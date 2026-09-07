@@ -878,7 +878,7 @@ public class ClinicScheduleController implements Serializable {
             }
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
 
         getItems();

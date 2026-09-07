@@ -120,6 +120,19 @@
                                                 </div>
                                             </div>
 
+                                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.nic ne null and !cc.attrs.bill.patient.person.nic.equals('')}">
+                                                <div class="d-flex justify-content-between w-100">
+                                                    <div class="w-100 text-left">
+                                                        <h:outputLabel value="NIC No" />
+                                                    </div>
+                                                    <div class="text-right w-100 ">
+                                                        <h:outputLabel value=":" />
+                                                    </div>
+                                                    <div class="text-right w-100">
+                                                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nic}"/>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100">

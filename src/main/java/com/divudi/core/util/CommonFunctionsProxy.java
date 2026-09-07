@@ -1,6 +1,8 @@
 package com.divudi.core.util;
 
 import com.divudi.core.entity.channel.SessionInstance;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
@@ -47,6 +49,10 @@ public class CommonFunctionsProxy {
         return CommonFunctions.getEndOfDay(new Date());
     }
 
+    public Date getStartOfDayOnCurrentDate() {
+        return CommonFunctions.getStartOfDay(new Date());
+    }
+
     public boolean renderPaginator(List<Object> list, int count) {
         return CommonFunctions.renderPaginator(list, count);
     }
@@ -77,4 +83,41 @@ public class CommonFunctionsProxy {
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
         return CommonFunctions.dateDifferenceInMinutes(fromDate, toDate);
     }
+
+
+    public static Date getRoundedHourAfter60Minutes() {
+
+        LocalDateTime d = LocalDateTime.now()
+                .plusMinutes(60)
+                .plusMinutes(30) // Add 30 minutes to round to nearest
+                .truncatedTo(ChronoUnit.HOURS);
+
+        return CommonFunctions.convertLocalDateTimeToDate(d);
+    }
+
+    /**
+     * Delegates to {@link CommonFunctions#escapeHtml(String)} to sanitise text
+     * before rendering with <code>escape="false"</code> in JSF pages.
+     *
+     * @param input raw string value
+     * @return escaped string safe for HTML output
+     */
+    public String escapeHtml(String input) {
+        return CommonFunctions.escapeHtml(input);
+    }
+
+    /**
+     * Adds the specified number of days to the given date.
+     *
+     * @param date the base date
+     * @param days the number of days to add (can be negative to subtract)
+     * @return the resulting date after adding the days
+     */
+    public Date addDaysToDate(Date date, Long days) {
+        if (date == null || days == null) {
+            return date;
+        }
+        return CommonFunctions.getAddedDate(date, days.intValue());
+    }
+
 }

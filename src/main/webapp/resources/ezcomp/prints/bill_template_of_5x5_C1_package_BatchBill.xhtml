@@ -149,7 +149,9 @@
 
                         </td>
                         <td  style="width:10%!important;text-align: right;">
-                            <h:outputLabel value="Amount" ></h:outputLabel>
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the item Prices in package Batch Bill',false)}" >
+                                <h:outputLabel value="Amount" ></h:outputLabel>
+                            </h:panelGroup>
                         </td>
                     </tr>
 
@@ -169,9 +171,11 @@
                                 </h:panelGroup>
                             </td>
                             <td   style="width:10%!important;text-align: right;">
-                                <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the item Prices in package Batch Bill',false)}" >
+                                    <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </h:panelGroup>
                             </td>
                         </tr>
 

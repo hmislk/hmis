@@ -183,7 +183,7 @@
                                             value="#{webUserController.webUserRole}"
                                             rendered="#{!webUserController.createOnlyUserForExsistingUser}">
                                             <f:selectItem itemLabel="-- Select Role --" itemValue="" />
-                                            <f:selectItems value="#{webUserRoleController.items}"
+                                            <f:selectItems value="#{webUserRoleController.activatediItems}"
                                                            var="role"
                                                            itemLabel="#{role.name}"
                                                            itemValue="#{role}" />

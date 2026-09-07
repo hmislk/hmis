@@ -17,6 +17,7 @@ public enum Analyzer {
     IndikoPlus("Indiko Plus"),
     BioRadD10("Bio-Rad D10"),
     MindrayBC5150("Mindray BC 5150"),
+    MindrayCL1000i("Mindray CL-1000i"),
     SmartLytePlus("SmartLyte Plus"),
     SwelabLumi("Swelab Lumi"),
     HumaCount5D("HumaCount5D"),
@@ -24,7 +25,8 @@ public enum Analyzer {
     HumaStar600("HumaStar600"),
     MaglumiX3HL7("Maglumi X3 HL7"),
     XL_200("XL 200"),
-    AIA_360("AIA 360");
+    AIA_360("AIA 360"),
+    AutoLumo("AutoLumo");
 
     private final String label;
 

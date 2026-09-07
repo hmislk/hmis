@@ -455,10 +455,16 @@
             </div>
 
             <div style="margin-left: 6%">
-                <div style="font-size: 8pt">
+                <div style="font-size: 8pt" class="d-flex">
                     <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}">
                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                     </h:outputLabel>
+                    <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paymentMethod ne cc.attrs.bill.paidBill.paymentMethod}" >
+                        <div class="d-flex gap-2">
+                            <h:outputLabel value=" -" />
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod}" />
+                        </div>
+                    </h:panelGroup>
                 </div>
 
                 <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card' }" >

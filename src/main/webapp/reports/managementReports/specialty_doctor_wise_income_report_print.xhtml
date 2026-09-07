@@ -1,0 +1,276 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css" />
+                <h:form >
+                        <h:panelGroup rendered="#{inwardReportController.byDoctor}">
+                            <p:panel header="Doctor wise Income Report" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Doctor wise Income Report" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="doctorRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/managementReports/specility_doctor_wise_income_report?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="doctorRp" class="d-flex justify-content-center">
+                                <style>
+                                    @media print {
+                                        @page { size: A4 portrait !important; }
+                                        #doctorRp .paper { width: 210mm !important; }
+                                    }
+                                </style>
+                                <div class="paper">
+                                    <div class="header" >
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="Doctor wise Income Report"/>
+                                            </div>
+                                        <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="4" styleClass="report-header-table" style="font-size:10px; width:80%;" columnClasses="label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.fromYearStartDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.toYearEndDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="By Doctor Wise" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.currentDoctor != null ? inwardReportController.currentDoctor.toString() : 'All'}"/>   
+
+                                                <h:outputText value="By Specialty:" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.currentSpeciality != null ? inwardReportController.currentSpeciality.name : 'All'}"/>
+
+                                            </h:panelGrid>
+                                        </div>   
+                                    </div>
+                                    <p:dataTable
+                                        id="tblDoctorWise"
+                                        value="#{inwardReportController.spcDocIncomeBillList}"
+                                        var="var"
+                                        styleClass="table">
+                                        <p:column width="50mm">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Performed Doctor Name"/>
+                                            </f:facet>
+                                            <h:outputText value="#{var.doctorTitle.label}"/>
+                                            <h:outputText value="#{var.doctorName}"/>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="Total" />
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width= "30mm" >
+                                            <f:facet name="header" >
+                                                <h:outputText value="Doctor Specialty" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.specialtyName}" styleClass="text-left">
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width= "30mm" style="text-align: right;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Doc Charge" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.docFee}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{inwardReportController.totalValuesSpcDocIncome.docFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="30mm" style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputText value="Hospital Charge" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.hosFee}"> 
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{inwardReportController.totalValuesSpcDocIncome.hosFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="30mm" style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputText value="Total Charge" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.totalCharge}"> 
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{inwardReportController.totalValuesSpcDocIncome.totalCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{not inwardReportController.byDoctor}">
+                            <p:panel header="Speciality wise Income Report" styleClass="my-2" >
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between">
+                                        <h:outputText value="Speciality wise Income Report" class="mt-2"/>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton 
+                                                icon="fa-solid fa-print"
+                                                class="ui-button-info"
+                                                style="width: 150px"
+                                                ajax="false" 
+                                                value="Print">
+                                                <p:printer target="spcRp" />
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Back to Report" 
+                                                style="width: 200px"
+                                                icon="fa fa-arrow-left"
+                                                class="ui-button-warning"
+                                                action="/reports/managementReports/specility_doctor_wise_income_report?faces-redirect=true">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </f:facet>
+                            </p:panel>
+
+                            <h:panelGroup id="spcRp" class="d-flex justify-content-center">
+                                <style>
+                                    @media print {
+                                        @page { size: A4 portrait !important; }
+                                        #spcRp .paper { width: 210mm !important; }
+                                    }
+                                </style>
+                                <div class="paper">
+                                    <div class="header" >
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
+                                                <h:outputText value="#{sessionController.institution.name}"/>
+                                            </div>
+                                            <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 16px;">
+                                                <h:outputText value="Speciality wise Income Report"/>
+                                            </div>
+                                        <div class="d-flex justify-content-center m-3">
+                                            <h:panelGrid columns="4" styleClass="report-header-table" style="font-size:10px; width:80%;" columnClasses="label,value,label,value">
+
+                                                <!-- Row 1 -->
+                                                <h:outputText value="From Date:" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.fromYearStartDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="To Date:" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.toYearEndDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputText value="By Doctor Wise" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.currentDoctor != null ? inwardReportController.currentDoctor.toString() : 'All'}"/>   
+
+                                                <h:outputText value="By Specialty:" styleClass="label"/>
+                                                <h:outputText value="#{inwardReportController.currentSpeciality != null ? inwardReportController.currentSpeciality.name : 'All'}"/>
+
+                                            </h:panelGrid>
+                                        </div>   
+                                    </div>
+                                    <p:dataTable
+                                        id="tblSpecialtyWise"
+                                        value="#{inwardReportController.spcDocIncomeBillList}"
+                                        var="var"
+                                        styleClass="table">
+                                        <p:column width="40mm">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Doctor Speciality" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.specialtyName}"/>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="Total" />
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column width= "30mm" style="text-align: right;">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Doc Charge" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.docFee}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{inwardReportController.totalValuesSpcDocIncome.docFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column width="30mm" style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputText value="Hospital Charge" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.hosFee}"> 
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{inwardReportController.totalValuesSpcDocIncome.hosFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column width="30mm" style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputText value="Total Charge" />
+                                            </f:facet>
+                                            <h:outputText value="#{var.totalCharge}"> 
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer" >
+                                                <h:outputText value="#{inwardReportController.totalValuesSpcDocIncome.totalCharge}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

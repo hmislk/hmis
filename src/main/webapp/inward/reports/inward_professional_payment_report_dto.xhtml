@@ -1,0 +1,532 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:growl id="professionalPaymentReportGrowl"></p:growl>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa fa-user-md"></h:outputText>
+                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Professional Payment Report" class="m-2"></p:outputLabel>
+                        </f:facet>
+
+                        <style>
+                            @media print {
+                                body {
+                                    margin: 0px 5px;
+                                }
+                            }
+                        </style>
+
+                        <div class="row">
+                            <div class="col-2">
+                                <h:outputLabel value="Report Type" for="reportType" />
+                                <p:selectOneMenu id="reportType" value="#{inwardReportControllerBht.professionalPaymentReportType}" class="w-100">
+                                    <f:selectItem itemLabel="Summary" itemValue="summary"/>
+                                    <f:selectItem itemLabel="Detailed" itemValue="detailed"/>
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="Search By" for="searchMode" class="mt-2 d-block"/>
+                                <p:selectOneMenu id="searchMode" value="#{inwardReportControllerBht.professionalPaymentSearchMode}" class="w-100">
+                                    <f:selectItem itemLabel="Date Range" itemValue="dateRange"/>
+                                    <f:selectItem itemLabel="BHT Range" itemValue="bhtRange"/>
+                                    <p:ajax update="rangeInputs"/>
+                                </p:selectOneMenu>
+
+                                <h:panelGroup id="rangeInputs" layout="block">
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'dateRange'}" layout="block">
+                                    <h:outputLabel value="Date Basis" for="dateBasis" class="mt-2 d-block"/>
+                                    <p:selectOneMenu id="dateBasis" value="#{inwardReportControllerBht.professionalPaymentDateBasis}" class="w-100">
+                                        <f:selectItem itemLabel="Admission Date" itemValue="admission"/>
+                                        <f:selectItem itemLabel="Discharge Date" itemValue="discharge"/>
+                                        <f:selectItem itemLabel="Final Bill Created Date" itemValue="finalBillCreated"/>
+                                        <f:selectItem itemLabel="Professional Fee Added Date" itemValue="feeAdded"/>
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="From Date" for="fromDate" />
+                                    <p:calendar
+                                        styleClass="dateTimePicker"
+                                        id="fromDate"
+                                        value="#{inwardReportControllerBht.fromDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:calendar>
+
+                                    <h:outputLabel value="To Date" for="toDate" />
+                                    <p:calendar
+                                        id="toDate"
+                                        value="#{inwardReportControllerBht.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:calendar>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'bhtRange'}" layout="block">
+                                    <h:outputLabel value="From BHT" for="admissionFrom" />
+                                    <p:autoComplete
+                                        id="admissionFrom"
+                                        value="#{inwardReportControllerBht.admissionFromForProfessionalPaymentReport}"
+                                        completeMethod="#{inwardReportControllerBht.completeAdmissionForProfessionalPaymentReport}"
+                                        var="apt"
+                                        itemLabel="#{apt.bhtNo}"
+                                        itemValue="#{apt}"
+                                        forceSelection="true"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:autoComplete>
+
+                                    <h:outputLabel value="To BHT" for="admissionTo" />
+                                    <p:autoComplete
+                                        id="admissionTo"
+                                        value="#{inwardReportControllerBht.admissionToForProfessionalPaymentReport}"
+                                        completeMethod="#{inwardReportControllerBht.completeAdmissionForProfessionalPaymentReport}"
+                                        var="apt"
+                                        itemLabel="#{apt.bhtNo}"
+                                        itemValue="#{apt}"
+                                        forceSelection="true"
+                                        class="w-100"
+                                        inputStyleClass="w-100">
+                                    </p:autoComplete>
+                                </h:panelGroup>
+                                </h:panelGroup>
+
+                                <h:outputLabel value="Admission Type" for="admissionType" class="mt-2 d-block"/>
+                                <p:selectOneMenu id="admissionType" value="#{inwardReportControllerBht.professionalPaymentAdmissionType}" class="w-100">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                                </p:selectOneMenu>
+
+                                <h:panelGroup layout="block" styleClass="mt-2">
+                                    <p:selectBooleanCheckbox id="onlyWithoutFees" value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>
+                                    <h:outputLabel value=" List admissions without any professional fees" for="onlyWithoutFees" class="mx-1"/>
+                                </h:panelGroup>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    action="#{inwardReportControllerBht.navigateToInwardProfessionalPaymentReport()}"
+                                    value="Search"
+                                    class="ui-button-warning w-100 my-1"
+                                    icon="fas fa-search">
+                                </p:commandButton>
+                            </div>
+
+                            <div class="col-10">
+
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentReportType eq 'summary'}" layout="block">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-user-md"></h:outputText>
+                                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Summary" class="m-2"></p:outputLabel>
+
+                                            <p:commandButton
+                                                value="Excel"
+                                                ajax="false"
+                                                class="ui-button-success m-1"
+                                                icon="fas fa-file-excel"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentSummaryExcel()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="PDF"
+                                                ajax="false"
+                                                class="ui-button-danger m-1"
+                                                icon="fas fa-file-pdf"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentSummaryPdf()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                class="ui-button-primary m-1"
+                                                icon="fa fa-print">
+                                                <p:printer target="summaryTbl"></p:printer>
+                                            </p:commandButton>
+                                        </f:facet>
+
+                                        <!-- Column Visibility Settings - Subtle placement, same pattern as pharmacy_grn_return_request.xhtml -->
+                                        <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                                            <p:panel id="panelSummaryColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                                <f:facet name="header">
+                                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                                        Configure Columns
+                                                    </span>
+                                                </f:facet>
+                                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryBhtNoVisible}" itemLabel="BHT Number">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryAdmittedVisible}" itemLabel="Admitted">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryDischargedVisible}" itemLabel="Discharged">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryFinalBillNoVisible}" itemLabel="Final Bill Number">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryConsultantVisible}" itemLabel="Consultant">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummarySpecialityVisible}" itemLabel="Speciality">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummarySumAddedFeeVisible}" itemLabel="Sum Added Fee">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummarySumPaidFeeVisible}" itemLabel="Sum Paid Fee">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryBalanceToPayVisible}" itemLabel="Balance to Pay">
+                                                        <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                </div>
+                                            </p:panel>
+                                        </div>
+
+                                        <h:panelGroup id="summaryTbl" layout="block" style="overflow-x: auto;">
+                                            <table class="table table-bordered table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBhtNoVisible}"><th>BHT Number</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryAdmittedVisible}"><th>Admitted</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryDischargedVisible}"><th>Discharged</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryFinalBillNoVisible}"><th>Final Bill Number</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryConsultantVisible}"><th>Consultant</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySpecialityVisible}"><th>Speciality</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySumAddedFeeVisible}"><th class="text-end">Sum Added Fee</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySumPaidFeeVisible}"><th class="text-end">Sum Paid Fee</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBalanceToPayVisible}"><th class="text-end">Balance to Pay</th></ui:fragment>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{inwardReportControllerBht.professionalPaymentReportGroups}" var="admissionRow">
+                                                        <ui:fragment rendered="#{empty admissionRow.detailRows}">
+                                                            <tr>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBhtNoVisible}"><td>#{admissionRow.bhtNo}</td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryAdmittedVisible}">
+                                                                    <td>
+                                                                        <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryDischargedVisible}">
+                                                                    <td>
+                                                                        <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryFinalBillNoVisible}"><td>#{admissionRow.firstFinalBillNo}</td></ui:fragment>
+                                                                <td colspan="#{inwardReportControllerBht.summaryEmptyRowColspan}">-</td>
+                                                            </tr>
+                                                        </ui:fragment>
+                                                        <ui:repeat value="#{admissionRow.detailRows}" var="detail" varStatus="rowStatus">
+                                                            <tr>
+                                                                <ui:fragment rendered="#{rowStatus.first}">
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBhtNoVisible}">
+                                                                        <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">#{admissionRow.bhtNo}</td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryAdmittedVisible}">
+                                                                        <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">
+                                                                            <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryDischargedVisible}">
+                                                                        <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">
+                                                                            <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryFinalBillNoVisible}">
+                                                                        <td rowspan="#{admissionRow.summaryAdmissionRowSpan}">#{admissionRow.firstFinalBillNo}</td>
+                                                                    </ui:fragment>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryConsultantVisible}"><td>#{detail.consultantName}</td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySpecialityVisible}"><td>#{detail.specialityName}</td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySumAddedFeeVisible}">
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.sumAddedFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySumPaidFeeVisible}">
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.sumPaidFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBalanceToPayVisible}">
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.sumAddedFee - detail.sumPaidFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </ui:repeat>
+                                                </tbody>
+                                            </table>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentReportType eq 'detailed'}" layout="block">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-user-md"></h:outputText>
+                                            <p:outputLabel value="&nbsp;&nbsp;&nbsp;Detailed" class="m-2"></p:outputLabel>
+
+                                            <p:commandButton
+                                                value="Excel"
+                                                ajax="false"
+                                                class="ui-button-success m-1"
+                                                icon="fas fa-file-excel"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentDetailedExcel()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="PDF"
+                                                ajax="false"
+                                                class="ui-button-danger m-1"
+                                                icon="fas fa-file-pdf"
+                                                action="#{inwardReportControllerBht.downloadProfessionalPaymentDetailedPdf()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Print"
+                                                ajax="false"
+                                                class="ui-button-primary m-1"
+                                                icon="fa fa-print">
+                                                <p:printer target="detailedTbl"></p:printer>
+                                            </p:commandButton>
+                                        </f:facet>
+
+                                        <!-- Column Visibility Settings - Subtle placement, same pattern as pharmacy_grn_return_request.xhtml -->
+                                        <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                                            <p:panel id="panelDetailedColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                                <f:facet name="header">
+                                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                                        Configure Columns
+                                                    </span>
+                                                </f:facet>
+                                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedBhtNoVisible}" itemLabel="BHT Number">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedAdmittedVisible}" itemLabel="Admitted">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedDischargedVisible}" itemLabel="Discharged">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedFinalBillNoVisible}" itemLabel="Final Bill Number">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedConsultantVisible}" itemLabel="Consultant">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedSpecialityVisible}" itemLabel="Speciality">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}" itemLabel="Added Fee Date">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}" itemLabel="Added Fee Value">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}" itemLabel="Paid Date">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}" itemLabel="Paid Bill Number">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}" itemLabel="Comments">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}" itemLabel="Paid Fee Value">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                </div>
+                                            </p:panel>
+                                        </div>
+
+                                        <h:panelGroup id="detailedTbl" layout="block" style="overflow-x: auto;">
+                                            <table class="table table-bordered table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedBhtNoVisible}"><th>BHT Number</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAdmittedVisible}"><th>Admitted</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedDischargedVisible}"><th>Discharged</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedFinalBillNoVisible}"><th>Final Bill Number</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedConsultantVisible}"><th>Consultant</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedSpecialityVisible}"><th>Speciality</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><th>Added Fee Date</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}"><th class="text-end">Added Fee Value</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}"><th>Paid Date</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}"><th>Paid Bill Number</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><th>Comments</th></ui:fragment>
+                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}"><th class="text-end">Paid Fee Value</th></ui:fragment>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <ui:repeat value="#{inwardReportControllerBht.professionalPaymentReportGroups}" var="admissionRow">
+                                                        <ui:fragment rendered="#{empty admissionRow.detailedRows}">
+                                                            <tr>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedBhtNoVisible}"><td>#{admissionRow.bhtNo}</td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAdmittedVisible}">
+                                                                    <td>
+                                                                        <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedDischargedVisible}">
+                                                                    <td>
+                                                                        <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedFinalBillNoVisible}"><td>#{admissionRow.firstFinalBillNo}</td></ui:fragment>
+                                                                <td colspan="#{inwardReportControllerBht.detailedEmptyRowColspan}">-</td>
+                                                            </tr>
+                                                        </ui:fragment>
+                                                        <ui:repeat value="#{admissionRow.detailedRows}" var="detail" varStatus="blockStatus">
+                                                            <ui:repeat value="#{detail.indexes}" var="i" varStatus="rowStatus">
+                                                                <tr>
+                                                                    <ui:fragment rendered="#{blockStatus.first and rowStatus.first}">
+                                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedBhtNoVisible}">
+                                                                            <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">#{admissionRow.bhtNo}</td>
+                                                                        </ui:fragment>
+                                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAdmittedVisible}">
+                                                                            <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">
+                                                                                <h:outputText value="#{admissionRow.dateOfAdmission}">
+                                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                                </h:outputText>
+                                                                            </td>
+                                                                        </ui:fragment>
+                                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedDischargedVisible}">
+                                                                            <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">
+                                                                                <h:outputText value="#{admissionRow.dateOfDischarge}" rendered="#{admissionRow.dateOfDischarge ne null}">
+                                                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                                                </h:outputText>
+                                                                            </td>
+                                                                        </ui:fragment>
+                                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedFinalBillNoVisible}">
+                                                                            <td rowspan="#{admissionRow.detailedAdmissionRowSpan}">#{admissionRow.firstFinalBillNo}</td>
+                                                                        </ui:fragment>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{rowStatus.first}">
+                                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedConsultantVisible}">
+                                                                            <td rowspan="#{detail.blockRowSpan}">#{detail.consultantName}</td>
+                                                                        </ui:fragment>
+                                                                        <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedSpecialityVisible}">
+                                                                            <td rowspan="#{detail.blockRowSpan}">#{detail.specialityName}</td>
+                                                                        </ui:fragment>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}">
+                                                                        <td>
+                                                                            <h:outputText value="#{detail.addedFeeDates[i]}" rendered="#{i lt detail.addedFeeValues.size()}">
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="Asia/Colombo" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
+                                                                        <td class="text-end">
+                                                                            <h:outputText value="#{detail.addedFeeValues[i]}" rendered="#{i lt detail.addedFeeValues.size()}">
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}">
+                                                                        <td>
+                                                                            <h:outputText value="#{detail.paidFeeDates[i]}" rendered="#{i lt detail.paidFeeValues.size()}">
+                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" timeZone="Asia/Colombo" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}">
+                                                                        <td>
+                                                                            <h:outputText value="#{detail.paidBillNumbers[i]}" rendered="#{i lt detail.paidFeeValues.size()}"/>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><td></td></ui:fragment>
+                                                                    <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}">
+                                                                        <td class="text-end">
+                                                                            <h:outputText value="#{detail.paidFeeValues[i]}" rendered="#{i lt detail.paidFeeValues.size()}">
+                                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </ui:fragment>
+                                                                </tr>
+                                                            </ui:repeat>
+                                                            <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Total</td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.sumAddedFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}"><td></td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}"><td></td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><td></td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}">
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.sumPaidFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                            </tr>
+                                                            <tr style="font-weight: bold;">
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Balance to Pay</td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{detail.sumAddedFee - detail.sumPaidFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}"><td></td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}"><td></td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><td></td></ui:fragment>
+                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}"><td></td></ui:fragment>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </ui:repeat>
+                                                </tbody>
+                                            </table>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

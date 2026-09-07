@@ -1,0 +1,247 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/channel/channel_reports.xhtml">
+            <ui:define name="subContent">
+                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
+                <h:form class="w-100">
+                    <p:panel header="Doctor Appointments" class="w-100">
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:panelGrid columns="5" 
+                                             class="ui-fluid"
+                                             style="width: 100%; table-layout: fixed;"
+                                             columnClasses="fp-col-label1, fp-col-input1, fp-col-space1, fp-col-label3, fp-col-input3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;"
+                                                      styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="Appointment Date" for="fromDate" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:datePicker
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{channelReportTemplateController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                        />
+
+                                    <p:spacer width="50"/>
+                                    <p:spacer width="50"/>
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf2b9;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:autoComplete id="acSpeciality"
+                                                    value="#{channelReportTemplateController.speciality}"
+                                                    completeMethod="#{specialityController.completeSpeciality}"
+                                                    var="speciality"
+                                                    itemLabel="#{speciality.name}"
+                                                    itemValue="#{speciality}"
+                                                    inputStyleClass="w-100"
+                                                    styleClass="w-100">
+                                        <p:ajax event="itemSelect" update="scStaff"/>
+                                    </p:autoComplete>
+
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Doctor" for="scStaff" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu id="scStaff"
+                                                     value="#{channelReportTemplateController.staff}"
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     styleClass="w-100 form-control">
+                                        <f:selectItem itemLabel="Please Select" noSelectionOption="true"/>
+                                        <f:selectItems
+                                            value="#{staffController.getSpecialityStaff(channelReportTemplateController.speciality)}"
+                                            var="staff"
+                                            itemLabel="#{staff.person.nameWithTitle}"
+                                            itemValue="#{staff}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;"
+                                                      styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbIns"
+                                        class="w-100"
+                                        styleClass="w-100 form-control"
+                                        value="#{channelReportTemplateController.institution}"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Institutions"/>
+                                        <f:selectItems value="#{institutionController.companies}" var="ins"
+                                                       itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                        <p:ajax process="cmbIns" update="cmbDept"/>
+                                    </p:selectOneMenu>
+
+                                    <p:spacer width="50"/>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
+                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                        id="cmbDept"
+                                        style="width: 350px;"
+                                        class="w-100"
+                                        value="#{channelReportTemplateController.department}"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments"/>
+                                        <f:selectItems
+                                            value="#{departmentController.getInstitutionDepartments(channelReportTemplateController.institution)}"
+                                            var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+
+                                </h:panelGrid>
+
+                                <div class="d-flex align-items-center my-2">
+                                    <p:commandButton
+                                        id="btnList" class="mx-1 ui-button-warning"
+                                        icon="fas fa-cogs"
+                                        ajax="false" value="Process"
+                                        action="#{channelReportTemplateController.processChannelDoctorAppointmentsReport()}"/>
+
+                                    <p:commandButton 
+                                        value="Export as PDF" 
+                                        ajax="false" 
+                                        icon="fas fa-file-pdf"
+                                        class="mx-1 ui-button-info">
+                                        <p:fileDownload value="#{channelReportTemplateController.channelDoctorAppointmentsReportAsPdf}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnExcel"
+                                        class="mx-1 ui-button-success"
+                                        icon="fas fa-file-excel"
+                                        ajax="false" value="Export to Excel">
+                                        <p:fileDownload value="#{channelReportTemplateController.channelDoctorAppointmentsReportAsExcel}" />
+                                    </p:commandButton>
+                                </div>
+                                
+                            </div>
+                        </div>
+
+                        <p:dataTable
+                            id="tbl"
+                            value="#{channelReportTemplateController.channelConsultantCountDTOs}"
+                            var="row"
+                            rowKey="#{row.sessionInstanceId}"
+                            tableStyle="table-layout: auto;">
+
+                            <p:column style="text-align: left;">
+                                <f:facet name="header">
+                                    <h:outputText value="Consultant"/>
+                                </f:facet>
+                                <h:outputText value="#{row.consultantNameWithTitle}"/>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Speciality"/>
+                                </f:facet>
+                                <h:outputText value="#{row.consultantSpeciality}"/>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Time"/>
+                                </f:facet>
+                                <h:outputText value="#{row.sessionStartingTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Direct Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.systemBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Agent Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.agentBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="On-Call Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.onCallBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Online Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.onlineBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Rescheduled Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.rescheduledBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Total Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.totalBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputText value="Doctor Fee"/>
+                                </f:facet>
+                                <h:outputText value="#{row.doctorFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Holiday"/>
+                                </f:facet>
+                                <h:outputText value="Holiday" rendered="#{row.holiday}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                        
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

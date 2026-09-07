@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="pharmacyReturnFromWardReceiveForm" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
+
+            <p:panel rendered="#{!pharmacyReturnFromWardReceiveController.printPreview}">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
+                            <p:outputLabel value="Receive Returned Medicines - Bill #{pharmacyReturnFromWardReceiveController.returnedBill.deptId}" class="mx-4"/>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <p:selectBooleanCheckbox
+                                itemLabel="Complete the Return"
+                                value="#{pharmacyReturnFromWardReceiveController.completed}"
+                                disabled="#{!webUserController.hasPrivilege('PharmacyReturnFromWardForceComplete')}">
+                            </p:selectBooleanCheckbox>
+                            <p:commandButton
+                                id="btnBackToPendingReturns"
+                                value="Back to List"
+                                icon="fas fa-arrow-left"
+                                ajax="false"
+                                class="ui-button-secondary mx-1"
+                                action="#{pharmacyReturnFromWardReceiveController.navigateBackToPendingList}"/>
+                            <p:commandButton
+                                id="btnConfirmReturnReceipt"
+                                value="Confirm Receipt"
+                                icon="fas fa-check"
+                                ajax="false"
+                                class="ui-button-success"
+                                action="#{pharmacyReturnFromWardReceiveController.settle}"
+                                onclick="return confirm('Confirm that these returned medicines have been physically received into this pharmacy?');"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <h:outputLabel value="Returned From Ward" class="fw-bold"/>
+                        <p:outputLabel value="#{pharmacyReturnFromWardReceiveController.returnedBill.fromDepartment.name}" class="d-block"/>
+                    </div>
+                    <div class="col-md-4">
+                        <h:outputLabel value="Returned By" class="fw-bold"/>
+                        <p:outputLabel value="#{pharmacyReturnFromWardReceiveController.returnedBill.creater.webUserPerson.name}" class="d-block"/>
+                    </div>
+                    <div class="col-md-4">
+                        <h:outputLabel value="Carried By" class="fw-bold"/>
+                        <p:outputLabel value="#{pharmacyReturnFromWardReceiveController.returnedBill.toStaff.person.nameWithTitle}" class="d-block"/>
+                    </div>
+                </div>
+
+                <p:dataTable
+                    id="returnReceiveItemTable"
+                    widgetVar="returnReceiveItemTable"
+                    rowKey="#{i.id}"
+                    value="#{pharmacyReturnFromWardReceiveController.receivedBill.billItems}"
+                    var="i"
+                    editable="true"
+                    class="w-100">
+
+                    <p:ajax event="rowEdit" listener="#{pharmacyReturnFromWardReceiveController.onEditing}" update="returnReceiveItemTable"/>
+                    <p:ajax event="rowEditCancel" listener="#{pharmacyReturnFromWardReceiveController.onEditing}" update="returnReceiveItemTable"/>
+
+                    <p:column headerText="Item">
+                        <h:outputText value="#{i.item.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Batch No">
+                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Expiry">
+                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Remaining to Accept">
+                        <h:outputText value="#{pharmacyReturnFromWardReceiveController.getRemainingQuantityForReturnItem(i.referanceBillItem)}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Receiving Quantity">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{i.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText autocomplete="off" value="#{i.pharmaceuticalBillItem.qty}" style="width:96%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column style="width:10px!important; text-align: right; padding: 6px;">
+                        <p:rowEditor/>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel rendered="#{pharmacyReturnFromWardReceiveController.printPreview}">
+                <f:facet name="header">
+                    <p:outputLabel value="Returned Medicines Received - Bill #{pharmacyReturnFromWardReceiveController.receivedBill.deptId}"/>
+                </f:facet>
+
+                <p:messages showDetail="true"/>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <h:outputLabel value="Returned From Ward" class="fw-bold"/>
+                        <p:outputLabel value="#{pharmacyReturnFromWardReceiveController.receivedBill.fromDepartment.name}" class="d-block"/>
+                    </div>
+                    <div class="col-md-4">
+                        <h:outputLabel value="Received Into" class="fw-bold"/>
+                        <p:outputLabel value="#{pharmacyReturnFromWardReceiveController.receivedBill.department.name}" class="d-block"/>
+                    </div>
+                    <div class="col-md-4">
+                        <h:outputLabel value="Received At" class="fw-bold"/>
+                        <p:outputLabel value="#{pharmacyReturnFromWardReceiveController.receivedBill.createdAt}" class="d-block">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </p:outputLabel>
+                    </div>
+                </div>
+
+                <p:dataTable
+                    id="returnReceivedItemTable"
+                    rowKey="#{i.id}"
+                    value="#{pharmacyReturnFromWardReceiveController.receivedBill.billItems}"
+                    var="i"
+                    class="w-100">
+
+                    <p:column headerText="Item">
+                        <h:outputText value="#{i.item.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Batch No">
+                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Received Quantity">
+                        <h:outputText value="#{i.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                </p:dataTable>
+
+                <p:commandButton
+                    id="btnBackToPendingReturnsAfterReceive"
+                    value="Back to Pending List"
+                    icon="fas fa-arrow-left"
+                    ajax="false"
+                    class="ui-button-secondary mt-3"
+                    action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"/>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

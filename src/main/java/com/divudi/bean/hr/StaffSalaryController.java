@@ -252,6 +252,26 @@ public class StaffSalaryController implements Serializable {
         getStaffController().makeNull();
     }
 
+    public String navigateToSalaryAdvance() {
+        clear();
+        return "/hr/hr_staff_salary_advance?faces-redirect=true";
+    }
+
+    public String navigateToSalary() {
+        clear();
+        return "/hr/hr_staff_salary?faces-redirect=true";
+    }
+
+    public String navigateToSalarySpecial() {
+        clear();
+        return "/hr/hr_staff_salary_special?faces-redirect=true";
+    }
+
+    public String navigateToSalaryPrint() {
+        clear();
+        return "/hr/hr_staff_salary_print?faces-redirect=true";
+    }
+
     public StaffSalary getCurrent() {
         if (current == null) {
             current = new StaffSalary();
@@ -1225,7 +1245,7 @@ public class StaffSalaryController implements Serializable {
             setAdjustments();
 
             //Record Late No Pay Leave
-            //Not consider in any calcualtion is alredy with general NO Pay
+            // Not considered in any calculation as it is already part of general No Pay
             //only for reporting purpose
 //            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             //Issue #311
@@ -1248,10 +1268,12 @@ public class StaffSalaryController implements Serializable {
         String sql = "select sc from StaffSalaryComponant sc "
                 + " where sc.retired=false "
                 + " and sc.salaryCycle=:sc "
-                + " and sc.staff=:stf";
+                + " and sc.staff=:stf"
+                + " and sc.staffPaysheetComponent.paysheetComponent.componentType=:ct";
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
+        hm.put("ct", PaysheetComponentType.Salary_Advance_Deduction);
         StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         if (salaryComponant != null) {
@@ -1610,7 +1632,7 @@ public class StaffSalaryController implements Serializable {
                             + "Salary not Generated for Emp. - " + s.getPerson().getNameWithTitle() + "(" + s.getCode() + ")");
                     continue;
                 }
-                if (!(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
+                if (s.getDateJoined() == null || !(s.getDateJoined().getTime() > salaryCycle.getDayOffPhToDate().getTime())) {
                     double workedDays = humanResourceBean.calculateWorkedDaysForSalary(salaryCycle.getDayOffPhFromDate(), salaryCycle.getDayOffPhToDate(), s);
                     if (workedDays == 0.0) {
                         JsfUtil.addErrorMessage("No Working Days - " + s.getPerson().getName());

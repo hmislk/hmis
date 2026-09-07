@@ -62,7 +62,7 @@ public class EmrController implements Serializable {
 
     public String navigateToManageDiagnoses() {
         diagnosisController.fillItems();
-        return "/clinical/clinical_diagnosis";
+        return "/clinical/clinical_diagnosis?faces-redirect=true";
     }
 
     public String navigateToEmrAdmin() {

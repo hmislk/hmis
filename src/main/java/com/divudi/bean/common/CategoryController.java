@@ -403,13 +403,19 @@ public class CategoryController implements Serializable {
                 + " where c.retired=false"
                 + " and (type(c)= :service "
                 + " or type(c)= :sub "
-                + " or type(c)=:invest )"
+                + " or type(c)=:invest "
+                + " or c.categoryType= :serviceType "
+                + " or c.categoryType= :subType "
+                + " or c.categoryType= :investType )"
                 + " and (c.name)"
                 + " like :q order by c.name";
 
         temMap.put("service", ServiceCategory.class);
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("invest", InvestigationCategory.class);
+        temMap.put("serviceType", CategoryType.SERVICE_CATEGORY);
+        temMap.put("subType", CategoryType.SERVICE_SUB_CATEGORY);
+        temMap.put("investType", CategoryType.INVESTIGATION_CATEGORY);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
 
         c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
@@ -665,7 +671,7 @@ public class CategoryController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

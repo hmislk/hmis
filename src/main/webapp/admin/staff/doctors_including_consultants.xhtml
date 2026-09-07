@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl />
+                <p:growl id="msg"/>
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="gpDetail" />
 
@@ -40,24 +40,36 @@
                                                                  return false;" action="#{doctorController.delete()}"  value="Delete" 
                                 class="m-1 ui-button-danger w-25" >
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Excel" 
+                            <p:commandButton
+                                value="Excel"
                                 icon="fa-solid fa-file-excel"
                                 class="ui-button-success w-25"
                                 ajax="false"
                                 action="#{doctorController.downloadAsExcel()}"
                                 />
+                            <p:commandButton
+                                id="btnReload"
+                                value="Reload"
+                                icon="fa-solid fa-rotate"
+                                class="m-1 ui-button-info w-25"
+                                process="@this"
+                                update="lstSelect"
+                                action="#{doctorController.reloadDoctorsIncludingConsultants()}"/>
 
 
 
-                            <p:selectOneListbox  
+                            <p:selectOneListbox
                                 class="w-100" 
                                 filterMatchMode="contains" 
                                 id="lstSelect" 
                                 value="#{doctorController.current}" 
                                 filter="true" >
                                 <f:selectItems  value="#{doctorController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}"  ></f:selectItems>
-                                <p:ajax update="gpDetail" process="lstSelect" />                                        
+                                <p:ajax 
+                                    event="change"
+                                    update="gpDetail"
+                                    process="lstSelect"
+                                    listener="#{doctorController.changeStaff()}"/>                                        
                             </p:selectOneListbox>
 
                         </div>
@@ -141,7 +153,7 @@
                                                  class=" m-1 ui-button-warning w-25"
                                                  action="#{doctorController.saveSelected()}" 
                                                  process="btnSave gpDetail"
-                                                 update="lstSelect"
+                                                 update="lstSelect selectFocus msg gpDetail"
                                                  />
                                 <p:defaultCommand target="btnSave"/>
                             </p:panel>

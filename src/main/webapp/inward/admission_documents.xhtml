@@ -1,0 +1,218 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formDocuments" enctype="multipart/form-data">
+
+                    <p:panel header="Admission Documents" class="m-1">
+                        <f:facet name="actions">
+                            <p:commandButton
+                                value="Back"
+                                ajax="false"
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-secondary" />
+                        </f:facet>
+
+                        <!-- Upload section -->
+                        <p:fieldset legend="Upload New Document" class="mb-3">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <p:outputLabel for="cmbDocType" value="Document Type" />
+                                    <p:selectOneMenu id="cmbDocType"
+                                                    value="#{inwardDocumentUploadController.selectedUploadType}"
+                                                    class="w-100">
+                                        <f:selectItem itemLabel="-- Select Type --" itemValue="#{null}" />
+                                        <f:selectItems value="#{inwardDocumentUploadController.inwardUploadTypes}"
+                                                       var="t"
+                                                       itemLabel="#{t.label}"
+                                                       itemValue="#{t}" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-8">
+                                    <p:outputLabel for="txtDocComments" value="Comments (optional)" />
+                                    <p:inputTextarea id="txtDocComments"
+                                                    value="#{inwardDocumentUploadController.comments}"
+                                                    rows="2"
+                                                    class="w-100"
+                                                    autoResize="true"
+                                                    placeholder="Enter any notes about this document..." />
+                                </div>
+                            </div>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-10">
+                                    <p:fileUpload id="fuDocument"
+                                                 value="#{inwardDocumentUploadController.file}"
+                                                 mode="simple"
+                                                 skinSimple="true"
+                                                 accept=".pdf,.jpeg,.jpg,.png,application/pdf,image/jpeg,image/png"
+                                                 sizeLimit="10240000"
+                                                 label="Choose File"
+                                                 class="w-100" />
+                                </div>
+                                <div class="col-md-2">
+                                    <p:commandButton
+                                        id="btnUpload"
+                                        value="Upload"
+                                        icon="fa fa-upload"
+                                        action="#{inwardDocumentUploadController.uploadDocument()}"
+                                        ajax="false"
+                                        class="w-100" />
+                                </div>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col-12">
+                                    <small class="text-muted">Accepted formats: PDF, JPEG, PNG — maximum 10 MB</small>
+                                </div>
+                            </div>
+                        </p:fieldset>
+
+                        <!-- Documents list -->
+                        <p:dataTable id="tblDocuments"
+                                    value="#{inwardDocumentUploadController.documents}"
+                                    var="doc"
+                                    emptyMessage="No documents uploaded yet."
+                                    paginator="true"
+                                    rows="10"
+                                    paginatorAlwaysVisible="false"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                    class="w-100">
+                            <p:column headerText="Type" width="180">
+                                <h:outputText value="#{doc.uploadType.label}" />
+                            </p:column>
+                            <p:column headerText="File Name">
+                                <h:outputText value="#{doc.fileName}" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="#{doc.comments}" />
+                            </p:column>
+                            <p:column headerText="Uploaded At" width="160">
+                                <h:outputText value="#{doc.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                                       timeZone="Asia/Colombo" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Uploaded By" width="160">
+                                <h:outputText value="#{doc.creater.name}" />
+                            </p:column>
+                            <p:column headerText="Actions" width="180">
+                                <p:commandButton
+                                    icon="fa fa-eye"
+                                    title="View"
+                                    class="ui-button-success me-1"
+                                    process="@this"
+                                    update=":formDocuments:dlgViewContent"
+                                    action="#{inwardDocumentUploadController.viewDocument(doc)}"
+                                    oncomplete="PF('dlgView').show()" />
+                                <p:commandButton
+                                    icon="fa fa-download"
+                                    title="Download"
+                                    ajax="false"
+                                    class="ui-button-info me-1">
+                                    <p:fileDownload value="#{inwardDocumentUploadController.getDownloadStream(doc)}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnSendEmail"
+                                    icon="fas fa-envelope"
+                                    title="Send by Email"
+                                    class="ui-button-secondary me-1"
+                                    process="@this"
+                                    update=":emailDocDialogForm"
+                                    action="#{inwardDocumentUploadController.prepareEmailDialog(doc)}"
+                                    oncomplete="PF('emailDocDialog').show();" />
+                                <p:commandButton
+                                    icon="fa fa-trash"
+                                    title="Remove"
+                                    class="ui-button-danger"
+                                    process="@this"
+                                    update="tblDocuments growl"
+                                    action="#{inwardDocumentUploadController.removeDocument(doc)}">
+                                    <p:confirm header="Confirm Remove"
+                                               message="Remove this document?"
+                                               icon="pi pi-exclamation-triangle" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <!-- Document viewer dialog -->
+                    <p:dialog id="dlgView"
+                              widgetVar="dlgView"
+                              header="#{inwardDocumentUploadController.selectedDocument.uploadType.label} — #{inwardDocumentUploadController.selectedDocument.fileName}"
+                              modal="true"
+                              resizable="false"
+                              closeOnEscape="true"
+                              width="860">
+                        <h:panelGroup id="dlgViewContent">
+                            <h:panelGroup rendered="#{inwardDocumentUploadController.selectedDocument != null and inwardDocumentUploadController.selectedDocument.image}">
+                                <p:graphicImage
+                                    cache="false"
+                                    value="#{streamedContentController.imageByUploadId}"
+                                    style="max-width:100%; display:block; margin:auto;">
+                                    <f:param name="id" value="#{inwardDocumentUploadController.selectedDocument.id}" />
+                                </p:graphicImage>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{inwardDocumentUploadController.selectedDocument != null and inwardDocumentUploadController.selectedDocument.pdf}">
+                                <p:media
+                                    cache="false"
+                                    value="#{streamedContentController.imageByUploadId}"
+                                    player="pdf"
+                                    width="100%"
+                                    height="540px">
+                                    <f:param name="id" value="#{inwardDocumentUploadController.selectedDocument.id}" />
+                                </p:media>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </p:dialog>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                    </p:confirmDialog>
+
+                </h:form>
+
+                <!-- Send Email dialog -->
+                <p:dialog widgetVar="emailDocDialog" modal="true"
+                          header="Send Document by Email"
+                          width="400px" height="auto" resizable="false">
+                    <h:form id="emailDocDialogForm"
+                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                        <div class="p-3">
+                            <div class="mb-3">
+                                <p:outputLabel value="Document: " style="font-weight: bold;"/>
+                                <p:outputLabel value="#{inwardDocumentUploadController.selectedDocument.fileName}"/>
+                            </div>
+                            <div class="mb-3">
+                                <p:outputLabel for="emailDocRecipient" value="Email Address:" class="form-label"/>
+                                <p:inputText id="emailDocRecipient"
+                                             value="#{inwardDocumentUploadController.emailRecipient}"
+                                             class="w-100" placeholder="Enter email address"
+                                             required="true" requiredMessage="Email address is required"/>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">The document will be attached to the email along with a cover note.</small>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:commandButton id="btnCancelDocEmail" value="Cancel" onclick="PF('emailDocDialog').hide();"
+                                                 class="ui-button-secondary" type="button"/>
+                                <p:commandButton id="btnConfirmSendDocEmail" value="Send Email"
+                                                 action="#{inwardDocumentUploadController.sendDocumentEmail}"
+                                                 class="ui-button-success" icon="fas fa-envelope"
+                                                 ajax="false" oncomplete="PF('emailDocDialog').hide();"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -29,7 +29,7 @@ public class Fee implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String name;
@@ -47,6 +47,8 @@ public class Fee implements Serializable {
     @ManyToOne
     private Category forCategory;
     @ManyToOne
+    private Department forDepartment;
+    @ManyToOne
     Institution institution;
     @ManyToOne
     Department department;
@@ -55,7 +57,6 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
-
     ServiceSession serviceSession;
     private boolean booleanValue;
     //Created Properties
@@ -83,10 +84,9 @@ public class Fee implements Serializable {
 
     Item packege;  //Ceylinco, LEC ,
     @ManyToOne
-
     Department fromDepartment;
-    @ManyToOne
 
+    @ManyToOne
     Department toDepartment;
 
     @ManyToOne
@@ -98,15 +98,16 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff fromStaff;
     @ManyToOne
-
     Staff toStaff;
     @ManyToOne
-
     Speciality fromSpeciality;
     @ManyToOne
-
     Speciality toSpaciality;
+    
+    private boolean primaryFee;
+    
     private boolean discountAllowed;
+    private Boolean marginAllowed;
 
     public Fee() {
     }
@@ -435,6 +436,14 @@ public class Fee implements Serializable {
         this.discountAllowed = discountAllowed;
     }
 
+    public Boolean getMarginAllowed() {
+        return marginAllowed;
+    }
+
+    public void setMarginAllowed(Boolean marginAllowed) {
+        this.marginAllowed = marginAllowed;
+    }
+
     public double getCcFee() {
         return ccFee;
     }
@@ -459,5 +468,22 @@ public class Fee implements Serializable {
         this.forCategory = forCategory;
     }
 
+    public Department getForDepartment() {
+        return forDepartment;
+    }
+
+    public void setForDepartment(Department forDepartment) {
+        this.forDepartment = forDepartment;
+    }
+
+    public boolean isPrimaryFee() {
+        return primaryFee;
+    }
+
+    public void setPrimaryFee(boolean primaryFee) {
+        this.primaryFee = primaryFee;
+    }
+
+    
 
 }

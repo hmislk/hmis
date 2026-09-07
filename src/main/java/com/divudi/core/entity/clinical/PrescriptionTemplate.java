@@ -41,7 +41,7 @@ public class PrescriptionTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -88,6 +88,7 @@ public class PrescriptionTemplate implements Serializable {
     @ManyToOne
     private MeasurementUnit issueUnit;
 
+    private boolean indoor;
 
 
 
@@ -408,6 +409,12 @@ public class PrescriptionTemplate implements Serializable {
         this.favouriteType = favouriteType;
     }
 
+    public boolean isIndoor() {
+        return indoor;
+    }
 
+    public void setIndoor(boolean indoor) {
+        this.indoor = indoor;
+    }
 
 }

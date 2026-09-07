@@ -21,6 +21,7 @@ import com.divudi.core.entity.BillComponent;
 import com.divudi.core.entity.BillEntry;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.RefundBill;
@@ -748,6 +749,7 @@ public class StoreBillSearch implements Serializable {
         cb.setInstitution(getSessionController().getInstitution());
 
         cb.setComments(getBill().getComments());
+        cb.setCompleted(true);
 
         return cb;
     }
@@ -872,6 +874,14 @@ public class StoreBillSearch implements Serializable {
             b.setBill(can);
             b.copy(nB);
             b.invertValue(nB);
+
+            if (nB.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails invertedFinanceDetails = new BillItemFinanceDetails();
+                invertedFinanceDetails.invertValue(nB.getBillItemFinanceDetails());
+                invertedFinanceDetails.setBillItem(b);
+                invertedFinanceDetails.setCreatedAt(new Date());
+                b.setBillItemFinanceDetails(invertedFinanceDetails);
+            }
 
             b.setReferanceBillItem(nB);
 
@@ -2009,6 +2019,30 @@ public class StoreBillSearch implements Serializable {
     public Bill getBill() {
         //recreateModel();
         return bill;
+    }
+
+    public String navigateToCancelStoreDirectIssueToInpatients() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return null;
+        }
+        return "/store/store_cancel_bill_retail_bht?faces-redirect=true";
+    }
+
+    public String navigateToCancelStoreReturnDirectIssueToInpatients() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return null;
+        }
+        return "/store/store_cancel_bill_return_bht?faces-redirect=true";
     }
 
     public void setBill(Bill bill) {

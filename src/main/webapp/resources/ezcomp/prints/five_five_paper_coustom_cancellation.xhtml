@@ -246,16 +246,16 @@
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
+            <h:panelGroup rendered="#{cc.attrs.bill.billedBill ne null}">
                 <div class="d-flex gap-2" style="font-size: 9pt;margin-left:5%">
                     <h:outputLabel value="Remark :"/>
-                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.comments}"/>
                 </div>
             </h:panelGroup>
             <div class="d-flex justify-content-end align-items-center" style="margin-right: 5%;font-size: 9pt">
-                <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
+                <h:panelGroup rendered="#{cc.attrs.bill.billedBill ne null}">
                     <div>
-                        <h:outputLabel value="Original Bill No :  #{cc.attrs.bill.deptId}" />
+                        <h:outputLabel value="Original Bill No :  #{cc.attrs.bill.billedBill.deptId}" />
                     </div>
                 </h:panelGroup>
             </div>

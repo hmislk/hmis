@@ -36,21 +36,26 @@
                 .noDisplayRow {
                     display: none;
                 }
+                .bhtFinalTable .ui-datatable-data td,
+                .bhtFinalTable .ui-datatable-data th,
+                .bhtFinalTable thead th,
+                .bhtFinalTable tbody td,
+                .bhtFinalTable tfoot td {
+                    padding: 8px !important;
+                }
             </style>
- 
-            <p:dataTable id="tb1"
-                         class="mt-2"
-                         value="#{cc.attrs.bill.billItems}" 
-                         var="bip"
-                         rowStyleClass="#{(bip.grossValue ne 0) ? '' : 'noDisplayRow' }"
-                         >
-                <p:column headerText="searialNo">
-                    #{bip.id}
-                    <h:outputLabel   value="#{bip.searialNo}"/>
-                </p:column>
+
+            <p:dataTable 
+                id="tb1"
+                styleClass="mt-2 bhtFinalTable"
+                value="#{cc.attrs.bill.billItems}" 
+                var="bip"
+                rowStyleClass="#{(bip.adjustedValue ne 0 or bip.netValue ne 0) ? '' : 'noDisplayRow' }">
+                
                 <p:column headerText="Inward Charge Type">
                     <h:outputLabel   value="#{bip.inwardChargeType.name}"/>
                 </p:column>
+                
                 <p:column headerText="Total Value" style="text-align: right;">
                     <h:outputLabel  value="#{bip.grossValue}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -60,7 +65,8 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </f:facet>
-                </p:column>                            
+                </p:column>
+                
                 <p:column headerText="Discount Value"  style="text-align: right;">
                     <h:outputLabel  value="#{bip.discount}">
                         <f:convertNumber pattern="#,##0.00" />
@@ -89,12 +95,31 @@
                     </h:outputLabel>
                 </p:column>
 
+                <p:column headerText="Difference"  style="text-align: center; width: 12em;" exportable="false">
+                    <h:panelGroup style="font-size: 18px; font-weight: 700">
+                        <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) ge 0.005}" style="color: green;">
+                            <h:outputText styleClass="fas fa-arrow-up mx-1" />
+                            <h:outputLabel value="#{bip.adjustedValue - bip.netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) le -0.005}" style="color: red;">
+                            <h:outputText styleClass="fas fa-arrow-down mx-1" />
+                            <h:outputLabel value="#{bip.adjustedValue - bip.netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{(bip.adjustedValue - bip.netValue) gt -0.005 and (bip.adjustedValue - bip.netValue) lt 0.005}" style="color: blue;">
+                            <h:outputLabel value="0">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </p:column>
+
             </p:dataTable>
 
         </p:panel>
-
-
-
 
     </cc:implementation>
 </html>

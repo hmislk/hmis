@@ -6,6 +6,7 @@
 package com.divudi.core.data.lab;
 
 import com.divudi.core.data.InvestigationItemType;
+import static com.divudi.core.data.lab.Priority.URGENT;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientSample;
@@ -493,7 +494,7 @@ public class Dimension {
                     if (tii.getItem().getPriority() != null) {
                         this.setLimsPriority(tii.getItem().getPriority());
                     } else {
-                        this.setLimsPriority(Priority.Routeine);
+                        this.setLimsPriority(Priority.NORMAL);
                     }
                     if (tii.getItem().isHasMoreThanOneComponant()) {
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
@@ -695,17 +696,20 @@ public class Dimension {
     public void setLimsPriority(Priority limsPriority) {
         this.limsPriority = limsPriority;
         if (limsPriority == null) {
-            limsPriority = Priority.Routeine;
+            limsPriority = Priority.NORMAL;
         }
         switch (limsPriority) {
-            case Asap:
-                analyzerPriority = DimensionPriority.Two;
-                break;
-            case Stat:
+            case NORMAL:
                 analyzerPriority = DimensionPriority.One;
                 break;
-            case Routeine:
-                analyzerPriority = DimensionPriority.Zero;
+            case HIGH:
+                analyzerPriority = DimensionPriority.Two;
+                break;
+            case URGENT:
+                analyzerPriority = DimensionPriority.Three;
+                break;
+            case CRITICAL:
+                analyzerPriority = DimensionPriority.Four;
                 break;
             default:
                 analyzerPriority = DimensionPriority.Zero;

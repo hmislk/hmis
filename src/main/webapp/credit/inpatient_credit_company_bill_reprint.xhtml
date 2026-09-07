@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+      xmlns:bip="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -126,7 +127,19 @@
 
                                     <h:panelGroup id="gpBillPreview">
                                         <div>
-                                            <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}"  bill="#{creditCompanyBillSearch.bill}" dup="true"/>
+                                            <!-- Use cancellation print component for cancelled bills -->
+                                            <h:panelGroup rendered="#{creditCompanyBillSearch.bill.cancelled eq true}">
+                                                <bip:credit_settlement_cancellation_print
+                                                    controller="#{creditCompanyBillSearch}"
+                                                    originalBill="#{creditCompanyBillSearch.bill}"
+                                                    cancellationBill="#{creditCompanyBillSearch.bill.cancelledBill}"
+                                                    duplicate="true"/>
+                                            </h:panelGroup>
+
+                                            <!-- Use regular print component for non-cancelled bills -->
+                                            <h:panelGroup rendered="#{creditCompanyBillSearch.bill.cancelled ne true}">
+                                                <bi:CreditReceiveBill controller="#{creditCompanyBillSearch}" bill="#{creditCompanyBillSearch.bill}" dup="true"/>
+                                            </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
 

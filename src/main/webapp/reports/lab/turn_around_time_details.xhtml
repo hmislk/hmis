@@ -10,215 +10,529 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form >
+                <h:form>
+                    <p:panel header="Turn Around Time Details">
 
+                        <div class="container-fluid px-0">
 
+                            <!-- Date Range -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-calendar-alt mr-2"></i>&#160;
+                                    <p:outputLabel value="From Date" for="dpFrom"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker id="dpFrom"
+                                                  value="#{reportController.fromDate}"
+                                                  styleClass="d-block w-100"
+                                                  inputStyleClass="form-control"
+                                                  title="Filter by from date"
+                                                  pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-calendar-alt"></i>&#160;
+                                    <p:outputLabel value="To Date" for="dpTo"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker id="dpTo"
+                                                  value="#{reportController.toDate}"
+                                                  styleClass="d-block w-100"
+                                                  inputStyleClass="form-control"
+                                                  title="Filter by to date"
+                                                  pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </div>
+                            </div>
 
-                    <p:panel header="Turn Around Time Details" >
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="From (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <!-- Institution & Site -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-hospital"></i>&#160;
+                                    <p:outputLabel value="Institution" for="cmdInstitution"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdInstitution"
+                                                     value="#{reportController.institution}"
+                                                     style="width:100%"
+                                                     title="Filter by institution"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Institutions" itemValue=""/>
+                                        <f:selectItems value="#{institutionController.items}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}"/>
+                                        <p:ajax process="@this" update="cmdSite cmdDepartment"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-map-marker-alt"></i>&#160;
+                                    <p:outputLabel value="Site" for="cmdSite"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdSite"
+                                                     value="#{reportController.site}"
+                                                     style="width:100%"
+                                                     title="Filter by site"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Sites" itemValue=""/>
+                                        <f:selectItems value="#{institutionController.sites}"
+                                                       var="s"
+                                                       itemLabel="#{s.name}"
+                                                       itemValue="#{s}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                            <p:spacer width="20"></p:spacer>
+                            <!-- Department & Priority Type -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-sitemap"></i>&#160;
+                                    <p:outputLabel value="Department" for="cmdDepartment"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdDepartment"
+                                                     value="#{reportController.department}"
+                                                     style="width:100%"
+                                                     title="Filter by department"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Departments" itemValue=""/>
+                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-flag"></i>&#160;
+                                    <p:outputLabel value="Priority Type" for="cmdPriority"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdPriority"
+                                                     value="#{reportController.priorityType}"
+                                                     style="width:100%"
+                                                     title="Filter by priority type">
+                                        <f:selectItem itemLabel="All"       itemValue=""/>
+                                        <f:selectItem itemLabel="Elective"  itemValue="ELECTIVE"/>
+                                        <f:selectItem itemLabel="Emergency" itemValue="EMERGENCY"/>
+                                        <f:selectItem itemLabel="Immediate" itemValue="IMMEDIATE"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="To (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <!-- Show Outliers & CC Name -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-chart-line"></i>&#160;
+                                    <p:outputLabel value="Show Outliers Over" for="cmdOutliers"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdOutliers"
+                                                     value="#{reportController.totalAverage}"
+                                                     style="width:100%"
+                                                     title="Show outliers over total average">
+                                        <f:selectItem itemLabel="None"       itemValue=""/>
+                                        <f:selectItem itemLabel="Percentage" itemValue="PERCENTAGE"/>
+                                        <f:selectItem itemLabel="Minutes"    itemValue="MINUTES"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-user-circle"></i>&#160;
+                                    <p:outputLabel value="CC Name" for="txtCcName"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText id="txtCcName"
+                                                 styleClass="form-control w-100"
+                                                 title="Filter by CC name"
+                                                 placeholder="Enter CC Name"/>
+                                </div>
+                            </div>
 
-                            
+                            <!-- CC Route & Patient MRN -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-road"></i>&#160;
+                                    <p:outputLabel value="CC Route" for="txtCcRoute"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText id="txtCcRoute"
+                                                 styleClass="form-control w-100"
+                                                 title="Filter by CC route"
+                                                 placeholder="Enter CC Route"/>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-id-card"></i>&#160;
+                                    <p:outputLabel value="Patient MRN" for="txtMrn"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText id="txtMrn"
+                                                 value="#{reportController.phn}"
+                                                 styleClass="form-control w-100"
+                                                 title="Filter by patient MRN"
+                                                 placeholder="Enter Patient MRN"/>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="Institution/Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdInstitution"
-                                value="#{reportController.institution}"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
-                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
-                            </p:selectOneMenu>
+                            <!-- Investigation & Lab Department -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-flask"></i>&#160;
+                                    <p:outputLabel value="Investigation" for="cmdInvestigation"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdInvestigation"
+                                                     style="width:100%"
+                                                     filter="true"
+                                                     title="Filter by investigation">
+                                        <!--dummy values-->
+                                        <f:selectItem itemLabel="Select Investigation" itemValue="" />
+                                        <f:selectItem itemLabel="Blood Test" itemValue="1" />
+                                        <f:selectItem itemLabel="Urine Analysis" itemValue="2" />
+                                        <f:selectItem itemLabel="X-Ray" itemValue="3" />
+                                        <f:selectItem itemLabel="MRI Scan" itemValue="4" />
+                                        <f:selectItem itemLabel="CT Scan" itemValue="5" />
 
-                            <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="Priority Type"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.priorityType}">
-                                <f:selectItem itemLabel="Priority Type"/>
-                            </p:selectOneMenu>
-                            
-                            
-                            
-                            <p:outputLabel value="Total Average"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.totalAverage}">
-                                <f:selectItem itemLabel="Percentage"/>
-                            </p:selectOneMenu>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-flask"></i>&#160;
+                                    <p:outputLabel value="Lab Department" for="cmdLabDepartment"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdLabDepartment"
+                                                     style="width:100%"
+                                                     title="Filter by laboratory department"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Lab Departments" itemValue=""/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                           <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="Laboratary Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
-                            </p:selectOneMenu>
+                            <!-- Referring Doctor & Result Status -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-user-md"></i>&#160;
+                                    <p:outputLabel value="Referring Doctor" for="cmdRefDoctor"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdRefDoctor"
+                                                     value="#{reportController.referingDoctor}"
+                                                     style="width:100%"
+                                                     title="Filter by referring doctor"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="Select Referring Doctor" itemValue=""/>
+                                        <f:selectItems value="#{doctorController.items}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-clipboard-check"></i>&#160;
+                                    <p:outputLabel value="Result Status" for="cmdResultStatus"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdResultStatus"
+                                                     style="width:100%"
+                                                     title="Filter by result status">
+                                        <f:selectItem itemLabel="All"              itemValue=""/>
+                                        <f:selectItem itemLabel="Result Pending"   itemValue="PENDING"/>
+                                        <f:selectItem itemLabel="Result Certified" itemValue="CERTIFIED"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="CC Name"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItem itemLabel="CC name"/>
-                            </p:selectOneMenu>
+                            <!-- Visit Type -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-stethoscope"></i>&#160;
+                                    <p:outputLabel value="Visit Type" for="cmdVisitType"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdVisitType"
+                                                     value="#{reportController.visitType}"
+                                                     style="width:100%"
+                                                     title="Filter by visit type">
+                                        <f:selectItem itemLabel="All" itemValue=""/>
+                                        <f:selectItem itemLabel="OP"  itemValue="OP"/>
+                                        <f:selectItem itemLabel="IP"  itemValue="IP"/>
+                                        <f:selectItem itemLabel="CC"  itemValue="CC"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
-                           <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="CC Route"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccRoute}">
-                                <f:selectItem itemLabel="CC Route"/>
-                            </p:selectOneMenu>
-                            
-                            
-                            <p:outputLabel value="Visit"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.visit}">
-                                <f:selectItem itemLabel="All visits"/>
-                            </p:selectOneMenu>
-                            
-                            <p:spacer width="20"></p:spacer>
+                            <!-- Action Buttons -->
+                            <div class="row mb-3">
+                                <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
+                                    <p:commandButton ajax="false"
+                                                     value="Process"
+                                                     icon="fas fa-cog"
+                                                     styleClass="ui-button-warning"/>
+                                    <p:commandButton ajax="false"
+                                                     value="Print"
+                                                     icon="fas fa-print"
+                                                     styleClass="ui-button-info">
+                                        <p:printer target="tbl"/>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false"
+                                                     value="Export Excel"
+                                                     icon="fas fa-file-excel"
+                                                     styleClass="ui-button-success">
+                                        <p:dataExporter fileName="turn_around_time_details" target="tbl" type="xlsx"/>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false"
+                                                     value="Export PDF"
+                                                     icon="fas fa-file-pdf"
+                                                     styleClass="ui-button-danger">
+                                        <p:dataExporter type="pdf" target="tbl" fileName="turn_around_time_details"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="Patient MRN"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.patientMrn}">
-                                <f:selectItem itemLabel="Patient MRN"/>
-                            </p:selectOneMenu>
+                        </div>
+                    </p:panel>
 
-                          
-                            
-                            <p:outputLabel value="Investigation"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.investigation}">
-                                <f:selectItem itemLabel="Investigation"/>
-                            </p:selectOneMenu>
-                            
-                            <p:spacer width="20"></p:spacer>
-                            
-                            <p:outputLabel value="Result status"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.status}">
-                                <f:selectItem itemLabel="Result Status"/>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Refering Doctor Name"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.refDocName}">
-                                <f:selectItem itemLabel="Doctor Name"/>
-                            </p:selectOneMenu>
-                            
+                    <!-- ============================================================ -->
+                    <!-- REPORT RESULTS SUMMARY                                        -->
+                    <!-- ============================================================ -->
+                    <p:panel header="Report Results" styleClass="mt-3">
+
+                        <h:panelGrid columns="4"
+                                     styleClass="table table-bordered table-sm table-striped w-100"
+                                     columnClasses="font-weight-bold w-15,w-35,font-weight-bold w-15,w-35">
+
+                            <h:outputText value="From Date"/>
+                            <h:outputLabel value="#{reportController.fromDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputLabel>
+                            <h:outputText value="To Date"/>
+                            <h:outputLabel value="#{reportController.toDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputLabel>
+
+                            <h:outputText value="Institution"/>
+                            <h:outputText value="#{reportController.institution.name}"/>
+                            <h:outputText value="Site"/>
+                            <h:outputText value="#{reportController.site.name}"/>
+
+                            <h:outputText value="Department"/>
+                            <h:outputText value="#{reportController.department.name}"/>
+                            <h:outputText value="Priority Type"/>
+                            <h:outputText value="#{reportController.priorityType}"/>
+
+                            <h:outputText value="Show Outliers Over"/>
+                            <h:outputText value="#{reportController.totalAverage}"/>
+                            <h:outputText value="CC Name"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="CC Route"/>
+                            <h:outputText value=""/>
+                            <h:outputText value="Patient MRN"/>
+                            <h:outputText value="#{reportController.phn}"/>
+
+                            <h:outputText value="Investigation"/>
+                            <h:outputText value="Investigation 1"/>
+                            <h:outputText value="Lab Department"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="Referring Doctor"/>
+                            <h:outputText value="#{reportController.referingDoctor.name}"/>
+                            <h:outputText value="Result Status"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="Visit Type"/>
+                            <h:outputText value="#{reportController.visitType}"/>
+                            <h:outputText value=""/>
+                            <h:outputText value=""/>
 
                         </h:panelGrid>
 
-                        <p:commandButton ajax="false" value="Process" action="null" class="my-2" >
-                        </p:commandButton>
+                        <!-- ============================================================ -->
+                        <!-- DURATION LEGEND AND SUMMARY TABLE                            -->
+                        <!-- ============================================================ -->
+                        <div class="row mt-3 mb-3">
 
-   
-                        <p:dataTable value="null" class="mb-2" >
-                            <p:column headerText="" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T1" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T2" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T3" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T4" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T5" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="TAT" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Total" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                        </p:dataTable>
+                            <div class="col-md-5">
+                                <h:outputText value="Terminologies"
+                                              styleClass="font-weight-bold d-block mb-1"/>
+                                <ul class="list-unstyled" style="font-size:12px;">
+                                    <li><h:outputText value="T1 - Order/Invoice and Sample Collection"/></li>
+                                    <li><h:outputText value="T2 - Sample Collection and Laboratory Acceptance"/></li>
+                                    <li><h:outputText value="T3 - Laboratory Acceptance and Result Entered or Interfaced"/></li>
+                                    <li><h:outputText value="T4 - Result Entered or Interfaced and Laboratory Reporting"/></li>
+                                    <li><h:outputText value="T5 - Laboratory Reporting and Report Printing"/></li>
+                                    <li><h:outputText value="TAT - Laboratory Acceptance and Sample Certification"/></li>
+                                    <li><h:outputText value="Total - Order/Invoice and Laboratory Reporting"/></li>
+                                </ul>
+                            </div>
 
-                        <p:dataTable value="null" class="my-4" >
-                            <p:column headerText="Branch" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Lab Department" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Sample" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Priority" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Investigation" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Ordered" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Collected" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Accepted" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Entered" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Certified" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Printed" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T1" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T2" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T3" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T4" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="T5" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="TAT" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Total" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Status" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                        </p:dataTable>
-                        
+                            <div class="col-md-7">
+                                <table class="table table-bordered table-sm" style="font-size:13px;">
+                                    <thead>
+                                        <tr style="background:#f8f9fa; font-weight:bold; text-align:center;">
+                                            <th></th>
+                                            <th>T1</th>
+                                            <th>T2</th>
+                                            <th>T3</th>
+                                            <th>T4</th>
+                                            <th style="background:#ffff00;">T5</th>
+                                            <th>TAT</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-weight-bold">
+                                                <h:outputText value="Average Durations"/>
+                                            </td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold">
+                                                <h:outputText value="Minimum Durations"/>
+                                            </td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold">
+                                                <h:outputText value="Maximum Durations"/>
+                                            </td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                            <td class="text-center"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                        <!-- ============================================================ -->
+                        <!-- MAIN RESULT TABLE                                             -->
+                        <!-- ============================================================ -->
+                        <div style="overflow-x: auto; width: 100%;">
+                            <p:dataTable id="tbl"
+                                         value="null"
+                                         var="row"
+                                         paginator="false"
+                                         styleClass="table table-sm tbl-header"
+                                         style="min-width:200em;">
+
+                                <p:column headerText="Institution">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer">
+                                        <h:outputText value="Grand Total" styleClass="font-weight-bold"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Lab Department">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Sample">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Priority">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Investigation">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Ordered">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Collected">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Accepted">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Entered">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Certified">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Printed">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="T1">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="T2">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="T3">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="T4">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="T5" style="background:#ffff00;">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="TAT">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Total">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+
+                        <!-- Generated By / Generated On -->
+                        <div class="d-flex justify-content-between align-items-center mt-2 px-2">
+                            <div>
+                                <h:outputText value="Generated By: " styleClass="font-weight-bold mr-1"/>
+                                <h:outputText value="#{sessionController.loggedUser.name}"/>
+                            </div>
+                            <div>
+                                <h:outputText value="Generated On: " styleClass="font-weight-bold mr-1"/>
+                                <h:outputText value="#{sessionController.currentDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </div>
+                        </div>
+
                     </p:panel>
 
                 </h:form>
 
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

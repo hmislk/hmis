@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Consumption Issues — List to Finalize</title>
+</h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}">
+                <h:outputText value="You are NOT authorized"/>
+            </h:panelGroup>
+            <p:panel
+                id="gpDisposalIssueFinalize"
+                rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}">
+                <f:facet name="header">
+                    <div class="d-flex align-items-center">
+                        <h:outputText styleClass="fas fa-tasks text-warning me-2"/>
+                        <h:outputText value="Consumption Issues — List to Finalize" styleClass="mb-0 text-warning"/>
+                    </div>
+                </f:facet>
+                <h:form>
+                    <div class="row g-3">
+                        <div class="col-lg-2 col-md-3 d-flex flex-column gap-2">
+                            <div>
+                                <p:outputLabel for="fromDate" value="From Date"/>
+                                <p:calendar
+                                    id="fromDate"
+                                    styleClass="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <div>
+                                <p:outputLabel for="toDate" value="To Date"/>
+                                <p:calendar
+                                    id="toDate"
+                                    styleClass="w-100"
+                                    inputStyleClass="form-control"
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <p:commandButton
+                                id="btnSearch"
+                                styleClass="ui-button-warning w-100"
+                                icon="fas fa-search"
+                                ajax="false"
+                                value="Search"
+                                action="#{searchController.createDisposalIssueTableToFinalize}"/>
+                        </div>
+                        <div class="col-lg-10 col-md-9">
+                            <p:dataTable
+                                id="tblDisposalIssueFinalize"
+                                value="#{searchController.bills}"
+                                var="g"
+                                paginator="true"
+                                rows="15"
+                                paginatorPosition="both"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,15,25,50"
+                                emptyMessage="No saved consumption issues found matching your criteria"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true"
+                                styleClass="p-datatable-sm">
+                                <p:column headerText="Created" width="7em" sortBy="#{g.createdAt}" styleClass="text-center">
+                                    <h:outputText value="#{g.createdAt}" styleClass="text-muted small">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="From Dept" width="8em" sortBy="#{g.fromDepartment.name}">
+                                    <h:outputText value="#{g.fromDepartment.name}" title="#{g.fromDepartment.name}" styleClass="text-truncate d-block"/>
+                                </p:column>
+                                <p:column headerText="To Dept" width="8em" sortBy="#{g.toDepartment.name}">
+                                    <h:outputText value="#{g.toDepartment.name}" title="#{g.toDepartment.name}" styleClass="text-truncate d-block"/>
+                                </p:column>
+                                <p:column headerText="Req. No." width="6em">
+                                    <h:outputText value="#{g.invoiceNumber}" styleClass="text-truncate d-block small"/>
+                                </p:column>
+                                <p:column headerText="Created By" width="8em" sortBy="#{g.creater.webUserPerson.name}">
+                                    <h:outputText value="#{g.creater.webUserPerson.name}" styleClass="text-truncate d-block small"/>
+                                </p:column>
+                                <p:column headerText="Action" styleClass="text-center" exportable="false" width="10em">
+                                    <p:commandButton
+                                        id="btnFinalize"
+                                        styleClass="ui-button-stage-finalize"
+                                        icon="fas fa-lock"
+                                        value="View / Finalize"
+                                        title="View and Finalize Consumption Issue #{g.id}"
+                                        ajax="false"
+                                        onclick="return confirm('Open consumption issue ##{g.id} for finalization?');"
+                                        action="#{pharmacyIssueController.loadDraftForEdit(g.id)}"/>
+                                    <p:commandButton
+                                        id="btnCancel"
+                                        styleClass="ui-button-danger ui-button-outlined ms-1"
+                                        icon="fas fa-times"
+                                        value="Cancel"
+                                        title="Cancel this saved consumption issue"
+                                        ajax="false"
+                                        onclick="return confirm('Cancel this consumption issue draft? This cannot be undone.');"
+                                        action="#{pharmacyIssueController.cancelPendingDisposalIssue(g.id)}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+                </h:form>
+
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

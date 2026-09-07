@@ -51,7 +51,11 @@
 
                     <f:facet name="header" >
                         <h:outputLabel value="Shift Collection Details by Bill Type" ></h:outputLabel>
-                        <p:commandButton value="Close Tab" onclick="closeCurrentTab();" type="button" style="float: right;"/>
+                        <p:commandButton value="Back" icon="pi pi-arrow-left"
+                                         ajax="false"
+                                         styleClass="ui-button-secondary"
+                                         action="#{financialTransactionController.navigateBackToPaymentHandoverCreate}"
+                                         style="float: right;"/>
                     </f:facet>
 
 
@@ -295,15 +299,6 @@
                         </p:column>
 
                     </p:dataTable>
-
-
-                    <script type="text/javascript">
-                        function closeCurrentTab() {
-                            // Attempt to close the tab
-                            window.open('', '_self', '');
-                            window.close();
-                        }
-                    </script>
 
 
 

@@ -1,0 +1,338 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form>
+
+                    <p:panel header="Profit Matrix Report Print" styleClass="w-100">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Profit Matrix Report Print" class="mt-2"/>
+
+                                <div class="d-flex gap-2">
+
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width:150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        value="Back to Report"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="profit_matrix_report?faces-redirect=true"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            @media screen {
+                                .paper{
+                                    width: 420mm!important;
+                                    zoom: 1.1;
+                                }
+
+                                table{
+                                    border-collapse: collapse;
+                                    width:100%;
+                                    font-size:10px!important;
+                                }
+
+                                th, td{
+                                    border:1px solid #000;
+                                    padding:4px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page{
+                                    size: A3 landscape;
+                                    margin:10mm;
+                                }
+
+                                .paper{
+                                    width: 420mm!important;
+                                }
+
+                                table{
+                                    border-collapse: collapse;
+                                    width:99.9%;
+                                    font-size:8px!important;
+                                }
+
+                                th, td{
+                                    border:1px solid #000;
+                                    padding:3px!important;
+                                }
+                            }
+
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+
+                            <div class="paper">
+
+                                <div class="header">
+
+                                    <div class="text-center" style="font-weight:700; font-size:18px;">
+                                        <h:outputText value="Profit Matrix Report"/>
+                                    </div>
+
+                                    <div class="text-center" style="font-size:11px; margin-top:5px;">
+                                        From Date :
+                                        <h:outputText value="#{reportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                                        </h:outputText>
+
+                                        |
+
+                                        To Date :
+                                        <h:outputText value="#{reportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                                        </h:outputText>
+
+                                        |
+
+                                        Type :
+                                        <h:outputText value="#{empty reportController.reportType ? 'Summary' : (reportController.reportType eq 'detail' ? 'Detail' : 'Summary')}"/>
+                                    </div>
+
+                                </div>
+
+                                <p:panel rendered="#{empty reportController.reportType or reportController.reportType eq 'summery'}">
+                                    <p:dataTable
+                                        value="#{reportController.profitMatrixSummaryRows}"
+                                        var="row"
+                                        rowIndexVar="n"
+                                        paginator="false"
+                                        styleClass="table-sm">
+
+                                        <p:column width="4em" styleClass="text-center">
+                                            <f:facet name="header"><h:outputText value="S.No"/></f:facet>
+                                            <h:outputText value="#{n+1}"/>
+                                            <f:facet name="footer"><h:outputText value="Total"/></f:facet>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Invoice No"/></f:facet>
+                                            <h:outputText value="#{row.invoiceNo}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Admission No"/></f:facet>
+                                            <h:outputText value="#{row.admissionNo}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="MRNO"/></f:facet>
+                                            <h:outputText value="#{row.mrn}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Patient Name"/></f:facet>
+                                            <h:outputText value="#{row.patientName}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Visit Type"/></f:facet>
+                                            <h:outputText value="#{row.visitType}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Referring Doctor Name"/></f:facet>
+                                            <h:outputText value="#{row.referringDoctorName}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Invoice Amount"/></f:facet>
+                                            <h:outputText value="#{row.invoiceAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText>
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Profit Margin"/></f:facet>
+                                            <h:outputText value="#{row.profitMargin}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText>
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header"><h:outputText value="Final Amount"/></f:facet>
+                                            <h:outputText value="#{row.finalAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{reportController.totalNetTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+
+                                <p:panel rendered="#{reportController.reportType eq 'detail'}">
+
+                                    <p:dataTable
+                                        value="#{reportController.profitMatrixDetailRows}"
+                                        var="row"
+                                        rowIndexVar="n"
+                                        paginator="false"
+                                        styleClass="table-sm">
+
+                                        <p:column width="4em" styleClass="text-center">
+                                            <f:facet name="header">
+                                                <h:outputText value="S.No" />
+                                            </f:facet>
+                                            <h:outputText value="#{n+1}"/>
+                                            <f:facet name="footer">
+                                                <h:outputText value="Total"/>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Invoice No" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.invoiceNo}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Admission No" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.admissionNo}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="MRNO" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.mrn}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Patient Name" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.patientName}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Visit Type" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.visitType}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Referring Doctor Name" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.referringDoctorName}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Service Name" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.serviceName}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Service Department" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.serviceDepartment}"/>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Invoice Amount" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.invoiceAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Service Value" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.serviceValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Profit Margin" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.profitMargin}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Matrix Percentage" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.matrixPercentage}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column width="8em">
+                                            <f:facet name="header">
+                                                <h:outputText value="Final Amount" />
+                                            </f:facet>
+                                            <h:outputText value="#{row.finalAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{reportController.totalNetTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </p:panel>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

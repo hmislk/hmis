@@ -6,8 +6,15 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -17,21 +24,32 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
-import com.divudi.core.entity.StockBill;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.service.BillService;
+import com.divudi.core.util.BigDecimalUtil;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -45,21 +63,12 @@ import javax.inject.Named;
 @SessionScoped
 public class IssueReturnController implements Serializable {
 
-    private Bill bill;
-    private Bill returnBill;
-    private boolean printPreview;
-    ////////
+    private static final Logger LOGGER = Logger.getLogger(IssueReturnController.class.getName());
 
-    private List<BillItem> billItems;
     ///////
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @Inject
-    private PharmaceuticalItemController pharmaceuticalItemController;
-    @Inject
-    private PharmacyController pharmacyController;
-    @Inject
-    private SessionController sessionController;
+
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -68,51 +77,359 @@ public class IssueReturnController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    BillService billService;
 
-    public void saveIssueBillReturn() {
-        saveBill();
-        saveComponentForSaveReturnBill();
-        JsfUtil.addSuccessMessage("Saved");
+    @Inject
+    private PharmaceuticalItemController pharmaceuticalItemController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ConfigOptionController configOptionController;
+    @Inject
+    private DisposalReturnWorkflowController disposalReturnWorkflowController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
+
+    private Bill originalBill;
+    private Bill returnBill;
+    private boolean printPreview;
+    ////////
+
+    private List<BillItem> originalBillItems;
+    private List<BillItem> returnBillItems;
+
+    private List<BillItem> selectedBillItems;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
     }
 
-    public void finalizeIssueBillReturn() {
-        if (getBill().getId() == null) {
-            JsfUtil.addErrorMessage("No Bill");
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
             return;
         }
-        getBill().setEditedAt(new Date());
-        getBill().setEditor(sessionController.getLoggedUser());
-        getBill().setCheckeAt(new Date());
-        getBill().setCheckedBy(sessionController.getLoggedUser());
-        getBillFacade().edit(getBill());
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("pharmacy/pharmacy_bill_return_issue");
+        metadata.setPageName("Pharmacy Disposal Issue Return");
+        metadata.setDescription("Return of previously issued pharmacy disposal items back to issuing department");
+        metadata.setControllerClass("IssueReturnController");
+
+        // Configuration Options - Print Formats
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Return Issue Receipt is A4 Paper",
+            "Uses A4 paper format for bill return issue receipts (default format)",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Return Issue Receipt is Custom 1",
+            "Uses Custom format 1 for bill return issue receipts",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Return Issue Receipt is Custom 2",
+            "Uses Custom format 2 for bill return issue receipts",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.DEPARTMENT
+        ));
+
+        // Configuration Options - Bill Number Generation Strategies
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number",
+            "Generates bill numbers for issue returns in format: Prefix-DeptCode-InstCode-Year-Number (e.g., PIR-PHARM-001-2024-0001)",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Department Code + Year + Yearly Number",
+            "Generates bill numbers for issue returns in format: Prefix-InstCode-DeptCode-Year-Number (e.g., PIR-001-PHARM-2024-0001)",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number",
+            "Generates bill numbers for issue returns in format: Prefix-InstCode-Year-Number (e.g., PIR-001-2024-0001) - institution-wide counter",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Add the Institution Code to the Bill Number Generator",
+            "Includes institution code in the generated bill numbers for pharmacy issue returns",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Bill Number Suffix for PharmacyIssueReturn",
+            "Custom suffix to append to pharmacy issue return bill numbers generated by this page",
+            "pharmacy/pharmacy_bill_return_issue",
+            OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+            "Admin",
+            "Administrative access to page configuration management - displays the Config button"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "CreateDisposalReturn",
+            "Permission to create new disposal return requests from issued bills"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "FinalizeDisposalReturn",
+            "Permission to finalize disposal return requests, marking them ready for approval"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ApproveDisposalReturn",
+            "Permission to approve and settle disposal return requests, completing the return process"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ViewDisposalReturn",
+            "Permission to view completed disposal return records"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "ChangeReceiptPrintingPaperTypes",
+            "Permission to access printer configuration settings dialog for changing bill return issue receipt paper formats"
+        ));
+
+        // Register the metadata
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
+    /**
+     * Guards every write entry point (save / finalize / settle) against acting
+     * on a bill whose CURRENT database state is already completed or closed.
+     *
+     * The @SessionScoped bean (and the browser page) can hold a STALE copy of
+     * the return bill - e.g. the bill was settled, then Save/Finalize/Settle is
+     * clicked again from an old screen or list row. Merging that stale copy
+     * reverts the settled bill to a draft (completed/deptId/insId cleared)
+     * while its items and stock movements remain - the #21266 RC5 orphan-return
+     * corruption (Ruhunu bills 4336218 / 4337297, 2026-03-25). Reads bypass the
+     * L2 cache because another app server may have written the bill under
+     * dual-version operation.
+     *
+     * @return true if processing must stop (with a user-facing message).
+     */
+    private boolean disposalReturnAlreadyProcessed() {
+        if (getReturnBill() == null || getReturnBill().getId() == null) {
+            return false; // new, never-persisted draft - nothing to clobber
+        }
+        Bill fresh = getBillFacade().findWithoutCache(getReturnBill().getId());
+        if (fresh == null) {
+            return false;
+        }
+        if (fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This disposal return (" + (fresh.getDeptId() != null ? fresh.getDeptId() : fresh.getId())
+                    + ") has already been settled. Reload the page before continuing.");
+            return true;
+        }
+        if (fresh.isBillClosed()) {
+            JsfUtil.addErrorMessage("This disposal return has been closed. Create a new return instead.");
+            return true;
+        }
+        if (fresh.isCancelled() || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("This disposal return is cancelled or retired and can no longer be processed.");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Disposal Return
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    new Object[]{action});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Disposal Return access attempt - action={0}, userId={1}, requiredPrivilege={2}",
+                    new Object[]{action, userId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " this disposal return.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public void saveDisposalIssueReturnBill() {
+        if (!isAuthorized("SAVE", "CreateDisposalReturn")) {
+            return;
+        }
+        doSaveDisposalIssueReturnBill();
+    }
+
+    /**
+     * Unguarded core of {@link #saveDisposalIssueReturnBill()}. Called
+     * directly (bypassing the CreateDisposalReturn check) by
+     * {@link #finalizeDisposalIssueReturnBill()}, which auto-saves a
+     * not-yet-persisted draft as part of a Finalize action already
+     * authorized under FinalizeDisposalReturn.
+     */
+    private boolean doSaveDisposalIssueReturnBill() {
+        if (disposalReturnAlreadyProcessed()) {
+            return false;
+        }
+        // No validation required for saving drafts - users can save incomplete data
+        if (!saveBill()) {
+            return false;
+        }
+        saveBillComponents();
+        JsfUtil.addSuccessMessage("Saved");
+        return true;
+    }
+
+    // synchronized: no double-click guard exists on the Finalize action. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating the finalize save (same bug
+    // class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized void finalizeDisposalIssueReturnBill() {
+        if (!isAuthorized("FINALIZE", "FinalizeDisposalReturn")) {
+            return;
+        }
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
+        // disposalReturnAlreadyProcessed() does not check checkedBy (settleDisposalIssueReturnBill()
+        // relies on that same helper and requires checkedBy already set), so a queued double-submit
+        // reaching this point after the first call finished would re-finalize and overwrite the
+        // checkeAt/checkedBy/editedAt audit fields (CodeRabbit finding on #22194/PR #22197).
+        if (getReturnBill().getId() != null) {
+            Bill freshForFinalizeCheck = getBillFacade().findWithoutCache(getReturnBill().getId());
+            if (freshForFinalizeCheck != null && freshForFinalizeCheck.getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("This disposal return has already been finalized. Reload the page before continuing.");
+                return;
+            }
+        }
+        // Validate return comment is provided
+        if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
+            return;
+        }
+
+        // Validate return quantities before finalizing
+        if (!validateReturnQuantities()) {
+            return;
+        }
+
+        if (!doSaveDisposalIssueReturnBill()) {
+            return;
+        }
+        // Reload from DB so we don't trigger orphan-removal on billItems
+        returnBill = billService.reloadBill(getReturnBill());
+        if (returnBill != null) {
+            returnBill.setEditedAt(new Date());
+            returnBill.setEditor(sessionController.getLoggedUser());
+            returnBill.setChecked(true);
+            returnBill.setCheckeAt(new Date());
+            returnBill.setCheckedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(returnBill);
+        }
+
+        // Refresh again and reload bill items for print preview
+        returnBill = billService.reloadBill(getReturnBill());
+        if (returnBill != null) {
+            returnBillItems = billService.fetchBillItems(returnBill);
+        }
+
+        printPreview = true;
         JsfUtil.addSuccessMessage("Finalized");
     }
 
-    public void settle() {
-
-        if (getBill().getCheckedBy() == null) {
+    // synchronized: no double-click guard existed prior to #22194. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating stock movements/payment.
+    public synchronized void settleDisposalIssueReturnBill() {
+        if (!isAuthorized("APPROVE", "ApproveDisposalReturn")) {
+            return;
+        }
+        // Re-settling an already-settled bill (double-click, stale screen, stale
+        // list row) would write a second set of items and stock movements and
+        // then clobber the bill header (#21266 RC5).
+        if (disposalReturnAlreadyProcessed()) {
+            return;
+        }
+        if (getReturnBill().getCheckedBy() == null) {
             JsfUtil.addErrorMessage("Pleace Finalise Bill First. Can not Return");
             return;
         }
-        if (!hasQtyToReturn(billItems)) {
+        // Validate return comment is provided
+        if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
+            return;
+        }
+        if (!hasQtyToReturn(returnBillItems)) {
             JsfUtil.addErrorMessage("Return Quantity is Zero. Can not Return");
             return;
         }
-        saveReturnBill();
-        saveComponent();
-
-        if (getBill().getPatientEncounter() != null) {
-            updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
+        // Final validation before settlement to ensure data integrity
+        if (!validateReturnQuantities()) {
+            return;
         }
-        getReturnBill().setReferenceBill(getBill());
-        getBillFacade().edit(getReturnBill());
-        getBill().setRefundedBill(getReturnBill());
-        getBill().setRefunded(true);
-        getBill().getRefundBills().add(getReturnBill());
-        getBill().getReturnBhtIssueBills().add(getReturnBill());
-        getBillFacade().edit(getBill());
+        calculateBillTotal();
+        if (!saveSettlingBill()) {
+            return;
+        }
+        if (!saveSettlingBillComponents()) {
+            return;
+        }
 
-        /// setOnlyReturnValue();
+        // Reload both bills so EclipseLink doesn't orphan-remove existing billItems
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn != null) {
+            returnBill = freshReturn;
+        }
+        getReturnBill().setReferenceBill(getOriginalBill());
+        getReturnBill().setCompleted(true);
+        getReturnBill().setCompletedAt(new Date());
+        getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
+        getBillFacade().edit(getReturnBill());
+
+        Bill freshOriginal = billService.reloadBill(getOriginalBill());
+        if (freshOriginal != null) {
+            originalBill = freshOriginal;
+        }
+        getOriginalBill().setRefundedBill(getReturnBill());
+        getOriginalBill().setRefunded(true);
+        getOriginalBill().getRefundBills().add(getReturnBill());
+        getBillFacade().edit(getOriginalBill());
+
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
 
@@ -127,37 +444,87 @@ public class IssueReturnController implements Serializable {
         return false;
     }
 
-    public Bill getBill() {
-        return bill;
+    /**
+     * Validates that no item is being returned more than the available quantity
+     * Checks against original issued quantity and previously returned
+     * quantities
+     *
+     * @return true if all return quantities are valid, false otherwise
+     */
+    public boolean validateReturnQuantities() {
+        List<BillItem> activeItems = getReturnBillItems();
+        if (activeItems == null || activeItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items found to return");
+            return false;
+        }
+
+        boolean hasErrors = false;
+        for (BillItem returnItem : activeItems) {
+            if (returnItem == null || returnItem.getReferanceBillItem() == null) {
+                continue;
+            }
+
+            // Use absolute value since disposal issues have negative quantities
+            double requestedReturnQty = Math.abs(returnItem.getQty());
+            if (requestedReturnQty <= 0) {
+                continue; // Skip items with zero return quantity
+            }
+
+            // Use the comprehensive validation method without auto-correction
+            if (!validateItemReturnQuantity(returnItem)) {
+                hasErrors = true;
+                // Continue checking all items to show all errors at once
+            }
+        }
+
+        return !hasErrors;
     }
 
-    public void setBill(Bill bill) {
-        makeNull();
+    public Bill getOriginalBill() {
+        return originalBill;
+    }
 
-        if (bill.getDepartment() == null) {
-            return;
+    public String navigateToReturnDisposalIssueBill(Bill originalIssueBill) {
+        if (originalIssueBill == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
         }
-
-//        if (getSessionController().getDepartment().getId() != bill.getDepartment().getId()) {
-//            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
-//            return;
-//        }
-        if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
+        if (originalIssueBill.getId() == null) {
+            JsfUtil.addErrorMessage("Programming Error");
+            return null;
+        }
+        if (originalIssueBill.isFullReturned()) {
+            JsfUtil.addErrorMessage("This disposal issue bill has been fully returned. No further returns are allowed.");
+            return null;
+        }
+        if (!getSessionController().getDepartment().getId().equals(originalIssueBill.getDepartment().getId())) {
             JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
-            return;
+            return null;
         }
 
-        this.bill = bill;
-        generateBillComponent();
+        // Check for existing pending disposal returns for this specific bill
+        if (disposalReturnWorkflowController.hasPendingDisposalReturnForSpecificBill(originalIssueBill)) {
+            JsfUtil.addErrorMessage("Cannot create new return for this disposal issue bill. There is already a pending disposal return for this bill. Please finalize and approve the existing return first, or cancel it before creating a new one.");
+            return null;
+        }
+
+        resetBillValues();
+        originalBill = originalIssueBill;
+        if (!generateBillComponent()) {
+            JsfUtil.addErrorMessage("Programming Error");
+            return null;
+        }
+        return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
+    }
+
+    public void setOriginalBill(Bill originalBill) {
+        this.originalBill = originalBill;
     }
 
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new RefundBill();
-            //    returnBill.setBillType(BillType.PharmacyBhtPre);
-
         }
-
         return returnBill;
     }
 
@@ -176,6 +543,7 @@ public class IssueReturnController implements Serializable {
     @Inject
     private PharmacyCalculation pharmacyRecieveBean;
 
+    @Deprecated
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
@@ -199,152 +567,426 @@ public class IssueReturnController implements Serializable {
         //   getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
 
+    @Deprecated // use resetBillValues() 
     public void makeNull() {
-        bill = null;
+        originalBill = null;
         returnBill = null;
         printPreview = false;
-        billItems = null;
+        originalBillItems = null;
 
     }
 
-    private void saveBill() {
-        getBill().setEditor(getSessionController().getLoggedUser());
-        getBill().setEditedAt(Calendar.getInstance().getTime());
+    public void resetBillValues() {
+        originalBill = null;
+        returnBill = null;
+        printPreview = false;
+        originalBillItems = null;
+    }
 
-//        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
-//        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.PreBill, BillNumberSuffix.PHISSRET));
-        //   getReturnBill().setInsId(getBill().getInsId());
-        if (getBill().getId() == null) {
-            getBillFacade().create(getBill());
+    private boolean saveBill() {
+        if (getReturnBill().getReferenceBill() == null) {
+            getReturnBill().setReferenceBill(originalBill);
         }
-
+        if (getReturnBill().getId() == null) {
+            getReturnBill().setToDepartment(originalBill.getToDepartment()); // Same consumption department
+            getReturnBill().setFromDepartment(originalBill.getFromDepartment()); // Same pharmacy department
+            getReturnBill().setDepartment(sessionController.getDepartment());
+            if (originalBill.getDepartmentType() != null) {
+                getReturnBill().setDepartmentType(originalBill.getDepartmentType());
+            }
+            getReturnBill().setInstitution(sessionController.getInstitution());
+            getReturnBill().setSite(sessionController.getLoggedSite());
+            getReturnBill().setCreatedAt(new Date());
+            getReturnBill().setCreater(sessionController.getLoggedUser());
+            getBillFacade().create(getReturnBill());
+        } else {
+            // Reload from DB so we don't trigger orphan-removal on billItems.
+            // Bill items are managed independently by saveBillComponents() / billItemFacade.
+            // Capture in-memory fields set directly by the UI (JSF binds returnBill.comments)
+            // before the reload replaces the entity, or they'd be silently lost.
+            Bill referenceBill = getReturnBill().getReferenceBill();
+            String comments = getReturnBill().getComments();
+            Bill fresh = billService.reloadBill(getReturnBill());
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+                return false;
+            }
+            returnBill = fresh;
+            // Recompute bill-level totals onto the fresh entity - calculateBillItemTotals()
+            // (the per-item Return Qty ajax handler) writes total/netTotal/billFinanceDetails
+            // directly onto the in-memory bill, which the reload above just replaced.
+            calculateBillTotal();
+            getReturnBill().setReferenceBill(referenceBill);
+            getReturnBill().setComments(comments);
+            getBillFacade().edit(getReturnBill());
+        }
+        return true;
     }
 
-    private void saveReturnBill() {
-
-        getReturnBill().copy(getBill());
+    private boolean saveSettlingBill() {
+        // Reload from DB so we don't trigger orphan-removal on billItems.
+        // Bill items are managed independently by saveSettlingBillComponents() / billItemFacade.
+        // Capture comments (bound directly to returnBill by the UI) before the reload
+        // replaces the entity, or the user's typed comment would be silently lost.
+        String comments = getReturnBill().getComments();
+        Bill fresh = billService.reloadBill(getReturnBill());
+        if (fresh == null) {
+            JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+            return false;
+        }
+        returnBill = fresh;
+        // Recompute bill-level totals onto the fresh entity - calculateBillTotal() was just
+        // called by settleDisposalIssueReturnBill() before this method, and the reload above
+        // discarded whatever it had computed onto the previous in-memory bill.
+        calculateBillTotal();
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
-        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
-        getReturnBill().setBilledBill(getBill());
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        getReturnBill().setBilledBill(getOriginalBill());
+        getReturnBill().setCompleted(true);
+        getReturnBill().setCompletedAt(new Date());
+        getReturnBill().setCompletedBy(sessionController.getLoggedUser());
 
-        getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
+        getReturnBill().setForwardReferenceBill(getOriginalBill().getForwardReferenceBill());
 
-        getReturnBill().setTotal(0 - getReturnBill().getTotal());
-        getReturnBill().setNetTotal(getReturnBill().getTotal());
+        // Copy department-related fields from original bill WITHOUT swapping
+        // This is a return/cancellation of the original disposal issue bill
+        // The department structure remains the same to maintain the relationship with the original transaction
+        // Original: fromDepartment = pharmacy (issuing), toDepartment = consumption dept (receiving)
+        // Return: same structure to show this is reversing that exact transaction
+        getReturnBill().setToDepartment(originalBill.getToDepartment()); // Same consumption department
+        getReturnBill().setFromDepartment(originalBill.getFromDepartment()); // Same pharmacy department
+        getReturnBill().setFromInstitution(originalBill.getFromInstitution());
+        getReturnBill().setToInstitution(originalBill.getToInstitution());
 
-        getReturnBill().setCreater(getSessionController().getLoggedUser());
-        getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
+        // Copy reference information from original bill for traceability
+        getReturnBill().setReferenceNumber(originalBill.getReferenceNumber());
+        getReturnBill().setComments(comments);
 
-        getReturnBill().setDepartment(getSessionController().getDepartment());
-        getReturnBill().setInstitution(getSessionController().getInstitution());
-
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
-
-        //   getReturnBill().setInsId(getBill().getInsId());
-        if (getReturnBill().getId() == null) {
-            getBillFacade().create(getReturnBill());
+        // Handle Department ID generation (independent)
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        } else {
+            // Use existing method for backward compatibility
+            deptId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET);
         }
 
+        // Handle Institution ID generation (completely separate)
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        } else {
+            // Smart fallback logic
+            if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Department Code + Institution Code + Year + Yearly Number", false)
+                    || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Return - Prefix + Institution Code + Year + Yearly Number", false)) {
+                insId = deptId; // Use same number as department
+            } else {
+                // Preserve old behavior: use existing institution originalBill number generator
+                insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyIssue, BillClassType.RefundBill, BillNumberSuffix.PHISSRET);
+            }
+        }
+        getReturnBill().setDeptId(deptId);
+        getReturnBill().setInsId(insId);
+        billFacade.edit(returnBill);
+        return true;
     }
 
-    private void saveComponent() {
-
-        double purchaseValue = 0.0;
-        double retailValue = 0.0;
-
-        for (BillItem i : getBillItems()) {
-            double itemPurchaseValue;
-            double itemRetialValue;
-
-            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
-
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
-                continue;
-            }
+    private boolean saveSettlingBillComponents() {
+        boolean fullyReturned = true;
+        List<BillItem> itemsToProcess = new ArrayList<>(getReturnBillItems());
+        for (BillItem i : itemsToProcess) {
+            // Get return quantity (positive value)
+            double returnQty = Math.abs(i.getQty());
 
             i.setBill(getReturnBill());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
-            i.setQty(0 - i.getPharmaceuticalBillItem().getQty());
 
-            double value = i.getRate() * i.getQty();
-            i.setGrossValue(0 - value);
-            i.setNetValue(0 - value);
+            // Set BillItem quantities as POSITIVE (returns add stock)
+            i.setQty(returnQty);
 
-            itemPurchaseValue = i.getPharmaceuticalBillItem().getPurchaseRate() * i.getQty();
-            itemRetialValue = i.getPharmaceuticalBillItem().getRetailRate() * i.getQty();
-
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
-            }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            i.setPharmaceuticalBillItem(tmpPh);
-            getBillItemFacade().edit(i);
-
-            //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-            //System.err.println("STOCK " + i.getPharmaceuticalBillItem().getStock());
-            getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
-
-            //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());
-            //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
-            //      updateRemainingQty(i);
-            getReturnBill().getBillItems().add(i);
-
-            purchaseValue += itemPurchaseValue;
-            retailValue += itemRetialValue;
-        }
-        StockBill clonedStockBill = getBill().getStockBill().createNewBill();
-        clonedStockBill.setStockValueAtPurchaseRates(purchaseValue);
-        clonedStockBill.setStockValueAsSaleRate(retailValue);
-        getReturnBill().setStockBill(clonedStockBill);
-        getReturnBill().getStockBill().invertStockBillValues(getReturnBill());
-
-        getBillFacade().edit(getReturnBill());
-
-    }
-
-    private void saveComponentForSaveReturnBill() {
-        for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
-            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
+            if (Math.abs(i.getQty()) == 0.0) {
+                BillItem referenceBillItem = i.getReferanceBillItem();
+                if (referenceBillItem != null) {
+                    BillItemFinanceDetails originalFinance = referenceBillItem.getBillItemFinanceDetails();
+                    if (originalFinance != null) {
+                        BigDecimal originalQty = BigDecimalUtil.valueOrZero(originalFinance.getQuantity()).abs();
+                        BigDecimal alreadyReturned = BigDecimalUtil.valueOrZero(originalFinance.getReturnQuantity()).abs();
+                        if (originalQty.compareTo(alreadyReturned) > 0) {
+                            fullyReturned = false;
+                        }
+                    } else {
+                        fullyReturned = false;
+                    }
+                } else {
+                    fullyReturned = false;
+                }
+                i.setRetired(true);
+                billItemFacade.edit(i);
                 continue;
             }
 
-            i.setBill(getBill());
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-
-            double value = i.getRate() * i.getQty();
-            i.setGrossValue(0 - value);
-            i.setNetValue(0 - value);
-
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(tmpPh);
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
+            // Get the reference bill item to access rates
+            BillItem referenceBillItem = i.getReferanceBillItem();
+            if (referenceBillItem == null) {
+                JsfUtil.addErrorMessage("Cannot process return: missing reference bill item for " + (i.getItem() != null ? i.getItem().getName() : "unknown item"));
+                fullyReturned = false;
+                continue;
             }
+
+            // Validate PharmaceuticalBillItem exists
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                pbi = new PharmaceuticalBillItem();
+                i.setPharmaceuticalBillItem(pbi);
+            }
+
+            // Calculate quantity in units
+            double qtyInUnits;
+            if (i.getItem() instanceof Ampp) {
+                qtyInUnits = returnQty * i.getItem().getDblValue();
+            } else {
+                qtyInUnits = returnQty;
+            }
+
+            // Set PharmaceuticalBillItem quantity in units as POSITIVE
+            pbi.setQty(qtyInUnits);
+
+            // Get rates from reference bill item's pharmaceutical bill item batch - with null checks
+            PharmaceuticalBillItem refPbi = referenceBillItem.getPharmaceuticalBillItem();
+            if (refPbi == null || refPbi.getItemBatch() == null) {
+                JsfUtil.addErrorMessage("Cannot process return: missing batch information for " + (i.getItem() != null ? i.getItem().getName() : "unknown item"));
+                fullyReturned = false;
+                continue;
+            }
+            double purchaseRate = refPbi.getItemBatch().getPurcahseRate();
+            double costRate = refPbi.getItemBatch().getCostRate();
+            double retailRate = refPbi.getItemBatch().getRetailsaleRate();
+
+            // MONEY FLOW vs STOCK FLOW for RETURNS:
+            // - Stock Flow: Disposal issue return brings stock IN (quantity is POSITIVE)
+            // - Money Flow: Disposal issue return takes money OUT (net/gross totals are NEGATIVE - refund/loss)
+            // Calculate values as POSITIVE first, then negate for money flow
+            double purchaseValue = purchaseRate * qtyInUnits;
+            double costValue = costRate * qtyInUnits;
+            double retailValue = retailRate * qtyInUnits;
+
+            // Set BillItem values as NEGATIVE (money going out/refunded)
+            // Use Math.abs() to ensure correct sign regardless of upstream calculations
+            i.setGrossValue(-Math.abs(retailValue));
+            i.setNetValue(-Math.abs(retailValue));
+
+            // Initialize BillItemFinanceDetails if needed
+            BillItemFinanceDetails financeDetailsOfReturn = i.getBillItemFinanceDetails();
+            if (financeDetailsOfReturn == null) {
+                financeDetailsOfReturn = new BillItemFinanceDetails();
+                i.setBillItemFinanceDetails(financeDetailsOfReturn);
+            }
+
+            // QUANTITY vs VALUE TREATMENT:
+            // - Quantities: POSITIVE (stock coming back IN)
+            // - Value at rates: POSITIVE (stock measure - follows quantity sign)
+            // - Totals (Gross/Net): NEGATIVE (money going OUT - this is a refund/expense)
+            financeDetailsOfReturn.setQuantity(BigDecimal.valueOf(returnQty));
+            financeDetailsOfReturn.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+            financeDetailsOfReturn.setTotalQuantity(BigDecimal.valueOf(returnQty));
+            financeDetailsOfReturn.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+
+            // Value at rates follow quantity (positive, as they measure stock not money)
+            // Use Math.abs() to ensure positive values
+            financeDetailsOfReturn.setValueAtPurchaseRate(BigDecimal.valueOf(Math.abs(purchaseValue)));
+            financeDetailsOfReturn.setValueAtCostRate(BigDecimal.valueOf(Math.abs(costValue)));
+            financeDetailsOfReturn.setValueAtRetailRate(BigDecimal.valueOf(Math.abs(retailValue)));
+
+            // Set individual rates for audit trail (always positive - they are rates)
+            financeDetailsOfReturn.setPurchaseRate(BigDecimal.valueOf(Math.abs(purchaseRate)));
+            financeDetailsOfReturn.setCostRate(BigDecimal.valueOf(Math.abs(costRate)));
+            financeDetailsOfReturn.setRetailSaleRate(BigDecimal.valueOf(Math.abs(retailRate)));
+
+            // Set line-level rates (per unit rates)
+            financeDetailsOfReturn.setLineCostRate(BigDecimal.valueOf(Math.abs(costRate)));
+            financeDetailsOfReturn.setLineGrossRate(BigDecimal.valueOf(Math.abs(retailRate)));
+            financeDetailsOfReturn.setLineNetRate(BigDecimal.valueOf(Math.abs(retailRate)));
+
+            // Set bill-level rates (zero for returns - no additional bill-level costs)
+            financeDetailsOfReturn.setBillCostRate(BigDecimal.ZERO);
+            financeDetailsOfReturn.setBillGrossRate(BigDecimal.ZERO);
+            financeDetailsOfReturn.setBillNetRate(BigDecimal.ZERO);
+
+            // Set total-level rates (same as line-level for returns)
+            financeDetailsOfReturn.setTotalCostRate(BigDecimal.valueOf(Math.abs(costRate)));
+            financeDetailsOfReturn.setGrossRate(BigDecimal.valueOf(Math.abs(retailRate)));
+            financeDetailsOfReturn.setNetRate(BigDecimal.valueOf(Math.abs(retailRate)));
+
+            // Set cost values (positive - stock measure)
+            financeDetailsOfReturn.setLineCost(BigDecimal.valueOf(Math.abs(costValue)));
+            financeDetailsOfReturn.setBillCost(BigDecimal.ZERO);
+            financeDetailsOfReturn.setTotalCost(BigDecimal.valueOf(Math.abs(costValue)));
+
+            // All monetary totals are NEGATIVE (money going out/refunded)
+            // Use Math.abs() to ensure correct sign
+            financeDetailsOfReturn.setLineGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setLineNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setBillGrossTotal(BigDecimal.ZERO);
+            financeDetailsOfReturn.setBillNetTotal(BigDecimal.ZERO);
+            financeDetailsOfReturn.setGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+
+            // Return-specific fields: quantity positive, totals negative
+            financeDetailsOfReturn.setReturnQuantity(BigDecimal.valueOf(Math.abs(returnQty)));
+            financeDetailsOfReturn.setTotalReturnQuantity(BigDecimal.valueOf(Math.abs(returnQty)));
+            financeDetailsOfReturn.setReturnGrossTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+            financeDetailsOfReturn.setReturnNetTotal(BigDecimal.valueOf(-Math.abs(retailValue)));
+
+            // Set units per pack
+            if (i.getItem() instanceof Ampp && i.getItem().getDblValue() != 0.0) {
+                financeDetailsOfReturn.setUnitsPerPack(BigDecimal.valueOf(i.getItem().getDblValue()));
+            } else {
+                financeDetailsOfReturn.setUnitsPerPack(BigDecimal.ONE);
+            }
+
+            // Update original bill item's finance details
+            BillItemFinanceDetails financeDetailsOfOriginal = referenceBillItem.getBillItemFinanceDetails();
+            if (financeDetailsOfOriginal != null) {
+                // Use absolute values for all calculations since disposal issues have negative quantities
+                BigDecimal alreadyReturned = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getReturnQuantity()).abs();
+                BigDecimal currentReturnQty = BigDecimal.valueOf(returnQty);
+                BigDecimal updatedReturnQty = alreadyReturned.add(currentReturnQty);
+                financeDetailsOfOriginal.setReturnQuantity(updatedReturnQty);
+
+                BigDecimal originalQty = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getQuantity()).abs();
+                if (originalQty.compareTo(updatedReturnQty) > 0) {
+                    fullyReturned = false;
+                }
+
+                // Calculate and update remaining quantity in BillItem (in packs for AMPP, units otherwise)
+                BigDecimal remainingQty = originalQty.subtract(updatedReturnQty);
+                referenceBillItem.setRemainingQty(remainingQty.doubleValue());
+
+                // Update remaining quantities in PharmaceuticalBillItem if available
+                if (referenceBillItem.getPharmaceuticalBillItem() != null) {
+                    PharmaceuticalBillItem originalPbi = referenceBillItem.getPharmaceuticalBillItem();
+
+                    // PharmaceuticalBillItem always uses units
+                    // Calculate remaining quantity in units using absolute values
+                    BigDecimal originalQtyInUnits = BigDecimalUtil.valueOrZero(financeDetailsOfOriginal.getQuantityByUnits()).abs();
+
+                    // Calculate total returned quantity in units by using units per pack
+                    BigDecimal returnedQtyInUnits;
+                    if (financeDetailsOfOriginal.getUnitsPerPack() != null
+                            && financeDetailsOfOriginal.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+                        // For AMPP items: convert returned packs to units
+                        returnedQtyInUnits = updatedReturnQty.multiply(financeDetailsOfOriginal.getUnitsPerPack());
+                    } else {
+                        // For non-pack items: returned qty equals returned units
+                        returnedQtyInUnits = updatedReturnQty;
+                    }
+
+                    BigDecimal remainingQtyInUnits = originalQtyInUnits.subtract(returnedQtyInUnits);
+                    originalPbi.setRemainingQty(remainingQtyInUnits.doubleValue());
+
+                    // Calculate remaining quantity in packs
+                    // For AMPP items: convert units back to packs
+                    // For non-AMPP items: same as units
+                    if (financeDetailsOfOriginal.getUnitsPerPack() != null
+                            && financeDetailsOfOriginal.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0) {
+                        BigDecimal remainingQtyPack = remainingQtyInUnits.divide(
+                                financeDetailsOfOriginal.getUnitsPerPack(),
+                                2,
+                                java.math.RoundingMode.HALF_UP
+                        );
+                        originalPbi.setRemainingQtyPack(remainingQtyPack.doubleValue());
+                    } else {
+                        originalPbi.setRemainingQtyPack(remainingQtyInUnits.doubleValue());
+                    }
+                }
+
+                getBillItemFacade().edit(referenceBillItem);
+            } else {
+                fullyReturned = false;
+            }
+
             getBillItemFacade().edit(i);
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-        }
 
+            // Validate Stock object exists before adding to stock
+            if (pbi.getStock() == null || pbi.getStock().getId() == null) {
+                JsfUtil.addErrorMessage("Cannot add to stock: missing stock record for " + (i.getItem() != null ? i.getItem().getName() : "unknown item"));
+                fullyReturned = false;
+                continue;
+            }
+
+            getPharmacyBean().addToStock(pbi.getStock(), Math.abs(pbi.getQty()), pbi, getSessionController().getDepartment());
+
+        }
+        if (fullyReturned) {
+            // Reload from DB so we don't trigger orphan-removal on billItems.
+            Bill freshOriginal = billService.reloadBill(getOriginalBill());
+            if (freshOriginal == null) {
+                JsfUtil.addErrorMessage("The original disposal issue bill no longer exists. Please reload the page and try again.");
+                return false;
+            }
+            originalBill = freshOriginal;
+            getOriginalBill().setFullReturned(true);
+            getOriginalBill().setFullReturnedAt(new Date());
+            getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(getOriginalBill());
+        }
+        // Reload from DB so we don't trigger orphan-removal on billItems.
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn == null) {
+            JsfUtil.addErrorMessage("This return bill no longer exists. Please reload the page and try again.");
+            return false;
+        }
+        returnBill = freshReturn;
+        getBillFacade().edit(getReturnBill());
+
+        return true;
+    }
+
+    private void saveBillComponents() {
+        for (BillItem i : getReturnBillItems()) {
+            i.setBill(getReturnBill());
+            if (i.getId() == null) {
+                i.setCreatedAt(Calendar.getInstance().getTime());
+                i.setCreater(getSessionController().getLoggedUser());
+                getBillItemFacade().create(i);
+            } else {
+                getBillItemFacade().edit(i);
+            }
+        }
+    }
+
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward pharmacy-margin matrix (issue #21981);
+     * null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
     }
 
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin = 0;
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
+        PatientEncounter encounter = bi.getBill() != null ? bi.getBill().getPatientEncounter() : null;
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod, null,
+                encounter != null ? encounter.getAdmissionType() : null, resolveCurrentRoomCategory(encounter));
 
         if (priceMatrix != null) {
             margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -370,6 +1012,7 @@ public class IssueReturnController implements Serializable {
 
         bill.setTotal(total);
         bill.setNetTotal(netTotal);
+        bill.setBillItems(null);
         getBillFacade().edit(bill);
 
     }
@@ -401,7 +1044,7 @@ public class IssueReturnController implements Serializable {
     private void calTotal() {
         double grossTotal = 0.0;
 
-        for (BillItem p : getBillItems()) {
+        for (BillItem p : getOriginalBillItems()) {
             grossTotal += p.getNetRate() * p.getQty();
 
         }
@@ -412,10 +1055,43 @@ public class IssueReturnController implements Serializable {
         //  return grossTotal;
     }
 
-    public void generateBillComponent() {
-        billItems = new ArrayList<>();
+    public boolean generateBillComponent() {
+        returnBill = new RefundBill();
+        returnBill.setReferenceBill(originalBill);
+        returnBill.setBillType(BillType.PharmacyDisposalIssue);
+        returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+        returnBill.setInvoiceNumber(originalBill.getInvoiceNumber());
+        originalBillItems = billService.fetchBillItems(originalBill);
+        returnBillItems = new ArrayList<>();
+        if (originalBillItems == null || originalBillItems.isEmpty()) {
+            return false;
+        }
+        for (BillItem originalBillItem : originalBillItems) {
 
-        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getBill())) {
+            BillItem returningBillItem = new BillItem();
+            returningBillItem.setBill(returnBill);
+            returningBillItem.setReferenceBill(originalBill);
+            returningBillItem.setReferanceBillItem(originalBillItem);
+            returningBillItem.copy(originalBillItem);
+            returningBillItem.setQty(0.0); // Set to 0 so user can enter actual return amount
+            returningBillItem.setRemainingQty(originalBillItem.getRemainingQty());
+
+            PharmaceuticalBillItem returningPbi = returningBillItem.getPharmaceuticalBillItem();
+            returningPbi.copy(originalBillItem.getPharmaceuticalBillItem());
+
+            returningPbi.setBillItem(returningBillItem);
+            returningBillItem.setPharmaceuticalBillItem(returningPbi);
+
+            returnBillItems.add(returningBillItem);
+        }
+        return true;
+    }
+
+    @Deprecated
+    public void generateBillComponentOld() {
+        originalBillItems = new ArrayList<>();
+
+        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getOriginalBill())) {
             double rFund = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PharmacyIssue);
             double tmpQty = Math.abs(i.getQtyInUnit()) - Math.abs(rFund);
 
@@ -425,7 +1101,7 @@ public class IssueReturnController implements Serializable {
 
             BillItem bi = new BillItem();
             bi.setBill(getReturnBill());
-            bi.setReferenceBill(getBill());
+            bi.setReferenceBill(getOriginalBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
             bi.setQty(tmpQty);
@@ -437,7 +1113,7 @@ public class IssueReturnController implements Serializable {
             tmp.setQtyInUnit(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
-            billItems.add(bi);
+            originalBillItems.add(bi);
         }
     }
 
@@ -526,16 +1202,47 @@ public class IssueReturnController implements Serializable {
         this.pharmacyRecieveBean = pharmacyRecieveBean;
     }
 
-    public List<BillItem> getBillItems() {
-        if (billItems == null) {
-
-            billItems = new ArrayList<>();
+    public void deleteSelectedItems() {
+        if (selectedBillItems == null || selectedBillItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items selected for deletion");
+            return;
         }
-        return billItems;
+        for (BillItem selectedItem : selectedBillItems) {
+            if (selectedItem.getId() != null) {
+                selectedItem.setRetired(true);
+                billItemFacade.edit(selectedItem);
+            }
+            returnBillItems.remove(selectedItem);
+        }
+        selectedBillItems.clear();
+        calculateBillTotal();
+        JsfUtil.addSuccessMessage("Selected items deleted successfully");
     }
 
-    public void setBillItems(List<BillItem> billItems) {
-        this.billItems = billItems;
+    public void deleteItem(BillItem itemToDelete) {
+        if (itemToDelete == null) {
+            JsfUtil.addErrorMessage("No item to delete");
+            return;
+        }
+        if (itemToDelete.getId() != null) {
+            itemToDelete.setRetired(true);
+            billItemFacade.edit(itemToDelete);
+        }
+        returnBillItems.remove(itemToDelete);
+        calculateBillTotal();
+        JsfUtil.addSuccessMessage("Item deleted successfully");
+    }
+
+    public List<BillItem> getOriginalBillItems() {
+        if (originalBillItems == null) {
+
+            originalBillItems = new ArrayList<>();
+        }
+        return originalBillItems;
+    }
+
+    public void setOriginalBillItems(List<BillItem> originalBillItems) {
+        this.originalBillItems = originalBillItems;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -544,6 +1251,639 @@ public class IssueReturnController implements Serializable {
 
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
+    }
+
+    public List<BillItem> getSelectedBillItems() {
+        if (selectedBillItems == null) {
+            selectedBillItems = new ArrayList<>();
+        }
+        return selectedBillItems;
+    }
+
+    public void setSelectedBillItems(List<BillItem> selectedBillItems) {
+        this.selectedBillItems = selectedBillItems;
+    }
+
+    public List<BillItem> getReturnBillItems() {
+        if (returnBillItems == null) {
+            return java.util.Collections.emptyList();
+        }
+        return returnBillItems.stream()
+                .filter(bi -> bi != null && !bi.isRetired())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void setReturnBillItems(List<BillItem> returnBillItems) {
+        this.returnBillItems = returnBillItems;
+    }
+
+    /**
+     * Validates return quantity for a specific item against both remaining
+     * quantity and stock availability This version is for finalization - does
+     * NOT auto-correct, only shows errors
+     *
+     * @param bi The bill item to validate
+     * @return true if validation passes, false if validation fails
+     */
+    public boolean validateItemReturnQuantity(BillItem bi) {
+        return validateItemReturnQuantity(bi, false);
+    }
+
+    /**
+     * Validates return quantity for a specific item against both remaining
+     * quantity and stock availability Similar to GRN return validation logic
+     * but adapted for issue returns
+     *
+     * @param bi The bill item to validate
+     * @param autoCorrect If true, automatically corrects invalid quantities; if
+     * false, only shows error
+     * @return true if validation passes, false if validation fails
+     */
+    public boolean validateItemReturnQuantity(BillItem bi, boolean autoCorrect) {
+        if (bi == null) {
+            return false;
+        }
+
+        double requestedQty = Math.abs(bi.getQty());
+        String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown Item";
+
+        // First check: Validate against original issued quantity and already returned quantity
+        if (bi.getReferanceBillItem() != null && requestedQty > 0) {
+            BillItem originalItem = bi.getReferanceBillItem();
+            // Use absolute values since disposal issues have negative quantities
+            double originalIssuedQty = Math.abs(originalItem.getQty());
+
+            // Get already returned quantity from finance details (always stored as positive)
+            double alreadyReturnedQty = 0.0;
+            if (originalItem.getBillItemFinanceDetails() != null
+                    && originalItem.getBillItemFinanceDetails().getReturnQuantity() != null) {
+                alreadyReturnedQty = Math.abs(originalItem.getBillItemFinanceDetails().getReturnQuantity().doubleValue());
+            }
+
+            // Calculate maximum returnable quantity
+            double maxReturnableQty = originalIssuedQty - alreadyReturnedQty;
+
+            // Validate requested quantity doesn't exceed what's available to return
+            if (requestedQty > maxReturnableQty) {
+                if (autoCorrect) {
+                    JsfUtil.addErrorMessage(String.format(
+                            "Return quantity %.2f for '%s' exceeds available quantity. "
+                            + "Original issued: %.2f, Already returned: %.2f, Maximum returnable: %.2f. "
+                            + "Corrected to maximum available.",
+                            requestedQty, itemName, originalIssuedQty, alreadyReturnedQty, maxReturnableQty
+                    ));
+                    bi.setQty(maxReturnableQty);
+                    bi.setRemainingQty(maxReturnableQty);
+                } else {
+                    JsfUtil.addErrorMessage(String.format(
+                            "Return quantity %.2f for '%s' exceeds available quantity. "
+                            + "Original issued: %.2f, Already returned: %.2f, Maximum returnable: %.2f. "
+                            + "Please correct the quantity before finalizing.",
+                            requestedQty, itemName, originalIssuedQty, alreadyReturnedQty, maxReturnableQty
+                    ));
+                }
+                return false;
+            }
+        }
+
+        // Second check: Validate against remaining quantity (what can be returned) - fallback validation
+        if (requestedQty > 0 && bi.getRemainingQty() > 0 && requestedQty > bi.getRemainingQty()) {
+            if (autoCorrect) {
+                JsfUtil.addErrorMessage(String.format(
+                        "Return quantity %.2f for '%s' exceeds available quantity %.2f. Corrected to maximum available.",
+                        requestedQty, itemName, bi.getRemainingQty()
+                ));
+                bi.setQty(bi.getRemainingQty());
+            } else {
+                JsfUtil.addErrorMessage(String.format(
+                        "Return quantity %.2f for '%s' exceeds available quantity %.2f. Please correct the quantity before finalizing.",
+                        requestedQty, itemName, bi.getRemainingQty()
+                ));
+            }
+            return false;
+        }
+
+        // NOTE: We do NOT check stock levels for disposal issue returns
+        // Because returns ADD to stock, not subtract from it
+        // Stock can be zero or negative, and returns will increase it
+        return true; // All validations passed
+    }
+
+    public void calculateBillItemTotals(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getItemBatch() == null) {
+            return;
+        }
+        if (bi.getItem() == null) {
+            return;
+        }
+        if (bi.getItem().getId() == null) {
+            return;
+        }
+        double qty = bi.getQty();
+
+        if (!validateItemReturnQuantity(bi, false)) {
+            return;
+        }
+
+        // Get rates from item batch - these are always in units
+        double costRate = bi.getPharmaceuticalBillItem().getItemBatch().getCostRate();
+        double purchaseRate = bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate();
+        double retailRate = bi.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate();
+        double wholesaleRate = bi.getPharmaceuticalBillItem().getItemBatch().getWholesaleRate();
+
+        // Handle AMPP conversion to units if needed
+        double qtyInUnits;
+        if (bi.getItem() instanceof Ampp) {
+            // Convert qty to units for AMPP items
+            qtyInUnits = qty * bi.getItem().getDblValue();
+            bi.getPharmaceuticalBillItem().setQty(qtyInUnits);
+        } else {
+            qtyInUnits = qty;
+            bi.getPharmaceuticalBillItem().setQty(qtyInUnits);
+        }
+
+        // Calculate basic bill item values
+        double rate = bi.getRate();
+        double grossValue = rate * qty;
+        bi.setGrossValue(grossValue);
+
+        // For return bills, net value equals gross value (no discounts/margins in returns)
+        bi.setNetValue(grossValue);
+
+        // Initialize BillItemFinanceDetails if null
+        if (bi.getBillItemFinanceDetails() == null) {
+            bi.setBillItemFinanceDetails(new BillItemFinanceDetails());
+        }
+
+        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+
+        // Calculate all rate-based values using quantity in units
+        bifd.setValueAtCostRate(BigDecimal.valueOf(costRate * qtyInUnits));
+        bifd.setValueAtPurchaseRate(BigDecimal.valueOf(purchaseRate * qtyInUnits));
+        bifd.setValueAtRetailRate(BigDecimal.valueOf(retailRate * qtyInUnits));
+        bifd.setValueAtWholesaleRate(BigDecimal.valueOf(wholesaleRate * qtyInUnits));
+
+        // Set line-level rates and totals
+        bifd.setLineGrossRate(BigDecimal.valueOf(rate));
+        bifd.setLineNetRate(BigDecimal.valueOf(rate));
+        bifd.setLineGrossTotal(BigDecimal.valueOf(grossValue));
+        bifd.setLineNetTotal(BigDecimal.valueOf(grossValue));
+
+        // Set overall rates and totals (same as line for single items)
+        bifd.setGrossRate(BigDecimal.valueOf(rate));
+        bifd.setNetRate(BigDecimal.valueOf(rate));
+        bifd.setGrossTotal(BigDecimal.valueOf(grossValue));
+        bifd.setNetTotal(BigDecimal.valueOf(grossValue));
+
+        // Set quantities in finance details
+        bifd.setQuantity(BigDecimal.valueOf(qty));
+        bifd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+        bifd.setTotalQuantity(BigDecimal.valueOf(qty));
+        bifd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+
+        // Set retail and wholesale rates per unit
+        bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+        bifd.setWholesaleRate(BigDecimal.valueOf(wholesaleRate));
+
+        // For returns, discounts, taxes, and expenses are typically zero
+        bifd.setLineDiscount(BigDecimal.ZERO);
+        bifd.setBillDiscount(BigDecimal.ZERO);
+        bifd.setTotalDiscount(BigDecimal.ZERO);
+        bifd.setLineDiscountRate(BigDecimal.ZERO);
+        bifd.setBillDiscountRate(BigDecimal.ZERO);
+        bifd.setTotalDiscountRate(BigDecimal.ZERO);
+
+        bifd.setLineTax(BigDecimal.ZERO);
+        bifd.setBillTax(BigDecimal.ZERO);
+        bifd.setTotalTax(BigDecimal.ZERO);
+        bifd.setLineTaxRate(BigDecimal.ZERO);
+        bifd.setBillTaxRate(BigDecimal.ZERO);
+        bifd.setTotalTaxRate(BigDecimal.ZERO);
+
+        bifd.setLineExpense(BigDecimal.ZERO);
+        bifd.setBillExpense(BigDecimal.ZERO);
+        bifd.setTotalExpense(BigDecimal.ZERO);
+        bifd.setLineExpenseRate(BigDecimal.ZERO);
+        bifd.setBillExpenseRate(BigDecimal.ZERO);
+        bifd.setTotalExpenseRate(BigDecimal.ZERO);
+
+        bifd.setLineCost(BigDecimal.valueOf(costRate * qtyInUnits));
+        bifd.setBillCost(BigDecimal.valueOf(costRate * qtyInUnits));
+        bifd.setTotalCost(BigDecimal.valueOf(costRate * qtyInUnits));
+        bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+        bifd.setBillCostRate(BigDecimal.valueOf(costRate));
+        bifd.setTotalCostRate(BigDecimal.valueOf(costRate));
+
+        // Set return-specific values
+        bifd.setReturnQuantity(BigDecimal.valueOf(qty));
+        bifd.setTotalReturnQuantity(BigDecimal.valueOf(qty));
+        bifd.setReturnGrossTotal(BigDecimal.valueOf(grossValue));
+        bifd.setReturnNetTotal(BigDecimal.valueOf(grossValue));
+
+        // Set units per pack (for AMPP items)
+        if (bi.getItem() instanceof Ampp && bi.getItem().getDblValue() != 0.0) {
+            bifd.setUnitsPerPack(BigDecimal.valueOf(bi.getItem().getDblValue()));
+        } else {
+            bifd.setUnitsPerPack(BigDecimal.ONE);
+        }
+
+        // Set pharmaceutical bill item rates for tracking (with null check)
+        PharmaceuticalBillItem returnPbi = bi.getPharmaceuticalBillItem();
+        if (returnPbi != null) {
+            returnPbi.setCostRate(costRate);
+            returnPbi.setPurchaseRate(purchaseRate);
+            returnPbi.setRetailRate(retailRate);
+            returnPbi.setWholesaleRate(wholesaleRate);
+        }
+
+        calculateBillTotal();
+    }
+
+    public void calculateBillTotal() {
+        List<BillItem> activeItems = getReturnBillItems();
+        calculateReturnBillTotalFromItems(activeItems);
+    }
+
+    /**
+     * Calculate bill totals specifically for return bills, excluding items with zero quantity.
+     * This method is a copy of calculateBillTotalFromItems but modified to skip items
+     * with zero return quantity to ensure only items being returned are included in totals.
+     */
+    private void calculateReturnBillTotalFromItems(List<BillItem> billItems) {
+        // Initialize totals
+        double netTotal = 0.0;
+        double grossTotal = 0.0;
+        double totalDiscountValue = 0.0;
+        double totalTaxValue = 0.0;
+        double totalExpenseValue = 0.0;
+
+        // Initialize BillFinanceDetails aggregates
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalQuantityInUnits = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+        BigDecimal lineDiscountTotal = BigDecimal.ZERO;
+        BigDecimal lineTaxTotal = BigDecimal.ZERO;
+        BigDecimal lineExpenseTotal = BigDecimal.ZERO;
+        BigDecimal lineCostTotal = BigDecimal.ZERO;
+
+        // Iterate through bill items and sum up totals
+        for (BillItem bi : billItems) {
+            if (bi == null) {
+                continue;
+            }
+
+            // Skip items with zero or negative quantity - they shouldn't be included in return total
+            if (bi.getQty() <= 0) {
+                continue;
+            }
+
+            // Recalculate values based on current quantity to ensure accuracy
+            double currentQty = bi.getQty();
+            double currentRate = bi.getRate();
+
+            // Safeguard: if rate is 0 or negative, skip this item
+            if (currentRate <= 0) {
+                continue;
+            }
+
+            double currentGrossValue = currentRate * currentQty;
+            double currentNetValue = currentGrossValue; // For returns, net = gross
+
+            netTotal += currentNetValue;
+            grossTotal += currentGrossValue;
+
+            // Add quantities
+            totalQuantity = totalQuantity.add(BigDecimal.valueOf(bi.getQty()));
+
+            // Add quantity in units (for AMPP conversion)
+            if (bi.getPharmaceuticalBillItem() != null) {
+                totalQuantityInUnits = totalQuantityInUnits.add(BigDecimal.valueOf(bi.getPharmaceuticalBillItem().getQty()));
+            } else {
+                totalQuantityInUnits = totalQuantityInUnits.add(BigDecimal.valueOf(bi.getQty()));
+            }
+
+            // Add line totals from BillItemFinanceDetails if available
+            if (bi.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+
+                if (bifd.getValueAtCostRate() != null) {
+                    totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+                }
+                if (bifd.getValueAtPurchaseRate() != null) {
+                    totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+                }
+                if (bifd.getValueAtRetailRate() != null) {
+                    totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate());
+                }
+                if (bifd.getValueAtWholesaleRate() != null) {
+                    totalWholesaleValue = totalWholesaleValue.add(bifd.getValueAtWholesaleRate());
+                }
+
+                // Line-level totals
+                if (bifd.getLineGrossTotal() != null) {
+                    lineGrossTotal = lineGrossTotal.add(bifd.getLineGrossTotal());
+                }
+                if (bifd.getLineNetTotal() != null) {
+                    lineNetTotal = lineNetTotal.add(bifd.getLineNetTotal());
+                }
+                if (bifd.getLineDiscount() != null) {
+                    lineDiscountTotal = lineDiscountTotal.add(bifd.getLineDiscount());
+                }
+                if (bifd.getLineTax() != null) {
+                    lineTaxTotal = lineTaxTotal.add(bifd.getLineTax());
+                }
+                if (bifd.getLineExpense() != null) {
+                    lineExpenseTotal = lineExpenseTotal.add(bifd.getLineExpense());
+                }
+                if (bifd.getLineCost() != null) {
+                    lineCostTotal = lineCostTotal.add(bifd.getLineCost());
+                }
+            }
+
+            // NO discount, tax, and expense from bill items
+            // For return bills, these are typically zero but we sum them anyway
+        }
+
+        // Update Bill entity fields
+        getReturnBill().setTotal(grossTotal);
+        getReturnBill().setNetTotal(netTotal);
+        getReturnBill().setGrantTotal(netTotal); // Grant total typically equals net total for returns
+        getReturnBill().setBillTotal(netTotal); // Bill total typically equals net total for returns
+
+        // For return bills, discounts and taxes are typically zero
+        getReturnBill().setDiscount(totalDiscountValue);
+        getReturnBill().setTax(totalTaxValue);
+        getReturnBill().setVat(0.0); // VAT is typically zero for returns
+        getReturnBill().setVatPlusNetTotal(netTotal); // Net total without VAT
+
+        // Set expense total
+        getReturnBill().setExpenseTotal(totalExpenseValue);
+        getReturnBill().setExpensesTotalConsideredForCosting(totalExpenseValue);
+        getReturnBill().setExpensesTotalNotConsideredForCosting(0.0);
+
+        // Set sale and free values (for returns, free value is typically zero)
+        getReturnBill().setSaleValue(netTotal);
+        getReturnBill().setFreeValue(0.0);
+
+        // Initialize and populate BillFinanceDetails
+        if (getReturnBill().getBillFinanceDetails() == null) {
+            getReturnBill().setBillFinanceDetails(new BillFinanceDetails());
+        }
+
+        BillFinanceDetails bfd = getReturnBill().getBillFinanceDetails();
+
+        // Set discount totals
+        bfd.setBillDiscount(BigDecimal.ZERO); // Bill-level discount is zero for returns
+        bfd.setLineDiscount(lineDiscountTotal);
+        bfd.setTotalDiscount(lineDiscountTotal);
+
+        // Set expense totals
+        bfd.setBillExpense(BigDecimal.ZERO); // Bill-level expense is zero for returns
+        bfd.setLineExpense(lineExpenseTotal);
+        bfd.setTotalExpense(lineExpenseTotal);
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.ZERO);
+        bfd.setBillExpensesNotConsideredForCosting(BigDecimal.ZERO);
+
+        // Set cost totals
+        bfd.setBillCostValue(BigDecimal.ZERO); // Bill-level cost is zero for returns
+        bfd.setLineCostValue(lineCostTotal);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalCostValueFree(BigDecimal.ZERO);
+        bfd.setTotalCostValueNonFree(totalCostValue);
+
+        // Set tax totals
+        bfd.setBillTaxValue(BigDecimal.ZERO); // Bill-level tax is zero for returns
+        bfd.setItemTaxValue(lineTaxTotal);
+        bfd.setTotalTaxValue(lineTaxTotal);
+
+        // Set purchase value totals
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalPurchaseValueFree(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValueNonFree(totalPurchaseValue);
+
+        // Set retail and wholesale value totals
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setTotalRetailSaleValueFree(BigDecimal.ZERO);
+        bfd.setTotalRetailSaleValueNonFree(totalRetailSaleValue);
+
+        bfd.setTotalWholesaleValue(totalWholesaleValue);
+        bfd.setTotalWholesaleValueFree(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValueNonFree(totalWholesaleValue);
+
+        // Set quantity totals
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(BigDecimal.ZERO);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQuantityInUnits);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(BigDecimal.ZERO);
+
+        // Set gross and net totals
+        bfd.setLineGrossTotal(lineGrossTotal);
+        bfd.setBillGrossTotal(BigDecimal.ZERO); // Bill-level gross is zero for returns
+        bfd.setGrossTotal(BigDecimal.valueOf(grossTotal));
+
+        bfd.setLineNetTotal(lineNetTotal);
+        bfd.setBillNetTotal(BigDecimal.ZERO); // Bill-level net is zero for returns
+        bfd.setNetTotal(BigDecimal.valueOf(netTotal));
+
+        // Set free item values (typically zero for returns)
+        bfd.setTotalOfFreeItemValues(BigDecimal.ZERO);
+        bfd.setTotalOfFreeItemValuesFree(BigDecimal.ZERO);
+        bfd.setTotalOfFreeItemValuesNonFree(BigDecimal.ZERO);
+
+        // Set adjustment values (same as totals for returns)
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(grossTotal));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(netTotal));
+    }
+
+    private void calculateBillTotalFromItems(List<BillItem> billItems) {
+        // Initialize totals
+        double netTotal = 0.0;
+        double grossTotal = 0.0;
+        double totalDiscountValue = 0.0;
+        double totalTaxValue = 0.0;
+        double totalExpenseValue = 0.0;
+
+        // Initialize BillFinanceDetails aggregates
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
+        BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalQuantityInUnits = BigDecimal.ZERO;
+        BigDecimal lineGrossTotal = BigDecimal.ZERO;
+        BigDecimal lineNetTotal = BigDecimal.ZERO;
+        BigDecimal lineDiscountTotal = BigDecimal.ZERO;
+        BigDecimal lineTaxTotal = BigDecimal.ZERO;
+        BigDecimal lineExpenseTotal = BigDecimal.ZERO;
+        BigDecimal lineCostTotal = BigDecimal.ZERO;
+
+        // Iterate through bill items and sum up totals
+        for (BillItem bi : billItems) {
+            if (bi == null) {
+                continue;
+            }
+
+            // Add to gross and net totals
+            double netValue = bi.getNetValue();
+            double grossValue = bi.getGrossValue();
+
+            netTotal += netValue;
+            grossTotal += grossValue;
+
+            // Add quantities
+            totalQuantity = totalQuantity.add(BigDecimal.valueOf(bi.getQty()));
+
+            // Add quantity in units (for AMPP conversion)
+            if (bi.getPharmaceuticalBillItem() != null) {
+                totalQuantityInUnits = totalQuantityInUnits.add(BigDecimal.valueOf(bi.getPharmaceuticalBillItem().getQty()));
+            } else {
+                totalQuantityInUnits = totalQuantityInUnits.add(BigDecimal.valueOf(bi.getQty()));
+            }
+
+            // Add line totals from BillItemFinanceDetails if available
+            if (bi.getBillItemFinanceDetails() != null) {
+                BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+
+                if (bifd.getValueAtCostRate() != null) {
+                    totalCostValue = totalCostValue.add(bifd.getValueAtCostRate());
+                }
+                if (bifd.getValueAtPurchaseRate() != null) {
+                    totalPurchaseValue = totalPurchaseValue.add(bifd.getValueAtPurchaseRate());
+                }
+                if (bifd.getValueAtRetailRate() != null) {
+                    totalRetailSaleValue = totalRetailSaleValue.add(bifd.getValueAtRetailRate());
+                }
+                if (bifd.getValueAtWholesaleRate() != null) {
+                    totalWholesaleValue = totalWholesaleValue.add(bifd.getValueAtWholesaleRate());
+                }
+
+                // Line-level totals
+                if (bifd.getLineGrossTotal() != null) {
+                    lineGrossTotal = lineGrossTotal.add(bifd.getLineGrossTotal());
+                }
+                if (bifd.getLineNetTotal() != null) {
+                    lineNetTotal = lineNetTotal.add(bifd.getLineNetTotal());
+                }
+                if (bifd.getLineDiscount() != null) {
+                    lineDiscountTotal = lineDiscountTotal.add(bifd.getLineDiscount());
+                }
+                if (bifd.getLineTax() != null) {
+                    lineTaxTotal = lineTaxTotal.add(bifd.getLineTax());
+                }
+                if (bifd.getLineExpense() != null) {
+                    lineExpenseTotal = lineExpenseTotal.add(bifd.getLineExpense());
+                }
+                if (bifd.getLineCost() != null) {
+                    lineCostTotal = lineCostTotal.add(bifd.getLineCost());
+                }
+            }
+
+            // NO discount, tax, and expense from bill items
+            // For return bills, these are typically zero but we sum them anyway
+        }
+
+        // Update Bill entity fields
+        getReturnBill().setTotal(grossTotal);
+        getReturnBill().setNetTotal(netTotal);
+        getReturnBill().setGrantTotal(netTotal); // Grant total typically equals net total for returns
+        getReturnBill().setBillTotal(netTotal); // Bill total typically equals net total for returns
+
+        // For return bills, discounts and taxes are typically zero
+        getReturnBill().setDiscount(totalDiscountValue);
+        getReturnBill().setTax(totalTaxValue);
+        getReturnBill().setVat(0.0); // VAT is typically zero for returns
+        getReturnBill().setVatPlusNetTotal(netTotal); // Net total without VAT
+
+        // Set expense total
+        getReturnBill().setExpenseTotal(totalExpenseValue);
+        getReturnBill().setExpensesTotalConsideredForCosting(totalExpenseValue);
+        getReturnBill().setExpensesTotalNotConsideredForCosting(0.0);
+
+        // Set sale and free values (for returns, free value is typically zero)
+        getReturnBill().setSaleValue(netTotal);
+        getReturnBill().setFreeValue(0.0);
+
+        // Initialize and populate BillFinanceDetails
+        if (getReturnBill().getBillFinanceDetails() == null) {
+            getReturnBill().setBillFinanceDetails(new BillFinanceDetails());
+        }
+
+        BillFinanceDetails bfd = getReturnBill().getBillFinanceDetails();
+
+        // Set discount totals
+        bfd.setBillDiscount(BigDecimal.ZERO); // Bill-level discount is zero for returns
+        bfd.setLineDiscount(lineDiscountTotal);
+        bfd.setTotalDiscount(lineDiscountTotal);
+
+        // Set expense totals
+        bfd.setBillExpense(BigDecimal.ZERO); // Bill-level expense is zero for returns
+        bfd.setLineExpense(lineExpenseTotal);
+        bfd.setTotalExpense(lineExpenseTotal);
+        bfd.setBillExpensesConsideredForCosting(BigDecimal.ZERO);
+        bfd.setBillExpensesNotConsideredForCosting(BigDecimal.ZERO);
+
+        // Set cost totals
+        bfd.setBillCostValue(BigDecimal.ZERO); // Bill-level cost is zero for returns
+        bfd.setLineCostValue(lineCostTotal);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalCostValueFree(BigDecimal.ZERO);
+        bfd.setTotalCostValueNonFree(totalCostValue);
+
+        // Set tax totals
+        bfd.setBillTaxValue(BigDecimal.ZERO); // Bill-level tax is zero for returns
+        bfd.setItemTaxValue(lineTaxTotal);
+        bfd.setTotalTaxValue(lineTaxTotal);
+
+        // Set purchase value totals
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalPurchaseValueFree(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValueNonFree(totalPurchaseValue);
+
+        // Set retail and wholesale value totals
+        bfd.setTotalRetailSaleValue(totalRetailSaleValue);
+        bfd.setTotalRetailSaleValueFree(BigDecimal.ZERO);
+        bfd.setTotalRetailSaleValueNonFree(totalRetailSaleValue);
+
+        bfd.setTotalWholesaleValue(totalWholesaleValue);
+        bfd.setTotalWholesaleValueFree(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValueNonFree(totalWholesaleValue);
+
+        // Set quantity totals
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(BigDecimal.ZERO);
+        bfd.setTotalQuantityInAtomicUnitOfMeasurement(totalQuantityInUnits);
+        bfd.setTotalFreeQuantityInAtomicUnitOfMeasurement(BigDecimal.ZERO);
+
+        // Set gross and net totals
+        bfd.setLineGrossTotal(lineGrossTotal);
+        bfd.setBillGrossTotal(BigDecimal.ZERO); // Bill-level gross is zero for returns
+        bfd.setGrossTotal(BigDecimal.valueOf(grossTotal));
+
+        bfd.setLineNetTotal(lineNetTotal);
+        bfd.setBillNetTotal(BigDecimal.ZERO); // Bill-level net is zero for returns
+        bfd.setNetTotal(BigDecimal.valueOf(netTotal));
+
+        // Set free item values (typically zero for returns)
+        bfd.setTotalOfFreeItemValues(BigDecimal.ZERO);
+        bfd.setTotalOfFreeItemValuesFree(BigDecimal.ZERO);
+        bfd.setTotalOfFreeItemValuesNonFree(BigDecimal.ZERO);
+
+        // Set adjustment values (same as totals for returns)
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(grossTotal));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(netTotal));
     }
 
 }

@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -56,6 +58,10 @@ public class InwardServiceController implements Serializable {
     SessionController sessionController;
     @Inject
     private ServiceSubCategoryController serviceSubCategoryController;
+    @Inject
+    private ItemController itemController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private InwardServiceFacade ejbFacade;
     @EJB
@@ -209,6 +215,11 @@ public class InwardServiceController implements Serializable {
         return false;
     }
 
+    public void generateCode() {
+        String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
+    }
+
     public void saveSelected() {
 
         if (getCurrent().getDepartment() == null) {
@@ -217,6 +228,20 @@ public class InwardServiceController implements Serializable {
         }
         if (getCurrent().getInwardChargeType() == null) {
             JsfUtil.addErrorMessage("Please Select Inward Charge type");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
+                }
+            }
+        }
+
+        if (itemController.isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
+            JsfUtil.addErrorMessage("Item code is already used");
             return;
         }
 
@@ -316,7 +341,7 @@ public class InwardServiceController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

@@ -81,7 +81,6 @@ public class ServiceSessionFunctions {
     }
 
     public Long calBillSessions(Item i, Date d) {
-        System.out.println("calBillSessions");
         //   ////// // System.out.println("getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
@@ -244,7 +243,6 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("stp", SessionNumberType.ByBill);
         m.put("sd", d);
-        System.out.println("m = " + m);
         countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
         return countLong;
     }

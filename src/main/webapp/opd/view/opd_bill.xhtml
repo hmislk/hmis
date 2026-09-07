@@ -86,6 +86,11 @@
                                                                 <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true"/>                        
                                                             </ui:repeat>
                                                         </h:panelGroup>
+                                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}">
+                                                            <ui:repeat value="#{billSearch.viewingBill}" var="ffb">
+                                                                <prints:five_five_custom_3 bill="#{ffb}" duplicate="true"/>
+                                                            </ui:repeat>
+                                                        </h:panelGroup>
                                                     </h:panelGroup>
                                                 </div>
                                                 <div class="col-6">

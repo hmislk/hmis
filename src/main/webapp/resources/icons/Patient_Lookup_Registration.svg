@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad6a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad6" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad6)">
+    <!-- Person silhouette -->
+    <circle cx="80" cy="78" r="22" fill="url(#grad6a)"/>
+    <path d="M55 108 Q80 96 105 108 L108 148 Q108 154 103 154 L57 154 Q52 154 52 148 Z" fill="url(#grad6a)"/>
+    <!-- White highlight on head -->
+    <circle cx="72" cy="71" r="7" fill="white" opacity="0.2"/>
+    <!-- Magnifying glass overlapping -->
+    <circle cx="135" cy="95" r="30" fill="none" stroke="url(#grad6a)" stroke-width="11"/>
+    <circle cx="135" cy="95" r="19" fill="#F0FDFA"/>
+    <!-- Person inside magnifier (small) -->
+    <circle cx="135" cy="88" r="7" fill="#22D3EE"/>
+    <path d="M124 100 Q135 95 146 100 L147 107 Q147 110 144 110 L126 110 Q123 110 123 107 Z" fill="#22D3EE"/>
+    <!-- Handle -->
+    <line x1="157" y1="117" x2="172" y2="132" stroke="url(#grad6a)" stroke-width="11" stroke-linecap="round"/>
+  </g>
+</svg>

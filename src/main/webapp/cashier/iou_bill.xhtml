@@ -177,10 +177,10 @@
                                 <p:outputLabel value="Payment Method Details" />
 
                                 <h:panelGroup id="gpPaymentMethodDetails" >
-                                    <h:panelGroup id="cheque" style="display: #{iouBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                    <h:panelGroup id="cheque" layout="block" rendered="#{iouBillController.current.paymentMethod eq 'Cheque'}">
                                         <pa:cheque paymentMethodData="#{iouBillController.paymentMethodData}"/>
                                     </h:panelGroup>
-                                    <h:panelGroup id="slip" style="display: #{iouBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                    <h:panelGroup id="slip" layout="block" rendered="#{iouBillController.current.paymentMethod eq 'Slip'}">
                                         <pa:slip paymentMethodData="#{iouBillController.paymentMethodData}"/>
                                     </h:panelGroup>
                                 </h:panelGroup>

@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithMultiplePayments" required="true"/>
+        <cc:attribute name="componentDetail" type="com.divudi.core.data.dataStructure.ComponentDetail" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGroup rendered="#{cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}">
+            <div class="d-flex flex-column gap-3">
+                <div class="alert alert-info mb-0 d-flex align-items-center gap-2" role="alert">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <strong>Patient Deposit Balance:</strong>
+                        <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patientDepost.balance}" styleClass="ms-2">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <p:outputLabel for="txtMpPd" value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
+                    <p:inputText
+                        id="txtMpPd"
+                        autocomplete="off"
+                        onfocus="this.select();"
+                        value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
+                        styleClass="form-control"
+                        style="width: 150px;"
+                        disabled="#{cc.attrs.componentDetail != null and not cc.attrs.controller.isLastPaymentEntry(cc.attrs.componentDetail)}"
+                        required="true"
+                        requiredMessage="Amount is required">
+                        <f:convertNumber pattern="#,##0.00" />
+                        <p:ajax event="keyup" process="txtMpPd" update=":#{p:resolveFirstComponentWithId('balanceDisplay',view).clientId}" listener="#{cc.attrs.controller.calculatRemainForMultiplePaymentTotal()}" />
+                    </p:inputText>
+                </div>
+            </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{!cc.attrs.paymentMethodData.patient_deposit.patient.hasAnAccount}">
+            <div class="alert alert-warning mb-0 d-flex align-items-center gap-2" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Patient has no Patient Deposit account.</span>
+            </div>
+        </h:panelGroup>
+    </cc:implementation>
+</html>

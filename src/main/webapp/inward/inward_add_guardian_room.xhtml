@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="addGuardianRoomForm" onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
+                    <p:messages id="pageMessages"/>
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-user-plus fa-lg text-success me-3"></i>
+                                    <div>
+                                        <h:outputText value="Add Guardian Room" styleClass="text-success fw-bold"/>
+                                        <h:panelGroup rendered="#{roomChangeController.current ne null}" layout="block">
+                                            <small class="text-muted">
+                                                <h:outputText value="#{roomChangeController.current.patient.person.nameWithTitle}"/>
+                                                &nbsp;|&nbsp;BHT:&nbsp;
+                                                <h:outputText value="#{roomChangeController.current.bhtNo}"/>
+                                            </small>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAdmissionProfilePage()}"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary">
+                                        <f:setPropertyActionListener
+                                            value="#{roomChangeController.current}"
+                                            target="#{admissionController.current}"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup rendered="#{roomChangeController.current eq null}" layout="block">
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                                <p class="text-muted">No patient selected. Please navigate from the Inpatient Dashboard.</p>
+                            </div>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{roomChangeController.current ne null}" layout="block">
+                            <div class="row">
+                                <!-- Left: Patient Details -->
+                                <div class="col-4">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <i class="fa-solid fa-id-card-alt me-2"/>
+                                            <h:outputText value="Patient Details"/>
+                                        </f:facet>
+                                        <in:bhtDetail admission="#{roomChangeController.current}"/>
+
+                                        <h:panelGroup rendered="#{roomChangeController.current.guardian ne null}">
+                                            <div class="mt-3 p-2 border rounded" style="background:#f8f9fa;">
+                                                <strong>Guardian:</strong>
+                                                <h:outputText value="#{roomChangeController.current.guardian.name}"/>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <h:outputText value="#{roomChangeController.current.guardian.mobile}"/>
+                                                </small>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+
+                                <!-- Right: Room Selection -->
+                                <div class="col-8">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <i class="fa-solid fa-door-open me-2"/>
+                                            <h:outputText value="New Guardian Room Assignment"/>
+                                        </f:facet>
+                                        <div class="p-3">
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <p:outputLabel value="Room Facility"/>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p:autoComplete
+                                                        forceSelection="true"
+                                                        id="roomFacility"
+                                                        value="#{roomChangeController.newRoomFacilityCharge}"
+                                                        completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                                        var="rf" itemLabel="#{rf.name}" itemValue="#{rf}"
+                                                        style="width:100%;"
+                                                        minQueryLength="1"
+                                                        maxResults="15"
+                                                        placeholder="Type room number or facility name">
+                                                    </p:autoComplete>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <p:outputLabel value="Date/Time"/>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <p:datePicker
+                                                        id="admissionTimestamp"
+                                                        value="#{roomChangeController.changeAt}"
+                                                        showTime="true"
+                                                        showButtonBar="true"
+                                                        timeInput="true"
+                                                        style="width:100%;"
+                                                        pattern="dd MMM yyyy HH:mm"
+                                                        timeZone="Asia/Colombo">
+                                                    </p:datePicker>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-2 mt-4">
+                                                <p:commandButton
+                                                    id="btnAddGuardianRoom"
+                                                    value="Add Guardian Room"
+                                                    icon="fa fa-user-plus"
+                                                    class="ui-button-success"
+                                                    onclick="return confirm('Assign this guardian room to the patient?');"
+                                                    action="#{roomChangeController.addNewGuardianRoom()}"
+                                                    ajax="false">
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    id="btnBackToDashboard"
+                                                    value="Back to Dashboard"
+                                                    icon="fa fa-arrow-left"
+                                                    class="ui-button-secondary"
+                                                    ajax="false"
+                                                    action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                                    <f:setPropertyActionListener
+                                                        value="#{roomChangeController.current}"
+                                                        target="#{admissionController.current}"/>
+                                                </p:commandButton>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

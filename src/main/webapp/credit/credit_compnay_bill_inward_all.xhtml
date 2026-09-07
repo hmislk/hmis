@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/payments/pay_index.xhtml"
+                template="/payments/credit_company_pay_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -45,33 +45,27 @@
                                     <h:outputText styleClass="fa fa-money-bill-wave" />
                                     <h:outputText value="Payment" class="mx-4"></h:outputText>
                                 </f:facet>
-                                
-                                    <div class="row my-2 d-flex align-items-center">
+
+                                <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Select Credit Company" />      
                                     </div>
                                     <div class="col-md-8">
-                                        <p:autoComplete widgetVar="aIx" id="acIx" 
-                                                        placeholder="Type the Credit Company Name"
-                                                        forceSelection="true" 
-                                                        value="#{cashRecieveBillController.institution}" 
-                                                        completeMethod="#{institutionController.completeCreditCompany}" 
-                                                        var="ix" itemLabel="#{ix.name}"
-                                                        itemValue="#{ix}" class="w-100"
-                                                        inputStyleClass="w-100"
-                                                        >
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.name}"/>
-                                            </p:column>                                  
-                                            <p:column>
-                                                <h:outputLabel value="#{ix.institutionCode}"/>
-                                            </p:column>
-                                            <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} tot" 
-                                                    listener="#{cashRecieveBillController.selectInstitutionListenerBht()}"/>
-                                        </p:autoComplete>
+                                        <p:selectOneMenu id="creditCompanyMenu"
+                                                         value="#{cashRecieveBillController.creditCompany}"
+                                                         styleClass="w-100"
+                                                         filter="true"
+                                                         filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select Credit Company" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItems value="#{institutionController.creditCompanies}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"/>
+                                            <p:ajax event="change"
+                                                    process="@this"
+                                                    listener="#{cashRecieveBillController.selectInstitutionListenerBht}"
+                                                    update=":#{p:resolveFirstComponentWithId('items',view).clientId} tot"/>
+                                        </p:selectOneMenu>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row my-2 d-flex align-items-center">
                                     <div class="col-md-4">
                                         <p:outputLabel value="Payment Method" />      
@@ -103,16 +97,16 @@
                                     </div>
                                 </div>
 
-<!--                                <div class="row my-2 d-flex align-items-center">
-                                    <div class="col-md-4">
-                                        <p:outputLabel value="Comment" />      
-                                    </div>
-                                    <div class="col-md-8">
-                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
-                                    </div>
-                                </div>-->
+                                <!--                                <div class="row my-2 d-flex align-items-center">
+                                                                    <div class="col-md-4">
+                                                                        <p:outputLabel value="Comment" />      
+                                                                    </div>
+                                                                    <div class="col-md-8">
+                                                                        <p:inputText class="w-100" value="#{cashRecieveBillController.comment}" id="comment"/>
+                                                                    </div>
+                                                                </div>-->
 
-                            
+
 
                                 <div class="row my-2">
                                     <div class="col-md-4"></div>
@@ -143,8 +137,8 @@
                         <div class="col-md-6">
                             <p:panel>
                                 <f:facet name="header">
-                                    <h:outputLabel value="Paying Institution : "/>
-                                    <h:outputLabel value="#{cashRecieveBillController.institution.name}"/>
+                                    <h:outputLabel value="Selected Credit Company : "/>
+                                    <h:outputLabel value="#{cashRecieveBillController.creditCompany.name}"/>
                                     <p:commandButton 
                                         ajax="false" 
                                         action="#{cashRecieveBillController.removeAll()}" 
@@ -214,7 +208,15 @@
                         icon="fa fa-plus"
                         class="ui-button-warning">
                     </p:commandButton>
-                    <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    <p:commandButton value="Print"
+                                     icon="pi pi-print"
+                                     styleClass="ui-button-info"
+                                     ajax="false">
+                        <p:printer target="gpBillPreview"/>
+                    </p:commandButton>
+                    <h:panelGroup id="gpBillPreview" >
+                        <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
+                    </h:panelGroup>
                 </p:panel>
 
             </h:form>

@@ -60,17 +60,17 @@ public class ProcessController implements Serializable {
     private Institution site;
 
     public String navigateToProcessIndex() {
-        return "/process/index?faces-redirect=true;";
+        return "/process/index?faces-redirect=true";
     }
 
     public String navigateToStartNewProcessInstance() {
         resetVariablesToStartProcessInstance();
         stage = "initiate_process";
-        return "/process/process?faces-redirect=true;";
+        return "/process/process?faces-redirect=true";
     }
 
     public String navigateToListProcesses() {
-        return "/process/processes?faces-redirect=true;";
+        return "/process/processes?faces-redirect=true";
     }
 
     public String listOngoingProcessInstances() {
@@ -111,7 +111,6 @@ public class ProcessController implements Serializable {
 
     public String navigateToManageProcessInstance(ProcessInstance pi) {
         System.out.println("navigateToManageProcessInstance");
-        System.out.println("pi = " + pi);
         if (pi == null) {
             JsfUtil.addErrorMessage("No Process Selected");
             return null;
@@ -144,7 +143,6 @@ public class ProcessController implements Serializable {
             return null;
         }
         processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
-        System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
         if (processStepActionDefinitions == null || processStepActionDefinitions.isEmpty()) {
             JsfUtil.addErrorMessage("No Process Step Action Definitions for Selected Process Step Definition");
             return null;
@@ -178,7 +176,6 @@ public class ProcessController implements Serializable {
         processService.save(processStepInstance);
 
         processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
-        System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
         stage = "initiate_step";
         return null;
     }
@@ -205,7 +202,6 @@ public class ProcessController implements Serializable {
         ProcessStepActionDefinition actionDef = processStepInstance.getProcessStepActionDefinition();
         ProcessStepInstance previousProcessStepInstance;
         // Handle the specific action taken
-        System.out.println("actionDef.getActionType() = " + actionDef.getActionType());
         switch (actionDef.getActionType()) {
             case CANCEL_PROCESS:
                 processService.cancelProcessInstance(processStepInstance, sessionController.getLoggedUser());

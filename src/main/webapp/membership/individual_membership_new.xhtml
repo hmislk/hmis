@@ -56,16 +56,16 @@
                                                  autocomplete="off" id="membershipCardNo" value="#{patientController.currentFamily.membershipCardNo}" title="MembershipCardNo" />
 
 
-                                    <p:outputLabel value="MembershipScheme:" for="membershipScheme" />
-                                    <p:selectOneMenu 
+                                    <p:outputLabel value="Personal Membership Scheme:" for="membershipScheme" />
+                                    <p:selectOneMenu
                                         id="membershipScheme"
-                                        class="w-100" 
-                                        value="#{patientController.currentFamily.membershipScheme}" 
+                                        class="w-100"
+                                        value="#{patientController.currentFamily.membershipScheme}"
                                         filter="true"
                                         filterMatchMode="contains">
-                                        <f:selectItems 
-                                            value="#{membershipSchemeController.items}" 
-                                            var="m" 
+                                        <f:selectItems
+                                            value="#{membershipSchemeController.personalSchemes}"
+                                            var="m"
                                             itemLabel="#{m.name}" itemValue="#{m}"/>
                                     </p:selectOneMenu>
 

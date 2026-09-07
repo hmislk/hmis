@@ -1,13 +1,18 @@
 <?xml version='1.0' encoding='UTF-8' ?>
+<!--
+  DEPRECATED: Old normal-path Transfer Receive Approval page (TransferReceiveController).
+  Replaced by pharmacy_transfer_receive_native_approval.xhtml (native SQL path).
+  Do NOT delete — retained for reference until TransferReceiveController is fully retired.
+-->
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/pharmacy/disbursement_index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <h:outputStylesheet library="css" name="pharmacyA4.css"/>
             <p:panel rendered="#{!transferReceiveController.printPreview}">
@@ -31,7 +36,9 @@
                             class="ui-button-success mx-1"
                             icon="fas fa-check"
                             ajax="false"
-                            style="float: right;">
+                            style="float: right;"
+                            onclick="if (!confirm('Are you sure you want to settle this transfer receive?'))
+                                        return false;">
                         </p:commandButton>
 
 
@@ -74,7 +81,7 @@
                             </p:column>
 
                             <p:column headerText="Expiry Date"  style="width:25px!important;">
-                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >
+                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputText>
                             </p:column>

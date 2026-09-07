@@ -20,7 +20,7 @@
                                                 </h:outputLabel>
                                                 <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{reportsStock.staff}"  >
                                                 </p:autoComplete>-->
-                    <p:commandButton class="ui-button-warning " icon="fas fa-fill"  ajax="false" value="Fill" action="#{reportsStock.fillAllStaffStocks}" ></p:commandButton>
+                    <p:commandButton class="ui-button-warning " icon="fas fa-fill"  ajax="false" value="Fill" action="#{reportsStock.fillAllStaffStockItems}" ></p:commandButton>
                     <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" action="#" >
                         <p:printer target="gpBillPreview" >
                         </p:printer>

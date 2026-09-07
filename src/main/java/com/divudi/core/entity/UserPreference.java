@@ -35,7 +35,7 @@ public class UserPreference implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /*
@@ -145,6 +145,7 @@ public class UserPreference implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private PaperType inwardDepositPaymentBillPaper;
+
 
     private boolean partialPaymentOfPharmacyBillsAllowed;
 
@@ -1241,6 +1242,8 @@ public class UserPreference implements Serializable {
     public void setInwardDepositPaymentBillPaper(PaperType inwardDepositPaymentBillPaper) {
         this.inwardDepositPaymentBillPaper = inwardDepositPaymentBillPaper;
     }
+
+
 
     public String getLengthOfOTPIndexes() {
         return lengthOfOTPIndexes;

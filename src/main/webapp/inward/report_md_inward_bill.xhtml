@@ -11,28 +11,95 @@
         <h:form>
             <p:panel header="Report By Bill" style="height: 100vh" class="my-2">
 
-                <h:panelGrid columns="8" class="my-4">
-                    <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker mx-4" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
+                <p:panelGrid columns="4" class="w-100 my-2">
+
+                    <h:outputLabel for="dateFilterType" value="Date Type"/>
+                    <p:selectOneMenu class="w-100" id="dateFilterType"
+                                     value="#{mdInwardReportController.dateFilterType}">
+                        <f:selectItem itemLabel="Service Added Date" itemValue="SERVICE_ADDED"/>
+                        <f:selectItem itemLabel="Admitted Date" itemValue="ADMITTED"/>
+                        <f:selectItem itemLabel="Discharged Date" itemValue="DISCHARGED"/>
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel for="fromDate" value="From"/>
+                    <p:calendar class="w-100"
+                                inputStyleClass="w-100" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <f:ajax event="dateSelect" render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
-                    <h:outputLabel value="To"/>
-                    <p:calendar styleClass="mx-4" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                        <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
+
+                    <h:outputLabel for="toDate" value="To"/>
+                    <p:calendar class="w-100"
+                                inputStyleClass="w-100" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                        <f:ajax event="dateSelect" render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
-                    <p:commandButton ajax="false"
-                                     value="Process By Added Date"
-                                     icon="fas fa-cogs"
-                                     class=" ui-button-warning"
-                                     action="#{mdInwardReportController.createServiceBillsByAddedDate}"
-                                     /><br/>
-                    <p:commandButton ajax="false"
-                                     icon="fas fa-cogs"
-                                     value="Process By Discharge Date"
-                                     class="my-2 ui-button-warning"
-                                     action="#{mdInwardReportController.createServiceBillsByDischargeDate()}"
-                                     />
-                </h:panelGrid>
+
+                    <h:outputLabel for="admType" value="Admission Type"/>
+                    <p:selectOneMenu class="w-100" id="admType"
+                                     value="#{mdInwardReportController.admissionType}">
+                        <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                        <f:selectItems value="#{admissionTypeController.items}"
+                                       var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel for="pm" value="Payment Method"/>
+                    <p:selectOneMenu class="w-100" id="pm"
+                                     value="#{mdInwardReportController.paymentMethod}">
+                        <f:selectItem itemLabel="All Payment Methods"/>
+                        <f:selectItems value="#{mdInwardReportController.paymentMethods}"/>
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="ins" value="Institution" />
+                    <p:autoComplete class="w-100"
+                                    inputStyleClass="w-100" id="ins" value="#{mdInwardReportController.institution}"
+                                    completeMethod="#{institutionController.completeIns}"
+                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                        <p:column>
+                            #{ix.name}
+                        </p:column>
+                    </p:autoComplete>
+
+                    <h:outputLabel for="siteMenu" value="Site"/>
+                    <p:selectOneMenu class="w-100" id="siteMenu"
+                                     value="#{mdInwardReportController.site}"
+                                     filter="true">
+                        <f:selectItem itemLabel="All Sites" />
+                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                        <f:ajax event="change" listener="#{mdInwardReportController.makeBillNull}"/>
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="dept" value="Department" />
+                    <p:autoComplete class="w-100"
+                                    inputStyleClass="w-100" id="dept" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{mdInwardReportController.dept}" >
+                    </p:autoComplete>
+
+                </p:panelGrid>
+
+                <div class="d-flex align-items-center my-3">
+                    <p:commandButton
+                        ajax="false"
+                        value="Process"
+                        icon="fas fa-cogs"
+                        class="ui-button-warning mx-2"
+                        action="#{mdInwardReportController.processServiceBills}" />
+                    <p:commandButton
+                        ajax="false"
+                        icon="fas fa-file-excel"
+                        value="Download Excel"
+                        actionListener="#{mdInwardReportController.processServiceBills}"
+                        class="ui-button-success mx-2">
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_bill" />
+                    </p:commandButton>
+                    <p:commandButton
+                        icon="fas fa-print"
+                        ajax="false"
+                        value="Print"
+                        class="mx-2 ui-button-info" >
+                        <p:printer target="tbl"/>
+                    </p:commandButton>
+                </div>
 
                 <p:dataTable id="tbl"
                              value="#{mdInwardReportController.bills}"

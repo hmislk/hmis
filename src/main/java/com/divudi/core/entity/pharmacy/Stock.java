@@ -28,18 +28,18 @@ public class Stock implements Serializable, RetirableEntity {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Deprecated // Use Item Batch > Item > barcode
-    @Column(name = "ITEMNAME", length = 100)
+    @Column
     private String itemName;
 
     @Deprecated // Use Item Batch > Item > barcode
-    @Column(name = "BARCODE", length = 30)
+    @Column
     private String barcode;
 
     @Deprecated // Use Item Batch > Item
-    @Column(name = "LONGCODE")
+    @Column
     private Long longCode;
 
     @Deprecated // Use Item Batch > DOE
@@ -56,9 +56,12 @@ public class Stock implements Serializable, RetirableEntity {
     private Department department;
     @ManyToOne
     Staff staff;
+    @Deprecated // Use Item Batch > Item > Code
     @Column(name = "CODE")
     String code;
+    @Deprecated // WIll remove all later
     private Long startBarcode;
+    @Deprecated //Will remove all later
     private Long endBarcode;
     @Deprecated // Use Item Stock > Retail Sale
     private double retailsaleRate;

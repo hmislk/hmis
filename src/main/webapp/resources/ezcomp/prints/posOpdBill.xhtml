@@ -17,7 +17,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
-        <div class="posbillBreak" style="page-break-after: always">
+        <div class="posbillBreak" style="page-break-after: avoid!important;">
 
 
             <div class="institutionName" style="text-align: center!important;
@@ -118,6 +118,21 @@
                         <td>:</td>
                         <td style="width: 30%;" >
                             <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  style="text-align: center!important;
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 15% ;text-align: left;" >
+                            <h:outputLabel value="Batch Bill" style="text-align: center!important;
+                                           font-size: 12px!important;
+                                           font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 30%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}"  style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>

@@ -16,16 +16,26 @@
                         <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
                         <h:outputText value="Upload to Add Collection Centre Fees by Item Code" styleClass="m-2"></h:outputText>
                     </f:facet>
+                    <p:panel styleClass="mb-3">
+                        <f:facet name="header">
+                            <h:outputText value="Description" />
+                        </f:facet>
+                        <h:outputText value="This utility creates NEW fee records for a selected Collection Centre. " />
+                        <h:outputText value="Upload an Excel file (.xlsx) with item codes and fee values. " />
+                        <h:outputText value="The system will find existing items by their code and create new fee entries for the selected Collection Centre. " />
+                        <h:outputText value="This does NOT update existing fees - it adds new fee records." styleClass="text-warning" />
+                    </p:panel>
+
                     <h:form id="upload" enctype="multipart/form-data">
                         <p:panelGrid columns="2" >
                             <p:outputLabel value="Collection Centre" for="acCc" ></p:outputLabel>
-                            <p:autoComplete 
-                                value="#{itemController.collectionCentre}" 
+                            <p:autoComplete
+                                value="#{itemController.collectionCentre}"
                                 forceSelection="true" id="acCc"
-                                completeMethod="#{institutionController.completeCollectingCenter}" 
-                                var="vt" 
+                                completeMethod="#{institutionController.completeCollectingCenter}"
+                                var="vt"
                                 itemLabel="#{vt.name}"
-                                itemValue="#{vt}" 
+                                itemValue="#{vt}"
                                 maxResults="10"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
@@ -34,8 +44,17 @@
                             </p:autoComplete>
                         </p:panelGrid>
 
-                        <p>Column A - Item Code</p>
-                        <p>Column B - Fee</p>
+                        <p:fieldset legend="Excel File Format" styleClass="mb-3">
+                            <h:panelGrid columns="2" styleClass="table table-bordered" columnClasses="text-center,">
+                                <h:outputText value="Column" style="font-weight: bold;" />
+                                <h:outputText value="Content" style="font-weight: bold;" />
+                                <h:outputText value="A" />
+                                <h:outputText value="Item Code (must match existing item codes in the system)" />
+                                <h:outputText value="B" />
+                                <h:outputText value="Fee Value (numeric, must be greater than 0)" />
+                            </h:panelGrid>
+                            <h:outputText value="Note: The first row is treated as a header and will be skipped." styleClass="text-info" />
+                        </p:fieldset>
 
 
                         <p:fileUpload value="#{itemController.file}"

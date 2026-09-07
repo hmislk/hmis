@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText value="My IOU to Cash Conversions" />
+                        </f:facet>
+
+                        <p:panelGrid layout="tabular" columns="5" class="w-100">
+                            <h:outputLabel value="From Date" />
+                            <p:datePicker
+                                id="fromDate"
+                                showTime="true"
+                                value="#{iouBillController.myConversionsFromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                class="w-100" />
+                            <p:spacer />
+                            <h:outputLabel value="To Date" />
+                            <p:datePicker
+                                id="toDate"
+                                showTime="true"
+                                value="#{iouBillController.myConversionsToDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                class="w-100" />
+                        </p:panelGrid>
+
+                        <p:commandButton
+                            value="Search"
+                            icon="pi pi-search"
+                            class="ui-button-success mt-2"
+                            action="#{iouBillController.fillMyIouConversionBills()}"
+                            update="tblConversions" />
+
+                        <p:dataTable
+                            id="tblConversions"
+                            value="#{iouBillController.myIouConversionBills}"
+                            var="bill"
+                            emptyMessage="No IOU conversions found for the selected period"
+                            paginator="true"
+                            rows="20"
+                            paginatorPosition="bottom"
+                            class="mt-3">
+
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Date / Time">
+                                <h:outputText value="#{bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Total Value" style="text-align: right;">
+                                <h:outputText value="#{bill.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Comment">
+                                <h:outputText value="#{bill.comments}" />
+                            </p:column>
+
+                            <p:column headerText="Status">
+                                <h:panelGroup rendered="#{bill.cancelled}">
+                                    <span class="badge bg-danger">Cancelled</span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not bill.cancelled}">
+                                    <span class="badge bg-success">Active</span>
+                                </h:panelGroup>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width: 100px;">
+                                <p:commandButton
+                                    value="View"
+                                    icon="pi pi-eye"
+                                    ajax="false"
+                                    class="ui-button-info ui-button-sm"
+                                    action="#{iouBillController.navigateToViewIouConversion(bill)}" />
+                            </p:column>
+
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

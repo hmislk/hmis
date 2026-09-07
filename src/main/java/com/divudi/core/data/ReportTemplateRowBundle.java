@@ -36,6 +36,8 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private List<ReportTemplateRowBundle> bundles;
     List<DenominationTransaction> denominationTransactions;
+    private List<DenominationTransaction> paymentMethodHandoverTransactions;
+    private double paymentMethodHandoverActualTotal;
     private ReportTemplate reportTemplate;
     private List<ReportTemplateRow> reportTemplateRows;
     private Map<String, List<BillItem>> groupedBillItems;
@@ -69,6 +71,11 @@ public class ReportTemplateRowBundle implements Serializable {
     private Long long8;
     private Long long9;
     private Long long10;
+
+    private Long billedCount;
+    private Long cancelledCount;
+    private Long returnCount;
+    private Long netCount;
 
     private PaymentMethod paymentMethod;
 
@@ -113,6 +120,11 @@ public class ReportTemplateRowBundle implements Serializable {
     private double settledAmountBySponsorsTotal;
     private double totalBalance;
 
+    private double floatOutTotal;
+    private double floatInTotal;
+    private double cashFloatOutTotal;
+    private double cashFloatInTotal;
+
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
     private boolean hasCashTransaction;
@@ -147,8 +159,119 @@ public class ReportTemplateRowBundle implements Serializable {
 
     private boolean patientDepositsAreConsideredInHandingover = true;
 
+    private double cashierGrandTotal;
+    private double cashierCollectionTotal;
+    private double cashierExcludedTotal;
+    private boolean cashierGrandTotalComputed;
+    private boolean cashierCollectionTotalComputed;
+    private boolean cashierExcludedTotalComputed;
+    private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
+    private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+    
+    private Date fromDate;
+    private Date toDate;
+    private Institution filterInstitution;
+    private Institution filterSite;
+    private Department filterDepartment;
+    private WebUser filterWebUser;
+    
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getFilterInstitution() {
+        return filterInstitution;
+    }
+
+    public void setFilterInstitution(Institution filterInstitution) {
+        this.filterInstitution = filterInstitution;
+    }
+
+    public Institution getFilterSite() {
+        return filterSite;
+    }
+
+    public void setFilterSite(Institution filterSite) {
+        this.filterSite = filterSite;
+    }
+
+    public Department getFilterDepartment() {
+        return filterDepartment;
+    }
+
+    public void setFilterDepartment(Department filterDepartment) {
+        this.filterDepartment = filterDepartment;
+    }
+
+    public WebUser getFilterWebUser() {
+        return filterWebUser;
+    }
+
+    public void setFilterWebUser(WebUser filterWebUser) {
+        this.filterWebUser = filterWebUser;
+    }
+
+    /**
+     * True once a report generator has snapshotted the filters it actually ran
+     * with. Exporters gate the filter summary block on this: a bundle that
+     * never set them must not get "All Institutions / All Users" printed
+     * against it, because that asserts a scope the report never applied.
+     */
+    public boolean hasFilterSummary() {
+        return fromDate != null
+                || toDate != null
+                || filterInstitution != null
+                || filterSite != null
+                || filterDepartment != null
+                || filterWebUser != null;
+    }
+
+    /**
+     * The report title to print, or null when no generator ever named this
+     * bundle. Unlike {@link #getName()} this does not lazily assign a
+     * "BundleName&lt;uuid&gt;" placeholder - that placeholder exists to keep
+     * download file names unique, and printing it as a report heading shows
+     * the user a raw UUID.
+     */
+    public String getPrintableName() {
+        return (name == null || name.trim().isEmpty()) ? null : name;
+    }
+
+    /**
+     * Name to show for the filtered user. WebUser.getName() is the login name,
+     * not the person's name, so prefer the person and fall back to the login.
+     */
+    public String getFilterWebUserDisplayName() {
+        if (filterWebUser == null) {
+            return null;
+        }
+        if (filterWebUser.getWebUserPerson() != null
+                && filterWebUser.getWebUserPerson().getName() != null
+                && !filterWebUser.getWebUserPerson().getName().trim().isEmpty()) {
+            return filterWebUser.getWebUserPerson().getName();
+        }
+        return filterWebUser.getName();
+    }
+
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
+    }
+
+    public ReportTemplateRowBundle(String name) {
+        this.id = UUID.randomUUID();
+        this.name = name;
     }
 
     //    public ReportTemplateRowBundle(SessionController sessionController) {
@@ -229,6 +352,17 @@ public class ReportTemplateRowBundle implements Serializable {
         hasPatientDepositTransaction = false;
         hasPatientPointsTransaction = false;
         hasOnlineSettlementTransaction = false;
+
+        resetCashierTotalsAndFlags();
+    }
+
+    private void resetCashierTotalsAndFlags() {
+        cashierGrandTotal = 0.0;
+        cashierCollectionTotal = 0.0;
+        cashierExcludedTotal = 0.0;
+        cashierGrandTotalComputed = false;
+        cashierCollectionTotalComputed = false;
+        cashierExcludedTotalComputed = false;
     }
 
     public void collectDepartments() {
@@ -248,6 +382,9 @@ public class ReportTemplateRowBundle implements Serializable {
 
         if (bundles != null) {
             for (ReportTemplateRowBundle childBundle : bundles) {
+                if (childBundle.isFloatRow()) {
+                    continue;
+                }
                 grossTotal += nullSafeDouble(childBundle.grossTotal);
                 discount += nullSafeDouble(childBundle.discount);
                 total += nullSafeDouble(childBundle.total);
@@ -835,7 +972,6 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundles(boolean forHandover) {
-        System.out.println("calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         boolean selectAll = !forHandover;
 
@@ -844,11 +980,16 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected() || selectAll) {
 
-                    if (forHandover) {
+                    // Float rows (FLOAT_OUT / FLOAT_IN) are synthetic bundles with no payment rows —
+                    // their cashValue/cashHandoverValue are set directly in generatePaymentBundleForHandovers()
+                    // and must not be recalculated. calculateTotalsByPaymentsAndDenominationsForHandover()
+                    // starts with resetTotalsAndFlags() which would zero cashValue permanently, since
+                    // there are no reportTemplateRows to re-accumulate from.
+                    // The same guard exists in calculateTotalsByChildBundlesForHandover().
+                    if (forHandover && !childBundle.isFloatRow()) {
                         childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
                     }
 
-                    System.out.println("selected childBundle = " + childBundle.getName());
                     addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
                     addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
@@ -866,24 +1007,35 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
                     addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
                     addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
-
                     addValueAndUpdateFlag("hospitalTotal", safeDouble(childBundle.getHospitalTotal()));
                     addValueAndUpdateFlag("staffTotal", safeDouble(childBundle.getStaffTotal()));
                     addValueAndUpdateFlag("ccTotal", safeDouble(childBundle.getCcTotal()));
-
-                    System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
-
-                    System.out.println("total Before= " + total);
-
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
 
                 }
             }
         }
+
+        // SYNC RULE — do not remove or reverse this assignment.
+        // getHandoverTotal() reads denominatorValue for cash (see its Javadoc).
+        // The denomination-blur path writes denominatorValue directly via
+        // calculateTotalHandoverByDenominationQuantities(). This checkbox path
+        // accumulates cashHandoverValue from child rows and then syncs it into
+        // denominatorValue so both paths converge on the same field.
+        //
+        // CODEX CONCERN (addressed): reversing this to denominatorValue = cashHandoverValue
+        // would corrupt shortage calculation and settleHandoverStartBill(), both of which
+        // read getDenominatorValue() as the physically counted cash amount. The physically
+        // counted amount is correct to reset when the cashier changes row selection —
+        // they should re-enter denominations after any selection change.
+        //
+        // ACCEPT / VIEW flows are NOT affected — they set denominatorValue and
+        // cashHandoverValue directly from the persisted denomination bill and never
+        // call this method.
+        denominatorValue = cashHandoverValue;
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
-        System.out.println("calculateTotalsByChildBundlesForHandover");
         resetTotalsAndFlags();
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
@@ -891,19 +1043,18 @@ public class ReportTemplateRowBundle implements Serializable {
 
                 if (childBundle.isSelected()) {
 
-                    childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+                    // Float rows (FLOAT_OUT / FLOAT_IN) are synthetic bundles with no payment rows —
+                    // their cashValue/cashHandoverValue are set directly in generatePaymentBundleForHandovers().
+                    // Calling calculateTotalsOfSelectedRowsPlusAllCashForHandover() would reset them to 0.
+                    if (!childBundle.isFloatRow()) {
+                        childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
+                    }
 
-                    System.out.println("selected childBundle = " + childBundle.getName());
-                    System.out.println("childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
-                    System.out.println("childBundle.getCashValue() = " + childBundle.getCashValue());
-                    System.out.println("childBundle.getCashHandoverValue() = " + childBundle.getCashHandoverValue());
-                    if (childBundle.getSelectAllCashToHandover()) {
+                    if (childBundle.getSelectAllCashToHandover() || childBundle.isFloatRow()) {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     } else {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
                     }
-                    System.out.println("childBundle.getCashValue = " + childBundle.getCashValue());
-                    System.out.println("childBundle.getCashHandoverValue = " + childBundle.getCashHandoverValue());
                     addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
                     addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
                     addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()), safeDouble(childBundle.getStaffHandoverValue()));
@@ -915,7 +1066,6 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
                     addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
-                    System.out.println("patientDepositsAreConsideredInHandingover = " + patientDepositsAreConsideredInHandingover);
                     if (patientDepositsAreConsideredInHandingover) {
                         addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
                     }
@@ -923,20 +1073,23 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("onlineSettlement", safeDouble(childBundle.getOnlineSettlementValue()), safeDouble(childBundle.getOnlineSettlementHandoverValue()));
                     addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
                     addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
-
-                    System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
-                    System.out.println("total Before= " + total);
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
-                    System.out.println("total After= " + total);
-
-                    System.out.println("childBundle.totalOut() = " + childBundle.getTotalOut());
-                    System.out.println("totalOut Before= " + totalOut);
                     addValueAndUpdateFlag("totalOut", safeDouble(childBundle.getTotalOut()));
 
                 }
             }
         }
 
+        // SYNC RULE — do not remove this pair of calls.
+        // On page load all denomination qtys are 0, so denominatorValue → 0
+        // and cashHandoverValue → 0. That is the correct initial state: the cashier
+        // has not counted anything yet. Once they type denomination qtys, the
+        // denomination-blur AJAX fires calculateTotalHandoverByDenominationQuantities()
+        // directly, which sets both fields from the counted notes.
+        //
+        // ACCEPT / VIEW flows are NOT affected — they set denominatorValue and
+        // cashHandoverValue directly from the persisted denomination bill and never
+        // call this method.
         calculateTotalHandoverByDenominationQuantities();
         cashHandoverValue = denominatorValue;
     }
@@ -1779,36 +1932,15 @@ public class ReportTemplateRowBundle implements Serializable {
     public void createRowValuesFromBill() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                System.out.println("Processing row: " + row);
-                System.out.println("row.getBill() = " + row.getBill());
-
                 if (row.getBill() == null) {
                     continue;
                 }
-
-                // Debugging bill details
-                System.out.println("row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
-                System.out.println("row.getBill().getDiscount() = " + row.getBill().getDiscount());
-                System.out.println("row.getBill().getNetTotal() = " + row.getBill().getNetTotal());
-                System.out.println("row.getBill().getTotalStaffFee() = " + row.getBill().getTotalStaffFee());
-                System.out.println("row.getBill().getTotalCenterFee() = " + row.getBill().getTotalCenterFee());
-                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-
-                // Setting values
                 row.setGrossTotal(row.getBill().getGrantTotal());
                 row.setDiscount(row.getBill().getDiscount());
                 row.setTotal(row.getBill().getNetTotal());
                 row.setHospitalTotal(row.getHospitalTotal());
                 row.setStaffTotal(row.getBill().getTotalStaffFee());
                 row.setCcTotal(row.getBill().getTotalCenterFee());
-                // Debugging after setting
-
-                // Debugging after setting
-                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
-                System.out.println("row.getDiscount() = " + row.getDiscount());
-                System.out.println("row.getTotal() = " + row.getTotal());
-                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -1817,30 +1949,37 @@ public class ReportTemplateRowBundle implements Serializable {
     public void createRowValuesFromBillItems() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                System.out.println("Processing row: " + row);
-                System.out.println("row.getBill() = " + row.getBill());
-
                 if (row.getBillItem() == null) {
                     continue;
                 }
-
-                // Setting values
                 row.setGrossTotal(row.getBillItem().getGrossValue());
                 row.setDiscount(row.getBillItem().getDiscount());
                 row.setTotal(row.getBillItem().getNetValue());
                 row.setHospitalTotal(row.getHospitalTotal());
                 row.setStaffTotal(row.getBillItem().getStaffFee());
                 row.setCcTotal(row.getBillItem().getCollectingCentreFee());
-                // Debugging after setting
-
-                // Debugging after setting
-                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
-                System.out.println("row.getDiscount() = " + row.getDiscount());
-                System.out.println("row.getTotal() = " + row.getTotal());
-                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
+        }
+    }
+
+    // For channel bills
+    public void createRowValuesFromBillForChannelBills() {
+        if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
+            for (ReportTemplateRow row : this.reportTemplateRows) {
+
+                if (row.getBill() == null) {
+                    continue;
+                }
+
+                // Setting values
+                row.setGrossTotal(row.getBill().getTotal());
+                row.setDiscount(row.getBill().getDiscount());
+                row.setTotal(row.getBill().getNetTotal());
+                row.setHospitalTotal(row.getBill().getHospitalFee());
+                row.setStaffTotal(row.getBill().getStaffFee());
+                row.setCcTotal(row.getBill().getTotalCenterFee());
+            }
         }
     }
 
@@ -1861,6 +2000,8 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     private void resetTotalsAndFlags() {
+        resetCashierTotalsAndFlags();
+
         this.cashValue = this.cardValue = this.multiplePaymentMethodsValue = this.staffValue
                 = this.creditValue = this.staffWelfareValue = this.voucherValue = this.iouValue
                 = this.agentValue = this.chequeValue = this.slipValue = this.eWalletValue
@@ -2257,6 +2398,61 @@ public class ReportTemplateRowBundle implements Serializable {
         this.totalBalance = totalBalance;
     }
 
+    /**
+     * Returns true only for the synthetic fund-transfer float rows (FLOAT_OUT, FLOAT_IN)
+     * that are appended to the child bundle list in generatePaymentBundleForHandovers().
+     * These must be excluded from aggregateTotalsFromAllChildBundles() to avoid double-counting
+     * because their net effect is already captured directly on the parent bundle via
+     * cashFloatOutTotal / cashFloatInTotal.
+     *
+     * PaymentHandover.FLOATS is intentionally excluded from this check: those bundles hold
+     * real cashier float-movement payments (opening balance, increase, decrease, bank in/out)
+     * that are fetched from the DB and must be counted in normal aggregation.
+     */
+    public boolean isFloatRow() {
+        return paymentHandover == PaymentHandover.FLOAT_OUT || paymentHandover == PaymentHandover.FLOAT_IN;
+    }
+
+    public double getFloatOutTotal() {
+        return floatOutTotal;
+    }
+
+    public void setFloatOutTotal(double floatOutTotal) {
+        this.floatOutTotal = floatOutTotal;
+    }
+
+    public double getFloatInTotal() {
+        return floatInTotal;
+    }
+
+    public void setFloatInTotal(double floatInTotal) {
+        this.floatInTotal = floatInTotal;
+    }
+
+    public double getFloatNetTotal() {
+        return floatInTotal - floatOutTotal;
+    }
+
+    public double getCashFloatOutTotal() {
+        return cashFloatOutTotal;
+    }
+
+    public void setCashFloatOutTotal(double cashFloatOutTotal) {
+        this.cashFloatOutTotal = cashFloatOutTotal;
+    }
+
+    public double getCashFloatInTotal() {
+        return cashFloatInTotal;
+    }
+
+    public void setCashFloatInTotal(double cashFloatInTotal) {
+        this.cashFloatInTotal = cashFloatInTotal;
+    }
+
+    public double getCashFloatNetTotal() {
+        return cashFloatInTotal - cashFloatOutTotal;
+    }
+
     public void setTotal(Double total) {
         this.total = total;
     }
@@ -2275,6 +2471,37 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setTotalOut(Double totalOut) {
         this.totalOut = totalOut;
+    }
+
+    /**
+     * Returns the total being handed over, shown as "Total Handed over Value" on
+     * handover_start_all.xhtml (CREATE flow only).
+     *
+     * Uses denominatorValue for the cash portion. denominatorValue is the single
+     * authoritative cash figure — it always equals the physically counted denomination
+     * total. Two AJAX paths both converge on it:
+     *   1. Denomination-blur → calculateTotalHandoverByDenominationQuantities() sets
+     *      denominatorValue directly from counted notes.
+     *   2. Row-checkbox toggle → calculateTotalsByChildBundles() aggregates child
+     *      cashHandoverValue, then syncs denominatorValue = cashHandoverValue.
+     *
+     * WARNING — do NOT switch this method to use cashHandoverValue instead of
+     * denominatorValue. Two other callers depend on getDenominatorValue() being the
+     * physically counted cash amount:
+     *   - navigateToMarkShortagesForShiftForHandover() uses it for shortage calculation
+     *   - settleHandoverStartBill() calls setCashHandoverValue(getDenominatorValue())
+     *     before persisting the handover bill
+     * Changing this method without fixing both callers will silently persist wrong cash.
+     *
+     * ACCEPT / VIEW flows do NOT call this method — they read saved bill values directly.
+     */
+    public double getHandoverTotal() {
+        return denominatorValue + cardHandoverValue + chequeHandoverValue
+                + creditHandoverValue + staffHandoverValue + staffWelfareHandoverValue
+                + voucherHandoverValue + iouHandoverValue + agentHandoverValue
+                + slipHandoverValue + eWalletHandoverValue + onCallHandoverValue
+                + patientDepositHandoverValue + patientPointsHandoverValue
+                + onlineSettlementHandoverValue + multiplePaymentMethodsHandoverValue;
     }
 
     public Long getCountIn() {
@@ -2842,6 +3069,86 @@ public class ReportTemplateRowBundle implements Serializable {
         this.onlineSettlementHandoverValue = onlineSettlementHandoverValue;
     }
 
+    public double getCashierGrandTotal() {
+        return cashierGrandTotal;
+    }
+
+    public void setCashierGrandTotal(double cashierGrandTotal) {
+        this.cashierGrandTotal = cashierGrandTotal;
+        this.cashierGrandTotalComputed = true;
+    }
+
+    public double getCashierCollectionTotal() {
+        return cashierCollectionTotal;
+    }
+
+    public void setCashierCollectionTotal(double cashierCollectionTotal) {
+        this.cashierCollectionTotal = cashierCollectionTotal;
+        this.cashierCollectionTotalComputed = true;
+    }
+
+    public double getCashierExcludedTotal() {
+        return cashierExcludedTotal;
+    }
+
+    public void setCashierExcludedTotal(double cashierExcludedTotal) {
+        this.cashierExcludedTotal = cashierExcludedTotal;
+        this.cashierExcludedTotalComputed = true;
+    }
+
+    public boolean isCashierGrandTotalComputed() {
+        return cashierGrandTotalComputed;
+    }
+
+    public void setCashierGrandTotalComputed(boolean cashierGrandTotalComputed) {
+        this.cashierGrandTotalComputed = cashierGrandTotalComputed;
+        if (!cashierGrandTotalComputed) {
+            this.cashierGrandTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierCollectionTotalComputed() {
+        return cashierCollectionTotalComputed;
+    }
+
+    public void setCashierCollectionTotalComputed(boolean cashierCollectionTotalComputed) {
+        this.cashierCollectionTotalComputed = cashierCollectionTotalComputed;
+        if (!cashierCollectionTotalComputed) {
+            this.cashierCollectionTotal = 0.0;
+        }
+    }
+
+    public boolean isCashierExcludedTotalComputed() {
+        return cashierExcludedTotalComputed;
+    }
+
+    public void setCashierExcludedTotalComputed(boolean cashierExcludedTotalComputed) {
+        this.cashierExcludedTotalComputed = cashierExcludedTotalComputed;
+        if (!cashierExcludedTotalComputed) {
+            this.cashierExcludedTotal = 0.0;
+        }
+    }
+
+    public List<PaymentMethod> getCashierCollectionPaymentMethods() {
+        return cashierCollectionPaymentMethods;
+    }
+
+    public void setCashierCollectionPaymentMethods(List<PaymentMethod> cashierCollectionPaymentMethods) {
+        this.cashierCollectionPaymentMethods = cashierCollectionPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierCollectionPaymentMethods);
+    }
+
+    public List<PaymentMethod> getCashierExcludedPaymentMethods() {
+        return cashierExcludedPaymentMethods;
+    }
+
+    public void setCashierExcludedPaymentMethods(List<PaymentMethod> cashierExcludedPaymentMethods) {
+        this.cashierExcludedPaymentMethods = cashierExcludedPaymentMethods == null
+                ? new ArrayList<>()
+                : new ArrayList<>(cashierExcludedPaymentMethods);
+    }
+
     //    public SessionController getSessionController() {
 //        return sessionController;
 //    }
@@ -2864,13 +3171,40 @@ public class ReportTemplateRowBundle implements Serializable {
         this.denominationTransactions = denominationTransactions;
     }
 
+    public List<DenominationTransaction> getPaymentMethodHandoverTransactions() {
+        return paymentMethodHandoverTransactions;
+    }
+
+    public void setPaymentMethodHandoverTransactions(List<DenominationTransaction> paymentMethodHandoverTransactions) {
+        this.paymentMethodHandoverTransactions = paymentMethodHandoverTransactions;
+    }
+
+    public double getPaymentMethodHandoverActualTotal() {
+        return paymentMethodHandoverActualTotal;
+    }
+
+    public void setPaymentMethodHandoverActualTotal(double paymentMethodHandoverActualTotal) {
+        this.paymentMethodHandoverActualTotal = paymentMethodHandoverActualTotal;
+    }
+
     public void calculateTotalHandoverByDenominationQuantities() {
         denominatorValue = 0.0;
         if (denominationTransactions == null || denominationTransactions.isEmpty()) {
             return;
         }
         for (DenominationTransaction dt : denominationTransactions) {
-            if (dt == null || dt.getDenomination() == null || dt.getDenomination().getDenominationValue() == null) {
+            if (dt == null) {
+                continue;
+            }
+            if (dt.getDenomination() == null) {
+                // Lump-sum cash entry (denomination breakdown disabled) — the
+                // cashier types the total directly, there is no qty to derive it from.
+                if (dt.getDenominationValue() != null) {
+                    denominatorValue += dt.getDenominationValue();
+                }
+                continue;
+            }
+            if (dt.getDenomination().getDenominationValue() == null) {
                 continue;
             }
             if (dt.getDenominationQty() == null) {
@@ -2882,6 +3216,32 @@ public class ReportTemplateRowBundle implements Serializable {
                 denominatorValue += dv;
             }
         }
+    }
+
+    /**
+     * Sums the cashier-entered actual amounts for non-cash payment methods
+     * ({@link #paymentMethodHandoverTransactions}). Mirrors
+     * {@link #calculateTotalHandoverByDenominationQuantities()} for cash.
+     */
+    public void calculateTotalHandoverByPaymentMethodTransactions() {
+        paymentMethodHandoverActualTotal = 0.0;
+        if (paymentMethodHandoverTransactions == null) {
+            return;
+        }
+        for (DenominationTransaction dt : paymentMethodHandoverTransactions) {
+            if (dt != null && dt.getDenominationValue() != null) {
+                paymentMethodHandoverActualTotal += dt.getDenominationValue();
+            }
+        }
+    }
+
+    /**
+     * Combined actual handover total across cash (denomination or lump-sum)
+     * and every other payment method row. Bound to the "Total Collected
+     * Value" figure on the Shift Handover screen.
+     */
+    public double getGrandHandoverActualTotal() {
+        return denominatorValue + paymentMethodHandoverActualTotal;
     }
 
     private List<DenominationTransaction> createDefaultDenominationTransaction(PaymentMethod pm) {
@@ -2897,6 +3257,112 @@ public class ReportTemplateRowBundle implements Serializable {
             dts.add(dt);
         }
         return dts;
+    }
+
+    /**
+     * A single editable row representing the cashier's total cash handover
+     * as a lump sum, used when the "Shift End Cash Handover - Require
+     * Denomination Breakdown" config option is off. No {@link Denomination}
+     * is attached — {@link DenominationTransaction#getDenominationValue()}
+     * is typed directly by the cashier.
+     */
+    public List<DenominationTransaction> createLumpSumCashHandoverTransaction() {
+        List<DenominationTransaction> dts = new ArrayList<>();
+        DenominationTransaction dt = new DenominationTransaction();
+        dt.setPaymentMethod(Cash);
+        dt.setExpectedValue(cashHandoverValue);
+        dts.add(dt);
+        return dts;
+    }
+
+    /**
+     * The payment methods, other than cash, that a shift handover can
+     * reconcile against — mirrors the *HandoverValue fields this bundle
+     * already computes per shift.
+     */
+    private static final List<PaymentMethod> NON_CASH_HANDOVER_PAYMENT_METHODS = Collections.unmodifiableList(Arrays.asList(
+            PaymentMethod.Card,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.Voucher,
+            PaymentMethod.Credit,
+            PaymentMethod.Staff,
+            PaymentMethod.IOU,
+            PaymentMethod.Agent,
+            PaymentMethod.OnlineSettlement,
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.Staff_Welfare,
+            PaymentMethod.MultiplePaymentMethods,
+            PaymentMethod.PatientPoints,
+            PaymentMethod.OnCall
+    ));
+
+    /**
+     * The system-expected handover value already computed on this bundle for
+     * the given payment method (see {@code resetTotals()} / the
+     * *HandoverValue fields).
+     */
+    public double getHandoverValueByPaymentMethod(PaymentMethod pm) {
+        if (pm == null) {
+            return 0.0;
+        }
+        switch (pm) {
+            case Cash:
+                return cashHandoverValue;
+            case Card:
+                return cardHandoverValue;
+            case Cheque:
+                return chequeHandoverValue;
+            case Slip:
+                return slipHandoverValue;
+            case ewallet:
+                return eWalletHandoverValue;
+            case Voucher:
+                return voucherHandoverValue;
+            case Credit:
+                return creditHandoverValue;
+            case Staff:
+                return staffHandoverValue;
+            case IOU:
+                return iouHandoverValue;
+            case Agent:
+                return agentHandoverValue;
+            case OnlineSettlement:
+                return onlineSettlementHandoverValue;
+            case PatientDeposit:
+                return patientDepositHandoverValue;
+            case Staff_Welfare:
+                return staffWelfareHandoverValue;
+            case MultiplePaymentMethods:
+                return multiplePaymentMethodsHandoverValue;
+            case PatientPoints:
+                return patientPointsHandoverValue;
+            case OnCall:
+                return onCallHandoverValue;
+            default:
+                return 0.0;
+        }
+    }
+
+    /**
+     * One editable row per non-cash payment method that was actually used
+     * during the shift (non-zero expected handover value), for the cashier
+     * to confirm/enter what they are handing over for it.
+     */
+    public List<DenominationTransaction> createPaymentMethodHandoverTransactions() {
+        List<DenominationTransaction> rows = new ArrayList<>();
+        for (PaymentMethod pm : NON_CASH_HANDOVER_PAYMENT_METHODS) {
+            double expected = getHandoverValueByPaymentMethod(pm);
+            if (Math.abs(expected) < 0.001) {
+                continue;
+            }
+            DenominationTransaction dt = new DenominationTransaction();
+            dt.setPaymentMethod(pm);
+            dt.setExpectedValue(expected);
+            rows.add(dt);
+        }
+        return rows;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -2988,6 +3454,54 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setHandoverBill(Bill handoverBill) {
         this.handoverBill = handoverBill;
+    }
+
+    public Long getBilledCount() {
+        return billedCount;
+    }
+
+    public void setBilledCount(Long billedCount) {
+        this.billedCount = billedCount;
+    }
+
+    public Long getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(Long cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public Long getReturnCount() {
+        return returnCount;
+    }
+
+    public void setReturnCount(Long returnCount) {
+        this.returnCount = returnCount;
+    }
+
+    public Long getNetCount() {
+        return netCount;
+    }
+
+    public void setNetCount(Long netCount) {
+        this.netCount = netCount;
+    }
+
+    public double geteWalletHandoverValue() {
+        return eWalletHandoverValue;
+    }
+
+    public void seteWalletHandoverValue(double eWalletHandoverValue) {
+        this.eWalletHandoverValue = eWalletHandoverValue;
+    }
+
+    public double getEWalletValue() {
+        return eWalletValue;
+    }
+    
+     public void setEWalletValue(double eWalletValue) {
+        this.eWalletValue = eWalletValue;
     }
 
 }

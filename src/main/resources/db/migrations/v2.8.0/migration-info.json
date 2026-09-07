@@ -1,0 +1,14 @@
+{
+  "version": "v2.8.0",
+  "description": "Migrate stale BILLTYPEATOMIC values for pharmacy unit/disposal issue bills",
+  "issue": "#20996 — Unit Issue report missing historical data due to stale BILLTYPEATOMIC",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-05-25",
+  "type": "data",
+  "tables_affected": ["bill"],
+  "data_changes": true,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "Updates BILLTYPEATOMIC on historical PharmacyIssue bills created before the PHARMACY_DISPOSAL_ISSUE enum value was introduced. Only touches BILLTYPE='PharmacyIssue' rows — PharmacyTransferIssue rows with the same atomic value are left unchanged. Safe to re-run (UPDATE ... WHERE ... is idempotent).",
+  "rollback": "rollback.sql"
+}

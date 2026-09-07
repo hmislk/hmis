@@ -199,7 +199,6 @@ public class SpecialityController implements Serializable {
             Long id = Long.parseLong(idString);
             return findSpeciality(id);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid speciality ID format: " + idString);
             return null;
         }
     }
@@ -334,7 +333,7 @@ public class SpecialityController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();

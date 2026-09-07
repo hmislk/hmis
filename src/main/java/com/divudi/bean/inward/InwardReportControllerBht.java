@@ -7,15 +7,18 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import static com.divudi.core.data.FeeType.Service;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.table.String1Value2;
 import com.divudi.core.data.table.String2Value4;
+import com.divudi.core.entity.Appointment;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
@@ -27,6 +30,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.lab.Investigation;
@@ -36,11 +40,27 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
+import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
+import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
+import com.divudi.core.data.dto.InpatientServiceIssueDTO;
+import com.divudi.core.data.dto.BillListReportDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionGroupDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentDetailRowDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentFeeRowDTO;
+import com.divudi.core.data.dto.InwardProfessionalPaymentReportRowDTO;
+import com.divudi.core.entity.Service;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,7 +68,25 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+// NOTE: com.lowagie.text.Document/Font are used fully-qualified in the PDF
+// export methods below (not imported) - org.apache.poi.ss.usermodel.Font
+// (pulled in by the wildcard import) would otherwise collide with the
+// same-named PDF class.
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -73,6 +111,12 @@ public class InwardReportControllerBht implements Serializable {
     private SessionController sessionController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AdmissionController admissionController;
+    @Inject
+    InwardSearch inwardSearch;
+    @Inject
+    com.divudi.bean.common.UserSettingsController userSettingsController;
 
     PatientEncounter patientEncounter;
     Bill bill;
@@ -90,6 +134,55 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<BillItem> pharmacyIssueBillItemsToPatientEncounter;
     private double pharmacyIssueBillItemsToPatientEncounterNetTotal;
+
+    private List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter;
+    private double pharmacyIssueDtosToPatientEncounterNetTotal;
+    private double pharmacyIssueDtosToPatientEncounterGrossTotal;
+    private double pharmacyIssueDtosToPatientEncounterDiscountTotal;
+    private double pharmacyIssueDtosToPatientEncounterServiceChargeTotal;
+
+    private List<InpatientPharmacyNetSummaryDTO> pharmacyNetSummaryDtosToPatientEncounter;
+    private double pharmacyNetSummaryDtosToPatientEncounterNetTotal;
+
+    private List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter;
+    private double serviceIssueDtosToPatientEncounterNetTotal;
+
+    private List<BillListReportDTO> serviceBillDtosToPatientEncounter;
+    private double serviceBillDtosToPatientEncounterNetTotal;
+
+    // Issue #22783 (Part B) - encounter-scoped payment bills (deposits +
+    // appointment bills) and their cancellations.
+    private List<BillListReportDTO> paymentBillDtosToPatientEncounter;
+    private double paymentBillDtosToPatientEncounterNetTotal;
+
+    // Issue #22783 (Part C) - department-wide, date-filtered payment bills.
+    private List<BillListReportDTO> paymentBillDtosForDepartment;
+    private double paymentBillDtosForDepartmentNetTotal;
+    private Date fromDate;
+    private Date toDate;
+    private String bhtNoFilter;
+    private String patientNameFilter;
+
+    // Issue #22800 - admission-grouped inpatient professional payment report.
+    private List<InwardProfessionalPaymentAdmissionGroupDTO> professionalPaymentReportGroups;
+
+    // Issue #22803 - Summary vs Detailed report type, BHT-range search mode
+    // (admission-to-admission instead of a date range), and a filter to show
+    // only admissions that never got any professional fee added.
+    private String professionalPaymentReportType = "summary"; // "summary" | "detailed"
+    private String professionalPaymentSearchMode = "dateRange"; // "dateRange" | "bhtRange"
+    private PatientEncounter admissionFromForProfessionalPaymentReport;
+    private PatientEncounter admissionToForProfessionalPaymentReport;
+    private boolean onlyAdmissionsWithoutProfessionalFees;
+
+    // Issue #23306 - Date Basis selector for the date-range search mode:
+    // "admission" | "discharge" | "finalBillCreated" | "feeAdded"
+    private String professionalPaymentDateBasis = "admission";
+
+    // Issue #23307 - Admission Type filter (BHT / OPD Card / etc.), null = All.
+    // Separate from the bean's existing generic `admissionType` field (used by
+    // other reports on this same bean via getReportKeyWord()) to avoid collisions.
+    private AdmissionType professionalPaymentAdmissionType;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -121,7 +214,6 @@ public class InwardReportControllerBht implements Serializable {
     private List<Bill> issueBills;
 
     public String navigateToInpatientPharmacyItemList() {
-        System.out.println("navigateToInpatientPharmacyItemList");
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
             return null;
@@ -133,6 +225,9 @@ public class InwardReportControllerBht implements Serializable {
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -144,12 +239,15 @@ public class InwardReportControllerBht implements Serializable {
                         case PHARMACY_DIRECT_ISSUE_CANCELLED:
                         case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                         case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                             break;
                         case PHARMACY_DIRECT_ISSUE:
                         case DIRECT_ISSUE_INWARD_MEDICINE:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                             break;
@@ -161,10 +259,12 @@ public class InwardReportControllerBht implements Serializable {
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
             List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
 
             btas = new ArrayList<>();
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
 
             List<BillItem> pharmacyIssuesWithoutCanceled = new ArrayList<>();
@@ -193,12 +293,1919 @@ public class InwardReportControllerBht implements Serializable {
         //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
+
+    public String navigateToInpatientPharmacyItemListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
+        pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+        pharmacyIssueDtosToPatientEncounterGrossTotal = 0.0;
+        pharmacyIssueDtosToPatientEncounterDiscountTotal = 0.0;
+        pharmacyIssueDtosToPatientEncounterServiceChargeTotal = 0.0;
+        try {
+
+            // New mode: Include regular issues and returns, but omit cancellations
+            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
+            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+
+            List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
+
+            // Use all results
+            pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
+
+
+            // Calculate sum - positive for issues, negative for returns
+            for (InpatientPharmacyIssueDTO dto : allDtos) {
+                BillTypeAtomic billType = dto.getBillTypeAtomic();
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                double grossValue = dto.getGrossValue() != null ? dto.getGrossValue() : 0.0;
+                double marginValue = dto.getMarginValue() != null ? dto.getMarginValue() : 0.0;
+                double discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+
+                boolean isReturn = billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN;
+
+                if (isReturn) {
+                    pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                    pharmacyIssueDtosToPatientEncounterGrossTotal -= Math.abs(grossValue);
+                    pharmacyIssueDtosToPatientEncounterServiceChargeTotal -= Math.abs(marginValue);
+                } else {
+                    pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                    pharmacyIssueDtosToPatientEncounterGrossTotal += Math.abs(grossValue);
+                    pharmacyIssueDtosToPatientEncounterServiceChargeTotal += Math.abs(marginValue);
+                }
+                pharmacyIssueDtosToPatientEncounterDiscountTotal += discount;
+            }
+
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
+        }
+
+        return "/inward/reports/inpatient_pharmacy_item_list_dto?faces-redirect=true";
+    }
+
+    public String navigateToPostDischargeReports() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return null;
+        }
+        if (!Boolean.TRUE.equals(patientEncounter.getDischarged()) || !patientEncounter.isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Post-discharge reports are only available after the admission is discharged and payment finalized");
+            return null;
+        }
+        return "/inward/reports/post_discharge_reports?faces-redirect=true";
+    }
+
+    public String navigateToInpatientPharmacyNetSummaryDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        if (!Boolean.TRUE.equals(patientEncounter.getDischarged()) || !patientEncounter.isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Post-discharge reports are only available after the admission is discharged and payment finalized");
+            return null;
+        }
+        pharmacyNetSummaryDtosToPatientEncounter = new ArrayList<>();
+        pharmacyNetSummaryDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> issueTypes = new ArrayList<>();
+            issueTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            issueTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            issueTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            issueTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+
+            List<BillTypeAtomic> returnTypes = new ArrayList<>();
+            returnTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            returnTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+            returnTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+
+            List<BillTypeAtomic> cancellationTypes = new ArrayList<>();
+            cancellationTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+            cancellationTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            cancellationTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            cancellationTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+
+            pharmacyNetSummaryDtosToPatientEncounter = fetchPharmacyNetSummaryDtos(issueTypes, returnTypes, cancellationTypes);
+
+            for (InpatientPharmacyNetSummaryDTO dto : pharmacyNetSummaryDtosToPatientEncounter) {
+                pharmacyNetSummaryDtosToPatientEncounterNetTotal += dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+            }
+
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy net summary DTOs", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
+        }
+
+        return "/inward/reports/inpatient_pharmacy_net_summary_dto?faces-redirect=true";
+    }
+
+    public String navigateToInpatientServiceItemListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        serviceIssueDtosToPatientEncounter = new ArrayList<>();
+        serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+
+            serviceIssueDtosToPatientEncounter = fetchOnlyIPServiceIssueDtos(serviceTypes);
+
+            for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                    serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service issue DTOs", e);
+            JsfUtil.addErrorMessage("Error loading service data");
+            return null;
+        }
+        return "/inward/reports/inpatient_service_item_list_dto?faces-redirect=true";
+    }
+
+    public String navigateToInpatientPharmacyAndServiceItemListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        // Pharmacy part
+        pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
+        pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
+            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
+            pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
+            for (InpatientPharmacyIssueDTO dto : allDtos) {
+                BillTypeAtomic billType = dto.getBillTypeAtomic();
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                    pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs for combined report", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
+        }
+        // Service part
+        serviceIssueDtosToPatientEncounter = new ArrayList<>();
+        serviceIssueDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+            serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
+            for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
+                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                    serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
+                } else {
+                    serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
+                }
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service issue DTOs for combined report", e);
+            JsfUtil.addErrorMessage("Error loading service data");
+            return null;
+        }
+        return "/inward/reports/inpatient_pharmacy_and_service_item_list_dto?faces-redirect=true";
+    }
+
+    private List<InpatientServiceIssueDTO> fetchServiceIssueDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
+                + "bi.id, "
+                + "CASE WHEN bi.item.printName IS NULL OR bi.item.printName = '' "
+                + "THEN CONCAT('Printing name is missing in ', bi.item.name) ELSE bi.item.printName END, "
+                + "bi.qty, "
+                + "bi.netValue, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.billTypeAtomic, "
+                + "COALESCE(bi.bill.department.name, 'N/A'), "
+                + "bi.bill.cancelled) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
+
+        List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
     
+    private List<InpatientServiceIssueDTO> fetchOnlyIPServiceIssueDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
+                + "bi.id, "
+                + "CASE WHEN bi.item.printName IS NULL OR bi.item.printName = '' "
+                + "THEN CONCAT('Printing name is missing in ', bi.item.name) ELSE bi.item.printName END, "
+                + "bi.qty, "
+                + "bi.netValue, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.billTypeAtomic, "
+                + "COALESCE(bi.bill.department.name, 'N/A'), "
+                + "bi.bill.cancelled) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND type(bi.item)=:btp "
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+        params.put("btp", Service.class);
+
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
+
+        List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #21247 - Encounter-scoped list of inward service bills with a View
+    // button that navigates to the existing reprint page (no whole-batch
+    // cancellation needed; partial return is done from the reprint page).
+    public String navigateToInpatientServiceBillListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        serviceBillDtosToPatientEncounter = new ArrayList<>();
+        serviceBillDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+
+            serviceBillDtosToPatientEncounter = fetchServiceBillDtos(serviceTypes);
+
+            for (BillListReportDTO dto : serviceBillDtosToPatientEncounter) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                serviceBillDtosToPatientEncounterNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading service bill data");
+            return null;
+        }
+        return "/inward/reports/inpatient_service_bill_list_dto?faces-redirect=true";
+    }
+
+    private List<BillListReportDTO> fetchServiceBillDtos(List<BillTypeAtomic> billTypes) {
+        // Bill.retired/cancelled/refunded are primitive boolean and
+        // total/discount/netTotal/margin are primitive double, so they are
+        // never null - wrapping them in COALESCE makes EclipseLink return a
+        // mismatched type (e.g. Integer for a boolean) that breaks the
+        // reflective DTO-constructor binding. Project them directly; keep
+        // COALESCE only for the nullable String/relationship fields.
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(b.patientEncounter.patient.person.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(b.creater.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(b.patientEncounter.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin) "
+                + "FROM Bill b "
+                + "WHERE b.patientEncounter = :patientEncounter "
+                + "AND b.billTypeAtomic IN :billTypeAtomics "
+                + "AND b.retired = FALSE ";
+
+        jpql += "ORDER BY b.createdAt, b.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #22783 (Part B) - unlike deposit bills, INWARD_APPOINTMENT_BILL /
+    // INWARD_APPOINTMENT_CANCEL_BILL never populate Bill.patientEncounter
+    // (only Appointment.patientEncounter is set, at admission time - see
+    // BillFacade.findInwardBillReceiptDTO's javadoc, discovered while
+    // building Part A). A plain "b.patientEncounter = :patientEncounter"
+    // filter - which fetchServiceBillDtos above uses - silently excludes
+    // both the appointment bill and its cancellation. This method unions
+    // the two patterns in one query: deposit-family bills matched via
+    // Bill.patientEncounter directly, appointment-family bills matched via
+    // Appointment.patientEncounter (through Appointment.bill, and through
+    // Bill.referenceBill for the cancel bill, which points back at the
+    // original appointment bill). All patientEncounter/patient/creater
+    // navigation uses explicit LEFT JOINs rather than dot-path expressions,
+    // for the same reason: an inner-join dot-path would drop the
+    // null-patientEncounter appointment rows from the SELECT list too.
+    private List<BillListReportDTO> fetchPaymentBillDtosForEncounter(List<BillTypeAtomic> depositTypes, List<BillTypeAtomic> appointmentTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(per.name, per2.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(cr.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.patientEncounter pe "
+                + "LEFT JOIN pe.patient pt "
+                + "LEFT JOIN pt.person per "
+                + "LEFT JOIN b.patient pt2 "
+                + "LEFT JOIN pt2.person per2 "
+                + "LEFT JOIN b.creater cr "
+                + "WHERE b.retired = FALSE "
+                + "AND ("
+                + "  (b.billTypeAtomic IN :depositTypes AND pe = :patientEncounter) "
+                + "  OR "
+                + "  (b.billTypeAtomic IN :appointmentTypes AND ("
+                + "     b IN (SELECT a.bill FROM Appointment a WHERE a.patientEncounter = :patientEncounter) "
+                + "     OR b.referenceBill IN (SELECT a.bill FROM Appointment a WHERE a.patientEncounter = :patientEncounter)"
+                + "  ))"
+                + ") "
+                + "ORDER BY b.createdAt, b.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("depositTypes", depositTypes);
+        params.put("appointmentTypes", appointmentTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #22783 (Part B) - Encounter-scoped list of inward payment bills
+    // (deposits + appointment bills) together with their cancellations/refunds.
+    // Row-level View/Reprint action is done from the XHTML by calling the
+    // existing BillSearch#navigateToViewBillByAtomicBillTypeByBillId(billId)
+    // directly, same pattern as the service bill list (#21247).
+    public String navigateToInpatientPaymentBillListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        paymentBillDtosToPatientEncounter = new ArrayList<>();
+        paymentBillDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> depositTypes = new ArrayList<>();
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            depositTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+            List<BillTypeAtomic> appointmentTypes = new ArrayList<>();
+            appointmentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+            appointmentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+
+            paymentBillDtosToPatientEncounter = fetchPaymentBillDtosForEncounter(depositTypes, appointmentTypes);
+
+            for (BillListReportDTO dto : paymentBillDtosToPatientEncounter) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                paymentBillDtosToPatientEncounterNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading payment bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading payment bill data");
+            return null;
+        }
+        return "/inward/reports/inpatient_payment_bill_list_dto?faces-redirect=true";
+    }
+
+    // Issue #22783 (Part C) - Department-wide, date-filtered list of inward
+    // payment bills (deposits + appointment bills) together with their
+    // cancellations/refunds, with optional BHT No / patient name filters.
+    public String navigateToInwardPaymentBillListForDepartment() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("No department");
+            return null;
+        }
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        paymentBillDtosForDepartment = new ArrayList<>();
+        paymentBillDtosForDepartmentNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> paymentTypes = new ArrayList<>();
+            paymentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+            paymentTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+            paymentTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+
+            paymentBillDtosForDepartment = fetchPaymentBillDtosForDepartment(paymentTypes);
+
+            for (BillListReportDTO dto : paymentBillDtosForDepartment) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                paymentBillDtosForDepartmentNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading department payment bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading payment bill data");
+            return null;
+        }
+        return "/inward/reports/inward_payment_bill_list_department_dto?faces-redirect=true";
+    }
+
+    private List<BillListReportDTO> fetchPaymentBillDtosForDepartment(List<BillTypeAtomic> billTypes) {
+        // Explicit LEFT JOINs throughout (not dot-path navigation) for the
+        // same reason as fetchPaymentBillDtosForEncounter above: implicit
+        // path navigation through a null Bill.patientEncounter (true for
+        // INWARD_APPOINTMENT_BILL / INWARD_APPOINTMENT_CANCEL_BILL) compiles
+        // to an INNER JOIN and silently drops those rows from the whole
+        // result set, not just the projected column. b.patient (set
+        // directly on appointment bills) is the fallback patient path.
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(per.name, per2.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(cr.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.patientEncounter pe "
+                + "LEFT JOIN pe.patient pt "
+                + "LEFT JOIN pt.person per "
+                + "LEFT JOIN b.patient pt2 "
+                + "LEFT JOIN pt2.person per2 "
+                + "LEFT JOIN b.creater cr "
+                + "WHERE b.department = :department "
+                + "AND b.billTypeAtomic IN :billTypeAtomics "
+                + "AND b.retired = FALSE "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("department", department);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (bhtNoFilter != null && !bhtNoFilter.trim().isEmpty()) {
+            // pe.bhtNo alone misses INWARD_APPOINTMENT_BILL / INWARD_APPOINTMENT_CANCEL_BILL
+            // bills (their Bill.patientEncounter is always null) - fall back to the
+            // admission's BHT No via the Appointment that references this bill either
+            // as its original bill or its cancellation bill.
+            jpql += "AND (pe.bhtNo LIKE :bhtNo OR EXISTS ("
+                    + "SELECT a FROM Appointment a "
+                    + "WHERE (a.bill = b OR a.appointmentCancelBill = b) "
+                    + "AND a.patientEncounter.bhtNo LIKE :bhtNo)) ";
+            params.put("bhtNo", "%" + bhtNoFilter.trim() + "%");
+        }
+
+        if (patientNameFilter != null && !patientNameFilter.trim().isEmpty()) {
+            jpql += "AND (per.name LIKE :patientName OR per2.name LIKE :patientName) ";
+            params.put("patientName", "%" + patientNameFilter.trim() + "%");
+        }
+
+        jpql += "ORDER BY b.createdAt, b.id";
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #22800 - department-wide, date-filtered Inpatient Professional
+    // Payment Report, grouped by admission with one row per doctor+speciality.
+    public String navigateToInwardProfessionalPaymentReport() {
+        if (department == null) {
+            department = sessionController.getDepartment();
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("No department");
+            return null;
+        }
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        // Issue #22805 review - without this guard, a BHT Range search left
+        // with either endpoint unselected silently falls back to the date
+        // range query below (dead giveaway: the filter panel still says "BHT
+        // Range" but the results are date-range results).
+        if ("bhtRange".equals(professionalPaymentSearchMode)
+                && (admissionFromForProfessionalPaymentReport == null
+                || admissionToForProfessionalPaymentReport == null)) {
+            JsfUtil.addErrorMessage("Select both From BHT and To BHT for a BHT Range search");
+            return null;
+        }
+        professionalPaymentReportGroups = new ArrayList<>();
+        try {
+            professionalPaymentReportGroups = fetchInwardProfessionalPaymentReportGroups();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading inpatient professional payment report", e);
+            JsfUtil.addErrorMessage("Error loading professional payment report data");
+            return null;
+        }
+        return "/inward/reports/inward_professional_payment_report_dto?faces-redirect=true";
+    }
+
+    // Issue #22803 - row-span helpers shared by the Excel and PDF exporters,
+    // delegating to the same DTO getters the xhtml view binds `rowspan` to
+    // (InwardProfessionalPaymentAdmissionGroupDTO.getSummaryAdmissionRowSpan/
+    // getDetailedAdmissionRowSpan, InwardProfessionalPaymentDetailRowDTO.
+    // getBlockRowSpan) so the export layout can never drift from the on-screen one.
+    private int summaryAdmissionRowSpan(InwardProfessionalPaymentAdmissionGroupDTO group) {
+        return group.getSummaryAdmissionRowSpan();
+    }
+
+    private int detailedConsultantBlockRowSpan(InwardProfessionalPaymentDetailRowDTO detail) {
+        return detail.getBlockRowSpan();
+    }
+
+    private int detailedAdmissionRowSpan(InwardProfessionalPaymentAdmissionGroupDTO group) {
+        return group.getDetailedAdmissionRowSpan();
+    }
+
+    // Issue #23515 - column keys for the Configure Columns panels, in the
+    // same order the columns appear on inward_professional_payment_report_dto.xhtml.
+    // The 4 hand-built Excel/PDF export methods below consult
+    // visibleSummaryColumnKeys()/visibleDetailedColumnKeys() (backed by
+    // UserSettingsController, same "ui.<pageId>.columns.visibility"
+    // ConfigOption the xhtml checkboxes write to) instead of a fixed header
+    // array, so the exports can never drift from what's checked on screen.
+    private static final List<String> SUMMARY_COLUMN_KEYS_IN_ORDER = Arrays.asList(
+            "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
+            "speciality", "sumAddedFee", "sumPaidFee", "balanceToPay");
+
+    private static final List<String> DETAILED_COLUMN_KEYS_IN_ORDER = Arrays.asList(
+            "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
+            "speciality", "addedFeeDate", "addedFeeValue", "paidDate",
+            "paidBillNumber", "comments", "paidFeeValue");
+
+    private List<String> visibleSummaryColumnKeys() {
+        return userSettingsController.getVisibleColumnKeysInOrder(
+                "inward_professional_payment_summary", SUMMARY_COLUMN_KEYS_IN_ORDER);
+    }
+
+    private List<String> visibleDetailedColumnKeys() {
+        return userSettingsController.getVisibleColumnKeysInOrder(
+                "inward_professional_payment_detailed", DETAILED_COLUMN_KEYS_IN_ORDER);
+    }
+
+    private static final Map<String, String> SUMMARY_COLUMN_HEADERS = new LinkedHashMap<>();
+    private static final Map<String, String> DETAILED_COLUMN_HEADERS = new LinkedHashMap<>();
+
+    static {
+        SUMMARY_COLUMN_HEADERS.put("bhtNo", "BHT Number");
+        SUMMARY_COLUMN_HEADERS.put("admitted", "Admitted");
+        SUMMARY_COLUMN_HEADERS.put("discharged", "Discharged");
+        SUMMARY_COLUMN_HEADERS.put("finalBillNo", "Final Bill Number");
+        SUMMARY_COLUMN_HEADERS.put("consultant", "Consultant");
+        SUMMARY_COLUMN_HEADERS.put("speciality", "Speciality");
+        SUMMARY_COLUMN_HEADERS.put("sumAddedFee", "Sum Added Fee");
+        SUMMARY_COLUMN_HEADERS.put("sumPaidFee", "Sum Paid Fee");
+        SUMMARY_COLUMN_HEADERS.put("balanceToPay", "Balance to Pay");
+
+        DETAILED_COLUMN_HEADERS.put("bhtNo", "BHT Number");
+        DETAILED_COLUMN_HEADERS.put("admitted", "Admitted");
+        DETAILED_COLUMN_HEADERS.put("discharged", "Discharged");
+        DETAILED_COLUMN_HEADERS.put("finalBillNo", "Final Bill Number");
+        DETAILED_COLUMN_HEADERS.put("consultant", "Consultant");
+        DETAILED_COLUMN_HEADERS.put("speciality", "Speciality");
+        DETAILED_COLUMN_HEADERS.put("addedFeeDate", "Added Fee Date");
+        DETAILED_COLUMN_HEADERS.put("addedFeeValue", "Added Fee Value");
+        DETAILED_COLUMN_HEADERS.put("paidDate", "Paid Date");
+        DETAILED_COLUMN_HEADERS.put("paidBillNumber", "Paid Bill Number");
+        DETAILED_COLUMN_HEADERS.put("comments", "Comments");
+        DETAILED_COLUMN_HEADERS.put("paidFeeValue", "Paid Fee Value");
+    }
+
+    /**
+     * On-screen colspan for the "no fees at all" placeholder row on the
+     * Summary table: one cell per visible column not already covered by
+     * bhtNo/admitted/discharged/finalBillNo (those four render their own
+     * cells in that row).
+     */
+    public int getSummaryEmptyRowColspan() {
+        int count = 0;
+        for (String key : visibleSummaryColumnKeys()) {
+            if (!"bhtNo".equals(key) && !"admitted".equals(key) && !"discharged".equals(key) && !"finalBillNo".equals(key)) {
+                count++;
+            }
+        }
+        return Math.max(count, 1);
+    }
+
+    /**
+     * On-screen colspan for the "no fees at all" placeholder row on the
+     * Detailed table: one cell per visible column not already covered by
+     * bhtNo/admitted/discharged/finalBillNo.
+     */
+    public int getDetailedEmptyRowColspan() {
+        int count = 0;
+        for (String key : visibleDetailedColumnKeys()) {
+            if (!"bhtNo".equals(key) && !"admitted".equals(key) && !"discharged".equals(key) && !"finalBillNo".equals(key)) {
+                count++;
+            }
+        }
+        return Math.max(count, 1);
+    }
+
+    // Issue #22803 - Excel export for the Summary report.
+    // Issue #23515 - header/cells now driven by visibleSummaryColumnKeys()
+    // instead of a fixed array, so a hidden column is skipped and later
+    // columns compact left, matching the on-screen table.
+    public void downloadProfessionalPaymentSummaryExcel() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        List<String> columnKeys = visibleSummaryColumnKeys();
+        // Position of each rowspan'd admission-level column within columnKeys, or -1 if hidden.
+        int bhtCol = columnKeys.indexOf("bhtNo");
+        int admittedCol = columnKeys.indexOf("admitted");
+        int dischargedCol = columnKeys.indexOf("discharged");
+        int finalBillCol = columnKeys.indexOf("finalBillNo");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("Professional Payment Summary");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+            CellStyle moneyStyle = workbook.createCellStyle();
+            moneyStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            Row headerRow = sheet.createRow(0);
+            for (int c = 0; c < columnKeys.size(); c++) {
+                Cell cell = headerRow.createCell(c);
+                cell.setCellValue(SUMMARY_COLUMN_HEADERS.get(columnKeys.get(c)));
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int span = summaryAdmissionRowSpan(group);
+                int admissionStartRow = rowIdx;
+                List<InwardProfessionalPaymentReportRowDTO> detailRows = group.getDetailRows();
+
+                for (int i = 0; i < span; i++) {
+                    Row row = sheet.createRow(rowIdx++);
+                    if (i == 0) {
+                        if (bhtCol >= 0) {
+                            row.createCell(bhtCol).setCellValue(group.getBhtNo() != null ? group.getBhtNo() : "");
+                        }
+                        if (admittedCol >= 0) {
+                            row.createCell(admittedCol).setCellValue(group.getDateOfAdmission() != null ? dateFormat.format(group.getDateOfAdmission()) : "");
+                        }
+                        if (dischargedCol >= 0) {
+                            row.createCell(dischargedCol).setCellValue(group.getDateOfDischarge() != null ? dateFormat.format(group.getDateOfDischarge()) : "");
+                        }
+                        if (finalBillCol >= 0) {
+                            row.createCell(finalBillCol).setCellValue(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "");
+                        }
+                    }
+                    if (detailRows != null && i < detailRows.size()) {
+                        InwardProfessionalPaymentReportRowDTO detail = detailRows.get(i);
+                        for (int c = 0; c < columnKeys.size(); c++) {
+                            switch (columnKeys.get(c)) {
+                                case "consultant":
+                                    row.createCell(c).setCellValue(detail.getConsultantName() != null ? detail.getConsultantName() : "");
+                                    break;
+                                case "speciality":
+                                    row.createCell(c).setCellValue(detail.getSpecialityName() != null ? detail.getSpecialityName() : "");
+                                    break;
+                                case "sumAddedFee": {
+                                    Cell addedCell = row.createCell(c);
+                                    addedCell.setCellValue(detail.getSumAddedFee());
+                                    addedCell.setCellStyle(moneyStyle);
+                                    break;
+                                }
+                                case "sumPaidFee": {
+                                    Cell paidCell = row.createCell(c);
+                                    paidCell.setCellValue(detail.getSumPaidFee());
+                                    paidCell.setCellStyle(moneyStyle);
+                                    break;
+                                }
+                                case "balanceToPay": {
+                                    Cell balanceCell = row.createCell(c);
+                                    balanceCell.setCellValue(detail.getSumAddedFee() - detail.getSumPaidFee());
+                                    balanceCell.setCellStyle(moneyStyle);
+                                    break;
+                                }
+                                default:
+                                    // bhtNo/admitted/discharged/finalBillNo already written above (rowspan columns)
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                if (span > 1) {
+                    for (int c : new int[]{bhtCol, admittedCol, dischargedCol, finalBillCol}) {
+                        if (c >= 0) {
+                            sheet.addMergedRegion(new CellRangeAddress(admissionStartRow, rowIdx - 1, c, c));
+                        }
+                    }
+                }
+            }
+
+            for (int c = 0; c < columnKeys.size(); c++) {
+                sheet.autoSizeColumn(c);
+            }
+
+            // Issue #22805 review - serialize into memory first so a POI
+            // failure can't leave a truncated file on a half-committed
+            // response (matches the PDF exporters' existing pattern below).
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+
+            String filename = "Inpatient_Professional_Payment_Summary_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setContentLength(bytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+            }
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment summary to Excel", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+        }
+    }
+
+    // Issue #22803 - Excel export for the Detailed report.
+    // Issue #23515 - header/cells now driven by visibleDetailedColumnKeys()
+    // instead of a fixed array, so a hidden column is skipped and later
+    // columns compact left, matching the on-screen table.
+    public void downloadProfessionalPaymentDetailedExcel() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        List<String> columnKeys = visibleDetailedColumnKeys();
+        int bhtCol = columnKeys.indexOf("bhtNo");
+        int admittedCol = columnKeys.indexOf("admitted");
+        int dischargedCol = columnKeys.indexOf("discharged");
+        int finalBillCol = columnKeys.indexOf("finalBillNo");
+        int consultantCol = columnKeys.indexOf("consultant");
+        int specialityCol = columnKeys.indexOf("speciality");
+        int addedFeeDateCol = columnKeys.indexOf("addedFeeDate");
+        int addedFeeValueCol = columnKeys.indexOf("addedFeeValue");
+        int paidDateCol = columnKeys.indexOf("paidDate");
+        int paidBillNumberCol = columnKeys.indexOf("paidBillNumber");
+        int paidFeeValueCol = columnKeys.indexOf("paidFeeValue");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet("Professional Payment Detailed");
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            DataFormat poiDataFormat = workbook.createDataFormat();
+            CellStyle moneyStyle = workbook.createCellStyle();
+            moneyStyle.setDataFormat(poiDataFormat.getFormat("#,##0.00"));
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+            CellStyle boldStyle = workbook.createCellStyle();
+            boldStyle.setFont(boldFont);
+            CellStyle boldMoneyStyle = workbook.createCellStyle();
+            boldMoneyStyle.setFont(boldFont);
+            boldMoneyStyle.setDataFormat(poiDataFormat.getFormat("#,##0.00"));
+
+            Row headerRow = sheet.createRow(0);
+            for (int c = 0; c < columnKeys.size(); c++) {
+                Cell cell = headerRow.createCell(c);
+                cell.setCellValue(DETAILED_COLUMN_HEADERS.get(columnKeys.get(c)));
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int admissionStartRow = rowIdx;
+                List<InwardProfessionalPaymentDetailRowDTO> detailedRows = group.getDetailedRows();
+                boolean admissionInfoWritten = false;
+
+                if (detailedRows == null || detailedRows.isEmpty()) {
+                    Row row = sheet.createRow(rowIdx++);
+                    writeDetailedAdmissionCells(row, group, dateFormat, bhtCol, admittedCol, dischargedCol, finalBillCol);
+                    admissionInfoWritten = true;
+                } else {
+                    for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
+                        int consultantStartRow = rowIdx;
+                        int dataRows = Math.max(detail.rowCount(), 1);
+
+                        for (int i = 0; i < dataRows; i++) {
+                            Row row = sheet.createRow(rowIdx++);
+                            if (!admissionInfoWritten) {
+                                writeDetailedAdmissionCells(row, group, dateFormat, bhtCol, admittedCol, dischargedCol, finalBillCol);
+                                admissionInfoWritten = true;
+                            }
+                            if (i == 0) {
+                                if (consultantCol >= 0) {
+                                    row.createCell(consultantCol).setCellValue(detail.getConsultantName() != null ? detail.getConsultantName() : "");
+                                }
+                                if (specialityCol >= 0) {
+                                    row.createCell(specialityCol).setCellValue(detail.getSpecialityName() != null ? detail.getSpecialityName() : "");
+                                }
+                            }
+                            if (i < detail.getAddedFeeValues().size()) {
+                                if (addedFeeDateCol >= 0) {
+                                    Date addedDate = detail.getAddedFeeDates().get(i);
+                                    row.createCell(addedFeeDateCol).setCellValue(addedDate != null ? dateFormat.format(addedDate) : "");
+                                }
+                                if (addedFeeValueCol >= 0) {
+                                    Double addedValue = detail.getAddedFeeValues().get(i);
+                                    Cell addedCell = row.createCell(addedFeeValueCol);
+                                    addedCell.setCellValue(addedValue != null ? addedValue : 0.0);
+                                    addedCell.setCellStyle(moneyStyle);
+                                }
+                            }
+                            if (i < detail.getPaidFeeValues().size()) {
+                                if (paidDateCol >= 0) {
+                                    Date paidDate = detail.getPaidFeeDates().get(i);
+                                    row.createCell(paidDateCol).setCellValue(paidDate != null ? dateFormat.format(paidDate) : "");
+                                }
+                                if (paidBillNumberCol >= 0) {
+                                    String paidBillNo = detail.getPaidBillNumbers().get(i);
+                                    row.createCell(paidBillNumberCol).setCellValue(paidBillNo != null ? paidBillNo : "");
+                                }
+                                if (paidFeeValueCol >= 0) {
+                                    Double paidValue = detail.getPaidFeeValues().get(i);
+                                    Cell paidCell = row.createCell(paidFeeValueCol);
+                                    paidCell.setCellValue(paidValue != null ? paidValue : 0.0);
+                                    paidCell.setCellStyle(moneyStyle);
+                                }
+                            }
+                        }
+
+                        Row totalRow = sheet.createRow(rowIdx++);
+                        if (addedFeeDateCol >= 0) {
+                            Cell totalLabelCell = totalRow.createCell(addedFeeDateCol);
+                            totalLabelCell.setCellValue("Total");
+                            totalLabelCell.setCellStyle(boldStyle);
+                        }
+                        if (addedFeeValueCol >= 0) {
+                            Cell totalAddedCell = totalRow.createCell(addedFeeValueCol);
+                            totalAddedCell.setCellValue(detail.getSumAddedFee());
+                            totalAddedCell.setCellStyle(boldMoneyStyle);
+                        }
+                        if (paidFeeValueCol >= 0) {
+                            Cell totalPaidCell = totalRow.createCell(paidFeeValueCol);
+                            totalPaidCell.setCellValue(detail.getSumPaidFee());
+                            totalPaidCell.setCellStyle(boldMoneyStyle);
+                        }
+
+                        Row balanceRow = sheet.createRow(rowIdx++);
+                        if (addedFeeDateCol >= 0) {
+                            Cell balanceLabelCell = balanceRow.createCell(addedFeeDateCol);
+                            balanceLabelCell.setCellValue("Balance to Pay");
+                            balanceLabelCell.setCellStyle(boldStyle);
+                        }
+                        if (addedFeeValueCol >= 0) {
+                            Cell balanceValueCell = balanceRow.createCell(addedFeeValueCol);
+                            balanceValueCell.setCellValue(detail.getSumAddedFee() - detail.getSumPaidFee());
+                            balanceValueCell.setCellStyle(boldMoneyStyle);
+                        }
+
+                        if (rowIdx - 1 > consultantStartRow) {
+                            if (consultantCol >= 0) {
+                                sheet.addMergedRegion(new CellRangeAddress(consultantStartRow, rowIdx - 1, consultantCol, consultantCol));
+                            }
+                            if (specialityCol >= 0) {
+                                sheet.addMergedRegion(new CellRangeAddress(consultantStartRow, rowIdx - 1, specialityCol, specialityCol));
+                            }
+                        }
+                    }
+                }
+
+                if (rowIdx - 1 > admissionStartRow) {
+                    for (int c : new int[]{bhtCol, admittedCol, dischargedCol, finalBillCol}) {
+                        if (c >= 0) {
+                            sheet.addMergedRegion(new CellRangeAddress(admissionStartRow, rowIdx - 1, c, c));
+                        }
+                    }
+                }
+            }
+
+            for (int c = 0; c < columnKeys.size(); c++) {
+                sheet.autoSizeColumn(c);
+            }
+
+            // Issue #22805 review - same buffer-first pattern as the Summary
+            // exporter above.
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] bytes = baos.toByteArray();
+
+            String filename = "Inpatient_Professional_Payment_Detailed_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            response.reset();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+            response.setContentLength(bytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+            }
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment detailed report to Excel", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+        }
+    }
+
+    private void writeDetailedAdmissionCells(Row row, InwardProfessionalPaymentAdmissionGroupDTO group, SimpleDateFormat dateFormat,
+            int bhtCol, int admittedCol, int dischargedCol, int finalBillCol) {
+        if (bhtCol >= 0) {
+            row.createCell(bhtCol).setCellValue(group.getBhtNo() != null ? group.getBhtNo() : "");
+        }
+        if (admittedCol >= 0) {
+            row.createCell(admittedCol).setCellValue(group.getDateOfAdmission() != null ? dateFormat.format(group.getDateOfAdmission()) : "");
+        }
+        if (dischargedCol >= 0) {
+            row.createCell(dischargedCol).setCellValue(group.getDateOfDischarge() != null ? dateFormat.format(group.getDateOfDischarge()) : "");
+        }
+        if (finalBillCol >= 0) {
+            row.createCell(finalBillCol).setCellValue(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "");
+        }
+    }
+
+    // Issue #22803 - PDF export for the Summary report. Mirrors
+    // InwardReportController.downloadSurgeryCostEstimationPdf()'s structure
+    // (OpenPDF PdfPTable/PdfPCell, direct HttpServletResponse write via
+    // ExternalContext).
+    // Issue #23515 - columns now driven by visibleSummaryColumnKeys();
+    // PdfPTable.addCell() is purely sequential (no indexed insert), so
+    // hidden columns are skipped by simply not calling addCell() for them -
+    // no index bookkeeping needed like the Excel exporter above.
+    public void downloadProfessionalPaymentSummaryPdf() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        // Issue #23515 review (CodeRabbit) - PdfPTable(int) throws
+        // IllegalArgumentException for a column count <= 0, which happens if
+        // every Configure Columns checkbox is unchecked.
+        if (visibleSummaryColumnKeys().isEmpty()) {
+            JsfUtil.addErrorMessage("Select at least one column in Configure Columns before exporting.");
+            return;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+
+            String fileName = "Inpatient_Professional_Payment_Summary_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+
+            com.lowagie.text.Document document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A4.rotate(), 15, 15, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("Inpatient Professional Payment Report - Summary", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(10);
+            document.add(titlePara);
+
+            List<String> columnKeys = visibleSummaryColumnKeys();
+            boolean bhtVisible = columnKeys.contains("bhtNo");
+            boolean admittedVisible = columnKeys.contains("admitted");
+            boolean dischargedVisible = columnKeys.contains("discharged");
+            boolean finalBillVisible = columnKeys.contains("finalBillNo");
+            boolean consultantVisible = columnKeys.contains("consultant");
+            boolean specialityVisible = columnKeys.contains("speciality");
+            boolean sumAddedFeeVisible = columnKeys.contains("sumAddedFee");
+            boolean sumPaidFeeVisible = columnKeys.contains("sumPaidFee");
+            boolean balanceToPayVisible = columnKeys.contains("balanceToPay");
+            // Non-rowspan'd columns (consultant/speciality/the 3 fee totals) - used
+            // for the Grand Total row's leading label colspan below.
+            int nonRowspanColumnCount = columnKeys.size()
+                    - (bhtVisible ? 1 : 0) - (admittedVisible ? 1 : 0)
+                    - (dischargedVisible ? 1 : 0) - (finalBillVisible ? 1 : 0);
+
+            Map<String, Float> columnWidths = new HashMap<>();
+            columnWidths.put("bhtNo", 3f);
+            columnWidths.put("admitted", 3f);
+            columnWidths.put("discharged", 3f);
+            columnWidths.put("finalBillNo", 3f);
+            columnWidths.put("consultant", 4f);
+            columnWidths.put("speciality", 4f);
+            columnWidths.put("sumAddedFee", 3f);
+            columnWidths.put("sumPaidFee", 3f);
+            columnWidths.put("balanceToPay", 3f);
+
+            PdfPTable table = new PdfPTable(columnKeys.size());
+            table.setWidthPercentage(100);
+            float[] widths = new float[columnKeys.size()];
+            for (int c = 0; c < columnKeys.size(); c++) {
+                widths[c] = columnWidths.get(columnKeys.get(c));
+            }
+            table.setWidths(widths);
+
+            for (String key : columnKeys) {
+                PdfPCell cell = new PdfPCell(new Phrase(SUMMARY_COLUMN_HEADERS.get(key), headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            double grandAdded = 0;
+            double grandPaid = 0;
+
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int span = summaryAdmissionRowSpan(group);
+                List<InwardProfessionalPaymentReportRowDTO> detailRows = group.getDetailRows();
+
+                if (bhtVisible) {
+                    PdfPCell bhtCell = new PdfPCell(new Phrase(group.getBhtNo() != null ? group.getBhtNo() : "", normalFont));
+                    bhtCell.setRowspan(span);
+                    table.addCell(bhtCell);
+                }
+                if (admittedVisible) {
+                    PdfPCell admittedCell = new PdfPCell(new Phrase(group.getDateOfAdmission() != null ? sdf.format(group.getDateOfAdmission()) : "", normalFont));
+                    admittedCell.setRowspan(span);
+                    table.addCell(admittedCell);
+                }
+                if (dischargedVisible) {
+                    PdfPCell dischargedCell = new PdfPCell(new Phrase(group.getDateOfDischarge() != null ? sdf.format(group.getDateOfDischarge()) : "", normalFont));
+                    dischargedCell.setRowspan(span);
+                    table.addCell(dischargedCell);
+                }
+                if (finalBillVisible) {
+                    PdfPCell finalBillCell = new PdfPCell(new Phrase(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "", normalFont));
+                    finalBillCell.setRowspan(span);
+                    table.addCell(finalBillCell);
+                }
+
+                if (detailRows == null || detailRows.isEmpty()) {
+                    for (int c = 0; c < nonRowspanColumnCount; c++) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                } else {
+                    for (InwardProfessionalPaymentReportRowDTO detail : detailRows) {
+                        if (consultantVisible) {
+                            table.addCell(new Phrase(detail.getConsultantName() != null ? detail.getConsultantName() : "", normalFont));
+                        }
+                        if (specialityVisible) {
+                            table.addCell(new Phrase(detail.getSpecialityName() != null ? detail.getSpecialityName() : "", normalFont));
+                        }
+                        if (sumAddedFeeVisible) {
+                            PdfPCell addedCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee()), normalFont));
+                            addedCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(addedCell);
+                        }
+                        if (sumPaidFeeVisible) {
+                            PdfPCell paidCell = new PdfPCell(new Phrase(df.format(detail.getSumPaidFee()), normalFont));
+                            paidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(paidCell);
+                        }
+                        if (balanceToPayVisible) {
+                            PdfPCell balanceCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), normalFont));
+                            balanceCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(balanceCell);
+                        }
+
+                        grandAdded += detail.getSumAddedFee();
+                        grandPaid += detail.getSumPaidFee();
+                    }
+                }
+            }
+
+            int labelColspan = columnKeys.size()
+                    - (sumAddedFeeVisible ? 1 : 0) - (sumPaidFeeVisible ? 1 : 0) - (balanceToPayVisible ? 1 : 0);
+            if (labelColspan > 0) {
+                PdfPCell totalLblCell = new PdfPCell(new Phrase("Grand Total", boldFont));
+                totalLblCell.setColspan(labelColspan);
+                totalLblCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                table.addCell(totalLblCell);
+            }
+
+            if (sumAddedFeeVisible) {
+                PdfPCell tgAdded = new PdfPCell(new Phrase(df.format(grandAdded), boldFont));
+                tgAdded.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(tgAdded);
+            }
+
+            if (sumPaidFeeVisible) {
+                PdfPCell tgPaid = new PdfPCell(new Phrase(df.format(grandPaid), boldFont));
+                tgPaid.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(tgPaid);
+            }
+
+            if (balanceToPayVisible) {
+                PdfPCell tgBalance = new PdfPCell(new Phrase(df.format(grandAdded - grandPaid), boldFont));
+                tgBalance.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(tgBalance);
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            // Issue #22805 review - e.getMessage() is often null for runtime
+            // failures (e.g. NPE); log the stack trace too, matching the
+            // Excel exporters above.
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment summary to PDF", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    // Issue #22803 - PDF export for the Detailed report.
+    public void downloadProfessionalPaymentDetailedPdf() {
+        if (professionalPaymentReportGroups == null || professionalPaymentReportGroups.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        // Issue #23515 review (CodeRabbit) - same empty-selection guard as
+        // downloadProfessionalPaymentSummaryPdf() above.
+        if (visibleDetailedColumnKeys().isEmpty()) {
+            JsfUtil.addErrorMessage("Select at least one column in Configure Columns before exporting.");
+            return;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+
+            String fileName = "Inpatient_Professional_Payment_Detailed_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+
+            com.lowagie.text.Document document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 15, 15, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("Inpatient Professional Payment Report - Detailed", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(10);
+            document.add(titlePara);
+
+            // Issue #23515 - columns now driven by visibleDetailedColumnKeys();
+            // PdfPTable.addCell() is purely sequential, so a hidden column is
+            // skipped by simply not calling addCell() for it in every row shape
+            // below (data row / Total row / Balance row / empty-detail filler).
+            List<String> columnKeys = visibleDetailedColumnKeys();
+            boolean bhtVisible = columnKeys.contains("bhtNo");
+            boolean admittedVisible = columnKeys.contains("admitted");
+            boolean dischargedVisible = columnKeys.contains("discharged");
+            boolean finalBillVisible = columnKeys.contains("finalBillNo");
+            boolean consultantVisible = columnKeys.contains("consultant");
+            boolean specialityVisible = columnKeys.contains("speciality");
+            boolean addedFeeDateVisible = columnKeys.contains("addedFeeDate");
+            boolean addedFeeValueVisible = columnKeys.contains("addedFeeValue");
+            boolean paidDateVisible = columnKeys.contains("paidDate");
+            boolean paidBillNumberVisible = columnKeys.contains("paidBillNumber");
+            boolean commentsVisible = columnKeys.contains("comments");
+            boolean paidFeeValueVisible = columnKeys.contains("paidFeeValue");
+            // Non-rowspan'd columns per admission (everything but bht/admitted/discharged/finalBillNo).
+            int nonRowspanColumnCount = columnKeys.size()
+                    - (bhtVisible ? 1 : 0) - (admittedVisible ? 1 : 0)
+                    - (dischargedVisible ? 1 : 0) - (finalBillVisible ? 1 : 0);
+
+            Map<String, Float> columnWidths = new HashMap<>();
+            columnWidths.put("bhtNo", 3f);
+            columnWidths.put("admitted", 2.5f);
+            columnWidths.put("discharged", 2.5f);
+            columnWidths.put("finalBillNo", 3f);
+            columnWidths.put("consultant", 4f);
+            columnWidths.put("speciality", 4f);
+            columnWidths.put("addedFeeDate", 2.5f);
+            columnWidths.put("addedFeeValue", 2.5f);
+            columnWidths.put("paidDate", 2.5f);
+            columnWidths.put("paidBillNumber", 3f);
+            columnWidths.put("comments", 2.5f);
+            columnWidths.put("paidFeeValue", 2.5f);
+
+            PdfPTable table = new PdfPTable(columnKeys.size());
+            table.setWidthPercentage(100);
+            float[] widths = new float[columnKeys.size()];
+            for (int c = 0; c < columnKeys.size(); c++) {
+                widths[c] = columnWidths.get(columnKeys.get(c));
+            }
+            table.setWidths(widths);
+
+            for (String key : columnKeys) {
+                PdfPCell cell = new PdfPCell(new Phrase(DETAILED_COLUMN_HEADERS.get(key), headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
+                int admissionSpan = detailedAdmissionRowSpan(group);
+                List<InwardProfessionalPaymentDetailRowDTO> detailedRows = group.getDetailedRows();
+
+                if (bhtVisible) {
+                    PdfPCell bhtCell = new PdfPCell(new Phrase(group.getBhtNo() != null ? group.getBhtNo() : "", normalFont));
+                    bhtCell.setRowspan(admissionSpan);
+                    table.addCell(bhtCell);
+                }
+                if (admittedVisible) {
+                    PdfPCell admittedCell = new PdfPCell(new Phrase(group.getDateOfAdmission() != null ? sdf.format(group.getDateOfAdmission()) : "", normalFont));
+                    admittedCell.setRowspan(admissionSpan);
+                    table.addCell(admittedCell);
+                }
+                if (dischargedVisible) {
+                    PdfPCell dischargedCell = new PdfPCell(new Phrase(group.getDateOfDischarge() != null ? sdf.format(group.getDateOfDischarge()) : "", normalFont));
+                    dischargedCell.setRowspan(admissionSpan);
+                    table.addCell(dischargedCell);
+                }
+                if (finalBillVisible) {
+                    PdfPCell finalBillCell = new PdfPCell(new Phrase(group.getFirstFinalBillNo() != null ? group.getFirstFinalBillNo() : "", normalFont));
+                    finalBillCell.setRowspan(admissionSpan);
+                    table.addCell(finalBillCell);
+                }
+
+                if (detailedRows == null || detailedRows.isEmpty()) {
+                    for (int i = 0; i < nonRowspanColumnCount; i++) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    continue;
+                }
+
+                for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
+                    int blockSpan = detailedConsultantBlockRowSpan(detail);
+                    int dataRows = Math.max(detail.rowCount(), 1);
+
+                    if (consultantVisible) {
+                        PdfPCell consultantCell = new PdfPCell(new Phrase(detail.getConsultantName() != null ? detail.getConsultantName() : "", normalFont));
+                        consultantCell.setRowspan(blockSpan);
+                        table.addCell(consultantCell);
+                    }
+                    if (specialityVisible) {
+                        PdfPCell specialityCell = new PdfPCell(new Phrase(detail.getSpecialityName() != null ? detail.getSpecialityName() : "", normalFont));
+                        specialityCell.setRowspan(blockSpan);
+                        table.addCell(specialityCell);
+                    }
+
+                    for (int i = 0; i < dataRows; i++) {
+                        boolean hasAdded = i < detail.getAddedFeeValues().size();
+                        if (addedFeeDateVisible) {
+                            Date addedDate = hasAdded ? detail.getAddedFeeDates().get(i) : null;
+                            table.addCell(new Phrase(addedDate != null ? sdf.format(addedDate) : "", normalFont));
+                        }
+                        if (addedFeeValueVisible) {
+                            Double addedValue = hasAdded ? detail.getAddedFeeValues().get(i) : null;
+                            PdfPCell addedCell = new PdfPCell(new Phrase(hasAdded ? df.format(addedValue != null ? addedValue : 0.0) : "", normalFont));
+                            addedCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(addedCell);
+                        }
+
+                        boolean hasPaid = i < detail.getPaidFeeValues().size();
+                        if (paidDateVisible) {
+                            Date paidDate = hasPaid ? detail.getPaidFeeDates().get(i) : null;
+                            table.addCell(new Phrase(paidDate != null ? sdf.format(paidDate) : "", normalFont));
+                        }
+                        if (paidBillNumberVisible) {
+                            String paidBillNo = hasPaid ? detail.getPaidBillNumbers().get(i) : null;
+                            table.addCell(new Phrase(paidBillNo != null ? paidBillNo : "", normalFont));
+                        }
+                        if (commentsVisible) {
+                            table.addCell(new Phrase("", normalFont));
+                        }
+                        if (paidFeeValueVisible) {
+                            Double paidValue = hasPaid ? detail.getPaidFeeValues().get(i) : null;
+                            PdfPCell paidCell = new PdfPCell(new Phrase(hasPaid ? df.format(paidValue != null ? paidValue : 0.0) : "", normalFont));
+                            paidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(paidCell);
+                        }
+                    }
+
+                    if (addedFeeDateVisible) {
+                        table.addCell(new PdfPCell(new Phrase("Total", boldFont)));
+                    }
+                    if (addedFeeValueVisible) {
+                        PdfPCell totalAddedCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee()), boldFont));
+                        totalAddedCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(totalAddedCell);
+                    }
+                    if (paidDateVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    if (paidBillNumberVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    if (commentsVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    if (paidFeeValueVisible) {
+                        PdfPCell totalPaidCell = new PdfPCell(new Phrase(df.format(detail.getSumPaidFee()), boldFont));
+                        totalPaidCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(totalPaidCell);
+                    }
+
+                    if (addedFeeDateVisible) {
+                        table.addCell(new PdfPCell(new Phrase("Balance to Pay", boldFont)));
+                    }
+                    if (addedFeeValueVisible) {
+                        PdfPCell balanceValueCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), boldFont));
+                        balanceValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                        table.addCell(balanceValueCell);
+                    }
+                    if (paidDateVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    if (paidBillNumberVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    if (commentsVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                    if (paidFeeValueVisible) {
+                        table.addCell(new Phrase("", normalFont));
+                    }
+                }
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error exporting professional payment detailed report to PDF", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    private List<InwardProfessionalPaymentAdmissionGroupDTO> fetchInwardProfessionalPaymentReportGroups() {
+        List<InwardProfessionalPaymentFeeRowDTO> feeRows = fetchProfessionalFeeRowsForDepartment();
+
+        // Issue #23306 - "Professional Fee Added Date" basis has no meaningful
+        // admission-side predicate (BillFee.createdAt isn't reachable from
+        // PatientEncounter), so the admission list is restricted to whichever
+        // encounters actually have a fee row in range, fetched by ID instead
+        // of by date.
+        boolean filterByFeeAdded = "feeAdded".equals(professionalPaymentDateBasis)
+                && "dateRange".equals(professionalPaymentSearchMode);
+        List<InwardProfessionalPaymentAdmissionDTO> admissions = filterByFeeAdded
+                ? fetchProfessionalPaymentAdmissionsByEncounterIds(feeRows.stream()
+                        .map(InwardProfessionalPaymentFeeRowDTO::getPatientEncounterId)
+                        .distinct()
+                        .collect(Collectors.toList()))
+                : fetchProfessionalPaymentAdmissionsForDepartment();
+
+        Map<Long, List<InwardProfessionalPaymentFeeRowDTO>> feeRowsByEncounter = feeRows.stream()
+                .collect(Collectors.groupingBy(InwardProfessionalPaymentFeeRowDTO::getPatientEncounterId, LinkedHashMap::new, Collectors.toList()));
+
+        List<Long> encounterIds = admissions.stream()
+                .map(InwardProfessionalPaymentAdmissionDTO::getPatientEncounterId)
+                .collect(Collectors.toList());
+        Map<Long, String> firstFinalBillNoByEncounter = fetchFirstFinalBillNumbersByEncounterIds(encounterIds);
+
+        List<InwardProfessionalPaymentAdmissionGroupDTO> groups = new ArrayList<>();
+        for (InwardProfessionalPaymentAdmissionDTO admission : admissions) {
+            InwardProfessionalPaymentAdmissionGroupDTO group = new InwardProfessionalPaymentAdmissionGroupDTO();
+            group.setBhtNo(admission.getBhtNo());
+            group.setDateOfAdmission(admission.getDateOfAdmission());
+            group.setDateOfDischarge(admission.getDateOfDischarge());
+            group.setFirstFinalBillNo(firstFinalBillNoByEncounter.get(admission.getPatientEncounterId()));
+
+            List<InwardProfessionalPaymentFeeRowDTO> rowsForAdmission
+                    = feeRowsByEncounter.getOrDefault(admission.getPatientEncounterId(), new ArrayList<>());
+            group.setDetailRows(groupIntoDetailRows(rowsForAdmission));
+            group.setDetailedRows(groupIntoDetailedRows(rowsForAdmission));
+            groups.add(group);
+        }
+
+        // Issue #22803 - "admissions without professional fees" filter.
+        // detailRows/detailedRows are always empty/non-empty together, since
+        // both are derived from the same feeRowsByEncounter map.
+        if (onlyAdmissionsWithoutProfessionalFees) {
+            groups = groups.stream()
+                    .filter(g -> g.getDetailRows() == null || g.getDetailRows().isEmpty())
+                    .collect(Collectors.toList());
+        }
+
+        return groups;
+    }
+
+    // Issue #22805 review - shared by both query builders below, so the
+    // BHT-range/date-range predicate can't drift between them.
+    // Issue #23306 - Date Basis selector. "feeAdded" is intentionally NOT
+    // handled here: it doesn't apply to the admissions query (BillFee.createdAt
+    // isn't reachable from PatientEncounter without pulling in BillFee), so the
+    // admissions list is instead re-derived from the filtered fee rows in
+    // fetchInwardProfessionalPaymentReportGroups(); the fee-rows query applies
+    // its own bf.createdAt predicate directly (see fetchProfessionalFeeRowsForDepartment).
+    private String appendProfessionalPaymentRangePredicate(String jpql, Map<String, Object> params) {
+        if ("bhtRange".equals(professionalPaymentSearchMode)
+                && admissionFromForProfessionalPaymentReport != null
+                && admissionToForProfessionalPaymentReport != null) {
+            long peIdFrom = Math.min(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
+            long peIdTo = Math.max(admissionFromForProfessionalPaymentReport.getId(), admissionToForProfessionalPaymentReport.getId());
+            params.put("peIdFrom", peIdFrom);
+            params.put("peIdTo", peIdTo);
+            return jpql + "AND pe.id BETWEEN :peIdFrom AND :peIdTo ";
+        }
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        return jpql + "AND " + resolveProfessionalPaymentDatePath() + " BETWEEN :fromDate AND :toDate ";
+    }
+
+    // "feeAdded" falls back to admission date here - the admissions query has
+    // no BillFee join, and this basis is applied to the fee-rows query only
+    // (see fetchInwardProfessionalPaymentReportGroups, which re-derives the
+    // admission list from the filtered fee rows for this basis).
+    private String resolveProfessionalPaymentDatePath() {
+        if ("discharge".equals(professionalPaymentDateBasis)) {
+            return "pe.dateOfDischarge";
+        } else if ("finalBillCreated".equals(professionalPaymentDateBasis)) {
+            return "fb.createdAt";
+        }
+        return "pe.dateOfAdmission";
+    }
+
+    private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsForDepartment() {
+        boolean filterByFinalBillCreated = "finalBillCreated".equals(professionalPaymentDateBasis)
+                && "dateRange".equals(professionalPaymentSearchMode);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO("
+                + "pe.id, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "pe.dateOfAdmission, "
+                + "pe.dateOfDischarge, "
+                + "COALESCE(fb.deptId, '')) "
+                + "FROM PatientEncounter pe "
+                + (filterByFinalBillCreated ? "JOIN pe.finalBill fb " : "LEFT JOIN pe.finalBill fb ")
+                + "WHERE pe.department = :department ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", department);
+
+        jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
+        jpql = appendProfessionalPaymentRangePredicate(jpql, params);
+
+        jpql += "ORDER BY pe.dateOfAdmission, pe.id";
+
+        List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #23307 - shared by both admission and fee-row query builders.
+    private String appendProfessionalPaymentAdmissionTypePredicate(String jpql, Map<String, Object> params) {
+        if (professionalPaymentAdmissionType == null) {
+            return jpql;
+        }
+        params.put("admissionType", professionalPaymentAdmissionType);
+        return jpql + "AND pe.admissionType = :admissionType ";
+    }
+
+    // Issue #23306 - "Professional Fee Added Date" basis: admissions are
+    // looked up by the encounter IDs that survived the fee-rows date filter,
+    // not by their own admission date.
+    private List<InwardProfessionalPaymentAdmissionDTO> fetchProfessionalPaymentAdmissionsByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentAdmissionDTO("
+                + "pe.id, "
+                + "COALESCE(pe.bhtNo, ''), "
+                + "pe.dateOfAdmission, "
+                + "pe.dateOfDischarge, "
+                + "COALESCE(fb.deptId, '')) "
+                + "FROM PatientEncounter pe "
+                + "LEFT JOIN pe.finalBill fb "
+                + "WHERE pe.department = :department "
+                + "AND pe.id IN :encounterIds "
+                + "ORDER BY pe.dateOfAdmission, pe.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", department);
+        params.put("encounterIds", encounterIds);
+
+        List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    private List<InwardProfessionalPaymentFeeRowDTO> fetchProfessionalFeeRowsForDepartment() {
+        boolean filterByFeeAdded = "feeAdded".equals(professionalPaymentDateBasis)
+                && "dateRange".equals(professionalPaymentSearchMode);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.InwardProfessionalPaymentFeeRowDTO("
+                + "pe.id, "
+                + "st.id, "
+                + "COALESCE(per.name, ''), "
+                + "sp.id, "
+                + "COALESCE(sp.name, ''), "
+                + "bf.feeValue, "
+                + "bf.paidValue, "
+                + "COALESCE(rbfBill.deptId, ''), "
+                + "rbfBill.createdAt, "
+                + "bf.createdAt) "
+                + "FROM BillFee bf "
+                + "JOIN bf.bill b "
+                + "JOIN b.patientEncounter pe "
+                + (filterByFeeAdded ? "" : "LEFT JOIN pe.finalBill fb ")
+                + "LEFT JOIN bf.staff st "
+                + "LEFT JOIN st.person per "
+                + "LEFT JOIN bf.speciality sp "
+                + "LEFT JOIN bf.referenceBillFee rbf "
+                + "LEFT JOIN rbf.bill rbfBill "
+                + "WHERE bf.retired = false "
+                + "AND b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :billType "
+                + "AND pe.department = :department ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.InwardProfessional);
+        params.put("department", department);
+
+        jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
+
+        if (filterByFeeAdded) {
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+            jpql += "AND bf.createdAt BETWEEN :fromDate AND :toDate ";
+        } else {
+            jpql = appendProfessionalPaymentRangePredicate(jpql, params);
+        }
+
+        jpql += "ORDER BY pe.id, st.id, sp.id";
+
+        List<InwardProfessionalPaymentFeeRowDTO> result = (List<InwardProfessionalPaymentFeeRowDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // billTypeAtomic (not just billType) excludes cancellation-copy final bill
+    // records, matching InwardSearch.fetchFinalBillVersions(). Batched across
+    // all admissions on the report to avoid one query per admission.
+    private Map<Long, String> fetchFirstFinalBillNumbersByEncounterIds(List<Long> encounterIds) {
+        Map<Long, String> result = new HashMap<>();
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return result;
+        }
+        String jpql = "SELECT b.patientEncounter.id, b.deptId, b.finalBillVersionSerial "
+                + "FROM Bill b "
+                + "WHERE b.patientEncounter.id IN :encounterIds "
+                + "AND b.billType = :billType "
+                + "AND b.billTypeAtomic = :atomic "
+                + "AND b.retired = false "
+                + "ORDER BY b.patientEncounter.id, b.finalBillVersionSerial ASC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("encounterIds", encounterIds);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+
+        List<Object[]> rows = billFacade.findAggregates(jpql, params, TemporalType.TIMESTAMP);
+        if (rows == null) {
+            return result;
+        }
+        for (Object[] row : rows) {
+            Long encounterId = (Long) row[0];
+            // ORDER BY finalBillVersionSerial ASC - first row seen per encounter wins.
+            if (!result.containsKey(encounterId)) {
+                result.put(encounterId, (String) row[1]);
+            }
+        }
+        return result;
+    }
+
+    // Groups charge-side BillFee rows by (staff, speciality) within one
+    // admission, summing fee/paid values and collecting the distinct payment
+    // bills that settled each doctor+speciality into comma-joined strings.
+    private List<InwardProfessionalPaymentReportRowDTO> groupIntoDetailRows(List<InwardProfessionalPaymentFeeRowDTO> rows) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Map<String, InwardProfessionalPaymentReportRowDTO> rowsByStaffAndSpeciality = new LinkedHashMap<>();
+        Map<String, LinkedHashSet<String>> billNumbersByKey = new LinkedHashMap<>();
+        Map<String, LinkedHashSet<String>> billDatesByKey = new LinkedHashMap<>();
+
+        for (InwardProfessionalPaymentFeeRowDTO fee : rows) {
+            String key = fee.getStaffId() + "_" + fee.getSpecialityId();
+            InwardProfessionalPaymentReportRowDTO row = rowsByStaffAndSpeciality.get(key);
+            if (row == null) {
+                row = new InwardProfessionalPaymentReportRowDTO();
+                row.setConsultantName(fee.getStaffName());
+                row.setSpecialityName(fee.getSpecialityName());
+                rowsByStaffAndSpeciality.put(key, row);
+                billNumbersByKey.put(key, new LinkedHashSet<>());
+                billDatesByKey.put(key, new LinkedHashSet<>());
+            }
+            row.setSumAddedFee(row.getSumAddedFee() + (fee.getFeeValue() != null ? fee.getFeeValue() : 0.0));
+            row.setSumPaidFee(row.getSumPaidFee() + (fee.getPaidValue() != null ? fee.getPaidValue() : 0.0));
+
+            if (fee.getReferenceBillDeptId() != null && !fee.getReferenceBillDeptId().isEmpty()) {
+                billNumbersByKey.get(key).add(fee.getReferenceBillDeptId());
+            }
+            if (fee.getReferenceBillCreatedAt() != null) {
+                billDatesByKey.get(key).add(dateFormat.format(fee.getReferenceBillCreatedAt()));
+            }
+        }
+
+        List<InwardProfessionalPaymentReportRowDTO> result = new ArrayList<>();
+        for (Map.Entry<String, InwardProfessionalPaymentReportRowDTO> entry : rowsByStaffAndSpeciality.entrySet()) {
+            InwardProfessionalPaymentReportRowDTO row = entry.getValue();
+            row.setPaymentBillNumbers(String.join(", ", billNumbersByKey.get(entry.getKey())));
+            row.setPaymentDates(String.join(", ", billDatesByKey.get(entry.getKey())));
+            result.add(row);
+        }
+        return result;
+    }
+
+    // Issue #22803 - Detailed report grouping. Same (staff, speciality) key
+    // as groupIntoDetailRows above, but keeps every individual fee row's
+    // Added/Paid values and dates (rather than aggregating into one summary
+    // row + comma-joined strings), for the Detailed report's per-consultant
+    // block layout. Settlement in this codebase is always full-value per fee
+    // (see InwardStaffPaymentBillController.saveBillCompo/
+    // saveBillItemForPaymentBill) - paidValue is either 0 or equal to
+    // feeValue - so a paid entry is only appended when paidValue > 0.
+    private List<InwardProfessionalPaymentDetailRowDTO> groupIntoDetailedRows(List<InwardProfessionalPaymentFeeRowDTO> rows) {
+        Map<String, InwardProfessionalPaymentDetailRowDTO> rowsByStaffAndSpeciality = new LinkedHashMap<>();
+
+        for (InwardProfessionalPaymentFeeRowDTO fee : rows) {
+            String key = fee.getStaffId() + "_" + fee.getSpecialityId();
+            InwardProfessionalPaymentDetailRowDTO row = rowsByStaffAndSpeciality.get(key);
+            if (row == null) {
+                row = new InwardProfessionalPaymentDetailRowDTO();
+                row.setConsultantName(fee.getStaffName());
+                row.setSpecialityName(fee.getSpecialityName());
+                rowsByStaffAndSpeciality.put(key, row);
+            }
+
+            double feeValue = fee.getFeeValue() != null ? fee.getFeeValue() : 0.0;
+            row.getAddedFeeValues().add(feeValue);
+            row.getAddedFeeDates().add(fee.getAddedFeeDate());
+            row.setSumAddedFee(row.getSumAddedFee() + feeValue);
+
+            if (fee.getPaidValue() != null && fee.getPaidValue() > 0) {
+                row.getPaidFeeValues().add(fee.getPaidValue());
+                row.getPaidFeeDates().add(fee.getReferenceBillCreatedAt());
+                row.getPaidBillNumbers().add(fee.getReferenceBillDeptId());
+                row.setSumPaidFee(row.getSumPaidFee() + fee.getPaidValue());
+            }
+        }
+
+        return new ArrayList<>(rowsByStaffAndSpeciality.values());
+    }
+
+    // Issue #22803 - Department-scoped BHT-range autocomplete for the
+    // "Admission From" / "Admission To" fields (BHT-range search mode).
+    // Deliberately not reusing AdmissionController.completeBht /
+    // completePatientEncounter - both are unfiltered by department and use a
+    // broken "c.patient" alias.
+    public List<PatientEncounter> completeAdmissionForProfessionalPaymentReport(String query) {
+        Department dept = department != null ? department : sessionController.getDepartment();
+        if (dept == null || query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT pe FROM PatientEncounter pe "
+                + "WHERE pe.department = :department "
+                + "AND pe.retired = false "
+                + "AND pe.bhtNo LIKE :bhtNo "
+                + "ORDER BY pe.bhtNo";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", dept);
+        params.put("bhtNo", "%" + query.trim() + "%");
+
+        List<PatientEncounter> result = (List<PatientEncounter>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 20);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // View button on the list row: load the bill into InwardSearch and open the
+    // existing reprint page (same destination as the interim-bill View Bill flow).
+    public String navigateToReprintServiceBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return null;
+        }
+        Bill b = billFacade.find(billId);
+        if (b == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        inwardSearch.setBill(b);
+        return "/inward/inward_reprint_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToAdmissionProfile() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return null;
+        }
+        if (patientEncounter instanceof Admission) {
+            admissionController.setCurrent((Admission) patientEncounter);
+        }
+        return "/inward/admission_profile?faces-redirect=true";
+    }
+
+    private List<InpatientPharmacyIssueDTO> fetchPharmacyIssueDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientPharmacyIssueDTO("
+                + "bi.id, "
+                + "bi.item.name, "
+                + "bi.qty, "
+                + "bi.netValue, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.billTypeAtomic, "
+                + "COALESCE(bi.bill.department.name, 'N/A'), "
+                + "refBi.id, "
+                + "bi.grossValue, "
+                + "bi.discount, "
+                + "bi.marginValue) "
+                + "FROM BillItem bi LEFT JOIN bi.referanceBillItem refBi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE "
+                + "AND bi.bill.cancelled = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
+
+        List<InpatientPharmacyIssueDTO> result = (List<InpatientPharmacyIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+
+        return result != null ? result : new ArrayList<>();
+    }
+
+    private List<InpatientPharmacyNetSummaryDTO> fetchPharmacyNetSummaryDtos(List<BillTypeAtomic> issueTypes,
+            List<BillTypeAtomic> returnTypes, List<BillTypeAtomic> cancellationTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO("
+                + "bi.item.id, "
+                + "bi.item.name, "
+                + "SUM(0 - bi.pharmaceuticalBillItem.qty), "
+                + "SUM(bi.grossValue), "
+                + "SUM(bi.discount), "
+                + "SUM(bi.marginValue), "
+                + "SUM(bi.netValue)) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE "
+                + "AND ("
+                + "  (bi.bill.billTypeAtomic IN :issueTypes AND bi.bill.cancelled = FALSE) "
+                + "  OR bi.bill.billTypeAtomic IN :returnTypes "
+                + "  OR bi.bill.billTypeAtomic IN :cancellationTypes"
+                + ") "
+                + "GROUP BY bi.item.id, bi.item.name "
+                + "ORDER BY bi.item.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patientEncounter", patientEncounter);
+        params.put("issueTypes", issueTypes);
+        params.put("returnTypes", returnTypes);
+        params.put("cancellationTypes", cancellationTypes);
+
+        List<InpatientPharmacyNetSummaryDTO> result = (List<InpatientPharmacyNetSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params);
+
+        return result != null ? result : new ArrayList<>();
+    }
+
     public String madeNull() {
         patientEncounter = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
     }
-    
+
     public String madeNullIssue() {
         patientEncounter = null;
         bill = null;
@@ -207,7 +2214,6 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     public String navigateToInpatientLabItemList() {
-        System.out.println("navigateToInpatientLabItemList");
 
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
@@ -239,12 +2245,14 @@ public class InwardReportControllerBht implements Serializable {
     public List<BillItem> fetchLabBillItems(PatientEncounter pt, List<BillTypeAtomic> billTypesAtomics) {
         String jpql = "select bi "
                 + "from BillItem bi "
-                + "where bi.bill.retired = :ret "
+                + "where bi.bill.retired = false "
+                + "and bi.bill.cancelled = false "
+                + "and bi.retired = false "
+                + "and bi.refunded = false "
                 + "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("ret", false);
         params.put("pe", pt);
         params.put("billTypesAtomics", billTypesAtomics);
 
@@ -257,7 +2265,7 @@ public class InwardReportControllerBht implements Serializable {
         //department = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
-    
+
     public String navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy() {
         department = sessionController.getLoggedUser().getDepartment();
         patientEncounter = null;
@@ -278,6 +2286,9 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -289,12 +2300,15 @@ public class InwardReportControllerBht implements Serializable {
                     case PHARMACY_DIRECT_ISSUE_CANCELLED:
                     case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                     case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                         break;
                     case PHARMACY_DIRECT_ISSUE:
                     case DIRECT_ISSUE_INWARD_MEDICINE:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                         break;
@@ -1149,30 +3163,35 @@ public class InwardReportControllerBht implements Serializable {
         patientRooms = patientRoomFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public void fetchIssueBill(){
-        if(getPatientEncounter() == null){
-            JsfUtil.addErrorMessage("No Patient");
+
+    public void fetchIssueBill() {
+        issueBills = new ArrayList<>();
+        if (getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No Patient Encounter");
             return;
         }
-        
-        issueBills = new ArrayList<>();
+        if (department == null) {
+            JsfUtil.addErrorMessage("No Department selected");
+            return;
+        }
         String jpql;
         HashMap hm = new HashMap();
         jpql = "select b from Bill b "
                 + "where b.patientEncounter=:pe "
                 + "and b.billType=:bTp "
+                + "and b.billTypeAtomic=:bta "
                 + "and b.retired=false "
                 + "and b.cancelled=false "
                 + "and  b.toDepartment=:toDep";
         hm.put("pe", getPatientEncounter());
         hm.put("toDep", department);
         hm.put("bTp", BillType.InwardPharmacyRequest);
-        
+        hm.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
+
         issueBills = getBillFacade().findByJpql(jpql, hm);
-        
+
     }
-    
+
     public List<Bill> getBHTIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billType=:btp "
@@ -1182,7 +3201,7 @@ public class InwardReportControllerBht implements Serializable {
         hm.put("btp", BillType.PharmacyBhtPre);
         return getBillFacade().findByJpql(sql, hm);
     }
-    
+
     public List<Bill> getReturnAndCancelBHTIssueBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billTypeAtomic IN :btp "
@@ -1675,5 +3694,227 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public List<InpatientPharmacyIssueDTO> getPharmacyIssueDtosToPatientEncounter() {
+        return pharmacyIssueDtosToPatientEncounter;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounter(List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter) {
+        this.pharmacyIssueDtosToPatientEncounter = pharmacyIssueDtosToPatientEncounter;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterNetTotal() {
+        return pharmacyIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterNetTotal(double pharmacyIssueDtosToPatientEncounterNetTotal) {
+        this.pharmacyIssueDtosToPatientEncounterNetTotal = pharmacyIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterGrossTotal() {
+        return pharmacyIssueDtosToPatientEncounterGrossTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterGrossTotal(double pharmacyIssueDtosToPatientEncounterGrossTotal) {
+        this.pharmacyIssueDtosToPatientEncounterGrossTotal = pharmacyIssueDtosToPatientEncounterGrossTotal;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterDiscountTotal() {
+        return pharmacyIssueDtosToPatientEncounterDiscountTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterDiscountTotal(double pharmacyIssueDtosToPatientEncounterDiscountTotal) {
+        this.pharmacyIssueDtosToPatientEncounterDiscountTotal = pharmacyIssueDtosToPatientEncounterDiscountTotal;
+    }
+
+    public double getPharmacyIssueDtosToPatientEncounterServiceChargeTotal() {
+        return pharmacyIssueDtosToPatientEncounterServiceChargeTotal;
+    }
+
+    public void setPharmacyIssueDtosToPatientEncounterServiceChargeTotal(double pharmacyIssueDtosToPatientEncounterServiceChargeTotal) {
+        this.pharmacyIssueDtosToPatientEncounterServiceChargeTotal = pharmacyIssueDtosToPatientEncounterServiceChargeTotal;
+    }
+
+    public List<InpatientPharmacyNetSummaryDTO> getPharmacyNetSummaryDtosToPatientEncounter() {
+        return pharmacyNetSummaryDtosToPatientEncounter;
+    }
+
+    public void setPharmacyNetSummaryDtosToPatientEncounter(List<InpatientPharmacyNetSummaryDTO> pharmacyNetSummaryDtosToPatientEncounter) {
+        this.pharmacyNetSummaryDtosToPatientEncounter = pharmacyNetSummaryDtosToPatientEncounter;
+    }
+
+    public double getPharmacyNetSummaryDtosToPatientEncounterNetTotal() {
+        return pharmacyNetSummaryDtosToPatientEncounterNetTotal;
+    }
+
+    public void setPharmacyNetSummaryDtosToPatientEncounterNetTotal(double pharmacyNetSummaryDtosToPatientEncounterNetTotal) {
+        this.pharmacyNetSummaryDtosToPatientEncounterNetTotal = pharmacyNetSummaryDtosToPatientEncounterNetTotal;
+    }
+
+    public List<InpatientServiceIssueDTO> getServiceIssueDtosToPatientEncounter() {
+        return serviceIssueDtosToPatientEncounter;
+    }
+
+    public void setServiceIssueDtosToPatientEncounter(List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter) {
+        this.serviceIssueDtosToPatientEncounter = serviceIssueDtosToPatientEncounter;
+    }
+
+    public double getServiceIssueDtosToPatientEncounterNetTotal() {
+        return serviceIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public void setServiceIssueDtosToPatientEncounterNetTotal(double serviceIssueDtosToPatientEncounterNetTotal) {
+        this.serviceIssueDtosToPatientEncounterNetTotal = serviceIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getServiceBillDtosToPatientEncounter() {
+        return serviceBillDtosToPatientEncounter;
+    }
+
+    public void setServiceBillDtosToPatientEncounter(List<BillListReportDTO> serviceBillDtosToPatientEncounter) {
+        this.serviceBillDtosToPatientEncounter = serviceBillDtosToPatientEncounter;
+    }
+
+    public double getServiceBillDtosToPatientEncounterNetTotal() {
+        return serviceBillDtosToPatientEncounterNetTotal;
+    }
+
+    public void setServiceBillDtosToPatientEncounterNetTotal(double serviceBillDtosToPatientEncounterNetTotal) {
+        this.serviceBillDtosToPatientEncounterNetTotal = serviceBillDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getPaymentBillDtosToPatientEncounter() {
+        return paymentBillDtosToPatientEncounter;
+    }
+
+    public void setPaymentBillDtosToPatientEncounter(List<BillListReportDTO> paymentBillDtosToPatientEncounter) {
+        this.paymentBillDtosToPatientEncounter = paymentBillDtosToPatientEncounter;
+    }
+
+    public double getPaymentBillDtosToPatientEncounterNetTotal() {
+        return paymentBillDtosToPatientEncounterNetTotal;
+    }
+
+    public void setPaymentBillDtosToPatientEncounterNetTotal(double paymentBillDtosToPatientEncounterNetTotal) {
+        this.paymentBillDtosToPatientEncounterNetTotal = paymentBillDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getPaymentBillDtosForDepartment() {
+        return paymentBillDtosForDepartment;
+    }
+
+    public void setPaymentBillDtosForDepartment(List<BillListReportDTO> paymentBillDtosForDepartment) {
+        this.paymentBillDtosForDepartment = paymentBillDtosForDepartment;
+    }
+
+    public double getPaymentBillDtosForDepartmentNetTotal() {
+        return paymentBillDtosForDepartmentNetTotal;
+    }
+
+    public void setPaymentBillDtosForDepartmentNetTotal(double paymentBillDtosForDepartmentNetTotal) {
+        this.paymentBillDtosForDepartmentNetTotal = paymentBillDtosForDepartmentNetTotal;
+    }
+
+    public List<InwardProfessionalPaymentAdmissionGroupDTO> getProfessionalPaymentReportGroups() {
+        return professionalPaymentReportGroups;
+    }
+
+    public void setProfessionalPaymentReportGroups(List<InwardProfessionalPaymentAdmissionGroupDTO> professionalPaymentReportGroups) {
+        this.professionalPaymentReportGroups = professionalPaymentReportGroups;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = new Date();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public String getBhtNoFilter() {
+        return bhtNoFilter;
+    }
+
+    public void setBhtNoFilter(String bhtNoFilter) {
+        this.bhtNoFilter = bhtNoFilter;
+    }
+
+    public String getPatientNameFilter() {
+        return patientNameFilter;
+    }
+
+    public void setPatientNameFilter(String patientNameFilter) {
+        this.patientNameFilter = patientNameFilter;
+    }
+
+    public String getProfessionalPaymentReportType() {
+        return professionalPaymentReportType;
+    }
+
+    public void setProfessionalPaymentReportType(String professionalPaymentReportType) {
+        this.professionalPaymentReportType = professionalPaymentReportType;
+    }
+
+    public String getProfessionalPaymentSearchMode() {
+        return professionalPaymentSearchMode;
+    }
+
+    public void setProfessionalPaymentSearchMode(String professionalPaymentSearchMode) {
+        this.professionalPaymentSearchMode = professionalPaymentSearchMode;
+    }
+
+    public String getProfessionalPaymentDateBasis() {
+        return professionalPaymentDateBasis;
+    }
+
+    public void setProfessionalPaymentDateBasis(String professionalPaymentDateBasis) {
+        this.professionalPaymentDateBasis = professionalPaymentDateBasis;
+    }
+
+    public AdmissionType getProfessionalPaymentAdmissionType() {
+        return professionalPaymentAdmissionType;
+    }
+
+    public void setProfessionalPaymentAdmissionType(AdmissionType professionalPaymentAdmissionType) {
+        this.professionalPaymentAdmissionType = professionalPaymentAdmissionType;
+    }
+
+    public PatientEncounter getAdmissionFromForProfessionalPaymentReport() {
+        return admissionFromForProfessionalPaymentReport;
+    }
+
+    public void setAdmissionFromForProfessionalPaymentReport(PatientEncounter admissionFromForProfessionalPaymentReport) {
+        this.admissionFromForProfessionalPaymentReport = admissionFromForProfessionalPaymentReport;
+    }
+
+    public PatientEncounter getAdmissionToForProfessionalPaymentReport() {
+        return admissionToForProfessionalPaymentReport;
+    }
+
+    public void setAdmissionToForProfessionalPaymentReport(PatientEncounter admissionToForProfessionalPaymentReport) {
+        this.admissionToForProfessionalPaymentReport = admissionToForProfessionalPaymentReport;
+    }
+
+    public boolean isOnlyAdmissionsWithoutProfessionalFees() {
+        return onlyAdmissionsWithoutProfessionalFees;
+    }
+
+    public void setOnlyAdmissionsWithoutProfessionalFees(boolean onlyAdmissionsWithoutProfessionalFees) {
+        this.onlyAdmissionsWithoutProfessionalFees = onlyAdmissionsWithoutProfessionalFees;
     }
 }

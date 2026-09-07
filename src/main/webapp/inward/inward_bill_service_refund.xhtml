@@ -14,25 +14,52 @@
             <ui:define name="content">
                 <h:panelGroup >
 
-                    <h:form>
-                        <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
-                            <p:panel  header="Refund">    
+                    <h:form id="refundForm">
+                        <h:panelGroup rendered="#{!inwardServiceRefundController.printPreview}" styleClass="alignTop" >
+                            <p:panel  header="Refund">
                                 <f:facet name="header">
                                     <h:outputText value="Refund"/>
-                                    <h:panelGrid columns="3" style="float: right" class="w-50">
-                                        <p:inputText placeholder="Enter Comments to Refund Bill" value="#{billSearch.comment}" style="float: right" class="p-2 w-100"/> 
-
-                                        <p:commandButton 
+                                    <h:panelGroup style="float: right">
+                                        <p:commandButton
+                                            id="btnBackToProfile"
                                             ajax="false"
-                                            value="Refund Bill" 
+                                            value="Inpatient Profile"
+                                            icon="fa fa-arrow-circle-left"
+                                            class="ui-button-secondary m-1"
+                                            action="#{inwardServiceRefundController.navigateBackToInpatientProfile()}" />
+                                        <p:commandButton
+                                            id="btnBackToReprint"
+                                            ajax="false"
+                                            value="Bill"
+                                            icon="fa fa-file-invoice"
+                                            class="ui-button-secondary m-1"
+                                            action="#{inwardServiceRefundController.navigateBackToReprint()}" />
+                                        <p:commandButton
+                                            id="btnToSearch"
+                                            ajax="false"
+                                            value="Search"
+                                            icon="fa fa-search"
+                                            class="ui-button-secondary m-1"
+                                            action="#{inwardServiceRefundController.navigateToInwardServiceSearch()}" />
+                                        <p:inputText id="txtRefundComment"
+                                                     placeholder="Enter Comments to Refund Bill"
+                                                     value="#{inwardServiceRefundController.comment}"
+                                                     class="p-2 m-1"
+                                                     style="width: 20em;"
+                                                     onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
+
+                                        <p:commandButton
+                                            id="btnRefundBill"
+                                            ajax="false"
+                                            value="Refund Bill"
                                             icon="fa fa-money-bill-wave"
-                                            style="float: right"
-                                            class="ui-button-warning" action="#{billSearch.refundBill()}"
+                                            class="ui-button-warning m-1"
+                                            action="#{inwardServiceRefundController.refundInwardServiceBill()}"
                                             onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
                                                         return false;" >
-                                        </p:commandButton>  
-                                    </h:panelGrid>
-                                </f:facet>                              
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </f:facet>
                             </p:panel>
                             <div class="row my-2">
                                 <div class="col-6">
@@ -41,23 +68,23 @@
                                             <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
                                             <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
                                         </f:facet>
-                                        <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                        <common:patient patient="#{inwardServiceRefundController.bill.patient}" class="w-100"/>
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
                                     <p:panel header="Bill Detail">
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="#{inwardServiceRefundController.bill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.total}" ></h:outputLabel>
+                                            <h:outputLabel value="#{inwardServiceRefundController.bill.total}" ></h:outputLabel>
                                             <h:outputLabel value="Discount :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.discount}" ></h:outputLabel>
+                                            <h:outputLabel value="#{inwardServiceRefundController.bill.discount}" ></h:outputLabel>
                                             <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{billSearch.bill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{inwardServiceRefundController.bill.netTotal}" ></h:outputLabel>
                                             <h:outputLabel style="font-weight: bold;" value="Total Refund" >
                                             </h:outputLabel>
-                                            <h:outputLabel id="txtTotal" style="font-weight: bold;" value="#{billSearch.refundAmount}" >
+                                            <h:outputLabel id="txtTotal" style="font-weight: bold;" value="#{inwardServiceRefundController.refundAmount}" >
                                             </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
@@ -66,37 +93,37 @@
 
 
                             <p:panel header="Bill Item Detail">
-                                <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="b" 
-                                             rowKey="#{b.id}" selection="#{billSearch.refundingItems}"  >
+                                <p:dataTable id="dtF" rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="b"
+                                             selectionMode="multiple"
+                                             rowKey="#{b.id}"
+                                             selection="#{inwardServiceRefundController.refundingItems}" >
 
+                                    <p:ajax event="rowSelectCheckbox" listener="#{inwardServiceRefundController.calculateRefundTotal()}"
+                                            update=":refundForm:txtTotal" process="colSelect dtF" />
+                                    <p:ajax event="rowUnselectCheckbox" listener="#{inwardServiceRefundController.calculateRefundTotal()}"
+                                            update=":refundForm:txtTotal" process="colSelect dtF" />
+                                    <p:ajax event="toggleSelect" listener="#{inwardServiceRefundController.calculateRefundTotal()}"
+                                            update=":refundForm:txtTotal" process="colSelect dtF" />
 
-                                    <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-                                    <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
-                                    <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
+                                    <p:column selectionBox="true" id="colSelect" style="width: 3em; text-align: center;" disabledSelection="#{b.refunded}" />
 
-                                    <p:column id="colSelect"   selectionMode="multiple"    >
-                                    </p:column>
-
-                                    <p:column >
-                                        <f:facet name="header">Item Name</f:facet>
+                                    <p:column headerText="Item Name">
                                         <h:outputLabel value="#{b.item.name}"/>
                                     </p:column>
-                                    <p:column >
-                                        <f:facet name="header">Fee Value</f:facet>
-                                        <h:outputLabel value="#{b.netValue}"/>
-                                    </p:column >
-                                    <p:column headerText="Refunded" >
-                                        <h:outputLabel rendered="#{b.transRefund}" value="Refunded" />
+                                    <p:column headerText="Fee Value" style="text-align: right;">
+                                        <h:outputLabel value="#{b.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Returned">
+                                        <h:outputLabel rendered="#{b.refunded}" value="Returned" style="color: red;" />
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
 
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{billSearch.printPreview}" >
+                        <h:panelGroup rendered="#{inwardServiceRefundController.printPreview}" >
                             <div id="centrewrabillSearch.biller">
                                 <div id="centrecell">
                                     <div class="centrecontent">
@@ -110,7 +137,20 @@
                                             <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info mx-2 m-1" icon="fas fa-print">
                                                 <p:printer target="gpBillPreview" ></p:printer>
                                             </p:commandButton>
-                                            <p:commandButton value="Service Bill" ajax="false" action="/inward/inward_search_service?faces-redirect=true" class="ui-button-secondary mx-2 m-1" icon="fas fa-arrow-left">
+                                            <p:commandButton
+                                                id="btnPrintFormatSettings"
+                                                value="Settings"
+                                                icon="fas fa-cog"
+                                                class="ui-button-secondary mx-1 m-1"
+                                                type="button"
+                                                title="Choose which print formats this refund bill produces"
+                                                disabled="#{!webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                onclick="PF('inwardServiceRefundPrintConfigDialog').show();" />
+                                            <p:commandButton value="Inpatient Profile" ajax="false" action="#{inwardServiceRefundController.navigateBackToInpatientProfile()}" class="ui-button-secondary mx-1 m-1" icon="fa fa-arrow-circle-left">
+                                            </p:commandButton>
+                                            <p:commandButton value="Bill" ajax="false" action="#{inwardServiceRefundController.navigateBackToReprint()}" class="ui-button-secondary mx-1 m-1" icon="fa fa-file-invoice">
+                                            </p:commandButton>
+                                            <p:commandButton value="Search" ajax="false" action="#{inwardServiceRefundController.navigateToInwardServiceSearch()}" class="ui-button-secondary mx-1 m-1" icon="fas fa-search">
                                             </p:commandButton>
                                         </div>
 
@@ -121,34 +161,44 @@
                                             <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
                                         </ui:repeat>-->
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show 5x5 Format', false)}" >
 
-                                                <print:five_five_paper_with_headings_inward_service bill="#{billSearch.bill}"/>                        
-
-                                            </h:panelGroup>
-
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}" >
-
-                                                <print:five_five_paper_without_headings_inward_service bill="#{billSearch.bill}" dup="false"/>
+                                                <print:five_five_paper_with_headings_inward_service bill="#{inwardServiceRefundController.bill.refundedBill}"/>
 
                                             </h:panelGroup>
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show 5x5 Pre-printed Format', false)}" >
 
-                                                <print:posOpdBill_inward_service bill="#{billSearch.bill}" duplicate="false"/>                        
-
-                                            </h:panelGroup>
-
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}" >
-
-                                                <print:A4_paper_with_headings bill="#{billSearch.bill}" duplicate="false"/>                        
+                                                <print:five_five_paper_without_headings_inward_service bill="#{inwardServiceRefundController.bill.refundedBill}" dup="false"/>
 
                                             </h:panelGroup>
 
-                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}" >
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show POS Format', false)}" >
 
-                                                <print:A4_paper_without_headings bill="#{billSearch.bill}" duplicate="false"/>                        
+                                                <print:posOpdBill_inward_service bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
 
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show A4 Format', false)}" >
+
+                                                <print:A4_paper_with_headings bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
+
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show A4 Pre-printed Format', false)}" >
+
+                                                <print:A4_paper_without_headings bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
+
+                                            </h:panelGroup>
+                                            
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'
+                                                          or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill Refund - Show Custom 1 Format', false)}" >
+                                                <print:five_five_paper_coustom_1_inward_service_refund bill="#{inwardServiceRefundController.bill.refundedBill}" duplicate="false"/>
                                             </h:panelGroup>
 
                                         </h:panelGroup>
@@ -280,6 +330,86 @@
                         </h:panelGroup>
 
                     </h:form>
+
+                    <!--
+                        Print format settings for this page. Lets a department switch
+                        print formats on/off here instead of going to Config Options.
+                        See developer_docs/configuration/printer-configuration-system.md.
+                        Kept outside refundForm - JSF forbids nested forms.
+                    -->
+                    <p:dialog id="inwardServiceRefundPrintConfigDialog"
+                              header="Inward Service Bill Refund - Print Format Settings"
+                              widgetVar="inwardServiceRefundPrintConfigDialog"
+                              modal="true"
+                              width="620"
+                              resizable="true"
+                              closeOnEscape="true">
+
+                        <p:ajax event="open"
+                                listener="#{inwardServiceRefundController.loadPrintConfig}"
+                                update="inwardServiceRefundPrintConfigForm" />
+
+                        <h:form id="inwardServiceRefundPrintConfigForm"
+                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                            <div class="card-body">
+                                <h:outputText value="Which formats print" styleClass="fw-bold d-block mb-2" />
+                                <small class="form-text text-muted d-block mb-3">
+                                    Every format switched on here is printed, in addition to
+                                    the format chosen in the Paper Type list on the page.
+                                    Settings apply to this department only.
+                                </small>
+
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatCustom1"
+                                                             value="#{inwardServiceRefundController.printFormatCustom1}" />
+                                    <h:outputLabel for="printFormatCustom1" value="5x5 Custom 1" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatFiveFive"
+                                                             value="#{inwardServiceRefundController.printFormatFiveFive}" />
+                                    <h:outputLabel for="printFormatFiveFive" value="5x5 With Headings" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatFiveFivePrinted"
+                                                             value="#{inwardServiceRefundController.printFormatFiveFivePrinted}" />
+                                    <h:outputLabel for="printFormatFiveFivePrinted" value="5x5 Pre-printed Paper" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatPos"
+                                                             value="#{inwardServiceRefundController.printFormatPos}" />
+                                    <h:outputLabel for="printFormatPos" value="POS Paper" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatA4"
+                                                             value="#{inwardServiceRefundController.printFormatA4}" />
+                                    <h:outputLabel for="printFormatA4" value="A4 Paper" class="ms-2" />
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="printFormatA4Printed"
+                                                             value="#{inwardServiceRefundController.printFormatA4Printed}" />
+                                    <h:outputLabel for="printFormatA4Printed" value="A4 Pre-printed Paper" class="ms-2" />
+                                </div>
+
+                                <p:messages id="inwardServiceRefundPrintConfigMessages" showDetail="true" closable="true" />
+
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Apply &amp; Close"
+                                        icon="fas fa-save"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{inwardServiceRefundController.savePrintConfig}" />
+                                    <p:commandButton
+                                        value="Cancel"
+                                        icon="fas fa-times"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        onclick="PF('inwardServiceRefundPrintConfigDialog').hide();
+                                                return false;" />
+                                </div>
+                            </div>
+                        </h:form>
+                    </p:dialog>
                 </h:panelGroup>   
 
             </ui:define>

@@ -34,6 +34,7 @@ import com.divudi.core.facade.InvestigationItemFacade;
 import com.divudi.core.facade.InvestigationItemValueFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ReportItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -891,55 +892,130 @@ public class InvestigationItemController implements Serializable {
         this.file = file;
     }
 
+    /**
+     * Migrates report items from the legacy String css* layout fields to the
+     * numeric ri* fields the current report rendering reads.
+     *
+     * Safe to re-run: a row that already carries new format coordinates keeps
+     * them, so a partially converted database is not overwritten.
+     */
     public void convertCssValuesToRiValues() {
         String j = "select ri from ReportItem ri";
         List<ReportItem> ris = riFacade.findByJpql(j);
+        int layoutMigrated = 0;
+        int textMigrated = 0;
+        int alreadyConverted = 0;
+        int failed = 0;
+
         for (ReportItem ri : ris) {
-
             try {
+                boolean changed = false;
 
-                ri.setCssTop(ri.getCssTop().replace("%", ""));
-                ri.setCssLeft(ri.getCssLeft().replace("%", ""));
-                ri.setCssHeight(ri.getCssHeight().replace("%", ""));
-                ri.setCssWidth(ri.getCssWidth().replace("%", ""));
+                // getRiTop() and getRiLeft() return the stored value as is. Do not use
+                // getRiWidth(), getRiHeight() or getRiFontSize() for this test - they
+                // apply a lazy default and write it back to the entity when read.
+                if (ri.getRiTop() == 0 && ri.getRiLeft() == 0) {
+                    Double top = parseLegacyCssLength(ri.getCssTop());
+                    Double left = parseLegacyCssLength(ri.getCssLeft());
+                    Double width = parseLegacyCssLength(ri.getCssWidth());
+                    Double height = parseLegacyCssLength(ri.getCssHeight());
 
-                try {
-                    ri.setRiTop(Double.parseDouble(ri.getCssTop()));
-                } catch (Exception e) {
-                    ri.setRiTop(11.11);
-                }
-
-                try {
-                    ri.setRiLeft(Double.parseDouble(ri.getCssLeft()));
-                } catch (Exception e) {
-                    ri.setRiTop(22.22);
-                }
-
-                try {
-                    ri.setRiHeight(Double.parseDouble(ri.getCssHeight()));
-                } catch (Exception e) {
-                    ri.setRiHeight(2);
-                }
-
-                try {
-                    ri.setRiWidth(Double.parseDouble(ri.getCssWidth()));
-                    if (ri.getRiWidth() < 20) {
-                        ri.setRiWidth(20);
+                    if (top != null) {
+                        ri.setRiTop(top);
+                        changed = true;
                     }
-                } catch (Exception e) {
-                    ri.setRiWidth(40);
+                    if (left != null) {
+                        ri.setRiLeft(left);
+                        changed = true;
+                    }
+                    if (width != null) {
+                        ri.setRiWidth(width);
+                        changed = true;
+                    }
+                    if (height != null) {
+                        ri.setRiHeight(height);
+                        changed = true;
+                    }
+                    if (changed) {
+                        layoutMigrated++;
+                    }
+                } else {
+                    alreadyConverted++;
                 }
 
-                if (ri.getHtmltext() == null || ri.getHtmltext().trim().equals("")) {
-                    ri.setHtmltext(ri.getName());
+                // The new format renders label content from htmltext. This is migrated
+                // independently of the layout - a row with no usable legacy coordinates
+                // still needs its text, or it renders blank.
+                // Image items are skipped: for those htmltext holds the image URL, not
+                // display text, so seeding it from the name would produce a broken src.
+                if (!isImageItem(ri)
+                        && (ri.getHtmltext() == null || ri.getHtmltext().trim().equals(""))) {
+                    if (ri.getName() != null && !ri.getName().trim().equals("")) {
+                        ri.setHtmltext(ri.getName());
+                        textMigrated++;
+                        changed = true;
+                    }
                 }
 
-                riFacade.edit(ri);
+                if (changed) {
+                    riFacade.edit(ri);
+                }
 
             } catch (Exception e) {
+                failed++;
             }
         }
 
+        JsfUtil.addSuccessMessage("Report items checked: " + ris.size()
+                + ". Layout migrated: " + layoutMigrated
+                + ". Text migrated: " + textMigrated
+                + ". Already in new format: " + alreadyConverted
+                + ". Failed: " + failed + ".");
+    }
+
+    /**
+     * Image items hold the image URL in htmltext rather than display text.
+     */
+    private boolean isImageItem(ReportItem ri) {
+        return ri.getIxItemType() == InvestigationItemType.ExternalImage
+                || ri.getIxItemType() == InvestigationItemType.Image
+                || ri.getIxItemType() == InvestigationItemType.ReportImage;
+    }
+
+    /**
+     * Parses a legacy css length such as "47", "10%" or " 30 " into the plain
+     * number the ri* fields hold.
+     *
+     * Returns null when there is nothing usable to migrate - null, blank, or a
+     * unit this percentage based layout never supported such as "25px" - so the
+     * caller leaves the field untouched instead of inventing a position.
+     */
+    private Double parseLegacyCssLength(String cssValue) {
+        if (cssValue == null) {
+            return null;
+        }
+        String cleaned = cssValue.trim();
+        if (cleaned.endsWith("%")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
+        }
+        // Anything with a percent sign left in it is malformed, such as "10%%".
+        if (cleaned.contains("%")) {
+            return null;
+        }
+        if (cleaned.isEmpty()) {
+            return null;
+        }
+        try {
+            // Double.valueOf accepts "NaN" and "Infinity". Those cannot be stored in
+            // the double ri* columns, so treat them as nothing usable to migrate.
+            Double value = Double.valueOf(cleaned);
+            if (value.isNaN() || value.isInfinite()) {
+                return null;
+            }
+            return value;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public String uploadJsonToCreateAnInvestigation() {
@@ -1709,6 +1785,78 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    public void addNewHtml() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        current = new InvestigationItem();
+        current.setName("Html Template");
+        current.setItem(currentInvestigation);
+        current.setIxItemType(InvestigationItemType.Html);
+        current.setIxItemValueType(InvestigationItemValueType.Memo);
+        current.setCreatedAt(new Date());
+        current.setCreater(getSessionController().getLoggedUser());
+        currentInvestigation.getReportItems().add(current);
+        getIxFacade().edit(currentInvestigation);
+        listInvestigationItem();
+    }
+
+    /**
+     * Parses {placeholder} tokens from the current Html item's htmltext and
+     * creates a Value-type InvestigationItem for each placeholder that does
+     * not already exist in the investigation. Called automatically on save.
+     */
+    public void autoCreateValueItemsFromHtmlPlaceholders() {
+        if (current == null || current.getIxItemType() != InvestigationItemType.Html) {
+            return;
+        }
+        if (currentInvestigation == null) {
+            return;
+        }
+        String htmlText = current.getHtmltext();
+        if (htmlText == null || htmlText.trim().isEmpty()) {
+            return;
+        }
+
+        List<String> placeholders = CommonFunctions.extractPlaceholders(htmlText);
+        if (placeholders.isEmpty()) {
+            return;
+        }
+
+        // Collect names of existing non-retired Value items only
+        List<String> existingNames = new ArrayList<>();
+        for (ReportItem ri : currentInvestigation.getReportItems()) {
+            if (!ri.isRetired() && ri.getName() != null
+                    && ri.getIxItemType() == InvestigationItemType.Value) {
+                existingNames.add(ri.getName());
+            }
+        }
+
+        int created = 0;
+        for (String placeholder : placeholders) {
+            if (existingNames.contains(placeholder)) {
+                continue; // already exists
+            }
+            InvestigationItem valueItem = new InvestigationItem();
+            valueItem.setName(placeholder);
+            valueItem.setItem(currentInvestigation);
+            valueItem.setIxItemType(InvestigationItemType.Value);
+            valueItem.setIxItemValueType(InvestigationItemValueType.Varchar);
+            valueItem.setCreatedAt(new Date());
+            valueItem.setCreater(getSessionController().getLoggedUser());
+            currentInvestigation.getReportItems().add(valueItem);
+            existingNames.add(placeholder);
+            created++;
+        }
+
+        if (created > 0) {
+            getIxFacade().edit(currentInvestigation);
+            listInvestigationItem();
+            JsfUtil.addSuccessMessage(created + " value item(s) auto-created from HTML placeholders.");
+        }
+    }
+
     public void prepareAdd() {
         current = new InvestigationItem();
     }
@@ -1740,6 +1888,7 @@ public class InvestigationItemController implements Serializable {
             getCurrentInvestigation().getReportItems().add(current);
             getIxFacade().edit(currentInvestigation);
         }
+        autoCreateValueItemsFromHtmlPlaceholders();
     }
 
     public InvestigationFacade getIxFacade() {
@@ -1837,7 +1986,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format?faces-redirect=true;";
+        return "/admin/lims/investigation_format?faces-redirect=true";
     }
 
     public String toEditInvestigationFormatPastData() {
@@ -1846,7 +1995,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format_pastdata?faces-redirect=true;";
+        return "/admin/lims/investigation_format_pastdata?faces-redirect=true";
     }
 
     public String toEditInvestigationFormatMultiple() {
@@ -1855,7 +2004,7 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
         listInvestigationItem();
-        return "/admin/lims/investigation_format_multiple?faces-redirect=true;";
+        return "/admin/lims/investigation_format_multiple?faces-redirect=true";
     }
 
     public ReportItemFacade getRiFacade() {
@@ -2171,17 +2320,12 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.BarcodeVertical);
         l.add(InvestigationItemType.Image);
         l.add(InvestigationItemType.ReportImage);
-//            Label,
-//    Value,
-//    Calculation,
-//    Flag,
-//    DynamicLabel,
-//    Css,
-//    Barcode,
-//    BarcodeVertical,
-//    Investigation,
-//    Template,
-//    AntibioticList,
+        l.add(InvestigationItemType.ExternalImage);
+        l.add(InvestigationItemType.WarningFlag);
+        l.add(InvestigationItemType.QrCode);
+        l.add(InvestigationItemType.Antibiotic);
+        l.add(InvestigationItemType.MeasurementUnit);
+
         userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
         return userChangableItems;
     }

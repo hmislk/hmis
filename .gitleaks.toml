@@ -1,0 +1,82 @@
+# Gitleaks configuration for HMIS project
+# Docs: https://github.com/gitleaks/gitleaks#configuration
+title = "HMIS Gitleaks Configuration"
+
+[extend]
+# Extend the default gitleaks ruleset
+useDefault = true
+
+# ----------------------------------------------------------------
+# Project-specific rules
+# ----------------------------------------------------------------
+[[rules]]
+id = "hmis-db-password-in-xml"
+description = "Hardcoded database password in XML config"
+regex = '''<property[^>]+name=["']javax\.persistence\.jdbc\.password["'][^>]*value=["']([^"']{4,})["']'''
+tags = ["database", "password", "xml"]
+
+[[rules]]
+id = "hmis-glassfish-password"
+description = "GlassFish/Payara admin or datasource password"
+regex = '''<password-alias[^>]+value=["']([^"']{4,})["']'''
+tags = ["appserver", "password"]
+
+[[rules]]
+id = "hmis-jdbc-url-with-host"
+description = "Hardcoded JDBC URL with hostname or IP (may expose server location)"
+regex = '''jdbc:mysql://([a-zA-Z0-9][-a-zA-Z0-9.]{3,})/'''
+tags = ["network", "database"]
+
+# ----------------------------------------------------------------
+# Allowlist: known-safe patterns that would otherwise trigger
+# ----------------------------------------------------------------
+[allowlist]
+description = "Global allowlist for HMIS project"
+
+# Placeholder text in documentation
+regexes = [
+  '''\[password\]''',
+  '''\[your.password\]''',
+  '''\[admin_password\]''',
+  '''\$\{.*password.*\}''',
+  '''password_placeholder''',
+  # JNDI datasource name — not a credential
+  '''jdbc/\w+''',
+  # Test/example IP addresses used in docs
+  '''192\.0\.2\.\d+''',    # TEST-NET-1 (RFC 5737)
+  '''198\.51\.100\.\d+''', # TEST-NET-2
+  '''203\.0\.113\.\d+''',  # TEST-NET-3
+]
+
+paths = [
+  # Migration docs use placeholder [password] — already checked
+  "src/main/resources/db/migrations",
+  # Test fixtures
+  "src/test",
+  # SE training presentation — uses localhost JDBC example for teaching
+  "SE-Principles-Presentation.md",
+  # Developer docs — uses YOUR_GITHUB_TOKEN placeholder
+  "developer_docs/",
+]
+
+# Historical commits: old JPA direct-connect config used password="admin"
+# before the project migrated to JNDI datasources (~2023).
+# "admin" was the local dev default — no production credential.
+# Current persistence.xml uses JNDI only.
+commits = [
+  # Old local-dev persistence.xml with password=admin (pre-JNDI era)
+  "d9fc300aa4c1c93846bcfd49371bfd300a119c56",
+  "07dc0a6ee6618d804e6dc94bd6705fe17b1500a4",
+  "b8c8ffe7153e64879bd93400e0692fa7ec1231f2",
+  "298e386d9a55e1bcaa9cb33072f1131cf9cbd012",
+  "a7e545b47dfcd83833728eb202d89110487c044f",
+  "3b01d6ef577a40af53ad7978c459b3e41188ab5a",
+  # stock_reset_script.py — UUID used as API key variable name (script context unknown)
+  "dfa8ef6563e2c07fde89b8ce8727838c31c8b542",
+  # EncryptionUtils.java placeholder key "MySecretKey12345" — file deleted, example placeholder
+  "97683edf3ca12fa3b1875e7f989c1e15936b188b",
+  # PaymentGatewayController.java — hardcoded test gateway credentials (fixed in current HEAD)
+  "e733b5bbecf9aa61a4b1270fe190c670512f91bd",
+  "278b904e65cc960fa3b76d004d97f2045b878d01",
+  "e16ccefb7c609a5ed45f5aa1482e5e2896170dad",
+]

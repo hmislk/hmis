@@ -308,7 +308,7 @@ public class ChannellingFeeController implements Serializable {
             getItemFeeFacade().edit(removingFee);
             JsfUtil.addSuccessMessage("Deleted Successfull");
         } else {
-            JsfUtil.addSuccessMessage("Nothing To Delete");
+            JsfUtil.addErrorMessage("Nothing To Delete");
         }
         fillFees();
         session.setTotal(calTot());

@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bundle" type="com.divudi.core.data.dto.DailyReturnBundleDTO" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGroup rendered="#{empty cc.attrs.bundle.rows}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="No Data for #{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{not empty cc.attrs.bundle.rows}">
+            <h:panelGroup styleClass="table-responsive">
+                <table class="table w-100">
+                    <thead>
+                        <tr class="text-light bg-dark">
+                            <th  class="text-light bg-dark " colspan="2">
+                                <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                            </th>
+                            <th class="text-end text-light bg-dark">
+                                <h:outputText value="#{cc.attrs.bundle.count}">
+                                    <f:convertNumber pattern="#0"></f:convertNumber>
+                                </h:outputText>
+                            </th>
+                            <th class="text-end text-light bg-dark">
+                                <h:outputText value="#{cc.attrs.bundle.hospitalTotal}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </th>
+                            <th class="text-end text-light bg-dark">
+                                <h:outputText value="#{cc.attrs.bundle.staffTotal}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </th>
+                            <th class="text-end text-light bg-dark">
+                                <h:outputText value="#{cc.attrs.bundle.discount}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </th>
+                            <th class="text-end text-light bg-dark">
+                                <h:outputText value="#{cc.attrs.bundle.total}">
+                                    <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                </h:outputText>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>Category</th>
+                            <th>Item / Service</th>
+                            <th class="text-end">Count</th>
+                            <th class="text-end">Hospital Fee</th>
+                            <th class="text-end">Professional Fee</th>
+                            <th class="text-end">Discount</th>
+                            <th class="text-end">Net Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.bundle.rows}" var="row" >
+                            <tr class="table-light">
+                                <td>
+                                    <h:outputText value="#{row.categoryName}" />
+                                </td>
+                                <td>
+                                    <h:outputText value="#{row.itemName}" />
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{row.itemCount}">
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{row.itemHospitalFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{row.itemProfessionalFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{row.itemDiscountAmount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{row.itemNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+            </h:panelGroup>
+        </h:panelGroup>
+
+        <!-- For bundles that only show totals (like summary bundles) -->
+        <h:panelGroup rendered="#{empty cc.attrs.bundle.rows and cc.attrs.bundle.total != null and cc.attrs.bundle.total != 0}">
+            <table class="table w-100">
+                <thead>
+                    <tr class="text-light bg-dark">
+                        <th class="text-light bg-dark">
+                            <h:outputText value="#{cc.attrs.bundle.name}" ></h:outputText>
+                        </th>
+                        <th class="text-end text-light bg-dark">
+                            <h:outputText value="#{cc.attrs.bundle.total}">
+                                <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                            </h:outputText>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>

@@ -14,37 +14,37 @@
                             <div class="col-md-12">
                                 <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" />
                                         <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:calendar 
-                                        styleClass="w-100" 
-                                        inputStyleClass="w-100 form-control" 
-                                        id="fromDate" 
-                                        value="#{searchController.fromDate}" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{searchController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         />
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                         <h:outputLabel value="To" for="toDate" class="mx-3"/>
                                     </h:panelGroup>
-                                    <p:calendar 
-                                        styleClass="w-100" 
-                                        inputStyleClass="w-100 form-control" 
-                                        id="toDate" 
-                                        value="#{searchController.toDate}" 
-                                        navigator="false" 
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    <p:calendar
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        id="toDate"
+                                        value="#{searchController.toDate}"
+                                        navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                         />
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
-                                        styleClass="w-100 form-control" 
-                                        value="#{searchController.institution}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.institution}"
                                         filter="true">
                                         <f:selectItem itemLabel="All Institutions" />
                                         <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -52,37 +52,37 @@
                                     </p:selectOneMenu>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbDept"
-                                        styleClass="w-100 form-control"  
-                                        value="#{searchController.department}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.department}"
                                         filter="true">
                                         <f:selectItem itemLabel="All Departments" />
                                         <f:selectItems value="#{departmentController.getInsDepartments(searchController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                     </p:selectOneMenu>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="siteMenu"
-                                        styleClass="w-100 form-control"  
-                                        value="#{searchController.site}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{searchController.site}"
                                         filter="true">
                                         <f:selectItem itemLabel="All Sites" />
                                         <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                     </p:selectOneMenu>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" /> <!-- FontAwesome book icon -->
+                                        <h:outputText title="Category" value="&#xf02d;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Category"  class="mx-3"/>
                                     </h:panelGroup>
                                     <p:autoComplete value="#{searchController.category}"
-                                                    completeMethod="#{categoryController.completeCategoryServiceInvestigation}" 
+                                                    completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
                                                     var="category"
                                                     class="w-100"
                                                     inputStyleClass="w-100"
@@ -91,23 +91,22 @@
                                     </p:autoComplete>
 
                                     <h:panelGroup layout="block" styleClass="form-group">
-                                        <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" /> <!-- FontAwesome box icon -->
+                                        <h:outputText title="Item" value="&#xf0f6;" styleClass="fa mr-2" />
                                         <h:outputLabel value="Item"  class="mx-3"/>
                                     </h:panelGroup>
                                     <p:autoComplete value="#{searchController.item}"
                                                     class="w-100"
                                                     inputStyleClass="w-100"
-                                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
+                                                    completeMethod="#{itemController.completeAllServicesAndInvestigations}"
                                                     var="item"
                                                     itemLabel="#{item.name}"
                                                     itemValue="#{item}">
                                     </p:autoComplete>
 
-
                                 </h:panelGrid>
 
                                 <p:commandButton id="btnSearch" class="m-1 ui-button-info"
-                                                 icon="fas fa-list-alt" 
+                                                 icon="fas fa-list-alt"
                                                  ajax="false" value="List"
                                                  action="#{searchController.generateOpdServicesByBillItem()}" />
 
@@ -122,25 +121,18 @@
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                                 </p:commandButton>
 
-
-
-
                             </div>
-
-                        </div>
-                        <div style="display: none;" >
-                            #{searchController.bundle.reportTemplateRows}
                         </div>
 
                         <div class="row">
                             <div class="col-md-12">
-                                <p:dataTable 
-                                    rowIndexVar="i" 
-                                    id="tblBillsDisplay" 
-                                    value="#{searchController.bundleBillItems.reportTemplateRows}" 
-                                    var="pi"
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="tblBillsDisplay"
+                                    value="#{searchController.opdBillItemDtos}"
+                                    var="dto"
                                     rows="10"
-                                    rowKey="#{pi.billItem.id}"
+                                    rowKey="#{dto.billItemId}"
                                     paginatorPosition="bottom"
                                     paginator="true"
                                     class="w-100"
@@ -148,290 +140,251 @@
                                     rowsPerPageTemplate="5,10,15"
                                     >
 
-                                    <p:column headerText="No" width="40px;" >
+                                    <p:column headerText="No" width="40px;">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No"  sortBy="#{pi.billItem.bill.deptId}" filterBy="#{pi.billItem.bill.deptId}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.billItem.bill.deptId}">
-                                        </h:outputLabel>  
-                                        <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
-                                        <p:commandButton icon="pi pi-list" styleClass="m-1" ajax="false" title="Manage Batch Bill" action="#{billSearch.navigateToManageBillByAtomicBillType}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
-                                        <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
-                                        <p:commandButton icon="pi pi-search-plus" styleClass="m-1" ajax="false" title="View Batch Bill" action="#{billSearch.navigateToViewBillByAtomicBillType}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill.backwardReferenceBill}" target="#{billSearch.bill}"/>
-                                        </p:commandButton>
-                                        <p:commandButton 
-                                            title="Admin" 
-                                            icon="fa fa-shield-alt" 
-                                            class="m-1 ui-button-danger" 
-                                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                                            ajax="false" 
+                                    <p:column headerText="Bill No" sortBy="#{dto.deptId}" filterBy="#{dto.deptId}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.deptId}"/>
+                                        <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill"
+                                                         action="#{billSearch.navigateToManageBillByAtomicBillTypeByBillId(dto.billId)}"/>
+                                        <p:commandButton icon="pi pi-list" styleClass="m-1" ajax="false" title="Manage Batch Bill"
+                                                         rendered="#{dto.backwardReferenceBillId ne null}"
+                                                         action="#{billSearch.navigateToManageBillByAtomicBillTypeByBillId(dto.backwardReferenceBillId)}"/>
+                                        <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill"
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.billId)}"/>
+                                        <p:commandButton icon="pi pi-search-plus" styleClass="m-1" ajax="false" title="View Batch Bill"
+                                                         rendered="#{dto.backwardReferenceBillId ne null}"
+                                                         action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.backwardReferenceBillId)}"/>
+                                        <p:commandButton
+                                            title="Admin"
+                                            icon="fa fa-shield-alt"
+                                            class="m-1 ui-button-danger"
+                                            action="#{billSearch.navigateToAdminBillByAtomicBillTypeByBillId(dto.billId)}"
+                                            ajax="false"
                                             rendered="#{webUserController.hasPrivilege('Developers')}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill}" target="#{billSearch.bill}" />
-                                            #{pi.billItem.bill.id}
+                                            #{dto.billId}
                                         </p:commandButton>
                                     </p:column>
 
-                                    <p:column headerText="Institution Name"  sortBy="#{pi.billItem.bill.toInstitution.name}" filterBy="#{pi.billItem.bill.toInstitution.name}" filterMatchMode="contains">
-                                        <h:outputLabel   value="#{pi.billItem.bill.toInstitution.name}">
-                                        </h:outputLabel>
+                                    <p:column headerText="Institution" sortBy="#{dto.toInstitutionName}" filterBy="#{dto.toInstitutionName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.toInstitutionName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Credit Company"  rendered="#{pi.billItem.bill.creditCompany ne null}" sortBy="#{pi.billItem.bill.creditCompany.name}" filterBy="#{pi.billItem.bill.creditCompany.name}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.billItem.bill.creditCompany.name}">
-                                        </h:outputLabel>
+                                    <p:column headerText="Credit Company" sortBy="#{dto.creditCompanyName}" filterBy="#{dto.creditCompanyName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.creditCompanyName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Patient"  sortBy="#{pi.billItem.bill.patient.person.nameWithTitle}" filterBy="#{pi.billItem.bill.patient.person.nameWithTitle}" filterMatchMode="contains">
-                                        <h:commandLink value="#{pi.billItem.bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.billItem.bill.approvedAnyTest ne true}">
-                                            <f:setPropertyActionListener value="#{pi.billItem.bill.patient}" target="#{patientController.current}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Patient" sortBy="#{dto.patientName}" filterBy="#{dto.patientName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.patientNameWithTitle}"/>
                                         <br/>
-                                        <h:outputLabel value="#{pi.billItem.bill.patient.person.ageAsString}" />
+                                        <h:outputLabel value="#{dto.patientAgeAsString}"/>
                                         <br/>
-                                        <h:outputLabel value="#{pi.billItem.bill.patient.person.sex}" />
+                                        <h:outputLabel value="#{dto.patientSex}"/>
                                         <br/>
-                                        <h:outputLabel value="#{pi.billItem.bill.patient.person.phone}" />
+                                        <h:outputLabel value="#{dto.patientPhone}"/>
                                     </p:column>
 
-
-                                    <p:column headerText="Category"  sortBy="#{pi.billItem.item.category.name}" filterBy="#{pi.billItem.item.category.name}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.billItem.item.category.name}" />
+                                    <p:column headerText="Category" sortBy="#{dto.categoryName}" filterBy="#{dto.categoryName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.categoryName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill Type" 
+                                    <p:column headerText="Bill Type"
                                               rendered="#{webUserController.hasPrivilege('Developers')}"
-                                              sortBy="#{pi.billItem.bill.billTypeAtomic}"
-                                              filterBy="#{pi.billItem.bill.billTypeAtomic}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.billItem.bill.billTypeAtomic}" />
+                                              sortBy="#{dto.billTypeAtomic}"
+                                              filterBy="#{dto.billTypeAtomic}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.billTypeAtomic}"/>
                                     </p:column>
 
-                                    <p:column headerText="Investigation or Service"  sortBy="#{pi.billItem.item.name}" filterBy="#{pi.billItem.item.name}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.billItem.item.name}" />
+                                    <p:column headerText="Investigation or Service" sortBy="#{dto.itemName}" filterBy="#{dto.itemName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.itemName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Billed At" sortBy="#{pi.billItem.bill.createdAt}" filterBy="#{pi.billItem.bill.createdAt}" filterMatchMode="equals">
-                                        <h:outputLabel value="Billed at " />
-                                        <h:outputLabel value="#{pi.billItem.bill.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                    <p:column headerText="Billed At" sortBy="#{dto.billedAt}">
+                                        <h:outputLabel value="Billed at "/>
+                                        <h:outputLabel value="#{dto.billedAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                         </h:outputLabel>
                                         <br/>
-
-                                        <h:panelGroup rendered="#{pi.billItem.bill.cancelled}">
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        <h:panelGroup rendered="#{dto.cancelled}">
+                                            <h:outputLabel style="color: red;" value="Cancelled at "/>
+                                            <h:outputLabel style="color: red;" value="#{dto.cancelledAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.billItem.bill.refunded}">
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.refunded}" value="#{pi.billItem.bill.refundedBill.createdAt}">
-                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                        <h:panelGroup rendered="#{dto.refunded}">
+                                            <h:outputLabel style="color: red;" value="Refunded at "/>
+                                            <h:outputLabel style="color: red;" value="#{dto.refundedAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                             </h:outputLabel>
                                         </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Billed By" sortBy="#{dto.billedByName}" filterBy="#{dto.billedByName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.billedByName}"/>
                                         <br/>
-                                    </p:column>
-
-                                    <p:column headerText="Billed By" sortBy="#{pi.billItem.bill.creater.webUserPerson.name}" filterBy="#{pi.billItem.bill.creater.webUserPerson.name}" filterMatchMode="contains">
-                                        <h:outputLabel value="#{pi.billItem.bill.creater.webUserPerson.name}" />
-                                        <br/>
-                                        <h:panelGroup rendered="#{pi.billItem.bill.cancelled}">
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.creater.webUserPerson.name}" />
+                                        <h:panelGroup rendered="#{dto.cancelled}">
+                                            <h:outputLabel style="color: red;" value="Cancelled By "/>
+                                            <h:outputLabel style="color: red;" value="#{dto.cancelledByName}"/>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{pi.billItem.bill.refunded}">
-                                            <h:outputLabel style="color: red;" value="Refunded By " />
-                                            <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.refunded}" value="#{pi.billItem.bill.refundedBill.creater.webUserPerson.name}" />
+                                        <h:panelGroup rendered="#{dto.refunded}">
+                                            <h:outputLabel style="color: red;" value="Refunded By "/>
+                                            <h:outputLabel style="color: red;" value="#{dto.refundedByName}"/>
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Payment Method" sortBy="#{pi.billItem.bill.paymentMethod}" filterBy="#{pi.billItem.bill.paymentMethod}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.bill.paymentMethod}" />
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Payment Method" sortBy="#{dto.paymentMethod}" filterBy="#{dto.paymentMethod}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.paymentMethod}"/>
                                     </p:column>
 
-                                    <p:column headerText="Discount Scheme" sortBy="#{pi.billItem.bill.paymentScheme.name}" filterBy="#{pi.billItem.bill.paymentScheme.name}" filterMatchMode="contains">
-                                        <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.billItem.bill.paymentScheme.name}" />
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
-                                        </h:commandLink>
+                                    <p:column headerText="Discount Scheme" sortBy="#{dto.paymentSchemeName}" filterBy="#{dto.paymentSchemeName}" filterMatchMode="contains">
+                                        <h:outputLabel value="#{dto.paymentSchemeName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value*" sortBy="#{pi.billItem.grossValue}" filterBy="#{pi.billItem.grossValue}" filterMatchMode="gte">
-                                        <h:outputLabel value="#{pi.billItem.grossValue}">
+                                    <p:column headerText="Gross Value*" sortBy="#{dto.grossValue}" filterBy="#{dto.grossValue}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{dto.grossValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Discount*" sortBy="#{pi.billItem.discount}" filterBy="#{pi.billItem.discount}" filterMatchMode="gte">
-                                        <h:outputLabel value="#{pi.billItem.discount}">
+                                    <p:column headerText="Discount*" sortBy="#{dto.discount}" filterBy="#{dto.discount}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{dto.discount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Net Value*" sortBy="#{pi.billItem.netValue}" 
-                                              filterBy="#{pi.billItem.netValue}" filterMatchMode="gte">
-                                        <h:outputLabel value="#{pi.billItem.netValue}">
+                                    <p:column headerText="Net Value*" sortBy="#{dto.netValue}" filterBy="#{dto.netValue}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{dto.netValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Doctor" sortBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterBy="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" filterMatchMode="contains">
-                                        <p:outputLabel value="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" />
+                                    <p:column headerText="Doctor" sortBy="#{dto.doctorName}" filterBy="#{dto.doctorName}" filterMatchMode="contains">
+                                        <p:outputLabel value="#{dto.doctorNameWithTitle}"/>
                                     </p:column>
 
                                 </p:dataTable>
-
                             </div>
-                        </div>  
+                        </div>
 
-                        <p:dataTable 
+                        <!-- Hidden table for Excel export -->
+                        <p:dataTable
                             style="display: none;"
-                            rowIndexVar="i" 
-                            id="tblBills" 
-                            value="#{searchController.bundleBillItems.reportTemplateRows}" 
-                            var="pi"
+                            rowIndexVar="i"
+                            id="tblBills"
+                            value="#{searchController.opdBillItemDtos}"
+                            var="dto"
                             rows="10"
-                            rowKey="#{pi.billItem.id}"
+                            rowKey="#{dto.billItemId}"
                             paginator="true"
-                            class="w-100" >
+                            class="w-100">
 
-                            <p:column headerText="No" width="40px;" >
+                            <p:column headerText="No">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
 
-                            <p:column headerText="Bill No" >
-                                <h:outputLabel value="#{pi.billItem.bill.deptId}"/>
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{dto.deptId}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Type" >
-                                <h:outputLabel value="#{pi.billItem.bill.billType}"/>
+                            <p:column headerText="Bill Type Atomic">
+                                <h:outputLabel value="#{dto.billTypeAtomic}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Class Type" >
-                                <h:outputLabel value="#{pi.billItem.bill.billClassType}"/>
+                            <p:column headerText="Bill Class Type">
+                                <h:outputLabel value="#{dto.billClassType}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Type Atomic" >
-                                <h:outputLabel value="#{pi.billItem.bill.billTypeAtomic}"/>
+                            <p:column headerText="Institution Name">
+                                <h:outputLabel value="#{dto.toInstitutionName}"/>
                             </p:column>
 
-                            <p:column headerText="Institution Name" >
-                                <h:outputLabel   value="#{pi.billItem.bill.toInstitution.name}">
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Credit Company" >
-                                <h:outputLabel value="#{pi.billItem.bill.creditCompany.name}">
-                                </h:outputLabel>
+                            <p:column headerText="Credit Company">
+                                <h:outputLabel value="#{dto.creditCompanyName}"/>
                             </p:column>
 
                             <p:column headerText="Patient Name">
-                                <h:outputLabel value="#{pi.billItem.bill.patient.person.nameWithTitle}" />
+                                <h:outputLabel value="#{dto.patientNameWithTitle}"/>
+                            </p:column>
+
+                            <p:column headerText="Patient Age">
+                                <h:outputLabel value="#{dto.patientAgeAsString}"/>
+                            </p:column>
+
+                            <p:column headerText="Patient Sex">
+                                <h:outputLabel value="#{dto.patientSex}"/>
                             </p:column>
 
                             <p:column headerText="Patient Phone">
-                                <h:outputLabel value="#{pi.billItem.bill.patient.person.phone}" />
+                                <h:outputLabel value="#{dto.patientPhone}"/>
                             </p:column>
 
-
-                            <p:column headerText="Category" >
-                                <h:outputLabel value="#{pi.billItem.item.category.name}" />
+                            <p:column headerText="Category">
+                                <h:outputLabel value="#{dto.categoryName}"/>
                             </p:column>
 
-                            <p:column headerText="Investigation or Service"  >
-                                <h:outputLabel value="#{pi.billItem.item.name}" />
+                            <p:column headerText="Investigation or Service">
+                                <h:outputLabel value="#{dto.itemName}"/>
                             </p:column>
 
                             <p:column headerText="Billed At">
-                                <h:outputLabel value="#{pi.billItem.bill.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                <h:outputLabel value="#{dto.billedAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Billed By" >
-                                <h:outputLabel value="#{pi.billItem.bill.creater.webUserPerson.name}" />
+                            <p:column headerText="Billed By">
+                                <h:outputLabel value="#{dto.billedByName}"/>
                             </p:column>
 
-
-                            <p:column headerText="Cancalled" >
-                                <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                            <p:column headerText="Cancelled At">
+                                <h:outputLabel style="color: red;" rendered="#{dto.cancelled}" value="#{dto.cancelledAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Cancallation at" >
-                                <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Refunded">
-                                <h:outputLabel style="color: red;" value="Refunded at "  rendered="#{pi.billItem.bill.refunded}"/>
+                            <p:column headerText="Cancelled By">
+                                <h:outputLabel style="color: red;" rendered="#{dto.cancelled}" value="#{dto.cancelledByName}"/>
                             </p:column>
 
                             <p:column headerText="Refunded At">
-                                <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.refunded}" value="#{pi.billItem.bill.refundedBill.createdAt}">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                <h:outputLabel style="color: red;" rendered="#{dto.refunded}" value="#{dto.refundedAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputLabel>
                             </p:column>
 
-
-                            <p:column headerText="Payment Method" >
-                                <h:outputLabel value="#{pi.billItem.bill.paymentMethod}" />
+                            <p:column headerText="Refunded By">
+                                <h:outputLabel style="color: red;" rendered="#{dto.refunded}" value="#{dto.refundedByName}"/>
                             </p:column>
 
-                            <p:column headerText="Discount Scheme" >
-                                <h:outputLabel value="#{pi.billItem.bill.paymentScheme.name}" />
+                            <p:column headerText="Payment Method">
+                                <h:outputLabel value="#{dto.paymentMethod}"/>
                             </p:column>
 
-                            <p:column headerText="Gross Value" >
-                                <h:outputLabel value="#{pi.billItem.grossValue}">
+                            <p:column headerText="Discount Scheme">
+                                <h:outputLabel value="#{dto.paymentSchemeName}"/>
+                            </p:column>
+
+                            <p:column headerText="Gross Value">
+                                <h:outputLabel value="#{dto.grossValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Discount" >
-                                <h:outputLabel value="#{pi.billItem.discount}">
+                            <p:column headerText="Discount">
+                                <h:outputLabel value="#{dto.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Net Value" >
-                                <h:outputLabel value="#{pi.billItem.netValue}">
+                            <p:column headerText="Net Value">
+                                <h:outputLabel value="#{dto.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Hospital Fee" >
-                                <h:outputLabel value="#{pi.billItem.hospitalFee}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Staff Fee" >
-                                <h:outputLabel value="#{pi.billItem.staffFee}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="CC Fee" >
-                                <h:outputLabel value="#{pi.billItem.collectingCentreFee}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </p:column>
-
-                            <p:column headerText="Doctor" >
-                                <p:outputLabel value="#{pi.billItem.bill.fromStaff.person.nameWithTitle}" />
+                            <p:column headerText="Doctor">
+                                <p:outputLabel value="#{dto.doctorNameWithTitle}"/>
                             </p:column>
 
                         </p:dataTable>

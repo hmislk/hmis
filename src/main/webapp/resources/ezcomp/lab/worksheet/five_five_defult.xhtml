@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+            <cc:attribute name="patientInvestigation" required="true" />
+        </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panel id="pPrintWorksheet"  style="margin: auto; border: 0px; padding: 10px!important; font-size:110%" styleClass="fiveinchbillBreakRuhunu" >
+            <div >
+
+                Referring Doc - for OPD :  #{cc.attrs.patientInvestigation.billItem.bill.referredInstituteOrDoctor}<br/>
+                Referring Doc - for Admission :  #{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}<br/>
+
+                bht :#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.bhtNo}<br/>
+
+                room : #{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}<br/>
+
+                Collecting Center : #{cc.attrs.patientInvestigation.billItem.bill.collectingCentre.name}<br/>
+
+
+                <h:panelGroup   id="gpBillPreview" styleClass="fiveinchbill" style="padding: 12px!important;">
+                    <div >
+                        <div>
+                            <h:panelGroup  style="min-width: 100%; padding: 5px!important; margin: 5px;">
+
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Name : "/></div>
+                                    <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.patient.person.nameWithTitle}" ></h:outputLabel></div>
+                                </div >
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Sex : " /></div>
+                                    <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.patient.person.sex}" ></h:outputLabel></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Age : " /> </div>
+                                    <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.patient.age }" ></h:outputLabel></div>
+                                </div >
+
+                                <div class="row">
+                                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.referredBy.person ne null}">
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Ref. Doc : " /></div>
+                                            <div class="col-7 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}"></h:outputLabel></div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.referringDoctor.person ne null}">
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Ref. Doc : " /></div>
+                                            <div class="col-7 mx-1"><h:outputLabel style="font-size: 11px!important;"  value="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.referringDoctor.person.nameWithTitle}" ></h:outputLabel></div>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div class="row">
+                                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.collectingCentre ne null}">
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="CC Name : " /></div>
+                                            <div class="col-6 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.billItem.bill.collectingCentre.name}"></h:outputLabel></div>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div class="row">
+                                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter ne null}">
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="BHT No : " /></div>
+                                            <div class="col-7 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.bhtNo}"></h:outputLabel></div>
+                                        </div >
+
+                                        <div class="row">
+                                            <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Room No : " /></div>
+                                            <div class="col-7 mx-1"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}"></h:outputLabel></div>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Test : " /></div>
+                                    <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.investigation.name}" ></h:outputLabel></div>
+                                </div >
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Bill Id : " /></div>
+                                    <div class="col-7"><h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.billItem.bill.deptId}" ></h:outputLabel></div>
+                                </div>
+
+
+
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Bill At : " /></div>
+                                    <div class="col-7">
+                                        <h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.billItem.bill.createdAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div >
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Sample At : " /></div>
+                                    <div class="col-7">
+                                        <h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.sampledAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Col. At : " /></div>
+                                    <div class="col-7">
+                                        <h:outputLabel style="font-size: 11px!important;" value="#{cc.attrs.patientInvestigation.receivedAt}" >
+                                            <f:convertDateTime pattern="dd MM yyyy HH:mm:ss a "/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="font-weight: 600;">
+                                    <div class="col-3"><h:outputLabel style="font-size: 11px!important;" value="Sample Id : " /></div>
+                                    <div class="col-7">
+                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(cc.attrs.patientInvestigation)}" var="psc">
+                                            <div class="d-flex gap-2">
+                                                <h:outputText value="#{psc.patientSample.id}"  />
+                                            </div>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{cc.attrs.patientInvestigation.investigation.reportType eq 'Microbiology'}"  style="width: 100%;" >
+                                <p:panelGrid columns="2"  >
+
+                                    <h:outputLabel value="Macroscopy"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+                                    <h:outputLabel value="................................................................................................"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="Microscopy"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="Colony Count"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="Comments"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+                                    <h:outputLabel value="........................................................................"   style="font-size: 11px!important;">
+                                    </h:outputLabel>
+                                </p:panelGrid>
+
+                                <p:dataGrid style="padding: 1px!important;margin: 1px!important;" columns="1" value="#{antibioticController.items}" var="ab" >
+                                    <h:outputLabel value="#{ab.name}"   style="font-size: 11px!important;"></h:outputLabel>
+                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
+                                    <h:outputLabel value="....."   style="font-size: 11px!important;"></h:outputLabel>
+                                    <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"   style="font-size: 11px!important;"></h:outputLabel>
+                                </p:dataGrid>
+
+                            </h:panelGroup>
+
+                            <table>
+                                <ui:repeat value="#{cc.attrs.patientInvestigation.investigation.reportItems}" var="myix" >
+
+                                    <h:panelGroup rendered="#{myix.retired==false and myix.ixItemType eq 'Value' and myix.item.reportType ne 'Microbiology'}" style="padding-left: 10px!important;margin-left:  10px!important;">
+                                        <tr>
+                                            <td>
+                                                <h:outputLabel value="#{myix.name}" style="font-size: 11px!important;" ></h:outputLabel>
+                                            </td>
+                                            <td>
+                                                <h:outputLabel value="_____________"   style="font-size: 11px!important;"  ></h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </table>
+
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+        </p:panel>
+    </cc:implementation>
+</html>

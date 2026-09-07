@@ -1,0 +1,223 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS'}" >
+            <p:dataTable
+                class="w-100"
+                value="#{patientInvestigationController.patientReports}"
+                var="dpr"
+                paginator="true"
+                rowKey="#{dpr.id}"
+                paginatorPosition="bottom"
+                selectionMode="multiple"
+                selection="#{patientInvestigationController.selectedPatientReports}"
+                rows="10"
+                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                rowsPerPageTemplate="10,25,50"
+                style="table-layout: fixed; width: 100%;">
+
+                <!-- Bill Number Column with Icon and Colour -->
+                <p:column headerText="Bill Number" width="12em" style="vertical-align: top;">
+                    <p:commandLink
+                        ajax="false"
+                        class="m-2 text-primary"
+                        action="#{billSearch.navigateToViewOpdBill()}">
+                        <f:setPropertyActionListener value="#{dpr.patientInvestigation.billItem.bill}" target="#{billSearch.bill}"/>
+                        <i class="fas fa-receipt"></i> <!-- Bill Icon -->
+                        <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.deptId}" class="mx-2"/>
+                    </p:commandLink>
+                    <br/>
+                    <i class="fas fa-calendar-alt text-secondary"></i> <!-- Date Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.createdAt}" class="mx-2">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                    </h:outputLabel>
+                    <br/>
+                    <i class="fa-solid fa-bed text-info"></i> <!-- BHT Icon -->
+                    <h:outputLabel value="BHT : #{dpr.patientInvestigation.billItem.bill.patientEncounter.bhtNo}" class="mx-2" />
+                    <br/>
+                    <!-- CC, IP, and OP Icons with Colours -->
+                    <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.ipOpOrCc == 'CC'}">
+                        <i class="fas fa-box text-warning"></i> <!-- Collecting Centre Icon -->
+                        <h:outputLabel value="Collecting Centre (CC)" class="text-warning mx-2"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.ipOpOrCc == 'IP'}">
+                        <i class="fas fa-procedures text-info"></i> <!-- Inpatient Icon -->
+                        <h:outputLabel value="Inpatient (IP)" class="text-info mx-2"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.ipOpOrCc == 'OP'}">
+                        <i class="fas fa-user-outlet text-primary"></i> <!-- Outpatient Icon -->
+                        <h:outputLabel value="Outpatient (OP)" class="text-primary mx-2"/>
+                    </h:panelGroup>
+                </p:column>
+
+                <!-- Patient Details Column with Icons -->
+                <p:column headerText="Patient" width="10em" style="vertical-align: top;">
+                    <i class="fas fa-user text-primary"></i> <!-- Name Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.person.nameWithTitle}" class="mx-2"/>
+                    <br/>
+                    <i class="fas fa-birthday-cake text-info"></i> <!-- Age Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.person.ageAsString}" class="mx-2" />
+                    <br/>
+                    <i class="fas fa-venus-mars text-danger"></i> <!-- Sex Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.person.sex.label}" class="mx-2" />
+                    <br/>
+                    <i class="fas fa-phone-alt text-success"></i> <!-- Phone Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.person.phone}" class="mx-2" />
+                    <br/>
+                    <i class="fas fa-mobile-alt text-warning"></i> <!-- Mobile Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.patient.person.mobile}" class="mx-2" />
+                </p:column>
+
+                <!-- Investigation Name Column -->
+                <p:column headerText="Investigations" width="10em" style="vertical-align: top;">
+                    <i class="fas fa-vial text-danger"></i> <!-- Investigation Icon -->
+                    <h:outputLabel rendered="#{not webUserController.hasPrivilege('Developers')}" value="#{dpr.patientInvestigation.investigation.name}"/>
+                    <p:commandLink
+                        value="#{dpr.patientInvestigation.investigation.name}"
+                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                        action="#{investigationController.navigateToManageInvestigation(dpr.patientInvestigation.investigation.id)}">
+                    </p:commandLink>
+                </p:column>
+
+                <!-- Status Column -->
+                <p:column headerText="Status" width="5em" style="vertical-align: top;">
+
+                    <h:panelGroup rendered="#{!dpr.patientInvestigation.billItem.bill.cancelled}">
+                        <h:outputLabel value="#{dpr.patientInvestigation.status}" />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}">
+                        <div class="d-flex justify-content-center mt-4">
+                            <p:badge
+                                value="Bill Cancel"
+                                severity="info"
+                                size="large"
+                                style="width: 200px;"
+                                styleClass="ui-badge-danger"
+                                rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}" >
+                            </p:badge>
+                        </div>
+                    </h:panelGroup>
+
+                </p:column>
+
+                <!-- Ordered Institution and Department Column with Icons -->
+                <p:column headerText="Ordered Institute" width="10em" style="vertical-align: top;">
+                    <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.collectingCentre == null}">
+                        <i class="fas fa-hospital text-info"></i> <!-- Institution Icon -->
+                        <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.institution.name}" />
+                        <br/>
+                        <i class="fas fa-building text-primary"></i> <!-- Department Icon -->
+                        <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.department.name}" />
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.collectingCentre != null}">
+                        <i class="fas fa-box text-secondary"></i> <!-- Collecting Centre Icon -->
+                        <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.collectingCentre.name}" />
+                    </h:panelGroup>
+                </p:column>
+
+                <!-- Lab Institution and Department Column with Icons -->
+                <p:column headerText="Lab" width="10em" style="vertical-align: top;">
+                    <i class="fas fa-flask text-danger"></i> <!-- Lab Institution Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.toInstitution.name}" />
+                    <br/>
+                    <i class="fas fa-vials text-success"></i> <!-- Lab Department Icon -->
+                    <h:outputLabel value="#{dpr.patientInvestigation.billItem.bill.toDepartment.name}" />
+                </p:column>
+
+                <!-- Sample Components Column with Icon and Repeat -->
+                <p:column headerText="Sample Components" width="15em" style="vertical-align: top;">
+                    <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(dpr.patientInvestigation)}" var="psc">
+                        <div class="ui-g" style="margin-bottom: 10px;">
+                            <div class="ui-g-12">
+                                <i class="fa fa-vial text-primary"></i>
+                                <span class="text-primary font-weight-bold">Sample ID : </span>
+                                <h:outputText value="#{psc.patientSample.id}" class="#{psc.patientSample.sampleRejected ? 'text-danger mx-2' : 'text-primary  mx-2'}" />
+                            </div>
+                            <div class="ui-g-12">
+                                <i class="fa fa-flask text-success"></i>
+                                <span class="text-success font-weight-bold">Test Component : </span>
+                                <h:outputText value="#{psc.investigationComponant.name}" class="#{psc.patientSample.sampleRejected ? 'text-danger mx-2' : 'text-primary  mx-2'}" />
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </p:column>
+
+                <!-- Actions Column -->
+                <p:column headerText="Actions" style="vertical-align: top; width: 260px;" >
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
+                        <h:outputLabel value="Investigation ID : #{dpr.patientInvestigation.id}" /><br/>
+                        <h:outputLabel value="Report ID : #{dpr.id}" /><br/>
+                        <h:outputLabel value="Report Type : #{dpr.reportType}" /><br/><br/>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{!dpr.approved}">
+                        <p:badge
+                            value="Pending"
+                            severity="warning"
+                            class="mt-2 w-100">
+                        </p:badge>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{dpr.approved}">
+                        <div class="d-flex justify-content-between">
+
+                            <p:badge
+                                value="Approved"
+                                severity="success"
+                                class="mt-2">
+                            </p:badge>
+
+                            <div class="d-flex gap-2 mb-2">
+                                <!-- Print Report CommandButton 1 -->
+                                <p:commandButton
+                                    id="cmdOldReportPrint1"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    value="To Print"
+                                    action="#{patientReportController.navigateToPrintPatientReportForInward(dpr)}"
+                                    rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}">
+                                </p:commandButton>
+
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:graphicImage
+                                    library="image"
+                                    rendered="#{!dpr.printed}"
+                                    title="Not Printed"
+                                    name="print_pending.png"
+                                    style="height: 40px; width: 40px;" >
+                                </p:graphicImage>
+
+                                <p:graphicImage
+                                    library="image"
+                                    rendered="#{dpr.printed}"
+                                    name="print_done.png"
+                                    title="Report Printed"
+                                    style="height: 40px; width: 40px;" >
+                                </p:graphicImage>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </p:column>
+
+            </p:dataTable>
+
+        </h:panelGroup>
+    </cc:implementation>
+</html>

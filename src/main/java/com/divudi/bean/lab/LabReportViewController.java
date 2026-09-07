@@ -30,7 +30,6 @@ public class LabReportViewController {
             return false;
         }
         System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getId());
-        System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getIdStr());
         return "application/pdf".equalsIgnoreCase(patientReportUploadController.getReportUpload().getFileType());
     }
 
@@ -44,11 +43,9 @@ public class LabReportViewController {
 
     // StreamedContent getter for PDF
     public StreamedContent getPdfReportStream() {
-        System.out.println("getPdfReportStream");
         if (isPdf()) {
             ByteArrayInputStream input = new ByteArrayInputStream(patientReportUploadController.getReportUpload().getBaImage());
             System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getId());
-            System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getIdStr());
             return DefaultStreamedContent.builder()
                     .name(patientReportUploadController.getReportUpload().getFileName())
                     .contentType(patientReportUploadController.getReportUpload().getFileType())

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D97706;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#B45309;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#FFFBEB"/>
+  <g filter="url(#shad1)">
+    <!-- Left coin -->
+    <circle cx="58" cy="100" r="36" fill="url(#grad1a)"/>
+    <circle cx="58" cy="100" r="26" fill="#B45309"/>
+    <text x="58" y="107" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFBEB" font-family="sans-serif">$</text>
+    <!-- Right coin -->
+    <circle cx="142" cy="100" r="36" fill="url(#grad1a)"/>
+    <circle cx="142" cy="100" r="26" fill="#B45309"/>
+    <text x="142" y="107" text-anchor="middle" font-size="22" font-weight="bold" fill="#FFFBEB" font-family="sans-serif">$</text>
+    <!-- Upward arrow (left side) -->
+    <line x1="96" y1="74" x2="96" y2="58" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+    <path d="M88 66 L96 54 L104 66" fill="none" stroke="#FBBF24" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Downward arrow (right side) -->
+    <line x1="104" y1="126" x2="104" y2="142" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/>
+    <path d="M96 134 L104 146 L112 134" fill="none" stroke="#FBBF24" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

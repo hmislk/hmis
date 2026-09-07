@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad23a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad23" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad23)">
+    <!-- Pill bottle -->
+    <rect x="55" y="75" width="60" height="90" rx="8" fill="url(#grad23a)"/>
+    <!-- Bottle cap -->
+    <rect x="50" y="58" width="70" height="22" rx="6" fill="#155E75"/>
+    <!-- Bottle label -->
+    <rect x="60" y="95" width="50" height="52" rx="5" fill="white" opacity="0.85"/>
+    <!-- Medical cross on label -->
+    <rect x="77" y="108" width="16" height="6" rx="3" fill="#22D3EE"/>
+    <rect x="82" y="103" width="6" height="16" rx="3" fill="#22D3EE"/>
+    <!-- Pills inside visible area -->
+    <ellipse cx="75" cy="80" rx="8" ry="5" fill="#22D3EE" opacity="0.7"/>
+    <ellipse cx="93" cy="80" rx="8" ry="5" fill="#22D3EE" opacity="0.7"/>
+    <!-- Arrow pointing right -->
+    <rect x="122" y="107" width="48" height="12" rx="6" fill="#22D3EE"/>
+    <polygon points="158,95 176,113 158,131" fill="#22D3EE"/>
+  </g>
+</svg>

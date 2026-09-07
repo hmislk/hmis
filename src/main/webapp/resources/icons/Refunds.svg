@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
+  <g filter="url(#shad1)">
+    <!-- Coin circle -->
+    <circle cx="100" cy="88" r="38" fill="url(#grad1a)"/>
+    <circle cx="100" cy="88" r="28" fill="#4338CA"/>
+    <text x="100" y="95" text-anchor="middle" font-size="22" font-weight="bold" fill="#EEF2FF" font-family="sans-serif">$</text>
+    <!-- Curved return arrow (arc going left) -->
+    <path d="M138 120 Q160 148 120 158 Q82 168 62 142" fill="none" stroke="#818CF8" stroke-width="7" stroke-linecap="round"/>
+    <!-- Arrowhead pointing left -->
+    <path d="M55 150 L62 140 L72 150" fill="none" stroke="#818CF8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -383,6 +383,7 @@ public class FinancialReport {
     }
 
     public List<BillTypeAtomic> getBillTypesForRefundedCash() {
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         if (billTypesForRefundedCash == null) {
             billTypesForRefundedCash = new ArrayList<>();
             billTypesForRefundedCash.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
@@ -502,6 +503,7 @@ public class FinancialReport {
     }
 
     public List<BillTypeAtomic> getBillTypesForRefundedCreditCard() {
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         if (billTypesForRefundedCreditCard == null) {
             billTypesForRefundedCreditCard = new ArrayList<>();
             // Add BillTypeAtomic entries that represent credit card refunds
@@ -585,6 +587,7 @@ public class FinancialReport {
     }
 
     public List<BillTypeAtomic> getBillTypesForRefundedDebitCard() {
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         if (billTypesForRefundedDebitCard == null) {
             billTypesForRefundedDebitCard = new ArrayList<>();
             // Add BillTypeAtomic entries related to debit card refunds

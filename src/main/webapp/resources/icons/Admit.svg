@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad1)">
+    <!-- Door frame -->
+    <rect x="115" y="55" width="45" height="100" rx="3" fill="url(#grad1a)"/>
+    <rect x="118" y="58" width="39" height="94" rx="2" fill="#F0FDFA"/>
+    <!-- Door knob -->
+    <circle cx="125" cy="108" r="4" fill="#22D3EE"/>
+    <!-- Person body -->
+    <circle cx="75" cy="75" r="14" fill="url(#grad1a)"/>
+    <path d="M60 95 Q75 88 90 95 L93 135 Q93 140 88 140 L62 140 Q57 140 57 135 Z" fill="url(#grad1a)"/>
+    <!-- Walking leg lines -->
+    <line x1="68" y1="140" x2="63" y2="158" stroke="url(#grad1a)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="82" y1="140" x2="87" y2="158" stroke="url(#grad1a)" stroke-width="7" stroke-linecap="round"/>
+    <!-- Plus sign (admission) -->
+    <rect x="95" y="62" width="16" height="6" rx="3" fill="#22D3EE"/>
+    <rect x="100" y="57" width="6" height="16" rx="3" fill="#22D3EE"/>
+    <!-- Arrow pointing to door -->
+    <path d="M96 108 L110 108" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"/>
+    <path d="M105 103 L111 108 L105 113" fill="none" stroke="#22D3EE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

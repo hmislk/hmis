@@ -41,9 +41,7 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
 
-                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{creditSummeryController.makeNull}" ajax="false" value="Excel" >
-                        <p:dataExporter  type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
-                    </p:commandButton>
+                    <p:commandButton class="ui-button-success" icon="fas fa-file-excel" action="#{creditSummeryController.exportToExcelByBill}" ajax="false" value="Excel" />
 
                 </h:panelGrid>
 

@@ -62,16 +62,18 @@
                                         <h:outputText styleClass="fas fa-money-bill"></h:outputText>
                                         <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
                                     </f:facet>
-                                    <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"  
+                                    <p:selectOneMenu   id="cmbPs" value="#{billSearch.paymentMethod}"
                                                        rendered="#{billSearch.bill.billType eq 'OpdBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
                                         <f:selectItems value="#{billSearch.paymentMethods}"/>
+                                        <p:ajax process="@this" event="change" listener="#{billSearch.onPaymentMethodChange()}" />
                                     </p:selectOneMenu>
 
-                                    <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"  
+                                    <p:selectOneMenu   id="cmbPs2" value="#{billSearch.paymentMethod}"
                                                        disabled="#{billSearch.bill.paymentMethod eq 'Agent'}" rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
                                         <f:selectItem itemLabel="Select paymentMethod"/>
                                         <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
+                                        <p:ajax process="@this" event="change" listener="#{billSearch.onPaymentMethodChange()}" />
                                     </p:selectOneMenu>
                                 </p:panel>
 

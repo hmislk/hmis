@@ -20,7 +20,11 @@ public enum PharmacyReports implements IReportType {
     SALE_SUMMARY_BY_PAYMENT_METHOD("Sale summary by payment method"),
     SALE_SUMMARY_BY_PAYMENT_METHOD_BY_BILL("Sale summary by payment method by Bill"),
     STOCK_REPORT_BY_EXPIRY("Stock report by Expiry"),
-    STOCK_REPORT_BY_ITEM("Stock report by Item"),;
+    STOCK_REPORT_BY_ITEM("Stock report by Item"),
+    STOCK_REPORT_BY_VMP("Stock report by VMP"),
+    STOCK_REPORT_BY_ZERO_ITEM("Stock report by Zero Item"),
+    DEPARTMENT_VICE_STOCK_REPORT("Department Vice Stock Report"),
+    ORDERING_REQUIREMENT_REPORT("Ordering Requirement Report");
 
 
     private final String displayName;

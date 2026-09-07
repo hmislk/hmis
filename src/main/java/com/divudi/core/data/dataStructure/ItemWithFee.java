@@ -18,6 +18,17 @@ public class ItemWithFee {
     private double proFee;
     private double total;
 
+    public ItemWithFee() {
+    }
+
+    public ItemWithFee(Item item, double count, double hospitalFee, double proFee) {
+        this.item = item;
+        this.count = count;
+        this.hospitalFee = hospitalFee;
+        this.proFee = proFee;
+        this.total = hospitalFee + proFee;
+    }
+
     public Item getItem() {
         return item;
     }

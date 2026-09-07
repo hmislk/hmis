@@ -12,11 +12,14 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Search Interim Bills" style="height: 100vh" >
-                        <div class="d-flex">
-                            <h:panelGrid columns="1">
+
+
+
+                        <div class="d-flex gap-3">
+                            <div class="col-2">
                                 <h:outputLabel value="From Date"/>
                                 <p:datePicker
-                                    value="#{searchController.fromDate}"
+                                    value="#{inwardIntrimBillSearchController.fromDate}"
                                     class="w-100"
                                     showTime="true"
                                     showButtonBar="true"
@@ -28,7 +31,7 @@
 
                                 <h:outputLabel value="To Date"/>
                                 <p:datePicker
-                                    value="#{searchController.toDate}"
+                                    value="#{inwardIntrimBillSearchController.toDate}"
                                     class="w-100"
                                     showTime="true"
                                     showButtonBar="true"
@@ -42,28 +45,127 @@
                                     class="mt-2 w-100 mb-3 ui-button-warning"
                                     icon="fa-solid fa-search"
                                     ajax="false"
-                                    action="#{searchController.createInwardIntrimBills()}"
-                                    value="Search"  />
+                                    action="#{inwardIntrimBillSearchController.search()}"
+                                    value="Search"  >
+                                </p:commandButton>
 
-
+                                <hr/>
 
                                 <h:outputLabel value="Bill No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
+                                <p:inputText autocomplete="off"  value="#{inwardIntrimBillSearchController.billNo}" class="w-100" />
                                 <h:outputLabel value="BHT No"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.bhtNo}" />
+                                <p:inputText autocomplete="off"  value="#{inwardIntrimBillSearchController.bhtNo}" class="w-100"/>
                                 <h:outputLabel value="Patient Name"/>
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
+                                <p:inputText autocomplete="off" value="#{inwardIntrimBillSearchController.patientName}" class="w-100"/>
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" value="#{inwardIntrimBillSearchController.mrnOrPhn}" class="w-100"/>
                                 <h:outputLabel value="Patient Phone"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                <h:outputLabel value="Total"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.total}" />
-                                <h:outputLabel value="Net Total"/>
-                                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                            </h:panelGrid>
-                            <div class="p-1">
+                                <p:inputText autocomplete="off"  value="#{inwardIntrimBillSearchController.patientPhone}" class="w-100"/>
+
+                                <h:outputLabel value="Patient NIC / Passport"/>
+                                <p:inputText autocomplete="off" value="#{inwardIntrimBillSearchController.patientIdentityNumber}" class="w-100"/>
+
+                                <h:outputLabel value="Referring Doctor"/>
+                                <p:autoComplete
+                                    forceSelection="true"
+                                    id="cmbDoc"
+                                    value="#{inwardIntrimBillSearchController.referringDoctor}"
+                                    completeMethod="#{doctorController.completeDoctor}"
+                                    var="ix"
+                                    class="w-100"
+                                    inputStyleClass="form-control">
+                                    <p:column headerText="Name">
+                                        <h:outputLabel value="#{ix.person.nameWithTitle}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <h:outputLabel value="#{ix.speciality.name}"></h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <h:outputLabel value="Occupation"/>
+                                <p:inputText autocomplete="off" value="#{inwardIntrimBillSearchController.occupation}" class="w-100"/>
+
+                                <h:outputLabel value="Insurance Company"/>
+                                <p:selectOneMenu
+                                    id="cmbCreditCompanyIntrim"
+                                    class="w-100"
+                                    value="#{inwardIntrimBillSearchController.creditCompany}"
+                                    filter="true"
+                                    autoWidth="false"
+                                    >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="creditCompanyItem" itemLabel="#{creditCompanyItem.name}" itemValue="#{creditCompanyItem}" />
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="Status"/>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    value="#{inwardIntrimBillSearchController.admissionStatus}" >
+                                    <f:selectItem itemLabel="Any Status"></f:selectItem>
+                                    <f:selectItems value="#{enumController.admissionStatuses}"
+                                                   var="status"
+                                                   itemValue="#{status}" itemLabel="#{status.label}" />
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="Admission Type"/>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    value="#{inwardIntrimBillSearchController.admissionType}" >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="Institution"/>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    id="cmbInstitution"
+                                    value="#{inwardIntrimBillSearchController.institution}"
+                                    filter="true"
+                                    autoWidth="false"
+                                    >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="@this"
+                                            update=":#{p:resolveFirstComponentWithId('cmbDepartment',view).clientId}" />
+                                </p:selectOneMenu>
+
+                                <h:panelGroup  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBillUnrestrictedAccess') or !configOptionApplicationController.getBooleanValueByKey('Restirct Inward Admission Search to Logged Department of the User')}" >
+                                    <h:outputLabel value="Site"/>
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        id="cmbSite"
+                                        value="#{inwardIntrimBillSearchController.site}"
+                                        filter="true"
+                                        autoWidth="false"
+                                        >
+                                        <f:selectItem itemLabel="All"></f:selectItem>
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                        <p:ajax process="@this"
+                                                update=":#{p:resolveFirstComponentWithId('cmbDepartment',view).clientId}" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="Department"/>
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        id="cmbDepartment"
+                                        value="#{inwardIntrimBillSearchController.department}"
+                                        filter="true"
+                                        autoWidth="false"
+                                        >
+                                        <f:selectItem itemLabel="All"></f:selectItem>
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardIntrimBillSearchController.institution,inwardIntrimBillSearchController.site)}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+
+                            </div>
+                            <div class="col-10 ">
                                 <p:dataTable
                                     id="tblBills"
-                                    value="#{searchController.bills}"
+                                    value="#{inwardIntrimBillSearchController.results}"
                                     var="bb"
                                     rowKey="#{bb.id}"
                                     paginator="true"
@@ -81,7 +183,7 @@
                                     </p:column>
 
                                     <p:column headerText="BHT No" >
-                                        <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
+                                        <h:outputLabel value="#{bb.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Billed At" >
@@ -89,25 +191,25 @@
                                         <br/>
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
+                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Billed By">
-                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" >
+                                        <h:outputLabel value="#{bb.createrName}" >
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >
+                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledByName}" >
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Client" >
-                                        <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
+                                        <h:outputLabel value="#{bb.patientName}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Payment Method">
                                         <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>
@@ -118,18 +220,19 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Comments" >
-                                        <h:outputLabel rendered="#{bb.refundedBill ne null}" value="#{bb.refundedBill.comments}" >
+                                        <h:outputLabel rendered="#{bb.refundedComments ne null}" value="#{bb.refundedComments}" >
                                         </h:outputLabel>
-                                        <h:outputLabel  rendered="#{bb.cancelledBill ne null}" value="#{bb.cancelledBill.comments}" >
+                                        <h:outputLabel  rendered="#{bb.cancelledComments ne null}" value="#{bb.cancelledComments}" >
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_intrim"  >
-                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                        <p:commandButton ajax="false" value="View Bill" action="#{inwardIntrimBillSearchController.viewInterimBill()}"  >
+                                            <f:setPropertyActionListener value="#{bb.id}" target="#{inwardIntrimBillSearchController.billId}"/>
                                         </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </div>
+
                         </div>
 
                     </p:panel>

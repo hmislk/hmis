@@ -47,7 +47,7 @@
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Transfer_Issue_by_Bill"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Transfer_Issue_by_Bill" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -131,21 +131,21 @@
                                     </h:outputLabel>                                  
                                 </p:column>
                                 
-                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                <p:column headerText="Purchase Value" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
                                     <!--This is the Purchase Value of bill items-->
-                                    <h:outputLabel value="#{0-i.netTotal}"  > 
+                                    <h:outputLabel value="#{empty i.netTotal ? null : commonFunctionsProxy.abs(i.netTotal)}"  > 
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
 
-                                <p:column headerText="Sale Value" style="text-align: right;">
+                                <p:column headerText="Sale Value" style="text-align: right;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{0-i.saleValue}">
+                                    <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -160,16 +160,16 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column style="text-align: right;"  footerText="#{-reportsTransfer.netTotalValues}" >
+                                        <p:column style="text-align: right;"  footerText="#{reportsTransfer.netTotalValues}" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{-reportsTransfer.netTotalValues}" >
+                                                <h:outputLabel value="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: right;"  footerText="#{-reportsTransfer.netTotalValues}" >
+                                        <p:column style="text-align: right;"  footerText="#{reportsTransfer.totalsValue}" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{-reportsTransfer.totalsValue}" >
+                                                <h:outputLabel value="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>

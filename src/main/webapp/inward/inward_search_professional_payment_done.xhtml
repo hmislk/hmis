@@ -38,9 +38,11 @@
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.deptId}" />
                                 <h:outputLabel value="Bht No"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.bhtNo}" />
-                                <h:outputLabel value="Patient Name"/> 
+                                <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
-                                <h:outputLabel value="Speciality"/> 
+                                <h:outputLabel value="MRN / PHN No"/>
+                                <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.number}" />
+                                <h:outputLabel value="Speciality"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.speciality}" />
                                 <h:outputLabel value="Staff Name"/>      
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.staffName}" />
@@ -125,7 +127,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Action">
-                                        <p:commandButton ajax="false" value="View Bill" icon="fas fa-eye"  action="inward_reprint_staff_payment"  >
+                                        <p:commandButton ajax="false" value="View Bill" icon="fas fa-eye"  action="inward_reprint_staff_payment?faces-redirect=true"  >
                                             <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>

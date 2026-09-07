@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:define name="content">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}">
+            <h:outputText value="You are NOT authorized"/>
+        </h:panelGroup>
+        <p:panel
+            id="gpDirectPurchaseFinalize"
+            styleClass="shadow-sm border-0"
+            rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}">
+            <f:facet name="header">
+                <div class="d-flex align-items-center">
+                    <h:outputText styleClass="fas fa-clipboard-check text-warning me-2"/>
+                    <h:outputText value="Direct Purchase List to Finalize" styleClass="mb-0 text-warning fw-bold"/>
+                </div>
+            </f:facet>
+            <h:form>
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-4">
+                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
+                            <div class="mb-2">
+                                <p:outputLabel for="fromDate" styleClass="form-label fw-bold text-secondary d-block">
+                                    <h:outputText styleClass="fas fa-calendar-alt me-1"/>
+                                    <h:outputText value="From Date"/>
+                                </p:outputLabel>
+                                <p:calendar
+                                    id="fromDate"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
+                                    value="#{searchController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select start date">
+                                </p:calendar>
+                            </div>
+                            <div class="mb-2">
+                                <p:outputLabel for="toDate" styleClass="form-label fw-bold text-secondary d-block">
+                                    <h:outputText styleClass="fas fa-calendar-alt me-1"/>
+                                    <h:outputText value="To Date"/>
+                                </p:outputLabel>
+                                <p:calendar
+                                    id="toDate"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
+                                    value="#{searchController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    placeholder="Select end date">
+                                </p:calendar>
+                            </div>
+                            <p:commandButton
+                                id="btnSearch"
+                                value="Search Direct Purchases to Finalize"
+                                icon="fas fa-search"
+                                ajax="false"
+                                action="#{searchController.createDirectPurchaseTableToFinalize}"
+                                styleClass="ui-button-warning w-100"/>
+                            <p:defaultCommand target="btnSearch"/>
+                        </p:panel>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <p:panel header="Direct Purchases Pending Finalization" styleClass="shadow-sm">
+                            <p:dataTable
+                                id="tblDirectPurchaseFinalize"
+                                value="#{searchController.bills}"
+                                var="g"
+                                rowKey="#{g.id}"
+                                stickyHeader="true"
+                                paginator="true"
+                                rows="25"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="25,50,100"
+                                styleClass="p-datatable-sm"
+                                emptyMessage="No saved Direct Purchases found matching your criteria"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true">
+
+                                <p:column headerText="Created" width="8em" sortBy="#{g.createdAt}">
+                                    <h:outputLabel value="#{g.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Department" width="8em" sortBy="#{g.department.name}">
+                                    <h:outputLabel value="#{g.department.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Created By" width="8em" sortBy="#{g.creater.webUserPerson.name}">
+                                    <h:outputLabel value="#{g.creater.webUserPerson.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Supplier" width="12em" sortBy="#{g.fromInstitution.name}">
+                                    <h:outputLabel value="#{g.fromInstitution.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Invoice No" width="8em" sortBy="#{g.invoiceNumber}">
+                                    <h:outputLabel value="#{g.invoiceNumber}"/>
+                                </p:column>
+
+                                <p:column headerText="Value" width="8em" styleClass="text-end" sortBy="#{g.netTotal}">
+                                    <h:outputLabel value="#{g.netTotal}" styleClass="fw-bold text-success">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Action" styleClass="text-center" exportable="false" width="10em">
+                                    <p:commandButton
+                                        styleClass="ui-button-warning"
+                                        icon="fas fa-eye"
+                                        value="To Finalize"
+                                        title="Open Direct Purchase #{g.deptId} for review and finalization"
+                                        ajax="false"
+                                        action="#{pharmacyBillSearch.navigateToEditSavedDirectPurchase()}"
+                                        style="min-width: 100px;">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </div>
+                </div>
+            </h:form>
+
+        </p:panel>
+
+
+    </ui:define>
+
+</ui:composition>

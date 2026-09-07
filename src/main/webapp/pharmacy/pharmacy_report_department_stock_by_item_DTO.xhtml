@@ -1,0 +1,358 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frm">
+                    <p:panel header="Stock Report by Item" >
+
+                        <common:institution_site_department_filter controller="#{reportsStock}"/>
+
+                        <h:panelGroup id="panelDeptType" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Category Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-tags mr-2" />
+                                            <h:outputLabel value="Category" for="categoryFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="categoryFilter"
+                                            value="#{reportsStock.category}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Categories"/>
+                                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Dosage Form Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-capsules mr-2" />
+                                            <h:outputLabel value="Dosage Form" for="dosageFormFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="dosageFormFilter"
+                                            value="#{reportsStock.dosageForm}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Dosage Forms"/>
+                                            <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Department Type Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                            <h:outputLabel value="Department Types" for="departmentTypeFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectCheckboxMenu
+                                            id="departmentTypeFilter"
+                                            value="#{reportsStock.selectedDepartmentTypes}"
+                                            label="Select Department Types"
+                                            updateLabel="true"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            scrollHeight="200">
+                                            <f:selectItems
+                                                value="#{reportsStock.availableDepartmentTypes}"
+                                                var="depType"
+                                                itemLabel="#{depType.label}"
+                                                itemValue="#{depType}"/>
+                                        </p:selectCheckboxMenu>
+                                        <p:tooltip for="departmentTypeFilter" value="Leave empty to include all departments"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="panelZeroStock" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Include Zero Stock Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-box-open mr-2" />
+                                            <h:outputLabel value="Include Zero Stock" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <h:selectBooleanCheckbox id="includeZeroStockFilter" value="#{reportsStock.includeZeroStock}" />
+                                        <h:outputLabel for="includeZeroStockFilter" value=" Include items with zero stock" styleClass="ms-1"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Action Buttons -->
+                                <h:panelGroup layout="block" styleClass="col-lg-8 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputLabel value="&#160;" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning mx-1"
+                                                     actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" />
+                                    <p:commandButton styleClass="ui-button-success mx-1" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Report_By_Item" postProcessor="#{reportsStock.postProcessXLSStockReportByItem}"/>
+                                    </p:commandButton>
+                                    <p:commandButton styleClass="ui-button-info mx-1" icon="fas fa-print" value="Print"
+                                                     actionListener="#{reportsStock.prepareForPrint()}"
+                                                     oncomplete="alignStockByItemColumns(); $('#frm\\:print').click()"
+                                                     update=":frm:tbl"/>
+                                    <p:commandButton id="print" value="Actual print" style="display: none">
+                                        <p:ajax event="click" listener="#{reportsStock.prepareForView()}" update=":frm:tbl" oncomplete="alignStockByItemColumns()"/>
+                                        <p:printer target=":frm:tbl" />
+                                    </p:commandButton>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100">
+
+                            <!-- Cells keep their natural (unwrapped) width so the table overflows its
+                                 container and scrolls horizontally (scrollable="true" below) instead of
+                                 wrapping long item names onto multiple lines. table-layout must be
+                                 overridden from PrimeFaces' default "fixed" (which silently clips
+                                 nowrap content to the container width) to "auto" so the table can
+                                 actually grow past the scrollable viewport. Issue #23052.
+
+                                 Because scrollable="true" renders the header/body/footer as three
+                                 independent <table> elements, letting each auto-size to its own content
+                                 means a long item name only widens the BODY table's Item column - the
+                                 header/footer tables have short content in that column and stay narrow,
+                                 so every column after Item drifts out of alignment (issue #23209).
+                                 alignStockByItemColumns() re-measures the widest cell per column across
+                                 all three tables and pins that width on all three, so they always match
+                                 regardless of item-name length. It reruns after every AJAX update
+                                 (paginate/sort/filter/print) since those redraw the body with different
+                                 content. -->
+                            <style>
+                                [id="frm:tbl"] td, [id="frm:tbl"] th { white-space: nowrap; }
+                                /* All three scrollable tables (header / body / footer) must auto-size
+                                   to content AND use border-box so a width set from outerWidth()
+                                   renders as the same box on all three. Leaving the footer out (or
+                                   leaving it content-box) is what let the totals row drift out of
+                                   alignment for long item names - issue #23209. */
+                                [id="frm:tbl"] .ui-datatable-scrollable-header table,
+                                [id="frm:tbl"] .ui-datatable-scrollable-body table,
+                                [id="frm:tbl"] .ui-datatable-scrollable-footer table {
+                                    table-layout: auto !important;
+                                    width: auto !important;
+                                }
+                                [id="frm:tbl"] .ui-datatable-scrollable-header th,
+                                [id="frm:tbl"] .ui-datatable-scrollable-body td,
+                                [id="frm:tbl"] .ui-datatable-scrollable-footer td {
+                                    box-sizing: border-box;
+                                }
+                            </style>
+                            <script>
+                                function alignStockByItemColumns() {
+                                    var $wrapper = $('#frm\\:tbl');
+                                    var $headerTable = $wrapper.find('.ui-datatable-scrollable-header table').first();
+                                    var $bodyTable = $wrapper.find('.ui-datatable-scrollable-body table').first();
+                                    var $footerTable = $wrapper.find('.ui-datatable-scrollable-footer table').first();
+                                    var $headerCells = $headerTable.find('> thead > tr > th');
+                                    var $bodyRows = $bodyTable.find('> tbody > tr');
+                                    var $footerCells = $footerTable.find('> tfoot > tr > td');
+                                    if (!$headerCells.length || !$bodyRows.length) {
+                                        return;
+                                    }
+
+                                    // Clear any previously pinned widths so every cell reports its
+                                    // natural content width again.
+                                    $headerCells.css('width', '');
+                                    $bodyRows.find('> td').css('width', '');
+                                    $footerCells.css('width', '');
+
+                                    // PASS 1 - measure only. Pinning a column before the later columns
+                                    // are measured redistributes space in a table-layout:auto table and
+                                    // corrupts their outerWidth(), so all reads must happen first.
+                                    var widths = [];
+                                    $headerCells.each(function(colIndex) {
+                                        var maxWidth = $(this).outerWidth() || 0;
+                                        $bodyRows.each(function() {
+                                            var cellWidth = $(this).find('> td').eq(colIndex).outerWidth() || 0;
+                                            if (cellWidth > maxWidth) {
+                                                maxWidth = cellWidth;
+                                            }
+                                        });
+                                        var footerWidth = $footerCells.eq(colIndex).outerWidth() || 0;
+                                        if (footerWidth > maxWidth) {
+                                            maxWidth = footerWidth;
+                                        }
+                                        widths[colIndex] = maxWidth;
+                                    });
+
+                                    // PASS 2 - apply. With box-sizing:border-box (set in CSS above) the
+                                    // border-box width from outerWidth() maps 1:1 onto css('width').
+                                    $headerCells.each(function(colIndex) {
+                                        var w = widths[colIndex] + 'px';
+                                        $(this).css('width', w);
+                                        $bodyRows.each(function() {
+                                            $(this).find('> td').eq(colIndex).css('width', w);
+                                        });
+                                        $footerCells.eq(colIndex).css('width', w);
+                                    });
+                                }
+                                // Run once the DOM is ready, then again after the browser has
+                                // finished layout/paint and PrimeFaces has run its own scrollable
+                                // column sync - on a full-page load (the non-AJAX "Process" submit)
+                                // there is no oncomplete hook, and a bare ready() call measures the
+                                // table before PF has laid out the three scrollable sub-tables.
+                                function alignStockByItemColumnsDeferred() {
+                                    alignStockByItemColumns();
+                                    if (window.requestAnimationFrame) {
+                                        requestAnimationFrame(function() {
+                                            requestAnimationFrame(alignStockByItemColumns);
+                                        });
+                                    } else {
+                                        setTimeout(alignStockByItemColumns, 50);
+                                    }
+                                    setTimeout(alignStockByItemColumns, 250);
+                                }
+                                $(document).ready(alignStockByItemColumnsDeferred);
+                                $(window).on('load', alignStockByItemColumnsDeferred);
+                            </script>
+
+                            <p:dataTable
+                                id="tbl"
+                                rowIndexVar="ii"
+                                value="#{reportsStock.stockReportByItemDTOS}" var="i"
+                                rendered="#{reportsStock.stockReportByItemDTOS.size() ne 0 }"
+                                rows="#{reportsStock.paginator?'20':reportsStock.stockReportByItemDTOS.size()}"
+                                paginator="#{reportsStock.paginator}"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="20, 50, 100"
+                                scrollable="true"
+                                scrollWidth="100%">
+                                <p:ajax event="page" oncomplete="alignStockByItemColumns()" />
+                                <p:ajax event="sort" oncomplete="alignStockByItemColumns()" />
+                                <p:ajax event="filter" oncomplete="alignStockByItemColumns()" />
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Stock Report by Item"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Institution: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}   |   "/>
+                                            <h:outputText value="Site: #{not empty reportsStock.site ? reportsStock.site.name : 'All'}   |   "/>
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}   |   "/>
+                                            <h:outputText value="Category: #{not empty reportsStock.category ? reportsStock.category.name : 'All'}   |   "/>
+                                            <h:outputText value="Dosage Form: #{not empty reportsStock.dosageForm ? reportsStock.dosageForm.name : 'All'}   |   "/>
+                                            <h:outputText value="Department Types: #{reportsStock.selectedDepartmentTypesPrintDisplay}   |   "/>
+                                            <h:outputText value="Include Zero Stock: #{reportsStock.includeZeroStock ? 'Yes' : 'No'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
+                                </f:facet>
+
+                                <p:column width="20px;" headerText="No" sortBy="#{ii}"
+                                          style="width: 20px;">
+                                    <h:outputLabel value="#{ii+1}" />
+                                </p:column>
+
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.code}" filterBy="#{i.code}"
+                                          styleClass="averageNumericColumn"
+                                          filterMatchMode="startsWith">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Code"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.code}" />
+                                </p:column>
+
+                                <p:column headerText="Item" 
+                                          sortBy="#{i.name}" filterBy="#{i.name}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.name}" />
+                                </p:column>
+
+                                <p:column headerText="Quantity" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.qty}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Quantity"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.qty}"  >
+                                        <f:convertNumber pattern="#,###" />
+                                    </h:outputLabel>                                 
+                                </p:column>
+
+
+                                <p:column headerText="Purchase Value" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.purchaseValue}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Value"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.purchaseValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+
+                                <p:column headerText="Retail Sale Value" 
+                                          styleClass="averageNumericColumn"
+                                          style="text-align: right;" sortBy="#{i.saleValue}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value"/>                                     
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.saleValue}"  >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column/>
+                                        <p:column/>
+                                        <p:column footerText="Total">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="Total" />
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column/>
+                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockPurchaseValue}">
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;" footerText="#{reportsStock.stockSaleValue}">
+                                            <f:facet name="footer" >
+                                                <h:outputLabel value="#{reportsStock.stockSaleValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -8,149 +8,353 @@
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form id="form">
-            <p:panel >
-                <f:facet name="header" >
-                    <h:outputLabel value="Staff Shift Report" />
-                </f:facet>
-                <h:panelGroup id="panelError"
-                              rendered="#{shiftFingerPrintAnalysisController.errorMessage ne null and shiftFingerPrintAnalysisController.errorMessage.size()!=0}"
-                              style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;" >
-                    <ui:repeat var="mes"
-                               value="#{shiftFingerPrintAnalysisController.errorMessage}" >
-                        <p:outputLabel value="#{mes}" /><br/>
-                    </ui:repeat>
-                </h:panelGroup>
-                <h:panelGrid columns="2">
-                    <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate"
-                                value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                    <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate"
-                                value="#{shiftFingerPrintAnalysisController.toDate}"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
 
-                    <h:outputLabel value="Staff : "/>
-                    <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
-                    <h:panelGroup>
+        <h:form id="form" styleClass="shift-report-form">
+
+            <h:outputStylesheet>
+                .shift-report-form {
+                    padding: 2rem 1.75rem;
+                }
+
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
+
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
+
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .error-panel {
+                    background: #fff8f8;
+                    border: 1px solid #f5c6c2;
+                    border-radius: 4px;
+                    padding: 0.75rem 1rem;
+                    margin-bottom: 1rem;
+                    color: #c0392b;
+                    font-size: 13px;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .shift-datagrid .ui-datagrid-content {
+                    padding: 0 !important;
+                }
+
+                .shift-day-table {
+                    margin-bottom: 1px;
+                }
+
+                .shift-day-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                }
+
+                .shift-day-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .shift-day-table .ui-datatable-data td,
+                .shift-day-table .ui-datatable-thead th {
+                    padding: 8px 12px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                }
+
+                .shift-day-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .shift-day-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .shift-day-table .ui-datatable-header {
+                    background: #f0f4ff !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    padding: 8px 14px !important;
+                    border-top: 2px solid #dde4f5 !important;
+                    color: #3a4a7a !important;
+                }
+
+                .shift-day-table .highLight2 td {
+                    background: #fdf6ec !important;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Staff Shift Report" /></p>
+                <p class="page-subtitle"><h:outputText value="Select a date range and staff member to view the shift table" /></p>
+            </div>
+
+            <!-- Error panel -->
+            <h:panelGroup id="panelError"
+                          styleClass="error-panel"
+                          rendered="#{shiftFingerPrintAnalysisController.errorMessage ne null
+                                      and shiftFingerPrintAnalysisController.errorMessage.size() != 0}">
+                <ui:repeat var="mes" value="#{shiftFingerPrintAnalysisController.errorMessage}">
+                    <p:outputLabel value="#{mes}" /><br />
+                </ui:repeat>
+            </h:panelGroup>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="frmDate" value="From date" styleClass="field-label" />
+                            <p:calendar id="frmDate"
+                                        value="#{shiftFingerPrintAnalysisController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="toDate" value="To date" styleClass="field-label" />
+                            <p:calendar id="toDate"
+                                        value="#{shiftFingerPrintAnalysisController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff" styleClass="field-label" />
+                            <hr:completeStaff id="roster"
+                                              value="#{shiftFingerPrintAnalysisController.staff}" />
+                        </div>
+                    </div>
+
+                    <div class="controls-actions">
                         <p:commandButton value="Fill"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action"
                                          process="@this frmDate toDate roster"
                                          update="lst"
                                          actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                         action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}"
-                                          />
+                                         action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" />
 
-                        <p:commandButton value="Fill Additional Only"
+                        <p:commandButton value="Fill additional only"
+                                         icon="pi pi-plus"
+                                         styleClass="btn-action"
                                          process="@this frmDate toDate roster"
                                          update="lst"
                                          actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
-                                         action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}"
-                                          />
-                    </h:panelGroup>
-                </h:panelGrid>
+                                         action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" />
+                    </div>
 
-                <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
-                    <p:dataGrid  id="lst" columns="1" var="data"
-                                 value="#{shiftFingerPrintAnalysisController.shiftTables}" >
-                        <f:facet name="header">
-                            <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
-                            <h:outputLabel style="text-align: center" value="  Staff Shift Report "  /><br/>
-                            <h:panelGroup rendered="#{shiftFingerPrintAnalysisController.staff.person.name ne null}" >
-                                <h:outputLabel value="Staff : #{shiftFingerPrintAnalysisController.staff.person.name}"/>
-                                <br/>
-                            </h:panelGroup>
-                            <h:outputLabel value="  From : "  />
-                            <h:outputLabel  value="#{shiftFingerPrintAnalysisController.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy "/>
-                            </h:outputLabel>
-                            <h:outputLabel/>
-                            <h:outputLabel/>
-                            <h:outputLabel value="  To : "/>
-                            <h:outputLabel  value="#{shiftFingerPrintAnalysisController.toDate}">
-                                <f:convertDateTime pattern="dd MM yy "/>
-                            </h:outputLabel>
-                        </f:facet>
-                        <p:dataTable value="#{data.staffShift}" var="sts"
-                                     rowStyleClass="#{sts.shift.dayType eq 'DayOff'
-                                                      or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
-                            <f:facet name="header">
-                                <h:outputLabel value="#{data.date}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputLabel>
-                            </f:facet>
-                            <p:column headerText="Shift Name" styleClass="singleLine">
-                                <h:outputLabel value="#{sts.shift.name}" />
-                            </p:column>
-                            <p:column headerText="ID">
-                                #{sts.id}
-                            </p:column>
-
-                            <p:column headerText="Shift Start">
-                                <h:outputLabel value="#{sts.shiftStartTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Shift End Time">
-                                <h:outputLabel value="#{sts.shiftEndTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                </h:outputLabel>
-
-                            </p:column>
-                            <p:column headerText="Leave/Replace" styleClass="singleLine">
-                                <h:outputLabel value="#{sts.leaveType}"  />
-                            </p:column>
-
-                            <p:column headerText="Halfday" styleClass="singleLine">
-                                <h:outputLabel value="#{sts.shift.halfShift}"  />
-                            </p:column>
-
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputLabel value="Staff Name"/>
-                                </f:facet>
-                                <h:outputLabel value="#{sts.staff.person.name}"/>
-
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputLabel value="Staff Code"/>
-                                </f:facet>
-                                <h:outputLabel value="#{sts.staff.code}"/>
-                            </p:column>
-
-                            <p:column headerText="Starting Record Frm Attendence">
-
-                                <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >
-                                    <h:outputLabel value="#{sts.startRecord.recordTimeStamp}"></h:outputLabel>
-                                </h:panelGroup>
-                                <h:outputLabel value="Previous" rendered="#{sts.previousStaffShift ne null}"/>
-                            </p:column>
-
-                            <p:column headerText="Ending Record Frm Attendence">
-                                <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
-                                    <h:outputLabel value="#{sts.endRecord.recordTimeStamp}"></h:outputLabel>
-                                </h:panelGroup>
-                                <h:outputLabel value="Next" rendered="#{sts.nextStaffShift ne null}"/>
-                            </p:column>
-
-                        </p:dataTable>
-                        <f:facet name="footer">
-                            <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                            <p:outputLabel value="Print At : " />
-                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                            </p:outputLabel>
-                        </f:facet>
-                    </p:dataGrid>
-                </p:panel>
+                </div>
             </p:panel>
+
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
+
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">
+                            <h:outputText value="#{sessionController.loggedUser.institution.name}" />
+                        </span>
+                        <span class="report-title-label">
+                            <h:outputText value="Staff Shift Report" />
+                        </span>
+                        <h:panelGroup rendered="#{shiftFingerPrintAnalysisController.staff.person.name ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="Staff: " />
+                                <h:outputText value="#{shiftFingerPrintAnalysisController.staff.person.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <p class="report-meta">
+                            <h:outputText value="#{shiftFingerPrintAnalysisController.fromDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+                            <h:outputText value=" — " />
+                            <h:outputText value="#{shiftFingerPrintAnalysisController.toDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+                        </p>
+                    </div>
+                </f:facet>
+
+                <p:dataGrid id="lst"
+                            columns="1"
+                            var="data"
+                            value="#{shiftFingerPrintAnalysisController.shiftTables}"
+                            styleClass="shift-datagrid">
+
+                    <p:dataTable value="#{data.staffShift}"
+                                 var="sts"
+                                 styleClass="shift-day-table"
+                                 rowStyleClass="#{sts.shift.dayType eq 'DayOff'
+                                                  or sts.shift.dayType eq 'SleepingDay' ? 'highLight2' : null}">
+
+                        <f:facet name="header">
+                            <h:outputText value="#{data.date}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                            </h:outputText>
+                        </f:facet>
+
+                        <p:column headerText="Shift" styleClass="singleLine">
+                            <h:outputLabel value="#{sts.shift.name}" />
+                        </p:column>
+
+                        <p:column headerText="ID">
+                            <h:outputText value="#{sts.id}" />
+                        </p:column>
+
+                        <p:column headerText="Shift start">
+                            <h:outputLabel value="#{sts.shiftStartTime}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Shift end">
+                            <h:outputLabel value="#{sts.shiftEndTime}">
+                                <f:convertDateTime timeZone="Asia/Colombo"
+                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Leave / replace" styleClass="singleLine">
+                            <h:outputLabel value="#{sts.leaveType}" />
+                        </p:column>
+
+                        <p:column headerText="Half day" styleClass="singleLine">
+                            <h:outputLabel value="#{sts.shift.halfShift}" />
+                        </p:column>
+
+                        <p:column headerText="Staff name">
+                            <h:outputLabel value="#{sts.staff.person.name}" />
+                        </p:column>
+
+                        <p:column headerText="Staff code">
+                            <h:outputLabel value="#{sts.staff.code}" />
+                        </p:column>
+
+                        <p:column headerText="In record">
+                            <h:panelGroup rendered="#{sts.previousStaffShift eq null}">
+                                <h:outputLabel value="#{sts.startRecord.recordTimeStamp}" />
+                            </h:panelGroup>
+                            <h:outputText value="Previous" rendered="#{sts.previousStaffShift ne null}" />
+                        </p:column>
+
+                        <p:column headerText="Out record">
+                            <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
+                                <h:outputLabel value="#{sts.endRecord.recordTimeStamp}" />
+                            </h:panelGroup>
+                            <h:outputText value="Next" rendered="#{sts.nextStaffShift ne null}" />
+                        </p:column>
+
+                    </p:dataTable>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataGrid>
+
+            </p:panel>
+
         </h:form>
 
-
-
     </ui:define>
-
-
 
 </ui:composition>

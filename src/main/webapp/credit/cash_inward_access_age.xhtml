@@ -9,7 +9,43 @@
     <h:body>
         <ui:composition template="/inward/inward_reports.xhtml">
             <ui:define name="subcontent">
-                <h:form>            
+                <h:form>
+                    <h:panelGrid columns="2">
+                        <h:outputLabel value="From"/>
+                        <p:calendar value="#{creditCompanyDueController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <h:outputLabel value="To"/>
+                        <p:calendar value="#{creditCompanyDueController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <h:outputLabel value="Date Basis"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
+                            <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
+                            <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Institution"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.institution}" filter="true">
+                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Site"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.site}" filter="true">
+                            <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                            <f:selectItems value="#{institutionController.sites}" var="exSite" itemLabel="#{exSite.name}" itemValue="#{exSite}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Department"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Admission Type"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.admissionType}">
+                            <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
+                            <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Payment Method"/>
+                        <p:selectOneMenu value="#{creditCompanyDueController.paymentMethod}">
+                            <f:selectItem itemLabel="All Methods" itemValue="#{null}"/>
+                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                        </p:selectOneMenu>
+                    </h:panelGrid>
                     <p:commandButton class="my-2" id="btnSearch" ajax="false" value="Process Cash Access Age" action="#{creditCompanyDueController.createInwardCashAgeTableAccess()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     

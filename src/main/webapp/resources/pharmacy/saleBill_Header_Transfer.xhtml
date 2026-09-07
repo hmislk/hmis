@@ -159,7 +159,7 @@
                         </td>
 
                     </tr>
-                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                         <tr>
                             <td colspan="4" style="overflow: visible;">
                                 <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock1" style="text-transform: capitalize!important;"  >
@@ -276,7 +276,7 @@
                 </h:panelGroup>
                 <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
                 <br/>
-                <h:outputLabel style="font-size: 9px" value="Software By CareCode Solutions (Pvt) Ltd"/>
+                <h:outputLabel style="font-size: 9px" value="Powered by CareCode (Pvt) Ltd."/>
             </div>
 
         </div>

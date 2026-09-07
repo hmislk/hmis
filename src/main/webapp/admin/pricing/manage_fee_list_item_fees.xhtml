@@ -19,7 +19,7 @@
                     <p:panel>
                         <f:facet name="header">
                             <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
-                            <p:outputLabel class="m-2">Manage Fee List Type Items Fees</p:outputLabel>
+                            <p:outputLabel class="m-2">Manage List Fees</p:outputLabel>
 
                         </f:facet>
                         <p:panelGrid columns="2" class="w-100" >
@@ -60,7 +60,7 @@
                                         process="@this" 
                                         listener="#{itemFeeManager.updateItemAndFeeListees}"
                                         update="gpFees gpTotals gpTotalsF" ></p:ajax>
-                                <p:column headerText="Type" style="padding: 6px;" >
+                                <p:column headerText="Code" style="padding: 6px;" >
                                     <p:outputLabel value="#{ix.code}" ></p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Type" style="padding: 6px;" >

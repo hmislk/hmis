@@ -4,129 +4,203 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:p="http://primefaces.org/ui"
       >
+
     <h:body>
-        <ui:composition template="/admin/users/user_roles.xhtml">
+
+        <ui:composition template="/admin/users/user_list.xhtml">
+
             <ui:define name="users">
-                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
-                    <h:outputLabel value="You are NOT authorized"/>
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}">
+                    <na:not_authorize />
                 </h:panelGroup>
 
-                <p:panel
-                    class="w-100"
-                    rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
+                <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}">
                     <f:facet name="header">
-                        <i class="fa fa-icons" />
-                        <h:outputLabel class="mx-2" value="Manage User Role Users"/>
+                        <i class="fa fa-user-cog" aria-hidden="true" />
+                        <h:outputLabel value="Manage User Role &amp; Defaults" class="mx-2" />
                     </f:facet>
 
-                    <p:panelGrid
-                        class="w-100 my-2"
-                        columns="2">
+                    <p:messages id="messages" showDetail="true" closable="true" />
 
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <p:outputLabel value="User: " style="font-weight:bold;" />
+                            <h:outputText value="#{userRoleManagementController.currentUser.name}" style="font-weight:bold; font-size:1.1em;" />
+                        </div>
+                    </div>
 
-                        <p:outputLabel value="User" ></p:outputLabel>
-                        <p:selectOneMenu
-                            value="#{webUserRoleUserController.webUser}"
-                            filter="true"
-                            filterMatchMode="contains"
-                            class="w-100"
-                            autoWidth="false">
-                            <f:selectItems value="#{webUserRoleUserController.users}"
-                                           var="i"
-                                           itemLabel="#{i.name}"
-                                           itemValue="#{i}"/>
-                        </p:selectOneMenu>
-
-
-
-
-                        <p:outputLabel  value="Role" ></p:outputLabel>
-                        <p:selectOneMenu
-                            class="w-100"
-                            value="#{webUserRoleUserController.webUserRole}" >
-                            <f:selectItem itemLabel="Select" ></f:selectItem>
-                            <f:selectItems value="#{webUserRoleController.items}" 
-                                           var="ur" 
-                                           itemLabel="#{ur.name}" 
-                                           itemValue="#{ur}" ></f:selectItems>
-                        </p:selectOneMenu>
-
-
-                        <p:outputLabel value="Institution"  ></p:outputLabel>                                            
-                        <p:autoComplete 
-                            id="ins"
-                            value="#{webUserRoleUserController.institution}"
-                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                            completeMethod="#{institutionController.completeIns}"
-                            var="ins"
-                            class="w-100 mt-1"
-                            inputStyleClass="form-control"
-                            itemLabel="#{ins.name}"
-                            itemValue="#{ins}">
-                            <p:ajax event="itemSelect" update="gpDept"/>
-                        </p:autoComplete>
-
-                        <p:outputLabel value="Department"  ></p:outputLabel>  
-                        <h:panelGroup id="gpDept" >
-                            <p:selectOneMenu 
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <p:outputLabel value="User's Role" for="cmbRole" class="d-block" />
+                            <p:selectOneMenu
+                                id="cmbRole"
+                                value="#{userRoleManagementController.selectedRole}"
                                 class="w-100"
-                                rendered="#{webUserRoleUserController.institution ne null}"
-                                value="#{webUserRoleUserController.department}" >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(webUserRoleUserController.institution)}" 
-                                               var="ur" 
-                                               itemLabel="#{ur.name}" 
-                                               itemValue="#{ur}" ></f:selectItems>
+                                filter="true"
+                                filterMatchMode="contains">
+                                <f:selectItem itemLabel="Select Role" ></f:selectItem>
+                                <f:selectItems
+                                    value="#{userRoleManagementController.roles}"
+                                    var="r"
+                                    itemLabel="#{r.name}"
+                                    itemValue="#{r}" />
                             </p:selectOneMenu>
-                        </h:panelGroup>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <p:commandButton
+                                id="btnSaveRole"
+                                value="Set as User's Role"
+                                icon="fa fa-save"
+                                title="Save this role as the user's own role, without changing any privileges/icons/subscriptions/login page yet"
+                                class="ui-button-success"
+                                process="@this cmbRole"
+                                update="messages"
+                                action="#{userRoleManagementController.saveUserRole()}" />
+                        </div>
+                    </div>
 
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p:outputLabel value="Departments to Apply Operations In" for="chkDepartments" class="d-block" />
+                            <p:selectManyCheckbox
+                                id="chkDepartments"
+                                value="#{userRoleManagementController.selectedDepartments}"
+                                converter="userRoleDepartmentConverter"
+                                layout="grid"
+                                columns="2"
+                                class="w-100">
+                                <f:selectItems
+                                    value="#{userRoleManagementController.userDepartments}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
+                            </p:selectManyCheckbox>
+                        </div>
+                        <div class="col-md-6">
+                            <p:outputLabel value="Aspects to Apply" class="d-block" />
+                            <div class="d-flex flex-wrap gap-3 mt-1">
+                                <p:selectBooleanCheckbox id="chkAspectPrivileges" value="#{userRoleManagementController.aspectPrivileges}" itemLabel="Privileges" />
+                                <p:selectBooleanCheckbox id="chkAspectIcons" value="#{userRoleManagementController.aspectIcons}" itemLabel="Icons" />
+                                <p:selectBooleanCheckbox id="chkAspectSubscriptions" value="#{userRoleManagementController.aspectSubscriptions}" itemLabel="Subscriptions" />
+                                <p:selectBooleanCheckbox id="chkAspectLoginPage" value="#{userRoleManagementController.aspectLoginPage}" itemLabel="Default Login Page" />
+                            </div>
+                            <div class="mt-2">
+                                <p:selectBooleanCheckbox id="chkUpdateUserRole" value="#{userRoleManagementController.updateUserRole}" itemLabel="Also set selected role as the user's role on reset" />
+                            </div>
+                        </div>
+                    </div>
 
-                        <p:spacer ></p:spacer>
+                    <div class="row mb-2">
+                        <div class="col-md-12 d-flex flex-wrap gap-2">
+                            <p:commandButton
+                                id="btnPreviewReset"
+                                value="Preview Reset"
+                                icon="fa fa-eye"
+                                class="ui-button-info ui-button-outlined"
+                                process="@form"
+                                update="opPreview messages"
+                                action="#{userRoleManagementController.previewOperation('RESET')}" />
+                            <p:commandButton
+                                id="btnPreviewExpand"
+                                value="Preview Expand"
+                                icon="fa fa-eye"
+                                class="ui-button-info ui-button-outlined"
+                                process="@form"
+                                update="opPreview messages"
+                                action="#{userRoleManagementController.previewOperation('EXPAND')}" />
+                            <p:commandButton
+                                id="btnPreviewNarrow"
+                                value="Preview Narrow"
+                                icon="fa fa-eye"
+                                class="ui-button-info ui-button-outlined"
+                                process="@form"
+                                update="opPreview messages"
+                                action="#{userRoleManagementController.previewOperation('NARROW')}" />
+                        </div>
+                    </div>
 
-                        <p:commandButton
-                            value="Add User and Role Privileges to Department"
-                            icon="fa fa-plus"
-                            class="ui-button-success w-100"
-                            action="#{webUserRoleUserController.addUsersToDepartmentRoleWithPrivileges}"
-                            ajax="false"
-                            update="tbl"
-                            />
-                    </p:panelGrid>
+                    <!-- Enter key only ever triggers a harmless preview, never a destructive execute action -->
+                    <p:defaultCommand target="btnPreviewReset" />
 
+                    <h:panelGroup id="opPreview" layout="block" class="mb-3">
+                        <p:outputPanel
+                            styleClass="ui-g ui-widget ui-state-highlight ui-corner-all p-2"
+                            rendered="#{userRoleManagementController.previewText ne null}">
+                            <i class="fa fa-info-circle" aria-hidden="true" />
+                            <h:outputText value=" #{userRoleManagementController.previewText}" style="font-weight:bold;" />
+                        </p:outputPanel>
+                    </h:panelGroup>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12 d-flex flex-wrap gap-2">
+                            <p:commandButton
+                                id="btnResetDefaultRole"
+                                value="Reset to User's Default Role"
+                                icon="fa fa-undo"
+                                class="ui-button-warning"
+                                process="@form"
+                                update="resultsWrap messages opPreview"
+                                onclick="return confirm('Reset the selected departments/aspects to this user\'s DEFAULT role template? Existing records outside the template will be retired.');"
+                                action="#{userRoleManagementController.executeResetToDefaultRole()}" />
+                            <p:commandButton
+                                id="btnResetSelectedRole"
+                                value="Reset to Selected Role"
+                                icon="fa fa-undo"
+                                class="ui-button-warning"
+                                process="@form"
+                                update="resultsWrap messages opPreview"
+                                onclick="return confirm('Reset the selected departments/aspects to the SELECTED role template? Existing records outside the template will be retired.');"
+                                action="#{userRoleManagementController.executeResetToSelectedRole()}" />
+                            <p:commandButton
+                                id="btnExpand"
+                                value="Expand by Selected Role"
+                                icon="fa fa-plus-circle"
+                                class="ui-button-secondary"
+                                process="@form"
+                                update="resultsWrap messages opPreview"
+                                onclick="return confirm('Add the selected role\'s template records to this user in the selected departments? Existing extras are left untouched.');"
+                                action="#{userRoleManagementController.executeExpand()}" />
+                            <p:commandButton
+                                id="btnNarrow"
+                                value="Narrow by Selected Role"
+                                icon="fa fa-minus-circle"
+                                class="ui-button-danger"
+                                process="@form"
+                                update="resultsWrap messages opPreview"
+                                onclick="return confirm('Retire this user\'s records that match the selected role template in the selected departments? Non-role records remain.');"
+                                action="#{userRoleManagementController.executeNarrow()}" />
+                        </div>
+                    </div>
+
+                    <h:panelGroup id="resultsWrap" layout="block">
+                    <p:dataTable
+                        id="tblResults"
+                        var="res"
+                        value="#{userRoleManagementController.results}"
+                        rendered="#{not empty userRoleManagementController.results}"
+                        styleClass="p-datatable-sm"
+                        stickyHeader="true">
+                        <p:column headerText="User">
+                            <h:outputText value="#{res.user.name}" />
+                        </p:column>
+                        <p:column headerText="Added">
+                            <h:outputText value="#{res.totalAdded}" />
+                        </p:column>
+                        <p:column headerText="Retired">
+                            <h:outputText value="#{res.totalRetired}" />
+                        </p:column>
+                        <p:column headerText="Error">
+                            <h:outputText value="#{res.errorMessage}" style="color:#d9534f;" />
+                        </p:column>
+                    </p:dataTable>
+                    </h:panelGroup>
 
                 </p:panel>
 
-                <p:dataTable
-                    var="user"
-                    value="#{webUserRoleUserController.roleUsers}"
-                    rowKey="#{user.id}"
-                    id="tbl">
-                    <p:column headerText="User">
-                        <h:outputText value="#{user.webUser.name}" />
-                    </p:column>
-                    <p:column headerText="Department">
-                        <h:outputText value="#{user.webUser.department.name}" />
-                    </p:column>
-                    <p:column headerText="Actions" style="text-align: center; width: 200px;" >
-                        <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
-                            <p:commandButton
-                                id="remove"
-                                icon="fa fa-trash"
-                                action="#{webUserRoleUserController.removeUser()}"
-                                class="ui-button-danger"
-                                update="tbl" >
-                                <f:setPropertyActionListener
-                                    value="#{user}"
-                                    target="#{webUserRoleUserController.current}" >
-                                </f:setPropertyActionListener>
-                                <p:ajax process="@this" update="tbl"/>
-                            </p:commandButton>
-                            <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
-                        </h:panelGroup>
-                    </p:column>
-                </p:dataTable>
             </ui:define>
         </ui:composition>
     </h:body>

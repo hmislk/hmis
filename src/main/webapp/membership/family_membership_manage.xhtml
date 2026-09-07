@@ -160,10 +160,10 @@
                                 </p:column>
                                 <p:column headerText="Quick Links" >
                                     <p:commandButton 
-                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
+                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(fm.patient, fm.family.membershipScheme.paymentScheme, fm.family)}"
                                         ajax="false"
                                         styleClass="ui-button-opd"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD is available for Members',true)}"
+                                        rendered="#{webUserController.hasPrivilege('OpdBilling')}"
                                         class="m-1 ui-button-opd"
                                         icon="fa fa-fw fa-file-medical"
                                         title="OPD Billing">
@@ -171,13 +171,14 @@
                                     <p:commandButton 
                                         action="#{opdPreBillController.navigateToBillingForCashierFromMembership(fm.patient, fm.family.membershipScheme.paymentScheme)}" 
                                         ajax="false"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD is available for Members',true)}"
+                                        rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"
                                         class="m-1 ui-button-opd"
                                         icon="fa fa-fw fa-cash-register"
                                         title="OPD Billing for Cashier">
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" 
+                                        id="btnNavigateToPharmacyRetailSale"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}"
                                         icon="fa fa-fw fa-prescription-bottle-alt" 
                                         class="m-1 ui-button-pharmacy"
@@ -186,6 +187,7 @@
                                         title="Pharmacy Retail Sale">
                                     </p:commandButton>
                                     <p:commandButton 
+                                        id="btnNavigateToPharmacyRetailSaleForCashier"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy is available for Members',true)}"
                                         ajax="false" 
                                         icon="fa fa-fw fa-cash-register" 
@@ -205,23 +207,25 @@
                                     </p:commandButton>
                                 </p:column>
                                 <p:column headerText="Actions" >
-                                    <p:commandButton ajax="false" value="Profile"
-                                                     rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
-                                                     action="#{patientController.navigateToManageIndividualMembership()}"
-                                                     class="ui-button-warning mx-1" icon="pi pi-user">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Profile"
+                                        rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
+                                        action="#{patientController.navigateToManageIndividualMembership()}"
+                                        class="ui-button-warning mx-1" 
+                                        icon="pi pi-user">
                                         <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
-
 
                                     <p:commandButton
                                         ajax="false"
                                         value="Edit"
                                         action="patient" 
-
                                         rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                                         class="ui-button-warning mx-1" icon="fa-solid fa-pen">
                                         <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
+                                    
                                     <p:commandButton 
                                         rendered="#{webUserController.hasPrivilege('MemberShipAdd')}"
                                         ajax="false" value="Remove" 
@@ -232,10 +236,6 @@
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
-
-
-
-
 
                         </p:panel>
                     </h:form>

@@ -20,133 +20,73 @@
 
 
 
-        <p:panelGrid columns="2" layout="tabular" styleClass="w-100" columnClasses="text-start,text-end">
-
-            <f:facet name="header">
-                <h:outputText value="Net Collection" />
-            </f:facet>
-
-            <p:outputLabel value="Cash" rendered="#{cc.attrs.bundle.hasCashTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasCashTransaction}" >
-                <h:outputText value="#{cc.attrs.bundle.cashValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Credit" rendered="#{cc.attrs.bundle.hasCreditTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasCreditTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.creditValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Staff Welfare" rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasStaffWelfareTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.staffWelfareValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Voucher" rendered="#{cc.attrs.bundle.hasVoucherTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.voucherValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="IOU" rendered="#{cc.attrs.bundle.hasIouTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasIouTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.iouValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Agent" rendered="#{cc.attrs.bundle.hasAgentTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasAgentTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.agentValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Cheque" rendered="#{cc.attrs.bundle.hasChequeTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasChequeTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.chequeValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Slip" rendered="#{cc.attrs.bundle.hasSlipTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasSlipTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.slipValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="E-Wallet" rendered="#{cc.attrs.bundle.hasEWalletTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.eWalletValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Patient Deposit" rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasPatientDepositTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.patientDepositValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Patient Points" rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.patientPointsValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Online Settlement" rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.onlineSettlementValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-
-            <p:outputLabel value="On Call" rendered="#{cc.attrs.bundle.hasOnCallTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.onCallValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Card" rendered="#{cc.attrs.bundle.hasCardTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasCardTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.cardValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Multiple Payment Methods" rendered="#{cc.attrs.bundle.hasMultiplePaymentMethodsTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasMultiplePaymentMethodsTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.multiplePaymentMethodsValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Staff" rendered="#{cc.attrs.bundle.hasStaffTransaction}" />
-            <p:outputLabel rendered="#{cc.attrs.bundle.hasStaffTransaction}">
-                <h:outputText value="#{cc.attrs.bundle.staffValue}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-            <p:outputLabel value="Total" />
-            <p:outputLabel>
-                <h:outputText value="#{cc.attrs.bundle.total}">
-                    <f:convertNumber pattern="#,##0.00" />
-                </h:outputText>
-            </p:outputLabel>
-
-        </p:panelGrid>
+        <table class="table w-100">
+            <thead>
+                <tr>
+                    <th colspan="2">Net Collection</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Net Collection Total</td>
+                    <td class="text-end">
+                        <h:outputText value="#{cc.attrs.bundle.total}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">Included in Collection Total</th>
+                </tr>
+                <ui:repeat value="#{searchController.collectionIncludedMethodsWithValues(cc.attrs.bundle)}" var="pm">
+                    <tr>
+                        <td>#{pm.label}</td>
+                        <td class="text-end">
+                            <h:outputText value="#{searchController.bundlePaymentMethodValue(cc.attrs.bundle, pm)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </ui:repeat>
+                <tr>
+                    <th>Collection Total</th>
+                    <th class="text-end">
+                        <h:outputText value="#{searchController.bundleCashierCollectionTotal(cc.attrs.bundle)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="2">Not Included in Collection Total</th>
+                </tr>
+                <ui:repeat value="#{searchController.collectionExcludedMethodsWithValues(cc.attrs.bundle)}" var="pm">
+                    <tr>
+                        <td>#{pm.label}</td>
+                        <td class="text-end">
+                            <h:outputText value="#{searchController.bundlePaymentMethodValue(cc.attrs.bundle, pm)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+                </ui:repeat>
+                <tr>
+                    <th>Total NOT included in Collection Total</th>
+                    <th class="text-end">
+                        <h:outputText value="#{searchController.bundleCashierExcludedTotal(cc.attrs.bundle)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </th>
+                </tr>
+                <tr>
+                    <th>Grand Total</th>
+                    <th class="text-end">
+                        <h:outputText value="#{searchController.bundleCashierGrandTotal(cc.attrs.bundle)}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </th>
+                </tr>
+            </tbody>
+        </table>
 
 
 

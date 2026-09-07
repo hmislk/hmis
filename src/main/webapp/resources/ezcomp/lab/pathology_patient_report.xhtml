@@ -15,7 +15,7 @@
     <cc:implementation>
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'PathologyOrHaematology'}"  >
-            <div id="divReportM"  class="labReport"   >
+            <div id="divReportM"  class="labReport" style="height: 297mm;" >
                 <ez:common_report 
                     showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}" 
                     commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"

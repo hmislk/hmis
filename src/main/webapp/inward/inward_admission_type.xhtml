@@ -166,7 +166,19 @@
                                     <p:outputLabel value="Count to start Admission Numbers" ></p:outputLabel>
                                     <p:outputLabel value=":" style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{admissionTypeController.current.additionToCount}" class="w-100 m-1" />
+                                    
+                                    <p:outputLabel value="Count as a separate Number" />
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectBooleanCheckbox value="#{admissionTypeController.current.generateSeparateAdmissionNumber}" class="w-100 m-1" />
 
+                                    <p:outputLabel value="Allow to Margin" />
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:toggleSwitch 
+                                        value="#{admissionTypeController.current.allowToCalculateMargin}"
+                                        onIcon="pi pi-check" 
+                                        offIcon="pi pi-times">
+                                    </p:toggleSwitch>
+                                    
                                 </h:panelGrid>
                             </p:panel>
                             

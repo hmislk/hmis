@@ -19,15 +19,15 @@ public enum DimensionPriority {
     public String getLabel() {
         switch (this) {
             case Zero:
-                return "Routine";
+                return "None";
             case One:
-                return "STAT";
+                return "Normal";
             case Two:
-                return "ASAP";
+                return "High";
             case Three:
-                return "QC";
+                return "Urgent";
             case Four:
-                return "XQC";
+                return "Critical";
         }
         return "";
     }

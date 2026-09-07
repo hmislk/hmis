@@ -80,6 +80,30 @@
                 </p:inputText>
             </p:column>
 
+            <p:column headerText="Wholesale Rate">
+                <p:inputText value="#{bi.wholesaleRate}" styleClass="text-end w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </p:column>
+
+            <p:column headerText="Last Purchase Rate">
+                <p:inputText value="#{bi.lastPurchaseRate}" styleClass="text-end w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </p:column>
+
+            <p:column headerText="Remaining Qty">
+                <p:inputText value="#{bi.remainingQty}" styleClass="text-end w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </p:column>
+
+            <p:column headerText="Remaining Free Qty Pack">
+                <p:inputText value="#{bi.remainingFreeQtyPack}" styleClass="text-end w-100 m-1">
+                    <f:convertNumber pattern="#,##0.00" />
+                </p:inputText>
+            </p:column>
+
             <p:column headerText="Actions">
                 <p:commandButton 
                     value="Fix" 

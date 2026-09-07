@@ -32,7 +32,10 @@
                     <table id="tbl"  class="table table-striped">
                         <tr>
                             <th >
-                                <h:outputText value="GRN No" ></h:outputText>
+                                <h:outputText value="Bill No" ></h:outputText>
+                            </th>
+                            <th>
+                                <h:outputText value="Type" ></h:outputText>
                             </th>
                             <th>
                                 <h:outputText value="Invoice No" ></h:outputText>
@@ -104,8 +107,11 @@
                                     <h:outputText value="#{b.deptId}" ></h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.invoiceNumber}" ></h:outputText>
-                                    <h:outputText value="#{b.referenceBill.invoiceNumber}" ></h:outputText>
+                                    <h:outputText value="#{b.billTypeAtomic.label}" ></h:outputText>
+                                </td>
+                                <td  rowspan="#{b.billItems.size() + 1}">
+                                    <h:outputText value="#{b.invoiceNumber}" rendered="#{b.referenceBill eq null}"></h:outputText>
+                                    <h:outputText value="#{b.referenceBill.invoiceNumber}" rendered="#{b.referenceBill ne null}"></h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
                                     <h:outputText value="#{b.createdAt}" >
@@ -113,12 +119,12 @@
                                     </h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.referenceBill.createdAt}" >
+                                    <h:outputText value="#{b.referenceBill ne null ? b.referenceBill.createdAt : b.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? b.toInstitution.name : b.fromInstitution.name}" />
+                                    <h:outputText value="#{b.fromInstitution ne null ? b.fromInstitution.name : b.toInstitution.name}" />
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
                                     <h:outputText value="#{b.institution.name}" />
@@ -130,7 +136,7 @@
                                     <h:outputText value="#{b.department.name}" />
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}">
-                                    <h:outputText value="#{b.referenceBill.deptId}" ></h:outputText>
+                                    <h:outputText value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill ne null}"></h:outputText>
                                 </td>
                                 <td  rowspan="#{b.billItems.size() + 1}" style="text-align: right;">
                                     <h:outputText rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}">

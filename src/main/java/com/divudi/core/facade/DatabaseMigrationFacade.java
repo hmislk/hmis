@@ -1,0 +1,519 @@
+/*
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
+ */
+package com.divudi.core.facade;
+
+import com.divudi.core.entity.DatabaseMigration;
+import com.divudi.core.data.MigrationStatus;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import org.eclipse.persistence.internal.jpa.EntityManagerImpl;
+import org.eclipse.persistence.sessions.JNDIConnector;
+import org.eclipse.persistence.sessions.server.ServerSession;
+
+/**
+ * Facade for DatabaseMigration entity operations
+ *
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
+ */
+@Stateless
+public class DatabaseMigrationFacade extends AbstractFacade<DatabaseMigration> {
+
+    @PersistenceContext(unitName = "hmisPU")
+    private EntityManager em;
+
+    @Override
+    protected EntityManager getEntityManager() {
+        return em;
+    }
+
+    public DatabaseMigrationFacade() {
+        super(DatabaseMigration.class);
+    }
+
+    /**
+     * Execute a DDL statement (CREATE TABLE, ALTER TABLE, SET, etc.) outside JTA.
+     *
+     * DDL statements cause MySQL to issue an implicit COMMIT, which
+     * desynchronises the JTA transaction manager and causes "Transaction
+     * aborted". This method obtains a raw JDBC connection directly from
+     * EclipseLink's datasource — bypassing JTA entirely — and sets
+     * autoCommit=true so MySQL's implicit commits are harmless.
+     *
+     * Must NOT be called inside an active JTA transaction; the
+     * NOT_SUPPORTED attribute suspends any surrounding transaction.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void executeDdlNative(String sql) throws Exception {
+        if (sql == null || sql.trim().isEmpty()) {
+            throw new IllegalArgumentException("SQL statement cannot be null or empty");
+        }
+        Connection conn = getRawJdbcConnection();
+        try {
+            conn.setAutoCommit(true);
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(sql);
+            }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            // Without this, the pool hands the connection (with autoCommit=true) to the
+            // next JTA operation, which breaks JTA enlistment and causes
+            // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
+        }
+    }
+
+    /**
+     * Execute a migration script on one raw JDBC connection.
+     *
+     * MySQL user variables, PREPARE, and EXECUTE statements are scoped to the
+     * connection. Running those scripts one statement per pooled connection can
+     * lose guard state and execute unsafe dynamic DDL. This method keeps the
+     * full script on a single connection while still running outside JTA.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public List<String> executeNativeSqlStatements(List<String> sqlStatements) throws Exception {
+        List<String> skipMessages = new ArrayList<>();
+        if (sqlStatements == null || sqlStatements.isEmpty()) {
+            return skipMessages;
+        }
+        Connection conn = getRawJdbcConnection();
+        try {
+            conn.setAutoCommit(true);
+            try (Statement stmt = conn.createStatement()) {
+                for (String sql : sqlStatements) {
+                    if (sql == null || sql.trim().isEmpty()) {
+                        continue;
+                    }
+                    try {
+                        stmt.execute(sql);
+                        drainStatementResults(stmt);
+                    } catch (SQLException e) {
+                        String skipReason = getIdempotentSkipReason(sql, e);
+                        if (skipReason == null) {
+                            throw e;
+                        }
+                        skipMessages.add(skipReason);
+                    }
+                }
+            }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
+        }
+        return skipMessages;
+    }
+
+    private void drainStatementResults(Statement stmt) throws SQLException {
+        while (stmt.getMoreResults() || stmt.getUpdateCount() != -1) {
+            // Consume all result/update counts from statements such as CALL.
+        }
+    }
+
+    private String getIdempotentSkipReason(String sql, SQLException e) {
+        String upper = sql.toUpperCase().trim();
+        String msg = collectCauseMessages(e);
+
+        if ((upper.startsWith("CREATE INDEX") || upper.startsWith("CREATE UNIQUE INDEX"))
+                && (msg.contains("1061") || msg.contains("Duplicate key name")
+                    || msg.contains("1146") || msg.contains("doesn't exist"))) {
+            return "Index already exists or target table missing, skipping: " + abbreviateSql(sql);
+        }
+
+        if (upper.startsWith("ALTER TABLE") && upper.contains("ADD COLUMN")
+                && (msg.contains("1060") || msg.contains("Duplicate column name"))) {
+            return "Column already exists, skipping: " + abbreviateSql(sql);
+        }
+
+        if (upper.startsWith("ALTER TABLE")
+                && (upper.contains("DROP FOREIGN KEY") || upper.contains("DROP INDEX") || upper.contains("DROP KEY"))
+                && (msg.contains("1091") || msg.contains("check that column/key exists"))) {
+            return "Foreign key or index already absent, skipping: " + abbreviateSql(sql);
+        }
+
+        return null;
+    }
+
+    private String collectCauseMessages(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause.getMessage() != null) {
+                sb.append(cause.getMessage()).append('\n');
+            }
+            cause = cause.getCause();
+        }
+        return sb.toString();
+    }
+
+    private String abbreviateSql(String sql) {
+        String oneLine = sql.replaceAll("\\s+", " ").trim();
+        return oneLine.substring(0, Math.min(100, oneLine.length()));
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(DatabaseMigrationFacade.class.getName());
+
+    /**
+     * Obtain a raw JDBC connection from EclipseLink's JNDI datasource,
+     * completely outside JTA. Caller is responsible for closing it.
+     */
+    private Connection getRawJdbcConnection() throws Exception {
+        EntityManagerImpl emImpl = em.unwrap(EntityManagerImpl.class);
+        ServerSession serverSession = emImpl.getServerSession();
+        DataSource ds = ((JNDIConnector) serverSession.getLogin().getConnector()).getDataSource();
+        return ds.getConnection();
+    }
+
+    /**
+     * Scan every table in the current schema for a BIGINT ID primary key that
+     * lacks AUTO_INCREMENT and apply it, preserving each column's exact type.
+     * Runs outside JTA so DDL implicit COMMITs cannot desync the transaction
+     * manager. Relaxes sql_mode for the duration of the rebuild so a table
+     * whose OTHER columns carry legacy invalid defaults (e.g. TIMESTAMP
+     * DEFAULT '0000-00-00 00:00:00') does not fail with error 1067 when
+     * MODIFY COLUMN re-validates every column.
+     *
+     * Safe to call at every startup: tables that already have AUTO_INCREMENT
+     * are skipped by the information_schema query. FK checks are disabled for
+     * the duration so child-table ALTER statements do not fail.
+     *
+     * @return list of table names that were altered (empty when nothing needed)
+     * @throws Exception (specifically SQLException) if any detected table still
+     *         lacks AUTO_INCREMENT after the fix loop (e.g. lock timeout or
+     *         missing privilege) — callers must not treat a silent partial
+     *         failure as success.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public List<String> applyAutoIncrementToAllEntityTables() throws Exception {
+        List<String> altered = new ArrayList<>();
+        Connection conn = getRawJdbcConnection();
+        try {
+            conn.setAutoCommit(true);
+            String detectQuery = "SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
+                    + "WHERE TABLE_SCHEMA = DATABASE() "
+                    + "AND UPPER(COLUMN_NAME) = 'ID' "
+                    + "AND COLUMN_KEY = 'PRI' "
+                    + "AND DATA_TYPE = 'bigint' "
+                    + "AND EXTRA NOT LIKE '%auto_increment%' "
+                    + "ORDER BY TABLE_NAME";
+
+            List<String[]> rows = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(detectQuery);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new String[]{rs.getString(1), rs.getString(2), rs.getString(3)});
+                }
+            }
+            if (rows.isEmpty()) {
+                return altered;
+            }
+
+            String originalSqlMode;
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT @@SESSION.sql_mode")) {
+                originalSqlMode = rs.next() ? rs.getString(1) : "";
+            }
+            try (Statement relaxMode = conn.createStatement()) {
+                relaxMode.execute("SET SESSION sql_mode = ''");
+            }
+            try (Statement fkOff = conn.createStatement()) {
+                fkOff.execute("SET FOREIGN_KEY_CHECKS=0");
+            }
+            try {
+                for (String[] row : rows) {
+                    String tableName = row[0];
+                    String columnName = row[1];
+                    String columnType = row[2];
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.execute("ALTER TABLE `" + tableName + "` MODIFY COLUMN `" + columnName
+                                + "` " + columnType + " NOT NULL AUTO_INCREMENT");
+                        altered.add(tableName);
+                        LOGGER.info("AutoIncrement: applied to table `" + tableName + "`");
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "AutoIncrement: could not alter `" + tableName + "` — skipping", e);
+                    }
+                }
+            } finally {
+                try (Statement fkOn = conn.createStatement()) {
+                    fkOn.execute("SET FOREIGN_KEY_CHECKS=1");
+                }
+                try (PreparedStatement restoreMode = conn.prepareStatement("SET SESSION sql_mode = ?")) {
+                    restoreMode.setString(1, originalSqlMode);
+                    restoreMode.execute();
+                }
+            }
+
+            List<String> remaining = new ArrayList<>();
+            try (PreparedStatement ps = conn.prepareStatement(detectQuery);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    remaining.add(rs.getString(1));
+                }
+            }
+            if (!remaining.isEmpty()) {
+                throw new java.sql.SQLException("AUTO_INCREMENT could not be applied to: " + String.join(", ", remaining));
+            }
+        } finally {
+            // Restore autoCommit=false before returning connection to Payara's JTA pool.
+            // Without this, the pool hands the connection (with autoCommit=true) to the
+            // next JTA operation, which breaks JTA enlistment and causes
+            // java.lang.reflect.UndeclaredThrowableException wrapped in SQLException.
+            try { conn.setAutoCommit(false); } catch (Exception ignored) { }
+            conn.close();
+        }
+        return altered;
+    }
+
+    /**
+     * Find migration by version
+     */
+    public DatabaseMigration findByVersion(String version) {
+        if (version == null || version.trim().isEmpty()) {
+            return null;
+        }
+
+        String jpql = "SELECT m FROM DatabaseMigration m WHERE m.version = :version";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("version", version.trim());
+
+        return findFirstByJpql(jpql, parameters);
+    }
+
+    /**
+     * Check if migration exists for given version
+     */
+    public boolean isMigrationExecuted(String version) {
+        DatabaseMigration migration = findByVersion(version);
+        return migration != null && migration.isSuccessful();
+    }
+
+    /**
+     * Get all executed migrations ordered by version
+     */
+    public List<DatabaseMigration> findExecutedMigrations() {
+        String jpql = "SELECT m FROM DatabaseMigration m WHERE m.status = :status ORDER BY m.version";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("status", MigrationStatus.SUCCESS);
+
+        return findByJpql(jpql, parameters);
+    }
+
+    /**
+     * Get all migrations ordered by version
+     */
+    public List<DatabaseMigration> findAllMigrationsOrderedByVersion() {
+        String jpql = "SELECT m FROM DatabaseMigration m ORDER BY m.version";
+        return findByJpql(jpql);
+    }
+
+    /**
+     * Get failed migrations
+     */
+    public List<DatabaseMigration> findFailedMigrations() {
+        String jpql = "SELECT m FROM DatabaseMigration m WHERE m.status = :status ORDER BY m.executedAt DESC";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("status", MigrationStatus.FAILED);
+
+        return findByJpql(jpql, parameters);
+    }
+
+    /**
+     * Get currently executing migrations
+     */
+    public List<DatabaseMigration> findExecutingMigrations() {
+        String jpql = "SELECT m FROM DatabaseMigration m WHERE m.status = :status ORDER BY m.executedAt";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("status", MigrationStatus.EXECUTING);
+
+        return findByJpql(jpql, parameters);
+    }
+
+    /**
+     * Get latest executed migration version
+     * Uses semantic versioning comparison instead of string-based sorting
+     */
+    public String getLatestExecutedVersion() {
+        String jpql = "SELECT m.version FROM DatabaseMigration m WHERE m.status = :status";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("status", MigrationStatus.SUCCESS);
+
+        List<String> versions = findStringListByJpql(jpql, parameters);
+        if (versions.isEmpty()) {
+            return null;
+        }
+
+        // Sort versions using semantic versioning comparison
+        versions.sort((v1, v2) -> compareVersions(v2, v1)); // Descending order (latest first)
+        return versions.get(0);
+    }
+
+    /**
+     * Compare two version strings using semantic versioning
+     * Returns -1 if version1 < version2, 0 if equal, 1 if version1 > version2
+     */
+    private int compareVersions(String version1, String version2) {
+        if (version1 == null && version2 == null) return 0;
+        if (version1 == null) return -1;
+        if (version2 == null) return 1;
+
+        // Remove 'v' prefix if present
+        String v1 = version1.startsWith("v") ? version1.substring(1) : version1;
+        String v2 = version2.startsWith("v") ? version2.substring(1) : version2;
+
+        String[] parts1 = v1.split("\\.");
+        String[] parts2 = v2.split("\\.");
+
+        int maxLength = Math.max(parts1.length, parts2.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            String part1 = i < parts1.length ? parts1[i] : "0";
+            String part2 = i < parts2.length ? parts2[i] : "0";
+
+            try {
+                int num1 = Integer.parseInt(part1);
+                int num2 = Integer.parseInt(part2);
+
+                if (num1 < num2) return -1;
+                if (num1 > num2) return 1;
+            } catch (NumberFormatException e) {
+                // Fall back to string comparison for non-numeric segments
+                int stringCompare = part1.compareTo(part2);
+                if (stringCompare != 0) return stringCompare;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Get migration statistics
+     */
+    public Map<String, Long> getMigrationStatistics() {
+        Map<String, Long> stats = new HashMap<>();
+
+        // Total migrations
+        String totalJpql = "SELECT COUNT(m) FROM DatabaseMigration m";
+        Long total = findLongByJpql(totalJpql);
+        stats.put("total", total != null ? total : 0L);
+
+        // Successful migrations
+        String successJpql = "SELECT COUNT(m) FROM DatabaseMigration m WHERE m.status = :status";
+        Map<String, Object> successParams = new HashMap<>();
+        successParams.put("status", MigrationStatus.SUCCESS);
+        Long successful = findLongByJpql(successJpql, successParams);
+        stats.put("successful", successful != null ? successful : 0L);
+
+        // Failed migrations
+        Map<String, Object> failedParams = new HashMap<>();
+        failedParams.put("status", MigrationStatus.FAILED);
+        Long failed = findLongByJpql(successJpql, failedParams);
+        stats.put("failed", failed != null ? failed : 0L);
+
+        // Pending migrations
+        Map<String, Object> pendingParams = new HashMap<>();
+        pendingParams.put("status", MigrationStatus.PENDING);
+        Long pending = findLongByJpql(successJpql, pendingParams);
+        stats.put("pending", pending != null ? pending : 0L);
+
+        return stats;
+    }
+
+    /**
+     * Get recent migrations (last 10)
+     */
+    public List<DatabaseMigration> findRecentMigrations() {
+        String jpql = "SELECT m FROM DatabaseMigration m ORDER BY m.executedAt DESC";
+        return findByJpql(jpql, 10);
+    }
+
+    /**
+     * Check if any migration is currently executing
+     */
+    public boolean isMigrationInProgress() {
+        String jpql = "SELECT COUNT(m) FROM DatabaseMigration m WHERE m.status = :status";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("status", MigrationStatus.EXECUTING);
+
+        Long count = findLongByJpql(jpql, parameters);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Find migrations between versions (exclusive of fromVersion, inclusive of toVersion)
+     */
+    public List<DatabaseMigration> findMigrationsBetweenVersions(String fromVersion, String toVersion) {
+        if (fromVersion == null || toVersion == null) {
+            return findAllMigrationsOrderedByVersion();
+        }
+
+        String jpql = "SELECT m FROM DatabaseMigration m WHERE m.version > :fromVersion AND m.version <= :toVersion ORDER BY m.version";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("fromVersion", fromVersion);
+        parameters.put("toVersion", toVersion);
+
+        return findByJpql(jpql, parameters);
+    }
+
+    /**
+     * Update migration status
+     */
+    public void updateMigrationStatus(String version, MigrationStatus status, String errorMessage, Long executionTimeMs) {
+        DatabaseMigration migration = findByVersion(version);
+        if (migration != null) {
+            migration.setStatus(status);
+            if (errorMessage != null) {
+                migration.setErrorMessage(errorMessage);
+            }
+            if (executionTimeMs != null) {
+                migration.setExecutionTimeMs(executionTimeMs);
+            }
+            edit(migration);
+        }
+    }
+
+    /**
+     * Create or update migration record
+     */
+    public DatabaseMigration createOrUpdateMigration(String version, String description, String filename) {
+        DatabaseMigration existing = findByVersion(version);
+        if (existing != null) {
+            existing.setDescription(description);
+            existing.setFilename(filename);
+            edit(existing);
+            return existing;
+        } else {
+            DatabaseMigration newMigration = new DatabaseMigration(version, description, filename);
+            create(newMigration);
+            return newMigration;
+        }
+    }
+
+    /**
+     * Find migrations that need to be executed (not yet successful)
+     */
+    public List<DatabaseMigration> findPendingMigrations() {
+        String jpql = "SELECT m FROM DatabaseMigration m WHERE m.status != :successStatus ORDER BY m.version";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("successStatus", MigrationStatus.SUCCESS);
+
+        return findByJpql(jpql, parameters);
+    }
+}

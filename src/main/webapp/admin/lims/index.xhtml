@@ -17,7 +17,6 @@
                         <p:accordionPanel 
                             activeIndex="#{investigationCategoryController.manageItemIndex}" >
                             <p:ajax process="@this" ></p:ajax>
-
                             <p:tab title="Manage Metadata">
                                 <div class="d-grid gap-2">
                                     <p:commandButton   
@@ -141,15 +140,12 @@
                                 </h:panelGroup>
 
                             </p:tab>
-
                             <p:tab title="Reports">
                                 <div class="d-grid gap-2">
                                     <p:commandButton   class="w-100"  ajax="false" value="Item List"
                                                        action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
                                 </div>
                             </p:tab>
-
-
                             <p:tab title="Setup">
                                 <div class="d-grid gap-2">
                                     <p:commandButton id="btnMatch" value="Make All to Match Investigation" 
@@ -172,7 +168,6 @@
 
                                 </div>
                             </p:tab>
-
                             <p:tab title="SMS Messaging">
                                 <div class="d-grid gap-2">
                                     <p:commandButton 
@@ -222,6 +217,32 @@
                                     </div>
                                 </h:panelGroup>
 
+                            </p:tab>
+                            <p:tab title="Manage Stocks">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Manage Lab Items"
+                                        action="/admin/lims/lab_item_master.xhtml?faces-redirect=true" />
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Upload Lab Items"
+                                        action="/admin/lims/upload_lab_items.xhtml?faces-redirect=true" />
+                                </div>
+                            </p:tab>
+                            <p:tab title="Developers">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Investigation List" 
+                                        action="#{investigationController.navigateToManageInvestigationsForDevelopers}"  />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Reload Items from Database" 
+                                        action="#{itemController.reloadItemsFromDatabase()}"  />
+                                </div>
                             </p:tab>
                         </p:accordionPanel>
 
@@ -375,6 +396,8 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
                                     </div>
                                 </p:tab>
+
+
 
                             </p:accordionPanel>
 

@@ -1,0 +1,142 @@
+name: HIMS QA-3 Environment CI-CD Workflow
+
+on:
+  push:
+    branches:
+      - hims-qa3
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Cache Maven Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Update JDBC Data Sources in persistence.xml
+        run: |
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/qa3</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/qa3audit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+
+      - name: Verify JDBC Data Sources in persistence.xml
+        run: |
+          grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Archive Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: target/*.war
+          overwrite: true
+
+      # - name: Run Tests
+      #   run: mvn test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./
+
+      - name: Deploy to Payara
+        env:
+          SERVER_IP: ${{ secrets.QA_SERVER_IP }}
+          SERVER_USER: ${{ secrets.QA_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.QA_SSH_PRIVATE_KEY }}
+          PAYARA_ADMIN_PASS: ${{ secrets.QA_PAYARA_ADMIN_PASS }}
+        run: |
+          # Add SSH private key to the SSH agent
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          # Variables
+          WAR_NAME="qa3.war"
+          WAR_DIR="/home/appuser/app/latest"
+          APP_NAME="qa3"
+          SUBDOMAIN="qa"
+          CONTEXT_PATH="qa3"
+
+          # Ensure deployment directory exists
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            mkdir -p $WAR_DIR
+            chown -R appuser:appuser $WAR_DIR
+            cd $WAR_DIR
+
+            # Remove old backup if it exists
+            if [ -f $WAR_NAME.old ]; then
+              rm $WAR_NAME.old
+            fi
+
+            # If the current WAR file exists, back it up
+            if [ -f $WAR_NAME ]; then
+              mv $WAR_NAME $WAR_NAME.old
+            fi
+          "
+ 
+          # Copy new WAR file to the server
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+
+          # Set the WAR file permission
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            chown appuser:appuser $WAR_DIR/$WAR_NAME
+          "
+
+          # Deploy the WAR using asadmin
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
+            rm -f /tmp/payara-admin-pass.txt
+          "
+
+          # Validate if the application is running
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+              echo 'Application is running.'
+            else
+              echo 'Application failed to start.'
+            fi
+            rm -f /tmp/payara-admin-pass.txt
+          "
+ 
+          # Check if the application is reachable
+          for i in {1..5}; do
+            RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://$SUBDOMAIN.carecode.org/$CONTEXT_PATH/faces/index1.xhtml)
+            if [ "$RESPONSE_CODE" == "200" ]; then
+              echo "Application is reachable and healthy."
+              break
+            elif [ "$i" == "5" ]; then
+              echo "Application is not reachable or unhealthy at https://$SUBDOMAIN.carecode.org/$CONTEXT_PATH (HTTP $RESPONSE_CODE)"
+              break
+            fi
+            sleep 10
+          done
+
+          # Cleanup
+          rm -f private_key.pem

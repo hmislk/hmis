@@ -25,7 +25,7 @@ public class DenominationTransaction implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     private Denomination denomination;
@@ -53,6 +53,17 @@ public class DenominationTransaction implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date retiredAt;
     private String retireComments;
+
+    @javax.persistence.Transient
+    private boolean selected;
+
+    /**
+     * System-computed value the cashier is expected to hand over for this
+     * row's payment method, shown for reference next to the actual amount
+     * entered in {@link #denominationValue}. Never persisted.
+     */
+    @javax.persistence.Transient
+    private Double expectedValue;
 
     private boolean cancelled;
     @ManyToOne
@@ -213,6 +224,22 @@ public class DenominationTransaction implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public Double getExpectedValue() {
+        return expectedValue;
+    }
+
+    public void setExpectedValue(Double expectedValue) {
+        this.expectedValue = expectedValue;
     }
 
     public boolean isCancelled() {

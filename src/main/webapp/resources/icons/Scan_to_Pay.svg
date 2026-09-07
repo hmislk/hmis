@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
+  <g filter="url(#shad1)">
+    <!-- QR code outer frame -->
+    <rect x="42" y="62" width="116" height="116" rx="6" fill="url(#grad1a)"/>
+    <rect x="48" y="68" width="104" height="104" rx="4" fill="#EEF2FF"/>
+    <!-- Top-left QR block -->
+    <rect x="54" y="74" width="38" height="38" rx="3" fill="url(#grad1a)"/>
+    <rect x="60" y="80" width="26" height="26" rx="2" fill="#EEF2FF"/>
+    <rect x="65" y="85" width="16" height="16" rx="1" fill="url(#grad1a)"/>
+    <!-- Top-right QR block -->
+    <rect x="108" y="74" width="38" height="38" rx="3" fill="url(#grad1a)"/>
+    <rect x="114" y="80" width="26" height="26" rx="2" fill="#EEF2FF"/>
+    <rect x="119" y="85" width="16" height="16" rx="1" fill="url(#grad1a)"/>
+    <!-- Bottom-left QR block -->
+    <rect x="54" y="128" width="38" height="38" rx="3" fill="url(#grad1a)"/>
+    <rect x="60" y="134" width="26" height="26" rx="2" fill="#EEF2FF"/>
+    <rect x="65" y="139" width="16" height="16" rx="1" fill="url(#grad1a)"/>
+    <!-- Center data dots -->
+    <rect x="108" y="128" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <rect x="122" y="128" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <rect x="136" y="128" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <rect x="108" y="142" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <rect x="136" y="142" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <rect x="108" y="156" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <rect x="122" y="156" width="10" height="10" rx="1" fill="url(#grad1a)"/>
+    <!-- Wifi arc at top -->
+    <path d="M78 52 Q100 36 122 52" fill="none" stroke="#818CF8" stroke-width="5" stroke-linecap="round"/>
+    <path d="M86 44 Q100 33 114 44" fill="none" stroke="#818CF8" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="100" cy="40" r="4" fill="#818CF8"/>
+  </g>
+</svg>

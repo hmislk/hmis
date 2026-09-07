@@ -20,9 +20,9 @@
                             <p:commandButton value="Reprint" ajax="false">
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Cancel" 
-                                            action="store_cancel_bill_return_bht" 
-                                             disabled="#{storeBillSearch.bill.cancelled}"  >                           
+                            <p:commandButton ajax="false" value="Cancel"
+                                            action="#{storeBillSearch.navigateToCancelStoreReturnDirectIssueToInpatients()}"
+                                             disabled="#{storeBillSearch.bill.cancelled}"  >                         
                             </p:commandButton>
                             
                         </f:facet>

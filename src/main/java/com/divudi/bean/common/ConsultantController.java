@@ -14,6 +14,8 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.facade.ConsultantFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.service.AuditService;
+import com.divudi.service.PersonService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,12 +52,18 @@ public class ConsultantController implements Serializable {
     private ConsultantFacade ejbFacade;
     @EJB
     private PersonFacade personFacade;
+    @EJB
+    private PersonService personService;
+    @EJB
+    private AuditService auditService;
     List<Consultant> selectedItems;
 
     private Consultant current;
     private List<Consultant> items = null;
     String selectText = "";
     private Speciality speciality;
+    
+    private Map<String, Object> initialPerson;
 
     public List<Consultant> getSelectedItems() {
         String sql;
@@ -99,7 +107,7 @@ public class ConsultantController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         //  getItems();
@@ -187,6 +195,13 @@ public class ConsultantController implements Serializable {
     public void recreateModel() {
         items = null;
     }
+    
+    public void changeStaff() {
+        initialPerson = new HashMap<>();
+        if (current.getPerson() != null) {
+            personService.personToAuditMap(initialPerson, current.getPerson());
+        }
+    }
 
     public void saveSelected() {
         if (current == null) {
@@ -205,10 +220,26 @@ public class ConsultantController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Speciality.");
             return;
         }
+        
+        // Prepare editedPersonMap for audit logging
+        Map<String, Object> editedPerson = new HashMap<>();
+        personService.personToAuditMap(editedPerson, current.getPerson());
+        
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
-            getPersonFacade().create(current.getPerson());
+            getPersonFacade().createAndFlush(current.getPerson());
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
+
+            // Person created, log the creation event
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
+            // For editing staff just created
+            initialPerson = new HashMap<>();
         } else {
             getPersonFacade().edit(current.getPerson());
+            
+            // Person edited, log the creation event
+            auditService.logAudit(initialPerson, editedPerson, sessionController.getLoggedUser(), "Person", "updatePerson", current.getPerson().getId());
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -221,6 +252,8 @@ public class ConsultantController implements Serializable {
         }
         recreateModel();
         // getItems();
+        
+        initialPerson = editedPerson;
     }
 
     public void save(Consultant con) {
@@ -323,7 +356,6 @@ public class ConsultantController implements Serializable {
             Long id = Long.parseLong(idString);
             return getConsultantById(id);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid consultant ID format: " + idString);
             return null;
         }
     }

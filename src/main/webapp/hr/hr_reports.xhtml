@@ -3,368 +3,454 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:fav="http://xmlns.jcp.org/jsf/composite/ezcomp/reports">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml" >
 
             <ui:define name="content">
-
 
                 <div class="container-flex" >
                     <div class="row" >
                         <div class="col-2" >
                             <h:form>
                                 <p:panel header="HR Analytics">
-                                    <p:accordionPanel >
-                                        <p:tab title="(1) Salary Report">
-                                            <h:panelGrid columns="1">
-                                                <!--                                <p:commandButton value="(1) All Staff Salary Detail" 
-                                                                                                action="/hr/hr_report_all_staff_salary" 
-                                                                                                 class="w-100 my-1" ajax="false"  /> -->
-                                                <p:commandButton value="(2) All Staff Salary Summary" 
-                                                                 action="/hr/hr_report_staff_salary" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2.1) All Staff Salary Summary(By Department)" 
-                                                                 action="/hr/hr_report_staff_salary_by_department" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(3) Staff Payroll" 
-                                                                 action="/hr/hr_report_staff_payroll" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3) Staff Payroll(Accountant)" 
-                                                                 action="/hr/hr_report_staff_payroll_1" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3.1) Staff Payrol(By Department)" 
-                                                                 action="/hr/hr_report_staff_payroll_department" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3.2) Staff Payroll(By Roster)" 
-                                                                 action="/hr/hr_report_staff_payroll_roster" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3.1) Staff Payroll(Selected Staff)" 
-                                                                 action="/hr/hr_staff_salary_1" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(4) Staff Over Time " 
-                                                                 action="/hr/hr_report_staff_over_time" 
-                                                                 class="w-100 my-1" ajax="false" />  
-                                                <p:commandButton value="(5)No Pay And Salary Allovance  Report " 
-                                                                 action="/hr/hr_report_staff_no_pay_and_late" 
-                                                                 class="w-100 my-1" ajax="false" />  
-                                                <p:commandButton ajax="false"
-                                                                 action="/hr/hr_staff_paysheet_component_list"
-                                                                 value="(6) Staff Paysheet Component  List" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_payment_bank"
-                                                                 value="(7) Staff Salary Payment To Bank" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_payment_bank_summery"
-                                                                 value="(7.1) Staff Salary Bank Vise" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_Hreport_staff_salary_component"
-                                                                 value="(8) Staff Salary Component" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_component_summery_bank_vise"
-                                                                 value="(8.1) Staff Salary Component(Bank Vise)" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf_1"
-                                                                 value="(9) EPF" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf"
-                                                                 value="(9.1) ETF" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf_to_export"
-                                                                 value="(9.2) EPF ETF(Export)" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{staffBasicController.makeItemNul()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_generate _or_not"
-                                                                 value="(10) Staff Salary Generate Or Not Report" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{hrReportController.makeNull()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_staff_salary_deleted_report"
-                                                                 value="(11) Staff Salary Generate Or Delete Detail Report" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{hrReportController.makeNull()}"  />
-                                                <p:commandButton ajax="false" action="/hr/hr_report_grativity"
-                                                                 value="(12) Staff Gratuity" 
-                                                                 class="w-100 my-1"
-                                                                 actionListener="#{hrReportController.makeNull()}"  />
-                                            </h:panelGrid>
+                                    <p:accordionPanel id="reportsAccordion" >
+                                        <p:tab title="⭐ Favorites">
+                                            <!--
+                                                Each report button below is intentionally duplicated from its
+                                                category tab further down this file (same reportKey, label,
+                                                category, action), gated on isFavorite() instead of always
+                                                rendering. See developer_docs/feature/report-favorites.md.
+                                                If you add or rename a report button below, update BOTH copies -
+                                                the reportKey ties them together.
+                                            -->
+                                            <h:panelGroup id="favoritesPanel" layout="block">
+                                                <h:panelGroup layout="block" styleClass="text-muted p-2" rendered="#{not userFavoriteReportController.hasAnyFavoriteWithKeyPrefix('hrAnalytics_')}">
+                                                    <h:outputText value="No favorite reports yet — click the star next to any report to add it here." />
+                                                </h:panelGroup>
+                                                <div class="d-grid gap-2">
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalary')}"><p:commandButton styleClass="w-100" ajax="false" value="(2) All Staff Salary Summary" action="/hr/hr_report_staff_salary?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalary" label="(2) All Staff Salary Summary" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryByDepartment')}"><p:commandButton styleClass="w-100" ajax="false" value="(2.1) All Staff Salary Summary(By Department)" action="/hr/hr_report_staff_salary_by_department?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryByDepartment" label="(2.1) All Staff Salary Summary(By Department)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffPayroll')}"><p:commandButton styleClass="w-100" ajax="false" value="(3) Staff Payroll" action="/hr/hr_report_staff_payroll?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayroll" label="(3) Staff Payroll" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffPayroll1')}"><p:commandButton styleClass="w-100" ajax="false" value="(3) Staff Payroll(Accountant)" action="/hr/hr_report_staff_payroll_1?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayroll1" label="(3) Staff Payroll(Accountant)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffPayrollDepartment')}"><p:commandButton styleClass="w-100" ajax="false" value="(3.1) Staff Payrol(By Department)" action="/hr/hr_report_staff_payroll_department?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayrollDepartment" label="(3.1) Staff Payrol(By Department)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffPayrollRoster')}"><p:commandButton styleClass="w-100" ajax="false" value="(3.2) Staff Payroll(By Roster)" action="/hr/hr_report_staff_payroll_roster?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayrollRoster" label="(3.2) Staff Payroll(By Roster)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_staffSalary1')}"><p:commandButton styleClass="w-100" ajax="false" value="(3.1) Staff Payroll(Selected Staff)" action="/hr/hr_staff_salary_1?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_staffSalary1" label="(3.1) Staff Payroll(Selected Staff)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffOverTime')}"><p:commandButton styleClass="w-100" ajax="false" value="(4) Staff Over Time" action="/hr/hr_report_staff_over_time?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffOverTime" label="(4) Staff Over Time" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffNoPayAndLate')}"><p:commandButton styleClass="w-100" ajax="false" value="(5) No Pay And Salary Allowance Report" action="/hr/hr_report_staff_no_pay_and_late?faces-redirect=true" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffNoPayAndLate" label="(5) No Pay And Salary Allowance Report" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_staffPaysheetComponentList')}"><p:commandButton ajax="false" action="/hr/hr_staff_paysheet_component_list?faces-redirect=true" value="(6) Staff Paysheet Component List" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_staffPaysheetComponentList" label="(6) Staff Paysheet Component List" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryPaymentBank')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_salary_payment_bank?faces-redirect=true" value="(7) Staff Salary Payment To Bank" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryPaymentBank" label="(7) Staff Salary Payment To Bank" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryPaymentBankSummery')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_salary_payment_bank_summery?faces-redirect=true" value="(7.1) Staff Salary Bank Vise" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryPaymentBankSummery" label="(7.1) Staff Salary Bank Vise" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryComponent')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_salary_component?faces-redirect=true" value="(8) Staff Salary Component" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryComponent" label="(8) Staff Salary Component" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryComponentSummeryBankVise')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_salary_component_summery_bank_vise?faces-redirect=true" value="(8.1) Staff Salary Component(Bank Vise)" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryComponentSummeryBankVise" label="(8.1) Staff Salary Component(Bank Vise)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffEpfEtf1')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf_1?faces-redirect=true" value="(9) EPF" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffEpfEtf1" label="(9) EPF" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffEpfEtf')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf?faces-redirect=true" value="(9.1) ETF" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffEpfEtf" label="(9.1) ETF" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffEpfEtfToExport')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_epf_etf_to_export?faces-redirect=true" value="(9.2) EPF ETF(Export)" styleClass="w-100" actionListener="#{staffBasicController.makeItemNul()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffEpfEtfToExport" label="(9.2) EPF ETF(Export)" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryGenerateOrNot')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_salary_generate_or_not?faces-redirect=true" value="(10) Staff Salary Generate Or Not Report" styleClass="w-100" actionListener="#{hrReportController.makeNull()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryGenerateOrNot" label="(10) Staff Salary Generate Or Not Report" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffSalaryDeletedReport')}"><p:commandButton ajax="false" action="/hr/hr_report_staff_salary_deleted_report?faces-redirect=true" value="(11) Staff Salary Generate Or Delete Detail Report" styleClass="w-100" actionListener="#{hrReportController.makeNull()}" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryDeletedReport" label="(11) Staff Salary Generate Or Delete Detail Report" category="Salary Report" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportGrativity')}"><p:commandButton ajax="false" action="/hr/hr_report_grativity?faces-redirect=true" value="(12) Staff Gratuity" styleClass="w-100" actionListener="#{hrReportController.makeNull()}" /><fav:favoriteStar reportKey="hrAnalytics_reportGrativity" label="(12) Staff Gratuity" category="Salary Report" /></h:panelGroup>
 
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportAttendance')}"><p:commandButton styleClass="w-100" value="(1) Attendance Report" action="/hr/hr_report_attendance?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportAttendance" label="(1) Attendance Report" category="Attendance" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportAttendanceLateInEarlyOut')}"><p:commandButton styleClass="w-100" value="(6) Late In and Early Out" action="/hr/hr_report_attendance_late_in_early_out?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportAttendanceLateInEarlyOut" label="(6) Late In and Early Out" category="Attendance" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportSummeryByStaff')}"><p:commandButton styleClass="w-100" value="(8) Staff Shift Detail By Staff" action="/hr/hr_report_summery_by_staff?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportSummeryByStaff" label="(8) Staff Shift Detail By Staff" category="Attendance" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_formStaffShiftReport')}"><p:commandButton styleClass="w-100" value="(9) Verified Report" action="/hr/hr_form_staff_shift_report?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffShiftReport" label="(9) Verified Report" category="Attendance" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportDepartment')}"><p:commandButton styleClass="w-100" value="(1) Department Report" action="/hr/hr_report_department?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportDepartment" label="(1) Department Report" category="Administration" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportEmployeeDetail')}"><p:commandButton styleClass="w-100" value="(2) Employee Detail" action="/hr/hr_report_employee_detail?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEmployeeDetail" label="(2) Employee Detail" category="Administration" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportEmployeeDetailZoneCode')}"><p:commandButton styleClass="w-100" value="(3) Employee Detail Zone Code" action="/hr/hr_report_employee_detail_zone_code?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEmployeeDetailZoneCode" label="(3) Employee Detail Zone Code" category="Administration" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportEpfDetail')}"><p:commandButton styleClass="w-100" value="(4) Employee EPF Detail" action="/hr/hr_report_epf_detail?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEpfDetail" label="(4) Employee EPF Detail" category="Administration" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportEmployeeDetail1')}"><p:commandButton styleClass="w-100" value="(5) Employee Retierd Details" action="/hr/hr_report_employee_detail_1?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEmployeeDetail1" label="(5) Employee Retierd Details" category="Administration" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffShift')}"><p:commandButton styleClass="w-100" value="(1) Staff Shift Report" action="/hr/hr_report_staff_shift?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShift" label="(1) Staff Shift Report" category="Shift" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffShiftExtra')}"><p:commandButton styleClass="w-100" value="(2) Staff Extra Shift" action="/hr/hr_report_staff_shift_extra?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShiftExtra" label="(2) Staff Extra Shift" category="Shift" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_shiftReport')}"><p:commandButton styleClass="w-100" value="(3) Entered Shift Report" action="/hr/hr_shift_report?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_shiftReport" label="(3) Entered Shift Report" category="Shift" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportFingerPrintRecordLogged')}"><p:commandButton styleClass="w-100" value="(1) Finger Print Record By Logged" action="/hr/hr_report_finger_print_record_logged?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordLogged" label="(1) Finger Print Record By Logged" category="Finger Print Records" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportFingerPrintRecordVerified')}"><p:commandButton styleClass="w-100" value="(2) Finger Print Record By Verified" action="/hr/hr_report_finger_print_record_verified?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordVerified" label="(2) Finger Print Record By Verified" category="Finger Print Records" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportFingerPrintRecordNoShiftSetted')}"><p:commandButton styleClass="w-100" value="(3) Finger Print Record No Shift Setted" action="/hr/hr_report_finger_print_record_no_shift_setted?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordNoShiftSetted" label="(3) Finger Print Record No Shift Setted" category="Finger Print Records" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportFingerPrintRecordApproved')}"><p:commandButton styleClass="w-100" value="(4) Finger Print Approve" action="/hr/hr_report_finger_print_record_approved?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordApproved" label="(4) Finger Print Approve" category="Finger Print Records" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportHeadCount')}"><p:commandButton styleClass="w-100" value="(1) Head Count" action="/hr/hr_report_head_count?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportHeadCount" label="(1) Head Count" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndEmployeeDate')}"><p:commandButton styleClass="w-100" value="(2) Employee Worked Day Report" action="/hr/hr_report_month_end_employee_date?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndEmployeeDate" label="(2) Employee Worked Day Report" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndEmployeeDate1')}"><p:commandButton styleClass="w-100" value="(2.1) Employee Worked Day Report(New)" action="/hr/hr_report_month_end_employee_date_1?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndEmployeeDate1" label="(2.1) Employee Worked Day Report(New)" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndWorkTime')}"><p:commandButton styleClass="w-100" value="(3) Month End Employee Working Time + Over Time Report-By Minute" action="/hr/hr_report_month_end_work_time?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTime" label="(3) Month End Employee Working Time + Over Time Report-By Minute" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndWorkTimeMiniuts')}"><p:commandButton styleClass="w-100" value="(3.1) Month End Employee Working Time + Over Time Report-By Minute(Minute)" action="/hr/hr_report_month_end_work_time_miniuts?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTimeMiniuts" label="(3.1) Month End Employee Working Time + Over Time Report-By Minute(Minute)" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndWorkTimeMiniutsSummery')}"><p:commandButton styleClass="w-100" value="(3.2) Month End Employee Working Time + Over Time Report-By Minute(Minute) Summary (New)" action="/hr/hr_report_month_end_work_time_miniuts_summery?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTimeMiniutsSummery" label="(3.2) Month End Employee Working Time + Over Time Report-By Minute(Minute) Summary (New)" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndWorkTimeNoPay')}"><p:commandButton styleClass="w-100" value="(4) Month End Employee (No Pay) Report-By Minute" action="/hr/hr_report_month_end_work_time_no_pay?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTimeNoPay" label="(4) Month End Employee (No Pay) Report-By Minute" category="Summary" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportMonthEndStaffShiftData')}"><p:commandButton styleClass="w-100" value="(5) Month End Employee Summary" action="/hr/hr_report_month_end_staff_shift_data?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndStaffShiftData" label="(5) Month End Employee Summary" category="Summary" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportLeave')}"><p:commandButton styleClass="w-100" value="(1) Leave Report" action="/hr/hr_report_leave?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeave" label="(1) Leave Report" category="Leave" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportLeaveSummery')}"><p:commandButton styleClass="w-100" value="(2) Leave Report Summary" action="/hr/hr_report_leave_summery?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSummery" label="(2) Leave Report Summary" category="Leave" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportLeaveSummeryByStaff')}"><p:commandButton styleClass="w-100" value="(3) Leave Report Detail By Staff" action="/hr/hr_report_leave_summery_by_staff?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSummeryByStaff" label="(3) Leave Report Detail By Staff" category="Leave" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportLeaveSystem')}"><p:commandButton styleClass="w-100" value="(4) Late Leave" action="/hr/hr_report_leave_system?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSystem" label="(4) Late Leave" category="Leave" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportLeaveSystem1')}"><p:commandButton styleClass="w-100" value="(4) Late Leave(Detail)" action="/hr/hr_report_leave_system_1?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSystem1" label="(4) Late Leave(Detail)" category="Leave" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffShiftDetail')}"><p:commandButton styleClass="w-100" value="(1) Worked Time" action="/hr/hr_report_staff_shift_detail?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShiftDetail" label="(1) Worked Time" category="Working Time" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportOverTime')}"><p:commandButton styleClass="w-100" value="(2) Over Time" action="/hr/hr_report_over_time?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportOverTime" label="(2) Over Time" category="Working Time" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffShiftHistory')}"><p:commandButton styleClass="w-100" value="(1) Staff Shift History" action="/hr/hr_report_staff_shift_history?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShiftHistory" label="(1) Staff Shift History" category="History" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportFingerPrintHistory')}"><p:commandButton styleClass="w-100" value="(2) Finger Print History" action="/hr/hr_report_finger_print_history?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintHistory" label="(2) Finger Print History" category="History" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_formStaffAdditionalReport1')}"><p:commandButton styleClass="w-100" value="(1) Additional Form Report" action="/hr/hr_form_staff_additional_report_1?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffAdditionalReport1" label="(1) Additional Form Report" category="Form" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_formStaffLeaveReport')}"><p:commandButton styleClass="w-100" value="(2) Leave Form Report" action="/hr/hr_form_staff_leave_report?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffLeaveReport" label="(2) Leave Form Report" category="Form" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_formStaffAdditionalReport')}"><p:commandButton styleClass="w-100" value="(3) Additional Form Report Varification" action="/hr/hr_form_staff_additional_report?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffAdditionalReport" label="(3) Additional Form Report Varification" category="Form" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_formStaffFormReport')}"><p:commandButton styleClass="w-100" value="(4) Form Report That Not Comes To Analysed" action="/hr/hr_form_staff_form_report?faces-redirect=true" actionListener="#{hrReportController.makeNull()}" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffFormReport" label="(4) Form Report That Not Comes To Analysed" category="Form" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_staffLeaveEditSearch')}"><p:commandButton styleClass="w-100" value="Edit Leave" action="/hr/hr_staff_leave_edit_search?faces-redirect=true" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_staffLeaveEditSearch" label="Edit Leave" category="Hr Edit" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_shiftStaffEditSearch')}"><p:commandButton styleClass="w-100" value="Edit Shift" action="/hr/hr_shift_staff_edit_search?faces-redirect=true" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_shiftStaffEditSearch" label="Edit Shift" category="Hr Edit" /></h:panelGroup>
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_staffFingerEditSearch')}"><p:commandButton styleClass="w-100" value="Edit Finger Print Record" action="/hr/hr_staff_finger_edit_search?faces-redirect=true" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_staffFingerEditSearch" label="Edit Finger Print Record" category="Hr Edit" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportPhDate')}"><p:commandButton styleClass="w-100" value="Holyday Report" action="/hr/hr_report_ph_date?faces-redirect=true" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportPhDate" label="Holyday Report" category="Hr Holydays" /></h:panelGroup>
+
+                                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('hrAnalytics_reportStaffDetails')}"><p:commandButton styleClass="w-100" value="Staff Details" action="/hr/report_staff_details?faces-redirect=true" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffDetails" label="Staff Details" category="Staff Reports" /></h:panelGroup>
+                                                </div>
+                                            </h:panelGroup>
+                                        </p:tab>
+
+                                        <p:tab title="(1) Salary Report">
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) All Staff Salary Summary"
+                                                                 action="/hr/hr_report_staff_salary?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalary" label="(2) All Staff Salary Summary" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2.1) All Staff Salary Summary(By Department)"
+                                                                 action="/hr/hr_report_staff_salary_by_department?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryByDepartment" label="(2.1) All Staff Salary Summary(By Department)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Staff Payroll"
+                                                                 action="/hr/hr_report_staff_payroll?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayroll" label="(3) Staff Payroll" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Staff Payroll(Accountant)"
+                                                                 action="/hr/hr_report_staff_payroll_1?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayroll1" label="(3) Staff Payroll(Accountant)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3.1) Staff Payrol(By Department)"
+                                                                 action="/hr/hr_report_staff_payroll_department?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayrollDepartment" label="(3.1) Staff Payrol(By Department)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3.2) Staff Payroll(By Roster)"
+                                                                 action="/hr/hr_report_staff_payroll_roster?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffPayrollRoster" label="(3.2) Staff Payroll(By Roster)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3.1) Staff Payroll(Selected Staff)"
+                                                                 action="/hr/hr_staff_salary_1?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_staffSalary1" label="(3.1) Staff Payroll(Selected Staff)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Staff Over Time"
+                                                                 action="/hr/hr_report_staff_over_time?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffOverTime" label="(4) Staff Over Time" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(5) No Pay And Salary Allowance Report"
+                                                                 action="/hr/hr_report_staff_no_pay_and_late?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffNoPayAndLate" label="(5) No Pay And Salary Allowance Report" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_staff_paysheet_component_list?faces-redirect=true"
+                                                                 value="(6) Staff Paysheet Component List"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_staffPaysheetComponentList" label="(6) Staff Paysheet Component List" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_salary_payment_bank?faces-redirect=true"
+                                                                 value="(7) Staff Salary Payment To Bank"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryPaymentBank" label="(7) Staff Salary Payment To Bank" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_salary_payment_bank_summery?faces-redirect=true"
+                                                                 value="(7.1) Staff Salary Bank Vise"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryPaymentBankSummery" label="(7.1) Staff Salary Bank Vise" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_salary_component?faces-redirect=true"
+                                                                 value="(8) Staff Salary Component"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryComponent" label="(8) Staff Salary Component" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_salary_component_summery_bank_vise?faces-redirect=true"
+                                                                 value="(8.1) Staff Salary Component(Bank Vise)"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryComponentSummeryBankVise" label="(8.1) Staff Salary Component(Bank Vise)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_epf_etf_1?faces-redirect=true"
+                                                                 value="(9) EPF"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffEpfEtf1" label="(9) EPF" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_epf_etf?faces-redirect=true"
+                                                                 value="(9.1) ETF"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffEpfEtf" label="(9.1) ETF" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_epf_etf_to_export?faces-redirect=true"
+                                                                 value="(9.2) EPF ETF(Export)"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{staffBasicController.makeItemNul()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffEpfEtfToExport" label="(9.2) EPF ETF(Export)" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_salary_generate_or_not?faces-redirect=true"
+                                                                 value="(10) Staff Salary Generate Or Not Report"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{hrReportController.makeNull()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryGenerateOrNot" label="(10) Staff Salary Generate Or Not Report" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_staff_salary_deleted_report?faces-redirect=true"
+                                                                 value="(11) Staff Salary Generate Or Delete Detail Report"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{hrReportController.makeNull()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportStaffSalaryDeletedReport" label="(11) Staff Salary Generate Or Delete Detail Report" category="Salary Report" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton ajax="false"
+                                                                 action="/hr/hr_report_grativity?faces-redirect=true"
+                                                                 value="(12) Staff Gratuity"
+                                                                 class="w-100 my-1"
+                                                                 actionListener="#{hrReportController.makeNull()}"  /><fav:favoriteStar reportKey="hrAnalytics_reportGrativity" label="(12) Staff Gratuity" category="Salary Report" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(2) Attendance">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Attendance Report" 
-                                                                 action="hr_report_attendance" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2) Early In " 
-                                                                 action="hr_report_attendance_early_in" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" rendered="fasle"  /> 
-                                                <p:commandButton value="(3) Early Out " 
-                                                                 action="hr_report_attendance_early_out" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" rendered="false"/> 
-                                                <p:commandButton value="(4) Late In " 
-                                                                 action="hr_report_attendance_late_in" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" rendered="false" /> 
-                                                <p:commandButton value="(5) Late Out " 
-                                                                 action="hr_report_attendance_late_out" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" rendered="false"/> 
-                                                <p:commandButton value="(6) Late In and Early Out " 
-                                                                 action="hr_report_attendance_late_in_early_out" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-
-                                                <p:commandButton value="(8) Staff Shift Detail By Staff" 
-                                                                 action="hr_report_summery_by_staff" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-
-                                                <p:commandButton value="(9) Verified Report" 
-                                                                 action="hr_form_staff_shift_report" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-
-                                            </h:panelGrid>
-
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Attendance Report"
+                                                                 action="/hr/hr_report_attendance?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportAttendance" label="(1) Attendance Report" category="Attendance" /></div>
+                                                <p:commandButton value="(2) Early In"
+                                                                 action="/hr/hr_report_attendance_early_in?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" rendered="false" />
+                                                <p:commandButton value="(3) Early Out"
+                                                                 action="/hr/hr_report_attendance_early_out?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" rendered="false" />
+                                                <p:commandButton value="(4) Late In"
+                                                                 action="/hr/hr_report_attendance_late_in?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" rendered="false" />
+                                                <p:commandButton value="(5) Late Out"
+                                                                 action="/hr/hr_report_attendance_late_out?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" rendered="false" />
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(6) Late In and Early Out"
+                                                                 action="/hr/hr_report_attendance_late_in_early_out?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportAttendanceLateInEarlyOut" label="(6) Late In and Early Out" category="Attendance" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(8) Staff Shift Detail By Staff"
+                                                                 action="/hr/hr_report_summery_by_staff?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportSummeryByStaff" label="(8) Staff Shift Detail By Staff" category="Attendance" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(9) Verified Report"
+                                                                 action="/hr/hr_form_staff_shift_report?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffShiftReport" label="(9) Verified Report" category="Attendance" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(3) Administration">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Department Report " 
-                                                                 action="hr_report_department" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2) Employee Detail " 
-                                                                 action="hr_report_employee_detail" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3) Employee Detail Zone Code" 
-                                                                 action="hr_report_employee_detail_zone_code" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-
-                                                <p:commandButton value="(4) Employee EPF Detail" 
-                                                                 action="hr_report_epf_detail" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(5) Employee Retierd Details" 
-                                                                 action="hr_report_employee_detail_1" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
-
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Department Report"
+                                                                 action="/hr/hr_report_department?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportDepartment" label="(1) Department Report" category="Administration" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Employee Detail"
+                                                                 action="/hr/hr_report_employee_detail?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEmployeeDetail" label="(2) Employee Detail" category="Administration" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Employee Detail Zone Code"
+                                                                 action="/hr/hr_report_employee_detail_zone_code?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEmployeeDetailZoneCode" label="(3) Employee Detail Zone Code" category="Administration" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Employee EPF Detail"
+                                                                 action="/hr/hr_report_epf_detail?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEpfDetail" label="(4) Employee EPF Detail" category="Administration" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(5) Employee Retierd Details"
+                                                                 action="/hr/hr_report_employee_detail_1?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportEmployeeDetail1" label="(5) Employee Retierd Details" category="Administration" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(4) Shift">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Staff Shift Report" 
-                                                                 action="hr_report_staff_shift" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(2) Staff Extra Shift " 
-                                                                 action="hr_report_staff_shift_extra" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3) Entered Shift Report" 
-                                                                 action="hr_shift_report" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(4) Roster Table and verify Time" 
-                                                                 action="hr_report_shift_table" 
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Staff Shift Report"
+                                                                 action="/hr/hr_report_staff_shift?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShift" label="(1) Staff Shift Report" category="Shift" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Staff Extra Shift"
+                                                                 action="/hr/hr_report_staff_shift_extra?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShiftExtra" label="(2) Staff Extra Shift" category="Shift" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Entered Shift Report"
+                                                                 action="/hr/hr_shift_report?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_shiftReport" label="(3) Entered Shift Report" category="Shift" /></div>
+                                                <!-- <p:commandButton value="(4) Roster Table and verify Time"
+                                                                 action="/hr/hr_report_shift_table?faces-redirect=true"
                                                                  actionListener="#{shiftTableController.makeTableNull()}"
-                                                                 class="w-100 my-1" ajax="false" />
-
-                                            </h:panelGrid>
-
+                                                                 class="w-100 my-1" ajax="false" /> -->
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(5) Finger Print Records">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Finger Print Record By Logged" 
-                                                                 action="hr_report_finger_print_record_logged" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2) Finger Print Record By Verified" 
-                                                                 action="hr_report_finger_print_record_verified" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(3) Finger Print Record No Shift Setted" 
-                                                                 action="hr_report_finger_print_record_no_shift_setted" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(4) Finger Print Approve" 
-                                                                 action="hr_report_finger_print_record_approved" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Finger Print Record By Logged"
+                                                                 action="/hr/hr_report_finger_print_record_logged?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordLogged" label="(1) Finger Print Record By Logged" category="Finger Print Records" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Finger Print Record By Verified"
+                                                                 action="/hr/hr_report_finger_print_record_verified?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordVerified" label="(2) Finger Print Record By Verified" category="Finger Print Records" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Finger Print Record No Shift Setted"
+                                                                 action="/hr/hr_report_finger_print_record_no_shift_setted?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordNoShiftSetted" label="(3) Finger Print Record No Shift Setted" category="Finger Print Records" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Finger Print Approve"
+                                                                 action="/hr/hr_report_finger_print_record_approved?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintRecordApproved" label="(4) Finger Print Approve" category="Finger Print Records" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(6) Summary">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Head Count " 
-                                                                 action="hr_report_head_count" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2) Employee Worked Day Report" 
-                                                                 action="hr_report_month_end_employee_date" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2.1) Employee Worked Day Report(New)" 
-                                                                 action="hr_report_month_end_employee_date_1" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3) Month End Employee Working Time + 
-                                                                 Over Time Report-By Minute " 
-                                                                 action="hr_report_month_end_work_time" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(3.1) Month End Employee Working Time + 
-                                                                 Over Time Report-By Minute(Minute) " 
-                                                                 action="hr_report_month_end_work_time_miniuts" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3.2) Month End Employee Working Time + 
-                                                                 Over Time Report-By Minute(Minute) Summary (New)" 
-                                                                 action="hr_report_month_end_work_time_miniuts_summery" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(4) Month End Employee (No Pay) Report-By Minute " 
-                                                                 action="hr_report_month_end_work_time_no_pay" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(5) Month End Employee Summary " 
-                                                                 action="hr_report_month_end_staff_shift_data" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Head Count"
+                                                                 action="/hr/hr_report_head_count?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportHeadCount" label="(1) Head Count" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Employee Worked Day Report"
+                                                                 action="/hr/hr_report_month_end_employee_date?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndEmployeeDate" label="(2) Employee Worked Day Report" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2.1) Employee Worked Day Report(New)"
+                                                                 action="/hr/hr_report_month_end_employee_date_1?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndEmployeeDate1" label="(2.1) Employee Worked Day Report(New)" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Month End Employee Working Time + Over Time Report-By Minute"
+                                                                 action="/hr/hr_report_month_end_work_time?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTime" label="(3) Month End Employee Working Time + Over Time Report-By Minute" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3.1) Month End Employee Working Time + Over Time Report-By Minute(Minute)"
+                                                                 action="/hr/hr_report_month_end_work_time_miniuts?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTimeMiniuts" label="(3.1) Month End Employee Working Time + Over Time Report-By Minute(Minute)" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3.2) Month End Employee Working Time + Over Time Report-By Minute(Minute) Summary (New)"
+                                                                 action="/hr/hr_report_month_end_work_time_miniuts_summery?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTimeMiniutsSummery" label="(3.2) Month End Employee Working Time + Over Time Report-By Minute(Minute) Summary (New)" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Month End Employee (No Pay) Report-By Minute"
+                                                                 action="/hr/hr_report_month_end_work_time_no_pay?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndWorkTimeNoPay" label="(4) Month End Employee (No Pay) Report-By Minute" category="Summary" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(5) Month End Employee Summary"
+                                                                 action="/hr/hr_report_month_end_staff_shift_data?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportMonthEndStaffShiftData" label="(5) Month End Employee Summary" category="Summary" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(7) Leave">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Leave Report " 
-                                                                 action="hr_report_leave" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2) Leave Report Summary " 
-                                                                 action="hr_report_leave_summery" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(3) Leave Report Detail By Staff " 
-                                                                 action="hr_report_leave_summery_by_staff" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(4) Late Leave" 
-                                                                 action="hr_report_leave_system" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(4) Late Leave(Detail)" 
-                                                                 action="hr_report_leave_system_1" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Leave Report"
+                                                                 action="/hr/hr_report_leave?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeave" label="(1) Leave Report" category="Leave" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Leave Report Summary"
+                                                                 action="/hr/hr_report_leave_summery?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSummery" label="(2) Leave Report Summary" category="Leave" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Leave Report Detail By Staff"
+                                                                 action="/hr/hr_report_leave_summery_by_staff?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSummeryByStaff" label="(3) Leave Report Detail By Staff" category="Leave" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Late Leave"
+                                                                 action="/hr/hr_report_leave_system?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSystem" label="(4) Late Leave" category="Leave" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Late Leave(Detail)"
+                                                                 action="/hr/hr_report_leave_system_1?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportLeaveSystem1" label="(4) Late Leave(Detail)" category="Leave" /></div>
+                                            </div>
                                         </p:tab>
+
                                         <p:tab title="(8) Working Time">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Worked Time" 
-                                                                 action="hr_report_staff_shift_detail" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2) Over Time" 
-                                                                 action="hr_report_over_time" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Worked Time"
+                                                                 action="/hr/hr_report_staff_shift_detail?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShiftDetail" label="(1) Worked Time" category="Working Time" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Over Time"
+                                                                 action="/hr/hr_report_over_time?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportOverTime" label="(2) Over Time" category="Working Time" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(9) History">
-                                                <!--rendered="#{webUserController.hasPrivilege('EmployeeHistoryReport')}" >-->
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1) Staff Shift History" 
-                                                                 action="hr_report_staff_shift_history" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" /> 
-                                                <p:commandButton value="(2)Finger Print History" 
-                                                                 action="hr_report_finger_print_history" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Staff Shift History"
+                                                                 action="/hr/hr_report_staff_shift_history?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffShiftHistory" label="(1) Staff Shift History" category="History" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Finger Print History"
+                                                                 action="/hr/hr_report_finger_print_history?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportFingerPrintHistory" label="(2) Finger Print History" category="History" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(10) Form">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="(1)Additional Form Report" 
-                                                                 action="hr_form_staff_additional_report_1" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(2)Leave Form Report" 
-                                                                 action="hr_form_staff_leave_report" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(3)Additional Form Report Varification" 
-                                                                 action="hr_form_staff_additional_report" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="(4)Form Report That Not Comes To Analysed" 
-                                                                 action="hr_form_staff_form_report" 
-                                                                 actionListener="#{hrReportController.makeNull()}" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(1) Additional Form Report"
+                                                                 action="/hr/hr_form_staff_additional_report_1?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffAdditionalReport1" label="(1) Additional Form Report" category="Form" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(2) Leave Form Report"
+                                                                 action="/hr/hr_form_staff_leave_report?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffLeaveReport" label="(2) Leave Form Report" category="Form" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(3) Additional Form Report Varification"
+                                                                 action="/hr/hr_form_staff_additional_report?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffAdditionalReport" label="(3) Additional Form Report Varification" category="Form" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="(4) Form Report That Not Comes To Analysed"
+                                                                 action="/hr/hr_form_staff_form_report?faces-redirect=true"
+                                                                 actionListener="#{hrReportController.makeNull()}"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_formStaffFormReport" label="(4) Form Report That Not Comes To Analysed" category="Form" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(11) Hr Edit">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="Edit Leave" 
-                                                                 action="hr_staff_leave_edit_search" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="Edit Shift" 
-                                                                 action="hr_shift_staff_edit_search" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                                <p:commandButton value="Edit Finger Print Record" 
-                                                                 action="hr_staff_finger_edit_search" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="Edit Leave"
+                                                                 action="/hr/hr_staff_leave_edit_search?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_staffLeaveEditSearch" label="Edit Leave" category="Hr Edit" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="Edit Shift"
+                                                                 action="/hr/hr_shift_staff_edit_search?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_shiftStaffEditSearch" label="Edit Shift" category="Hr Edit" /></div>
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="Edit Finger Print Record"
+                                                                 action="/hr/hr_staff_finger_edit_search?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_staffFingerEditSearch" label="Edit Finger Print Record" category="Hr Edit" /></div>
+                                            </div>
                                         </p:tab>
 
                                         <p:tab title="(12) Hr Holydays">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="Holyday Report" 
-                                                                 action="hr_report_ph_date" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="Holyday Report"
+                                                                 action="/hr/hr_report_ph_date?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportPhDate" label="Holyday Report" category="Hr Holydays" /></div>
+                                            </div>
                                         </p:tab>
+
                                         <p:tab title="(13) Staff Reports">
-                                            <h:panelGrid columns="1">
-                                                <p:commandButton value="Staff Details" 
-                                                                 action="/hr/report_staff_details" 
-                                                                 class="w-100 my-1" ajax="false" />
-                                            </h:panelGrid>
+                                            <div class="d-grid gap-2">
+                                                <div class="d-flex align-items-center gap-1 w-100"><p:commandButton value="Staff Details"
+                                                                 action="/hr/report_staff_details?faces-redirect=true"
+                                                                 class="w-100 my-1" ajax="false" /><fav:favoriteStar reportKey="hrAnalytics_reportStaffDetails" label="Staff Details" category="Staff Reports" /></div>
+                                            </div>
                                         </p:tab>
+
                                     </p:accordionPanel>
                                 </p:panel>
                             </h:form>
                         </div>
                         <div class="col-10" >
                             <ui:insert name="subcontent" >
-                                
+
                             </ui:insert>
                         </div>
 
                     </div>
 
                 </div>
-
-
 
             </ui:define>
 

@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form>
+                    <p:panel class="m-1">
+                        <f:facet name="header">
+                            <h:outputText value="Float Transfer Cancellation Note" style="color: #dc3545;" />
+                            <p:commandButton
+                                class="float-end me-2"
+                                value="Back to My Float Outs"
+                                action="#{financialTransactionController.navigateBackToMyFloatOuts()}"
+                                ajax="false"
+                                icon="pi pi-arrow-left" />
+                            <p:commandButton
+                                class="float-end me-2"
+                                value="Cashier Index"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                                ajax="false"
+                                icon="pi pi-home" />
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-3">
+                                <p:panelGrid
+                                    class="w-100"
+                                    layout="tabular"
+                                    columns="2"
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText class="fw-medium" value="Cancellation Bill ID" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.deptId}" />
+
+                                    <h:outputText class="fw-medium" value="Cancelled At" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+
+                                    <h:outputText class="fw-medium" value="Cancelled By" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.creater.name}" />
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-3">
+                                <p:panelGrid
+                                    layout="tabular"
+                                    columns="2"
+                                    class="w-100"
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText class="fw-medium" value="Original Bill ID" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.billedBill.deptId}" />
+
+                                    <h:outputText class="fw-medium" value="Original From" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.fromWebUser.webUserPerson.nameWithTitle}" />
+
+                                    <h:outputText class="fw-medium" value="Original To" />
+                                    <h:outputText value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}" />
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-6">
+                                <p:dataTable
+                                    class="w-100"
+                                    id="tblPayments"
+                                    value="#{financialTransactionController.currentBillPayments}"
+                                    var="bp">
+                                    <p:column headerText="Payment Method">
+                                        <h:outputText value="#{bp.paymentMethod}" />
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="Total" />
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Value"
+                                        class="text-end">
+                                        <h:outputText value="#{bp.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{financialTransactionController.currentBill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <p:panel header="Cancellation Reason">
+                                    <h:outputText value="#{financialTransactionController.currentBill.comments}" />
+                                </p:panel>
+                            </div>
+                        </div>
+
+                    </p:panel>
+
+                    <h:panelGroup id="panelPrint">
+                        <!-- POS Paper with header -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Paper', false)}">
+                            <prints:float_transfer_cancel_pos bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- POS Printed Paper (without header) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is POS Printed Paper', false)}">
+                            <prints:float_transfer_cancel_pos bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- 5x5 Paper with header (default) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Paper', true)}">
+                            <prints:float_transfer_cancel_five_five bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- 5x5 Printed Paper (without header) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is 5x5 Printed Paper', false)}">
+                            <prints:float_transfer_cancel_five_five bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- A4 Paper with header -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Paper', false)}">
+                            <prints:float_transfer_cancel_a4 bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+
+                        <!-- A4 Printed Paper (without header) -->
+                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Fund Transfer Bill is A4 Printed Paper', false)}">
+                            <prints:float_transfer_cancel_a4 bill="#{financialTransactionController.currentBill}"/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <p:commandButton
+                        value="Print"
+                        ajax="false"
+                        icon="pi pi-print"
+                        style="margin-top: 10px;">
+                        <p:printer target="panelPrint"/>
+                    </p:commandButton>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

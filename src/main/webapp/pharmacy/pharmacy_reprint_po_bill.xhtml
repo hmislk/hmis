@@ -32,7 +32,7 @@
                                         ajax="false" 
                                         value="Back To Good Recipt" 
                                         rendered="#{webUserController.hasPrivilege('PharmacyGoodReceive')}"
-                                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"   
+                                        action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"   
                                         class="ui-button-warning mx-2" 
                                         icon="fas fa-arrow-left"/>
 
@@ -57,7 +57,6 @@
                         <div class="d-flex justify-content-center border border-light boder-1">
                             <h:panelGroup id="gpBillPreview" style="width: 212mm;">
                                 <ph:po bill="#{commonReport.previewBill}" reprint="true"/>
-
                             </h:panelGroup> 
                         </div>
 

@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+
+            <!-- ============================================================ -->
+            <!-- Panel 1: Patients Awaiting Theatre Acceptance                 -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fa fa-procedures fa-lg me-2"/>
+                            <span class="fw-bold">Patients Awaiting Theatre Acceptance — #{sessionController.department.name}</span>
+                        </div>
+                        <p:commandButton
+                            id="btnRefreshPendingTheatre"
+                            value="Refresh"
+                            icon="fa fa-refresh"
+                            ajax="false"
+                            class="ui-button-info"
+                            action="#{patientTransferController.navigateToTheatreAccept()}"/>
+                    </div>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblPending"
+                    value="#{patientTransferController.pendingTheatreRequests}"
+                    var="req"
+                    emptyMessage="No patients awaiting acceptance."
+                    styleClass="w-100">
+
+                    <p:column headerText="BHT">
+                        <h:outputText value="#{req.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{req.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="From Ward">
+                        <h:outputText value="#{req.fromPatientRoom.roomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Theatre Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Surgery">
+                        <h:outputText value="#{req.surgeryBill.procedure.item.name}" rendered="#{req.surgeryBill ne null}"/>
+                        <h:outputText value="—" rendered="#{req.surgeryBill eq null}"/>
+                    </p:column>
+                    <p:column headerText="Sent By">
+                        <h:outputText value="#{req.initiatedBy.webUserPerson.name}"/>
+                    </p:column>
+                    <p:column headerText="Sent At">
+                        <h:outputText value="#{req.initiatedAt}">
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Notes">
+                        <h:outputText value="#{req.notes}"/>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:160px">
+                        <div class="d-flex gap-1">
+                            <p:commandButton
+                                id="btnAccept"
+                                value="Accept"
+                                icon="fa fa-check"
+                                ajax="false"
+                                class="ui-button-success ui-button-sm"
+                                title="Accept patient in theatre"
+                                action="#{patientTransferController.acceptInTheatre(req)}"
+                                onclick="if (!confirm('Accept this patient in theatre?')) return false;"/>
+                            <p:commandButton
+                                id="btnCancel"
+                                value="Cancel"
+                                icon="fa fa-times"
+                                ajax="false"
+                                class="ui-button-danger ui-button-sm"
+                                title="Cancel this transfer request"
+                                action="#{patientTransferController.cancelTransfer(req)}"
+                                onclick="if (!confirm('Cancel this transfer request?')) return false;"/>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Panel 2: Patients Currently in Theatre                        -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div>
+                        <i class="fa fa-heartbeat fa-lg me-2 text-danger"/>
+                        <span class="fw-bold">Patients in Theatre — #{sessionController.department.name}</span>
+                    </div>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblInTheatre"
+                    value="#{patientTransferController.inTheatreRequests}"
+                    var="req"
+                    emptyMessage="No patients currently in theatre."
+                    styleClass="w-100">
+
+                    <p:column headerText="BHT">
+                        <h:outputText value="#{req.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{req.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Theatre Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Status">
+                        <h:outputText value="#{req.theatreOccupancyStatus}"/>
+                    </p:column>
+                    <p:column headerText="Accepted At">
+                        <h:outputText value="#{req.acceptedAt}">
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:220px">
+                        <div class="d-flex gap-1 flex-wrap">
+                            <p:commandButton
+                                id="btnMarkInTheatre"
+                                value="In Theatre"
+                                icon="fa fa-play"
+                                ajax="false"
+                                class="ui-button-warning ui-button-sm"
+                                title="Mark patient as in theatre (procedure started)"
+                                rendered="#{req.theatreOccupancyStatus ne null
+                                            and req.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
+                                action="#{patientTransferController.markInTheatre(req)}"
+                                onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
+                            <p:commandButton
+                                id="btnProcDone"
+                                value="Procedure Done"
+                                icon="fa fa-check-circle"
+                                ajax="false"
+                                class="ui-button-success ui-button-sm"
+                                title="Mark procedure as completed"
+                                rendered="#{req.theatreOccupancyStatus ne null
+                                            and req.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
+                                action="#{patientTransferController.markProcedureCompleted(req)}"
+                                onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
+                            <p:commandButton
+                                id="btnReturn"
+                                value="Return to Ward"
+                                icon="fa fa-arrow-left"
+                                ajax="false"
+                                class="ui-button-info ui-button-sm"
+                                title="Send patient back to ward"
+                                rendered="#{req.theatreOccupancyStatus ne null
+                                            and req.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
+                                action="#{patientTransferController.returnToWard(req)}"
+                                onclick="if (!confirm('Initiate return to ward?')) return false;"/>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

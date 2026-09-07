@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" />
+        <cc:attribute name="duplicate" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        <div class="posbill" style="border: 1px solid black;">
+
+            <div class="institutionName">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+            <div class="institutionContact" >
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div >
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                </div>
+            </div>
+
+            <div class="headingBill">
+                <h:outputLabel value="Medicines Received"   />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />
+            </div>
+
+            <div class="billDetails" >
+                <table style="width: 100%;" >
+                    <tr>
+                        <td style="width: 30%; text-align: left;" >
+                            <h:outputLabel value="Date" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 60%" >
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails" style="font-size: 10px!important">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MMM/yyyy hh:mm a" ></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 30%;text-align: left;" >
+                            <h:outputLabel value="Bill No" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 60%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.deptId}"  class="billDetails" style="font-size: 10px!important">
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                        <tr>
+                            <td style="width: 30% ;text-align: left;" >
+                                <h:outputLabel value="BHT" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 60%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetails" style="font-size: 10px!important">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 30% ;text-align: left;" >
+                                <h:outputLabel value="Patient" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 60%;text-align: left;">
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"  class="billDetails" style="font-size: 10px!important">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr>
+                        <td style="width: 30% ;text-align: left;" >
+                            <h:outputLabel value="Received Into" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 60%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.department.name}" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 30% ;text-align: left;" >
+                            <h:outputLabel value="Carried By" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td style="width: 60%;" >
+                            <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" class="billDetails" style="font-size: 10px!important"></h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />
+            </div>
+
+            <div class="w-100">
+                <table width="100%" style="width: 100%;" >
+                    <tr>
+                        <td style="width: 55%; padding-left: 20px;">
+                            <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+                        <td  style="width:10%;text-align: right; padding-right: 30px;">
+                            <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="4" >
+                            <div class="billline">
+                                <h:outputLabel value="-----------------------------------------------"   />
+                            </div>
+                        </td>
+                    </tr>
+
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" >
+                        <tr>
+                            <td colspan="1" style="overflow: visible; padding-left: 20px;">
+                                <h:outputLabel value="#{bip.searialNo+1}  -  #{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
+                                </h:outputLabel>
+                            </td>
+                            <td>
+                                <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}" styleClass="itemsBlock" style="text-align: left;" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+
+                </table>
+            </div>
+
+            <div class="billline">
+                <h:outputLabel value="-----------------------------------------------"   />
+            </div>
+
+            <div  >
+                <table style="width: 100%;" >
+                    <tr>
+                        <td  class="totalsBlock" style="text-align: left; padding-left: 20px;">
+                            <h:outputLabel   value="Number of Items Count" />
+                        </td>
+                        <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <br></br>
+            <br></br>
+
+            <div class="cashierPrinting">
+                <h:outputLabel value="Received By : #{cc.attrs.bill.creater.staff.code}"/>
+            </div>
+        </div>
+    </cc:implementation>
+</html>

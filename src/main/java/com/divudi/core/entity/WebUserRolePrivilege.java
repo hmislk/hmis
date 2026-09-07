@@ -24,7 +24,7 @@ import javax.persistence.Temporal;
 public class WebUserRolePrivilege implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String name;
     String description;
@@ -48,7 +48,6 @@ public class WebUserRolePrivilege implements Serializable {
     String retireComments;
     String sname;
     String tname;
-
     public Long getId() {
         return id;
     }
@@ -192,6 +191,5 @@ public class WebUserRolePrivilege implements Serializable {
     public void setWebUserRole(WebUserRole webUserRole) {
         this.webUserRole = webUserRole;
     }
-
 
 }

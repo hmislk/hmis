@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fav="http://xmlns.jcp.org/jsf/composite/ezcomp/reports">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -14,24 +15,112 @@
                     <div class="row" >
                         <div class="col-md-2" >
                             <h:form>
-                                <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
+                                <p:accordionPanel id="reportsAccordion" activeIndex="#{searchController.manageListIndex}">
                                     <p:ajax process="@this"></p:ajax>
+
+                                    <p:tab title="⭐ Favorites">
+                                        <!--
+                                            Each report button below is intentionally duplicated from its
+                                            home tab further down this file (same reportKey, label,
+                                            category, action), gated on isFavorite() instead of always
+                                            rendering. See developer_docs/feature/report-favorites.md.
+                                            If you add or rename a report button below, update BOTH copies -
+                                            the reportKey ties them together.
+                                        -->
+                                        <h:panelGroup layout="block" styleClass="text-muted p-2" rendered="#{not userFavoriteReportController.hasAnyFavoriteWithKeyPrefix('reportsAnalytics_')}">
+                                            <h:outputText value="No favorite reports yet — click the star next to any report to add it here." />
+                                        </h:panelGroup>
+                                        <div class="d-grid gap-2">
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_incomeBillCounts')}"><p:commandButton ajax="false" value="Income Bill Counts" icon="fa fa-chart-bar" action="#{reportController.navigateToIncomeBillCountReport()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_incomeBillCounts" label="Income Bill Counts" category="Summaries" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_shiftEndSummaries')}"><p:commandButton ajax="false" value="Shift End Summaries" action="#{financialTransactionController.navigateToListShiftEndSummaries()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_shiftEndSummaries" label="Shift End Summaries" category="Summaries" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_dayEndReport')}"><p:commandButton ajax="false" value="Day End Summery" actionListener="#{searchController.makeNull()}" action="#{financialTransactionController.navigateToDayEndReport()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_dayEndReport" label="Day End Summery" category="Summaries" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_billTypeList')}"><p:commandButton ajax="false" value="Bill Type List" action="#{searchController.navigateToBillTypeList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_billTypeList" label="Bill Type List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_billList')}"><p:commandButton ajax="false" value="Bill List" action="#{searchController.navigateToBillList}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_billList" label="Bill List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_billCountList')}"><p:commandButton ajax="false" value="Bill Count List" action="#{searchController.navigateToBillCountList()}" actionListener="#{searchController.resetAllFiltersExceptDateRange}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_billCountList" label="Bill Count List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_billItemList')}"><p:commandButton ajax="false" value="Bill Item List" action="#{searchController.navigateToBillItemList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_billItemList" label="Bill Item List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_billFeeList')}"><p:commandButton ajax="false" value="Bill Fee List" action="#{searchController.navigateToBillFeeList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_billFeeList" label="Bill Fee List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_paymentList')}"><p:commandButton ajax="false" value="Payment List" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToBillPaymentList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_paymentList" label="Payment List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_pharmaceuticalBillItemList')}"><p:commandButton ajax="false" value="Pharmaceutical Bill Item List" action="#{searchController.navigateToPharmaceuticalBillItemList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_pharmaceuticalBillItemList" label="Pharmaceutical Bill Item List" category="Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_patientInvestigationList')}"><p:commandButton ajax="false" value="Patient Investigation List" action="#{searchController.navigateToPatientInvestigationList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_patientInvestigationList" label="Patient Investigation List" category="Lists" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_cancellationBillList')}"><p:commandButton ajax="false" value="Cancellation Bill List" action="#{searchController.navigateToCancellationBillList}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_cancellationBillList" label="Cancellation Bill List" category="Additional Lists" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_returnBillList')}"><p:commandButton ajax="false" value="Return Bill List" action="#{searchController.navigateToReturnBillList()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_returnBillList" label="Return Bill List" category="Additional Lists" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_downloadBills')}"><p:commandButton ajax="false" value="Download Bills " action="#{billSearch.navigateToDownloadBillsAndBillItems()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_downloadBills" label="Download Bills" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_downloadBillsAndBillItems')}"><p:commandButton ajax="false" value="Download Bills and Bill Items" action="#{billSearch.navigateToDownloadBillsAndBillItems1()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_downloadBillsAndBillItems" label="Download Bills and Bill Items" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_dayEndSummaryDownload')}"><p:commandButton ajax="false" value="Day End Summary" action="#{financialTransactionController.navigateToDayEndSummary()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_dayEndSummaryDownload" label="Day End Summary" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_userBillSummary')}"><p:commandButton ajax="false" value="User Bill Summary" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_userBillSummary" label="User Bill Summary" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_financialTransactionsSummary')}"><p:commandButton ajax="false" value="Financial Transactions Summary" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToAllFinancialTransactionSummary()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummary" label="Financial Transactions Summary" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_financialTransactionsSummaryByCashier')}"><p:commandButton ajax="false" value="Financial Transactions Summary by cashier" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByCashier" label="Financial Transactions Summary by cashier" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_financialTransactionsSummaryPaymentMethod')}"><p:commandButton ajax="false" value="Financial Transactions Summary - Payment Method" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryPaymentMethod" label="Financial Transactions Summary - Payment Method" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_financialTransactionsSummaryByUsers')}"><p:commandButton ajax="false" value="Financial Transactions Summary - Cashiers" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToFinancialTransactionSummaryByUsers()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByUsers" label="Financial Transactions Summary - Cashiers" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_financialTransactionsSummaryByUserPayment')}"><p:commandButton ajax="false" value="Financial Transactions Summary - Cashier Payment Method" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByUserPayment" label="Financial Transactions Summary - Cashier Payment Method" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_financialTransactionsSummaryByDepartment')}"><p:commandButton ajax="false" value="Financial Transactions Summary - Department" actionListener="#{searchController.makeNull()}" action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByDepartment" label="Financial Transactions Summary - Department" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_allBills')}"><p:commandButton ajax="false" value="All Bills" action="/analytics/all_bills" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_allBills" label="All Bills" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_listOtherInstitutionBills')}"><p:commandButton ajax="false" value="List of Bills of Other Institutions" action="#{searchController.navigateToListOtherInstitutionBills()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_listOtherInstitutionBills" label="List of Bills of Other Institutions" category="Downloads" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_cashierDrawerHistory')}"><p:commandButton class="my-1 w-100" value="Cashier Drawer History" icon="pi pi-folder-open" style="background-color: #11633a; color: #ffffff;" ajax="false" action="#{drawerEntryController.navigateToCashierDrawerEntry()}" /><fav:favoriteStar reportKey="reportsAnalytics_cashierDrawerHistory" label="Cashier Drawer History" category="Downloads" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_dailyBillTypeCounts')}"><p:commandButton ajax="false" value="Daily Bill Type Counts" action="#{analysisController.navigateToDailyBillTypeCounts()}" class="w-100" /><fav:favoriteStar reportKey="reportsAnalytics_dailyBillTypeCounts" label="Daily Bill Type Counts" category="Performance" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_opdBillList')}"><p:commandButton ajax="false" value="OPD Bill List" action="#{searchController.navigateToOpdBillList()}" /><fav:favoriteStar reportKey="reportsAnalytics_opdBillList" label="OPD Bill List" category="OPD Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_opdSummaryByItem')}"><p:commandButton ajax="false" value="OPD Summary by Item" action="#{searchController.navigateToOpdSummaryByItem()}" /><fav:favoriteStar reportKey="reportsAnalytics_opdSummaryByItem" label="OPD Summary by Item" category="OPD Reports" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_channelProfessionalPaymentsByPayments')}"><p:commandButton ajax="false" value="Channel Professional Payments By Payments" action="#{searchController.navigateToChannellingPaymentBillList()}" /><fav:favoriteStar reportKey="reportsAnalytics_channelProfessionalPaymentsByPayments" label="Channel Professional Payments By Payments" category="Professional Payment Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_channelProfessionalPaymentsByPaymentItems')}"><p:commandButton ajax="false" value="Channel Professional Payments By Payment Items" action="#{searchController.navigateToChannellingPaymentBillFeeList()}" /><fav:favoriteStar reportKey="reportsAnalytics_channelProfessionalPaymentsByPaymentItems" label="Channel Professional Payments By Payment Items" category="Professional Payment Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_opdProfessionalPaymentByPayment')}"><p:commandButton ajax="false" value="OPD Professional Payment by Payment" action="#{searchController.navigateToOpdPaymentBillList}" /><fav:favoriteStar reportKey="reportsAnalytics_opdProfessionalPaymentByPayment" label="OPD Professional Payment by Payment" category="Professional Payment Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_opdProfessionalPaymentsByPaymentItems')}"><p:commandButton ajax="false" value="OPD Professional Payments By Payment Items" action="#{searchController.navigateToOpdPaymentBillFeeList()}" /><fav:favoriteStar reportKey="reportsAnalytics_opdProfessionalPaymentsByPaymentItems" label="OPD Professional Payments By Payment Items" category="Professional Payment Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_professionalPaymentsByPayment')}"><p:commandButton ajax="false" value="Professional Payments by Payment" action="#{searchController.navigateToProfessionalPaymentBillList()}" /><fav:favoriteStar reportKey="reportsAnalytics_professionalPaymentsByPayment" label="Professional Payments by Payment" category="Professional Payment Reports" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_staffCreditBillList')}"><p:commandButton ajax="false" value="Staff Credit Bill List" action="#{searchController.navigateToStaffCreditBillList}" /><fav:favoriteStar reportKey="reportsAnalytics_staffCreditBillList" label="Staff Credit Bill List" category="Credit Reports" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_generalCreditBillList')}"><p:commandButton ajax="false" value="Genaral Credit Bill List" action="#{searchController.navigateToGeneralCreditBillList}" /><fav:favoriteStar reportKey="reportsAnalytics_generalCreditBillList" label="Genaral Credit Bill List" category="Credit Reports" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_smsList')}"><p:commandButton ajax="false" value="SMS List" action="#{smsController.navigateToSmsList()}" /><fav:favoriteStar reportKey="reportsAnalytics_smsList" label="SMS List" category="SMS" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_smsFailedList')}"><p:commandButton ajax="false" value="SMS Failed List" action="#{searchController.navigateToFailedSmsList()}" /><fav:favoriteStar reportKey="reportsAnalytics_smsFailedList" label="SMS Failed List" category="SMS" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_sentSms')}"><p:commandButton ajax="false" value="Sent SMS" action="#{searchController.navigateToSendSms()}" /><fav:favoriteStar reportKey="reportsAnalytics_sentSms" label="Sent SMS" category="SMS" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_emailList')}"><p:commandButton ajax="false" icon="pi pi-list" value="Email List" styleClass="ui-button-info" action="#{emailController.navigateToEmailList()}" /><fav:favoriteStar reportKey="reportsAnalytics_emailList" label="Email List" category="Email" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_failedEmails')}"><p:commandButton ajax="false" icon="pi pi-times-circle" value="Failed Emails" styleClass="ui-button-danger" action="#{emailController.navigateToFailedEmailList()}" /><fav:favoriteStar reportKey="reportsAnalytics_failedEmails" label="Failed Emails" category="Email" /></h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_sendEmail')}"><p:commandButton ajax="false" icon="pi pi-send" value="Send Email" styleClass="ui-button-success" action="#{emailController.navigateToSendEmail()}" /><fav:favoriteStar reportKey="reportsAnalytics_sendEmail" label="Send Email" category="Email" /></h:panelGroup>
+
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('reportsAnalytics_auditEventList')}"><p:commandButton ajax="false" value="Audit Event List" action="#{auditEventController.navigateToAuditEventList()}" /><fav:favoriteStar reportKey="reportsAnalytics_auditEventList" label="Audit Event List" category="Audit Reports" /></h:panelGroup>
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Summaries">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Shift End Summaries" 
-                                                action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
-                                                class="w-100">
-                                            </p:commandButton>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Day End Summery" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{financialTransactionController.navigateToDayEndReport()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Income Bill Counts"
+                                                    icon="fa fa-chart-bar"
+                                                    action="#{reportController.navigateToIncomeBillCountReport()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_incomeBillCounts" label="Income Bill Counts" category="Summaries" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Shift End Summaries"
+                                                    action="#{financialTransactionController.navigateToListShiftEndSummaries()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_shiftEndSummaries" label="Shift End Summaries" category="Summaries" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Day End Summery"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{financialTransactionController.navigateToDayEndReport()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_dayEndReport" label="Day End Summery" category="Summaries" />
+                                            </div>
 
 
                                         </div>
@@ -39,63 +128,87 @@
                                     <p:tab title="Lists">
                                         <div class="d-grid gap-2">
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Bill Type List" 
-                                                action="#{searchController.navigateToBillTypeList()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Bill Type List"
+                                                    action="#{searchController.navigateToBillTypeList()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_billTypeList" label="Bill Type List" category="Lists" />
+                                            </div>
 
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Bill List" 
-                                                action="#{searchController.navigateToBillList}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Bill Count List"
-                                                action="#{searchController.navigateToBillCountList()}"
-                                                actionListener="#{searchController.resetAllFiltersExceptDateRange}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Bill Item List" 
-                                                action="#{searchController.navigateToBillItemList()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Bill List"
+                                                    action="#{searchController.navigateToBillList}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_billList" label="Bill List" category="Lists" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Bill Fee List" 
-                                                action="#{searchController.navigateToBillFeeList()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Bill Count List"
+                                                    action="#{searchController.navigateToBillCountList()}"
+                                                    actionListener="#{searchController.resetAllFiltersExceptDateRange}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_billCountList" label="Bill Count List" category="Lists" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Payment List" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToBillPaymentList()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Bill Item List"
+                                                    action="#{searchController.navigateToBillItemList()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_billItemList" label="Bill Item List" category="Lists" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Pharmaceutical Bill Item List" 
-                                                action="#{searchController.navigateToPharmaceuticalBillItemList()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Bill Fee List"
+                                                    action="#{searchController.navigateToBillFeeList()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_billFeeList" label="Bill Fee List" category="Lists" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Patient Investigation List" 
-                                                action="#{searchController.navigateToPatientInvestigationList()}"
-                                                class="w-100 mx-2"/>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Payment List"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToBillPaymentList()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_paymentList" label="Payment List" category="Lists" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Pharmaceutical Bill Item List"
+                                                    action="#{searchController.navigateToPharmaceuticalBillItemList()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_pharmaceuticalBillItemList" label="Pharmaceutical Bill Item List" category="Lists" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Patient Investigation List"
+                                                    action="#{searchController.navigateToPatientInvestigationList()}"
+                                                    class="w-100 mx-2"/>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_patientInvestigationList" label="Patient Investigation List" category="Lists" />
+                                            </div>
 
                                         </div>
 
@@ -104,18 +217,24 @@
 
                                     <p:tab title="Additional Lists">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Cancellation Bill List" 
-                                                action="#{searchController.navigateToCancellationBillList}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Return Bill List" 
-                                                action="#{searchController.navigateToReturnBillList()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Cancellation Bill List"
+                                                    action="#{searchController.navigateToCancellationBillList}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_cancellationBillList" label="Cancellation Bill List" category="Additional Lists" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Return Bill List"
+                                                    action="#{searchController.navigateToReturnBillList()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_returnBillList" label="Return Bill List" category="Additional Lists" />
+                                            </div>
                                         </div>
                                     </p:tab>
 
@@ -123,172 +242,241 @@
                                         <div class="d-grid gap-2">
 
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Download Bills " 
-                                                action="#{billSearch.navigateToDownloadBillsAndBillItems()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Download Bills "
+                                                    action="#{billSearch.navigateToDownloadBillsAndBillItems()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_downloadBills" label="Download Bills" category="Downloads" />
+                                            </div>
 
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Download Bills and Bill Items" 
-                                                action="#{billSearch.navigateToDownloadBillsAndBillItems1()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Download Bills and Bill Items"
+                                                    action="#{billSearch.navigateToDownloadBillsAndBillItems1()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_downloadBillsAndBillItems" label="Download Bills and Bill Items" category="Downloads" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Day End Summary" 
-                                                action="#{financialTransactionController.navigateToDayEndSummary()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="User Bill Summary" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Financial Transactions Summary" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToAllFinancialTransactionSummary()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Financial Transactions Summary by cashier" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Financial Transactions Summary - Payment Method" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Financial Transactions Summary - Cashiers" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToFinancialTransactionSummaryByUsers()}"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Financial Transactions Summary - Cashier Payment Method" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Day End Summary"
+                                                    action="#{financialTransactionController.navigateToDayEndSummary()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_dayEndSummaryDownload" label="Day End Summary" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="User Bill Summary"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToUserFinancialTransactionSummaryByBill()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_userBillSummary" label="User Bill Summary" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Financial Transactions Summary"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToAllFinancialTransactionSummary()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummary" label="Financial Transactions Summary" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Financial Transactions Summary by cashier"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToAllFinancialTransactionSummaryCashier()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByCashier" label="Financial Transactions Summary by cashier" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Financial Transactions Summary - Payment Method"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToFinancialTransactionSummaryPaymentMethod()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryPaymentMethod" label="Financial Transactions Summary - Payment Method" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Financial Transactions Summary - Cashiers"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToFinancialTransactionSummaryByUsers()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByUsers" label="Financial Transactions Summary - Cashiers" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Financial Transactions Summary - Cashier Payment Method"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToFinancialTransactionSummaryByUserPayment()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByUserPayment" label="Financial Transactions Summary - Cashier Payment Method" category="Downloads" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Financial Transactions Summary - Department" 
-                                                actionListener="#{searchController.makeNull()}"
-                                                action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Financial Transactions Summary - Department"
+                                                    actionListener="#{searchController.makeNull()}"
+                                                    action="#{searchController.navigateToFinancialTransactionSummaryByDepartment()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_financialTransactionsSummaryByDepartment" label="Financial Transactions Summary - Department" category="Downloads" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="All Bills" 
-                                                action="/analytics/all_bills"
-                                                class="w-100">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" value="List of Bills of Other Institutions"
-                                                action="#{searchController.navigateToListOtherInstitutionBills()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="All Bills"
+                                                    action="/analytics/all_bills"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_allBills" label="All Bills" category="Downloads" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false" value="List of Bills of Other Institutions"
+                                                    action="#{searchController.navigateToListOtherInstitutionBills()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_listOtherInstitutionBills" label="List of Bills of Other Institutions" category="Downloads" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                class="my-1 w-100" 
-                                                value="Cashier Drawer History" 
-                                                icon="pi pi-folder-open" 
-                                                style="background-color: #11633a; color: #ffffff;" 
-                                                ajax="false" 
-                                                action="#{drawerEntryController.navigateToCashierDrawerEntry()}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    class="my-1 w-100"
+                                                    value="Cashier Drawer History"
+                                                    icon="pi pi-folder-open"
+                                                    style="background-color: #11633a; color: #ffffff;"
+                                                    ajax="false"
+                                                    action="#{drawerEntryController.navigateToCashierDrawerEntry()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_cashierDrawerHistory" label="Cashier Drawer History" category="Downloads" />
+                                            </div>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Performance">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Daily Bill Type Counts" 
-                                                action="#{analysisController.navigateToDailyBillTypeCounts()}"
-                                                class="w-100">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Daily Bill Type Counts"
+                                                    action="#{analysisController.navigateToDailyBillTypeCounts()}"
+                                                    class="w-100">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_dailyBillTypeCounts" label="Daily Bill Type Counts" category="Performance" />
+                                            </div>
                                         </div>
                                     </p:tab>
                                     <p:tab title="OPD Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="OPD Bill List" 
-                                                action="#{searchController.navigateToOpdBillList()}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="OPD Bill List"
+                                                    action="#{searchController.navigateToOpdBillList()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_opdBillList" label="OPD Bill List" category="OPD Reports" />
+                                            </div>
 
-                                            <p:commandButton
-                                                ajax="false" 
-                                                value="OPD Summary by Item"
-                                                action="#{searchController.navigateToOpdSummaryByItem()}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="OPD Summary by Item"
+                                                    action="#{searchController.navigateToOpdSummaryByItem()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_opdSummaryByItem" label="OPD Summary by Item" category="OPD Reports" />
+                                            </div>
 
 
                                         </div>
                                     </p:tab>
                                     <p:tab title="Professional Payment Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton
-                                                ajax="false" 
-                                                value="Channel Professional Payments By Payments" 
-                                                action="#{searchController.navigateToChannellingPaymentBillList()}" 
-                                                >
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                ajax="false" 
-                                                value="Channel Professional Payments By Payment Items" 
-                                                action="#{searchController.navigateToChannellingPaymentBillFeeList()}" 
-                                                >
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="OPD Professional Payment by Payment" 
-                                                action="#{searchController.navigateToOpdPaymentBillList}" 
-                                                >
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                ajax="false" 
-                                                value="OPD Professional Payments By Payment Items" 
-                                                action="#{searchController.navigateToOpdPaymentBillFeeList()}">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Professional Payments by Payment" 
-                                                action="#{searchController.navigateToProfessionalPaymentBillList()}" >
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Channel Professional Payments By Payments"
+                                                    action="#{searchController.navigateToChannellingPaymentBillList()}"
+                                                    >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_channelProfessionalPaymentsByPayments" label="Channel Professional Payments By Payments" category="Professional Payment Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Channel Professional Payments By Payment Items"
+                                                    action="#{searchController.navigateToChannellingPaymentBillFeeList()}"
+                                                    >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_channelProfessionalPaymentsByPaymentItems" label="Channel Professional Payments By Payment Items" category="Professional Payment Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="OPD Professional Payment by Payment"
+                                                    action="#{searchController.navigateToOpdPaymentBillList}"
+                                                    >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_opdProfessionalPaymentByPayment" label="OPD Professional Payment by Payment" category="Professional Payment Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="OPD Professional Payments By Payment Items"
+                                                    action="#{searchController.navigateToOpdPaymentBillFeeList()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_opdProfessionalPaymentsByPaymentItems" label="OPD Professional Payments By Payment Items" category="Professional Payment Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Professional Payments by Payment"
+                                                    action="#{searchController.navigateToProfessionalPaymentBillList()}" >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_professionalPaymentsByPayment" label="Professional Payments by Payment" category="Professional Payment Reports" />
+                                            </div>
 
                                         </div>
                                     </p:tab>
                                     <p:tab title="Credit Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Staff Credit Bill List" 
-                                                action="#{searchController.navigateToStaffCreditBillList}" >
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Genaral Credit Bill List" 
-                                                action="#{searchController.navigateToGeneralCreditBillList}" >
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Staff Credit Bill List"
+                                                    action="#{searchController.navigateToStaffCreditBillList}" >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_staffCreditBillList" label="Staff Credit Bill List" category="Credit Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Genaral Credit Bill List"
+                                                    action="#{searchController.navigateToGeneralCreditBillList}" >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_generalCreditBillList" label="Genaral Credit Bill List" category="Credit Reports" />
+                                            </div>
                                         </div>
                                     </p:tab>
 
@@ -302,45 +490,80 @@
                                     </p:tab>
                                     <p:tab title="SMS">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
-                                            <p:commandButton ajax="false" value="SMS Failed List" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Sent SMS" action="#{searchController.navigateToSendSms()}"  ></p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="SMS List"
+                                                    action="#{smsController.navigateToSmsList()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_smsList" label="SMS List" category="SMS" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="SMS Failed List"
+                                                    action="#{searchController.navigateToFailedSmsList()}"  >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_smsFailedList" label="SMS Failed List" category="SMS" />
+                                            </div>
+
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Sent SMS"
+                                                    action="#{searchController.navigateToSendSms()}"  >
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_sentSms" label="Sent SMS" category="SMS" />
+                                            </div>
                                         </div>
-                                    </p:tab>  
+                                    </p:tab>
                                     <p:tab title="Email">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                icon="pi pi-list" 
-                                                value="Email List" 
-                                                styleClass="ui-button-info" 
-                                                action="#{emailController.navigateToEmailList()}" />
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="pi pi-list"
+                                                    value="Email List"
+                                                    styleClass="ui-button-info"
+                                                    action="#{emailController.navigateToEmailList()}" />
+                                                <fav:favoriteStar reportKey="reportsAnalytics_emailList" label="Email List" category="Email" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                icon="pi pi-times-circle" 
-                                                value="Failed Emails" 
-                                                styleClass="ui-button-danger" 
-                                                action="#{emailController.navigateToFailedEmailList()}" />
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="pi pi-times-circle"
+                                                    value="Failed Emails"
+                                                    styleClass="ui-button-danger"
+                                                    action="#{emailController.navigateToFailedEmailList()}" />
+                                                <fav:favoriteStar reportKey="reportsAnalytics_failedEmails" label="Failed Emails" category="Email" />
+                                            </div>
 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                icon="pi pi-send" 
-                                                value="Send Email" 
-                                                styleClass="ui-button-success" 
-                                                action="#{emailController.navigateToSendEmail()}" />
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="pi pi-send"
+                                                    value="Send Email"
+                                                    styleClass="ui-button-success"
+                                                    action="#{emailController.navigateToSendEmail()}" />
+                                                <fav:favoriteStar reportKey="reportsAnalytics_sendEmail" label="Send Email" category="Email" />
+                                            </div>
                                         </div>
                                     </p:tab>
 
                                     <p:tab title="Audit Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Audit Event List"
-                                                action="#{auditEventController.navigateToAuditEventList()}">
-                                            </p:commandButton>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Audit Event List"
+                                                    action="#{auditEventController.navigateToAuditEventList()}">
+                                                </p:commandButton>
+                                                <fav:favoriteStar reportKey="reportsAnalytics_auditEventList" label="Audit Event List" category="Audit Reports" />
+                                            </div>
                                         </div>
-                                    </p:tab>  
+                                    </p:tab>
 
                                 </p:accordionPanel>
                             </h:form>

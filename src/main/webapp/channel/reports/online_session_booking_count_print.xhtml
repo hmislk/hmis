@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="printing/reportprint.css"/>
+                <h:form>
+                    <p:panel header="Online Session Bookings Print View" styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="Online Session Bookings Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="online_session_booking_count?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="Online Session Bookings"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From Date - "/>
+                                        <h:outputText value="#{channelReportTemplateController.fromDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To Date - "/>
+                                        <h:outputText value="#{channelReportTemplateController.toDate}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div>
+                                        <p:dataTable 
+                                            value="#{channelReportTemplateController.onlineBookingDetialRows}" 
+                                            var="a" 
+                                            id="tbl1" 
+                                            rowIndexVar="i"
+                                            rowKey="#{a.id}"
+                                            styleClass="table">
+
+                                            <p:column width="5mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="No" />
+                                                </f:facet>
+                                                <h:outputText value="#{i+1}" />
+                                            </p:column>
+
+                                            <p:column width="25mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Bill No" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.billDeptId}" />
+                                            </p:column>
+
+                                            <p:column width="15mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Session Date" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.sessionDate}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column width="30mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Consultant" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.consultantName}" />
+                                            </p:column>
+                                            <p:column width="20mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Speciality" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.consultantSpeciality}" />
+                                            </p:column>
+                                            <p:column width="25mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Session" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.sessionName}" />
+                                            </p:column>
+                                            <p:column width="30mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Patient Name" />
+                                                </f:facet>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="Net Amount" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.patientName}" />
+                                            </p:column>
+                                            <p:column width="25mm" style="text-align: right;">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Amount" />
+                                                </f:facet>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{channelReportTemplateController.totalNetTotalInOBReport}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                                <h:outputText value="#{a.paidAmount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column width="20mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Agent" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.agentName}" />
+
+                                            </p:column>
+
+                                            <p:column width="15mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Phone Number" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.patientPhone}" />
+
+                                            </p:column>
+
+                                            <p:column width="15mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="State" />
+                                                </f:facet>
+                                                <h:outputText  rendered="#{a.billCancelled eq true}" value="Cancelled Bill" style="color: red;"></h:outputText >
+                                                <h:outputText  rendered="#{a.billRefunded eq true}" value="Refunded bill" style="color: rgb(243, 243, 6);"></h:outputText >
+                                                <h:outputText  rendered="#{a.onlineBookingStatus eq 'COMPLETED'}" value="Completed bill" style="color: rgb(33, 203, 33);">
+                                                </h:outputText >
+                                                <h:outputText  value="Absent" rendered="#{(a.billCancelled eq false and a.billRefunded eq false) and a.absent == true}"></h:outputText >
+
+                                            </p:column>                                            
+                                        </p:dataTable>
+                                    </div>
+                                </div>  
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -17,14 +17,43 @@
 
                         <h:panelGrid columns="2" class="my-2" >
                             <h:outputLabel value="To Date"/>
-                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" 
-                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate"
+                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputLabel value="Due Type"/>
                             <p:selectOneRadio class="mx-4 w-100" value="#{searchController.reportKeyWord.string}" >
                                 <f:selectItem itemLabel="OPD" itemValue="0" />
                                 <f:selectItem itemLabel="inward" itemValue="1" />
                             </p:selectOneRadio>
+                            <h:outputLabel value="Date Basis" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{searchController.dateBasis}">
+                                <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Admission Type" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{searchController.searchKeyword.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Payment Method" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{searchController.searchKeyword.paymentMethod}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Institution" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{searchController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Site" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{searchController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="mx-4 w-100" completeMethod="#{departmentController.completeDept}"
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                            forceSelection="true" value="#{searchController.department}" />
 
                         </h:panelGrid>
 

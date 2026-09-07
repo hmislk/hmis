@@ -56,14 +56,14 @@
                                 value="Fill" 
                                 icon="fas fa-fill"
                                 class="ui-button-warning"
-                                action="#{reportsTransfer.fillDepartmentTransfersIssueByBill}" >
+                                action="#{reportsTransfer.fillDepartmentTransfersIssueByBillEntity}" >
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing"   />
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_Entity" exportFooter="true" />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -156,28 +156,28 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;" >
+                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;"  class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.netTotal}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{i.billFinanceDetails.totalPurchaseValue}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.netTotalValues}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{reportsTransfer.purchaseValue}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;"  >
+                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;" class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.saleValue}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{i.billFinanceDetails.totalRetailSaleValue}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.totalsValue}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{reportsTransfer.retailValue}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -187,11 +187,8 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Comment" style="padding: 5px!important; margin: 0px!important;" />
                                     </f:facet>
-
                                     <h:outputLabel
-                                        style="display: block; max-height: 60px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; padding: 0px!important; margin: 0px!important;"
                                         value="#{i.comments}" />
-
                                 </p:column>
 
                                 <!-- Actions -->
@@ -293,31 +290,41 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;" >
+                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;" footerText="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.netTotal}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{empty i.netTotal ? null : commonFunctionsProxy.abs(i.netTotal)}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.netTotalValues}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{empty reportsTransfer.netTotalValues ? null : commonFunctionsProxy.abs(reportsTransfer.netTotalValues)}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;"  >
+                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;" footerText="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}"  >
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.saleValue}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>   
+                                    </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.totalsValue}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{empty reportsTransfer.totalsValue ? null : commonFunctionsProxy.abs(reportsTransfer.totalsValue)}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comment" style="padding: 5px!important; margin: 0px!important;" />
+                                    </f:facet>
+
+                                    <h:outputLabel
+                                        style="display: block; max-height: 60px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; padding: 0px!important; margin: 0px!important;"
+                                        value="#{i.comments}" />
                                 </p:column>
 
 

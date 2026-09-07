@@ -65,8 +65,8 @@
                                                 var="myItem" 
                                                 itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.name}" ></f:selectItems>
-                                            <f:ajax 
-                                                render="gpDetail" 
+                                            <f:ajax
+                                                render="gpDetail @form:gpTimedItems"
                                                 execute="lstSelect" >
                                             </f:ajax>
                                         </p:selectOneListbox>
@@ -124,11 +124,20 @@
                                                     var="c" itemLabel="#{c.name}" itemValue="#{c}" class="w-100 ml-2" >
                                     </p:autoComplete>
 
-                                    <h:outputLabel value="Fee Calculation Block Duration in Hours"/>
+                                    <h:outputLabel value="Fee Calculation Block Unit"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectOneMenu value="#{roomFacilityChargeController.current.timedItemFee.durationUnit}"
+                                                     class="w-100 mt-2 mb-2"
+                                                     title="The unit the block duration below is counted in">
+                                        <f:selectItems value="#{roomFacilityChargeController.durationUnits}" var="du"
+                                                       itemLabel="#{du.label}" itemValue="#{du}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="Fee Calculation Block Duration"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationHours}" class="w-100 mt-2 mb-2"/>
 
-                                    <h:outputLabel value="Over Shoot Hour for the last Block"/>
+                                    <h:outputLabel value="Over Shoot for the last Block"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.overShootHours}" class="w-100 ml-2"/>
 
@@ -173,6 +182,69 @@
 
                         </div>
                     </div>
+                </p:panel>
+
+                <p:panel class="mx-1 mt-3">
+                    <f:facet name="header">
+                        <i class="fa-solid fa-clock"></i>
+                        <p:outputLabel value="Duration-based Timed Item Charges" class="mx-2"/>
+                    </f:facet>
+
+                    <h:panelGroup id="gpTimedItems" layout="block">
+                        <div class="row mb-2">
+                            <div class="col-md-8">
+                                <p:autoComplete
+                                    id="acTimedItem"
+                                    value="#{roomFacilityChargeController.selectedTimedItem}"
+                                    completeMethod="#{roomFacilityChargeController.completeTimedItem}"
+                                    var="ti"
+                                    itemLabel="#{ti.name}"
+                                    itemValue="#{ti}"
+                                    forceSelection="true"
+                                    maxResults="10"
+                                    onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"
+                                    placeholder="Search Timed Item..."
+                                    class="w-100">
+                                    <p:ajax event="itemSelect" update="acTimedItem"/>
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-md-4">
+                                <p:commandButton
+                                    id="btnAddTimedItem"
+                                    value="Add Timed Item"
+                                    icon="fa fa-plus"
+                                    process="btnAddTimedItem acTimedItem"
+                                    update="@form:gpTimedItems"
+                                    action="#{roomFacilityChargeController.addTimedItem()}"
+                                    class="ui-button-success w-100"
+                                    onclick="return confirm('Add this Timed Item to the room facility?')"/>
+                            </div>
+                        </div>
+
+                        <p:dataTable
+                            id="dtTimedItems"
+                            value="#{roomFacilityChargeController.currentTimedItems}"
+                            var="link"
+                            emptyMessage="No Timed Items attached to this room facility."
+                            styleClass="w-100">
+                            <p:column headerText="Timed Item">
+                                <h:outputText value="#{link.timedItem.name}"/>
+                            </p:column>
+                            <p:column headerText="Charge Category">
+                                <h:outputText value="#{link.timedItem.inwardChargeType}"/>
+                            </p:column>
+                            <p:column headerText="Action" style="width:100px; text-align:center">
+                                <p:commandButton
+                                    id="btnRemoveTimedItem"
+                                    icon="fa fa-trash"
+                                    class="ui-button-danger"
+                                    process="@this"
+                                    update="@form:gpTimedItems"
+                                    action="#{roomFacilityChargeController.removeTimedItem(link)}"
+                                    onclick="return confirm('Remove this Timed Item from the room facility?')"/>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
                 </p:panel>
 
             </h:form>

@@ -1,0 +1,228 @@
+/*
+ * Open Hospital Management Information System
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ */
+package com.divudi.bean.clinical;
+
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.facade.ClinicalEntityFacade;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+/**
+ * Manages configurable discharge condition values (e.g. Stable, DAMA, Referred)
+ * used in the clinical discharge workflow.
+ *
+ * @author Dr. M. H. B. Ariyaratne
+ */
+@Named
+@SessionScoped
+public class DischargeConditionController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @Inject
+    SessionController sessionController;
+
+    @EJB
+    private ClinicalEntityFacade ejbFacade;
+
+    private ClinicalEntity current;
+    private List<ClinicalEntity> items = null;
+    private String selectText = "";
+
+    public DischargeConditionController() {
+    }
+
+    public void prepareAdd() {
+        current = new ClinicalEntity();
+        current.setSymanticType(SymanticType.Discharge_Condition);
+    }
+
+    public void saveSelected() {
+        current.setSymanticType(SymanticType.Discharge_Condition);
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Updated");
+        } else {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(current);
+            JsfUtil.addSuccessMessage("Saved");
+        }
+        recreateModel();
+        getItems();
+    }
+
+    public void delete() {
+        if (current != null) {
+            current.setRetired(true);
+            current.setRetiredAt(new Date());
+            current.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(current);
+            JsfUtil.addSuccessMessage("Deleted Successfully");
+        } else {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+        }
+        recreateModel();
+        getItems();
+        current = null;
+        getCurrent();
+    }
+
+    public List<ClinicalEntity> getItems() {
+        if (items == null) {
+            Map m = new HashMap();
+            m.put("t", SymanticType.Discharge_Condition);
+            String sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t order by c.name";
+            items = getFacade().findByJpql(sql, m);
+        }
+        return items;
+    }
+
+    public List<ClinicalEntity> completeDischargeConditions(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<ClinicalEntity> c;
+        Map m = new HashMap();
+        m.put("t", SymanticType.Discharge_Condition);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        String sql = "select c from ClinicalEntity c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        c = getFacade().findByJpql(sql, m, 10);
+        if (c == null) {
+            c = new ArrayList<>();
+        }
+        return c;
+    }
+
+    public void downloadAsExcel() {
+        getItems();
+        FacesContext context = FacesContext.getCurrentInstance();
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Discharge Conditions");
+
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("No");
+            headerRow.createCell(1).setCellValue("Name");
+            headerRow.createCell(2).setCellValue("Code");
+            headerRow.createCell(3).setCellValue("Description");
+
+            int rowNum = 1;
+            for (ClinicalEntity item : items) {
+                Row row = sheet.createRow(rowNum);
+                row.createCell(0).setCellValue(rowNum);
+                row.createCell(1).setCellValue(item.getName());
+                row.createCell(2).setCellValue(item.getCode());
+                row.createCell(3).setCellValue(item.getDescreption());
+                rowNum++;
+            }
+
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"discharge_conditions.xlsx\"");
+
+            workbook.write(response.getOutputStream());
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel file: " + e.getMessage());
+        }
+    }
+
+    private void recreateModel() {
+        items = null;
+    }
+
+    private ClinicalEntityFacade getFacade() {
+        return ejbFacade;
+    }
+
+    public ClinicalEntity getCurrent() {
+        if (current == null) {
+            current = new ClinicalEntity();
+        }
+        return current;
+    }
+
+    public void setCurrent(ClinicalEntity current) {
+        this.current = current;
+    }
+
+    public String getSelectText() {
+        return selectText;
+    }
+
+    public void setSelectText(String selectText) {
+        this.selectText = selectText;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public ClinicalEntityFacade getEjbFacade() {
+        return ejbFacade;
+    }
+
+    public void setEjbFacade(ClinicalEntityFacade ejbFacade) {
+        this.ejbFacade = ejbFacade;
+    }
+
+    @FacesConverter("dischargeConditionConverter")
+    public static class DischargeConditionConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            try {
+                DischargeConditionController controller = (DischargeConditionController) facesContext.getApplication()
+                        .getELResolver().getValue(facesContext.getELContext(), null, "dischargeConditionController");
+                return controller.getEjbFacade().find(Long.valueOf(value));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof ClinicalEntity) {
+                ClinicalEntity o = (ClinicalEntity) object;
+                return String.valueOf(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: ClinicalEntity");
+            }
+        }
+    }
+}

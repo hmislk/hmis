@@ -6,6 +6,7 @@ import com.divudi.core.entity.report.ReportLog;
 import com.divudi.service.ReportLogAsyncService;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
 import java.io.Serializable;
 import java.util.Date;
@@ -22,9 +23,13 @@ public class ReportTimerController implements Serializable {
     private ReportLogAsyncService reportLogAsyncService;
 
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, WebUser loggedUser) {
+        trackReportExecution(reportGenerationLogic, reportType, reportType.getReportName(), loggedUser);
+    }
+
+    public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, String reportName, WebUser loggedUser) {
         final Date startTime = new Date();
 
-        final ReportLog reportLog = new ReportLog(reportType, loggedUser, startTime, null);
+        final ReportLog reportLog = new ReportLog(reportType, reportName, loggedUser, startTime, null);
 
         ReportLog savedLog = null;
 
@@ -33,6 +38,21 @@ public class ReportTimerController implements Serializable {
             savedLog = futureLog.get();
 
             reportGenerationLogic.run();
+        } catch (IllegalArgumentException e) {
+            LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", e);
+        } catch (EJBTransactionRolledbackException e) {
+            IllegalArgumentException foundCause = null;
+            for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+                if (cause instanceof IllegalArgumentException) {
+                    foundCause = (IllegalArgumentException) cause;
+                    break;
+                }
+            }
+            if (foundCause != null) {
+                LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", foundCause);
+            } else {
+                LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
         }

@@ -4,8 +4,10 @@
  */
 package com.divudi.core.data.dataStructure;
 
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,6 +18,7 @@ public class InstitutionEncounters {
 
     private Institution institution;
     private List<PatientEncounter> patientEncounters;
+    private List<Bill> bills;
     private double returned;
     private double total;
     private double paidTotal;
@@ -47,6 +50,17 @@ public class InstitutionEncounters {
 
     public void setPaidTotal(double paidTotal) {
         this.paidTotal = paidTotal;
+    }
+
+    public List<Bill> getBills() {
+        if (bills == null) {
+            bills = new ArrayList<>();
+        }
+        return bills;
+    }
+
+    public void setBills(List<Bill> bills) {
+        this.bills = bills;
     }
 
     public double getReturned() {

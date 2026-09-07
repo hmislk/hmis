@@ -12,18 +12,34 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:panelGroup layout="block" style="line-height: 40px;">
-                                <h:outputText styleClass="fas fa-search" />
-                                <h:outputLabel value="Petty Cash Bill Search" styleClass="mx-4"/>
-                                <p:commandButton 
-                                    value="Back" 
-                                    icon="fas fa-arrow-left" 
-                                    class="ui-button-primary" 
-                                    style="float: right;" 
-                                    action="/payments/pay_index?faces-redirect=true" 
-                                    ajax="false"/>     
-                            </h:panelGroup>
-                            
+                            <div class="d-flex justify-content-between align-items-center" style="min-height: 40px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputLabel value="Petty Cash Bill Search" styleClass="mx-2"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-5">
+                                    <p:badge 
+                                        value="#{requestController.pendingPettyCashApprovalCount}"
+                                        severity="danger"
+                                        rendered="#{requestController.pendingPettyCashApprovalCount gt 0}">
+                                        <p:commandButton
+                                            value="Pending Approvals"
+                                            icon="fas fa-clock"
+                                            ajax="false"
+                                            class="ui-button-warning"
+                                            action="#{requestController.navigateToPendingPettyCashRequests()}">
+                                        </p:commandButton>
+                                    </p:badge>
+
+                                    <p:commandButton
+                                        value="Back"
+                                        icon="fas fa-arrow-left"
+                                        class="ui-button-primary"
+                                        action="/payments/pay_index?faces-redirect=true"
+                                        ajax="false">
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
 
                         <div class="row">
@@ -75,7 +91,7 @@
                                     completeMethod="#{staffController.completeStaffWithoutDoctors}" 
                                     forceSelection="true"
                                     var="ix" 
-                                    itemLabel="#{ix.person.name}" 
+                                    itemLabel="#{ix.person.nameWithTitle}" 
                                     itemValue="#{ix}" 
                                     size="20"
                                     inputStyleClass="form-control"
@@ -101,26 +117,55 @@
                             <div class="col-md-10">
                                 <p:dataTable 
                                     id="tblBills" 
+                                    rowIndexVar="i"
+                                    paginator="true"
+                                    paginatorPosition="bottom"
+                                    rows="15"
                                     value="#{searchController.bills}" 
+                                    rowsPerPageTemplate="15,30,50,{ShowAll|'All'}"
                                     var="bill"  >
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="#" style="padding: 8px;" width="2em;" class="text-center" >
+                                        #{i+1}
+                                    </p:column>
+
+                                    <p:column headerText="Pre-Bill No" style="padding: 8px;" width="11em;" >
                                         <p:commandLink 
                                             id="billNo" 
                                             ajax="false" 
                                             value="#{bill.deptId}" 
-                                            action="#{pettyCashBillController.navigatePettyAndIouReprint()}"
-                                            actionListener="#{pettyCashBillController.fillBillsReferredByCurrentBill()}"
-                                            >
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
+                                            action="#{pettyCashBillController.navigatePettyCashReprint(bill)}">
                                         </p:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="Bill No" style="padding: 8px;" width="11em;" >
+                                        <div>
+                                            <p:commandLink 
+                                                id="prebillNo" 
+                                                ajax="false" 
+                                                value="#{bill.referenceBill.deptId}" 
+                                                action="#{pettyCashBillController.navigatePettyCashReprint(bill.referenceBill)}">
+                                            </p:commandLink>
+                                        </div>
+                                        <div>
+                                            <p:commandLink 
+                                                id="canbillNo" 
+                                                ajax="false" 
+                                                class="text-danger"
+                                                rendered="#{bill.referenceBill.cancelled}"
+                                                value="#{bill.referenceBill.cancelledBill.deptId}" 
+                                                action="#{pettyCashBillController.navigatePettyCashReprint(bill.referenceBill.cancelledBill)}">
+                                            </p:commandLink>
+                                        </div>
+
 
                                     </p:column>
-                                    <p:column headerText="Invoice No" >
+
+                                    <p:column headerText="Invoice No" style="padding: 8px;"  width="8em;">
                                         <h:outputLabel  value="#{bill.invoiceNumber}"  />
                                     </p:column>
-                                    <p:column headerText="Billed At"  >
+
+                                    <p:column headerText="Billed At" style="padding: 8px;" width="13em;" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -131,49 +176,74 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>  
-                                    <p:column headerText="Billed By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Billed By" style="padding: 8px;" width="12em;" >
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{bill.refunded}" >
-                                            <h:outputLabel style="color: red;" value="Refunded at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.nameWithTitle}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
-                                    <p:column headerText="Paid To(Staff)"  >
 
-                                        <h:outputLabel value="#{bill.staff.person.name}" ></h:outputLabel>
-                                    </p:column>  
-                                    <p:column headerText="Paid To(Person)"  >
-                                        <h:outputLabel value="#{bill.person.name}" />
-                                    </p:column> 
-                                    <p:column headerText="Net Value" >
-                                        <h:outputLabel value="#{bill.netTotal}" >
+                                    <p:column headerText="Paid To" style="padding: 8px;" width="28em;"  >
+                                        <h:panelGroup rendered="#{bill.staff ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Staff" severity="warning" style="width: 120px;" ></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="Staff - #{bill.staff.person.nameWithTitle}"></h:outputLabel>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bill.person ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Person" severity="info"  style="width: 120px;"></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="#{bill.person.nameWithTitle}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{bill.toDepartment ne null}">
+                                            <div class="d-flex gap-2">
+                                                <p:badge value="Department" severity="success" style="width: 120px;"></p:badge>
+                                                <h:outputLabel value="-"></h:outputLabel>
+                                                <h:outputLabel value="#{bill.toDepartment.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Status" style="padding: 8px;" width="9em;" class="text-center">
+
+                                        <h:panelGroup rendered="#{bill.referenceBill.cancelled}">
+                                            <p:badge  value="Cancelled" severity="danger" class="w-100"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{not bill.referenceBill.cancelled}">
+                                            <h:panelGroup rendered="#{bill.referenceBill.currentRequest ne null}">
+                                                <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="warning" rendered="#{bill.referenceBill.currentRequest.status eq 'PENDING'}" class="w-100"/>
+                                                <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="info" rendered="#{bill.referenceBill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
+                                                <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="success" rendered="#{bill.referenceBill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
+                                                <p:badge  value="Cancellation - #{bill.referenceBill.currentRequest.status.label}" severity="danger" rendered="#{bill.referenceBill.currentRequest.status eq 'REJECTED'}" class="w-100"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{bill.referenceBill.currentRequest eq null}">
+                                                <p:badge  value="#{bill.currentRequest.status.label}" severity="warning" rendered="#{bill.currentRequest.status eq 'PENDING'}" class="w-100"/>
+                                                <p:badge  value="#{bill.currentRequest.status.label}" severity="info" rendered="#{bill.currentRequest.status eq 'UNDER_REVIEW'}" class="w-100"/>
+                                                <p:badge  value="#{bill.currentRequest.status.label}" severity="success" rendered="#{bill.currentRequest.status eq 'APPROVED'}" class="w-100"/>
+                                                <p:badge  value="#{bill.currentRequest.status.label}" severity="danger" rendered="#{bill.currentRequest.status eq 'REJECTED'}" class="w-100"/>
+                                                <p:badge  value="#{bill.currentRequest.status.label}" severity="danger" rendered="#{bill.currentRequest.status eq 'CANCELLED'}" class="w-100"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+
+
+                                    </p:column>
+
+                                    <p:column headerText="Net Value" style="padding: 8px;" width="6em;" class="text-end" >
+                                        <h:outputLabel value="#{bill.netTotal}" class="text-end" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>   
-                                    <p:column headerText="Bill Type" >
-                                        <p:badge value="Iou Issue" severity="success" styleClass="mr-2" rendered="#{bill.billType eq 'IouIssue'}"></p:badge>
-                                        <p:badge value="Petty Issue" severity="info" styleClass="mr-2" rendered="#{bill.billType eq 'PettyCash'}"></p:badge>
-                                    </p:column>  
-                                    <p:column headerText="Comments" >
-                                        <h:outputLabel  rendered="#{bill.comments ne null}" value="#{bill.comments}" >
-                                        </h:outputLabel>
                                     </p:column>
+
                                 </p:dataTable>
                             </div>
                         </div>

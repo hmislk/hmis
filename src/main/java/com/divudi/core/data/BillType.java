@@ -23,11 +23,14 @@ public enum BillType {
     SurgeryBill,
     LabBill,
     CollectingCentreBill,
+    CollectingCentreAgentPayment,
+    CollectingCentreAgentPaymentCancel,
     CollectingCentreBatchBill,
     PaymentBill,//To Pay Professional Payments
     OpdBill,
     OpdPreBill,
     InwardPaymentBill,
+    PostFinalBillInwardPayment,
     InwardFinalBill,
     InwardOriginalFinalBill,
     InwardProvisionalBill,
@@ -65,10 +68,12 @@ public enum BillType {
     @Deprecated
     SandryGrn,
     PharmacyIssue,
+    PharmacyDisposalIssue,
     @Deprecated
     PharmacyBhtIssue,
     PharmacyBhtPre,
     InwardPharmacyRequest,
+    InwardServiceItemRequest,
     @Deprecated
     StoreBhtIssue,
     StoreBhtPre,
@@ -90,6 +95,7 @@ public enum BillType {
     GrnPaymentPre,
     PharmacyPurchaseBill, //Cash out
     PurchaseReturn,// Purchase Return
+    PharmacyDonationBill,
     PharmacyTransferRequest,
     PharmacyTransferIssue,
     PharmacyDirectIssue,
@@ -102,10 +108,14 @@ public enum BillType {
     PharmacyAdjustmentSaleRate,
     PharmacyAdjustmentWholeSaleRate,
     PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentCostRate,
     PharmacyAdjustmentExpiryDate,
     PharmacyAddtoStock,
     DrawerAdjustment,
     PharmacyMajorAdjustment,
+    PharmacySnapshotBill,
+    PharmacyPhysicalCountBill,
+    PharmacyStockAdjustmentBill,
     ChannelCash(ChannelCashFlow),
     ChannelPaid(ChannelCashFlow),
     ChannelAgent(ChannelCashFlow),
@@ -117,6 +127,8 @@ public enum BillType {
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
+    ChannelOnlineBookingAgentPaidToHospital,
+    ChannelOnlineBookingAgentPaidToHospitalBillCancellation,
     gpBooking,
     gpSettling,
     Appointment,
@@ -161,10 +173,15 @@ public enum BillType {
     RecordShiftEndCash,
     FundTransferBill, // For transferring the total balance from one shift to another
     FundTransferReceivedBill, // For receiving the transferred balance from one shift to another
+    FundTransferRequestBill, // For requesting a float transfer from another cashier
     DepositFundBill, // For processing deposits of all payment types into the bank by the main or bulk cashier
     WithdrawalFundBill, // For handling withdrawal transactions from the bank for operational purposes
     ShiftShortage,
+    ShiftShortageSettlement,
     ShiftExcess,
+    HandoverProofMissing,
+    HandoverProofMissingSettlement,
+    PaymentSettlementBill, // For settling non-cash payments (card/cheque/slip/eWallet) with bank or processor
     PaymentTransfer,
     @Deprecated
     TransactionHandoverBill, // For handling the handover of all transaction types at the end of a cashier's shift
@@ -186,6 +203,8 @@ public enum BillType {
 
     public String getLabel() {
         switch (this) {
+            case PaymentSettlementBill:
+                return "Payment Settlement Bill";
             case OpdBill:
                 return "OPD Bill";
             case PaymentBill:
@@ -198,6 +217,8 @@ public enum BillType {
                 return "Agent Payment Receive Bill";
             case InwardPaymentBill:
                 return "Inward Payment Receive Bill";
+            case PostFinalBillInwardPayment:
+                return "Post Final Bill Inward Payment Receive Bill";
             case PharmacyOrder:
                 return "Purchase Order Request";
             case PharmacyWholeSale:
@@ -216,6 +237,8 @@ public enum BillType {
                 return "Pharmacy Direct Purchase";
             case PurchaseReturn:
                 return "Pharmacy Purchase Return";
+            case PharmacyDonationBill:
+                return "Pharmacy Donation Bill";
             case PharmacySale:
                 return "Pharmacy Sale Bill";
 
@@ -223,6 +246,12 @@ public enum BillType {
                 return "Pharmacy Sale Bill for Cashier";
             case PharmacyAdjustment:
                 return "Pharmacy Adjustment";
+            case PharmacySnapshotBill:
+                return "Snapshot Bill";
+            case PharmacyPhysicalCountBill:
+                return "Physical Count Bill";
+            case PharmacyStockAdjustmentBill:
+                return "Stock Adjustment Bill";
             case GrnPayment:
                 return "Grn Payment";
             case GrnPaymentPre:
@@ -270,7 +299,9 @@ public enum BillType {
             case StoreTransferIssue:
                 return "Store Transfer Issue";
             case PharmacyIssue:
-                return "Pharmacy Issue";
+                return "Pharmacy Transfer Issue";
+            case PharmacyDisposalIssue:
+                return "Pharmacy Disposal Issue";
             case PharmacyBhtPre:
                 return "Pharmacy BHT Issue (Pre)";
             case OpdPreBill:
@@ -309,6 +340,8 @@ public enum BillType {
                 return "Financial Auditing Bill";
             case FundTransferReceivedBill:
                 return "Fund Transfer Received Bill";
+            case FundTransferRequestBill:
+                return "Fund Transfer Request Bill";
             case RecordShiftEndCash:
                 return "Shift End Cash Record";
             default:

@@ -5,9 +5,13 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ControllerWithReportFilters;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
+import com.divudi.core.data.dto.StockReportByItemDTO;
+import com.divudi.core.data.dto.DepartmentViceStockDTO;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -17,11 +21,13 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
 import com.divudi.core.data.dataStructure.StockReportRecord;
 import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -32,6 +38,9 @@ import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -40,7 +49,9 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.CommonFunctions;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -52,11 +63,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import java.util.Objects;
+import javax.faces.context.ExternalContext;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -64,7 +91,7 @@ import javax.persistence.TemporalType;
  */
 @Named(value = "reportsStock")
 @SessionScoped
-public class ReportsStock implements Serializable {
+public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     /**
      * Bean Variables
@@ -72,10 +99,20 @@ public class ReportsStock implements Serializable {
     Department department;
     Staff staff;
     Institution institution;
+    Institution site;
+    private AdmissionType admissionType;
+    private PaymentScheme paymentScheme;
+    private ReportViewType reportViewType;
+    private List<ReportViewType> reportViewTypes;
     private Category category;
+    private DosageForm dosageForm;
+    private DepartmentType departmentType;
+    private List<DepartmentType> selectedDepartmentTypes;
     List<Stock> stocks;
+    List<StockDTO> stockDtos;
     double stockSaleValue;
     double stockPurchaseValue;
+    double stockCostValue;
     List<PharmacyStockRow> pharmacyStockRows;
     List<StockReportRecord> records;
     Date fromDate;
@@ -113,7 +150,8 @@ public class ReportsStock implements Serializable {
     private double saleValueAfterDisbursement;
     private double finalTotalPurchaseValue;
     private double finalTotalSaleValue;
-    
+    private boolean includeZeroStock;
+
     private int fromRecord;
     private int toRecord;
     Vmp vmp;
@@ -135,6 +173,10 @@ public class ReportsStock implements Serializable {
     DealerController dealerController;
     @Inject
     SessionController sessionController;
+    @Inject
+    ItemController itemController;
+    @Inject
+    com.divudi.bean.common.ExcelController excelController;
     /**
      * EJBs
      */
@@ -150,9 +192,19 @@ public class ReportsStock implements Serializable {
         return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
     }
 
+    public String navigateToPharmacyReportDepartmentStockByItemDTO() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item_DTO?faces-redirect=true";
+    }
+
     public String navigateToPharmacyReportDepartmentStockByItemOrderByVmp() {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyReportDepartmentStockByZeroItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_zero_item?faces-redirect=true";
     }
 
     public String navigateToStockReportByBatch() {
@@ -165,9 +217,27 @@ public class ReportsStock implements Serializable {
         return "/pharmacy/pharmacy_report_department_stock_by_batch_for_export?faces-redirect=true";
     }
 
+    public String navigateToStockReportByBatchDto() {
+        stockDtos = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch_dto?faces-redirect=true";
+    }
+
     public String navigateToPharmacyStockOverviewReport() {
         pharmacyStockRows = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_overview?faces-redirect=true";
+    }
+
+    public String navigateToDepartmentViceStockReport() {
+        departmentViceStockDtos = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_vice_stock?faces-redirect=true";
+    }
+
+    public String navigateToShortExpiryByAmpPeriod() {
+        stockDtos = new ArrayList<>();
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+        return "/pharmacy/pharmacy_report_short_expiry_by_amp_period?faces-redirect=true";
     }
 
     /**
@@ -175,28 +245,30 @@ public class ReportsStock implements Serializable {
      */
     public void fillDepartmentStocks() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
-            System.out.println("startedAt = " + startedAt);
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
             Map<String, Object> m = new HashMap<>();
-            String sql = "select s from Stock s "
-                    + " where s.department=:d "
-                    + " and s.stock > 0 ";
-            m.put("d", department);
+            StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
+
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+
             Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql, m);
+            stocks = getStockFacade().findByJpql(sql.toString(), m);
 
             Date afterJpql = new Date();
-            System.out.println("afterJpql = " + afterJpql);
             stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
 
             Date beforeCal = new Date();
-            System.out.println("beforeCal = " + beforeCal);
             stockPurchaseValue = stocks.stream()
                     .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
                     .sum();
@@ -204,30 +276,560 @@ public class ReportsStock implements Serializable {
             stockSaleValue = stocks.stream()
                     .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
                     .sum();
+
+            stockCostValue = stocks.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getItemBatch().getCostRate();
+                        return (cr == null ? 0.0 : cr) * s.getStock();
+                    })
+                    .sum();
             Date afterCal = new Date();
-            System.out.println("afterCal = " + afterCal);
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Batch"
+     * (Developers) page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockByBatchDevelopers(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 12;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Batch", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    public void fillDepartmentStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
+            jpql.append("s.id, ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("s.itemBatch.item.code, ");
+            jpql.append("s.itemBatch.dateOfExpire, ");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+
+            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+            stockDtos.sort(Comparator.comparing(StockDTO::getItemName, Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER)));
+
+            stockPurchaseValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double pr = s.getPurchaseRate();
+                        Double qty = s.getStockQty();
+                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+
+            stockSaleValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double rr = s.getRetailRate();
+                        Double qty = s.getStockQty();
+                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+
+            stockCostValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getCostRate();
+                        Double qty = s.getStockQty();
+                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+        }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    public void exportCurrentStockByBatchToExcel() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response
+                = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=Current_Stock_By_Batch.xlsx");
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+
+            XSSFSheet sheet = workbook.createSheet("Current Stock By Batch");
+
+            int rowIndex = 0;
+            int totalColumns = 14;
+
+            Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            // Title Style (Big + Bold + Center)
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            //filter Style
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // Header Style
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // Data Style
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat dataFormat = workbook.createDataFormat();
+
+            CellStyle formatStyle = workbook.createCellStyle();
+            formatStyle.cloneStyleFrom(dataStyle);
+            formatStyle.setDataFormat(dataFormat.getFormat("#,##0.00"));
+
+            // =========================
+            // HEADER
+            // =========================
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institution != null ? institution.getName() : "All Institutions");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            Row siteRow = sheet.createRow(rowIndex++);
+            Cell siteCell = siteRow.createCell(0);
+            siteCell.setCellValue(site != null ? site.getName() : "All Sites");
+            siteCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue(department != null ? department.getName() : "All Departments");
+            deptCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Filters row
+            Row filterRow = sheet.createRow(rowIndex++);
+            Cell filterCell = filterRow.createCell(0);
+            filterCell.setCellValue(
+                    "Category: " + (category != null ? category.getName() : "All")
+                    + " | Dosage Form: " + (dosageForm != null ? dosageForm.getName() : "All")
+                    + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay()
+            );
+            filterCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // Report Title
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Current Stock By Batch Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, totalColumns - 1));
+
+            rowIndex++;
+
+            // =========================
+            // header
+            // =========================
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {
+                "Category", "Dosage Form", "Item", "Type", "Code",
+                "Expiry", "Batch No", "Stock",
+                "Purchase Rate", "Purchase Value",
+                "Cost Rate", "Cost Value",
+                "Retail Rate", "Retail Value"
+            };
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // =========================
+            // data row
+            // =========================
+            for (StockDTO row : stockDtos) {
+
+                Row dataRow = sheet.createRow(rowIndex++);
+                int col = 0;
+
+                dataRow.createCell(col++).setCellValue(row.getCategoryName());
+                dataRow.createCell(col++).setCellValue(row.getDosageFormName());
+                dataRow.createCell(col++).setCellValue(row.getItemName());
+                dataRow.createCell(col++).setCellValue(row.getDepartmentType().name());
+                dataRow.createCell(col++).setCellValue(row.getCode());
+
+                dataRow.createCell(col++).setCellValue(
+                        row.getDateOfExpire() != null
+                        ? new SimpleDateFormat("dd/MM/yyyy")
+                                .format(row.getDateOfExpire()) : "-"
+                );
+
+                dataRow.createCell(col++).setCellValue(row.getBatchNo());
+                dataRow.createCell(col++).setCellValue(row.getStockQty());
+
+                double purchaseRate = row.getPurchaseRate() != null ? row.getPurchaseRate() : 0.0;
+                double costRate = row.getCostRate() != null ? row.getCostRate() : 0.0;
+                double retailRate = row.getRetailRate() != null ? row.getRetailRate() : 0.0;
+
+                dataRow.createCell(col++).setCellValue(purchaseRate);
+                dataRow.createCell(col++).setCellValue(purchaseRate * row.getStockQty());
+                dataRow.createCell(col++).setCellValue(costRate);
+                dataRow.createCell(col++).setCellValue(costRate * row.getStockQty());
+                dataRow.createCell(col++).setCellValue(retailRate);
+                dataRow.createCell(col++).setCellValue(retailRate * row.getStockQty());
+
+                for (int i = 0; i < totalColumns; i++) {
+                    dataRow.getCell(i).setCellStyle(dataStyle);
+                }
+            }
+
+            // =========================
+            // total
+            // =========================
+            Row footerRow = sheet.createRow(rowIndex++);
+            Cell totalLabel = footerRow.createCell(7);
+            totalLabel.setCellValue("Total");
+            totalLabel.setCellStyle(headerStyle);
+
+            Cell totalPurchase = footerRow.createCell(9);
+            totalPurchase.setCellValue(stockPurchaseValue);
+            totalPurchase.setCellStyle(formatStyle);
+
+            Cell totalCost = footerRow.createCell(11);
+            totalCost.setCellValue(stockCostValue);
+            totalCost.setCellStyle(formatStyle);
+
+            Cell totalSale = footerRow.createCell(13);
+            totalSale.setCellValue(stockSaleValue);
+            totalSale.setCellStyle(formatStyle);
+
+            // =========================
+            // Printed By / Printed At
+            // =========================
+            rowIndex++;
+            Row printedRow = sheet.createRow(rowIndex++);
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            SimpleDateFormat printedSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            Cell printedByCell = printedRow.createCell(0);
+            printedByCell.setCellValue("Printed by: " + userName);
+            Cell printedAtCell = printedRow.createCell(4);
+            printedAtCell.setCellValue("Printed at: " + printedSdf.format(new Date()));
+
+            // Auto size
+            for (int i = 0; i < totalColumns; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            workbook.write(out);
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, e.getMessage());
+        }
+    }
+
+    public void exportCurrentStockByBatchToPDF() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Current_Stock_By_Batch.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Fonts
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            com.itextpdf.text.Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            // =========================
+            // HEADER (Institution, Site, Department)
+            // =========================
+            Paragraph instPara = new Paragraph(institution != null ? institution.getName() : "All Institutions", titleFont);
+            instPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(instPara);
+
+            Paragraph sitePara = new Paragraph(site != null ? site.getName() : "All Sites", titleFont);
+            sitePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(sitePara);
+
+            Paragraph deptPara = new Paragraph(department != null ? department.getName() : "All Departments", titleFont);
+            deptPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(deptPara);
+
+            document.add(new Paragraph(" ")); // empty line
+
+            // Filters
+            Paragraph filterPara = new Paragraph(
+                    "Category: " + (category != null ? category.getName() : "All")
+                    + " | Dosage Form: " + (dosageForm != null ? dosageForm.getName() : "All")
+                    + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay(),
+                    filterFont
+            );
+            filterPara.setAlignment(Element.ALIGN_CENTER);
+            document.add(filterPara);
+
+            // Report Title
+            Paragraph titlePara = new Paragraph("Current Stock By Batch Report", subTitleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            document.add(titlePara);
+
+            document.add(new Paragraph(" ")); // empty line
+
+            // =========================
+            // TABLE
+            // =========================
+            int columnCount = 14;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+
+            String[] headers = {
+                "Category", "Dosage Form", "Item", "Type", "Code",
+                "Expiry", "Batch No", "Stock",
+                "Purchase Rate", "Purchase Value",
+                "Cost Rate", "Cost Value",
+                "Retail Rate", "Retail Value"
+            };
+
+            float[] widths = {3f, 3f, 4f, 3f, 3f, 3f, 3f, 2f, 3f, 3f, 3f, 3f, 3f, 3f};
+            table.setWidths(widths);
+
+            // Header row
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                
+                table.addCell(cell);
+            }
+
+            // Data rows
+            for (StockDTO row : stockDtos) {
+                table.addCell(new PdfPCell(new Phrase(row.getCategoryName() != null ? row.getCategoryName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDosageFormName() != null ? row.getDosageFormName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getItemName() != null ? row.getItemName() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDepartmentType() != null ? row.getDepartmentType().name() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getCode() != null ? row.getCode() : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getDateOfExpire() != null ? sdf.format(row.getDateOfExpire()) : "-", dataFont)));
+                table.addCell(new PdfPCell(new Phrase(row.getBatchNo() != null ? row.getBatchNo() : "-", dataFont)));
+
+                PdfPCell stockCell = new PdfPCell(new Phrase(String.valueOf(Objects.requireNonNullElse(row.getStockQty(), 0.0)), dataFont));
+                stockCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockCell);
+
+                // Numeric columns
+                double purchaseRate = Objects.requireNonNullElse(row.getPurchaseRate(), 0.0);
+                double costRate = Objects.requireNonNullElse(row.getCostRate(), 0.0);
+                double retailRate = Objects.requireNonNullElse(row.getRetailRate(), 0.0);
+                double purchaseValue = purchaseRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+                double costValue = costRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+                double retailValue = retailRate * Objects.requireNonNullElse(row.getStockQty(), 0.0);
+
+                PdfPCell prCell = new PdfPCell(new Phrase(String.format("%,.2f", purchaseRate), dataFont));
+                prCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(prCell);
+
+                PdfPCell pvCell = new PdfPCell(new Phrase(String.format("%,.2f", purchaseValue), dataFont));
+                pvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(pvCell);
+
+                PdfPCell crCell = new PdfPCell(new Phrase(String.format("%,.2f", costRate), dataFont));
+                crCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(crCell);
+
+                PdfPCell cvCell = new PdfPCell(new Phrase(String.format("%,.2f", costValue), dataFont));
+                cvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cvCell);
+
+                PdfPCell rrCell = new PdfPCell(new Phrase(String.format("%,.2f", retailRate), dataFont));
+                rrCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rrCell);
+
+                PdfPCell rvCell = new PdfPCell(new Phrase(String.format("%,.2f", retailValue), dataFont));
+                rvCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(rvCell);
+            }
+
+            // Totals row
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Total", headerFont));
+            totalLabel.setColspan(8); // First 8 columns
+            totalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(totalLabel);
+
+            PdfPCell purchaseRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            purchaseRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseRateTotalCell);
+
+            PdfPCell purchaseValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockPurchaseValue), headerFont));
+            purchaseValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(purchaseValueTotalCell);
+
+            PdfPCell costRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            costRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costRateTotalCell);
+
+            PdfPCell costValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockCostValue), headerFont));
+            costValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(costValueTotalCell);
+
+            PdfPCell retailRateTotalCell = new PdfPCell(new Phrase("", headerFont));
+            retailRateTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailRateTotalCell);
+
+            PdfPCell retailValueTotalCell = new PdfPCell(new Phrase(String.format("%,.2f", stockSaleValue), headerFont));
+            retailValueTotalCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(retailValueTotalCell);
+
+            document.add(table);
+
+            // =========================
+            // Printed By / Printed At
+            // =========================
+            document.add(new Paragraph(" "));
+            String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+            SimpleDateFormat printedSdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            PdfPTable printedTable = new PdfPTable(2);
+            printedTable.setWidthPercentage(100);
+            PdfPCell printedByCell = new PdfPCell(new Phrase("Printed by: " + userName, filterFont));
+            printedByCell.setBorder(Rectangle.NO_BORDER);
+            printedByCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            printedTable.addCell(printedByCell);
+            PdfPCell printedAtCell = new PdfPCell(new Phrase("Printed at: " + printedSdf.format(new Date()), filterFont));
+            printedAtCell.setBorder(Rectangle.NO_BORDER);
+            printedAtCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            printedTable.addCell(printedAtCell);
+            document.add(printedTable);
+
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportsStock.class.getName()).log(Level.SEVERE, "Error exporting Current Stock By Batch PDF", e);
+        }
+    }
+
+    public void toggleIncludeZeroStock() {
+        includeZeroStock = !includeZeroStock;
     }
 
     public void fillDepartmentStocksForDownload() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
-            System.out.println("startedAt = " + startedAt);
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
+
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT s FROM Stock s WHERE 1=1");
+
+            if (!includeZeroStock) {
+                jpql.append(" AND s.stock > 0");
             }
-            Map<String, Object> m = new HashMap<>();
-            String sql = "select s from Stock s "
-                    + " where s.department=:d "
-                    + " and s.stock > 0 "
-                    + " order by s.id";
-            m.put("d", department);
+
+            if (department != null) {
+                jpql.append(" AND s.department = :dept");
+                parameters.put("dept", department);
+            }
+            if (site != null) {
+                jpql.append(" AND s.department.site = :site");
+                parameters.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" AND s.department.institution = :ins");
+                parameters.put("ins", institution);
+            }
+
+            jpql.append(" ORDER BY s.id");
+
             Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql, m, fromRecord, toRecord);
+
+            stocks = getStockFacade().findByJpql(jpql.toString(), parameters);
+
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Batch
+     * for Export" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockByBatchForExport(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Include Zero Stocks", includeZeroStock ? "Yes" : "No"});
+        int mergeCol = 18;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Batch for Export", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void fillDepartmentStocksOfMedicines() {
@@ -251,9 +853,11 @@ public class ReportsStock implements Serializable {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
     }
@@ -278,9 +882,11 @@ public class ReportsStock implements Serializable {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
         return "pharmacy_report_department_stock_by_single_product";
@@ -308,9 +914,6 @@ public class ReportsStock implements Serializable {
             m.put("d", department);
             m.put("z", 0.0);
         }
-//        //////System.out.println("sql = " + sql);
-//        //////System.out.println("m = " + m);
-//        //////System.out.println("getStockFacade().findObjects(sql, m) = " + getStockFacade().findObjects(sql, m));
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -323,10 +926,10 @@ public class ReportsStock implements Serializable {
     }
 
     public void generateDepartmentStockOverviewReport() {
-        
+
         startingPurchaseValue = 0.0;
         startingSaleValue = 0.0;
-        
+
         //ALL GRN
         commonReport.setFromDate(findStartOfMonth(toDate));
         commonReport.setToDate(findEndofMonth(toDate));
@@ -350,11 +953,10 @@ public class ReportsStock implements Serializable {
         totalDirectPurchasePurchaseValue = 0.0;
         totalDirectPurchaseRetailValue = 0.0;
         calDirectPurchaseTotalsForOverViewReport();
-        
+
         //Totals After GRN
         purchaseValueAfterGrn = Math.abs(totalGrnCashPurchaseValue) + Math.abs(totalGrnCreditPurchaseValue) + Math.abs(totalDirectPurchasePurchaseValue);
         saleValueAfterGrn = Math.abs(totalGrnCashRetailValue) + Math.abs(totalGrnCreditRetailValue) + Math.abs(totalDirectPurchaseRetailValue);
-        
 
         //GRN Return
         totalGrnReturnPurchaseValue = 0.0;
@@ -366,26 +968,25 @@ public class ReportsStock implements Serializable {
         totalGrnFreeQtyPurchaseValue = 0.0;
         totalGrnFreeQtyRetailValue = 0.0;
         calFreeQtyTotalsForOverViewReport();
-        
+
         //Total After Free Qty and Returns
         purchaseValueAfterGrnReturnAndFreeQty = (0 - Math.abs(totalGrnReturnPurchaseValue)) + Math.abs(totalGrnFreeQtyPurchaseValue);
         saleValueAfterGrnReturnAndFreeQty = (0 - Math.abs(totalGrnReturnRetailValue)) + Math.abs(totalGrnFreeQtyRetailValue);
 
         //Sale
         saleTotalsForOverViewReport();
-        
+
         //TotalAfterSales
         purchaseValueAfterSale = Math.abs(totalPurchaseSaleCashValue) + Math.abs(totalPurchaseSaleCreditValue);
         saleValueAfterSale = Math.abs(totalRetailSaleCashValue) + Math.abs(totalRetailSaleCreditValue);
 
         //Disbursment
         reportsTransfer.fetchBillTotalByToDepartment(findStartOfMonth(toDate), findEndofMonth(toDate), department, BillType.PharmacyTransferIssue);
-        
+
         //TotalsAfterDisbursment
         purchaseValueAfterDisbursement = Math.abs(reportsTransfer.getNetTotalPurchaseValues());
         saleValueAfterDisbursement = Math.abs(reportsTransfer.getNetTotalSaleValues());
-        
-        
+
         //Final Count
         finalTotalPurchaseValue = startingPurchaseValue + purchaseValueAfterGrn + purchaseValueAfterGrnReturnAndFreeQty - (purchaseValueAfterSale + purchaseValueAfterDisbursement);
         finalTotalSaleValue = startingSaleValue + saleValueAfterGrn + saleValueAfterGrnReturnAndFreeQty - (saleValueAfterSale + saleValueAfterDisbursement);
@@ -468,6 +1069,9 @@ public class ReportsStock implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -484,6 +1088,9 @@ public class ReportsStock implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -494,7 +1101,7 @@ public class ReportsStock implements Serializable {
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
         );
-        
+
         List<PaymentMethod> creditPaymentMethod = Arrays.asList(
                 PaymentMethod.Credit,
                 PaymentMethod.Staff);
@@ -502,13 +1109,13 @@ public class ReportsStock implements Serializable {
         // The optimized JPQL using SUM and CASE WHEN
         jpql = "SELECT "
                 + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.purchaseRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.retailRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.purchaseRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END) "
+                + "THEN (pbi.qty * pbi.retailRate) ELSE 0 END) "
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN bi.pharmaceuticalBillItem pbi "
@@ -537,33 +1144,492 @@ public class ReportsStock implements Serializable {
 
     public void fillDepartmentNonEmptyItemStocks() {
         reportTimerController.trackReportExecution(() -> {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
-            Map m = new HashMap();
-            String sql;
-            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
-                    + "(s.itemBatch.item.code, "
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select new com.divudi.core.data.dto.StockReportByItemDTO("
+                    + "s.itemBatch.item.code, "
                     + "s.itemBatch.item.name, "
                     + "sum(s.stock), "
                     + "sum(s.itemBatch.purcahseRate * s.stock), "
-                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
-                    + "from Stock s where s.stock>:z and s.department=:d "
-                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
-                    + "order by s.itemBatch.item.name";
-            m.put("d", department);
-            m.put("z", 0.0);
-            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s "
+                    + "left join s.itemBatch.item.category cat "
+                    + "left join s.itemBatch.item.dosageForm df "
+                    + "where 1=1");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" group by s.itemBatch.item.name, s.itemBatch.item.code order by s.itemBatch.item.name");
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(jpql.toString(), m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (StockReportByItemDTO r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
+            }
+            stockReportByItemDTOS = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    private List<StockReportByItemDTO> stockReportByItemDTOS;
+
+    public List<StockReportByItemDTO> getStockReportByItemDTOS() {
+        return stockReportByItemDTOS;
+    }
+
+    public void setStockReportByItemDTOS(List<StockReportByItemDTO> stockReportByItemDTOS) {
+        this.stockReportByItemDTOS = stockReportByItemDTOS;
+    }
+
+    /**
+     * VMP Stock Report — aggregates stock across every AMP (brand) linked to
+     * a VMP into a single row per VMP, so e.g. "Amoxicillin 500mg capsule"
+     * shows one combined quantity/value across all its brands, instead of
+     * one row per AMP as the AMP-level Item Stock report does. Reuses
+     * {@link StockReportByItemDTO} since its shape (code, name, qty,
+     * purchaseValue, saleValue) is identical at the VMP level. Items with no
+     * VMP link (e.g. store/lab items) are excluded, since there's nothing to
+     * aggregate them under. Issue #23054.
+     */
+    public void fillDepartmentVmpStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select new com.divudi.core.data.dto.StockReportByItemDTO("
+                    + "s.itemBatch.item.vmp.code, "
+                    + "s.itemBatch.item.vmp.name, "
+                    + "sum(s.stock), "
+                    + "sum(s.itemBatch.purcahseRate * s.stock), "
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s "
+                    + "left join s.itemBatch.item.category cat "
+                    + "left join s.itemBatch.item.dosageForm df "
+                    + "where s.itemBatch.item.vmp is not null");
+            if (!includeZeroStock) {
+                jpql.append(" and s.stock > 0");
+            }
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" group by s.itemBatch.item.vmp.name, s.itemBatch.item.vmp.code order by s.itemBatch.item.vmp.name");
+            List<StockReportByItemDTO> lsts = (List) getStockFacade().findLightsByJpql(jpql.toString(), m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (StockReportByItemDTO r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
+            }
+            stockReportByVmpDTOS = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_VMP, sessionController.getLoggedUser());
+    }
+
+    private List<StockReportByItemDTO> stockReportByVmpDTOS;
+
+    public List<StockReportByItemDTO> getStockReportByVmpDTOS() {
+        return stockReportByVmpDTOS;
+    }
+
+    public void setStockReportByVmpDTOS(List<StockReportByItemDTO> stockReportByVmpDTOS) {
+        this.stockReportByVmpDTOS = stockReportByVmpDTOS;
+    }
+
+    public String navigateToVmpStockReport() {
+        stockReportByVmpDTOS = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_vmp_dto?faces-redirect=true";
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Item"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportByItem(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook workbook = (org.apache.poi.ss.usermodel.Workbook) document;
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // The exported table's footer row (p:columnGroup type="footer") is not
+        // picked up by the xlsx exporter, so the Total row is built here
+        // directly instead (issue #22459).
+        int totalRowIndex = sheet.getLastRowNum() + 1;
+        Row totalRow = sheet.createRow(totalRowIndex);
+
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+
+        CellStyle totalLabelStyle = workbook.createCellStyle();
+        totalLabelStyle.setFont(boldFont);
+
+        CellStyle totalValueStyle = workbook.createCellStyle();
+        totalValueStyle.setFont(boldFont);
+        totalValueStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        Cell totalLabelCell = totalRow.createCell(0);
+        totalLabelCell.setCellValue("Total");
+        totalLabelCell.setCellStyle(totalLabelStyle);
+        sheet.addMergedRegion(new CellRangeAddress(totalRowIndex, totalRowIndex, 0, 3));
+
+        Cell purchaseTotalCell = totalRow.createCell(4);
+        purchaseTotalCell.setCellValue(stockPurchaseValue);
+        purchaseTotalCell.setCellStyle(totalValueStyle);
+
+        Cell saleTotalCell = totalRow.createCell(5);
+        saleTotalCell.setCellValue(stockSaleValue);
+        saleTotalCell.setCellStyle(totalValueStyle);
+
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        filterPairs.add(new String[]{"Dosage Form", dosageForm != null ? dosageForm.getName() : "All"});
+        filterPairs.add(new String[]{"Department Types", getSelectedDepartmentTypesPrintDisplay()});
+        filterPairs.add(new String[]{"Include Zero Stock", includeZeroStock ? "Yes" : "No"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Item", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * Human-readable label for the "Filter Type" radio selection on the
+     * Before Stock Taking Report (issue #17615).
+     */
+    public String getReportKeyWordFilterTypeLabel() {
+        String code = getReportKeyWord().getString();
+        if (code == null) {
+            return "All Batch";
+        }
+        switch (code) {
+            case "1":
+                return "Only Item";
+            case "2":
+                return "Item By Sale Rate";
+            case "3":
+                return "Extra Medicine";
+            case "4":
+                return "Extra Note";
+            default:
+                return "All Batch";
+        }
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Before Stock Taking
+     * Report" page - adds the report title, active filters, and a Printed
+     * By/At footer around the exported table (issue #17615). The column
+     * count on this report varies with the selected filter type, so the
+     * merge column is derived from the exported header row instead of a
+     * fixed constant.
+     */
+    public void postProcessXLSBeforeStockTaking(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        filterPairs.add(new String[]{"Filter Type", getReportKeyWordFilterTypeLabel()});
+        excelController.insertExcelReportHeader(sheet, "Before Stock Taking Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "After Stock Taking
+     * Report" page - adds the report title, active filters, and a Printed
+     * By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSAfterStockTaking(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        excelController.insertExcelReportHeader(sheet, "After Stock Taking Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Category Stock Report"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSCategoryStockByBatch(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Category", category != null ? category.getName() : "All"});
+        int mergeCol = 8;
+        excelController.insertExcelReportHeader(sheet, "Category Stock Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Category Stock Summary"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSCategoryStockByCategory(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 1;
+        excelController.insertExcelReportHeader(sheet, "Category Stock Summary", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Product"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportByProduct(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Product", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report of Single
+     * Product" page - adds the report title, active filters, and a Printed
+     * By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportOfSingleProduct(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Product", vmp != null ? vmp.getName() : "All"});
+        int mergeCol = 9;
+        excelController.insertExcelReportHeader(sheet, "Stock Report of Single Product", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report by Item -
+     * Order by VMP" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportByItemOrderByVmp(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 6;
+        excelController.insertExcelReportHeader(sheet, "Stock Report by Item - Order by VMP", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Supplier Stock Report"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSSupplierStockByBatch(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Supplier", institution != null ? institution.getName() : "All"});
+        int mergeCol = 8;
+        excelController.insertExcelReportHeader(sheet, "Supplier Stock Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Suppliers Stock Summary"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSAllSupplierStock(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Suppliers Stock Summary", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    // Department Vice Stock Report fields
+    private List<DepartmentViceStockDTO> departmentViceStockDtos;
+    private double totalDepartmentViceStockQuantity;
+    private double totalDepartmentViceStockPurchaseValue;
+    private double totalDepartmentViceStockRetailValue;
+    private double totalDepartmentViceStockCostValue;
+
+    public List<DepartmentViceStockDTO> getDepartmentViceStockDtos() {
+        return departmentViceStockDtos;
+    }
+
+    public void setDepartmentViceStockDtos(List<DepartmentViceStockDTO> departmentViceStockDtos) {
+        this.departmentViceStockDtos = departmentViceStockDtos;
+    }
+
+    public double getTotalDepartmentViceStockQuantity() {
+        return totalDepartmentViceStockQuantity;
+    }
+
+    public void setTotalDepartmentViceStockQuantity(double totalDepartmentViceStockQuantity) {
+        this.totalDepartmentViceStockQuantity = totalDepartmentViceStockQuantity;
+    }
+
+    public double getTotalDepartmentViceStockPurchaseValue() {
+        return totalDepartmentViceStockPurchaseValue;
+    }
+
+    public void setTotalDepartmentViceStockPurchaseValue(double totalDepartmentViceStockPurchaseValue) {
+        this.totalDepartmentViceStockPurchaseValue = totalDepartmentViceStockPurchaseValue;
+    }
+
+    public double getTotalDepartmentViceStockRetailValue() {
+        return totalDepartmentViceStockRetailValue;
+    }
+
+    public void setTotalDepartmentViceStockRetailValue(double totalDepartmentViceStockRetailValue) {
+        this.totalDepartmentViceStockRetailValue = totalDepartmentViceStockRetailValue;
+    }
+
+    public double getTotalDepartmentViceStockCostValue() {
+        return totalDepartmentViceStockCostValue;
+    }
+
+    public void setTotalDepartmentViceStockCostValue(double totalDepartmentViceStockCostValue) {
+        this.totalDepartmentViceStockCostValue = totalDepartmentViceStockCostValue;
+    }
+
+    public void fillDepartmentZeroItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null && site == null && institution == null) {
+                JsfUtil.addErrorMessage("Please select a department, site, or institution");
+                return;
+            }
+            Map m = new HashMap();
+            StringBuilder sql = new StringBuilder("select new com.divudi.core.data.dataStructure.PharmacyStockRow("
+                    + "s.itemBatch.item.code, "
+                    + "s.itemBatch.item.name, "
+                    + "sum(s.stock), "
+                    + "sum(s.itemBatch.purcahseRate * s.stock), "
+                    + "sum(s.itemBatch.retailsaleRate * s.stock)) "
+                    + "from Stock s where 1=1 ");
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            sql.append(" group by s.itemBatch.item.code, s.itemBatch.item.name having sum(s.stock) = 0 order by s.itemBatch.item.name");
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql.toString(), m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
             for (PharmacyStockRow r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
-
             }
             pharmacyStockRows = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Zero Stock Item Report"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSZeroStockItem(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 2;
+        excelController.insertExcelReportHeader(sheet, "Zero Stock Item Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void fillDepartmentStockByItemOrderByVmp() {
@@ -595,6 +1661,109 @@ public class ReportsStock implements Serializable {
         }
         pharmacyStockRows = lsts;
 
+    }
+
+    public void fillDepartmentViceStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT new com.divudi.core.data.dto.DepartmentViceStockDTO(");
+            jpql.append("d.institution.name, ");
+            jpql.append("d.site.name, ");
+            jpql.append("d.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("SUM(s.stock), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.purcahseRate, 0.0)), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.retailsaleRate, 0.0)), ");
+            jpql.append("SUM(s.stock * COALESCE(s.itemBatch.costRate, 0.0))) ");
+            jpql.append("FROM Stock s JOIN s.department d ");
+            jpql.append("WHERE s.stock > 0 ");
+            jpql.append("GROUP BY d.institution.name, d.site.name, d.name, s.itemBatch.item.departmentType ");
+            jpql.append("ORDER BY d.institution.name, d.site.name, d.name, s.itemBatch.item.departmentType");
+
+            List<DepartmentViceStockDTO> dtos = (List<DepartmentViceStockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            // Set serial numbers and calculate totals
+            int serialNo = 1;
+            totalDepartmentViceStockQuantity = 0.0;
+            totalDepartmentViceStockPurchaseValue = 0.0;
+            totalDepartmentViceStockRetailValue = 0.0;
+            totalDepartmentViceStockCostValue = 0.0;
+
+            for (DepartmentViceStockDTO dto : dtos) {
+                dto.setSerialNo(serialNo++);
+                if (dto.getQuantity() != null) {
+                    totalDepartmentViceStockQuantity += dto.getQuantity();
+                }
+                if (dto.getPurchaseValue() != null) {
+                    totalDepartmentViceStockPurchaseValue += dto.getPurchaseValue();
+                }
+                if (dto.getRetailValue() != null) {
+                    totalDepartmentViceStockRetailValue += dto.getRetailValue();
+                }
+                if (dto.getCostValue() != null) {
+                    totalDepartmentViceStockCostValue += dto.getCostValue();
+                }
+            }
+
+            departmentViceStockDtos = dtos;
+        }, PharmacyReports.DEPARTMENT_VICE_STOCK_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Department Vice Stock
+     * Report" xlsx export - adds the report title and a Printed By/At footer
+     * around the exported table (issue #17615). This report has no
+     * institution/site/department filter UI (it always aggregates across all
+     * departments), so no filter row is added.
+     */
+    public void postProcessXLSDepartmentViceStock(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 8;
+        excelController.insertExcelReportHeader(sheet, "Department Vice Stock Report", new ArrayList<>(), mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
+     * {@code p:dataExporter} preProcessor for the "Department Vice Stock
+     * Report" pdf export - opens the PDF document and adds a centered report
+     * title before the table is written (issue #17615).
+     *
+     * Note: the PrimeFaces PDF exporter (14.x) uses the OpenPDF
+     * ({@code com.lowagie.text}) library, which is a different class
+     * hierarchy from the iText5 ({@code com.itextpdf.text}) classes already
+     * wildcard-imported in this file (see {@link #exportCurrentStockByBatchToPDF()}).
+     * Fully-qualified names are used throughout to avoid binding to the
+     * wrong "Document"/"Font"/etc type.
+     */
+    public void preProcessPdfDepartmentViceStock(Object document) throws com.lowagie.text.DocumentException {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        pdf.setPageSize(com.lowagie.text.PageSize.A4.rotate());
+        pdf.setMargins(20f, 20f, 20f, 20f);
+        pdf.open();
+
+        com.lowagie.text.Font titleFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA_BOLD, 16);
+        com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("Department Vice Stock Report", titleFont);
+        titlePara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        titlePara.setSpacingAfter(12f);
+        pdf.add(titlePara);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Department Vice Stock
+     * Report" pdf export - appends a Printed By/At footer line after the
+     * table, before the document is closed (issue #17615).
+     */
+    public void postProcessPdfDepartmentViceStock(Object document) throws com.lowagie.text.DocumentException {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        com.lowagie.text.Font footerFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA, 9);
+        String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+        String printedTime = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(new Date());
+        com.lowagie.text.Paragraph footerPara = new com.lowagie.text.Paragraph("Printed by: " + userName + "     Printed at: " + printedTime, footerFont);
+        footerPara.setSpacingBefore(10f);
+        pdf.add(footerPara);
     }
 
     public void fillDepartmentInventryStocks() {
@@ -632,9 +1801,11 @@ public class ReportsStock implements Serializable {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
     }
@@ -810,6 +1981,82 @@ public class ReportsStock implements Serializable {
 
     private Date date;
 
+    public void fillDepartmentExpiaryStockDtos() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
+            jpql.append("s.id, ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("s.itemBatch.item.code, ");
+            jpql.append("s.itemBatch.dateOfExpire, ");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where s.stock > 0");
+            jpql.append(" and s.itemBatch.dateOfExpire between :fd and :td");
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" order by s.itemBatch.dateOfExpire");
+
+            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            stockPurchaseValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double pr = s.getPurchaseRate();
+                        Double qty = s.getStockQty();
+                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockSaleValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double rr = s.getRetailRate();
+                        Double qty = s.getStockQty();
+                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockCostValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getCostRate();
+                        Double qty = s.getStockQty();
+                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
+    }
+
     public void fillDepartmentExpiaryStocks() {
         reportTimerController.trackReportExecution(() -> {
             if (department == null) {
@@ -832,10 +2079,88 @@ public class ReportsStock implements Serializable {
             stocks = getStockFacade().findByJpql(sql, m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
+            stockCostValue = 0.0;
             for (Stock ts : stocks) {
                 stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
                 stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+                stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
             }
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
+    }
+
+    public void fillShortExpiryByAmpPeriod() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.StockDTO(");
+            jpql.append("s.id, ");
+            jpql.append("cat.name, ");
+            jpql.append("s.itemBatch.item.name, ");
+            jpql.append("s.itemBatch.item.departmentType, ");
+            jpql.append("s.itemBatch.item.code, ");
+            jpql.append("s.itemBatch.dateOfExpire, ");
+            jpql.append("s.itemBatch.batchNo, ");
+            jpql.append("s.stock, ");
+            jpql.append("s.itemBatch.purcahseRate, ");
+            jpql.append("s.itemBatch.costRate, ");
+            jpql.append("s.itemBatch.retailsaleRate, ");
+            jpql.append("df.name) ");
+            jpql.append("from Stock s ");
+            jpql.append("left join s.itemBatch.item.category cat ");
+            jpql.append("left join s.itemBatch.item.dosageForm df ");
+            jpql.append("where s.stock > 0");
+            jpql.append(" and type(s.itemBatch.item) = Amp");
+            jpql.append(" and treat(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary > 0");
+            jpql.append(" and FUNCTION('DATEDIFF', s.itemBatch.dateOfExpire, CURRENT_DATE) <= treat(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary");
+
+            if (department != null) {
+                jpql.append(" and s.department=:d");
+                m.put("d", department);
+            }
+            if (site != null) {
+                jpql.append(" and s.department.site=:site");
+                m.put("site", site);
+            }
+            if (institution != null) {
+                jpql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append(" and s.itemBatch.item.departmentType IN :departmentTypes");
+                m.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (category != null) {
+                jpql.append(" and s.itemBatch.item.category=:cat");
+                m.put("cat", category);
+            }
+            if (dosageForm != null) {
+                jpql.append(" and s.itemBatch.item.dosageForm=:df");
+                m.put("df", dosageForm);
+            }
+            jpql.append(" order by s.itemBatch.dateOfExpire");
+
+            stockDtos = (List<StockDTO>) stockFacade.findLightsByJpql(jpql.toString(), m);
+
+            stockPurchaseValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double pr = s.getPurchaseRate();
+                        Double qty = s.getStockQty();
+                        return (pr == null ? 0.0 : pr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockSaleValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double rr = s.getRetailRate();
+                        Double qty = s.getStockQty();
+                        return (rr == null ? 0.0 : rr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
+            stockCostValue = stockDtos.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getCostRate();
+                        Double qty = s.getStockQty();
+                        return (cr == null ? 0.0 : cr) * (qty == null ? 0.0 : qty);
+                    })
+                    .sum();
         }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
 
@@ -850,6 +2175,7 @@ public class ReportsStock implements Serializable {
     ItemFacade itemFacade;
 
     List<Item> items;
+    private Item item;
 
     public List<Item> getItems() {
         return items;
@@ -884,8 +2210,6 @@ public class ReportsStock implements Serializable {
         }
         sql += " GROUP BY bi.item";
 
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
         Set<Item> bis = new HashSet<>(itemFacade.findByJpql(sql, m));
 
         sql = "SELECT s.itemBatch.item "
@@ -940,23 +2264,71 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillAllStaffStocks() {
-//        Date startTime = new Date();
-//        Date fromDate = null;
-//        Date toDate = null;
-//
-//        Map m = new HashMap();
-//        String sql;
-//        sql = "select s from Stock s where s.stock!=:d "
-//                + " order by s.staff.person.name, "
-//                + " s.itemBatch.item.name ";
-//        m.put("d", 0.0);
-//        stocks = getStockFacade().findByJpql(sql, m);
-//        stockPurchaseValue = 0.0;
-//        stockSaleValue = 0.0;
-//        for (Stock ts : stocks) {
-//            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-//            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-//        }
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder sql = new StringBuilder("select s from Stock s where s.stock!=:d");
+
+        // Add staff filter if staff is selected
+        if (staff != null) {
+            sql.append(" and s.staff=:staff");
+            m.put("staff", staff);
+        }
+
+        // Add item filter if item is selected
+        if (item != null) {
+            sql.append(" and s.itemBatch.item=:item");
+            m.put("item", item);
+        }
+
+        sql.append(" order by s.staff.person.name, s.itemBatch.item.name");
+
+        m.put("d", 0.0);
+        stocks = getStockFacade().findByJpql(sql.toString(), m);
+
+        // Calculate totals
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+
+        for (Stock ts : stocks) {
+            stockPurchaseValue += (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue += (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue += ((ts.getItemBatch().getCostRate() == null ? 0 : ts.getItemBatch().getCostRate()) * ts.getStock());
+        }
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Staff Stock" report -
+     * adds the report title, active filters, and a Printed By/At footer
+     * around the exported table (issue #17615).
+     */
+    public void postProcessXLSStaffStock(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Staff", staff != null ? staff.getPerson().getName() : "All"});
+        filterPairs.add(new String[]{"Item", item != null ? item.getName() : "All"});
+        excelController.insertExcelReportHeader(sheet, "Staff Stock Inventory Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    public void clearFilters() {
+        staff = null;
+        itemController.setCurrent(null);
+        stocks = new ArrayList<>();
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+        JsfUtil.addSuccessMessage("Filters cleared successfully");
+    }
+
+    public void fillAllStaffStockItems() {
+        //TODO: Improve Logic. This Logic is wrong.
 
         Map<String, Object> m = new HashMap<>();
         String sql = "select bi from BillItem bi"
@@ -1075,6 +2447,24 @@ public class ReportsStock implements Serializable {
         }
 
         return "/pharmacy/pharmacy_report_stock_report_with_supplier?faces-redirect=true";
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Report (with
+     * Suppliers)" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockReportWithSupplier(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Supplier", institution != null ? institution.getName() : "All"});
+        int mergeCol = 9;
+        excelController.insertExcelReportHeader(sheet, "Stock Report (with Suppliers)", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void fillCategoryStocks() {
@@ -1251,7 +2641,6 @@ public class ReportsStock implements Serializable {
                 + " group by s.itemBatch.item.category "
                 + " order by s.itemBatch.item.category.name";
         List<Object[]> objs = getStockFacade().findAggregates(sql, m);
-        ////System.out.println("sql = " + sql);
         totalPurchaseValue = 0.0;
         stockRecords = new ArrayList<>();
 
@@ -1283,7 +2672,6 @@ public class ReportsStock implements Serializable {
         stockSaleValue = 0.0;
         stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            ////////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             m.put("d", department);
@@ -1294,7 +2682,6 @@ public class ReportsStock implements Serializable {
 
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                ////////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -1321,7 +2708,6 @@ public class ReportsStock implements Serializable {
         stockSaleValue = 0.0;
         stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            ////////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             m.put("d", department);
@@ -1333,7 +2719,6 @@ public class ReportsStock implements Serializable {
 
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                ////////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -1347,25 +2732,82 @@ public class ReportsStock implements Serializable {
     }
 
     /**
+     * {@code p:dataExporter} postProcessor for the "Stock Summary (with
+     * Suppliers)" page - adds the report title, active filters, and a
+     * Printed By/At footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockSummaryWithSupplier(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        Sheet sheet = ((org.apache.poi.ss.usermodel.Workbook) document).getSheetAt(0);
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        int mergeCol = 4;
+        excelController.insertExcelReportHeader(sheet, "Stock Summary (with Suppliers)", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+    }
+
+    /**
      * Getters & Setters
      *
      * @return
      */
+    @Override
     public Department getDepartment() {
-        if (department == null) {
-            department = sessionController.getDepartment();
-        }
         return department;
     }
 
+    @Override
     public void setDepartment(Department department) {
         this.department = department;
     }
 
+    public DepartmentType getDepartmentType() {
+        return departmentType;
+    }
+
+    public void setDepartmentType(DepartmentType departmentType) {
+        this.departmentType = departmentType;
+    }
+
+    public List<DepartmentType> getSelectedDepartmentTypes() {
+        if (selectedDepartmentTypes == null) {
+            selectedDepartmentTypes = new ArrayList<>();
+        }
+        return selectedDepartmentTypes;
+    }
+
+    public void setSelectedDepartmentTypes(List<DepartmentType> selectedDepartmentTypes) {
+        this.selectedDepartmentTypes = selectedDepartmentTypes;
+    }
+
+    public String getSelectedDepartmentTypesPrintDisplay() {
+        List<DepartmentType> list = getSelectedDepartmentTypes();
+        if (list.isEmpty()) {
+            return "All";
+        }
+
+        return list.stream()
+                .map(DepartmentType::getLabel)
+                .collect(Collectors.joining(", "));
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(
+                DepartmentType.Pharmacy,
+                DepartmentType.Store,
+                DepartmentType.Lab,
+                DepartmentType.Kitchen
+        );
+    }
+
+    @Override
     public Institution getInstitution() {
         return institution;
     }
 
+    @Override
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
@@ -1376,6 +2818,14 @@ public class ReportsStock implements Serializable {
 
     public void setStocks(List<Stock> stocks) {
         this.stocks = stocks;
+    }
+
+    public List<StockDTO> getStockDtos() {
+        return stockDtos;
+    }
+
+    public void setStockDtos(List<StockDTO> stockDtos) {
+        this.stockDtos = stockDtos;
     }
 
     public StockFacade getStockFacade() {
@@ -1406,6 +2856,14 @@ public class ReportsStock implements Serializable {
 
     public void setStockPurchaseValue(double stockPurchaseValue) {
         this.stockPurchaseValue = stockPurchaseValue;
+    }
+
+    public double getStockCostValue() {
+        return stockCostValue;
+    }
+
+    public void setStockCostValue(double stockCostValue) {
+        this.stockCostValue = stockCostValue;
     }
 
     public Staff getStaff() {
@@ -1440,6 +2898,15 @@ public class ReportsStock implements Serializable {
         this.category = category;
     }
 
+    public DosageForm getDosageForm() {
+        return dosageForm;
+    }
+
+    public void setDosageForm(DosageForm dosageForm) {
+        this.dosageForm = dosageForm;
+    }
+
+    @Override
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = Calendar.getInstance().getTime();
@@ -1447,10 +2914,12 @@ public class ReportsStock implements Serializable {
         return fromDate;
     }
 
+    @Override
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
 
+    @Override
     public Date getToDate() {
         if (toDate == null) {
             Calendar c = Calendar.getInstance();
@@ -1465,7 +2934,7 @@ public class ReportsStock implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 3);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillSixMonthsExpiary() {
@@ -1473,7 +2942,7 @@ public class ReportsStock implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.MONTH, c.get(Calendar.MONTH) + 6);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillOneYearExpiary() {
@@ -1481,7 +2950,7 @@ public class ReportsStock implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, c.get(Calendar.YEAR) + 1);
         toDate = c.getTime();
-        fillDepartmentExpiaryStocks();;
+        fillDepartmentExpiaryStockDtos();
     }
 
     public void fillThreeMonthsExpiaryOfSupplier() {
@@ -1549,6 +3018,7 @@ public class ReportsStock implements Serializable {
         return CommonFunctions.getEndOfMonth(date);
     }
 
+    @Override
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -1661,6 +3131,14 @@ public class ReportsStock implements Serializable {
         return sessionController;
     }
 
+    public ItemController getItemController() {
+        return itemController;
+    }
+
+    public void setItemController(ItemController itemController) {
+        this.itemController = itemController;
+    }
+
     public ItemFacade getItemFacade() {
         return itemFacade;
     }
@@ -1686,7 +3164,15 @@ public class ReportsStock implements Serializable {
 
     public void prepareForPrint() {
         paginator = false;
-        rows = getStocks().size();
+        if (stocks != null && !stocks.isEmpty()) {
+            rows = stocks.size();
+        } else if (stockDtos != null && !stockDtos.isEmpty()) {
+            rows = stockDtos.size();
+        } else if (departmentViceStockDtos != null && !departmentViceStockDtos.isEmpty()) {
+            rows = departmentViceStockDtos.size();
+        } else {
+            rows = 0;
+        }
     }
 
     public void prepareForView() {
@@ -1851,7 +3337,7 @@ public class ReportsStock implements Serializable {
     public void setTotalPurchaseSaleCreditValue(double totalPurchaseSaleCreditValue) {
         this.totalPurchaseSaleCreditValue = totalPurchaseSaleCreditValue;
     }
-    
+
     public double getStartingPurchaseValue() {
         return startingPurchaseValue;
     }
@@ -1946,6 +3432,70 @@ public class ReportsStock implements Serializable {
 
     public void setFinalTotalSaleValue(double finalTotalSaleValue) {
         this.finalTotalSaleValue = finalTotalSaleValue;
+    }
+
+    @Override
+    public Institution getSite() {
+        return site;
+    }
+
+    @Override
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    @Override
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    @Override
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    @Override
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    @Override
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public ReportViewType getReportViewType() {
+        return reportViewType;
+    }
+
+    @Override
+    public void setReportViewType(ReportViewType reportViewType) {
+        this.reportViewType = reportViewType;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
+    }
+
+    public boolean isIncludeZeroStock() {
+        return includeZeroStock;
+    }
+
+    public void setIncludeZeroStock(boolean includeZeroStock) {
+        this.includeZeroStock = includeZeroStock;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
     }
 
 }

@@ -31,7 +31,6 @@ public class ItemFeeService {
     public List<ItemFee> fetchSiteFeesByItem(String itemCode, Institution site) {
         System.out.println("fetchSiteFeesByItem");
         System.out.println("itemCode = " + itemCode);
-        System.out.println("site = " + site);
         String jpql = "select f "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";
@@ -44,8 +43,6 @@ public class ItemFeeService {
         jpql += " and f.forInstitution=:site";
         m.put("site", site);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
@@ -60,7 +57,7 @@ public class ItemFeeService {
             feeValue.setCreatedAt(new Date());
         }
         feeValue.setTotalValueForLocals(feeValueForLocals);
-        feeValue.setTotalValueForLocals(feeValueForForeigners);
+        feeValue.setTotalValueForForeigners(feeValueForForeigners);
         save(feeValue);
     }
 

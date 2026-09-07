@@ -48,7 +48,7 @@
                                     />
 
                                 <p:spacer width="50" ></p:spacer>
-                               <p:outputLabel value="Doctor or Staff Member" ></p:outputLabel>
+                                <p:outputLabel value="Doctor or Staff Member" ></p:outputLabel>
                                 <p:autoComplete 
                                     class="w-100"
                                     inputStyleClass="w-100"
@@ -172,6 +172,9 @@
 
                             <p:dataTable value="#{workingTimeController.items}" var="w" paginator="true" paginatorPosition="bottom" rows="10"
                                          rowKey="#{w.id}" >
+                                <p:column headerText="Speciality">
+                                    <h:outputLabel value="#{w.staffShift.staff.speciality.name}" ></h:outputLabel>
+                                </p:column>
                                 <p:column headerText="Name">
                                     <h:outputLabel value="#{w.staffShift.staff.person.nameWithTitle}" ></h:outputLabel>
                                 </p:column>

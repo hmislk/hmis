@@ -1,0 +1,324 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="cancelDepositPaymentForm">
+                    <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <h:outputText value="Inward Deposit Cancellation" styleClass="fw-bold"/>
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <p:commandButton
+                                            id="btnBackToReprintBillPayment"
+                                            value="Back to Reprint Deposit"
+                                            action="/inward/inward_reprint_bill_deposit?faces-redirect=true"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            icon="fa fa-arrow-left"
+                                            title="Go to Reprint Bill Deposit">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnBackToSearchPayment"
+                                            value="Back to Bill List"
+                                            action="/inward/inward_search_deposit?faces-redirect=true"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            icon="fa fa-arrow-left"
+                                            title="Go to Deposit Bill Search">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 my-3">
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <p:outputLabel for="cmbPs" value="Payment Method" styleClass="fw-bold"/>
+                                    <p:selectOneMenu
+                                        id="cmbPs"
+                                        value="#{inwardSearch.paymentMethod}"
+                                        required="true"
+                                        style="width: 320px;">
+                                        <f:selectItem itemLabel="Select Payment Method"/>
+                                        <f:selectItems value="#{inwardSearch.inwardDepositCancelationPaymentMethods}"/>
+                                        <p:ajax
+                                            process="cmbPs"
+                                            update="paymentDetails :#{p:resolveFirstComponentWithId('updateData',view).clientId}"
+                                            event="change"
+                                            listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}">
+                                        </p:ajax>
+                                    </p:selectOneMenu>
+
+
+
+                                    <h:panelGroup id="paymentDetails" layout="block" class="d-flex gap-2 align-items-center ms-2">
+
+                                        <p:commandButton
+                                            id="updateData"
+                                            class="ui-button-warning "
+                                            rendered="#{inwardSearch.paymentMethod ne 'Cash'}"
+                                            process="@this"
+                                            update="paymentDetails"
+                                            icon="fas fa-gear"
+                                            title="Re-Fill Payment Details"
+                                            action="#{inwardSearch.refillPaymentDetail()}">
+                                        </p:commandButton>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Slip'}">
+                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'ewallet'}">
+                                            <pa:ewallet paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'OnlineSettlement'}">
+                                            <pa:online_settlement paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:inputText
+                                        id="txtCancellationComment"
+                                        value="#{inwardSearch.comment}"
+                                        style="width: 750px;"
+                                        title="Reason for cancelling this deposit bill"
+                                        placeholder="Enter a cancellation reason">
+                                    </p:inputText>
+                                    <p:commandButton
+                                        id="btnCancelPaymentBill"
+                                        value="Cancel Deposit Bill"
+                                        styleClass="ui-button-danger"
+                                        ajax="false"
+                                        icon="fas fa-ban"
+                                        title="Cancel this deposit bill"
+                                        onclick="return confirm('Are you sure you want to cancel this deposit bill? This action cannot be undone.');"
+                                        action="#{inwardSearch.cancelInwardDepositBill()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-12 col-md-4 mb-2">
+                                    <p:panel header="Patient Details" styleClass="h-100">
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100">
+                                            <h:outputLabel value="Patient Name:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.person.nameWithTitle}"/>
+                                            <h:outputLabel value="Bht No:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}"/>
+                                            <h:outputLabel value="Age:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.age}"/>
+                                            <h:outputLabel value="Sex:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.person.sex}"/>
+                                            <h:outputLabel value="Phone:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.person.phone}"/>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-12 col-md-4 mb-2">
+                                    <p:panel header="Bill Details" styleClass="h-100">
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100">
+                                            <h:outputLabel value="Bill No:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.deptId}"/>
+                                            <h:outputLabel value="Total:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.total}" styleClass="text-end d-block">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Discount:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.discount}" styleClass="text-end d-block">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.netTotal}" styleClass="text-end d-block">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-12 col-md-4 mb-2">
+                                    <p:panel header="Original Payment Details" styleClass="h-100">
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3 px-3 py-2 rounded-3 bg-light text-dark border shadow-sm">
+                                            <span class="d-flex align-items-center gap-2">
+                                                <i class="fas fa-money-check-alt fs-5 text-primary"/>
+                                                <h:outputText value="Payment Method" styleClass="text-uppercase small fw-semibold text-muted"/>
+                                            </span>
+                                            <h:outputText value="#{inwardSearch.bill.paymentMethod}"
+                                                          styleClass="fs-5 fw-bold"/>
+                                        </div>
+
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Cash'}">
+                                            <pa:cash_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Card'}">
+                                            <pa:creditCard_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Slip'}">
+                                            <pa:slip_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'ewallet'}">
+                                            <pa:ewallet_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'OnlineSettlement'}">
+                                            <pa:online_settlement_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText value="Deposit Bill"/>
+                                                <p:commandButton
+                                                    id="btnPrintPaymentBill"
+                                                    styleClass="ui-button-info"
+                                                    icon="fas fa-print"
+                                                    title="Print deposit bill"
+                                                    value="Print">
+                                                    <p:printer target="gpBillPreview"/>
+                                                </p:commandButton>
+                                            </div>
+                                        </f:facet>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <h:panelGroup id="gpBillPreview">
+                                                <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
+                                            </h:panelGroup>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{inwardSearch.printPreview}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h:outputText value="Cancellation Bill"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            id="btnCancelBillSettings"
+                                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            styleClass="ui-button-secondary"
+                                            type="button"
+                                            title="Configure cancellation bill paper"
+                                            onclick="PF('inwardPaymentConfigDialog').show();"/>
+                                        <p:commandButton
+                                            id="btnPrintCancelBill"
+                                            value="Print"
+                                            styleClass="ui-button-info"
+                                            icon="fas fa-print"
+                                            title="Print cancellation bill">
+                                            <p:printer target="gpCancelBillPreview"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnBackToBillList"
+                                            value="Back to Bill List"
+                                            action="/inward/inward_search_deposit?faces-redirect=true"
+                                            ajax="false"
+                                            styleClass="ui-button-warning"
+                                            icon="fa fa-arrow-left"
+                                            title="Return to the deposit bill list">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h:panelGroup id="gpCancelBillPreview">
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                        <bill:posPaperCancellationBill bill="#{inwardSearch.bill.cancelledBill}" duplicate="false"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+
+                </h:form>
+
+                <p:dialog id="inwardPaymentConfigDialog"
+                          header="Inward Payment Bill Printer Configuration"
+                          widgetVar="inwardPaymentConfigDialog"
+                          modal="true"
+                          width="560"
+                          resizable="false"
+                          closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+                    <h:form id="inwardPaymentConfigForm">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <i class="fas fa-file-alt me-2"/>
+                                <h:outputText value="Paper Format Settings"/>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                                    <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                                    <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <p:commandButton value="Apply &amp; Close"
+                                             icon="fas fa-save"
+                                             class="ui-button-success"
+                                             ajax="false"
+                                             action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                            <p:commandButton value="Cancel"
+                                             icon="fas fa-times"
+                                             class="ui-button-secondary"
+                                             type="button"
+                                             onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

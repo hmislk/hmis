@@ -30,7 +30,7 @@ public class PriceMatrix implements Serializable {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     BillType billType;
     @ManyToOne
@@ -75,7 +75,11 @@ public class PriceMatrix implements Serializable {
     @ManyToOne
     private Institution toInstitution;
 
+    @ManyToOne
+    private Institution creditCompany;
 
+    
+    
     public Item getItem() {
         return item;
     }
@@ -295,6 +299,14 @@ public class PriceMatrix implements Serializable {
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
     }
 
 }

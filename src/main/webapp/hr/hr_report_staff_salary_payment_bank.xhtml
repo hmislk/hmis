@@ -1,318 +1,586 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
-      xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
+    <ui:define name="content">
 
-    <h:body>
+        <h:form styleClass="bank-payment-form">
 
-        <ui:composition template="/resources/template/template.xhtml">
+            <h:outputStylesheet>
+                .bank-payment-form {
+                    padding: 2rem 1.75rem;
+                }
 
-            <ui:define name="content">
-                <h:form >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Employee Salary Payment To Bank " />
-                        </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="Salary Cycle"/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}"
-                                             var="t">
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
+
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
+
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .checkbox-row {
+                    display: flex;
+                    gap: 2rem;
+                    align-items: center;
+                }
+
+                .checkbox-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .cheque-input-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .cheque-input-group .ui-inputtext {
+                    height: 36px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-cycle-label {
+                    font-size: 13px;
+                    font-weight: 500;
+                    display: block;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .report-cheque-line {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 8px;
+                }
+
+                .bank-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .bank-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .bank-table .ui-datatable-data td,
+                .bank-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .bank-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .bank-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .bank-table .col-num {
+                    text-align: right !important;
+                }
+
+                .bank-table .col-num .ui-outputlabel {
+                    display: block;
+                    text-align: right;
+                }
+
+                .bank-table .col-text {
+                    text-align: left !important;
+                }
+
+                .bank-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
+
+                .bank-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Employee Salary Payment to Bank" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by cycle, department, employee or category and process to generate" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="salaryCycle" value="Salary cycle" styleClass="field-label" />
+                            <p:selectOneMenu id="salaryCycle"
+                                             value="#{hrReportController.reportKeyWord.salaryCycle}"
+                                             var="t"
+                                             appendTo="@body"
+                                             autoWidth="false"
+                                             style="width: 100%;">
                                 <f:selectItems value="#{salaryCycleController.salaryCycles}"
                                                var="theme"
                                                itemLabel="#{theme.name}"
-                                               itemValue="#{theme}" ></f:selectItems>
-
-                                <p:column style="width:10%" headerText="Name">
+                                               itemValue="#{theme}" />
+                                <p:column style="width:10%">
                                     <h:outputText value="#{t.name}" />
                                 </p:column>
-
-                                <p:column headerText="Year">
+                                <p:column>
                                     <h:outputText value="#{t.salaryYear}" />
                                 </p:column>
-                                <p:column headerText="Month">
+                                <p:column>
                                     <h:outputText value="#{t.salaryMonth}" />
                                 </p:column>
                             </p:selectOneMenu>
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Staff Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Staff Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Branch(Bank) : "/>
-                            <hr:completeBank_Branch value="#{hrReportController.reportKeyWord.bank}"/>
-                            <h:outputLabel value="Bank : "/>
-                            <hr:completeBank value="#{hrReportController.reportKeyWord.institutionBank}"/>
-                            <h:outputLabel value="Employee Status : "/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.employeeStatus}" >
-                                <f:selectItem itemLabel="Please select Employee Status"/>
-                                <f:selectItems value="#{staffController.employeeStatuses}"/>
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Employee" styleClass="field-label" />
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff category" styleClass="field-label" />
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff designation" styleClass="field-label" />
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff roster" styleClass="field-label" />
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Branch (Bank)" styleClass="field-label" />
+                            <hr:completeBank_Branch value="#{hrReportController.reportKeyWord.bank}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Bank" styleClass="field-label" />
+                            <hr:completeBank value="#{hrReportController.reportKeyWord.institutionBank}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="empStatus" value="Employee status" styleClass="field-label" />
+                            <p:selectOneMenu id="empStatus"
+                                             value="#{hrReportController.reportKeyWord.employeeStatus}"
+                                             appendTo="@body"
+                                             autoWidth="false"
+                                             style="width: 100%;">
+                                <f:selectItem itemLabel="Please select employee status" />
+                                <f:selectItems value="#{staffController.employeeStatuses}" />
                             </p:selectOneMenu>
-                            <h:outputLabel value="Show Blocked"/>
-                            <p:selectBooleanCheckbox value="#{hrReportController.blocked}"/>
-                            <h:outputLabel value="Show Hold"/>
-                            <p:selectBooleanCheckbox value="#{hrReportController.hold}"/>
-                        </h:panelGrid>
+                        </div>
 
-                        <p:commandButton ajax="false" value="Process Net Salary" action="#{hrReportController.createStaffSalaryNetSalary()}"/>
-                        <p:commandButton ajax="false" value="Process OT Payment" action="#{hrReportController.createStaffSalaryOtPayment()}"/>
-                        <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPayment()}"/>
+                        <div class="field-group">
+                            <p:outputLabel value="Options" styleClass="field-label" />
+                            <div class="checkbox-row">
+                                <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="blocked" value="#{hrReportController.blocked}" />
+                                    <h:outputLabel for="blocked" styleClass="field-label" value="Show blocked" />
+                                </div>
+                                <div class="checkbox-group">
+                                    <p:selectBooleanCheckbox id="hold" value="#{hrReportController.hold}" />
+                                    <h:outputLabel for="hold" styleClass="field-label" value="Show hold" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                        <p:inputText value="#{hrReportController.chequeNo}" id="chq"/>
-                                                <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
+                    <!-- Process actions -->
+                    <div class="controls-actions">
+                        <p:commandButton value="Process net salary"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryNetSalary()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Process OT payment"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryOtPayment()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                        <p:commandButton value="Process net and OT payment"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffSalaryNetAndOtPayment()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                    </div>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank"  />
+                    <!-- Cheque + secondary actions -->
+                    <div class="controls-actions-secondary">
+                        <div class="cheque-input-group">
+                            <p:outputLabel for="chq" value="Cheque no" styleClass="field-label" />
+                            <p:inputText id="chq" value="#{hrReportController.chequeNo}" />
+                            <p:commandButton value="Update"
+                                             ajax="false"
+                                             action="#{hrReportController.update()}"
+                                             icon="pi pi-check"
+                                             styleClass="btn-action" />
+                        </div>
+                        <p:commandButton value="Print"
+                                         ajax="false"
+                                         action="#"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="gpBillPreview" />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank" />
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
-                            <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true" rowStyleClass="#{ss.hold ? 'greenText': ss.blocked ? 'redText' :''}">
-                                <f:facet name="header" >
+                    </div>
 
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
-                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institutionBank ne null}" >
-                                        <h:outputLabel value="Bank : #{hrReportController.reportKeyWord.institutionBank.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}" >
-                                        <h:outputLabel value="Roster : #{hrReportController.reportKeyWord.roster.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:outputLabel value="Salary Range : #{hrReportController.reportKeyWord.salaryCycle.name}"/>
-                                    <br/><br/>
-                                    <h:outputLabel value="Cheque No :................................."/>
-                                </f:facet>
-                                <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="EMP No"/>
-                                    </f:facet>
+                </div>
+            </p:panel>
 
-                                    <p:outputLabel value="#{ss.staff.code}" style="float: right;">
-                                    </p:outputLabel>
-                                </p:column>
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
 
-                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">
-                                    <p:rowEditor />
-                                </p:column>
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">Employee Salary Payment to Bank</span>
+                        <span class="report-cycle-label">
+                            <h:outputText value="#{hrReportController.reportKeyWord.salaryCycle.name}" />
+                        </span>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{hrReportController.reportKeyWord.institution.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                            <p class="report-meta">
+                                Department: <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                            <p class="report-meta">
+                                Staff: <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institutionBank ne null}">
+                            <p class="report-meta">
+                                Bank: <h:outputText value="#{hrReportController.reportKeyWord.institutionBank.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
+                            <p class="report-meta">
+                                Roster: <h:outputText value="#{hrReportController.reportKeyWord.roster.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <p class="report-cheque-line">
+                            Cheque No: .................................
+                        </p>
+                    </div>
+                </f:facet>
 
-                                <p:column rendered="#{!hrReportController.hold}" >
-                                    <f:facet name="header">
+                <p:dataTable id="tb1"
+                             value="#{hrReportController.staffSalarys}"
+                             var="ss"
+                             editable="true"
+                             rowStyleClass="#{ss.hold ? 'greenText' : ss.blocked ? 'redText' : ''}"
+                             styleClass="bank-table">
 
-                                        <h:outputLabel value="Emp Name"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
-                                                            or sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
-                                    </p:outputLabel>
-                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.hold)
-                                                                                                 or(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}">
-                                    </p:outputLabel>
-                                </p:column>
-                                <p:column rendered="#{hrReportController.hold}" >
-                                    <f:facet name="header">
+                    <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />
 
-                                        <h:outputLabel value="Emp Name"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.staff.person.nameWithTitle}">
-                                    </p:outputLabel>
-                                </p:column>
+                    <p:column headerText="Emp no" styleClass="col-text">
+                        <p:outputLabel value="#{ss.staff.code}" />
+                    </p:column>
 
-                                <p:column rendered="#{hrReportController.reportKeyWord.institutionBank eq null}" >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bank"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.bankBranch.institution.name}">
-                                    </p:outputLabel>
-                                </p:column>
+                    <p:column styleClass="noPrintButton" exportable="false">
+                        <p:rowEditor />
+                    </p:column>
 
-                                <p:column styleClass="noPrintButton">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Bank Branch"/>
-                                    </f:facet>
-                                    <p:cellEditor>
-                                        <f:facet name="output">
-                                            <p:outputLabel value="#{ss.bankBranch.name}"/>
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:autoComplete disabled="#{!ss.blocked and !ss.hold}" id="pgbank" completeMethod="#{institutionController.completeBankBranch}"
-                                                            var="dept"
-                                                            itemLabel="#{dept.name}"
-                                                            itemValue="#{dept}"
-                                                            forceSelection="true"
-                                                            value="#{ss.bankBranch}"
-                                                             >
-                                                <p:column headerText="Name">
-                                                    <h:outputLabel value="#{dept.name}"/>
-                                                </p:column>
-                                                <p:column headerText="Banck">
-                                                    <h:outputLabel value="#{dept.institution.name}"/>
-                                                </p:column>
-                                                <p:column headerText="Code">
-                                                    <h:outputLabel value="#{dept.institutionCode}"/>
-                                                </p:column>
-                                            </p:autoComplete>
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column>
+                    <!-- Emp name — conditional on hold flag -->
+                    <p:column headerText="Emp name" styleClass="col-text col-name" style="min-width: 200px;"
+                              rendered="#{!hrReportController.hold}">
+                        <p:outputLabel value="#{ss.staff.person.nameWithTitle}"
+                                       rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
+                                                   or sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" />
+                        <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd"
+                                       rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.hold)
+                                                   or (sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}" />
+                    </p:column>
+                    <p:column headerText="Emp name" styleClass="col-text col-name" style="min-width: 200px;"
+                              rendered="#{hrReportController.hold}">
+                        <p:outputLabel value="#{ss.staff.person.nameWithTitle}" />
+                    </p:column>
 
-                                <p:column styleClass="noPrintButton" rendered="false">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="cheque No"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.chequeNumberOverTime}/">
-                                    </p:outputLabel>
-                                    <p:outputLabel value="#{ss.chequeNumberSalary}/">
-                                    </p:outputLabel>
-                                    <p:outputLabel value="#{ss.chequeNumberSalaryAndOverTime}">
-                                    </p:outputLabel>
-                                </p:column>
+                    <!-- Bank — only shown when no bank filter applied -->
+                    <p:column headerText="Bank" styleClass="col-text"
+                              rendered="#{hrReportController.reportKeyWord.institutionBank eq null}">
+                        <p:outputLabel value="#{ss.bankBranch.institution.name}" />
+                    </p:column>
 
-                                <p:column rendered="#{!hrReportController.hold}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Account No"/>
-                                    </f:facet>
-                                    <p:cellEditor>
-                                        <f:facet name="output">
-                                            <p:outputLabel value="#{ss.accountNo}"  />
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:inputText id="txtin" value="#{ss.accountNo}" disabled="#{!ss.blocked and !ss.hold}" styleClass="shortinput"/>
-                                        </f:facet>
-                                    </p:cellEditor>
+                    <!-- Bank branch — editable -->
+                    <p:column headerText="Bank branch" styleClass="col-text noPrintButton">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <p:outputLabel value="#{ss.bankBranch.name}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:autoComplete id="pgbank"
+                                                disabled="#{!ss.blocked and !ss.hold}"
+                                                completeMethod="#{institutionController.completeBankBranch}"
+                                                var="dept"
+                                                itemLabel="#{dept.name}"
+                                                itemValue="#{dept}"
+                                                forceSelection="true"
+                                                value="#{ss.bankBranch}">
+                                    <p:column headerText="Name">
+                                        <h:outputLabel value="#{dept.name}" />
+                                    </p:column>
+                                    <p:column headerText="Bank">
+                                        <h:outputLabel value="#{dept.institution.name}" />
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputLabel value="#{dept.institutionCode}" />
+                                    </p:column>
+                                </p:autoComplete>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
 
-                                </p:column>
-                                <p:column rendered="#{hrReportController.hold}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Account No"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.staff.accountNo}"  />
-                                </p:column>
+                    <!-- Account no — editable when not hold, read-only when hold -->
+                    <p:column headerText="Account no" styleClass="col-text"
+                              rendered="#{!hrReportController.hold}">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <p:outputLabel value="#{ss.accountNo}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText id="txtin"
+                                             value="#{ss.accountNo}"
+                                             disabled="#{!ss.blocked and !ss.hold}"
+                                             styleClass="shortinput" />
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+                    <p:column headerText="Account no" styleClass="col-text"
+                              rendered="#{hrReportController.hold}">
+                        <p:outputLabel value="#{ss.staff.accountNo}" />
+                    </p:column>
 
-                                <p:column headerText="Block" styleClass="noPrintButton">
-                                    <p:cellEditor>
-                                        <f:facet name="output">
-                                            <h:outputLabel value="Blocked" rendered="#{ss.blocked}">
-                                            </h:outputLabel>
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:selectBooleanCheckbox id="boBlock" value="#{ss.blocked}" >
-                                                <f:ajax event="change"  execute="@this" render="@this txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
-                                            </p:selectBooleanCheckbox>
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column>
-                                <p:column headerText="Hold" styleClass="noPrintButton">
-                                    <p:cellEditor>
-                                        <f:facet name="output">
-                                            <h:outputLabel value="Hold" rendered="#{ss.hold}">
-                                            </h:outputLabel>
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:selectBooleanCheckbox id="boHold" value="#{ss.hold}" >
-                                                <f:ajax event="change" execute="@this" render="@this txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
-                                            </p:selectBooleanCheckbox>
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column>
+                    <!-- Block / Hold inline editors -->
+                    <p:column headerText="Block" styleClass="noPrintButton">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputLabel value="Blocked" rendered="#{ss.blocked}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox id="boBlock" value="#{ss.blocked}">
+                                    <f:ajax event="change"
+                                            execute="@this"
+                                            render="@this txtin boHold pgbank"
+                                            listener="#{hrReportController.listnerBlock(ss)}" />
+                                </p:selectBooleanCheckbox>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
 
-                                <p:column rendered="#{hrReportController.netSalary}" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Salary"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.transNetSalry}"  >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalTransNetSalary}" style="text-align: right;" styleClass="noPrintButton">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>                                    </f:facet>
-                                </p:column>
+                    <p:column headerText="Hold" styleClass="noPrintButton">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputLabel value="Hold" rendered="#{ss.hold}" />
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:selectBooleanCheckbox id="boHold" value="#{ss.hold}">
+                                    <f:ajax event="change"
+                                            execute="@this"
+                                            render="@this txtin boBlock pgbank"
+                                            listener="#{hrReportController.listnerHold(ss)}" />
+                                </p:selectBooleanCheckbox>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
 
-                                <p:column rendered="#{hrReportController.otPayment}" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Over Time"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue}"  >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalOverTime}" style="text-align: right;" styleClass="noPrintButton">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
+                    <!-- Salary -->
+                    <p:column headerText="Salary" styleClass="col-num"
+                              rendered="#{hrReportController.netSalary}">
+                        <p:outputLabel value="#{ss.transNetSalry}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{hrReportController.totalTransNetSalary}" styleClass="noPrintButton">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
 
-                                <p:column rendered="#{hrReportController.otPayment and hrReportController.netSalary}" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Total"/>
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.transExtraDutyValue+ss.overTimeValue+ss.transNetSalry}"  >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </p:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{hrReportController.totalOverTime+hrReportController.totalTransNetSalary}" style="text-align: right;">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
+                    <!-- Over time -->
+                    <p:column headerText="Over time" styleClass="col-num"
+                              rendered="#{hrReportController.otPayment}">
+                        <p:outputLabel value="#{ss.transExtraDutyValue + ss.overTimeValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{hrReportController.totalOverTime}" styleClass="noPrintButton">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
 
-                                <p:column rendered="#{hrReportController.hold}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Signature"/>
-                                    </f:facet>
-                                    <p:outputLabel value="........................"  />
-                                </p:column>
+                    <!-- Total -->
+                    <p:column headerText="Total" styleClass="col-num"
+                              rendered="#{hrReportController.otPayment and hrReportController.netSalary}">
+                        <p:outputLabel value="#{ss.transExtraDutyValue + ss.overTimeValue + ss.transNetSalry}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </p:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{hrReportController.totalOverTime + hrReportController.totalTransNetSalary}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
 
-                                <p:column rendered="false" >
-                                    <p:commandButton process="@this"
-                                                     ajax="false"
-                                                     value="Update"
-                                                     actionListener="#{hrReportController.onEditBlockedUpdate(ss)}"
-                                                     >
-                                    </p:commandButton>
-                                </p:column>
+                    <!-- Signature — hold mode only -->
+                    <p:column headerText="Signature" rendered="#{hrReportController.hold}">
+                        <p:outputLabel value="........................" />
+                    </p:column>
 
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:dataTable>
-                        </p:panel>
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
 
+                </p:dataTable>
 
-                    </p:panel>
+            </p:panel>
 
-                </h:form>
-            </ui:define>
+        </h:form>
+    </ui:define>
 
-        </ui:composition>
-
-    </h:body>
-</html>
+</ui:composition>

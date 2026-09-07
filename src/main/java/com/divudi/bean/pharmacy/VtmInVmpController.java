@@ -117,7 +117,7 @@ public class VtmInVmpController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -133,9 +133,9 @@ public class VtmInVmpController implements Serializable {
         if (items == null) {
             String j;
             j = "select v "
-                    + " from VtmsVmps v "
+                    + " from VirtualProductIngredient v "
                     + " where v.retired=false "
-                    + " order by v.name";
+                    + " order by v.id";
             items = getFacade().findByJpql(j);
         }
         return items;

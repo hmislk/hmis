@@ -23,10 +23,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
+ * @deprecated This controller is deprecated. Use {@link MeasurementUnitController#getFrequencyUnits()} instead.
+ * Frequency units are now managed through the unified MeasurementUnit system.
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
+@Deprecated
 @Named
 @SessionScoped
 public  class FrequencyUnitController implements Serializable {
@@ -116,7 +119,7 @@ public  class FrequencyUnitController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
@@ -128,6 +131,10 @@ public  class FrequencyUnitController implements Serializable {
         return ejbFacade;
     }
 
+    /**
+     * @deprecated Use {@link MeasurementUnitController#getFrequencyUnits()} instead.
+     */
+    @Deprecated
     public List<FrequencyUnit> getItems() {
         items = getFacade().findAll("name", true);
         return items;

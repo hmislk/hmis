@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formEventHistory">
+
+                    <p:panel class="m-1" rendered="#{webUserController.hasPrivilege('InwardEventHistoryView')}">
+                        <f:facet name="header">
+                            <h:outputText value="Inpatient Event History" />
+                            <h:outputText
+                                value=" — #{inpatientEventHistoryController.patientEncounter.patient.person.nameWithTitle} | BHT: #{inpatientEventHistoryController.patientEncounter.bhtNo}"
+                                rendered="#{inpatientEventHistoryController.patientEncounter ne null}" />
+                        </f:facet>
+                        <f:facet name="actions">
+                            <p:commandButton
+                                value="Refresh"
+                                action="#{inpatientEventHistoryController.loadTimeline()}"
+                                icon="fa fa-sync"
+                                update="formEventHistory"
+                                class="ui-button-secondary ui-button-outlined me-1" />
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                icon="fa fa-arrow-left"
+                                class="ui-button-info ui-button-outlined" />
+                        </f:facet>
+
+                        <p:dataTable
+                            id="tblTimeline"
+                            value="#{inpatientEventHistoryController.timelineRows}"
+                            var="row"
+                            rowKey="#{row.key}"
+                            rowIndexVar="rowIndex"
+                            paginator="true"
+                            rows="50"
+                            paginatorPosition="bottom"
+                            emptyMessage="No events recorded for this admission yet."
+                            class="w-100">
+
+                            <p:column style="width:2rem;">
+                                <p:rowToggler rendered="#{row.auditRow}" />
+                            </p:column>
+
+                            <p:column headerText="Date &amp; Time" style="width:11rem;">
+                                <h:outputText value="#{row.when}">
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Category" style="width:10rem;">
+                                <p:tag value="#{row.category}"
+                                       severity="#{row.billRow ? 'info' : 'success'}" />
+                            </p:column>
+
+                            <p:column headerText="Event">
+                                <h:outputText value="#{row.description}" />
+                            </p:column>
+
+                            <p:column headerText="User" style="width:10rem;">
+                                <h:outputText value="#{row.user}" />
+                            </p:column>
+
+                            <p:column headerText="Amount" style="width:8rem; text-align:right;">
+                                <h:outputText value="#{row.amount}" rendered="#{row.billRow}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:rowExpansion>
+                                <h:panelGroup rendered="#{row.auditRow}">
+                                    <h:outputText value="Changes" styleClass="fw-bold d-block mb-1" />
+                                    <h:outputText value="#{row.auditEvent.difference}"
+                                                  style="white-space:pre-wrap; font-family:monospace;" />
+                                </h:panelGroup>
+                            </p:rowExpansion>
+
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

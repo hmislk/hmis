@@ -29,9 +29,12 @@ public class RoomFacilityCharge implements Serializable {
     @OneToMany(mappedBy = "roomFacilityCharge")
     private List<PatientRoom> patientRooms;
 
+    @OneToMany(mappedBy = "roomFacilityCharge")
+    private List<RoomFacilityTimedItem> timedItems;
+
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Double maintananceCharge = 0.0;
     private Double roomCharge = 0.0;
@@ -311,5 +314,13 @@ public class RoomFacilityCharge implements Serializable {
 
     public void setMoChargeForAfterDuration(Double moChargeForAfterDuration) {
         this.moChargeForAfterDuration = moChargeForAfterDuration;
+    }
+
+    public List<RoomFacilityTimedItem> getTimedItems() {
+        return timedItems;
+    }
+
+    public void setTimedItems(List<RoomFacilityTimedItem> timedItems) {
+        this.timedItems = timedItems;
     }
 }

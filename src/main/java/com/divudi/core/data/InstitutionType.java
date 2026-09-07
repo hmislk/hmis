@@ -7,6 +7,7 @@ package com.divudi.core.data;
 public enum InstitutionType {
 
     Agency("Agency"),
+    OnlineBookingAgent("Channeling Online Booking Agent"),
     Bank("Bank"),
     Site("Site"),
     branch("Branch"),

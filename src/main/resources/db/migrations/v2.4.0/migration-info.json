@@ -1,0 +1,27 @@
+{
+  "version": "v2.4.0",
+  "description": "Performance indexes for PharmaceuticalBillItem — fixes full-table scans on pharmacy date-range queries",
+  "issue": "RMH database slowness — pharmacy retail sale and batch/stock transaction reports",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-05-12",
+  "type": "performance",
+  "tables_affected": ["pharmaceuticalbillitem", "billitem"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 5,
+  "indexes_added": [
+    "pharmaceuticalbillitem.idx_pbi_createdat_retired (CREATEDAT, RETIRED)",
+    "pharmaceuticalbillitem.idx_pbi_stock_createdat (STOCK_ID, CREATEDAT, RETIRED)",
+    "pharmaceuticalbillitem.idx_pbi_batch_createdat (ITEMBATCH_ID, CREATEDAT, RETIRED)"
+  ],
+  "indexes_dropped": [
+    "billitem.BILLITEM_BILLITEMSTATUS_idx — cardinality=1, 100% NULL across 4.86M rows, dead weight"
+  ],
+  "performance_impact": {
+    "before": "Date-range pharmacy report: full scan 7,153,035 rows",
+    "after": "Date-range pharmacy report: index range scan ~3 rows",
+    "improvement": "~2,000,000x fewer rows examined for date-range queries"
+  },
+  "tested_on": "qa4 (copy of rmh)",
+  "rollback": "rollback.sql"
+}

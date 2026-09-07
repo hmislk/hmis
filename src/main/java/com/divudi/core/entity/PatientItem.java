@@ -23,7 +23,7 @@ public class PatientItem implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Main Properties
     Long id;
     String name;
@@ -39,6 +39,7 @@ public class PatientItem implements Serializable, RetirableEntity {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
+    String comment;
     @ManyToOne
     Patient patient;
     @ManyToOne
@@ -242,6 +243,14 @@ public class PatientItem implements Serializable, RetirableEntity {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public Double getServiceValue() {

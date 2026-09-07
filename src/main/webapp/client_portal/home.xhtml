@@ -1,0 +1,246 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Client Portal - Home</title>
+
+        <!-- Fonts: Syne (display) + DM Sans (body) — same pairing as client_portal/login.xhtml -->
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+
+        <style>
+            /* ================================================
+               CLIENT PORTAL HOME  ·  Forest Health Aesthetic
+               Theme variables copied verbatim from client_portal/login.xhtml
+               Single centered column layout (not a split login layout)
+               ================================================ */
+
+            :root {
+                --forest-mid:    #{configOptionApplicationController.getColorValueByKey('Client Portal - Theme Color','#1b4332')};
+                --forest-deep:   color-mix(in srgb, var(--forest-mid) 60%, #000);
+                --forest-bright: color-mix(in srgb, var(--forest-mid) 80%, #fff);
+                --emerald:       color-mix(in hsl, var(--forest-mid), white 55%);
+                --emerald-light: color-mix(in hsl, var(--forest-mid), white 65%);
+                --cream:         color-mix(in srgb, var(--forest-mid) 5%, #fff);
+                --white:         #ffffff;
+                --text-dark:     color-mix(in srgb, var(--forest-mid) 12%, #111);
+                --text-muted:    color-mix(in srgb, var(--forest-mid) 20%, #555);
+                --border:        color-mix(in srgb, var(--forest-mid) 12%, #fff);
+                --shadow-lg:     0 24px 64px color-mix(in srgb, var(--forest-mid) 20%, transparent);
+                --radius-sm:     10px;
+            }
+
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body, html {
+                font-family: 'DM Sans', sans-serif;
+                background: var(--cream);
+                min-height: 100vh;
+                color: var(--text-dark);
+            }
+
+            /* ── PAGE WRAPPER ────────────────────────────────────── */
+            .home-wrapper {
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                padding: 2.5rem 1.25rem;
+            }
+
+            .home-column {
+                width: 100%;
+                max-width: 640px;
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            /* ── CARDS ────────────────────────────────────────────── */
+            .home-card {
+                background: var(--white);
+                border-radius: 22px;
+                padding: 2.25rem 2rem;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border);
+                animation: fadeUp 0.45s ease forwards;
+            }
+
+            @keyframes fadeUp {
+                from { opacity: 0; transform: translateY(22px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+
+            /* ── WELCOME HEADER CARD ─────────────────────────────── */
+            .welcome-avatar {
+                width: 64px; height: 64px; border-radius: 50%;
+                background: linear-gradient(135deg, var(--forest-mid), var(--emerald));
+                display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: white;
+                margin: 0 auto 1.1rem;
+                box-shadow: 0 8px 24px color-mix(in srgb, var(--forest-mid) 25%, transparent);
+            }
+            .welcome-greeting { font-size: 0.8rem; font-weight: 600; color: var(--emerald); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.35rem; text-align: center; }
+            .welcome-name { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--forest-deep); margin-bottom: 0; text-align: center; }
+
+            /* ── INSTITUTION DETAILS CARD ────────────────────────── */
+            .card-lead-icon {
+                width: 48px; height: 48px;
+                background: linear-gradient(135deg, color-mix(in srgb, var(--emerald) 20%, white), color-mix(in srgb, var(--emerald) 35%, white));
+                border-radius: 12px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.2rem; color: var(--forest-mid);
+                margin-bottom: 1rem;
+            }
+            .card-title { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--forest-deep); margin-bottom: 0.9rem; line-height: 1.2; }
+
+            .inst-detail-row { display: flex; align-items: flex-start; gap: 0.65rem; font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.65rem; }
+            .inst-detail-row:last-child { margin-bottom: 0; }
+            .inst-detail-row i { width: 18px; text-align: center; color: var(--emerald); margin-top: 0.15rem; flex-shrink: 0; }
+
+            /* ── COMING SOON PLACEHOLDER CARDS ───────────────────── */
+            .coming-soon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+            .coming-soon-tile {
+                background: color-mix(in srgb, var(--forest-mid) 6%, white);
+                border: 2px solid var(--border);
+                border-radius: 16px;
+                padding: 1.5rem 1.1rem;
+                display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.6rem;
+            }
+            .coming-soon-tile i { font-size: 1.9rem; color: var(--forest-mid); }
+            .coming-soon-tile .tile-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--forest-deep); }
+            .coming-soon-tile .tile-subtext { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+            /* ── LOGOUT BUTTON ────────────────────────────────────── */
+            .btn-verify .ui-button {
+                width: 100% !important;
+                padding: 0.85rem 1.5rem !important;
+                background: var(--cream) !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-sm) !important;
+                font-family: 'Syne', sans-serif !important;
+                font-weight: 600 !important;
+                font-size: 0.92rem !important;
+                color: var(--forest-mid) !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                min-width: unset !important;
+            }
+            .btn-verify .ui-button:hover { border-color: var(--emerald) !important; background: color-mix(in srgb, var(--emerald) 12%, white) !important; color: var(--forest-deep) !important; }
+            .btn-verify .ui-button .ui-button-text { padding: 0 !important; }
+            .btn-verify .ui-button .ui-icon { color: var(--forest-mid) !important; margin-right: 6px !important; }
+
+            /* ── NOT LOGGED IN FALLBACK ──────────────────────────── */
+            .not-logged-in-card { text-align: center; }
+            .not-logged-in-card i.big-icon { font-size: 2.5rem; color: var(--emerald); margin-bottom: 1rem; display: block; }
+            .not-logged-in-card p { font-size: 0.92rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.25rem; }
+            .not-logged-in-card a { color: var(--forest-bright); font-weight: 600; text-decoration: none; font-family: 'DM Sans', sans-serif; }
+            .not-logged-in-card a:hover { color: var(--emerald); text-decoration: underline; }
+
+            @media (max-width: 480px) {
+                .home-card { padding: 1.75rem 1.25rem; border-radius: 18px; }
+            }
+        </style>
+    </h:head>
+
+    <h:body style="margin:0; padding:0;">
+        <h:form id="form">
+        <div class="home-wrapper">
+            <div class="home-column">
+
+                <!-- ═══════════════════════════════════════════
+                     LOGGED-IN CONTENT
+                     ═══════════════════════════════════════════ -->
+                <h:panelGroup rendered="#{clientPortalSessionController.isLoggedIn()}" layout="block">
+
+                    <!-- Welcome header card -->
+                    <div class="home-card">
+                        <div class="welcome-avatar"><i class="fas fa-circle-check"/></div>
+                        <div class="welcome-greeting">Welcome</div>
+                        <div class="welcome-name">#{clientPortalSessionController.loggedInAccount.person.nameWithTitle}</div>
+                    </div>
+
+                    <!-- Institution details card -->
+                    <h:panelGroup rendered="#{clientPortalHomeController.institution != null}" layout="block" styleClass="home-card">
+                        <div class="card-lead-icon"><i class="fas fa-hospital"/></div>
+                        <div class="card-title">#{clientPortalHomeController.institution.name}</div>
+
+                        <h:panelGroup rendered="#{not empty clientPortalHomeController.institution.address}" layout="block" styleClass="inst-detail-row">
+                            <i class="fas fa-location-dot"/>
+                            <span>#{clientPortalHomeController.institution.address}</span>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{not empty clientPortalHomeController.institution.phone}" layout="block" styleClass="inst-detail-row">
+                            <i class="fas fa-phone"/>
+                            <span>#{clientPortalHomeController.institution.phone}</span>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{not empty clientPortalHomeController.institution.email}" layout="block" styleClass="inst-detail-row">
+                            <i class="fas fa-envelope"/>
+                            <span>#{clientPortalHomeController.institution.email}</span>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{not empty clientPortalHomeController.institution.web}" layout="block" styleClass="inst-detail-row">
+                            <i class="fas fa-globe"/>
+                            <span>#{clientPortalHomeController.institution.web}</span>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!-- Coming soon placeholder cards -->
+                    <div class="home-card">
+                        <div class="card-title">What's Next</div>
+                        <div class="coming-soon-grid">
+                            <div class="coming-soon-tile">
+                                <i class="fas fa-file-invoice"/>
+                                <span class="tile-title">Bills</span>
+                                <span class="tile-subtext">Coming soon</span>
+                            </div>
+                            <div class="coming-soon-tile">
+                                <i class="fas fa-calendar-check"/>
+                                <span class="tile-title">Appointments</span>
+                                <span class="tile-subtext">Coming soon</span>
+                            </div>
+                            <div class="coming-soon-tile">
+                                <i class="fas fa-chart-line"/>
+                                <span class="tile-title">Reports</span>
+                                <span class="tile-subtext">Coming soon</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Log out -->
+                    <div class="home-card btn-verify">
+                        <p:commandButton value="Log Out"
+                                          icon="fas fa-right-from-bracket"
+                                          action="#{clientPortalHomeController.logout}"
+                                          ajax="false"
+                                          title="Log out of Client Portal"/>
+                    </div>
+
+                </h:panelGroup>
+
+                <!-- ═══════════════════════════════════════════
+                     NOT-LOGGED-IN FALLBACK
+                     ═══════════════════════════════════════════ -->
+                <h:panelGroup rendered="#{!clientPortalSessionController.isLoggedIn()}" layout="block">
+                    <div class="home-card not-logged-in-card">
+                        <i class="fas fa-lock big-icon"/>
+                        <p>You're not logged in. Please log in to access your Client Portal account.</p>
+                        <h:link outcome="/client_portal/login" value="Go to Login" title="Go to Client Portal login"/>
+                    </div>
+                </h:panelGroup>
+
+            </div>
+        </div>
+        </h:form>
+    </h:body>
+</html>

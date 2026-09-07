@@ -1,0 +1,1113 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <style>
+                        @media screen {
+                            .paper {
+                                position: static !important;
+                                width: 297mm !important;
+                                zoom: 2.0;
+                            }
+                        }
+
+                        @media print {
+                            @page {
+                                size: A4 landscape !important;
+                                @bottom-right {
+                                    content: "Page " counter(page) " of " counter(pages);
+                                    font-family: Arial, sans-serif;
+                                    font-size: 8pt;
+                                }
+                            }
+
+                            body {
+                                counter-reset: page;
+                            }
+
+                            .paper {
+                                position: static !important;
+                                width: 297mm !important;
+                            }
+                        }
+
+                        @media screen, print {
+
+                            .header {
+                                line-height: 1.1;
+                                margin: 0mm !important;
+                            }
+
+                            .table-detail {
+                                width: 99%;
+                                font-size: 6pt !important;
+                                margin-top: 3mm !important;
+                                border-collapse: collapse !important;
+                                table-layout: fixed;
+                            }
+
+                            .table-summary {
+                                width: 60%;
+                                font-size: 8pt !important;
+                                margin-top: 3mm !important;
+                                border-collapse: collapse !important;
+                                table-layout: fixed;
+                            }
+
+                            th, td {
+                                border: 1pt solid #000000 !important;
+                                padding: 1pt !important;
+                                text-align: left;
+                                overflow-wrap: break-word;
+                                white-space: normal;
+                            }
+
+                            .report-header-table {
+                                border-collapse: collapse;
+                            }
+
+                            .report-header-table .label {
+                                font-weight: 600;
+                                padding-right: 5px;
+                                white-space: nowrap;
+                            }
+
+                            .report-header-table td {
+                                padding: 3px 8px;
+                                vertical-align: top;
+                            }
+
+                            .nested-table {
+                                width: 100%;
+                                font-size: 6pt !important;
+                                border-collapse: collapse !important;
+                                table-layout: fixed;
+                                margin: 0 !important;
+                            }
+                        }
+                    </style>
+
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!--  1. DETAIL REPORT                                          -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'detailReport'}">
+                        <p:panel styleClass="my-2">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="GRN Detail Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="detailRp"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/grn_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+
+                        <h:panelGroup id="detailRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="GRN Report (Detail)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6" styleClass="report-header-table"
+                                                     style="font-size:10px; width:80%;"
+                                                     columnClasses="label,value,label,value,label,value">
+
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Report Type:" styleClass="label"/>
+                                            <h:outputText value="Detail"/>
+
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.institution != null ? pharmacyController.institution.name : 'All'}"/>
+
+                                            <h:outputText value="Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.site != null ? pharmacyController.site.name : 'All'}"/>
+
+                                            <h:outputText value="Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dept != null ? pharmacyController.dept.name : 'All'}"/>
+
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.getSelectedDepartmentTypesString()}"/>
+
+                                            <h:outputText value="Payment Mode:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.paymentMethod != null ? pharmacyController.paymentMethod : 'All'}"/>
+
+                                            <h:outputText value="Supplier:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                                <!-- Detail Data Table -->
+                                 <div class="d-flex justify-content-center">
+                                     <div style="width:99%;">
+                                         <p:dataTable
+                                            id="printDetailTbl"
+                                            value="#{pharmacyController.bills}"
+                                            var="b"
+                                            rowIndexVar="n"
+                                            styleClass="table-detail">
+
+                                            <p:columnGroup type="header">
+                                                <p:row>
+                                                    <p:column headerText="Bill No"             style="width:5%;"/>
+                                                    <p:column headerText="Bill Type"           style="width:5%;"/>
+                                                    <p:column headerText="Invoice No"          style="width:4%;"/>
+                                                    <p:column headerText="Created Date"        style="width:7%;"/>
+                                                    <p:column headerText="Approved Date"       style="width:7%;"/>
+                                                    <p:column headerText="Supplier"            style="width:7%;"/>
+                                                    <p:column headerText="Institution"         style="width:7%;"/>
+                                                    <p:column headerText="Site"                style="width:6%;"/>
+                                                    <p:column headerText="Department"          style="width:6%;"/>
+                                                    <p:column headerText="PO No"               style="width:4%;"/>
+                                                    <p:column headerText="Purchase Value Cash"  style="width:5%;"/>
+                                                    <p:column headerText="Purchase Value Credit" style="width:5%;"/>
+                                                    <p:column headerText="Cost Value Cash"     style="width:5%;"/>
+                                                    <p:column headerText="Cost Value Credit"   style="width:5%;"/>
+                                                    <p:column headerText="Sale Value Cash"     style="width:5%;"/>
+                                                    <p:column headerText="Sale Value Credit"   style="width:5%;"/>
+                                                    <p:column headerText="Net Total"           style="width:5%;"/>
+                                                    <p:column headerText="Remark"              style="width:7%;"/>
+                                                </p:row>
+                                            </p:columnGroup>
+
+                                            <!-- Bill No -->
+                                            <p:column>
+                                                <h:outputText value="#{b.deptId}"/>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="Net Purchase Value"/>
+                                                    <br/>
+                                                    <h:outputText value="Net Cost Value"/>
+                                                    <br/>
+                                                    <h:outputText value="Net Sale Value"/>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Bill Type -->
+                                            <p:column>
+                                                <h:outputText value="#{b.billTypeAtomic}"/>
+                                            </p:column>
+
+                                            <!-- Invoice No -->
+                                            <p:column>
+                                                <h:outputText value="#{b.invoiceNumber}"/>
+                                                <h:outputText value="#{b.referenceBill.invoiceNumber}"/>
+                                            </p:column>
+
+                                            <!-- Created Date -->
+                                            <p:column>
+                                                <h:outputText value="#{b.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <br/>
+                                                    <h:outputText value="#{pharmacyController.totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <br/>
+                                                    <h:outputText value="#{pharmacyController.totalSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Approved Date -->
+                                            <p:column>
+                                                <h:outputText value="#{b.referenceBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Supplier -->
+                                            <p:column>
+                                                <h:outputText value="#{b.fromInstitution.name ne null ? b.fromInstitution.name : b.toInstitution.name}"/>
+                                            </p:column>
+
+                                            <!-- Institution -->
+                                            <p:column>
+                                                <h:outputText value="#{b.institution.name}"/>
+                                            </p:column>
+
+                                            <!-- Site -->
+                                            <p:column>
+                                                <h:outputText value="#{b.department.site.name}"/>
+                                            </p:column>
+
+                                            <!-- Department -->
+                                            <p:column>
+                                                <h:outputText value="#{b.department.name}"/>
+                                            </p:column>
+
+                                            <!-- PO No -->
+                                            <p:column>
+                                                <h:outputText value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND')
+                                                                       ? (b.referenceBill.referenceBill ne null ? b.referenceBill.referenceBill.deptId : '')
+                                                                       : (b.referenceBill ne null ? b.referenceBill.deptId : '')}"/>
+                                            </p:column>
+
+                                            <!-- Purchase Value Cash -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel
+                                                    value="#{b.billFinanceDetails.totalPurchaseValue}"
+                                                    rendered="#{b.paymentMethod ne 'Credit'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCashPurchaseValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Purchase Value Credit -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel
+                                                    value="#{b.billFinanceDetails.totalPurchaseValue}"
+                                                    rendered="#{b.paymentMethod eq 'Credit'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCreditPurchaseValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Cost Value Cash -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel
+                                                    value="#{b.billFinanceDetails.totalCostValue}"
+                                                    rendered="#{b.paymentMethod ne 'Credit'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCashCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Cost Value Credit -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel
+                                                    value="#{b.billFinanceDetails.totalCostValue}"
+                                                    rendered="#{b.paymentMethod eq 'Credit'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCreditCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Sale Value Cash -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel
+                                                    value="#{b.billFinanceDetails.totalRetailSaleValue}"
+                                                    rendered="#{b.paymentMethod ne 'Credit'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCashSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Sale Value Credit -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel
+                                                    value="#{b.billFinanceDetails.totalRetailSaleValue}"
+                                                    rendered="#{b.paymentMethod eq 'Credit'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCreditSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Net Total -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputLabel value="#{b.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalNetTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Remark -->
+                                            <p:column>
+                                                <h:outputLabel value="#{b.comments}"/>
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    
+                                
+
+                                <!-- Bill Items Sub-Table per Bill -->
+                                <ui:repeat value="#{pharmacyController.bills}" var="b">
+                                    <div style="margin-top:4pt; font-size:6pt; font-weight:bold;">
+                                        <h:outputText value="Bill No: #{b.deptId} — Item Details"/>
+                                    </div>
+                                    <p:dataTable
+                                        value="#{b.billItems}"
+                                        var="bi"
+                                        rowKey="#{bi.id}"
+                                        styleClass="nested-table">
+                                        <p:column headerText="Item Name"      style="width:20%;">
+                                            <h:outputText value="#{bi.item.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Qty"            style="width:6%; text-align:right;">
+                                            <h:outputText value="#{bi.billItemFinanceDetails.quantity}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Free Qty"       style="width:6%; text-align:right;">
+                                            <h:outputText value="#{bi.billItemFinanceDetails.freeQuantity}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Purchase Rate"  style="width:8%; text-align:right;">
+                                            <h:outputText value="#{bi.billItemFinanceDetails.lineGrossRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Discount Rate"  style="width:8%; text-align:right;">
+                                            <h:outputText value="#{bi.billItemFinanceDetails.lineDiscountRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Cost Rate"      style="width:8%; text-align:right;">
+                                            <h:outputText value="#{bi.billItemFinanceDetails.costRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Item MRP"       style="width:8%; text-align:right;">
+                                            <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Batch Code"     style="width:10%;">
+                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                                        </p:column>
+<!--                                        <p:column headerText="Expiry Date"    style="width:10%;">
+                                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.expiryDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            </h:outputText>
+                                        </p:column>-->
+                                        <p:column headerText="UOM"            style="width:6%;">
+                                            <h:outputText value="#{bi.item.measurementUnit.name}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </ui:repeat>
+                                 </div>
+                                 </div>
+
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!--  2. RETURN REPORT                                          -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'returnReport'}">
+                        <p:panel styleClass="my-2">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="GRN Return Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="returnRp"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/grn_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+
+                        <h:panelGroup id="returnRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="GRN Report (Return)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6" styleClass="report-header-table"
+                                                     style="font-size:10px; width:80%;"
+                                                     columnClasses="label,value,label,value,label,value">
+
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Report Type:" styleClass="label"/>
+                                            <h:outputText value="Return"/>
+
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.institution != null ? pharmacyController.institution.name : 'All'}"/>
+
+                                            <h:outputText value="Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.site != null ? pharmacyController.site.name : 'All'}"/>
+
+                                            <h:outputText value="Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dept != null ? pharmacyController.dept.name : 'All'}"/>
+
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.getSelectedDepartmentTypesString()}"/>
+
+                                            <h:outputText value="Payment Mode:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.paymentMethod != null ? pharmacyController.paymentMethod : 'All'}"/>
+
+                                            <h:outputText value="Supplier:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                                <!-- Return Data Table -->
+                                <div class="d-flex justify-content-center">
+                                    <div style="width:99%;">
+                                         <p:dataTable
+                                            id="printReturnTbl"
+                                            value="#{pharmacyController.bills}"
+                                            var="r"
+                                            rowIndexVar="n"
+                                            styleClass="table-detail">
+
+                                            <p:columnGroup type="header">
+                                                <p:row>
+                                                    <p:column headerText="Purchase Return No"    style="width:7%;"/>
+                                                    <p:column headerText="GRN No"               style="width:6%;"/>
+                                                    <p:column headerText="GRN Invoice No"       style="width:6%;"/>
+                                                    <p:column headerText="GRN Date"             style="width:9%;"/>
+                                                    <p:column headerText="Reference Institution" style="width:9%;"/>
+                                                    <p:column headerText="Created At"           style="width:9%;"/>
+                                                    <p:column headerText="Approved At"          style="width:9%;"/>
+                                                    <p:column headerText="Supplier"             style="width:8%;"/>
+                                                    <p:column headerText="Purchase Value"       style="width:7%;"/>
+                                                    <p:column headerText="Cost Value"           style="width:7%;"/>
+                                                    <p:column headerText="Sale Value"           style="width:7%;"/>
+                                                </p:row>
+                                            </p:columnGroup>
+
+                                            <!-- Purchase Return No -->
+                                            <p:column>
+                                                <h:outputText value="#{r.deptId}"/>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="Total"/>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- GRN No -->
+                                            <p:column>
+                                                <h:outputText value="#{r.referenceBill.deptId}"/>
+                                            </p:column>
+
+                                            <!-- GRN Invoice No -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{r.referenceBill.invoiceNumber}"/>
+                                            </p:column>
+
+                                            <!-- GRN Date -->
+                                            <p:column>
+                                                <h:outputText value="#{r.referenceBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Reference Institution -->
+                                            <p:column>
+                                                <h:outputText value="#{r.referenceBill.referenceInstitution.name}"/>
+                                            </p:column>
+
+                                            <!-- Created At -->
+                                            <p:column>
+                                                <h:outputText value="#{r.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Approved At -->
+                                            <p:column>
+                                                <h:outputText value="#{r.referenceBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Supplier -->
+                                            <p:column>
+                                                <h:outputText value="#{r.toInstitution.name}"/>
+                                            </p:column>
+
+                                            <!-- Purchase Value -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{r.billFinanceDetails.totalPurchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Cost Value -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{r.billFinanceDetails.totalCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Sale Value -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{r.billFinanceDetails.totalRetailSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                        </p:dataTable>
+
+                                        <!-- Return Bill Items Sub-Table per Bill -->
+                                        <ui:repeat value="#{pharmacyController.bills}" var="r">
+                                            <div style="margin-top:4pt; font-size:6pt; font-weight:bold;">
+                                                <h:outputText value="Return No: #{r.deptId} — Item Details"/>
+                                            </div>
+                                            <p:dataTable
+                                                value="#{r.billItems}"
+                                                var="bi"
+                                                rowKey="#{bi.id}"
+                                                styleClass="nested-table">
+                                                <p:column headerText="Item Name"      style="width:22%;">
+                                                    <h:outputText value="#{bi.item.name}"/>
+                                                </p:column>
+                                                <p:column headerText="Qty"            style="width:6%; text-align:right;">
+                                                    <h:outputText value="#{bi.pharmaceuticalBillItem.qty}"/>
+                                                </p:column>
+                                                <p:column headerText="Free Qty"       style="width:6%; text-align:right;">
+                                                    <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}"/>
+                                                </p:column>
+                                                <p:column headerText="Purchase Rate"  style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Cost Rate"      style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{bi.billItemFinanceDetails.lineCostRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Discount Rate"  style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{bi.billItemFinanceDetails.lineDiscountRate ne null ?
+                                                                            bi.billItemFinanceDetails.lineDiscountRate :
+                                                                            bi.referanceBillItem.billItemFinanceDetails.lineDiscountRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Item MRP"       style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Batch Code"     style="width:12%;">
+                                                    <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                                                </p:column>
+                                                <p:column headerText="UOM"            style="width:8%;">
+                                                    <h:outputText value="#{bi.item.measurementUnit.name}"/>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                               
+
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!--  3. SUMMARY REPORT                                         -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'summeryReport'}">
+                        <p:panel styleClass="my-2">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="GRN Summary Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="summaryRp"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/grn_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+
+                        <h:panelGroup id="summaryRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="GRN Report (Summary)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6" styleClass="report-header-table"
+                                                     style="font-size:10px; width:80%;"
+                                                     columnClasses="label,value,label,value,label,value">
+
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Report Type:" styleClass="label"/>
+                                            <h:outputText value="Summary"/>
+
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.institution != null ? pharmacyController.institution.name : 'All'}"/>
+
+                                            <h:outputText value="Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.site != null ? pharmacyController.site.name : 'All'}"/>
+
+                                            <h:outputText value="Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dept != null ? pharmacyController.dept.name : 'All'}"/>
+
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.getSelectedDepartmentTypesString()}"/>
+
+                                            <h:outputText value="Payment Mode:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.paymentMethod != null ? pharmacyController.paymentMethod : 'All'}"/>
+
+                                            <h:outputText value="Supplier:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                                <!-- Summary Data Table -->
+                                <div class="d-flex justify-content-center">
+                                    <div style="width:99%;">
+                                        <p:dataTable
+                                    id="printSummaryTbl"
+                                    value="#{pharmacyController.data}"
+                                    var="s"
+                                    rowIndexVar="n"
+                                    style="width: 100%"
+                                    styleClass="table-summary">
+
+                                    <p:column width="12em">
+                                        <h:outputLabel value="#{s.string}"/>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold; text-align: right;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Purchase Value"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{s.value}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold; text-align: right;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Sale Value"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{s.value2}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold; text-align: right;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Cost Value"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{s.value3}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column style="font-weight: bold; text-align: right;">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Net Total"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{s.value4}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                </p:dataTable>
+                                    </div>
+                                </div>
+                                
+
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <!--  4. CANCELLATION REPORT                                    -->
+                    <!-- ═══════════════════════════════════════════════════════════ -->
+                    <h:panelGroup rendered="#{pharmacyController.reportType eq 'cancellationReport'}">
+                        <p:panel styleClass="my-2">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <h:outputText value="GRN Cancellation Report" class="mt-2"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            style="width: 150px"
+                                            ajax="false"
+                                            value="Print">
+                                            <p:printer target="cancellationRp"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to Report"
+                                            style="width: 200px"
+                                            icon="fa fa-arrow-left"
+                                            class="ui-button-warning"
+                                            action="/reports/inventoryReports/grn_report?faces-redirect=true">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                        </p:panel>
+
+                        <h:panelGroup id="cancellationRp" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 18px;">
+                                        <h:outputText value="#{sessionController.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 16px;">
+                                        <h:outputText value="GRN Report (Cancellation)"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center m-3">
+                                        <h:panelGrid columns="6" styleClass="report-header-table"
+                                                     style="font-size:10px; width:80%;"
+                                                     columnClasses="label,value,label,value,label,value">
+
+                                            <!-- Row 1 -->
+                                            <h:outputText value="From Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="To Date:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.toDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+
+                                            <h:outputText value="Report Type:" styleClass="label"/>
+                                            <h:outputText value="Cancellation"/>
+
+                                            <!-- Row 2 -->
+                                            <h:outputText value="Institution:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.institution != null ? pharmacyController.institution.name : 'All'}"/>
+
+                                            <h:outputText value="Site:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.site != null ? pharmacyController.site.name : 'All'}"/>
+
+                                            <h:outputText value="Department:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.dept != null ? pharmacyController.dept.name : 'All'}"/>
+
+                                            <!-- Row 3 -->
+                                            <h:outputText value="Department Type:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.getSelectedDepartmentTypesString()}"/>
+
+                                            <h:outputText value="Payment Mode:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.paymentMethod != null ? pharmacyController.paymentMethod : 'All'}"/>
+
+                                            <h:outputText value="Supplier:" styleClass="label"/>
+                                            <h:outputText value="#{pharmacyController.fromInstitution != null ? pharmacyController.fromInstitution.name : 'All'}"/>
+
+                                        </h:panelGrid>
+                                    </div>
+                                </div>
+
+                                <!-- Cancellation Data Table (with inline item sub-table) -->
+                                <div class="d-flex justify-content-center">
+                                    <div style="width:99%;">
+                                        <p:dataTable
+                                            id="printCancellationTbl"
+                                            value="#{pharmacyController.bills}"
+                                            var="cb"
+                                            rowIndexVar="n"
+                                            styleClass="table-detail">
+
+                                            <p:columnGroup type="header">
+                                                <p:row>
+                                                    <p:column headerText="GRN Cancelled No"    style="width:7%;"/>
+                                                    <p:column headerText="GRN No"             style="width:6%;"/>
+                                                    <p:column headerText="GRN Invoice No"     style="width:6%;"/>
+                                                    <p:column headerText="GRN Date"           style="width:9%;"/>
+                                                    <p:column headerText="Reference Institution" style="width:9%;"/>
+                                                    <p:column headerText="Created At"         style="width:9%;"/>
+                                                    <p:column headerText="Approved At"        style="width:9%;"/>
+                                                    <p:column headerText="Supplier"           style="width:8%;"/>
+                                                    <p:column headerText="Purchase Value"     style="width:7%;"/>
+                                                    <p:column headerText="Cost Value"         style="width:7%;"/>
+                                                    <p:column headerText="Sale Value"         style="width:7%;"/>
+                                                </p:row>
+                                            </p:columnGroup>
+
+                                            <!-- GRN Cancelled No -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.deptId}"/>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="Total"/>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- GRN No -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.referenceBill.deptId}"/>
+                                            </p:column>
+
+                                            <!-- GRN Invoice No -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{cb.invoiceNumber}"/>
+                                            </p:column>
+
+                                            <!-- GRN Date -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.referenceBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Reference Institution -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.referenceInstitution.name}"/>
+                                            </p:column>
+
+                                            <!-- Created At -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Approved At -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.referenceBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <!-- Supplier -->
+                                            <p:column>
+                                                <h:outputText value="#{cb.fromInstitution.name}"/>
+                                            </p:column>
+
+                                            <!-- Purchase Value -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{cb.billFinanceDetails.lineNetTotal gt 0
+                                                                       ? -1 * cb.billFinanceDetails.lineNetTotal
+                                                                       : cb.billFinanceDetails.lineNetTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalPurchase}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Cost Value -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{cb.billFinanceDetails.totalCostValue gt 0
+                                                                       ? -1 * cb.billFinanceDetails.totalCostValue
+                                                                       : cb.billFinanceDetails.totalCostValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalCostValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- Sale Value -->
+                                            <p:column style="text-align: right;">
+                                                <h:outputText value="#{cb.billFinanceDetails.totalRetailSaleValue gt 0
+                                                                       ? -1 * cb.billFinanceDetails.totalRetailSaleValue
+                                                                       : cb.billFinanceDetails.totalRetailSaleValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{pharmacyController.totalSaleValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                        </p:dataTable>
+
+                                        <!-- Cancellation Bill Items Sub-Table per Bill -->
+                                        <ui:repeat value="#{pharmacyController.bills}" var="cb">
+                                            <div style="margin-top:4pt; font-size:6pt; font-weight:bold;">
+                                                <h:outputText value="Cancelled GRN No: #{cb.deptId} — Item Details"/>
+                                            </div>
+                                            <p:dataTable
+                                                value="#{cb.billItems}"
+                                                var="cbi"
+                                                rowKey="#{cbi.id}"
+                                                styleClass="nested-table">
+                                                <p:column headerText="Item Name"      style="width:22%;">
+                                                    <h:outputText value="#{cbi.item.name}"/>
+                                                </p:column>
+                                                <p:column headerText="Qty"            style="width:6%; text-align:right;">
+                                                    <h:outputText value="#{cbi.pharmaceuticalBillItem.qty}"/>
+                                                </p:column>
+                                                <p:column headerText="Free Qty"       style="width:6%; text-align:right;">
+                                                    <h:outputText value="#{cbi.pharmaceuticalBillItem.freeQty}"/>
+                                                </p:column>
+                                                <p:column headerText="Purchase Rate"  style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{cbi.pharmaceuticalBillItem.purchaseRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Cost Rate"      style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{cbi.billItemFinanceDetails.lineCostRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Discount Rate"  style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{cbi.billItemFinanceDetails.lineDiscountRate ne null ?
+                                                                            cbi.billItemFinanceDetails.lineDiscountRate :
+                                                                            cbi.referanceBillItem.billItemFinanceDetails.lineDiscountRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Item MRP"       style="width:9%; text-align:right;">
+                                                    <h:outputText value="#{cbi.pharmaceuticalBillItem.retailRate}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Batch Code"     style="width:12%;">
+                                                    <h:outputText value="#{cbi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                                                </p:column>
+                                                <p:column headerText="UOM"            style="width:8%;">
+                                                    <h:outputText value="#{cbi.item.measurementUnit.name}"/>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                                
+
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

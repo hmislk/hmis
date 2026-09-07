@@ -19,7 +19,7 @@ public class ItemMapping implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -44,6 +44,16 @@ public class ItemMapping implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date retiredAt;
+
+    /**
+     * Distinguishes a mapping created specifically for the outside-charge
+     * item filter (Add Outside Charges, Mode B / issue #23250) from any other
+     * general-purpose use of this table (OPD/Optician/Collecting Centre item
+     * catalogs, etc.). Existing generic institution-scoped queries filter
+     * this out so an outside-charge-only mapping does not leak into
+     * unrelated features that also key off {@link #institution}.
+     */
+    private boolean outsideChargeMapping;
 
     public Long getId() {
         return id;
@@ -142,6 +152,14 @@ public class ItemMapping implements Serializable {
 
     public void setRetiredAt(Date retiredAt) {
         this.retiredAt = retiredAt;
+    }
+
+    public boolean isOutsideChargeMapping() {
+        return outsideChargeMapping;
+    }
+
+    public void setOutsideChargeMapping(boolean outsideChargeMapping) {
+        this.outsideChargeMapping = outsideChargeMapping;
     }
 
 }

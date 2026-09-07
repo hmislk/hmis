@@ -185,7 +185,7 @@ public class MembershipSchemeController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         recreateModel();
         fillItems();
@@ -234,6 +234,20 @@ public class MembershipSchemeController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         items = getFacade().findByJpql(j, m);
+    }
+
+    public List<MembershipScheme> getPersonalSchemes() {
+        String j = "select s from MembershipScheme s where s.retired=:ret and s.institution is null order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(j, m);
+    }
+
+    public List<MembershipScheme> getCorporateSchemes() {
+        String j = "select s from MembershipScheme s where s.retired=:ret and s.institution is not null order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(j, m);
     }
 
     public Institution getLastInstitution() {

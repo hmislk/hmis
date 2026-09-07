@@ -1,0 +1,46 @@
+{
+    "version": "v2.1.14",
+    "description": "Backfill approveAt field for historical pharmacy return bills to enable QB reporting",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 5,
+    "requiresDowntime": false,
+    "affectedTables": ["BILL"],
+    "affectedModules": ["Pharmacy", "QB Reports", "GRN Returns", "Direct Purchase Returns"],
+    "preRequisites": [
+        "Database backup completed",
+        "Ensure no heavy transactions on BILL table during migration",
+        "This migration populates approveAt for existing return bills that were missing this field"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Diagnostic - Count bills missing approveAt by bill type"
+        },
+        {
+            "description": "Backfill approveAt for PHARMACY_GRN_RETURN bills using completedAt"
+        },
+        {
+            "description": "Backfill approveAt for PHARMACY_DIRECT_PURCHASE_REFUND bills using completedAt"
+        },
+        {
+            "description": "Backfill approveAt for PHARMACY_RETURN_WITHOUT_TREASING bills using createdAt"
+        },
+        {
+            "description": "Verification - Confirm all return bills now have approveAt populated"
+        }
+    ],
+    "expectedOutcome": {
+        "primaryFix": "Historical pharmacy return bills will have approveAt field populated",
+        "impact": "QB Report Type 9 (Pharmacy GRN and Purchase Bills with Expenses) will now include historical return transactions",
+        "affectedBillTypes": [
+            "PHARMACY_GRN_RETURN",
+            "PHARMACY_DIRECT_PURCHASE_REFUND",
+            "PHARMACY_RETURN_WITHOUT_TREASING"
+        ]
+    },
+    "rollbackNotes": [
+        "Rollback script provided to reset approveAt to NULL for affected bills",
+        "Rolling back will cause historical returns to not appear in QB reports again",
+        "Future returns created after code fix will still have approveAt set correctly"
+    ],
+    "relatedIssue": "GRN Returns not appearing in QB Report - Pharmacy GRN and Purchase Bills with Expenses"
+}

@@ -64,7 +64,7 @@ public class HrmVariablesController implements Serializable {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
-
+        current = null;
     }
 
     public HrmVariablesFacade getEjbFacade() {
@@ -95,13 +95,12 @@ public class HrmVariablesController implements Serializable {
     }
 
     public HrmVariables getCurrent() {
-        fetchHrmVariable();
-
         if (current == null) {
-            current = new HrmVariables();
-
-            //   Date dt=new Date();
-            current.setName("HrmVariable");
+            fetchHrmVariable();
+            if (current == null) {
+                current = new HrmVariables();
+                current.setName("HrmVariable");
+            }
         }
         return current;
     }
@@ -119,7 +118,7 @@ public class HrmVariablesController implements Serializable {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
 
         current = null;

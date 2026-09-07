@@ -23,6 +23,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.data.dto.PharmacyBinCardDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
@@ -54,6 +55,7 @@ public class PharmacyErrorChecking implements Serializable {
 
     List<BillItem> billItems;
     private List<StockHistory> stockHistories;
+    private List<PharmacyBinCardDTO> binCardEntries;
     //private ReportTimerController reportTimerController;
     Date fromDate;
     Date toDate;
@@ -66,6 +68,9 @@ public class PharmacyErrorChecking implements Serializable {
     double currentStock;
     double currentSaleValue;
     double currentPurchaseValue;
+    private double binCardTotalIn;
+    private double binCardTotalOut;
+    private boolean includeArchived = false;
     @Named
     @Inject
     private SessionController sessionController;
@@ -106,25 +111,84 @@ public class PharmacyErrorChecking implements Serializable {
 
     public void processBinCard() {
         reportTimerController.trackReportExecution(() -> {
-            stockHistories = stockHistoryController.findStockHistories(fromDate, toDate, null, department, item);
+            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item);
 
             if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Bin Card - Hide Adjustment Bills in Bin Card",true)) {
                 List<BillType> bts = new ArrayList<>();
                 bts.add(BillType.PharmacyAdjustmentSaleRate);
 
-                Iterator<StockHistory> iterator = stockHistories.iterator();
+                Iterator<PharmacyBinCardDTO> iterator = binCardEntries.iterator();
                 while (iterator.hasNext()) {
-                    StockHistory sh = iterator.next();
-                    if (sh.getPbItem() != null
-                            && sh.getPbItem().getBillItem() != null
-                            && sh.getPbItem().getBillItem().getBill() != null
-                            && bts.contains(sh.getPbItem().getBillItem().getBill().getBillType())) {
-                        iterator.remove(); // modifies the original list safely
+                    PharmacyBinCardDTO dto = iterator.next();
+                    if (dto.getBillType() != null && bts.contains(dto.getBillType())) {
+                        iterator.remove();
                     }
                 }
             }
 
         }, PharmacyReports.PHARMACY_BIN_CARD, sessionController.getLoggedUser());
+    }
+
+    /**
+     * DTO-based version of processBinCard for better performance and future compatibility.
+     * This method can be used when merging hotfix into development.
+     */
+    public void processBinCardWithDTO() {
+        reportTimerController.trackReportExecution(() -> {
+            binCardEntries = stockHistoryController.findBinCardDTOs(fromDate, toDate, null, department, item, includeArchived);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Bin Card - Hide Adjustment Bills in Bin Card", true)) {
+                List<BillType> bts = new ArrayList<>();
+                bts.add(BillType.PharmacyAdjustmentSaleRate);
+
+                Iterator<PharmacyBinCardDTO> iterator = binCardEntries.iterator();
+                while (iterator.hasNext()) {
+                    PharmacyBinCardDTO dto = iterator.next();
+                    if (dto.getBillType() != null && bts.contains(dto.getBillType())) {
+                        iterator.remove();
+                    }
+                }
+            }
+
+            calculateBinCardTotals();
+
+        }, PharmacyReports.PHARMACY_BIN_CARD, sessionController.getLoggedUser());
+    }
+
+    private void calculateBinCardTotals() {
+        binCardTotalIn = 0;
+        binCardTotalOut = 0;
+        if (binCardEntries != null) {
+            for (PharmacyBinCardDTO dto : binCardEntries) {
+                if(List.of(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT, 
+                        BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
+                        BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT).contains(dto.getBillTypeAtomic())){
+                    continue;
+                }
+                double qtyPlusFree = dto.getTransQtyPlusFreeQty();
+                if (qtyPlusFree > 0) {
+                    binCardTotalIn += qtyPlusFree;
+                } else if (qtyPlusFree < 0) {
+                    binCardTotalOut += Math.abs(qtyPlusFree);
+                }
+            }
+        }
+    }
+
+    /**
+     * Process Item-only Bin Card using DTOs.
+     * Reuses the same data source, and the view limits to item-level fields.
+     */
+    public void processItemBinCardWithDTO() {
+        processBinCardWithDTO();
+    }
+
+    /**
+     * Process Batch-only Bin Card using DTOs.
+     * Reuses the same data source, and the view focuses on batch-level fields.
+     */
+    public void processBatchBinCardWithDTO() {
+        processBinCardWithDTO();
     }
 
     public void listPharmacyMovementByDateRange() {
@@ -149,7 +213,7 @@ public class PharmacyErrorChecking implements Serializable {
     private PharmacyBean pharmacyBean;
 
     public double getItemStock() {
-        return getPharmacyBean().getStockQty(item, department);
+        return getPharmacyBean().getItemStockQty(item, department);
     }
 
     public void calculateTotals2() {
@@ -538,5 +602,47 @@ public class PharmacyErrorChecking implements Serializable {
     public void setStockHistories(List<StockHistory> stockHistories) {
         this.stockHistories = stockHistories;
     }
+
+    public List<PharmacyBinCardDTO> getBinCardEntries() {
+        return binCardEntries;
+    }
+
+    public void setBinCardEntries(List<PharmacyBinCardDTO> binCardEntries) {
+        this.binCardEntries = binCardEntries;
+    }
+    
+    /**
+     * Generates a CSS class name for batch color coding.
+     * Returns a consistent color class for the same batch number.
+     * 
+     * @param batchNo the batch number
+     * @return CSS class name for coloring the row
+     */
+    public String getBatchColorClass(String batchNo) {
+        if (batchNo == null || batchNo.trim().isEmpty()) {
+            return "";
+        }
+        
+        // Use hash code to get consistent color for same batch
+        int hash = Math.abs(batchNo.hashCode());
+        int colorIndex = hash % 10; // Use 10 different colors
+        
+        return "batch-color-" + colorIndex;
+    }
+
+    public double getBinCardTotalIn() {
+        return binCardTotalIn;
+    }
+
+    public double getBinCardTotalOut() {
+        return binCardTotalOut;
+    }
+
+    public double getBinCardNetTotal() {
+        return binCardTotalIn - binCardTotalOut;
+    }
+
+    public boolean isIncludeArchived() { return includeArchived; }
+    public void setIncludeArchived(boolean includeArchived) { this.includeArchived = includeArchived; }
 
 }

@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+    </cc:interface>
+
+    <cc:implementation>
+
+        <div style="width: 210mm; padding: 20mm; font-family: Arial, sans-serif;">
+
+            <div style="text-align: center; font-size: 24px; font-weight: bold; padding: 15px; border-bottom: 3px solid #000;">
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Header Text')}" escape="false"></h:outputText>
+            </div>
+
+            <div style="text-align: center; font-size: 20px; font-weight: bold; padding: 10px; color: #dc3545;">
+                <h:outputLabel value="Float Transfer Cancellation Note"/>
+                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}" style="color: red;"/>
+            </div>
+
+            <hr style="border-top: 2px solid #dc3545;"/>
+
+            <div style="padding: 15px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: bold; padding: 8px;">Cancellation Bill ID:</td>
+                        <td style="width: 25%; padding: 8px;"><h:outputLabel value="#{cc.attrs.bill.deptId}"></h:outputLabel></td>
+                        <td style="width: 25%; font-weight: bold; padding: 8px;">Cancelled At:</td>
+                        <td style="width: 25%; padding: 8px;">
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 8px;">Original Bill ID:</td>
+                        <td style="padding: 8px;"><h:outputLabel value="#{cc.attrs.bill.billedBill.deptId}"></h:outputLabel></td>
+                        <td style="font-weight: bold; padding: 8px;">Original Date:</td>
+                        <td style="padding: 8px;">
+                            <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 8px;">From:</td>
+                        <td style="padding: 8px;"><h:outputLabel value="#{cc.attrs.bill.fromWebUser.name}"></h:outputLabel></td>
+                        <td style="font-weight: bold; padding: 8px;">To:</td>
+                        <td style="padding: 8px;"><h:outputLabel value="#{cc.attrs.bill.toWebUser.webUserPerson.nameWithTitle}"></h:outputLabel></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 8px;">Cancelled By:</td>
+                        <td colspan="3" style="padding: 8px;"><h:outputLabel value="#{cc.attrs.bill.creater.name}"></h:outputLabel></td>
+                    </tr>
+                </table>
+            </div>
+
+            <hr style="border-top: 1px solid #000;"/>
+
+            <div style="padding: 15px;">
+                <h3 style="text-align: center; font-weight: bold; margin-bottom: 15px;">Payment Details (Reversed)</h3>
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+                    <tr style="background: #f2f2f2;">
+                        <th style="padding: 12px; text-align: left; border: 1px solid #000;">Payment Method</th>
+                        <th style="padding: 12px; text-align: left; border: 1px solid #000;">Details</th>
+                        <th style="padding: 12px; text-align: right; border: 1px solid #000;">Amount</th>
+                    </tr>
+                    <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ccc;"><h:outputLabel value="#{bip.paymentMethod}"></h:outputLabel></td>
+                            <td style="padding: 10px; border: 1px solid #ccc;">
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cash'}">
+                                    <ui:repeat value="#{bip.humanReadableDenominations}" var="denomination">
+                                        <h:outputText value="#{denomination}"/><br/>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{bip.bank.name} - #{bip.chequeRefNo} " />
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Card'}">
+                                    <h:outputText value="Card Ref: #{bip.creditCardRefNo} - #{bip.institution.name} " />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'ewallet'}">
+                                    <h:outputText value="eWallet: #{bip.chequeRefNo} - #{bip.institution.name} " />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Slip'}">
+                                    <h:outputText value="Bank: #{bip.bank.name} - #{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </td>
+                            <td style="padding: 10px; text-align: right; border: 1px solid #ccc;">
+                                <h:outputLabel value="#{bip.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                    <tr style="background: #f2f2f2; font-weight: bold;">
+                        <td colspan="2" style="padding: 12px; text-align: right; border: 1px solid #000;">Total Amount Reversed:</td>
+                        <td style="padding: 12px; text-align: right; border: 1px solid #000;">
+                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="padding: 15px; background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; margin: 15px 0;">
+                <h:outputText value="Cancellation Reason: " style="font-weight: bold; font-size: 16px;"/>
+                <h:outputText value="#{cc.attrs.bill.comments}" style="font-size: 14px;"/>
+            </div>
+
+            <hr style="border-top: 1px solid #000;"/>
+
+            <div style="margin-top: 40px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 50%; text-align: center; padding-top: 30px;">
+                            <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto;"></div>
+                            <div style="margin-top: 5px;">Cancelled By Signature</div>
+                        </td>
+                        <td style="width: 50%; text-align: center; padding-top: 30px;">
+                            <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto;"></div>
+                            <div style="margin-top: 5px;">Authorized Signature</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="text-align: center; font-size: 12px; padding: 15px; color: gray; margin-top: 20px;">
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Transfer Note Footer Text')}" escape="false"></h:outputText>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

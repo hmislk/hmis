@@ -1,139 +1,296 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                >
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
-        <h:form>
-            <p:panel header="Entered Shift Report">
 
-                <h:panelGrid columns="5">
-                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{shiftController.createShiftListReport()}"/>
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
-                        <p:printer target="datatable"  />
-                    </p:commandButton>
+        <h:form styleClass="shift-entered-form">
 
-                    <p:commandButton actionListener="#{shiftController.createShiftListReport()}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                        <p:dataExporter type="xlsx" target="tbl1" fileName="Shift_entered_report"  />
-                    </p:commandButton>
+            <h:outputStylesheet>
+                .shift-entered-form {
+                    padding: 2rem 1.75rem;
+                }
 
-                </h:panelGrid>
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
 
-                <h:outputLabel value="Show Only without Hide-Shift"/>
-                <p:selectBooleanCheckbox value="#{shiftController.checked}"/>
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
 
-                <p:panel id="datatable" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl1" value="#{shiftController.shiftList}" var="p">
-                        <f:facet name="header">
-                            <h:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
-                            <h:outputLabel value="Entered Shift Report"/>
-                            <br/>
-                        </f:facet>
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
 
-                        <p:column headerText="Roster Name" filterBy="#{p.roster.name}" sortBy="#{p.roster.name}">
-                            <h:outputLabel value="#{p.roster.name}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Roster Name"  />
-                            </f:facet>
-                        </p:column>
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
 
-                        <p:column headerText="Shift Name." filterBy="#{p.name}" sortBy="#{p.name}">
-                            <h:outputLabel value="#{p.name}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Shift Name."  />
-                            </f:facet>
-                        </p:column>
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
 
-                        <p:column headerText="Day Type">
-                            <h:outputLabel value="#{p.dayType}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Day Type"  />
-                            </f:facet>
-                        </p:column>
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
 
-                        <p:column headerText="Starting Time">
-                            <h:outputLabel value="#{p.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Starting Time"  />
-                            </f:facet>
-                        </p:column>
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
 
-                        <p:column headerText="End Time">
-                            <h:outputLabel value="#{p.endingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
-                            </h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="End Time"  />
-                            </f:facet>
-                        </p:column>
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
 
-                        <p:column headerText="Leave HourFull">
-                            <h:outputLabel value="#{p.leaveHourFull}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Leave HourFull"  />
-                            </f:facet>
-                        </p:column>
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
 
-                        <p:column headerText="Leave HourHalf">
-                            <h:outputLabel value="#{p.leaveHourHalf}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Leave HourHalf"  />
-                            </f:facet>
-                        </p:column>
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
 
-                        <p:column headerText="Duration Hour">
-                            <h:outputLabel value="#{p.durationHour}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Duration Hour"  />
-                            </f:facet>
-                        </p:column>
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
 
-                        <p:column headerText="Previous Shift">
-                            <h:outputLabel value="#{p.previousShift.name}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Previous Shift"  />
-                            </f:facet>
-                        </p:column>
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
 
-                        <p:column headerText="Next Shift">
-                            <h:outputLabel value="#{p.nextShift.name}"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="Next Shift"  />
-                            </f:facet>
-                        </p:column>
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
 
-                        <p:column headerText="First/Last">
-                            <h:outputLabel rendered="#{p.firstShift}" value="First Shift"></h:outputLabel>
-                            <h:outputLabel rendered="#{p.lastShift}" value="Last Shift"></h:outputLabel>
-                            <f:facet name="header">
-                                <h:outputLabel value="First/Last"  />
-                            </f:facet>
-                        </p:column>
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
 
-                        <!--                        <p:column headerText="Created Date">
-                                                    <h:outputLabel value="#{p.createdAt}"></h:outputLabel>
-                                                </p:column>
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
 
-                                                <p:column headerText="Ceated By">
-                                                    <h:outputLabel value="#{p.creater.webUserPerson.nameWithTitle}"></h:outputLabel>
-                                                </p:column>-->
-                        <f:facet name="footer">
-                            <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                            <p:outputLabel value="Print At : " />
-                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
+                .shift-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .shift-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .shift-table .ui-datatable-data td,
+                .shift-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .shift-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .shift-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .shift-table .col-text {
+                    text-align: left !important;
+                }
+
+                .shift-table .col-num {
+                    text-align: right !important;
+                }
+
+                .shift-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Entered Shift Report" /></p>
+                <p class="page-subtitle"><h:outputText value="Search and review all entered shifts" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="field-group">
+                        <p:outputLabel for="chkHide" value="Show only without hide-shift" styleClass="field-label" />
+                        <p:selectBooleanCheckbox id="chkHide"
+                                                 value="#{shiftController.checked}" />
+                    </div>
+
+                    <div class="controls-actions">
+                        <p:commandButton id="btnSearch"
+                                         value="Search"
+                                         ajax="false"
+                                         action="#{shiftController.createShiftListReport()}"
+                                         icon="pi pi-search"
+                                         styleClass="btn-action" />
+                    </div>
+
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="datatable" />
+                        </p:commandButton>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         actionListener="#{shiftController.createShiftListReport()}"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Shift_entered_report" />
+                        </p:commandButton>
+                    </div>
+
+                </div>
+            </p:panel>
+
+            <p:panel id="datatable" styleClass="report-panel noBorder summeryBorder">
+
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">
+                            <h:outputText value="#{sessionController.loggedUser.institution.name}" />
+                        </span>
+                        <span class="report-title-label">
+                            <h:outputText value="Entered Shift Report" />
+                        </span>
+                    </div>
+                </f:facet>
+
+                <p:dataTable id="tbl1"
+                             value="#{shiftController.shiftList}"
+                             var="p"
+                             styleClass="shift-table">
+
+                    <p:column headerText="Roster" styleClass="col-text"
+                              filterBy="#{p.roster.name}" sortBy="#{p.roster.name}">
+                        <h:outputLabel value="#{p.roster.name}" />
+                    </p:column>
+
+                    <p:column headerText="Shift name" styleClass="col-text"
+                              filterBy="#{p.name}" sortBy="#{p.name}">
+                        <h:outputLabel value="#{p.name}" />
+                    </p:column>
+
+                    <p:column headerText="Day type" styleClass="col-text">
+                        <h:outputLabel value="#{p.dayType}" />
+                    </p:column>
+
+                    <p:column headerText="Start time" styleClass="col-text">
+                        <h:outputLabel value="#{p.startingTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo"
+                                               pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="End time" styleClass="col-text">
+                        <h:outputLabel value="#{p.endingTime}">
+                            <f:convertDateTime timeZone="Asia/Colombo"
+                                               pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Leave hrs full" styleClass="col-num">
+                        <h:outputLabel value="#{p.leaveHourFull}" />
+                    </p:column>
+
+                    <p:column headerText="Leave hrs half" styleClass="col-num">
+                        <h:outputLabel value="#{p.leaveHourHalf}" />
+                    </p:column>
+
+                    <p:column headerText="Duration (hrs)" styleClass="col-num">
+                        <h:outputLabel value="#{p.durationHour}" />
+                    </p:column>
+
+                    <p:column headerText="Previous shift" styleClass="col-text">
+                        <h:outputLabel value="#{p.previousShift.name}" />
+                    </p:column>
+
+                    <p:column headerText="Next shift" styleClass="col-text">
+                        <h:outputLabel value="#{p.nextShift.name}" />
+                    </p:column>
+
+                    <p:column headerText="First / last" styleClass="col-text">
+                        <h:outputLabel rendered="#{p.firstShift}" value="First" />
+                        <h:outputLabel rendered="#{p.lastShift}"  value="Last"  />
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                             </p:outputLabel>
-                        </f:facet>
-                    </p:dataTable>
-                </p:panel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
 
             </p:panel>
+
         </h:form>
     </ui:define>
 

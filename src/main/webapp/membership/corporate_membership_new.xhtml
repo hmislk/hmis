@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('MemberShipAdd')}">
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:form rendered="#{webUserController.hasPrivilege('MemberShipAdd')}">
+                    <p:panel class="p-1 m-1">
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa-solid fa-building" />
+                            <p:outputLabel value="Add Corporate Membership" class="m-2"/>
+                            <div style="float: right;">
+                                <p:commandButton
+                                    value="Save &amp; Manage"
+                                    action="#{patientController.saveIndividualMembershipAndNavigateToManageIndividual()}"
+                                    ajax="false"
+                                    class="ui-button-success mx-1"
+                                    icon="fas fa-save">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Save &amp; Clear for New"
+                                    action="#{patientController.saveAndClearForNewCorporateMembership()}"
+                                    class="ui-button-warning mx-1"
+                                    icon="fas fa-eraser"
+                                    ajax="false">
+                                </p:commandButton>
+                            </div>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-6">
+                                <common:patient_details
+                                    id="ccPatientDetails"
+                                    editable="true"
+                                    controller="#{patientController}"/>
+                            </div>
+                            <div class="col-6">
+                                <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                    <f:facet name="header">
+                                        <h:outputText value="Corporate Membership" />
+                                    </f:facet>
+
+                                    <p:outputLabel value="Membership Card No:" for="membershipCardNo" />
+                                    <p:inputText class="w-100"
+                                                 autocomplete="off" id="membershipCardNo"
+                                                 value="#{patientController.currentFamily.membershipCardNo}" />
+
+                                    <p:outputLabel value="Corporate Scheme:" for="membershipScheme" />
+                                    <p:selectOneMenu
+                                        id="membershipScheme"
+                                        class="w-100"
+                                        value="#{patientController.currentFamily.membershipScheme}"
+                                        filter="true"
+                                        filterMatchMode="contains">
+                                        <f:selectItem itemLabel="Select a corporate scheme" itemValue="#{null}" />
+                                        <f:selectItems
+                                            value="#{membershipSchemeController.corporateSchemes}"
+                                            var="m"
+                                            itemLabel="#{m.name} (#{m.institution.name})"
+                                            itemValue="#{m}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Institution:" for="institution" />
+                                    <p:autoComplete
+                                        id="institution"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        value="#{patientController.currentFamily.createdInstitution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ins"
+                                        itemLabel="#{ins.name}"
+                                        itemValue="#{ins}">
+                                        <p:ajax process="institution" update="department" />
+                                    </p:autoComplete>
+
+                                    <p:outputLabel value="Department:" for="department" />
+                                    <p:selectOneMenu
+                                        id="department"
+                                        class="w-100"
+                                        value="#{patientController.currentFamily.createdDepartment}">
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems
+                                            value="#{departmentController.getInstitutionDepatrments(patientController.currentFamily.createdInstitution)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Comments:" for="comments" />
+                                    <p:inputTextarea rows="4" cols="30" class="w-100" id="comments"
+                                                     value="#{patientController.currentFamily.comments}" />
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

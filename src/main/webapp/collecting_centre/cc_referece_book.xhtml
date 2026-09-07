@@ -49,9 +49,22 @@
                                     <f:convertNumber pattern="00" />
                                 </p:inputText>
 
-
-                                <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" styleClass="ui-button-warning" ajax="false" icon="pi pi-times"></p:commandButton> 
-                                <p:commandButton action="#{agentReferenceBookController.saveLabBook}" styleClass="ui-button-success" value="Save" ajax="false" icon="pi pi-save"></p:commandButton> 
+                                <p:commandButton 
+                                    action="#{agentReferenceBookController.makeNull}" 
+                                    value="Clear" 
+                                    styleClass="ui-button-warning" 
+                                    ajax="false" 
+                                    icon="pi pi-times">
+                                </p:commandButton> 
+                                
+                                <p:commandButton 
+                                    action="#{agentReferenceBookController.saveLabBook}" 
+                                    styleClass="ui-button-success" 
+                                    value="Save" 
+                                    ajax="false" 
+                                    icon="pi pi-save">
+                                </p:commandButton> 
+                                
                             </p:panelGrid>
                         </p:panel>
                     </h:panelGroup>

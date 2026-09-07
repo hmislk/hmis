@@ -53,6 +53,12 @@
                                 <p:column headerText="Name" style="padding: 6px;" >
                                     <h:outputLabel value="#{apt.name}" ></h:outputLabel>
                                 </p:column>
+                                <p:column headerText="Institution" style="padding: 6px;" >
+                                    <h:outputLabel value="#{apt.institution.name}" ></h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Department" style="padding: 6px;" >
+                                    <h:outputLabel value="#{apt.department.name}" ></h:outputLabel>
+                                </p:column>
                             </p:autoComplete> 
 
                         </div>

@@ -14,4 +14,7 @@ public enum DocumentTemplateType {
     MedicalCertificate,
     FitnessCertificate,
     Referral,
+    InpatientDiagnosisCard,
+    InpatientLetter,
+    InpatientEmail,
 }

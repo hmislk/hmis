@@ -21,5 +21,6 @@ public enum ItemType {
     Amp,
     Vmpp,
     Ampp,
+    Expense,
     Other
 }

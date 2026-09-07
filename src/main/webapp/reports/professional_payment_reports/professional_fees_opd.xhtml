@@ -10,16 +10,23 @@
 <h:body class="w-100 border">
     <ui:composition template="/reports/index.xhtml" class="w-100 border">
         <ui:define name="subcontent">
+            <h:outputStylesheet library="css" name="eight_col_filter_panel.css"/>
             <h:form class="w-100">
                 <p:panel header="OPD Professional Fees" class="w-100">
                     <div class="row">
                         <div class="col-md-12">
-                            <h:panelGrid columns="8" styleClass="w-100 form-grid"
-                                         columnClasses="label-icon-column, input-column">
-                                <h:panelGroup layout="block" styleClass="form-group">
+                            <h:panelGrid columns="8" styleClass="w-100 ui-fluid" 
+                                        style="table-layout: fixed;"
+                                        columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                            fp-col-label2,fp-col-input2,fp-col-space2,
+                                            fp-col-label3,fp-col-input3">
+
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf073;"
-                                                  styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                    <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome calendar icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="From" for="fromDate"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:calendar
                                         styleClass="w-100"
@@ -31,10 +38,12 @@
 
                                 <p:spacer width="50"/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf073;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
-                                    <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome calendar icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="To" for="toDate"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:calendar
                                         styleClass="w-100"
@@ -49,10 +58,12 @@
                                 <p:spacer width="50"/>
                                 <p:spacer width="50"/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf19c;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                    <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome building icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Institution" for="cmbIns"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbIns"
@@ -67,10 +78,12 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf3c5;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
-                                    <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome map marker icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Site" for="siteMenu"/>
+                                    </div>  
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="siteMenu"
@@ -85,10 +98,12 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf0e8;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                                    <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome sitemap icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Department" for="cmbDept"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbDept"
@@ -101,10 +116,12 @@
                                             var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText title="Category" value="&#xf02d;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome book icon -->
-                                    <h:outputLabel value="Category" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome book icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Category"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:autoComplete value="#{searchController.category}"
                                                 completeMethod="#{categoryController.completeCategory}"
@@ -117,10 +134,12 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText title="Item" value="&#xf0f6;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome box icon -->
-                                    <h:outputLabel value="Item" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome box icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Item"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:autoComplete value="#{searchController.item}"
                                                 class="w-100"
@@ -134,18 +153,22 @@
                                 <p:spacer/>
 
                                 <!-- New Doctor Field with Icon -->
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
-                                    <h:outputLabel value="MRN" for="scMRN" class="mx-3"/>
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                    <h:outputText value="&#xf0f0;" styleClass="fa"/>
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="MRN" for="scMRN"/>
+                                    </div>  
                                 </h:panelGroup>
 
                                 <p:inputText value="#{searchController.mrnNo}" class="w-100"/>
 
                                 <!-- New Speciality Field with Icon -->
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf2b9;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome user-md icon for Speciality -->
-                                    <h:outputLabel value="Speciality" for="acSpeciality" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome user-md icon for Speciality -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Speciality" for="acSpeciality"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:autoComplete id="acSpeciality"
                                                 value="#{searchController.speciality}"
@@ -155,36 +178,38 @@
                                                 itemValue="#{speciality}"
                                                 inputStyleClass="w-100"
                                                 styleClass="w-100">
-                                    <p:ajax event="itemSelect" update="scStaff"/>
+                                    <p:ajax process="acSpeciality" event="change" update="scStaff"/>
                                 </p:autoComplete>
 
                                 <p:spacer/>
 
                                 <!-- New Doctor Field with Icon -->
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
-                                    <h:outputLabel value="Doctor" for="scStaff" class="mx-3"/>
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                    <h:outputText value="&#xf0f0;" styleClass="fa"/>
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Doctor" for="scStaff"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu id="scStaff"
                                                  value="#{searchController.staff}"
                                                  filter="true"
-                                                 rendered="#{searchController.speciality ne null}"
                                                  filterMatchMode="contains"
                                                  styleClass="w-100 form-control">
                                     <f:selectItem itemLabel="Please Select" noSelectionOption="true"/>
                                     <f:selectItems
-                                            value="#{staffController.getSpecialityStaff(searchController.speciality)}"
+                                            value="#{searchController.staffListBySpeciality}"
                                             var="staff"
                                             itemLabel="#{staff.person.nameWithTitle}"
                                             itemValue="#{staff}"/>
                                 </p:selectOneMenu>
 
                                 <p:spacer/>
-                                <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf0f8;" styleClass="fa mr-2"/>
-                                    <h:outputLabel value="Inward / OPD" class="m-3"/>
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                    <h:outputText value="&#xf0f8;" styleClass="fa"/>
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Inward / OPD"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu class="w-100" value="#{searchController.visitType}">
                                     <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
@@ -193,56 +218,58 @@
 
                             </h:panelGrid>
 
-                            <p:commandButton
-                                    id="btnListAll"
-                                    class="m-1 ui-button-info"
-                                    icon="fas fa-money-check-alt"
-                                    ajax="false"
-                                    value="Professional Payments - All"
-                                    action="#{searchController.generateOpdProfessionalFees('ALL')}"/>
+                            <div class="mt-3 mb-3">
+                                <p:commandButton
+                                        id="btnListAll"
+                                        class="m-1 ui-button-info"
+                                        icon="fas fa-money-check-alt"
+                                        ajax="false"
+                                        value="Professional Payments - All"
+                                        action="#{searchController.generateOpdProfessionalFees('ALL')}"/>
 
-                            <p:commandButton
-                                    id="btnListDone"
-                                    class="m-1 ui-button-success"
-                                    icon="fas fa-check-circle"
-                                    ajax="false"
-                                    value="Professional Payments - Done"
-                                    action="#{searchController.generateOpdProfessionalFees('DONE')}"/>
+                                <p:commandButton
+                                        id="btnListDone"
+                                        class="m-1 ui-button-success"
+                                        icon="fas fa-check-circle"
+                                        ajax="false"
+                                        value="Professional Payments - Done"
+                                        action="#{searchController.generateOpdProfessionalFees('DONE')}"/>
 
-                            <p:commandButton
-                                    id="btnListDue"
-                                    class="m-1 ui-button-warning"
-                                    icon="fas fa-exclamation-circle"
-                                    ajax="false"
-                                    value="Professional Payments - Due"
-                                    action="#{searchController.generateOpdProfessionalFees('DUE')}"/>
+                                <p:commandButton
+                                        id="btnListDue"
+                                        class="m-1 ui-button-warning"
+                                        icon="fas fa-exclamation-circle"
+                                        ajax="false"
+                                        value="Professional Payments - Due"
+                                        action="#{searchController.generateOpdProfessionalFees('DUE')}"/>
 
-                            <p:commandButton
-                                    id="btnPdf"
-                                    class="m-1 ui-button-info"
-                                    ajax="false"
-                                    rendered="false"
-                                    icon="fas fa-file-pdf"
-                                    value="Export as PDF">
-                                <p:dataExporter type="pdf" target="tbl" fileName="processional_fees"/>
-                            </p:commandButton>
+                                <p:commandButton
+                                        id="btnPdf"
+                                        class="m-1 ui-button-info"
+                                        ajax="false"
+                                        rendered="false"
+                                        icon="fas fa-file-pdf"
+                                        value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="processional_fees"/>
+                                </p:commandButton>
 
-                            <p:commandButton
-                                    id="btnPrint"
-                                    class="m-1 ui-button-primary"
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    value="Print Table">
-                                <p:printer target="tbl"/>
-                            </p:commandButton>
+                                <p:commandButton
+                                        id="btnPrint"
+                                        class="m-1 ui-button-primary"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        value="Print Table">
+                                    <p:printer target="tbl"/>
+                                </p:commandButton>
 
-                            <p:commandButton
-                                    id="btnExcel"
-                                    class="m-1 ui-button-success"
-                                    icon="fas fa-file-excel"
-                                    ajax="false" value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="professional_fees"/>
-                            </p:commandButton>
+                                <p:commandButton
+                                        id="btnExcel"
+                                        class="m-1 ui-button-success"
+                                        icon="fas fa-file-excel"
+                                        ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="professional_fees"/>
+                                </p:commandButton>
+                            </div>  
                         </div>
                     </div>
 

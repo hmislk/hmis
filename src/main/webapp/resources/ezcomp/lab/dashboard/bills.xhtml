@@ -13,11 +13,11 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <h:panelGroup rendered="#{(!webUserController.hasPrivilege('DashBoardMenu') and !webUserController.hasPrivilege('DashBoardBillSearch'))}">
             <na:not_authorize />
         </h:panelGroup>
-        
+
         <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardBillSearch'))}">
             <h3><h:outputText value="BILLS" class="d-flex justify-content-center mt-4"/> </h3>
             <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
@@ -174,10 +174,26 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100"/>
+                
+                <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100" value="Priority"/>
+                    <h:panelGroup id="gppriority">
+                        <p:selectOneMenu value="#{laboratoryManagementController.priority}" class="w-100" style="max-width: 100%">
+                            <f:selectItem itemLabel="Any"></f:selectItem>
+                            <f:selectItems 
+                                value="#{enumController.priorities}" 
+                                var="pt"
+                                itemLabel="#{pt.displayName}" 
+                                itemValue="#{pt}">
+                            </f:selectItems>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGrid>
+                
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100"/>
                 <h:panelGrid columns="1" class="w-100">
+                    <h:outputLabel class="w-100"/>
                     <p:commandButton 
                         ajax="false" 
                         action="#{laboratoryManagementController.searchLabBills}"  
@@ -196,9 +212,14 @@
                 rowKey="#{b.id}"
                 paginatorPosition="bottom"
                 rows="15"
+                rowIndexVar="i"
                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                 rowsPerPageTemplate="15,25,50"
                 style="table-layout: fixed; width: 100%;">
+                
+                <p:column headerText="#" style="width: 2em; vertical-align: top;">
+                    <h:outputLabel value="#{i+1}"/>
+                </p:column>
 
                 <!-- Bill Number and Date Column -->
                 <p:column headerText="Bill No." width="16em;" style="vertical-align: top;">
@@ -212,6 +233,10 @@
                     <h:outputLabel value="#{b.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
+                    <br/>
+                    <h:panelGroup rendered="#{b.patientEncounter ne null}">
+                        <h:outputLabel style="color: #0d6efd;" value="#{b.patientEncounter.bhtNo}"/>
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->
@@ -219,16 +244,17 @@
                     <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
                     <h:outputLabel value="#{b.patient.person.nameWithTitle}" />
                     <br/>
-                    <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                    <h:outputLabel value="#{b.patient.person.mobile}" />
-                </p:column>
-
-                <p:column headerText="Age/Sex" width="13em;" style="vertical-align: top;">
+                    <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
+                    <h:outputLabel value="#{b.patient.person.ageAsString}" />
+                    <h:outputLabel value="/" class="text-center" style="width: 30px;"/>
                     <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
                     <h:outputLabel value="#{b.patient.person.sex.label}" />
                     <br/>
-                    <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
-                    <h:outputLabel value="#{b.patient.person.ageAsString}" />
+                    <h:panelGroup rendered="#{!b.patient.person.mobile.blank}">
+                        <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                        <h:outputLabel value="#{b.patient.person.mobile}" />
+                    </h:panelGroup>
+
                 </p:column>
 
                 <!-- Ordered Institution and Department Column -->
@@ -246,7 +272,7 @@
                     </h:panelGroup>
                 </p:column>
 
-                <p:column headerText="Type" width="12em;" style=" vertical-align: top;">
+                <p:column headerText="Type" width="14em;"  style=" vertical-align: top; text-align: center;">
                     <h:panelGroup rendered="#{b.ipOpOrCc == 'CC'}">
                         <h:outputLabel value="Collecting Centre (CC)" class="text-warning"/>
                     </h:panelGroup>
@@ -256,9 +282,18 @@
                     <h:panelGroup rendered="#{b.ipOpOrCc == 'OP'}">
                         <h:outputLabel value="Outpatient (OP)" class="text-primary"/>
                     </h:panelGroup>
+                    <h:panelGroup rendered="#{b.priority ne 'NORMAL'}">
+                        <br/>
+                        <div class="d-flex justify-content-center mt-2">
+                            <div style="border: 4px solid #{b.priority.priorityColor}; color: #{b.priority.priorityColor}; min-width: 150px; font-weight: 700; border-radius: 15px;" class="d-flex justify-content-center p-1 m-1" >
+                                <h:outputLabel value="#{b.priority}"/>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                    
                 </p:column>
 
-                <p:column headerText="Status" width="10em;" style="vertical-align: top;">
+                <p:column headerText="Status" width="10em;" style="vertical-align: top; text-align: center;">
                     <h:panelGroup rendered="#{b.cancelled}">
                         <div class="d-flex justify-content-center mt-1">
                             <p:badge 
@@ -291,7 +326,7 @@
                             class="ui-button-raised"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardSampleSearch'))}"
                             ajax="false"
-                            action="#{laboratoryManagementController.navigateToSamplesFromSelectedBill(b)}"
+                            action="#{laboratoryManagementController.navigateToDTOSamplesFromSelectedBill(b)}"
                             disabled="#{b.status.label eq 'Ordered'}" >
                         </p:commandButton>
                         <p:commandButton 
@@ -299,7 +334,7 @@
                             title="To Investigations" 
                             class="ui-button-warning"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardInvestigationSearch'))}"
-                            action="#{laboratoryManagementController.navigateToInvestigationsFromSelectedBill(b)}"
+                            action="#{laboratoryManagementController.navigateToDTOInvestigationsFromSelectedBill(b)}"
                             ajax="false" >
                         </p:commandButton>
                         <p:commandButton 
@@ -308,8 +343,7 @@
                             class="ui-button-danger"
                             ajax="false" 
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardPatientReportSearch'))}"
-                            disabled="#{b.status eq 'ORDERED' or b.status eq 'SAMPLE_GENERATED' or b.status eq 'SAMPLE_COLLECTED'or b.status eq 'SAMPLE_SENT'}"
-                            action="#{laboratoryManagementController.navigateToPatientReportsPrintFromSelectedBill(b)}" >
+                            action="#{laboratoryManagementController.navigateToPatientReportsPrintDTOFromSelectedBill(b)}" >
                         </p:commandButton>
                     </div>
                 </p:column>

@@ -1,0 +1,31 @@
+{
+    "version": "v2.1.11",
+    "description": "Performance optimization indexes for pharmacy module autocomplete queries",
+    "author": "Claude AI Assistant",
+    "estimatedDurationMinutes": 15,
+    "requiresDowntime": false,
+    "affectedTables": ["ITEM", "STOCK", "ITEMBATCH"],
+    "affectedModules": ["Pharmacy", "Inventory", "Sales"],
+    "preRequisites": [
+        "Database backup completed",
+        "Ensure no active long-running transactions on ITEM, STOCK, or ITEMBATCH tables",
+        "Verify sufficient disk space for index creation (approximately 50MB)"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Create index on ITEM.NAME for autocomplete search optimization"
+        },
+        {
+            "description": "Create index on ITEM.CODE for autocomplete search optimization"
+        },
+        {
+            "description": "Create composite index on STOCK table for department-stock-batch filtering"
+        },
+        {
+            "description": "Create composite index on ITEMBATCH table for item-expiry optimization"
+        },
+        {
+            "description": "Verify index creation and analyze query performance improvement"
+        }
+    ]
+}

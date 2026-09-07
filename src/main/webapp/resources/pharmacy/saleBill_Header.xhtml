@@ -53,7 +53,7 @@
                             <h:outputLabel value="Date &nbsp;&nbsp;" class="billDetails1"/>
                             <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails1" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </h:panelGrid>
                     </div>
@@ -338,7 +338,7 @@
                 </h:panelGroup>
                 <h:outputLabel value="#{sessionController.loggedPreference.pharmacyBillFooter}" ></h:outputLabel>
                 <br/>
-                <h:outputLabel style="font-size: 9px" value="Software By CareCode Solutions (Pvt) Ltd"/>
+                <h:outputLabel style="font-size: 9px" value="Powered by CareCode (Pvt) Ltd."/>
             </div>
 
 

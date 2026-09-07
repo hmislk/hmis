@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/reportLab/lab_summeries_index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Sample List" >
+                        <div class="row">
+                            <div class="col-12">
+                                <h:panelGrid columns="3" class="my-2">
+                                    <p:outputLabel value="From Date" ></p:outputLabel>
+                                    <p:spacer width="50"/>
+                                    <p:calendar value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+
+                                    <p:outputLabel value="To Date" ></p:outputLabel>
+                                     <p:spacer width="50"/>
+                                    <p:calendar value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                </h:panelGrid>
+
+                                <p:commandButton 
+                                    value="Process"  
+                                    icon="fa-solid fa-arrows-rotate"
+                                    class="ui-button-warning"
+                                    action="#{patientInvestigationController.listPatientSamplesDTO()}" 
+                                    ajax="false" >
+                                </p:commandButton>
+                                <p:commandButton ajax="false" value="Excel" icon="fa-solid fa-file-excel"
+                                                 class="mx-1 ui-button-success">
+                                    <p:dataExporter target="tbl" fileName="patient_samples" type="xlsx" ></p:dataExporter>
+                                </p:commandButton>
+                                <p:commandButton id="btnPrint" ajax="false" icon="fa-solid fa-print"
+                                                 class="mx-1 ui-button-info" value="Print" >
+                                    <p:printer target="tbl" ></p:printer>
+                                </p:commandButton>
+
+
+                            </div>
+
+                            <div class="col-12">
+                                <p:dataTable 
+                                    id="tbl" 
+                                    value="#{patientInvestigationController.sampleDTOList}" 
+                                    var="s" 
+                                    rowKey="#{s.sampleId}" 
+                                    rowIndexVar="n" 
+                                    rows="20"
+                                    paginator="true" 
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                    rowsPerPageTemplate="20,50,100,500" 
+                                    class="my-2 mt-3 w-100">
+                                    
+                                    <p:column headerText="No." width="20">
+                                        <p:outputLabel value="#{n+1}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column width="90" headerText="ID" >
+                                        <p:outputLabel value="#{s.id}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column width="90" headerText="Sample ID" >
+                                        <p:outputLabel value="#{s.sampleId eq null ? s.id : s.sampleId}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column width="180" headerText="Collected At">
+                                        <p:outputLabel value="#{s.sampleDate}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="130" headerText="Bill No">
+                                        <p:outputLabel value="#{s.billNumber}" ></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Patient">
+                                        <p:outputLabel value="#{s.patientName}"></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Analyzer" width="130">
+                                        <p:outputLabel value="#{s.analyzerName}" ></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Tests" >
+                                        <p:outputLabel value=" | " style="color: blue;"></p:outputLabel>
+                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsUsingSampleId(s.id)}" var="c" >
+                                            <p:outputLabel value=" #{c.investigationComponant.name} |" style="color: blue;"></p:outputLabel>
+                                        </ui:repeat>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" width="130">
+                                        <p:commandButton
+                                            value="To Edit"
+                                            ajax="false"
+                                            action="#{patientSampleController.navigateToEditPatientSample(s.id)}" >
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+
+
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -70,82 +70,78 @@
                                     var="bill"
                                     style="min-width: 100%;"
                                     paginator="true"
-                                    rows="10"
+                                    rows="15"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
-                                    >
-                                    <p:column headerText="No" styleClass="alignTop" style="width: 20px;">
+                                    rowsPerPageTemplate="15,25,50,100">
+                                    
+                                    <p:column headerText="No" styleClass="alignTop" style="width: 20px; padding: 8px;">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Billed No"  >
-                                        <h:outputLabel value="#{bill.deptId}" />
+                                    
+                                    <p:column headerText="Billed No" width="13em;" style="padding: 8px;">
+                                        <p:commandLink 
+                                            ajax="false"
+                                            value="#{bill.deptId}"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                            <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
+                                        </p:commandLink>
                                     </p:column>
-                                    <p:column headerText="Collecting Centre"  >
+                                    
+                                    <p:column headerText="CC Code" width="6em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{bill.collectingCentre.code}" />
+                                    </p:column>
+                                    
+                                    <p:column headerText="Collecting Centre"  style="padding: 8px;" >
                                         <h:outputLabel value="#{bill.collectingCentre.name}" />
                                     </p:column>
-                                    <p:column headerText="Billed At"  >
+                                    
+                                    <p:column headerText="Billed At" width="10em;" style="padding: 8px;" >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Patient">
-                                        <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
-                                        <h:commandLink value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                    
+                                    <p:column headerText="Patient" style="padding: 8px;">
+                                        <h:outputLabel value="#{bill.patient.person.nameWithTitle}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
+                                        <h:commandLink value="#{bill.patient.person.nameWithTitle}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Patient Phone No">
+                                    <p:column headerText="Patient Phone No" width="10em;" style="padding: 8px;">
                                         <h:outputLabel value="#{bill.patient.person.phone}" />
                                     </p:column>
 
-                                    <p:column headerText="Billed By">
+                                    <p:column headerText="Billed By" width="8em;" style="padding: 8px;">
                                         <h:outputLabel value="#{bill.creater.name}" />
                                     </p:column>
+                                    
+                                    <p:column headerText="Status" width="8em;" class="text-center" style="padding: 8px;">
+                                        <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
+                                        <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
+                                        
+                                        <h:panelGroup rendered="#{bill.currentRequest ne null}">
+                                            <p:badge value="Request #{bill.currentRequest.status.label}" severity="warning" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+                                    </p:column>
 
-                                    <p:column headerText="Gross Value" styleClass="averageNumericColumn">
+                                    <p:column headerText="Gross Value" width="8em;" class="text-end" style="padding: 8px;">
                                         <h:outputLabel value="#{bill.total}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Discount" styleClass="averageNumericColumn">
+                                    
+                                    <p:column headerText="Discount" width="8em;" class="text-end" style="padding: 8px;">
                                         <h:outputLabel value="#{bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Net Value" styleClass="averageNumericColumn">
+                                    
+                                    <p:column headerText="Net Value" width="8em;" class="text-end" style="padding: 8px;">
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Comments" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="Cancelled"
-                                                       rendered="#{bill.cancelled}">
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Refunded"
-                                                       rendered="#{bill.refunded}">
-                                        </h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="View" width="5em;">
-                                        <div class="d-flex gap-2">
-                                            <p:commandButton
-                                                ajax="false"
-                                                icon="fa fa-cog"
-                                                title="Manage Bill"
-                                                action="#{billSearch.navigateToManageCollectingCentreBill()}">
-                                                <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
-                                            </p:commandButton>
-                                            <p:commandButton
-                                                ajax="false"
-                                                icon="fa fa-file"
-                                                title="View Bill"
-                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                                                <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
-                                            </p:commandButton>
-                                        </div>
-
                                     </p:column>
 
                                 </p:dataTable>

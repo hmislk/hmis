@@ -26,13 +26,15 @@ public class Notification implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     private Bill bill;
     @ManyToOne
     private PatientRoom patientRoom;
+    @ManyToOne
+    private PatientEncounter patientEncounter;
     private boolean completed;
     @Lob
     private String message;
@@ -174,6 +176,14 @@ public class Notification implements Serializable {
 
     public void setPatientRoom(PatientRoom patientRoom) {
         this.patientRoom = patientRoom;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
 

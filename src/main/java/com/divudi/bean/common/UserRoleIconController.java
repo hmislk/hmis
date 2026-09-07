@@ -223,6 +223,8 @@ public class UserRoleIconController implements Serializable {
             current.setRetired(true);
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
+            fillUserRoleIcon();
+            reOrderUserIcons();
         } else {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }

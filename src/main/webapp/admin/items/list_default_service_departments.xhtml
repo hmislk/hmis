@@ -9,8 +9,8 @@
 
     <ui:define name="item">
 
-        <h:form>
-            <p:growl />
+        <h:form id="form">
+            <p:growl id="msg"/>
 
             <p:panel header="Default Service Department List">
 
@@ -80,6 +80,7 @@
                 <p:separator />
 
                 <p:dataTable 
+                    id="dptTbl"
                     value="#{defaultServiceDepartmentController.items}" 
                     var="dsd"
                     paginator="true"
@@ -109,15 +110,31 @@
                     </p:column>
 
                     <p:column headerText="Actions">
-                        <p:commandButton 
-                            value="Edit"
-                            icon="fas fa-edit"
-                            ajax="false"
-                            action="#{defaultServiceDepartmentController.navigateToEditDefaultServiceDepartment}">
-                            <f:setPropertyActionListener 
-                                target="#{defaultServiceDepartmentController.current}" 
-                                value="#{dsd}" />
-                        </p:commandButton>
+                        <div class="d-flex flex-wrap gap-2">
+                            <p:commandButton 
+                                value="Edit"
+                                icon="fas fa-edit"
+                                ajax="false"
+                                action="#{defaultServiceDepartmentController.navigateToEditDefaultServiceDepartment}">
+                                <f:setPropertyActionListener 
+                                    target="#{defaultServiceDepartmentController.current}" 
+                                    value="#{dsd}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnDelete"
+                                action="#{defaultServiceDepartmentController.delete()}"
+                                value="Delete"
+                                icon="fas fa-trash"
+                                class="ui-button-danger"
+                                update=":form:msg dptTbl"
+                                process="@this"
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                            return false;" >
+                                <f:setPropertyActionListener 
+                                    target="#{defaultServiceDepartmentController.current}" 
+                                    value="#{dsd}" />
+                            </p:commandButton>
+                        </div>
                     </p:column>
 
                 </p:dataTable>

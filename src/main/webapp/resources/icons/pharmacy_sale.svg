@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gps0" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333EA;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#7E22CE;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shps0" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#FAF5FF"/>
+  <g filter="url(#shps0)">
+
+    <path d="M38 60 L55 60 L72 118 L152 118 L163 76 L60 76" fill="none" stroke="url(#gps0)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="86" cy="134" r="13" fill="url(#gps0)"/>
+    <circle cx="136" cy="134" r="13" fill="url(#gps0)"/>
+    <rect x="82" y="84" width="50" height="24" rx="12" fill="#7E22CE" opacity="0.85"/>
+    <line x1="107" y1="84" x2="107" y2="108" stroke="#C084FC" stroke-width="4"/>
+
+  </g>
+</svg>

@@ -234,22 +234,25 @@ public class SalaryCycleController implements Serializable {
         }
 
         if (current.getSalaryFromDate() == null) {
+            JsfUtil.addErrorMessage("Salary From Date is required");
             return true;
         }
 
         if (current.getSalaryToDate() == null) {
+            JsfUtil.addErrorMessage("Salary To Date is required");
             return true;
         }
 
         if (current.getWorkedFromDate() == null) {
+            JsfUtil.addErrorMessage("OT From Date is required");
             return true;
         }
 
         if (current.getWorkedToDate() == null) {
+            JsfUtil.addErrorMessage("OT To Date is required");
             return true;
         }
 
-        //Check Salry Date
         if (humanResourceBean.checkSalaryCycleDate(current, DateType.SalaryDate, current.getSalaryFromDate(), current.getSalaryToDate())) {
             JsfUtil.addErrorMessage("Salary Date Already Exist");
             return true;
@@ -311,10 +314,10 @@ public class SalaryCycleController implements Serializable {
 //            getRosterFacade().edit(getCurrentRoster());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
-            JsfUtil.addSuccessMessage("Nothing to Delete");
+            JsfUtil.addErrorMessage("Nothing to Delete");
         }
         //   recreateModel();
-
+        listAllSalaryCycles();
         current = null;
 
     }

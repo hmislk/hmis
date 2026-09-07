@@ -235,47 +235,7 @@
                             style="width: 150px"
                             ajax="false"
                             value="Print"
-                            onclick="handlePrint(); return false;"/>
-
-                    <h:outputScript>
-                        function handlePrint() {
-                            console.log("Print button clicked");
-
-                            const convertChartToImage = function (widgetVarName) {
-                                return new Promise((resolve, reject) => {
-                                    const chartWidget = PF(widgetVarName);
-                                    if (!chartWidget || !chartWidget.cfg || !chartWidget.cfg.chart) {
-                                        console.warn("Chart not available:", widgetVarName);
-                                        return resolve(false);
-                                    }
-
-                                    const canvas = chartWidget.cfg.chart.canvas;
-                                    const img = document.createElement("img");
-                                    img.onload = () => {
-                                        canvas.parentNode.replaceChild(img, canvas);
-                                        resolve(true);
-                                    };
-                                    img.onerror = reject;
-
-                                    img.src = chartWidget.cfg.chart.toBase64Image();
-                                    img.style.width = canvas.style.width;
-                                    img.style.height = canvas.style.height;
-                                });
-                            };
-
-                            Promise.all([
-                                convertChartToImage('countChartWidget'),
-                                convertChartToImage('serviceChartWidget')
-                            ]).then(() => {
-                                setTimeout(() => {
-                                    window.print();
-                                }, 300);
-                            }).catch((e) => {
-                                console.error("Error during chart conversion", e);
-                                window.print();
-                            });
-                        }
-                    </h:outputScript>
+                            action="route_analysis_report_view?faces-redirect=true"/>
 
                     <h:outputStylesheet>
                         @media print {

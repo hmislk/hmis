@@ -25,7 +25,15 @@
                 <div style="height: 1cm;">
 
                 </div>
+                
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Hide the Header Details on the OPD Doctor Payment 5x5 Bill',false)}">
+                <div style="height: 2.5cm;">
 
+                </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the Header Details on the OPD Doctor Payment 5x5 Bill',false)}">
+                    
                 <div class="institutionName">
                     <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
                 </div>
@@ -45,6 +53,7 @@
                         <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>
                     </div>
                 </div>
+                </h:panelGroup>
 
                 <div class="h6 my-2" style="text-align: center;font-weight: bold;">
                     <h:outputLabel value="Payment Invoice"/>
@@ -72,6 +81,8 @@
                     <hr/>
                 </div>
 
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the details on the OPD Doctor Payment Bill',false)}">
+                    
                 <div >
                     <table width="100%" style="width: 100%;" >
                         <tr>
@@ -91,6 +102,7 @@
                 <div class="billline">
                     <hr/>
                 </div>
+                </h:panelGroup>
 
                 <div class="itemHeadingsFiveFive" >
                     <table style="width: 100%;">

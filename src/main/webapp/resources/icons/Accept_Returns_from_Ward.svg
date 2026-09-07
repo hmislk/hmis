@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad33a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad33" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad33)">
+    <!-- Delivery truck (left) -->
+    <!-- Truck body -->
+    <rect x="18" y="90" width="90" height="55" rx="5" fill="url(#grad33a)"/>
+    <!-- Truck cab -->
+    <rect x="95" y="105" width="40" height="40" rx="5" fill="#155E75"/>
+    <!-- Windshield -->
+    <rect x="98" y="108" width="25" height="18" rx="3" fill="#22D3EE" opacity="0.7"/>
+    <!-- Wheels -->
+    <circle cx="42" cy="148" r="13" fill="#155E75"/>
+    <circle cx="42" cy="148" r="7" fill="#F0FDFA"/>
+    <circle cx="118" cy="148" r="13" fill="#155E75"/>
+    <circle cx="118" cy="148" r="7" fill="#F0FDFA"/>
+    <!-- Cargo box on truck -->
+    <rect x="22" y="75" width="68" height="18" rx="3" fill="url(#grad33a)" opacity="0.8"/>
+    <!-- Return curved arrow (pointing left/back) -->
+    <path d="M150 75 Q172 55 172 90 Q172 115 148 115" fill="none" stroke="#22D3EE" stroke-width="7" stroke-linecap="round"/>
+    <polygon points="154,107 146,116 158,121" fill="#22D3EE"/>
+    <!-- Checkmark (accept) -->
+    <circle cx="158" cy="60" r="18" fill="white"/>
+    <circle cx="158" cy="60" r="14" fill="url(#grad33a)"/>
+    <path d="M148 60 L155 67 L168 52" fill="none" stroke="#22D3EE" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -12,7 +12,7 @@
 
 
         <h:form  >
-            <p:growl />
+            <p:growl id="growlMsg"/>
             <p:focus id="selectFocus" context="gpSelect" />
             <p:focus id="detailFocus" context="gpDetail" />
 
@@ -20,11 +20,12 @@
                 <div class="row" >
                     <div class="col-md-5" >
                         <h:panelGrid id="gpSelect" columns="1"   class="w-100">
-                            <h:panelGrid id="gpSelectButtons" columns="3"   class="w-100">
+                            <h:panelGrid id="gpSelectButtons" columns="3"   class="w-80">
                                 <p:commandButton id="btnAdd" 
                                                  value="Add" 
                                                  action="#{signController.prepareAdd()}"  
-                                                 class="w-100"
+                                                 class="m-1 ui-button-success w-23"
+                                                 icon="fa fa-plus"
                                                  update="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" >
                                 </p:commandButton>
                                 <p:commandButton 
@@ -34,11 +35,13 @@
                                                 return false;" 
                                     action="#{signController.delete()}"  
                                     value="Delete" 
-                                    class="w-100">
+                                    class="m-1 ui-button-danger w-23"
+                                    icon="fa fa-trash">
                                 </p:commandButton>
                                 <p:commandButton 
-                                    value="Download as Excel" 
-                                    class="w-100"
+                                    value="Excel" 
+                                    class="m-1 ui-button-success w-23"
+                                    icon="fas fa-file-excel"
                                     ajax="false"
                                     action="#{signController.downloadAsExcel}" />
                             </h:panelGrid>
@@ -70,8 +73,10 @@
                             </h:panelGrid>
                             <h:panelGrid id="gpDetailButtons" columns="2"  class="w-100">
                                 <p:commandButton id="btnSave" value="Save" 
-                                                 action="#{signController.saveSelected()}"  class="w-100"
-                                                 update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  
+                                                 action="#{signController.saveSelected()}"  
+                                                 class="m-1"
+                                                 icon="fas fa-save"
+                                                 update="growlMsg btnAdd  btnDelete btnSave lstSelect gpDetail selectFocus gpDetail"  
                                                  process="gpDetail" >
                                 </p:commandButton>
                             </h:panelGrid>

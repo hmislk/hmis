@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="form">
+                    <p:growl id="msg" life="3000"/>
+
+                    <p:panel styleClass="mb-3">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <span><i class="fas fa-list"/> Pharmacy AMP List</span>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton id="btnFilterActive" value="Active"
+                                        action="#{ampController.setFilterToActive()}"
+                                        update="tblList filterStatusLabel" process="@this"
+                                        styleClass="m-1 #{ampController.showingActive ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
+                                        icon="fas fa-check-circle" title="Show only active AMPs"/>
+                                    <p:commandButton id="btnFilterInactive" value="Inactive"
+                                        action="#{ampController.setFilterToInactive()}"
+                                        update="tblList filterStatusLabel" process="@this"
+                                        styleClass="m-1 #{ampController.showingInactive ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
+                                        icon="fas fa-times-circle" title="Show only inactive AMPs"/>
+                                    <p:commandButton id="btnFilterAll" value="All"
+                                        action="#{ampController.setFilterToAll()}"
+                                        update="tblList filterStatusLabel" process="@this"
+                                        styleClass="m-1 #{ampController.showingAll ? 'ui-button-info' : 'ui-button-outlined ui-button-info'}"
+                                        icon="fas fa-list" title="Show all AMPs"/>
+                                    <p:commandButton id="btnDownloadExcel" value="Download Excel"
+                                        icon="fas fa-file-excel" ajax="false" styleClass="ui-button-success m-1"
+                                        title="Download the full list as an Excel file">
+                                        <p:dataExporter target="tblList" type="xlsx" fileName="pharmacy_amp_list"/>
+                                    </p:commandButton>
+                                    <p:commandButton id="btnBack" value="Back" icon="fas fa-arrow-left"
+                                        action="/pharmacy/admin/amp?faces-redirect=true"
+                                        ajax="false" styleClass="ui-button-secondary m-1"
+                                        title="Return to AMP management"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:outputLabel id="filterStatusLabel"
+                                       value="Currently showing: #{ampController.filterStatusDisplay}"
+                                       styleClass="text-muted small mb-2 d-block"/>
+
+                        <p:dataTable id="tblList" value="#{ampController.pharmacyAmpListDtos}" var="dto"
+                            rowIndexVar="rowIndex" paginator="true" rows="50" paginatorPosition="both"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} items"
+                            rowsPerPageTemplate="25,50,100,250" emptyMessage="No Pharmacy AMPs found."
+                            styleClass="table table-striped" resizableColumns="true">
+                            <p:column headerText="#" style="width: 3em; text-align: center;" exportable="false">
+                                <h:outputText value="#{rowIndex + 1}"/>
+                            </p:column>
+                            <p:column headerText="Name" sortBy="#{dto.name}" filterBy="#{dto.name}" filterMatchMode="contains" style="min-width: 12em;">
+                                <h:outputText value="#{dto.name}"/>
+                            </p:column>
+                            <p:column headerText="Code" sortBy="#{dto.code}" filterBy="#{dto.code}" filterMatchMode="contains" style="width: 8em;">
+                                <h:outputText value="#{dto.code}"/>
+                            </p:column>
+                            <p:column headerText="Barcode" sortBy="#{dto.barcode}" filterBy="#{dto.barcode}" filterMatchMode="contains" style="width: 9em;">
+                                <h:outputText value="#{dto.barcode}"/>
+                            </p:column>
+                            <p:column headerText="VMP" sortBy="#{dto.vmpName}" filterBy="#{dto.vmpName}" filterMatchMode="contains" style="min-width: 10em;">
+                                <h:outputText value="#{dto.vmpName}"/>
+                            </p:column>
+                            <p:column headerText="Dosage Form" sortBy="#{dto.dosageFormName}" filterBy="#{dto.dosageFormName}" filterMatchMode="contains" style="min-width: 9em;">
+                                <h:outputText value="#{dto.dosageFormName}"/>
+                            </p:column>
+                            <p:column headerText="Category" sortBy="#{dto.categoryName}" filterBy="#{dto.categoryName}" filterMatchMode="contains" style="min-width: 9em;">
+                                <h:outputText value="#{dto.categoryName}"/>
+                            </p:column>
+                            <p:column headerText="Short Expiry (days)" sortBy="#{dto.numberOfDaysToMarkAsShortExpiary}" style="width: 7em; text-align: center;">
+                                <h:outputText value="#{dto.numberOfDaysToMarkAsShortExpiary}"/>
+                            </p:column>
+                            <p:column headerText="Discount" sortBy="#{dto.discountAllowed}" style="width: 5em; text-align: center;" exportValue="#{dto.discountAllowed ? 'Yes' : 'No'}">
+                                <i class="#{dto.discountAllowed ? 'fas fa-check text-success' : 'fas fa-times text-danger'}"/>
+                            </p:column>
+                            <p:column headerText="Refunds" sortBy="#{dto.refundsAllowed}" style="width: 5em; text-align: center;" exportValue="#{dto.refundsAllowed ? 'Yes' : 'No'}">
+                                <i class="#{dto.refundsAllowed ? 'fas fa-check text-success' : 'fas fa-times text-danger'}"/>
+                            </p:column>
+                            <p:column headerText="Consumable" sortBy="#{dto.consumptionAllowed}" style="width: 6em; text-align: center;" exportValue="#{dto.consumptionAllowed ? 'Yes' : 'No'}">
+                                <i class="#{dto.consumptionAllowed ? 'fas fa-check text-success' : 'fas fa-times text-danger'}"/>
+                            </p:column>
+                            <p:column headerText="Fractions" sortBy="#{dto.allowFractions}" style="width: 5em; text-align: center;" exportValue="#{dto.allowFractions ? 'Yes' : 'No'}">
+                                <i class="#{dto.allowFractions ? 'fas fa-check text-success' : 'fas fa-times text-danger'}"/>
+                            </p:column>
+                            <p:column headerText="Status" sortBy="#{dto.inactive}" style="width: 6em; text-align: center;" exportValue="#{dto.inactive ? 'Inactive' : 'Active'}">
+                                <p:badge value="#{dto.inactive ? 'Inactive' : 'Active'}" severity="#{dto.inactive ? 'danger' : 'success'}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

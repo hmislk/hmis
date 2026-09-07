@@ -25,7 +25,7 @@
 
                 </f:facet>
 
-                <p:panelGrid columns="5" styleClass="noPrintButton"  >
+                <p:panelGrid columns="5" styleClass="noPrintButton"  layout="tabular" >
                     <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true"
                                     value="#{bhtSummeryFinalizedController.patientEncounter}"
                                     completeMethod="#{admissionController.completePatientPaymentFinalized}"
@@ -77,7 +77,7 @@
                                                       and
                                                       ((iss.bill.billClass eq 'class com.divudi.core.entity.PreBill')
                                                       or
-                                                      (iss.bill.billedBill eq null and iss.bill.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                                      (iss.bill.billedBill ne null and iss.bill.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
                             <p:column headerText="Bill No">
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>

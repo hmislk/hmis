@@ -33,7 +33,13 @@
             </h:panelGrid>
             <p:tabView  style="min-height: 250px;"   activeIndex="0" >
                 <p:tab   title="Stock"    >
-                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins">
+                    <h:panelGroup rendered="#{empty pharmacyController.institutionStocks}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No stock data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins" rendered="#{not empty pharmacyController.institutionStocks}">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >
@@ -94,7 +100,13 @@
                 </p:tab>
 
                 <p:tab   title="Sale" rendered="false">
-                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
+                    <h:panelGroup rendered="#{empty pharmacyController.institutionSales}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No sales data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins" rendered="#{not empty pharmacyController.institutionSales}">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >
@@ -179,7 +191,13 @@
                 </p:tab>
                 
                 <p:tab   title="BHT ISSUE">
-                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
+                    <h:panelGroup rendered="#{empty pharmacyController.institutionBhtIssue}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No BHT issue data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins" rendered="#{not empty pharmacyController.institutionBhtIssue}">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >
@@ -264,7 +282,13 @@
                 </p:tab>
 
                 <p:tab   title="Transfer Issue">
-                    <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                    <h:panelGroup rendered="#{empty pharmacyController.institutionTransferIssue}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No transfer issue data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacyController.institutionTransferIssue}" var="ins" rendered="#{not empty pharmacyController.institutionTransferIssue}">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >
@@ -349,8 +373,14 @@
                 </p:tab>
 
                 <p:tab   title="Transfer Receive ">
-                    <p:dataTable styleClass="noBorder" id="trRceive" 
-                                 value="#{pharmacyController.institutionTransferReceive}" var="ins">
+                    <h:panelGroup rendered="#{empty pharmacyController.institutionTransferReceive}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No transfer receive data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" id="trRceive"
+                                 value="#{pharmacyController.institutionTransferReceive}" var="ins" rendered="#{not empty pharmacyController.institutionTransferReceive}">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >
@@ -435,8 +465,14 @@
                 </p:tab>
                 
                 <p:tab   title="Department Issue" rendered="false">
+                    <h:panelGroup rendered="#{empty pharmacyController.institutionIssue}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No department issue data available for the selected period.
+                        </div>
+                    </h:panelGroup>
                     <p:dataTable styleClass="noBorder" id="depIssue"
-                                 value="#{pharmacyController.institutionIssue}" var="ins">
+                                 value="#{pharmacyController.institutionIssue}" var="ins" rendered="#{not empty pharmacyController.institutionIssue}">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >
@@ -522,8 +558,14 @@
 
                 <p:tab  title="GRN"  rendered="false">
 
-                    <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grns}" 
-                                 var="dd2" scrollable="true" scrollHeight="150" >
+                    <h:panelGroup rendered="#{empty pharmacyController.grns}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No GRN data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grns}"
+                                 var="dd2" scrollable="true" scrollHeight="150" rendered="#{not empty pharmacyController.grns}">
                         <p:column headerText="GRN No">
                             #{dd2.bill.deptId}
                         </p:column>
@@ -558,7 +600,13 @@
 
                 <p:tab  title="Purchase Orders"  rendered="false">
 
-                    <p:dataTable styleClass="noBorder" id="po" value="#{pharmacyController.pos}" var="dd3" scrollable="true" scrollHeight="150" >
+                    <h:panelGroup rendered="#{empty pharmacyController.pos}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No purchase order data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" id="po" value="#{pharmacyController.pos}" var="dd3" scrollable="true" scrollHeight="150" rendered="#{not empty pharmacyController.pos}">
                         <p:column headerText="Po No">
                             #{dd3.bill.deptId}
                         </p:column>
@@ -581,7 +629,13 @@
 
                 <p:tab  title="Direct Purchase" rendered="false">
 
-                    <p:dataTable styleClass="noBorder" id="dp" value="#{pharmacyController.directPurchase}" var="dd3" scrollable="true" scrollHeight="150" >
+                    <h:panelGroup rendered="#{empty pharmacyController.directPurchase}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No direct purchase data available for the selected period.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable styleClass="noBorder" id="dp" value="#{pharmacyController.directPurchase}" var="dd3" scrollable="true" scrollHeight="150" rendered="#{not empty pharmacyController.directPurchase}">
                         <p:column headerText="Bill No">
                             #{dd3.bill.deptId}
                         </p:column>
@@ -609,7 +663,13 @@
                 </p:tab>
                 
                 <p:tab title="Packsizes" >
-                    <p:dataTable value="#{pharmacyController.ampps}" var="p" >
+                    <h:panelGroup rendered="#{empty pharmacyController.ampps}">
+                        <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                            <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                            No pack size data available.
+                        </div>
+                    </h:panelGroup>
+                    <p:dataTable value="#{pharmacyController.ampps}" var="p" rendered="#{not empty pharmacyController.ampps}">
                         <p:column>
                             <h:outputLabel value="#{p.name}" ></h:outputLabel>
                         </p:column>

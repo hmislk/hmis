@@ -123,6 +123,22 @@ root {
 
     }
 
+    .grn-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: none !important;
+    }
+
+    .grn-table tr,
+    .grn-table td,
+    .grn-table th {
+        border: none !important;
+    }
+
+    .grn-table td {
+        padding: 2px 6px;
+        vertical-align: top;
+    }
 
 }
 
@@ -160,7 +176,22 @@ root {
         line-height: 2!important;
     }
 
+    .grn-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: none !important;
+    }
 
+    .grn-table tr,
+    .grn-table td,
+    .grn-table th {
+        border: none !important;
+    }
+
+    .grn-table td {
+        padding: 2px 6px;
+        vertical-align: top;
+    }
 
 }
 
@@ -215,4 +246,22 @@ root {
 }
 .transfer-footer .ui-outputlabel {
     font-size: 16pt;
+}
+
+/* Compact table row spacing */
+.compact-table td,
+.compact-table th {
+    padding: 1px 2px !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    vertical-align: middle !important;
+}
+
+.compact-table .ui-datatable-data tr {
+    line-height: 1.1 !important;
+}
+
+.compact-table .ui-datatable-data > tr > td {
+    padding: 1px 2px !important;
+    line-height: 1.1 !important;
 }

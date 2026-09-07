@@ -10,6 +10,12 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <style>
+                    .pharma-search-wrapper { overflow-x: auto; }
+                    .pharma-search-wrapper .ui-datatable td,
+                    .pharma-search-wrapper .ui-datatable th { white-space: nowrap; padding: 0.3rem 0.6rem !important; }
+                    .pharma-search-wrapper .ui-datatable { font-size: 0.875rem; }
+                </style>
                 <h:form>
                     <p:panel id="gpBillPreview">
                         <f:facet name="header" >

@@ -17,11 +17,40 @@
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate" value="#{inwardStaffPaymentBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate" value="#{inwardStaffPaymentBillController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{inwardStaffPaymentBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
+                            <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{inwardStaffPaymentBillController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
+                            <h:outputLabel value="Date Basis" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.dateBasis}">
+                                <f:selectItem itemValue="createdAt" itemLabel="Created Date (default)" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Admission Type" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Payment Method" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.paymentMethod}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Institution" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Site" />
+                            <p:selectOneMenu class="mx-4 w-100" value="#{inwardStaffPaymentBillController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Department" />
+                            <p:autoComplete class="mx-4 w-100" completeMethod="#{departmentController.completeDept}"
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                            forceSelection="true" value="#{inwardStaffPaymentBillController.department}" />
                         </h:panelGrid>
                         <h:panelGrid columns="2" class="my-2">
                             <p:commandButton id="btnSearch" icon="fas fa-search" ajax="false" value="Search" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}"/>

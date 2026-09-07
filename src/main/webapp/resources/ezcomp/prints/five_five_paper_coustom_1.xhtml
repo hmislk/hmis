@@ -19,7 +19,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
-        
+
         <style>
             .fiveinchbill{
                 position: relative!important;
@@ -31,8 +31,8 @@
                 text-transform: capitalize!important;
             }
         </style>
-        
-        <div class="fiveinchbill" style="page-break-after: always" >
+
+        <div class="fiveinchbill" style="page-break-before: always" >
 
             <div class="institutionName">
                 <h:outputLabel style="font-size: 14pt" value="#{cc.attrs.bill.department.printingName}" />
@@ -77,13 +77,15 @@
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Patient Name" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/></div>
+                    <div class="col-7">
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName ne 'UPPERCASE'}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.capitalNameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName eq 'UPPERCASE'}"/>
+                    </div>
                 </div>
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice No" ></h:outputLabel></div>
                     <div class="col-1 d-flex justify-content-center"><h:outputLabel value=":" /></div>
-                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.deptId}" rendered="#{!cc.attrs.bill.cancelled}"/>
-                        <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId}" rendered="#{cc.attrs.bill.cancelled}"/></div>
+                    <div class="col-7"><h:outputLabel value="#{cc.attrs.bill.deptId}"/></div>
                 </div>
                 <div class="d-flex">
                     <div class="col-3"><h:outputLabel value="Invoice Date" ></h:outputLabel></div>
@@ -155,18 +157,20 @@
                     <ui:repeat value="#{billController.billItemsOfBill(cc.attrs.bill)}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td style="width:80%!important;">
-                                <h:outputLabel value="#{billItem.item.name}"></h:outputLabel>
-                                <h:outputLabel value=" (N)" rendered="#{billItem.item.speciality}"/>
+                                <div class="d-flex justify-content-between">
+                                    <div class="d-flex gap-2">
+                                        <h:outputLabel value="#{billItem.item.name}"></h:outputLabel>
+                                        <h:outputLabel value=" (N)" rendered="#{billItem.item.speciality}"/>
+                                    </div>
+                                    <h:panelGroup rendered="#{billItem.item.printSessionNumber}" style="">
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
+                                            <h:outputLabel  value="#{billItem.sessionId}" style="border: 1px solid black; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;"></h:outputLabel>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
                             </td>
                             <td style="width:10%!important;">
-                                <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
-                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >
-                                        <td>
-                                            <h:outputLabel  value="#{billItem.billSession.serialNo}"    >
-                                            </h:outputLabel>
-                                        </td>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+
                             </td>
                             <td   style="width:10%!important;text-align: right;">
                                 <h:outputLabel value="#{billItem.grossValue}" style="text-align: right;" class="w-100">
@@ -255,7 +259,7 @@
                         </div>
                         <div class="mx-2">
                             <h:outputLabel value="#{p.paidValue}" >
-                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber></h:outputLabel>
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber></h:outputLabel>
                         </div>
                     </div>
                 </ui:repeat>
@@ -278,26 +282,6 @@
                     </ui:repeat>
                 </h:panelGroup>
             </h:panelGroup>
-
-            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                <div class="d-flex gap-2" style="font-size: 9pt;margin-left:5%">
-                    <h:outputLabel value="Remark :"/>
-                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
-                </div>
-            </h:panelGroup>
-            <div class="d-flex justify-content-end align-items-center" style="margin-right: 5%;font-size: 9pt">
-                <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                    <div>
-                        <h:outputLabel value="Original Bill No :  #{cc.attrs.bill.deptId}" />
-                    </div>
-                </h:panelGroup>
-            </div>
-
-<!--            <div class="footer" style="text-align: center;">
-                <br/>
-                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
-                <br/>
-            </div>-->
 
         </div>
 

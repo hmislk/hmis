@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <p:panel header="Expiry Date Adjustments Report" >
+
+                        <div class="row">
+                            <div class="col-4">
+                                <h:outputLabel value="Department" />&nbsp;
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                                value="#{pharmacyAdjustmentController.fromDepartment}"  >
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-4">
+                                <h:outputLabel value="From" />&nbsp;
+                                <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                            <div class="col-4">
+                                <h:outputLabel value="To" />&nbsp;
+                                <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                        </div>
+
+
+                        <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Fill"
+                                icon="fas fa-fill"
+                                class="ui-button-warning"
+                                action="#{pharmacyAdjustmentController.fillExpiryDateAdjustmentReport()}" ></p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel"
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-2">
+                                <p:dataExporter type="xlsx" target="tblExpiryAdj" fileName="Expiry_Date_Adjustment_Report"  />
+                            </p:commandButton> 
+                            <p:commandButton 
+                                value="Print" 
+                                ajax="false" 
+                                icon="fas fa-print"
+                                class="ui-button-info"
+                                action="#" >
+                                <p:printer target="gpExpiryBillPreview" ></p:printer>
+                            </p:commandButton>
+
+
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpExpiryBillPreview">
+                            <p:dataTable id="tblExpiryAdj" styleClass="noBorder normalFont" 
+                                         value="#{pharmacyAdjustmentController.expiryDateAdjustmentBillItems}" var="i" 
+
+                                         rows="10"
+                                         paginator="true" paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                         rowsPerPageTemplate="5,10,15"
+
+
+                                         >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Expiry Date Adjustment Report for "/>&nbsp;
+                                    
+                                    <h:outputLabel value="Department : "/>&nbsp;
+                                        <h:outputLabel value="#{pharmacyAdjustmentController.fromDepartment.name}"/> 
+                                        <br/>
+                                        <h:outputLabel value="From : "/>
+                                        <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.fromDate}">&nbsp;
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To : "/>
+                                        <h:outputLabel class="mx-2" value="#{pharmacyAdjustmentController.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                        </h:outputLabel>
+                                   
+                                </f:facet>
+
+                                <p:column headerText="Bill No"
+                                          sortBy="#{i.bill.deptId}"
+                                          filterBy="#{i.bill.deptId}"
+                                          filterMatchMode="contains"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date/Time"
+                                          filterBy="#{i.bill.createdAt}"
+                                          filterMatchMode="contains"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date/Time"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.bill.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Item"
+                                          sortBy="#{i.item.name}"
+                                          filterBy="#{i.item.name}"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}"  >                                      
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Batch No"
+                                          sortBy="#{i.pharmaceuticalBillItem.stock.itemBatch.batchNo}"
+                                          filterBy="#{i.pharmaceuticalBillItem.stock.itemBatch.batchNo}"
+                                          filterMatchMode="contains"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Batch No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.itemBatch.batchNo}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Previous Expiry Date" style="text-align: center;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Previous Expiry Date"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.beforeAdjustmentExpiry}" >
+                                        <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Expiry Date Pattern', 'MMM yyyy')}" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="New Expiry Date" style="text-align: center;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="New Expiry Date"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.afterAdjustmentExpiry}" >
+                                        <f:convertDateTime pattern="#{configOptionApplicationController.getShortTextValueByKey('Expiry Date Pattern', 'MMM yyyy')}" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Comments"
+                                          sortBy="#{i.bill.comments}"
+                                          filterBy="#{i.bill.comments}"
+                                          filterMatchMode="contains"
+
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comments"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.comments}" 
+                                                   style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="User"
+                                          sortBy="#{i.bill.creater.webUserPerson.name}"
+                                          filterBy="#{i.bill.creater.webUserPerson.name}"
+                                          filterMatchMode="contains"
+
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="User"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.creater.webUserPerson.name}" 
+                                                   style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

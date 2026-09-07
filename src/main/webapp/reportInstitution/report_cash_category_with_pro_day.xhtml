@@ -69,6 +69,34 @@
 
                                             />
                         </p:commandButton>
+                        <p:commandButton value="PDF" ajax="false" class="ui-button-danger mx-1" icon="fas fa-file-pdf" >
+                            <p:dataExporter type="pdf" target="opd_new:opd_new,
+                                            colCash,
+                                            colCredit,
+                                            outside:outside,
+                                            pharmacy:pharmacy,
+                                            pharmacyc:pharmacyc,
+                                            pharmacyws:pharmacyws,
+                                            pharmacywsc:pharmacywsc,
+                                            inward_collection:inward_collection,
+                                            agent_collection:agent_collection,
+                                            credit_collection:credit_collection,
+                                            credit_collection_inward:credit_collection_inward,
+                                            credit_collection_pharmacy:credit_collection_pharmacy,
+                                            credit_collection_pharmacy_old:credit_collection_pharmacy_old,
+                                            col,
+                                            opd_professional:opd_professional,
+                                            opd_professional_credit:opd_professional_credit,
+                                            inward_professional:inward_professional,
+                                            credit_card:credit_card,
+                                            cheque:cheque,
+                                            finalSum,
+                                            slip:slip,
+                                            opd_new_credit:opd_new_credit"
+                                            fileName="Book_Keeping_Summery_with_pro_day"
+
+                                            />
+                        </p:commandButton>
                     </h:panelGrid>
                 <!--            <p:spacer height="30" />-->
                 <p:panel id="panelPrint" styleClass="noBorder summeryBorder">

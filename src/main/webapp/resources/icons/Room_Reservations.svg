@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad9a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad9" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad9)">
+    <!-- Calendar small top-left -->
+    <rect x="28" y="35" width="80" height="68" rx="6" fill="url(#grad9a)"/>
+    <rect x="28" y="35" width="80" height="20" rx="6" fill="#155E75"/>
+    <rect x="28" y="47" width="80" height="8" fill="#155E75"/>
+    <rect x="43" y="28" width="8" height="16" rx="4" fill="white" opacity="0.9"/>
+    <rect x="77" y="28" width="8" height="16" rx="4" fill="white" opacity="0.9"/>
+    <rect x="36" y="60" width="10" height="8" rx="2" fill="white" opacity="0.6"/>
+    <rect x="52" y="60" width="10" height="8" rx="2" fill="#22D3EE"/>
+    <rect x="68" y="60" width="10" height="8" rx="2" fill="white" opacity="0.6"/>
+    <rect x="84" y="60" width="10" height="8" rx="2" fill="white" opacity="0.6"/>
+    <rect x="36" y="74" width="10" height="8" rx="2" fill="white" opacity="0.6"/>
+    <rect x="52" y="74" width="10" height="8" rx="2" fill="white" opacity="0.6"/>
+    <!-- Bed (bottom-right) -->
+    <!-- Frame -->
+    <rect x="78" y="110" width="95" height="60" rx="5" fill="url(#grad9a)"/>
+    <!-- Mattress -->
+    <rect x="83" y="115" width="85" height="45" rx="4" fill="white" opacity="0.85"/>
+    <!-- Pillow -->
+    <rect x="88" y="119" width="28" height="22" rx="5" fill="#22D3EE" opacity="0.85"/>
+    <!-- Headboard -->
+    <rect x="78" y="105" width="12" height="65" rx="4" fill="#155E75"/>
+    <!-- Footboard -->
+    <rect x="163" y="110" width="10" height="60" rx="4" fill="#155E75"/>
+    <!-- Sheet lines -->
+    <line x1="120" y1="118" x2="160" y2="118" stroke="#0E7490" stroke-width="1.5" opacity="0.3"/>
+    <line x1="120" y1="128" x2="160" y2="128" stroke="#0E7490" stroke-width="1.5" opacity="0.3"/>
+  </g>
+</svg>

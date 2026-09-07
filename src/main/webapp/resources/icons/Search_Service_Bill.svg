@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad37a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad37" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad37)">
+    <!-- Magnifying glass -->
+    <circle cx="85" cy="85" r="52" fill="none" stroke="url(#grad37a)" stroke-width="13"/>
+    <circle cx="85" cy="85" r="39" fill="#F0FDFA"/>
+    <!-- Wrench / service tool inside magnifier -->
+    <g transform="rotate(45 85 85)">
+      <rect x="79" y="60" width="12" height="50" rx="4" fill="url(#grad37a)"/>
+      <circle cx="85" cy="62" r="12" fill="url(#grad37a)"/>
+      <circle cx="85" cy="62" r="6" fill="#F0FDFA"/>
+      <circle cx="85" cy="108" r="12" fill="url(#grad37a)"/>
+      <circle cx="85" cy="108" r="6" fill="#F0FDFA"/>
+    </g>
+    <!-- Handle -->
+    <line x1="124" y1="124" x2="150" y2="150" stroke="url(#grad37a)" stroke-width="13" stroke-linecap="round"/>
+  </g>
+</svg>

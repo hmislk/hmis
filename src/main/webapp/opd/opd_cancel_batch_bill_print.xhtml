@@ -75,7 +75,7 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_five_paper_coustom_1_cancellation_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                    <prints:five_five_paper_coustom_1_cancellation_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>
                                                 </ui:repeat>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
@@ -114,13 +114,13 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                    <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>
                                                 </ui:repeat>
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>
                                                 </ui:repeat>
                                             </h:panelGroup>
 

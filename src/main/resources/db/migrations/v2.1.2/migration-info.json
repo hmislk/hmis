@@ -1,0 +1,25 @@
+{
+    "version": "v2.1.2",
+    "description": "Fix remaining decimal precision columns in BILLFINANCEDETAILS (production-ready)",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 3,
+    "requiresDowntime": false,
+    "affectedTables": ["BILLFINANCEDETAILS"],
+    "affectedModules": ["Finance", "Pharmacy", "Reports", "Payment Processing"],
+    "preRequisites": [
+        "Database backup completed",
+        "Ensure no active transactions on BILLFINANCEDETAILS table",
+        "Previous migration v2.1.1 partially completed - this fixes remaining columns"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Fix 3 remaining columns that were missed in v2.1.1: TOTALEXPENSE, TOTALOFFREEITEMVALUES, TOTALTAXVALUE"
+        },
+        {
+            "description": "Add verification queries to confirm all columns are properly fixed"
+        },
+        {
+            "description": "Include error handling for production robustness"
+        }
+    ]
+}

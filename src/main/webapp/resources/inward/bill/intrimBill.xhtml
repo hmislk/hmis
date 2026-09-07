@@ -97,6 +97,24 @@
                             </div>
                         </div>
 
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('')}">
+                            <div class="row mb-2">
+                                <div class="col-6 w-50 d-flex">
+                                    <div class="d-flex text-left w-100">
+                                        <div class="w-100 text-left">
+                                            <h:outputLabel value="NIC No " />
+                                        </div>
+                                        <div class="text-left w-100 ">
+                                            <h:outputLabel value=":" />
+                                        </div>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
                         <div class="row mb-2">
                             <div class="col-6 w-50 d-flex">
                                 <div class="d-flex text-left w-100">
@@ -167,22 +185,28 @@
 
 
                         <table class="tbl"  >
-                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                <h:panelGroup rendered="#{bip.adjustedValue !=0}">
-                                    <tr>
-
-                                        <td style="text-align: left;" >
-                                            <h:outputLabel  value="#{bip.inwardChargeType.name}" />
-                                        </td>                                   
-                                        <td style="text-align: right;" >
-                                            <h:outputLabel value="#{bip.adjustedValue}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>  
-                                        </td>
-
-                                    </tr>
-                                </h:panelGroup>
-                            </ui:repeat>
+                            <!-- The broken 'Group Bed Charges in Bills' alternate branch that used
+                                 to sit here (calling a nonexistent
+                                 bhtSummeryController.getBedChargesTotal(...)) has been removed —
+                                 it was unreachable (config defaults false) and never actually
+                                 worked. This is the Interim Bill; charge-type grouping was not
+                                 requested here, only the dead code. -->
+                            <h:panelGroup>
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.adjustedValue !=0}">
+                                        <tr>
+                                            <td style="text-align: left;" >
+                                                <h:outputLabel value="#{not empty bip.descreption ? bip.descreption : bip.inwardChargeType.name}" />
+                                            </td>
+                                            <td style="text-align: right;" >
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </h:panelGroup>
 
                             <h:panelGroup>
                                 <tr>   

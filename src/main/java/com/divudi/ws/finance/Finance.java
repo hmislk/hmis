@@ -24,6 +24,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -581,6 +582,39 @@ public class Finance {
 
         String json = jSONObjectOut.toString();
         return json;
+    }
+
+    @GET
+    @Path("/bill/search")
+    @Produces("application/json")
+    public String getBillByNumber(
+            @QueryParam("billNumber") String billNumber,
+            @Context HttpServletRequest requestContext) {
+        JSONObject jSONObjectOut = new JSONObject();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            return errorMessageNotValidKey().toString();
+        }
+        if (billNumber == null || billNumber.trim().isEmpty()) {
+            JSONObject out = new JSONObject();
+            out.put("code", 400);
+            out.put("type", "error");
+            out.put("message", "billNumber is required.");
+            return out.toString();
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("bn", billNumber.trim());
+        List<Bill> bills = billFacade.findByJpql(
+                "select b from Bill b "
+                + "where b.retired <> true "
+                + "and (b.insId = :bn or b.deptId = :bn)",
+                params);
+        if (bills == null || bills.isEmpty()) {
+            return errorMessageNoData().toString();
+        }
+        jSONObjectOut.put("data", billToJSONArray(bills));
+        jSONObjectOut.put("status", successMessage());
+        return jSONObjectOut.toString();
     }
 
     @GET

@@ -1,0 +1,37 @@
+{
+    "version": "v2.1.19",
+    "description": "Add REGISTRATIONSOURCE column to PATIENT and back-fill legacy self-registrations",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 1,
+    "requiresDowntime": false,
+    "affectedTables": ["patient"],
+    "affectedModules": ["OPD", "Pharmacy", "Inward", "Patient Portal"],
+    "preRequisites": [
+        "Database backup completed",
+        "PATIENT table must exist"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Detect actual table name case for PATIENT"
+        },
+        {
+            "description": "Add REGISTRATIONSOURCE VARCHAR(255) NULL column (STRING enum) if it does not exist"
+        },
+        {
+            "description": "Back-fill REGISTRATIONSOURCE = 'ONLINE_SELF' for rows where legacy SELFREGISTERED = 1 and REGISTRATIONSOURCE IS NULL"
+        },
+        {
+            "description": "Verify column presence and report distribution of registration sources"
+        }
+    ],
+    "expectedOutcome": {
+        "primaryFix": "PATIENT.REGISTRATIONSOURCE available to record how each patient was first registered (walk-in, inward admission, newborn, online self, etc.)",
+        "impact": "Adds one nullable column. Existing portal self-registrations are tagged ONLINE_SELF; all other existing patients remain NULL (unrecorded / pre-feature).",
+        "columnsAdded": 1
+    },
+    "rollbackNotes": [
+        "Rollback DROPs the REGISTRATIONSOURCE column. Source data captured after the feature shipped will be lost.",
+        "Legacy SELFREGISTERED is left intact and is NOT removed by this migration."
+    ],
+    "relatedIssue": "#21181 - Add PatientRegistrationSource field to Patient entity"
+}

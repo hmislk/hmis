@@ -1,0 +1,43 @@
+{
+    "version": "v2.1.18",
+    "description": "Create STOCKHISTORYARCHIVE table for archiving old StockHistory records",
+    "author": "Dr M H B Ariyaratne",
+    "estimatedDurationMinutes": 2,
+    "requiresDowntime": false,
+    "affectedTables": ["stockhistory", "stockhistoryarchive"],
+    "affectedModules": ["Pharmacy"],
+    "preRequisites": [
+        "Database backup completed",
+        "STOCKHISTORY table must exist (it is the source of cloned schema)"
+    ],
+    "migrationSteps": [
+        {
+            "description": "Detect actual table name case for STOCKHISTORY and STOCKHISTORYARCHIVE"
+        },
+        {
+            "description": "CREATE TABLE STOCKHISTORYARCHIVE LIKE STOCKHISTORY (clones columns and indexes, no FKs)"
+        },
+        {
+            "description": "Remove AUTO_INCREMENT from ID column so archived rows keep their original StockHistory IDs"
+        },
+        {
+            "description": "Add ARCHIVEDAT DATETIME column for tracking when each row was archived"
+        },
+        {
+            "description": "Add index on CREATEDAT for efficient archive cutoff and lookup queries"
+        },
+        {
+            "description": "Verify schema, column count and presence of ID/CREATEDAT/ARCHIVEDAT columns"
+        }
+    ],
+    "expectedOutcome": {
+        "primaryFix": "STOCKHISTORYARCHIVE table available for the archival job to move rows older than the configured retention window",
+        "impact": "Empty table created; no data movement yet. Archival itself is performed by the application's scheduled or manual archive job.",
+        "tablesAdded": 1
+    },
+    "rollbackNotes": [
+        "Rollback DROPs STOCKHISTORYARCHIVE. If the table has been populated, archived data will be lost.",
+        "Take a backup of STOCKHISTORYARCHIVE before rollback if its rows are still needed."
+    ],
+    "relatedIssue": "#20726 - perf: archive old StockHistory records to reduce 850MB table bloat"
+}

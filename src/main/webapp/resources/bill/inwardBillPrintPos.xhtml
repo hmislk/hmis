@@ -280,11 +280,13 @@
                             <h:outputLabel value="#{bip.item.printName}" style="text-transform: capitalize!important;">
                             </h:outputLabel>
                         </td>
-                        <td   style="padding-left: 40px;">
-                            <h:outputLabel    value="#{bip.grossValue}"    >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                            <td   style="padding-left: 40px;">
+                                <h:outputLabel    value="#{bip.grossValue}"    >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </h:panelGroup>
 
                     </tr>
 
@@ -309,7 +311,7 @@
                             <hr/>                       
                         </td>
                     </tr>
-                        <h:panelGroup rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowInwardFee') or webUserController.hasPrivilege('ShowServiceCharges')}">
                             <tr >
                                 <td class="totalsBlock" >
                                     <h:outputLabel value="Actual Total"  style="padding-right: 170px"/>
