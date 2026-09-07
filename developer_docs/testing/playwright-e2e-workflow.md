@@ -131,6 +131,8 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [104. A department/room created by direct SQL needs more than the FK columns](#104-a-departmentroom-created-by-direct-sql-needs-more-than-the-fk-columns)
 - [105. A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API](#105-a-pcalendar-bound-to-date-of-birth-can-ignore-real-keystrokes--use-the-widgets-setdate-api)
 - [106. A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation](#106-a-third-level-menu-item-cant-be-clicked-directly--fire-its-own-onclick-which-is-still-the-menu-path-not-url-navigation)
+- [107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action](#107-inward_lab_dashboardxhtmls-send-to-lab-has-no-pmessagespgrowl-at-all--a-missing-transporter-silently-no-ops-the-whole-action)
+- [108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly](#108-this-dashboards-sample-transporter-pautocomplete-ignores-synthetic-keystrokes--drive-widgetsearch-directly)
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
 - [Quick checklist](#quick-checklist)
 
@@ -3010,6 +3012,40 @@ EclipseLink cache has bitten targeted-refresh attempts before (see the
 "Native settle poisons the Bill entity" gotcha).
 
 Found while verifying issue #23523.
+
+## 107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action
+
+Found while verifying issue #23578 (block Nursing Discharge until lab
+investigations are sent to lab). The dashboard's "Send to Lab" button calls
+`InwardLaboratoryController.sendSamplesToLab()` →
+`PatientInvestigationController.sendSamplesToLab(true)`, which requires the
+"Sample Transporter" `p:autoComplete` to be filled (`transporterMandatory =
+true`) and otherwise calls `JsfUtil.addErrorMessage("Transporter is
+Missing")` and returns. The page has no `p:messages`/`p:growl` component
+anywhere, so clicking Send to Lab with the transporter empty just silently
+reloads the search results with the sample still at "Sample Collected" —
+same failure class as item 88's first finding, different page. If a
+sample's status doesn't advance after clicking Send to Lab with no visible
+error, check the Sample Transporter field is actually populated before
+suspecting the controller logic.
+
+## 108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly
+
+Same page/issue as item 107. Playwright's `browser_type`
+(`pressSequentially`) into the Sample Transporter input updated the DOM
+value but never fired PrimeFaces' autocomplete AJAX query — no network
+request went out, and the suggestion panel stayed empty even after a 1.5s
+wait. Driving the widget directly worked immediately:
+```js
+const w = PrimeFaces.widgets['widget_<formId>_<inputId>'];
+w.search('a');                         // fires the AJAX query
+// then, after the panel populates:
+w.panel[0].querySelector('.ui-autocomplete-item').click();
+```
+Confirmed the resulting hidden value actually stuck (visible input showed
+the selected staff name, and the subsequent Send to Lab submit used it
+correctly) — this is the same class of gotcha as item 50, but for
+`p:autoComplete` specifically rather than `p:calendar`/`p:selectOneMenu`.
 
 ---
 
