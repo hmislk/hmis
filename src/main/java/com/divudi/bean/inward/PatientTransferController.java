@@ -670,6 +670,22 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("Please select a theatre room.");
             return;
         }
+        // This bean is @SessionScoped, so a stale postback from a different
+        // browser tab could carry a selectedSurgeryBill left over from a
+        // DIFFERENT admission's send-to-theatre page (current gets reset per
+        // navigation, but two tabs sharing the same session can race). Since
+        // acceptInTheatre() uses selectedSurgeryBill.getProcedure() to
+        // attribute the theatre room (and its charges), a mismatched bill
+        // here would misattribute a totally different patient's surgery -
+        // reject and clear rather than silently trusting client state.
+        if (selectedSurgeryBill != null
+                && (selectedSurgeryBill.getPatientEncounter() == null
+                || selectedSurgeryBill.getPatientEncounter().getId() == null
+                || !selectedSurgeryBill.getPatientEncounter().getId().equals(current.getId()))) {
+            JsfUtil.addErrorMessage("Selected surgery does not belong to this admission. Please re-select.");
+            selectedSurgeryBill = null;
+            return;
+        }
         PatientTransferRequest existing = findActiveSendToTheatreRequest(current, selectedSurgeryBill);
         if (existing != null) {
             JsfUtil.addErrorMessage(selectedSurgeryBill != null
