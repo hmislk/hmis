@@ -540,11 +540,14 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        // Check if there's an ongoing stock taking for this department
+        // Check if there's an ongoing stock taking for this department and department type
         // Use department from snapshotBill to prevent bypass via mutable controller field
         Department deptFromBill = snapshotBill.getDepartment();
-        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill)) {
-            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department. Please complete the existing session first.");
+        com.divudi.core.data.DepartmentType deptTypeFromBill = snapshotBill.getDepartmentType();
+        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill, deptTypeFromBill)) {
+            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department"
+                    + (deptTypeFromBill != null ? " and department type (" + deptTypeFromBill.name() + ")" : "")
+                    + ". Please complete the existing session first.");
             //LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
@@ -3555,16 +3558,23 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Check if there's an ongoing (incomplete) stock taking for the given
-     * department. An ongoing stock taking is one where bill.completed = false.
+     * department and department type. An ongoing stock taking is one where
+     * bill.completed = false. Stock takes for different department types
+     * (e.g. Pharmacy vs Store) within the same department cover disjoint
+     * item sets, so they are allowed to run concurrently. A legacy bill
+     * with a NULL departmentType (predating this field) is treated as
+     * conflicting with every department type, since its item scope is
+     * unknown and may overlap.
      */
-    private boolean hasOngoingStockTaking(Department dept) {
+    private boolean hasOngoingStockTaking(Department dept, com.divudi.core.data.DepartmentType deptType) {
         if (dept == null || dept.getId() == null) {
             return false;
         }
-        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false)";
+        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false) and (b.departmentType is null or b.departmentType=:deptType)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacySnapshotBill);
         params.put("deptId", dept.getId());
+        params.put("deptType", deptType);
         Long count = billFacade.countByJpql(jpql, params);
         return count != null && count > 0;
     }
