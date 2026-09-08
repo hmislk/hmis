@@ -10,6 +10,10 @@
     <cc:interface>
         <cc:attribute name="receipt" type="com.divudi.core.data.dto.InwardBillReceiptDTO" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="titleLabel" type="java.lang.String" default="Deposit Cancellation Receipt"/>
+        <cc:attribute name="dateLabel" type="java.lang.String" default="Cancelled At"/>
+        <cc:attribute name="billNoLabel" type="java.lang.String" default="Cancellation Bill No"/>
+        <cc:attribute name="reasonLabel" type="java.lang.String" default="Cancellation Reason"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -47,7 +51,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Deposit Cancellation Receipt" style="font-size: 20px;" /><br/>
+                <h:outputLabel value="#{cc.attrs.titleLabel}" style="font-size: 20px;" /><br/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 
@@ -155,7 +159,7 @@
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel
-                                value="Cancelled At"
+                                value="#{cc.attrs.dateLabel}"
                                 style="text-align: center!important;
                                 font-size: 12px!important;
                                 font-family:Arial, Helvetica, sans-serif!important;">
@@ -176,7 +180,7 @@
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
                             <h:outputLabel
-                                value="Cancellation Bill No"
+                                value="#{cc.attrs.billNoLabel}"
                                 style="text-align: center!important;
                                 font-size: 12px!important;
                                 font-family:Arial, Helvetica, sans-serif!important;">
@@ -217,7 +221,7 @@
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
                                 <h:outputLabel
-                                    value="Cancellation Reason"
+                                    value="#{cc.attrs.reasonLabel}"
                                     style="text-align: center!important;
                                     font-size: 12px!important;
                                     font-family:Arial, Helvetica, sans-serif!important;">
