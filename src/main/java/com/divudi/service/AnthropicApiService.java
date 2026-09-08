@@ -3,11 +3,18 @@ package com.divudi.service;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemCreateRequestDTO;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemDTO;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemPageDTO;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemUpdateRequestDTO;
 import com.divudi.core.entity.AiMessage;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ApiKeyFacade;
 import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.service.inward.AdmissionChargeApiService;
+import com.divudi.service.inward.AdmissionChargeValidationException;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URI;
@@ -51,6 +58,9 @@ public class AnthropicApiService implements Serializable {
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+
+    @EJB
+    private AdmissionChargeApiService admissionChargeApiService;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -2011,6 +2021,90 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageAdmissionChargesTool = Json.createObjectBuilder()
+                .add("name", "manage_admission_charges")
+                .add("description",
+                        "Manage AdmissionChargeItem rows — routine charges billed automatically on every matching "
+                        + "admission (issue #23594), additive alongside room and service charges. These are NOT "
+                        + "inpatient packages. "
+                        + "Resolution is two-step per item, applied when an admission is saved: admission type is "
+                        + "the outer filter, payment method the inner one; a null in either column means "
+                        + "\"applies to all\" for that dimension. "
+                        + "Configuration trap: because admission type is a filter, not a preference, adding one "
+                        + "admission-type-specific row for an item completely replaces the null-admissionType row "
+                        + "set for that item and that admission type — it does not fall back to it. Configuring "
+                        + "(Admission Charge, Day Case, Cash) and forgetting the Day Case Credit row leaves a "
+                        + "Credit Day Case admission with NO admission charge at all. Warn the user whenever a "
+                        + "change would leave an item's admission-type-specific rows covering only one of Cash "
+                        + "and Credit for a given admission type — check with LIST filtered by itemId. "
+                        + "paymentMethod is only ever Cash or Credit (or omitted, meaning \"both\") — an admission "
+                        + "can hold no other value; any other PaymentMethod value is rejected. "
+                        + "The item behind a row must have a department, an institution, an inwardChargeType, and "
+                        + "at least one live fee, or the charge cannot be billed — an item with no fee produces a "
+                        + "charge that cancels and refunds as zero. "
+                        + "Double-charge trap: AdmissionType.admissionFee is a separate, older mechanism already "
+                        + "added to the bill under the Admission Fee charge type, without a bill item. An "
+                        + "admission type with a non-zero admissionFee plus an AdmissionChargeItem configured "
+                        + "here charges the patient twice — warn the user before configuring a general admission "
+                        + "charge against an admission type that already has a non-zero admissionFee. "
+                        + "At most one live row may exist per (item, admissionType, paymentMethod) triple — "
+                        + "CREATE/UPDATE reject a duplicate; retire the existing row first, or update it instead. "
+                        + "action: LIST | GET | CREATE | UPDATE | RETIRE | RESTORE. "
+                        + "RETIRE only soft-retires, and RESTORE undoes it, so a mistaken retire is recoverable — "
+                        + "pass includeRetired=true to LIST or GET to see what was retired and get the id to "
+                        + "restore. "
+                        + "Always confirm with the user before CREATE, UPDATE, RETIRE, or RESTORE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("CREATE").add("UPDATE")
+                                                .add("RETIRE").add("RESTORE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionChargeItem id. Required for GET, UPDATE, RETIRE, RESTORE."))
+                                .add("itemId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Item (service) id being charged. Required for CREATE. Optional filter for LIST, and optional for UPDATE to repoint the row at a different item."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionType id this row applies to. Optional; omitted means \"any admission type\". Optional filter for LIST."))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Cash or Credit. Optional; omitted means \"both\". No other PaymentMethod value is valid here — an admission is never any other payment method."))
+                                .add("price", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Charge amount, must be >= 0. Required for CREATE."))
+                                .add("qty", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Quantity. Optional; defaults to 1.0."))
+                                .add("orderNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Display ordering. Optional; defaults to 0."))
+                                .add("clearAdmissionType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — UPDATE only. Sets admissionType back to null (\"any\"). Ignored if admissionTypeId is also given. A plain JSON body cannot tell \"field omitted\" apart from \"field set to null\", so clearing this column is explicit."))
+                                .add("clearPaymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — UPDATE only. Sets paymentMethod back to null (\"both\"). Ignored if paymentMethod is also given."))
+                                .add("includeRetired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — include retired rows in LIST/GET. Optional; defaults to false. Use it to find a row retired by mistake so it can be restored with RESTORE."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for RETIRE."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "LIST only — page size (1–100). Optional; defaults to 30."))
+                                .add("offset", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "LIST only — rows to skip, for paging through a configuration set larger than one page. The response carries a total count so you can tell whether more remain. Optional; defaults to 0.")))
+                        .add("required", Json.createArrayBuilder().add("action")))
+                .build();
+
         JsonObject lookupFinanceBillTool = Json.createObjectBuilder()
                 .add("name", "lookup_finance_bill")
                 .add("description",
@@ -2188,6 +2282,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageChannelBookingTool)
                 .add(manageInpatientTemplates)
                 .add(manageTimedItemsTool)
+                .add(manageAdmissionChargesTool)
                 .add(lookupFinanceBillTool)
                 .build();
     }
@@ -2648,6 +2743,25 @@ public class AnthropicApiService implements Serializable {
                             departmentId, institutionId, categoryId, inactive,
                             fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating, durationUnit,
                             feesJson, query, size, offset, includeRetired, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_admission_charges": {
+                    String action              = toolInput.getString("action", "LIST");
+                    String id                  = toolInput.containsKey("id")                 ? toolInput.getString("id", "")                 : "";
+                    String itemId              = toolInput.containsKey("itemId")             ? toolInput.getString("itemId", "")             : "";
+                    String admissionTypeId     = toolInput.containsKey("admissionTypeId")    ? toolInput.getString("admissionTypeId", "")    : "";
+                    String paymentMethod       = toolInput.containsKey("paymentMethod")      ? toolInput.getString("paymentMethod", "")      : "";
+                    String price               = toolInput.containsKey("price")              ? toolInput.getString("price", "")              : "";
+                    String qty                 = toolInput.containsKey("qty")                ? toolInput.getString("qty", "")                : "";
+                    String orderNo             = toolInput.containsKey("orderNo")            ? toolInput.getString("orderNo", "")            : "";
+                    String clearAdmissionType  = toolInput.containsKey("clearAdmissionType") ? toolInput.getString("clearAdmissionType", "") : "";
+                    String clearPaymentMethod  = toolInput.containsKey("clearPaymentMethod") ? toolInput.getString("clearPaymentMethod", "") : "";
+                    String includeRetired      = toolInput.containsKey("includeRetired")     ? toolInput.getString("includeRetired", "")     : "";
+                    String retireComments      = toolInput.containsKey("retireComments")     ? toolInput.getString("retireComments", "")     : "";
+                    String size                = toolInput.containsKey("size")               ? toolInput.getString("size", "")               : "";
+                    String offset              = toolInput.containsKey("offset")             ? toolInput.getString("offset", "")             : "";
+                    return manageAdmissionCharges(action, id, itemId, admissionTypeId, paymentMethod, price, qty,
+                            orderNo, clearAdmissionType, clearPaymentMethod, includeRetired, retireComments,
+                            size, offset, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -6155,6 +6269,191 @@ public class AnthropicApiService implements Serializable {
             return "Timed items API error: " + e.getMessage();
         }
     }
+
+    /**
+     * Handles {@code manage_admission_charges}. Unlike the other manage_* tools, this one is
+     * an in-process call to {@link AdmissionChargeApiService} rather than an HTTP round-trip
+     * through the REST API — {@code AnthropicApiService} is itself server-side, so it can call
+     * the same validated business logic directly. {@link AdmissionChargeValidationException} is
+     * caught here and surfaced as a plain "Error: ..." string, never a stack trace.
+     */
+    private String manageAdmissionCharges(String action, String id, String itemId, String admissionTypeId,
+            String paymentMethod, String price, String qty, String orderNo,
+            String clearAdmissionType, String clearPaymentMethod,
+            String includeRetired, String retireComments, String size, String offset,
+            String hmisApiKey) {
+        String normalizedAction = action == null ? "" : action.trim().toUpperCase();
+        try {
+            switch (normalizedAction) {
+                case "LIST": {
+                    Long itemIdL = itemId.isEmpty() ? null : Long.parseLong(itemId);
+                    Long admissionTypeIdL = admissionTypeId.isEmpty() ? null : Long.parseLong(admissionTypeId);
+                    boolean includeRetiredB = Boolean.parseBoolean(includeRetired);
+                    int limit = size.isEmpty() ? 30 : Integer.parseInt(size);
+                    int off = offset.isEmpty() ? 0 : Integer.parseInt(offset);
+                    AdmissionChargeItemPageDTO pageResult = admissionChargeApiService.search(
+                            itemIdL, admissionTypeIdL, paymentMethod.isEmpty() ? null : paymentMethod,
+                            includeRetiredB, limit, off);
+                    return formatAdmissionChargePage(pageResult);
+                }
+                case "GET": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for GET.";
+                    }
+                    boolean includeRetiredB = Boolean.parseBoolean(includeRetired);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.findById(Long.parseLong(id), includeRetiredB);
+                    return "Admission charge item:\n" + formatAdmissionChargeItem(dto);
+                }
+                case "CREATE": {
+                    if (itemId.isEmpty()) {
+                        return "Error: itemId is required for CREATE.";
+                    }
+                    if (price.isEmpty()) {
+                        return "Error: price is required for CREATE.";
+                    }
+                    AdmissionChargeItemCreateRequestDTO request = new AdmissionChargeItemCreateRequestDTO();
+                    request.setItemId(Long.parseLong(itemId));
+                    if (!admissionTypeId.isEmpty()) {
+                        request.setAdmissionTypeId(Long.parseLong(admissionTypeId));
+                    }
+                    if (!paymentMethod.isEmpty()) {
+                        request.setPaymentMethod(paymentMethod);
+                    }
+                    request.setPrice(Double.parseDouble(price));
+                    if (!qty.isEmpty()) {
+                        request.setQty(Double.parseDouble(qty));
+                    }
+                    if (!orderNo.isEmpty()) {
+                        request.setOrderNo(Integer.parseInt(orderNo));
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.create(request, user);
+                    return "Admission charge item created.\n" + formatAdmissionChargeItem(dto);
+                }
+                case "UPDATE": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for UPDATE.";
+                    }
+                    AdmissionChargeItemUpdateRequestDTO request = new AdmissionChargeItemUpdateRequestDTO();
+                    if (!itemId.isEmpty()) {
+                        request.setItemId(Long.parseLong(itemId));
+                    }
+                    if (!admissionTypeId.isEmpty()) {
+                        request.setAdmissionTypeId(Long.parseLong(admissionTypeId));
+                    } else if (!clearAdmissionType.isEmpty()) {
+                        request.setClearAdmissionType(Boolean.parseBoolean(clearAdmissionType));
+                    }
+                    if (!paymentMethod.isEmpty()) {
+                        request.setPaymentMethod(paymentMethod);
+                    } else if (!clearPaymentMethod.isEmpty()) {
+                        request.setClearPaymentMethod(Boolean.parseBoolean(clearPaymentMethod));
+                    }
+                    if (!price.isEmpty()) {
+                        request.setPrice(Double.parseDouble(price));
+                    }
+                    if (!qty.isEmpty()) {
+                        request.setQty(Double.parseDouble(qty));
+                    }
+                    if (!orderNo.isEmpty()) {
+                        request.setOrderNo(Integer.parseInt(orderNo));
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.update(Long.parseLong(id), request, user);
+                    return "Admission charge item updated.\n" + formatAdmissionChargeItem(dto);
+                }
+                case "RETIRE": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for RETIRE.";
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.retire(
+                            Long.parseLong(id), retireComments.isEmpty() ? null : retireComments, user);
+                    return "Admission charge item retired.\n" + formatAdmissionChargeItem(dto);
+                }
+                case "RESTORE": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for RESTORE.";
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.restore(Long.parseLong(id), user);
+                    return "Admission charge item restored.\n" + formatAdmissionChargeItem(dto);
+                }
+                default:
+                    return "Error: Unknown action '" + action + "'. Supported: LIST, GET, CREATE, UPDATE, RETIRE, RESTORE.";
+            }
+        } catch (AdmissionChargeValidationException e) {
+            return "Error: " + e.getMessage();
+        } catch (NumberFormatException e) {
+            return "Error: invalid numeric value — " + e.getMessage();
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "manage_admission_charges failed for action {0}: {1}",
+                    new Object[]{action, e.getMessage()});
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String formatAdmissionChargeItem(AdmissionChargeItemDTO dto) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("id: ").append(dto.getId()).append("\n");
+        sb.append("item: ").append(dto.getItemName()).append(" (itemId=").append(dto.getItemId()).append(")\n");
+        if (dto.getItemDepartmentName() != null) {
+            sb.append("department: ").append(dto.getItemDepartmentName()).append("\n");
+        }
+        if (dto.getInwardChargeType() != null) {
+            sb.append("inwardChargeType: ").append(dto.getInwardChargeType()).append("\n");
+        }
+        sb.append("admissionType: ").append(dto.getAdmissionTypeId() != null
+                ? dto.getAdmissionTypeName() + " (id=" + dto.getAdmissionTypeId() + ")" : "any (applies to every admission type)")
+                .append("\n");
+        sb.append("paymentMethod: ").append(dto.getPaymentMethod() != null
+                ? dto.getPaymentMethod() : "both (applies to Cash and Credit)").append("\n");
+        sb.append("price: ").append(dto.getPrice()).append("\n");
+        sb.append("qty: ").append(dto.getQty()).append("\n");
+        sb.append("orderNo: ").append(dto.getOrderNo()).append("\n");
+        sb.append("retired: ").append(dto.isRetired());
+        return sb.toString();
+    }
+
+    private String formatAdmissionChargePage(AdmissionChargeItemPageDTO page) {
+        List<AdmissionChargeItemDTO> items = page.getItems();
+        if (items == null || items.isEmpty()) {
+            return "No admission charge items found (total=" + page.getTotal() + ").";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Found ").append(page.getTotal()).append(" admission charge item(s); showing ")
+                .append(items.size()).append(" starting at offset ").append(page.getOffset()).append(":\n\n");
+        for (AdmissionChargeItemDTO dto : items) {
+            sb.append(formatAdmissionChargeItem(dto)).append("\n\n");
+        }
+        long shownThrough = (long) page.getOffset() + items.size();
+        if (shownThrough < page.getTotal()) {
+            sb.append("... ").append(page.getTotal() - shownThrough)
+                    .append(" more row(s) remain. Pass offset=").append(shownThrough).append(" to see the next page.\n");
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * Resolves the WebUser behind the caller's HMIS API key, for the {@code creater}/
+     * {@code retirer} fields on records this tool writes. Mirrors {@link #resolveCallerName}'s
+     * lookup but returns the entity rather than a display string.
+     */
+    private WebUser resolveCallerWebUser(String hmisApiKey) {
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", hmisApiKey);
+            ApiKey ak = apiKeyFacade.findFirstByJpql(
+                    "SELECT a FROM ApiKey a WHERE a.keyValue = :k AND a.retired = false", p);
+            return ak != null ? ak.getWebUser() : null;
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Could not resolve caller WebUser from hmisApiKey", e);
+            return null;
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -6384,6 +6683,35 @@ public class AnthropicApiService implements Serializable {
           .append("PUT_FEES replaces the entire slot list in one atomic, fully-validated call — prefer it over a run of POST_FEE calls when ")
           .append("configuring a tiered service; slots you leave out of the array are retired. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
+        sb.append("### manage_admission_charges\n");
+        sb.append("Manage AdmissionChargeItem rows — routine charges billed automatically on every matching admission, ")
+          .append("additive alongside room and service charges. These are NOT inpatient packages. ")
+          .append("Resolution is two-step per item, applied when an admission is saved: admission type is the outer filter, ")
+          .append("payment method the inner one; a null in either column means \"applies to all\" for that dimension. ")
+          .append("Configuration trap: because admission type is a filter, not a preference, adding one admission-type-specific ")
+          .append("row for an item completely replaces the null-admissionType row set for that item and that admission type — ")
+          .append("it does not fall back to it. Configuring (Admission Charge, Day Case, Cash) and forgetting the Day Case ")
+          .append("Credit row leaves a Credit Day Case admission with NO admission charge at all. Warn the user whenever a ")
+          .append("change (CREATE, UPDATE, or RETIRE) would leave an item's admission-type-specific rows covering only one of ")
+          .append("Cash and Credit for a given admission type — check with LIST filtered by itemId before and after the change. ")
+          .append("paymentMethod is only ever Cash or Credit (or omitted, meaning \"both\") — an admission can hold no other ")
+          .append("value; any other PaymentMethod value is rejected. ")
+          .append("The item behind a row must have a department, an institution, an inwardChargeType, and at least one live ")
+          .append("fee, or the charge cannot be billed — an item with no fee produces a charge that cancels and refunds as zero. ")
+          .append("Double-charge trap: AdmissionType.admissionFee is a separate, older mechanism already added to the bill ")
+          .append("under the Admission Fee charge type, without a bill item. An admission type with a non-zero admissionFee ")
+          .append("plus an AdmissionChargeItem configured here charges the patient twice — warn the user before configuring ")
+          .append("a general admission charge against an admission type that already has a non-zero admissionFee. ")
+          .append("At most one live row may exist per (item, admissionType, paymentMethod) triple — CREATE/UPDATE reject a ")
+          .append("duplicate; retire the existing row first, or update it instead. ")
+          .append("action: LIST | GET | CREATE | UPDATE | RETIRE | RESTORE. LIST is paged with size + offset and filters on ")
+          .append("itemId, admissionTypeId, paymentMethod, includeRetired. UPDATE uses clearAdmissionType / clearPaymentMethod ")
+          .append("to explicitly reset either column back to null, since a plain body cannot tell \"omitted\" apart from ")
+          .append("\"set to null\" and both are meaningful. ")
+          .append("RETIRE only soft-retires, and RESTORE undoes it, so a mistaken retire is recoverable — pass ")
+          .append("includeRetired=true to LIST or GET to see what was retired and get the id to restore. ")
+          .append("Always confirm with the user before CREATE, UPDATE, RETIRE, or RESTORE — these changes affect live inward ")
+          .append("billing on every future matching admission.\n\n");
         sb.append("### manage_inpatient_templates\n");
         sb.append("Create, read, update, and retire document templates (HTML with placeholder tokens). ")
           .append("Supported types: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter. ")
@@ -7067,6 +7395,22 @@ public class AnthropicApiService implements Serializable {
                     {"PUT",    "/timed-items/{id}/fees/{feeId}", "Update fee tier"},
                     {"DELETE", "/timed-items/{id}/fees/{feeId}", "Soft-retire fee tier"},
                     {"PATCH",  "/timed-items/{id}/fees/{feeId}/restore", "Un-retire fee tier"}
+                });
+
+        appendModule(sb, "Admission Charges", "/admission-charges",
+                "Manage AdmissionChargeItem rows — routine charges billed automatically on every matching "
+                + "admission, additive alongside room and service charges (not inpatient packages). Each row "
+                + "resolves per (item, admissionType, paymentMethod): admissionType null means any type, "
+                + "paymentMethod null means both Cash and Credit. At most one live row per triple. Retire is "
+                + "soft and reversible via restore.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_ADMISSION_CHARGES.md"),
+                new String[][]{
+                    {"GET",    "/admission-charges/search?itemId=&admissionTypeId=&paymentMethod=&includeRetired=&limit=&offset=", "Search admission charge items. Returns {items, total, limit, offset}"},
+                    {"GET",    "/admission-charges/{id}?includeRetired=", "Fetch one admission charge item"},
+                    {"POST",   "/admission-charges",              "Create. Body: itemId, price (required); admissionTypeId, paymentMethod, qty, orderNo optional"},
+                    {"PUT",    "/admission-charges/{id}",          "Update (all fields optional). Use clearAdmissionType/clearPaymentMethod to explicitly reset either column to null"},
+                    {"DELETE", "/admission-charges/{id}",          "Soft-retire admission charge item. Optional: retireComments (query param)"},
+                    {"PATCH",  "/admission-charges/{id}/restore",  "Un-retire admission charge item"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────

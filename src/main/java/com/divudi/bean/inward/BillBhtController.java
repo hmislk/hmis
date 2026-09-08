@@ -75,6 +75,8 @@ import com.divudi.core.data.lab.InvestigationTubeSticker;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.UserPreference;
+import com.divudi.service.inward.InwardServiceBillRequest;
+import com.divudi.service.inward.InwardServiceBillService;
 import com.divudi.ws.lims.Lims;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -734,42 +736,6 @@ public class BillBhtController implements Serializable {
     @Inject
     private BillSearch billSearch;
 
-    private void saveBatchBill() {
-        Bill tmp = new BilledBill();
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-        tmp.setPatient(patientEncounter.getPatient());
-        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
-        String batchBillId = "";
-        
-        if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
-            batchBillId = billNumberBean.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
-        }else{
-            batchBillId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-        }
-        
-        tmp.setDeptId(batchBillId);
-        tmp.setInsId(batchBillId);
-
-        if (tmp.getId() == null) {
-            getBillFacade().create(tmp);
-        }
-
-        for (Bill b : getBills()) {
-            b.setBackwardReferenceBill(tmp);
-            getBillFacade().edit(b);
-        }
-
-        for (Bill b : getBills()) {
-            tmp.getForwardReferenceBills().add(b);
-        }
-
-        getBillFacade().edit(tmp);
-
-    }
-
     public void cancellAll() {
         for (Bill b : getBills()) {
             getBillSearch().setBill((BilledBill) b);
@@ -781,82 +747,15 @@ public class BillBhtController implements Serializable {
 
     }
 
-    public void putToBills(Department matrixDepartment, PaymentMethod paymentMethod) {
-
-        Set<Department> billDepts = new HashSet<>();
-        for (BillEntry e : lstBillEntries) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
-        }
-        for (Department d : billDepts) {
-            BilledBill myBill = new BilledBill();
-            saveBill(d, myBill, matrixDepartment);
-            List<BillEntry> tmp = new ArrayList<>();
-            for (BillEntry e : lstBillEntries) {
-                if (e.getBillItem().getItem().getDepartment().equals(d)) {
-                    tmp.add(e);
-                }
-            }
-            applyItemRequestReference(myBill, tmp);
-            List<BillItem> tmpBis = saveBillItems(myBill, tmp, getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
-            for (int i = 0; i < tmpBis.size(); i++) {
-                tmpBis.get(i).setSearialNo(i);
-            }
-            getBillBean().calculateBillItems(myBill, tmp);
-            myBill.setBillItems(tmpBis);
-            getBills().add(myBill);
-        }
-
-    }
-
-    /**
-     * If any of the entries being saved onto this bill originated from an
-     * Item/Service Request line (issue #21793 redesign), set the bill's
-     * referenceBill so the request stays traceable to the bill it produced.
-     * Each such entry's originating request BillItem is threaded onto the
-     * real BillItem in {@link #saveBillItems(Bill, BillItem, BillEntry, List, WebUser, Department)}.
-     */
-    private void applyItemRequestReference(Bill bill, List<BillEntry> entries) {
-        for (BillEntry e : entries) {
-            if (e.getSourceRequestBillItem() != null && e.getSourceRequestBillItem().getBill() != null) {
-                bill.setReferenceBill(e.getSourceRequestBillItem().getBill());
-                return;
-            }
-        }
-    }
-
-    public BillItem saveBillItems(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu, Department matrixDepartment) {
-
-        billItem.setCreatedAt(new Date());
-        billItem.setCreater(wu);
-        billItem.setBill(bill);
-
-        if (billItem.getInwardChargeType() == null && billItem.getItem() != null
-                && billItem.getItem().getInwardChargeType() != null) {
-            billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
-        }
-
-        if (billEntry != null && billEntry.getSourceRequestBillItem() != null) {
-            billItem.setReferanceBillItem(billEntry.getSourceRequestBillItem());
-        }
-
-        if (billItem.getId() == null) {
-            getBillItemFacade().create(billItem);
-        }
-
-        getBillBean().saveBillComponent(billEntry, bill, wu);
-
-        for (BillFee bf : billFees) {
-            getInwardBean().saveBillFee(bf, billItem, bill, wu);
-            billItem.getBillFees().add(bf);
-        }
-
-        getBillBean().updateBillItemByBillFee(billItem);
-
-        return billItem;
-    }
-
     @Inject
     PriceMatrixController priceMatrixController;
+
+    /**
+     * The shared inward service settle pipeline, also used by the automatic
+     * admission charges (issue #23594) so the two paths cannot drift apart.
+     */
+    @Inject
+    private InwardServiceBillService inwardServiceBillService;
 
     public PriceMatrixController getPriceMatrixController() {
         return priceMatrixController;
@@ -881,57 +780,6 @@ public class BillBhtController implements Serializable {
         return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
     }
 
-    public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment, PaymentMethod paymentMethod) {
-        List<BillItem> list = new ArrayList<>();
-        for (BillEntry e : billEntries) {
-            double staffFee = 0.0;
-            double collectingCentreFee = 0.0;
-            double hospitalFee = 0.0;
-            double reagentFee = 0.0;
-            double otherFee = 0.0;
-            double marginFee = 0.0;
-
-            BillItem billItem = saveBillItems(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, matrixDepartment);
-            billItem.setSearialNo(list.size());
-
-            for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, null, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null, resolveCurrentRoomCategory(bill.getPatientEncounter()));
-                getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
-                getBillFeeFacade().edit(bf);
-
-                if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
-                    collectingCentreFee += bf.getFeeValue();
-                } else if (bf.getFee().getFeeType() == FeeType.Staff) {
-                    staffFee += bf.getFeeValue();
-                } else if (bf.getFee().getFeeType() == FeeType.Chemical) {
-                    reagentFee += bf.getFeeValue();
-                } else if (bf.getFee().getFeeType() == FeeType.Additional) {
-                    otherFee += bf.getFeeValue();
-                } else {
-                    hospitalFee += bf.getFeeValue();
-                }
-
-                marginFee += bf.getFeeMargin();
-            }
-
-            billItem.setHospitalFee(hospitalFee);
-            billItem.setCollectingCentreFee(collectingCentreFee);
-            billItem.setReagentFee(reagentFee);
-            billItem.setOtherFee(otherFee);
-            billItem.setStaffFee(staffFee);
-            billItem.setMarginValue(marginFee);
-
-            billItemFacade.editAndCommit(billItem);
-
-            list.add(billItem);
-
-        }
-
-        getBillBean().updateBillByBillFee(bill);
-
-        return list;
-    }
-
     public List<ItemLight> fillInwardItems() {
         UserPreference up = sessionController.getDepartmentPreference();
         switch (up.getInwardItemListingStrategy()) {
@@ -950,35 +798,40 @@ public class BillBhtController implements Serializable {
         }
     }
 
+    /**
+     * Settles the entries currently on the cart through
+     * {@link InwardServiceBillService} - the shared pipeline the automatic
+     * admission charges also run (issue #23594), so the two can never drift.
+     *
+     * <p>Two things stay exactly as they were. The bill's own
+     * {@code paymentMethod} is this controller's field, which
+     * {@link #settleBill()} nulls before getting here - not the encounter's.
+     * And {@code batchBill} is deliberately <b>not</b> assigned from the result:
+     * the old {@code saveBatchBill()} kept its bill local, so
+     * {@link #settleBillSurgery()} still operates on the surgery bill
+     * afterwards.</p>
+     */
     private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
-        if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
-            BilledBill temp = new BilledBill();
-            Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
-            applyItemRequestReference(b, getLstBillEntries());
+        InwardServiceBillRequest request = new InwardServiceBillRequest();
+        request.setBillEntries(getLstBillEntries());
+        request.setPatientEncounter(patientEncounter);
+        request.setMatrixDepartment(matrixDepartment);
+        request.setMarginPaymentMethod(paymentMethod);
+        request.setBillPaymentMethod(this.paymentMethod);
+        request.setPaymentScheme(getPaymentScheme());
+        request.setReferredBy(referredBy);
+        request.setSurgeryBatchBill(getBatchBill());
+        request.setLoggedUser(getSessionController().getLoggedUser());
+        request.setLoggedDepartment(sessionController.getDepartment());
+        request.setCreatingDepartment(getSessionController().getLoggedUser().getDepartment());
+        // settleBillSurgery() does not reset bills before settling, and the batch
+        // bill has always been linked over the whole accumulated list.
+        request.setBillCollector(getBills());
+        request.setApplyInwardMargin(true);
 
-            List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
-            b.setBillItems(list);
-            
-            Priority highestPriority = Optional
-                    .ofNullable(list)
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .filter(bi -> bi.getPriority() != null)
-                    .map(BillItem::getPriority)
-                    .max(Comparator.comparingInt(Priority::getLevel))
-                    .orElse(Priority.NORMAL);
-
-            b.setPriority(highestPriority);
-            
-            billFacade.edit(b);
-            getBillBean().calculateBillItems(b, getLstBillEntries());
-            getBills().add(b);
-        } else {
-            putToBills(matrixDepartment, paymentMethod);
-        }
+        inwardServiceBillService.createServiceBills(request);
 
         printPreview = true;
-        saveBatchBill();
 
         JsfUtil.addSuccessMessage("Bill Saved");
 
@@ -1058,76 +911,6 @@ public class BillBhtController implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }
-
-    private Bill saveBill(Department bt, BilledBill temp, Department matrixDepartment) {
-        temp.setBillType(BillType.InwardBill);
-        temp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
-        temp.setIpOpOrCc("IP");
-        getBillBean().setSurgeryData(temp, getBatchBill(), SurgeryBillType.Service);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-        temp.setPatient(patientEncounter.getPatient());
-        temp.setFromDepartment(matrixDepartment);
-
-        temp.setToDepartment(bt);
-        temp.setToInstitution(bt.getInstitution());
-
-        temp.setBillDate(date);
-        temp.setBillTime(date);
-        temp.setPatientEncounter(patientEncounter);
-        temp.setPaymentScheme(getPaymentScheme());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setReferredBy(referredBy);
-        temp.setCreatedAt(new Date());
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
-
-        boolean inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
-                = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:FromDepartmentToDepartmentBillTypes", false);
-
-        boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
-                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
-
-        boolean inpatientServiceBillNumberGenerateStrategyDefault
-                = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:Default", false);
-
-        String deptId;
-        String insId;
-
-        BillNumberGenerator bnb = getBillNumberBean();
-
-        if (inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
-            deptId = bnb.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                    bt, sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BILL);
-            insId = deptId;
-        } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
-            deptId = bnb.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
-            insId = deptId;
-        } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
-            deptId = bnb.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
-            insId = deptId;
-        } else {
-            deptId = bnb.departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
-            insId = bnb.institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER);
-        }
-
-        temp.setDeptId(deptId);
-        temp.setInsId(insId);
-
-        if (temp.getId() == null) {
-            getFacade().create(temp);
-        } else {
-            getFacade().edit(temp);
-        }
-
-        return temp;
-
     }
 
     public void logicalDischage() {
