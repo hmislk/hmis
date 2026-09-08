@@ -135,6 +135,7 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly](#108-this-dashboards-sample-transporter-pautocomplete-ignores-synthetic-keystrokes--drive-widgetsearch-directly)
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
+- [109. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#109-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3074,6 +3075,39 @@ both settings of any option that gates the code you touched, since the branch
 you did not test is the one someone is running.
 
 Found while fixing issue #23577.
+
+---
+
+## 109. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query
+
+While verifying issue #23571's new Appointment Deposit refund receipt on
+`inward_view_appointment_bill_receipt.xhtml`, the `billTypeAtomic`-keyed
+`h:panelGroup` branch matched correctly (confirmed with a temporary debug
+`h:outputText` dumping the DTO fields) and the DB row was correct, but the
+receipt panel rendered as a completely empty `<span>` — no error, no
+exception in `server.log`.
+
+The cause: this page's three paper-type branches only check
+`'Inward Payment Bill Five Five Paper'`, `'... A4 Paper'`, and
+`'... POS Paper'`. The department's actual `ChangeReceiptPrintingPaperTypes`
+Settings dialog (opened via the page's own "Settings" button) showed a
+**fourth** option, "5×5 Custom 3 Paper", was the one actually enabled for
+that department — a paper type this particular page's code has never
+checked. All three of the page's `getBooleanValueByKey` calls legitimately
+evaluated `false`, so nothing rendered — this is not a bug in the routing or
+DTO logic, it is a pre-existing gap between the Settings dialog's options and
+the page's own `rendered` conditions.
+
+**Before concluding a receipt panel is broken because it renders blank**,
+open the page's own "Settings" button/dialog (per §26, never raw SQL) and
+check which paper type is actually enabled for the current department
+against the exact set of paper-type checks the page's `rendered` attributes
+test — a Settings dialog can offer an option the page doesn't (yet) handle.
+Enable one of the paper types the page *does* check (e.g. tick "POS Paper")
+to get a renderable view for verification purposes; that's a legitimate local
+test-data setup action, not a workaround that hides a real defect.
+
+Found while fixing issue #23571.
 
 ---
 

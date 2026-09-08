@@ -11,6 +11,9 @@
     <cc:interface>
         <cc:attribute name="receipt" type="com.divudi.core.data.dto.InwardBillReceiptDTO" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="titleLabel" type="java.lang.String" default="Deposit Cancellation Receipt"/>
+        <cc:attribute name="dateLabel" type="java.lang.String" default="Cancelled At"/>
+        <cc:attribute name="billNoLabel" type="java.lang.String" default="Cancellation Bill No"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -42,7 +45,7 @@
             </div>
 
             <div class="headingBill" style="text-align: center;">
-                <h:outputLabel value="Deposit Cancellation Receipt" style="font-size: 20px;" /><br/>
+                <h:outputLabel value="#{cc.attrs.titleLabel}" style="font-size: 20px;" /><br/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 
@@ -88,13 +91,13 @@
             <div class="billDetailsFiveFive" >
                 <table style="width: 95%!important;" align="center" >
                     <tr>
-                        <td><h:outputLabel value="Cancellation Bill No" class="billDetailsFiveFive" ></h:outputLabel></td>
+                        <td><h:outputLabel value="#{cc.attrs.billNoLabel}" class="billDetailsFiveFive" ></h:outputLabel></td>
                         <td style="text-align: center;" >:</td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.receipt.deptId}" class="billDetailsFiveFive" ></h:outputLabel>
                         </td>
                         <td width="2%" />
-                        <td><h:outputLabel value="Cancelled At" class="billDetailsFiveFive" ></h:outputLabel></td>
+                        <td><h:outputLabel value="#{cc.attrs.dateLabel}" class="billDetailsFiveFive" ></h:outputLabel></td>
                         <td style="text-align: center;" >:</td>
                         <td>
                             <h:outputLabel value="#{cc.attrs.receipt.billDate}" class="billDetailsFiveFive" >
