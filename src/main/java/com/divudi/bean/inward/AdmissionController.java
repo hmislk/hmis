@@ -96,7 +96,6 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.PrimeFaces;
 import org.primefaces.event.TabChangeEvent;
 
 /**
@@ -238,6 +237,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Reservation currentReservation;
     
     private boolean patientForiegner;
+
+    /**
+     * Drives the {@code dlgActiveAdmission} dialog's server-side {@code visible}
+     * attribute. The "Admit" button is a non-ajax ({@code ajax="false"}) full
+     * postback (see Issue #21175), so {@code PrimeFaces.current().executeScript()}
+     * — which only queues JS into an ajax partial response — never reaches the
+     * browser; binding {@code visible} to this flag instead makes the dialog show
+     * on the resulting full page render. (Issue #23514)
+     */
+    private boolean showActiveAdmissionWarning;
 
     @PostConstruct
     public void init() {
@@ -898,13 +907,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         List<com.divudi.core.entity.inward.PatientRoom> activeRooms = new java.util.ArrayList<>();
         try {
+            // Theatre rooms tied to a specific surgery point at that
+            // surgery's procedure encounter (a child of this admission), not
+            // the admission itself - include children so an active theatre
+            // stay still shows on this panel.
+            List<PatientEncounter> encounters = new java.util.ArrayList<>();
+            encounters.add(current);
+            List<PatientEncounter> children = inwardBean.fetchChildPatientEncounter(current);
+            if (children != null) {
+                encounters.addAll(children);
+            }
             String jpql = "SELECT pr FROM PatientRoom pr "
                     + "WHERE pr.retired = false "
                     + "AND pr.discharged = false "
-                    + "AND pr.patientEncounter = :enc "
+                    + "AND pr.patientEncounter IN :encs "
                     + "ORDER BY pr.createdAt";
             java.util.HashMap<String, Object> params = new java.util.HashMap<>();
-            params.put("enc", current);
+            params.put("encs", encounters);
             activeRooms = patientRoomFacade.findByJpql(jpql, params);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to load active rooms for admission ID: "
@@ -1490,8 +1509,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
             return bhtSummeryController.navigateToInpatientProfile();
         } else {
-            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()
-                    || !current.getAdmissionType().isRoomChargesAllowed()) {
+            // A legacy/converted encounter can still have no admission type. Treat that
+            // as "room charges unknown" and send it to the dashboard rather than NPEing
+            // here, which left the button doing nothing at all. (#23577)
+            boolean roomChargesAllowed = current.getAdmissionType() != null
+                    && current.getAdmissionType().isRoomChargesAllowed();
+            // A baby admission never gets a room of its own - the baby stays in the
+            // mother's room (#9900) - so isRoomAdmitted() is false forever and the
+            // room-assignment diversion below would trap it permanently, leaving the
+            // baby's dashboard unreachable from every entry point. (#23577)
+            if (isBabyAdmission() || current.isRoomAdmitted() || current.isDischarged()
+                    || current.isPaymentFinalized() || !roomChargesAllowed) {
                 current.getPatient().setEditingMode(false);
                 bhtSummeryController.setPatientEncounter(current);
                 bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
@@ -1890,6 +1918,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         printPreview = false;
         encounterCreditCompanies = new ArrayList<>();
         encounterCreditCompany = new EncounterCreditCompany();
+        showActiveAdmissionWarning = false;
         bhtNumberCalculation();
     }
 
@@ -1906,6 +1935,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patient = null;
         yearMonthDay = null;
         printPreview = false;
+        showActiveAdmissionWarning = false;
         bhtNumberCalculation();
         return "/inward/inward_admission";
     }
@@ -2160,6 +2190,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return true;
         }
 
+        // Hard block on duplicate active admissions (Issue #23514). Runs
+        // unconditionally here — not just from the main "Admit" button's
+        // pre-check — so it also covers baby admission and OPD->Inward
+        // conversion (both call saveSelected()/saveConvertSelected() directly,
+        // skipping proceedWithAdmissionCheck()), and so there is no UI path
+        // (including the soft-warning dialog's own "Yes, Proceed" button) that
+        // can override it once the config option is enabled.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Enforce Hard Block on Duplicate Active Admission", false)
+                && isPatientAlreadyAdmitted()) {
+            JsfUtil.addErrorMessage("This patient already has an active (undischarged) admission. "
+                    + "Discharge the existing admission before admitting again.");
+            return true;
+        }
+
         // Rapid / Temp A&E admissions are admitted with incomplete demographics
         // by design; blank name/address are placeholder-filled and the required
         // patient-detail checks below are skipped. (Issue #21183)
@@ -2344,6 +2389,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     @Inject
     private InwardPaymentController inwardPaymentController;
+    @Inject
+    private InwardDepositController inwardDepositController;
     @EJB
     private AppointmentFacade appointmentFacade;
     @EJB
@@ -2479,15 +2526,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 : getCurrent().getPaymentMethod();
         PaymentMethodData conversionPaymentMethodData = buildPaymentMethodDataFromOriginalPayment(originalBill, appointmentPaymentMethod, amount);
         if (conversionPaymentMethodData != null) {
-            getInwardPaymentController().setPaymentMethodData(conversionPaymentMethodData);
+            getInwardDepositController().setPaymentMethodData(conversionPaymentMethodData);
         }
-        getInwardPaymentController().setPaymentMethod(appointmentPaymentMethod);
-        getInwardPaymentController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
-        getInwardPaymentController().getCurrent().setPatientEncounter(current);
-        getInwardPaymentController().getCurrent().setTotal(amount);
-        getInwardPaymentController().pay();
-        lastConversionDepositBillId = getInwardPaymentController().getCurrent().getId();
-        getInwardPaymentController().makeNull();
+        getInwardDepositController().setPaymentMethod(appointmentPaymentMethod);
+        getInwardDepositController().getCurrent().setPaymentMethod(appointmentPaymentMethod);
+        getInwardDepositController().getCurrent().setPatientEncounter(current);
+        getInwardDepositController().getCurrent().setTotal(amount);
+        getInwardDepositController().pay();
+        lastConversionDepositBillId = getInwardDepositController().getCurrent().getId();
+        getInwardDepositController().makeNull();
 
         pendingAppointmentConversion = null;
         printPreview = true;
@@ -2718,8 +2765,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + "AND a.discharged = false";
         HashMap<String, Object> params = new HashMap<>();
         params.put("patient", getCurrent().getPatient());
+        // Editing/re-saving an admission that is itself the active one must not
+        // flag itself as a duplicate of itself. (Issue #23514)
+        if (getCurrent().getId() != null) {
+            jpql += " AND a.id != :currentAdmissionId";
+            params.put("currentAdmissionId", getCurrent().getId());
+        }
         long count = getFacade().findLongByJpql(jpql, params);
         return count > 0;
+    }
+
+    public boolean isShowActiveAdmissionWarning() {
+        return showActiveAdmissionWarning;
+    }
+
+    /**
+     * Server round-trip for the {@code dlgActiveAdmission} "Cancel" button so the
+     * session-scoped {@link #showActiveAdmissionWarning} flag is actually cleared
+     * — a purely client-side {@code hide()} would leave it {@code true} and the
+     * dialog would reappear on the next unrelated full postback of this form.
+     * (Issue #23514)
+     */
+    public void cancelActiveAdmissionWarning() {
+        showActiveAdmissionWarning = false;
     }
 
     /**
@@ -2877,14 +2945,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     private void proceedWithAdmissionCheck() {
-        if (getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
-            PrimeFaces.current().executeScript("PF('dlgActiveAdmission').show();");
+        showActiveAdmissionWarning = false;
+        // Hard block (Issue #23514): errorCheck() enforces this unconditionally
+        // on every save path (including the dialog's own "Yes, Proceed" button),
+        // so when it's on there's no need for — and no correct way to show — the
+        // soft-warning dialog first. Let saveSelected() -> errorCheck() reject it
+        // with a proper error message instead.
+        boolean hardBlockEnabled = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Enforce Hard Block on Duplicate Active Admission", false);
+        if (!hardBlockEnabled && getCurrent().getPatient() != null && isPatientAlreadyAdmitted()) {
+            showActiveAdmissionWarning = true;
         } else {
             saveSelected();
         }
     }
 
     public void saveSelected() {
+        // Reached either past the duplicate-admission gate (proceedWithAdmissionCheck)
+        // or via the warning dialog's own "Yes, Proceed" override — either way that
+        // check is settled for this attempt, so clear it now rather than only on
+        // success. Otherwise an unrelated errorCheck() failure below (e.g. missing
+        // Payment Method) leaves the flag true and the dialog reappears on the
+        // update="@form" response, on top of the real validation error. (Issue #23514,
+        // CodeRabbit review on PR #23565)
+        showActiveAdmissionWarning = false;
         if (admittingProcessStarted) {
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
@@ -3507,6 +3591,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setInwardPaymentController(InwardPaymentController inwardPaymentController) {
         this.inwardPaymentController = inwardPaymentController;
+    }
+
+    public InwardDepositController getInwardDepositController() {
+        return inwardDepositController;
+    }
+
+    public void setInwardDepositController(InwardDepositController inwardDepositController) {
+        this.inwardDepositController = inwardDepositController;
     }
 
     public AppointmentFacade getAppointmentFacade() {

@@ -519,7 +519,8 @@
                                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Total">
+                                            <p:column headerText="Total"
+                                                      rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                                 #{ti.billFee.patientItem.serviceValue}
                                             </p:column>
                                             <p:column headerText="Date">

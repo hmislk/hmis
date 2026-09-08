@@ -407,6 +407,14 @@
                                     <ez:inwardPaymentsRefund id="inwardPaymentsRefund" bundle="#{myBundle}"
                                                              rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
+                                    <!-- Inward Deposits -->
+                                    <ez:inwardDeposits id="inwardDeposits" bundle="#{myBundle}"
+                                                       rendered="#{myBundle.bundleType eq 'InwardDeposits'}"/>
+                                    <ez:inwardDepositsCancel id="inwardDepositsCancel" bundle="#{myBundle}"
+                                                             rendered="#{myBundle.bundleType eq 'InwardDepositsCancel'}"/>
+                                    <ez:inwardDepositsRefund id="inwardDepositsRefund" bundle="#{myBundle}"
+                                                             rendered="#{myBundle.bundleType eq 'InwardDepositsRefund'}"/>
+
                                     <!-- Credit Company Payments OPD -->
                                     <!-- DEPRECATED: Replaced by unified Outpatient Credit Settling section
                                     <ez:creditCompanyPaymentOpReceive id="creditCompanyPaymentOpReceive" bundle="#{myBundle}"
