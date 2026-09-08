@@ -366,6 +366,9 @@
                                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}" itemLabel="Paid Fee Value">
                                                         <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
                                                     </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedBalanceToPayVisible}" itemLabel="Balance to Pay">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
                                                 </div>
                                             </p:panel>
                                         </div>
@@ -500,6 +503,9 @@
                                                                     </td>
                                                                 </ui:fragment>
                                                             </tr>
+                                                            <!-- tr is not a JSF component, so rendered on it directly is inert
+                                                                 (no xmlns:jsf pass-through namespace in this file) - wrap in ui:fragment. -->
+                                                            <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedBalanceToPayVisible}">
                                                             <tr style="font-weight: bold;">
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Balance to Pay</td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
@@ -514,6 +520,7 @@
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><td></td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}"><td></td></ui:fragment>
                                                             </tr>
+                                                            </ui:fragment>
                                                         </ui:repeat>
                                                     </ui:repeat>
                                                 </tbody>
