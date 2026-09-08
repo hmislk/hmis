@@ -3512,7 +3512,7 @@ public class UserSettingsController implements Serializable {
     private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS = java.util.Arrays.asList(
             "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
             "speciality", "addedFeeDate", "addedFeeValue", "paidDate",
-            "paidBillNumber", "comments", "paidFeeValue");
+            "paidBillNumber", "comments", "paidFeeValue", "balanceToPay");
 
     private void setProfessionalPaymentDetailedColumnVisible(String columnId, boolean visible) {
         ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
@@ -3623,6 +3623,18 @@ public class UserSettingsController implements Serializable {
 
     public void setInwardProfessionalPaymentDetailedPaidFeeValueVisible(boolean visible) {
         setProfessionalPaymentDetailedColumnVisible("paidFeeValue", visible);
+    }
+
+    // Defaults to hidden (unlike every other column above, which defaults to
+    // visible via isColumnVisible's getOrDefault(key, true)) - requested as a
+    // temporary hide of this row; users who want it back can re-check it.
+    public boolean isInwardProfessionalPaymentDetailedBalanceToPayVisible() {
+        return getColumnVisibility("inward_professional_payment_detailed")
+                .getColumnVisible().getOrDefault("balanceToPay", false);
+    }
+
+    public void setInwardProfessionalPaymentDetailedBalanceToPayVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("balanceToPay", visible);
     }
 
     /**
