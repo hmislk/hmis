@@ -173,6 +173,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
             loadSapIntegrationConfigurationDefaults();
+            loadInwardConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -182,6 +183,14 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadInwardConfigurationDefaults() {
+        // Reservation admission window: admission is allowed from this many hours before
+        // reservedFrom until this many hours after the reservation end (reservedTo, or
+        // reservedFrom when reservedTo is null). Consumed by AppointmentController.navigatePatientAdmit().
+        getLongValueByKey("Inward - Reservation Admission Early Window (Hours)", 24L);
+        getLongValueByKey("Inward - Reservation Admission Grace Period (Hours)", 24L);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {
