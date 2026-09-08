@@ -90,7 +90,7 @@
                                         value="Return"
                                         icon="fa fa-undo"
                                         action="#{inwardServiceRefundController.navigateToRefundInwardServiceBill(inwardSearch.bill)}"
-                                        disabled="#{inwardSearch.bill.cancelled or inwardServiceRefundController.fullyReturned}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardServiceRefundController.fullyReturned or (inwardSearch.bill.patientEncounter.nursingDischarged and !webUserController.hasPrivilege('InwardProcessReturnAfterNursingDischarge'))}"
                                         styleClass="ui-button-warning">
                                     </p:commandButton>
                                     <p:commandButton
@@ -98,7 +98,7 @@
                                         value="To Cancel"
                                         icon="fa fa-ban"
                                         action="#{inwardSearch.navigateToCancelInpatientBill()}"
-                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded or (inwardSearch.bill.patientEncounter.nursingDischarged and !webUserController.hasPrivilege('InwardProcessCancelAfterNursingDischarge'))}"
                                         styleClass="ui-button-danger">
                                     </p:commandButton>
                                     <p:commandButton
