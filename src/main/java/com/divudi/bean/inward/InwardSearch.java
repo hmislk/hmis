@@ -503,6 +503,12 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
+            return "";
+        }
+
         DepartmentType toBillDepartmentType = DepartmentType.Other;
 
         if (bill.getToDepartment() != null && bill.getToDepartment().getDepartmentType() != null) {
@@ -1581,6 +1587,12 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isDischarged()) {
                 JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isNursingDischarged()
+                    && !getWebUserController().hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+                JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
                 return;
             }
 

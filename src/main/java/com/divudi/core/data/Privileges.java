@@ -91,6 +91,7 @@ public enum Privileges {
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
     InwardProcessReturnAfterNursingDischarge("Inward Process Return After Nursing Discharge"),
+    InwardProcessCancelAfterNursingDischarge("Inward Process Cancel After Nursing Discharge"),
     InwardHoldProfessionalPayments("Hold Professional Payments"),
     InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
@@ -1666,6 +1667,7 @@ public enum Privileges {
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
             case InwardProcessReturnAfterNursingDischarge:
+            case InwardProcessCancelAfterNursingDischarge:
             case InwardHoldProfessionalPayments:
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
