@@ -276,7 +276,7 @@
                             </p:column>
 
                             <p:column headerText="QTY">
-                                <h:outputText value="#{row.qty}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveQty(row)}">
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
@@ -288,7 +288,7 @@
                             </p:column>
 
                             <p:column headerText="Cost Value" width="5em">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate * row.qty}" >
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveCostValue(row)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -306,7 +306,7 @@
                             </p:column>
 
                             <p:column headerText="Purchase Value">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.purcahseRate * row.qty}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectivePurchaseValue(row)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -334,7 +334,7 @@
                             </p:column>
 
                             <p:column headerText="MRP Value">
-                                <h:outputText value="#{0.0 - row.pharmaceuticalBillItem.retailRate * row.qty}">
+                                <h:outputText value="#{pharmacyReportController.ipDrugReturnEffectiveRetailValue(row)}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">

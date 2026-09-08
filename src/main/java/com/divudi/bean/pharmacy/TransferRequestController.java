@@ -349,6 +349,40 @@ public class TransferRequestController implements Serializable {
         return getAvailableQtyAtOrderingStore(bi) < bi.getQty();
     }
 
+    private final Map<BillItem, Double> availableQtyAtRequestingDepartmentCache = new WeakHashMap<>();
+
+    public double getAvailableQtyAtRequestingDepartment(BillItem bi) {
+        if (bi == null || bi.getItem() == null
+                || transferRequestBillPre == null
+                || transferRequestBillPre.getFromDepartment() == null) {
+            return 0.0;
+        }
+        return availableQtyAtRequestingDepartmentCache.computeIfAbsent(bi, this::calculateAvailableQtyAtRequestingDepartment);
+    }
+
+    private double calculateAvailableQtyAtRequestingDepartment(BillItem bi) {
+        Item item = bi.getItem();
+        double stock = stockService.findDepartmentStock(transferRequestBillPre.getFromDepartment(), item);
+        if ((item instanceof Ampp || item instanceof Vmpp) && item.getDblValue() > 0) {
+            return stock / item.getDblValue();
+        }
+        return stock;
+    }
+
+    // Value of the stock already available at the Ordering Store, priced at the
+    // same config-selected transfer rate (see determineTransferRate) already
+    // shown in the row's Transfer Rate/Transfer Value columns.
+    public double getTotalDrugAmountAtOrderingStore(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+        BigDecimal rate = bi.getBillItemFinanceDetails().getLineGrossRate();
+        if (rate == null) {
+            return 0.0;
+        }
+        return getAvailableQtyAtOrderingStore(bi) * rate.doubleValue();
+    }
+
     public void saveBill() {
         if (getBill().getId() == null) {
 
@@ -611,9 +645,25 @@ public class TransferRequestController implements Serializable {
         return false;
     }
 
-    public void saveTransferRequestPreBillAndBillItems() {
+    // synchronized because this bean is @SessionScoped and CDI does not serialise
+    // concurrent requests within a session: a double-clicked Save puts two threads on
+    // the same instance, and both would read a null id below -- creating two PRE bills
+    // and, since both would capture newRequest = true, notifying subscribers twice.
+    // Serialising per session is enough; two sessions never share a request bill.
+    public synchronized void saveTransferRequestPreBillAndBillItems() {
+        // Captured before the bill is persisted below: this method is re-entered by both
+        // Save and Finalize, and a ward can press Save repeatedly while still adding
+        // items. Only the call that actually creates the request notifies subscribers,
+        // so a request raises exactly one notification no matter how often it is re-saved.
+        boolean newRequest = getTransferRequestBillPre().getId() == null;
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
+        // fromDepartment (below) = the department creating this request; it is also the
+        // department that will later Save -> Finalize -> Approve it (maker-checker
+        // within itself). toDepartment only gets to see this bill AFTER approval, via
+        // its own separate Issue-for-Requests cycle. See the department-filter comment
+        // on SearchController.fillPharmacyTransferRequestsToApprove() (#23039) before
+        // changing which department is treated as the approver here.
         getTransferRequestBillPre().setToDepartment(getToDepartment());
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
@@ -702,6 +752,9 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         LOGGER.log(Level.FINE, "Finalizing transfer request with {0} items", getBillItems().size());
         getBillFacade().edit(getTransferRequestBillPre());
+        if (newRequest) {
+            notificationController.createNotification(getTransferRequestBillPre());
+        }
     }
 
     public void saveTranserRequestPreBill() {

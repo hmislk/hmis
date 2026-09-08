@@ -6675,7 +6675,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             case "Drug Return IP":
                 return "/reports/inventoryReports/ip_drug_return?faces-redirect=true";
             case "Drug Return Op":
-                return "/reports/inventoryReports/op_drug_return?faces-redirect=true";
+                return "/reports/inventoryReports/op_drug_return_dto?faces-redirect=true";
             case "Stock Consumption":
                 return "/reports/inventoryReports/stock_consumption_dto?faces-redirect=true";
             case "Purchase Return":

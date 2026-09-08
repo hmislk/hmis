@@ -71,8 +71,8 @@
                             <td class="r"><h:outputText value="#{item.qty}"><f:convertNumber integerOnly="true"/></h:outputText></td>
                             <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.netRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                             <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.grossValue lt 0 ? -item.grossValue : item.grossValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.marginValue lt 0 ? -item.marginValue : item.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
-                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.discountValue lt 0 ? -item.discountValue : item.discountValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}" value="#{item.marginValue lt 0 ? -item.marginValue : item.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}" value="#{item.discountValue lt 0 ? -item.discountValue : item.discountValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                             <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.netValue lt 0 ? -item.netValue : item.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
                         </tr>
                     </ui:repeat>
@@ -82,8 +82,12 @@
             <table class="totals">
                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                     <tr><td>Gross</td><td class="r"><h:outputText value="#{cc.attrs.bill.total}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}">
                     <tr><td>Service Charge</td><td class="r"><h:outputText value="#{cc.attrs.bill.margin}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
                     <tr><td>Discount</td><td class="r"><h:outputText value="#{cc.attrs.bill.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                     <tr><td><strong>Net Total</strong></td><td class="r"><strong><h:outputText value="#{cc.attrs.bill.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></strong></td></tr>
                 </h:panelGroup>
                 <tr><td>No of Items</td><td class="r"><h:outputText value="#{cc.attrs.items.size()}"><f:convertNumber integerOnly="true"/></h:outputText></td></tr>

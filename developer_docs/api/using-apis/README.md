@@ -13,6 +13,8 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 
 | File | Module | Auth |
 |---|---|---|
+| [API_ADMISSION_CHARGES.md](API_ADMISSION_CHARGES.md) | Configure automatic routine admission charges (AdmissionChargeItem) | `Finance` |
+| [API_ADMISSION_DETAILS.md](API_ADMISSION_DETAILS.md) | Consolidated index: which API to call for admission worklist/BHT numbers/clinical forms | `Finance` |
 | [API_ADMISSION_NUMBERS.md](API_ADMISSION_NUMBERS.md) | View/reset BHT/OPD admission-number sequence counters | `Finance` |
 | [API_BALANCE_HISTORY.md](API_BALANCE_HISTORY.md) | Drawer/patient-deposit/agent balance change history | `Finance` |
 | [API_BILL_DATA_CORRECTION.md](API_BILL_DATA_CORRECTION.md) | Correct saved bill finance-detail fields (UPDATE only) | `Finance` |
@@ -28,12 +30,14 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 | [API_INSTITUTION_DEPARTMENT_MANAGEMENT.md](API_INSTITUTION_DEPARTMENT_MANAGEMENT.md) | Institution, department, and site CRUD | `Finance` |
 | [API_INWARD.md](API_INWARD.md) | Inpatient admission data and payment processing | `Finance` |
 | [API_INWARD_ROOM.md](API_INWARD_ROOM.md) | Room categories, rooms, room facility charges | `Finance` |
+| [API_INWARD_PRICE_MATRIX.md](API_INWARD_PRICE_MATRIX.md) | Inward price adjustment (margin/discount) matrix CRUD | `Finance` |
 | [API_LIMS.md](API_LIMS.md) | Lab middleware, analyzer, and sample management | Custom (URL/JSON/Basic) |
 | [API_LOGIN_HISTORY.md](API_LOGIN_HISTORY.md) | User login history records | `Finance` |
 | [API_MEMBERSHIP.md](API_MEMBERSHIP.md) | Membership scheme registration and payment | none (public) |
 | [API_PHARMACEUTICAL_MANAGEMENT.md](API_PHARMACEUTICAL_MANAGEMENT.md) | VTM/ATM/VMP/AMP/VMPP/AMPP item master CRUD + backfill | `Finance` |
 | [API_PHARMACY_STOCK_ADJUSTMENTS.md](API_PHARMACY_STOCK_ADJUSTMENTS.md) | Search stocks, adjust qty/rates/expiry, create batches | `Finance` |
 | [API_QUICKBOOKS.md](API_QUICKBOOKS.md) | Read-only export of financial data for QuickBooks | `Finance` |
+| [API_REPORT_FORMATS.md](API_REPORT_FORMATS.md) | Lab report common template — patient-details/signature/footer layout | `Finance` |
 | [API_SERVICE_MANAGEMENT.md](API_SERVICE_MANAGEMENT.md) | `/api/services` service master data | `Finance` |
 | [API_SITES.md](API_SITES.md) | Sites (collection points, satellite clinics) | `Finance` |
 | [API_STOCK_HISTORY.md](API_STOCK_HISTORY.md) | Transaction-level stock movement records | `Finance` |

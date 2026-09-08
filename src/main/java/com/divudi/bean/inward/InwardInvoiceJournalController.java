@@ -1,32 +1,26 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.InwardInvoiceJournalRowDto;
 import com.divudi.core.data.inward.AdmissionStatus;
-import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.inward.AdmissionType;
-import com.divudi.core.entity.inward.PatientRoom;
-import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
-import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.service.inward.InwardBhtChargeAggregationService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -62,13 +56,17 @@ public class InwardInvoiceJournalController implements Serializable {
     @EJB
     private PaymentFacade paymentFacade;
     @EJB
-    private BillFeeFacade billFeeFacade;
-    @EJB
-    private PatientRoomFacade patientRoomFacade;
-    @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
+    private InwardBhtChargeAggregationService chargeAggregationService;
+    @EJB
+    private com.divudi.core.facade.BillFacade billFacade;
+    @EJB
+    private com.divudi.ejb.CreditBean creditBean;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @EJB
+    private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -94,8 +92,11 @@ public class InwardInvoiceJournalController implements Serializable {
     /**
      * All InwardChargeType values — drives the dynamic columns in XHTML.
      * Columns where every row has 0 are hidden via rendered="#{...}".
+     * Re-sorted by the admin-configurable Report Order at the top of
+     * {@link #generateReport()}; the inline default here only covers the very
+     * first page render, before the user searches (issue #23340).
      */
-    private final List<InwardChargeType> allChargeTypes = Arrays.asList(InwardChargeType.values());
+    private List<InwardChargeType> allChargeTypes = new ArrayList<>(Arrays.asList(InwardChargeType.values()));
 
     /**
      * Set of charge types that have at least one non-zero value in the current
@@ -110,7 +111,9 @@ public class InwardInvoiceJournalController implements Serializable {
     private double grandTotalDiscount;
     private double grandTotalServiceCharge;
     private double grandTotalCharges;
-    private double grandTotalDeposits;
+    private double grandTotalFinalPayment;
+    private double grandTotalDeposit;
+    private double grandTotalCreditCompanyDue;
     private double grandTotalCreditSettlement;
 
     // -------------------------------------------------------------------------
@@ -118,6 +121,12 @@ public class InwardInvoiceJournalController implements Serializable {
     // -------------------------------------------------------------------------
 
     public void generateReport() {
+        // Recompute the column order from the admin-configurable Report Order
+        // ConfigOption for each InwardChargeType (issue #23340). A stable
+        // sort keeps ordinal order among types the admin has not reordered.
+        allChargeTypes = professionalFeeClassificationService.visible(Arrays.asList(InwardChargeType.values()));
+        allChargeTypes.sort(Comparator.comparingInt(configOptionApplicationController::getInwardChargeTypeReportOrder));
+
         reportRows               = new ArrayList<>();
         columnTotals             = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes        = EnumSet.noneOf(InwardChargeType.class);
@@ -125,22 +134,30 @@ public class InwardInvoiceJournalController implements Serializable {
         grandTotalDiscount       = 0;
         grandTotalServiceCharge  = 0;
         grandTotalCharges        = 0;
-        grandTotalDeposits       = 0;
+        grandTotalFinalPayment   = 0;
+        grandTotalDeposit        = 0;
+        grandTotalCreditCompanyDue = 0;
         grandTotalCreditSettlement = 0;
 
-        List<PatientEncounter> encounters = fetchEncounters();
+        List<PatientEncounter> encounters = chargeAggregationService.fetchEncounters(buildEncounterFilter());
         if (encounters == null || encounters.isEmpty()) {
             return;
         }
 
         // --- bulk fetch gross charges per InwardChargeType for all encounters ---
-        Map<Long, Map<InwardChargeType, Double>> chargeMap = fetchChargesByEncounter(encounters);
+        Map<Long, Map<InwardChargeType, Double>> chargeMap = chargeAggregationService.fetchChargesByEncounter(encounters);
 
         // --- bulk fetch discount / service-charge totals per encounter ---
-        Map<Long, double[]> discountMarginMap = fetchDiscountAndMarginByEncounter(encounters);
+        Map<Long, double[]> discountMarginMap = chargeAggregationService.fetchDiscountAndMarginByEncounter(encounters);
 
-        // --- bulk fetch deposit totals for all encounters at once ---
+        // --- bulk fetch "Make a Payment" (final payment) totals for all encounters at once ---
+        Map<Long, Double> finalPaymentMap = fetchFinalPaymentTotalsByEncounter(encounters);
+
+        // --- bulk fetch genuine deposit totals for all encounters at once ---
         Map<Long, Double> depositMap = fetchDepositTotalsByEncounter(encounters);
+
+        // --- bulk fetch credit company outstanding due totals ---
+        Map<Long, Double> creditCompanyDueMap = fetchCreditCompanyDueByEncounter(encounters);
 
         // --- bulk fetch credit settlement totals ---
         Map<Long, double[]> creditMap = fetchCreditSettlementByEncounter(encounters);
@@ -150,8 +167,8 @@ public class InwardInvoiceJournalController implements Serializable {
 
         // --- build one row per encounter ---
         for (PatientEncounter enc : encounters) {
-            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, depositMap, creditMap,
-                    creditCompanyNamesMap);
+            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, finalPaymentMap, depositMap,
+                    creditCompanyDueMap, creditMap, creditCompanyNamesMap);
             reportRows.add(row);
 
             // accumulate column totals and active types
@@ -166,472 +183,76 @@ public class InwardInvoiceJournalController implements Serializable {
             grandTotalDiscount         += row.getTotalDiscount();
             grandTotalServiceCharge    += row.getTotalServiceCharge();
             grandTotalCharges          += row.getGrandTotal();
-            grandTotalDeposits         += row.getTotalDeposits();
+            grandTotalFinalPayment     += row.getTotalFinalPayment();
+            grandTotalDeposit          += row.getTotalDeposit();
+            grandTotalCreditCompanyDue += row.getCreditCompanyDue();
             grandTotalCreditSettlement += row.getCreditSettlementTotal();
         }
+    }
+
+    private InwardBhtChargeAggregationService.EncounterFilter buildEncounterFilter() {
+        InwardBhtChargeAggregationService.EncounterFilter filter =
+                new InwardBhtChargeAggregationService.EncounterFilter();
+        filter.setFromDate(fromDate);
+        filter.setToDate(toDate);
+        filter.setDateBasis(dateBasis);
+        filter.setAdmissionStatus(admissionStatus);
+        filter.setAdmissionType(admissionType);
+        filter.setPaymentMethod(paymentMethod);
+        filter.setInstitution(institution);
+        filter.setSite(site);
+        filter.setDepartment(department);
+        return filter;
     }
 
     // -------------------------------------------------------------------------
     // Query helpers
     // -------------------------------------------------------------------------
 
-    private List<PatientEncounter> fetchEncounters() {
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder(
-                "select distinct c from PatientEncounter c where c.retired = false");
-
-        // When filtering not-yet-discharged patients, discharge date is null —
-        // always use admission date as the date basis for that status.
-        boolean forceAdmissionDate = admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
-
-        if (fromDate != null && toDate != null) {
-            if ("admissionDate".equals(dateBasis) || forceAdmissionDate) {
-                jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
-            } else {
-                jpql.append(" and c.dateOfDischarge between :fromDate and :toDate");
-            }
-            params.put("fromDate", fromDate);
-            params.put("toDate",   toDate);
-        }
-
-        if (admissionStatus != null && admissionStatus != AdmissionStatus.ANY_STATUS) {
-            switch (admissionStatus) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    jpql.append(" and c.discharged = :dis");
-                    params.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    jpql.append(" and c.discharged = :dis and c.paymentFinalized = :pf");
-                    params.put("dis", true);
-                    params.put("pf",  false);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    jpql.append(" and c.discharged = :dis and c.paymentFinalized = :pf");
-                    params.put("dis", true);
-                    params.put("pf",  true);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (admissionType != null) {
-            jpql.append(" and c.admissionType = :admType");
-            params.put("admType", admissionType);
-        }
-
-        if (institution != null) {
-            jpql.append(" and c.institution = :ins");
-            params.put("ins", institution);
-        }
-
-        if (site != null) {
-            jpql.append(" and c.department.site = :site");
-            params.put("site", site);
-        }
-
-        if (department != null) {
-            jpql.append(" and c.department = :dept");
-            params.put("dept", department);
-        }
-
-        if (paymentMethod != null) {
-            jpql.append(" and c.paymentMethod = :pm");
-            params.put("pm", paymentMethod);
-        }
-
-        jpql.append(" order by c.bhtNo");
-        return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-    }
-
     /**
-     * Dispatcher that combines per-CalculationMethod bulk (GROUP BY) queries into
-     * the same Map< encounterId, Map<InwardChargeType, total> > shape the caller
-     * expects. Each sub-fetch stays a single bulk query for the whole encounter
-     * set (no N+1 per-encounter queries) — see class docblock.
+     * Single bulk query: sum of "Make a Payment" totals grouped by encounter.
+     * Despite the BillTypeAtomic name (INWARD_PAYMENT) this is the final-payment
+     * total, NOT a deposit — a naming bug from before issue #22804 split Payment
+     * and Deposit into separate BillTypeAtomic families. See
+     * {@link #fetchDepositTotalsByEncounter(List)} for the genuine deposit total.
      *
-     * Per InwardChargeType.getCalculationMethod():
-     *  - BILL_ITEM (default)  : BillItem on InwardBill/InwardOutSideBill (whitelist —
-     *                            naturally excludes both INWARD_FINAL_BILL and
-     *                            INWARD_ORIGINAL_FINAL_BILL snapshot bills, fixing
-     *                            the post-discharge double count).
-     *  - ADMISSION_FEE         : flat AdmissionType.admissionFee, read straight off
-     *                            the already-loaded encounters (no BillItem exists).
-     *  - PATIENT_ROOM           : PatientRoom.getCalculatedXxxCharge() (time-based)
-     *                            plus any service BillItems filed under the same
-     *                            charge type on InwardBill.
-     *  - BILL_FEE               : BillFee.feeValue on InwardProfessional bills,
-     *                            split Consultant (ProfessionalCharge) vs
-     *                            non-Consultant (DoctorAndNurses).
-     *  - PHARMACY_BILL/STORE_BILL: BillItem on the pharmacy-issue BillTypeAtomic
-     *                            list / StoreBhtPre, same as InwardChargeTypeDetailController.
+     * Matches the full INWARD_PAYMENT family — {@code INWARD_PAYMENT},
+     * {@code INWARD_PAYMENT_CANCELLATION}, {@code INWARD_PAYMENT_REFUND} and
+     * {@code INWARD_PAYMENT_REFUND_CANCELLATION} — and deliberately does NOT
+     * filter on {@code bill.cancelled}: a cancellation sets
+     * {@code cancelled=true} on the original but records the reversal as its
+     * own Payment row under the CANCELLATION billTypeAtomic, while a refund
+     * leaves the original bill untouched (only {@code refunded=true}) and
+     * creates a brand-new RefundBill with its own billTypeAtomic and a
+     * negative {@code netTotal}/{@code paidValue} (see
+     * {@code InwardRefundController.saveBill()}). Filtering to a single
+     * billTypeAtomic and/or excluding cancelled bills would leave a refunded
+     * or cancelled payment at its full, un-deducted value. Including every
+     * row and summing {@code p.paidValue} with its already-correct sign (no
+     * {@code Math.abs()} here or in {@link #buildRow}) nets them out
+     * correctly. Mirrors the same 4-type pattern already used for BHT reports
+     * in {@code InwardReportControllerBht}. Issue #23539.
+     * Returns Map< encounterId, totalFinalPayment >.
      */
-    private Map<Long, Map<InwardChargeType, Double>> fetchChargesByEncounter(
-            List<PatientEncounter> encounters) {
-
-        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
-
-        mergeChargeMaps(result, fetchBillItemCharges(encounters));
-        mergeChargeMaps(result, fetchAdmissionFeeCharges(encounters));
-        mergeChargeMaps(result, fetchPatientRoomCalculatedCharges(encounters));
-        mergeChargeMaps(result, fetchPatientRoomServiceItemCharges(encounters));
-        mergeChargeMaps(result, fetchProfessionalFeeCharges(encounters));
-        mergeChargeMaps(result, fetchAssistingFeeCharges(encounters));
-        mergeChargeMaps(result, fetchPharmacyBillCharges(encounters));
-        mergeChargeMaps(result, fetchStoreBillCharges(encounters));
-
-        return result;
-    }
-
-    /**
-     * Returns the InwardChargeType values whose CalculationMethod matches, e.g.
-     * the default BILL_ITEM set (everything without an explicit CalculationMethod)
-     * or the 7 PATIENT_ROOM types.
-     */
-    private List<InwardChargeType> chargeTypesByCalculationMethod(CalculationMethod method) {
-        List<InwardChargeType> types = new ArrayList<>();
-        for (InwardChargeType ct : InwardChargeType.values()) {
-            if (ct.getCalculationMethod() == method) {
-                types.add(ct);
-            }
-        }
-        return types;
-    }
-
-    /** Merges a fragment charge map into the accumulator, summing on collision. */
-    private void mergeChargeMaps(Map<Long, Map<InwardChargeType, Double>> target,
-            Map<Long, Map<InwardChargeType, Double>> source) {
-        for (Map.Entry<Long, Map<InwardChargeType, Double>> e : source.entrySet()) {
-            Map<InwardChargeType, Double> inner = target.computeIfAbsent(
-                    e.getKey(), k -> new EnumMap<>(InwardChargeType.class));
-            for (Map.Entry<InwardChargeType, Double> ie : e.getValue().entrySet()) {
-                inner.merge(ie.getKey(), ie.getValue(), Double::sum);
-            }
-        }
-    }
-
-    /** Reads {encId, InwardChargeType, sum} triples from an Object[] result set into a charge map. */
-    private Map<Long, Map<InwardChargeType, Double>> collectChargeTypeRows(List<Object[]> rows) {
-        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
-        if (rows == null) {
-            return result;
-        }
-        for (Object[] r : rows) {
-            Long              encId = (Long) r[0];
-            InwardChargeType  type  = (InwardChargeType) r[1];
-            double            total = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
-            result.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
-                  .merge(type, total, Double::sum);
-        }
-        return result;
-    }
-
-    /**
-     * BILL_ITEM (default) charge types: BillItem on InwardBill/InwardOutSideBill
-     * only — a whitelist, which is the fix for bug #6 (this naturally excludes
-     * both INWARD_FINAL_BILL and INWARD_ORIGINAL_FINAL_BILL discharge-snapshot
-     * bills, unlike the old blacklist that only excluded the latter).
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchBillItemCharges(List<PatientEncounter> encounters) {
-        List<InwardChargeType> types = chargeTypesByCalculationMethod(CalculationMethod.BILL_ITEM);
-        if (types.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
-                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
-                + " where bi.retired = false"
-                + " and b.retired = false"
-                + " and b.cancelled = false"
-                + " and b.billType in :btps"
-                + " and enc in :encs"
-                + " and bi.inwardChargeType in :types"
-                + " group by enc.id, bi.inwardChargeType";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btps", Arrays.asList(BillType.InwardBill, BillType.InwardOutSideBill));
-        params.put("encs", encounters);
-        params.put("types", types);
-
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
-    }
-
-    /**
-     * ADMISSION_FEE: a flat AdmissionType.admissionFee value, never persisted as
-     * a BillItem — read straight off the already-loaded encounter list.
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchAdmissionFeeCharges(List<PatientEncounter> encounters) {
-        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
-        for (PatientEncounter enc : encounters) {
-            if (enc.getAdmissionType() == null || enc.getId() == null) {
-                continue;
-            }
-            double fee = enc.getAdmissionType().getAdmissionFee();
-            if (fee == 0.0) {
-                continue;
-            }
-            result.computeIfAbsent(enc.getId(), k -> new EnumMap<>(InwardChargeType.class))
-                  .merge(InwardChargeType.AdmissionFee, fee, Double::sum);
-        }
-        return result;
-    }
-
-    /**
-     * PATIENT_ROOM — time-based half: PatientRoom.getCalculatedXxxCharge() per
-     * encounter, one bulk query then a Java-side pivot (see
-     * InwardChargeTypeBreakdownController.buildFromPatientRoom()/extractPatientRoomCharge()).
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchPatientRoomCalculatedCharges(List<PatientEncounter> encounters) {
-        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
-
-        String jpql = "select pr from PatientRoom pr join pr.patientEncounter enc"
-                + " where pr.retired = false"
-                + " and enc in :encs";
-        Map<String, Object> params = new HashMap<>();
-        params.put("encs", encounters);
-
-        List<PatientRoom> rooms = patientRoomFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        if (rooms == null) {
-            return result;
-        }
-        for (PatientRoom pr : rooms) {
-            PatientEncounter enc = pr.getPatientEncounter();
-            if (enc == null || enc.getId() == null) {
-                continue;
-            }
-            Map<InwardChargeType, Double> inner = result.computeIfAbsent(
-                    enc.getId(), k -> new EnumMap<>(InwardChargeType.class));
-            mergeIfNonZero(inner, InwardChargeType.RoomCharges, pr.getCalculatedRoomCharge());
-            mergeIfNonZero(inner, InwardChargeType.MOCharges, pr.getCalculatedMoCharge());
-            mergeIfNonZero(inner, InwardChargeType.NursingCharges, pr.getCalculatedNursingCharge());
-            mergeIfNonZero(inner, InwardChargeType.LinenCharges, pr.getCalculatedLinenCharge());
-            mergeIfNonZero(inner, InwardChargeType.AdministrationCharge, pr.getCalculatedAdministrationCharge());
-            mergeIfNonZero(inner, InwardChargeType.MedicalCareICU, pr.getCalculatedMedicalCareCharge());
-            mergeIfNonZero(inner, InwardChargeType.MaintainCharges, pr.getCalculatedMaintainCharge());
-        }
-        return result;
-    }
-
-    private void mergeIfNonZero(Map<InwardChargeType, Double> map, InwardChargeType type, double value) {
-        if (value != 0.0) {
-            map.merge(type, value, Double::sum);
-        }
-    }
-
-    /**
-     * PATIENT_ROOM — service-item half: BillItems filed directly under a
-     * PATIENT_ROOM charge type on InwardBill (e.g. an ad-hoc room-charge line),
-     * summed alongside the calculated time-based charge for the same type.
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchPatientRoomServiceItemCharges(List<PatientEncounter> encounters) {
-        List<InwardChargeType> types = chargeTypesByCalculationMethod(CalculationMethod.PATIENT_ROOM);
-        if (types.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
-                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
-                + " where bi.retired = false"
-                + " and b.retired = false"
-                + " and b.cancelled = false"
-                + " and b.billType = :btp"
-                + " and enc in :encs"
-                + " and bi.inwardChargeType in :types"
-                + " group by enc.id, bi.inwardChargeType";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.InwardBill);
-        params.put("encs", encounters);
-        params.put("types", types);
-
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
-    }
-
-    /**
-     * BILL_FEE — Consultant staff → ProfessionalCharge. Same filter as
-     * InwardBeanController.createProfesionallFee().
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchProfessionalFeeCharges(List<PatientEncounter> encounters) {
-        return fetchBillFeeCharges(encounters, true, InwardChargeType.ProfessionalCharge);
-    }
-
-    /**
-     * BILL_FEE — non-Consultant staff (assistants/nurses) → DoctorAndNurses.
-     * Same filter as InwardBeanController.createDoctorAndNurseFee().
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchAssistingFeeCharges(List<PatientEncounter> encounters) {
-        return fetchBillFeeCharges(encounters, false, InwardChargeType.DoctorAndNurses);
-    }
-
-    private Map<Long, Map<InwardChargeType, Double>> fetchBillFeeCharges(
-            List<PatientEncounter> encounters, boolean consultantOnly, InwardChargeType targetType) {
-
-        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
-
-        String jpql = "select bf.bill.patientEncounter.id, sum(coalesce(bf.feeGrossValue, bf.feeValue))"
-                + " from BillFee bf"
-                + " where bf.retired = false"
-                + " and bf.bill.retired = false"
-                + " and bf.bill.cancelled = false"
-                + " and bf.bill.billType = :btp"
-                + " and bf.fee.feeType = :ftp"
-                + (consultantOnly ? " and type(bf.staff) = :staffClass" : " and type(bf.staff) != :staffClass")
-                + " and bf.bill.patientEncounter in :encs"
-                + " group by bf.bill.patientEncounter.id";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.InwardProfessional);
-        params.put("ftp", FeeType.Staff);
-        params.put("staffClass", Consultant.class);
-        params.put("encs", encounters);
-
-        List<Object[]> rows = billFeeFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        if (rows != null) {
-            for (Object[] r : rows) {
-                Long   encId = (Long) r[0];
-                double total = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
-                result.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
-                      .merge(targetType, total, Double::sum);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * PHARMACY_BILL (Medicine): same BillTypeAtomic whitelist as
-     * InwardChargeTypeDetailController.fetchPharmacyBillItemRows(), aggregated.
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchPharmacyBillCharges(List<PatientEncounter> encounters) {
-        List<InwardChargeType> types = chargeTypesByCalculationMethod(CalculationMethod.PHARMACY_BILL);
-        if (types.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-
-        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
-                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
-                + " where bi.retired = false"
-                + " and b.retired = false"
-                + " and b.cancelled = false"
-                + " and b.billTypeAtomic in :btas"
-                + " and enc in :encs"
-                + " and bi.inwardChargeType in :types"
-                + " group by enc.id, bi.inwardChargeType";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btas", btas);
-        params.put("encs", encounters);
-        params.put("types", types);
-
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
-    }
-
-    /**
-     * STORE_BILL (GeneralIssuing): same BillType.StoreBhtPre filter as
-     * InwardChargeTypeDetailController.fetchStoreBillItemRows(), aggregated.
-     */
-    private Map<Long, Map<InwardChargeType, Double>> fetchStoreBillCharges(List<PatientEncounter> encounters) {
-        List<InwardChargeType> types = chargeTypesByCalculationMethod(CalculationMethod.STORE_BILL);
-        if (types.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
-                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
-                + " where bi.retired = false"
-                + " and b.retired = false"
-                + " and b.cancelled = false"
-                + " and b.billType = :btp"
-                + " and enc in :encs"
-                + " and bi.inwardChargeType in :types"
-                + " group by enc.id, bi.inwardChargeType";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.StoreBhtPre);
-        params.put("encs", encounters);
-        params.put("types", types);
-
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
-    }
-
-    /**
-     * Single bulk query: sum(feeDiscount) and sum(feeMargin) from BillFee
-     * grouped by encounter, matching the same filter used for gross charges.
-     * Returns Map< encounterId, double[]{ discount, serviceCharge } >.
-     *
-     * Reads from BillFee (not BillItem) because BillItem.discount is not
-     * populated for inpatient bills — discount lives per-fee.
-     *
-     * Kept as a single query spanning all bill sources (not narrowed to the
-     * InwardBill/InwardOutSideBill whitelist used for gross charges) since fees
-     * can be filed against professional/pharmacy/store bills too. Excludes BOTH
-     * discharge-snapshot bill types — INWARD_FINAL_BILL and
-     * INWARD_ORIGINAL_FINAL_BILL — so post-discharge discount/service-charge
-     * totals aren't doubled (bug #6).
-     */
-    private Map<Long, double[]> fetchDiscountAndMarginByEncounter(List<PatientEncounter> encounters) {
-        Map<Long, double[]> result = new HashMap<>();
-
-        String jpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
-                + " from BillFee bf"
-                + " where bf.retired = false"
-                + " and bf.bill.retired = false"
-                + " and bf.bill.cancelled = false"
-                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
-                + " and bf.bill.patientEncounter in :encs"
-                + " group by bf.bill.patientEncounter.id";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("encs", encounters);
-        params.put("excludedTypes", Arrays.asList(
-                BillTypeAtomic.INWARD_FINAL_BILL, BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL));
-
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        if (rows != null) {
-            for (Object[] r : rows) {
-                Long encId = (Long) r[0];
-                double disc = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
-                double marg = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
-                result.put(encId, new double[]{disc, marg});
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Single bulk query: sum of deposit payments grouped by encounter.
-     * Returns Map< encounterId, totalDeposits >.
-     */
-    private Map<Long, Double> fetchDepositTotalsByEncounter(List<PatientEncounter> encounters) {
+    private Map<Long, Double> fetchFinalPaymentTotalsByEncounter(List<PatientEncounter> encounters) {
         Map<Long, Double> result = new HashMap<>();
 
         String jpql = "select p.bill.patientEncounter.id, sum(p.paidValue)"
                 + " from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter in :encs"
                 + " group by p.bill.patientEncounter.id";
 
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_PAYMENT);
+        btas.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+        btas.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+
         Map<String, Object> params = new HashMap<>();
-        params.put("bta",  BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("btas", btas);
         params.put("encs", encounters);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -640,6 +261,107 @@ public class InwardInvoiceJournalController implements Serializable {
                 Long   encId = (Long) r[0];
                 double total = ((Number) r[1]).doubleValue();
                 result.put(encId, total);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Single bulk query: sum of genuine deposit payments ("Make a Deposit",
+     * BillTypeAtomic.INWARD_DEPOSIT) grouped by encounter. Added by issue
+     * #23518 alongside {@link #fetchFinalPaymentTotalsByEncounter(List)} once
+     * Payment and Deposit were confirmed to be separate BillTypeAtomic families.
+     *
+     * Matches the full INWARD_DEPOSIT family — {@code INWARD_DEPOSIT},
+     * {@code INWARD_DEPOSIT_CANCELLATION}, {@code INWARD_DEPOSIT_REFUND} and
+     * {@code INWARD_DEPOSIT_REFUND_CANCELLATION} — and deliberately does NOT
+     * filter on {@code bill.cancelled}: a cancellation sets
+     * {@code cancelled=true} on the original but records the reversal as its
+     * own Payment row under the CANCELLATION billTypeAtomic, while a refund
+     * leaves the original bill untouched (only {@code refunded=true}) and
+     * creates a brand-new RefundBill with its own billTypeAtomic and a
+     * negative {@code netTotal}/{@code paidValue} (see
+     * {@code InwardRefundController.saveBill()}). Filtering to a single
+     * billTypeAtomic and/or excluding cancelled bills would leave a refunded
+     * or cancelled deposit at its full, un-deducted value. Including every
+     * row and summing {@code p.paidValue} with its already-correct sign (no
+     * {@code Math.abs()} here or in {@link #buildRow}) nets them out
+     * correctly. Mirrors the same 4-type pattern already used for BHT reports
+     * in {@code InwardReportControllerBht}. Issue #23539.
+     * Returns Map< encounterId, totalDeposit >.
+     */
+    private Map<Long, Double> fetchDepositTotalsByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, Double> result = new HashMap<>();
+
+        String jpql = "select p.bill.patientEncounter.id, sum(p.paidValue)"
+                + " from Payment p"
+                + " where p.retired = false"
+                + " and p.bill.retired = false"
+                + " and p.bill.billTypeAtomic in :btas"
+                + " and p.bill.patientEncounter in :encs"
+                + " group by p.bill.patientEncounter.id";
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT);
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        btas.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btas", btas);
+        params.put("encs", encounters);
+
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long   encId = (Long) r[0];
+                double total = ((Number) r[1]).doubleValue();
+                result.put(encId, total);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Single bulk query: outstanding amount still owed by credit company/companies
+     * against their INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY "CC commitment"
+     * bill(s), summed per encounter (an admission may have more than one
+     * commitment bill for multi-company cases).
+     *
+     * Reuses the same due-calculation pattern as
+     * {@code InwardReportController1.inwardCreditCompanyDebtors()} and
+     * {@link com.divudi.ejb.CreditBean#getSettledAmountByCompany(com.divudi.core.entity.Bill)} —
+     * see developer_docs/billing/inward-cc-settlement-tracking.md. The commitment
+     * bill's patientEncounter field is set directly at creation time (see
+     * {@code BhtSummeryController.saveCCBillForAllocation()}/{@code saveCCBill()}/
+     * {@code saveCCBillByInstitution()}), so it can be queried without a
+     * BillItem join.
+     *
+     * Returns Map< encounterId, totalDue >.
+     */
+    private Map<Long, Double> fetchCreditCompanyDueByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, Double> result = new HashMap<>();
+
+        String jpql = "select b from Bill b"
+                + " where b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.patientEncounter in :encs";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta",  BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("encs", encounters);
+
+        List<com.divudi.core.entity.Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (bills != null) {
+            for (com.divudi.core.entity.Bill b : bills) {
+                if (b.getPatientEncounter() == null) {
+                    continue;
+                }
+                double settled = creditBean.getSettledAmountByCompany(b);
+                double due = b.getNetTotal() - settled;
+                Long encId = b.getPatientEncounter().getId();
+                result.merge(encId, due, Double::sum);
             }
         }
         return result;
@@ -719,7 +441,9 @@ public class InwardInvoiceJournalController implements Serializable {
             PatientEncounter enc,
             Map<Long, Map<InwardChargeType, Double>> chargeMap,
             Map<Long, double[]> discountMarginMap,
+            Map<Long, Double> finalPaymentMap,
             Map<Long, Double> depositMap,
+            Map<Long, Double> creditCompanyDueMap,
             Map<Long, double[]> creditMap,
             Map<Long, List<String>> creditCompanyNamesMap) {
 
@@ -749,8 +473,10 @@ public class InwardInvoiceJournalController implements Serializable {
             row.setTotalServiceCharge(dm[1]);
         }
 
-        // deposits
-        row.setTotalDeposits(depositMap.getOrDefault(enc.getId(), 0.0));
+        // final payment / deposit / credit company due
+        row.setTotalFinalPayment(finalPaymentMap.getOrDefault(enc.getId(), 0.0));
+        row.setTotalDeposit(depositMap.getOrDefault(enc.getId(), 0.0));
+        row.setCreditCompanyDue(creditCompanyDueMap.getOrDefault(enc.getId(), 0.0));
 
         // credit settlement
         double[] credit = creditMap.get(enc.getId());
@@ -819,7 +545,8 @@ public class InwardInvoiceJournalController implements Serializable {
         columnTotals     = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes = EnumSet.noneOf(InwardChargeType.class);
         grandTotalGross = grandTotalDiscount = grandTotalServiceCharge = 0;
-        grandTotalCharges = grandTotalDeposits = grandTotalCreditSettlement = 0;
+        grandTotalCharges = grandTotalCreditSettlement = 0;
+        grandTotalFinalPayment = grandTotalDeposit = grandTotalCreditCompanyDue = 0;
     }
 
     private static Date startOfCurrentMonth() {
@@ -873,6 +600,8 @@ public class InwardInvoiceJournalController implements Serializable {
     public double getGrandTotalDiscount() { return grandTotalDiscount; }
     public double getGrandTotalServiceCharge() { return grandTotalServiceCharge; }
     public double getGrandTotalCharges() { return grandTotalCharges; }
-    public double getGrandTotalDeposits() { return grandTotalDeposits; }
+    public double getGrandTotalFinalPayment() { return grandTotalFinalPayment; }
+    public double getGrandTotalDeposit() { return grandTotalDeposit; }
+    public double getGrandTotalCreditCompanyDue() { return grandTotalCreditCompanyDue; }
     public double getGrandTotalCreditSettlement() { return grandTotalCreditSettlement; }
 }

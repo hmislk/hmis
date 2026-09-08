@@ -14,6 +14,10 @@ user-invocable: true
 
 Any time a new `@Path` class is created under `com.divudi.ws.*`, or an existing API gets new endpoints.
 
+If you instead need to **call** an existing endpoint (verify data via API, write a debug script,
+check a request/response shape), use the `api-usage` skill instead — this one has no consumer-facing
+reference.
+
 ---
 
 ## Mandatory Checklist — Every New API

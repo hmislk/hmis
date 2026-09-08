@@ -3025,4 +3025,641 @@ public class UserSettingsController implements Serializable {
         settings.setColumnVisible("onlineSettlement", visible);
         saveColumnVisibility("all_drawers", settings);
     }
+
+    // Page: inward_invoice_journal (Issue #23515)
+    // Note: Discount/Service Charge/Gross Total columns stay gated by the
+    // existing admin ConfigOption "Inpatient Reports - Show Gross Value,
+    // Discount and Service Charge" (not user-toggleable here), and the
+    // dynamic per-InwardChargeType columns keep their existing
+    // auto-hide-when-zero behavior - neither is part of this panel. Net
+    // Total is also always-visible (no checkbox), so it is not in this list.
+
+    // Issue #23515 review (CodeRabbit) - same "at least one column stays
+    // visible" guard as inward_bht_payment_detail below, for the same reason:
+    // clearing every checkbox would leave tblReport with zero columns,
+    // breaking the screen table and its Print/Excel/PDF exports.
+    private static final java.util.List<String> INWARD_INVOICE_JOURNAL_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admitted", "discharged", "finalBillNo", "admissionType",
+            "totalFinalPayment", "totalDeposit", "creditSettlement", "creditCompanyDue", "creditCompanyName");
+
+    private void setInvoiceJournalColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_invoice_journal");
+        if (!visible) {
+            long stillVisible = INWARD_INVOICE_JOURNAL_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_invoice_journal", settings);
+    }
+
+    public boolean isInwardInvoiceJournalBhtNoVisible() {
+        return isColumnVisible("inward_invoice_journal", "bhtNo");
+    }
+
+    public void setInwardInvoiceJournalBhtNoVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardInvoiceJournalPatientNameVisible() {
+        return isColumnVisible("inward_invoice_journal", "patientName");
+    }
+
+    public void setInwardInvoiceJournalPatientNameVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("patientName", visible);
+    }
+
+    public boolean isInwardInvoiceJournalAdmittedVisible() {
+        return isColumnVisible("inward_invoice_journal", "admitted");
+    }
+
+    public void setInwardInvoiceJournalAdmittedVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardInvoiceJournalDischargedVisible() {
+        return isColumnVisible("inward_invoice_journal", "discharged");
+    }
+
+    public void setInwardInvoiceJournalDischargedVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardInvoiceJournalFinalBillNoVisible() {
+        return isColumnVisible("inward_invoice_journal", "finalBillNo");
+    }
+
+    public void setInwardInvoiceJournalFinalBillNoVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("finalBillNo", visible);
+    }
+
+    public boolean isInwardInvoiceJournalAdmissionTypeVisible() {
+        return isColumnVisible("inward_invoice_journal", "admissionType");
+    }
+
+    public void setInwardInvoiceJournalAdmissionTypeVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardInvoiceJournalTotalFinalPaymentVisible() {
+        return isColumnVisible("inward_invoice_journal", "totalFinalPayment");
+    }
+
+    public void setInwardInvoiceJournalTotalFinalPaymentVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("totalFinalPayment", visible);
+    }
+
+    public boolean isInwardInvoiceJournalTotalDepositVisible() {
+        return isColumnVisible("inward_invoice_journal", "totalDeposit");
+    }
+
+    public void setInwardInvoiceJournalTotalDepositVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("totalDeposit", visible);
+    }
+
+    public boolean isInwardInvoiceJournalCreditSettlementVisible() {
+        return isColumnVisible("inward_invoice_journal", "creditSettlement");
+    }
+
+    public void setInwardInvoiceJournalCreditSettlementVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("creditSettlement", visible);
+    }
+
+    public boolean isInwardInvoiceJournalCreditCompanyDueVisible() {
+        return isColumnVisible("inward_invoice_journal", "creditCompanyDue");
+    }
+
+    public void setInwardInvoiceJournalCreditCompanyDueVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("creditCompanyDue", visible);
+    }
+
+    public boolean isInwardInvoiceJournalCreditCompanyNameVisible() {
+        return isColumnVisible("inward_invoice_journal", "creditCompanyName");
+    }
+
+    public void setInwardInvoiceJournalCreditCompanyNameVisible(boolean visible) {
+        setInvoiceJournalColumnVisible("creditCompanyName", visible);
+    }
+
+    // Page: inward_bht_payment_detail (Issue #23515)
+    // Backs inward_report_bht_payment_detail.xhtml (bhtPaymentSummaryReportController - see #23258).
+
+    // Issue #23515 review (CodeRabbit) - full ordered key list for this page,
+    // used only to enforce "at least one column stays visible" below. Unlike
+    // the Professional Payment Report, this page's exports go through
+    // p:dataExporter (reads the same rendered p:dataTable), so this list
+    // isn't needed for export logic - just for the guard.
+    private static final java.util.List<String> INWARD_BHT_PAYMENT_DETAIL_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admissionType", "admitted", "discharged",
+            "depositCash", "depositCard", "depositOther", "totalDeposits",
+            "paymentCash", "paymentCard", "paymentCredit", "paymentOther", "totalPayments",
+            "postPaymentCash", "postPaymentCard", "postPaymentCredit", "postPaymentOther", "totalPostPayments",
+            "grandTotal", "totalCreditBilled", "creditSettled", "creditBalance", "creditCompany",
+            "finalBillNo", "totalBillValue", "totalBalance");
+
+    /**
+     * Shared setter for every inward_bht_payment_detail column checkbox.
+     * Refuses to hide the last remaining visible column - unchecking it would
+     * leave tblReport with zero columns, breaking the screen table and its
+     * Print/Excel/PDF exports (Issue #23515 review, CodeRabbit).
+     */
+    private void setBhtPaymentDetailColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_detail");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_PAYMENT_DETAIL_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_payment_detail", settings);
+    }
+
+    public boolean isInwardBhtPaymentDetailBhtNoVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "bhtNo");
+    }
+
+    public void setInwardBhtPaymentDetailBhtNoVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPatientNameVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "patientName");
+    }
+
+    public void setInwardBhtPaymentDetailPatientNameVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("patientName", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailAdmissionTypeVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "admissionType");
+    }
+
+    public void setInwardBhtPaymentDetailAdmissionTypeVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailAdmittedVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "admitted");
+    }
+
+    public void setInwardBhtPaymentDetailAdmittedVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailDischargedVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "discharged");
+    }
+
+    public void setInwardBhtPaymentDetailDischargedVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailDepositCashVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "depositCash");
+    }
+
+    public void setInwardBhtPaymentDetailDepositCashVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("depositCash", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailDepositCardVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "depositCard");
+    }
+
+    public void setInwardBhtPaymentDetailDepositCardVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("depositCard", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailDepositOtherVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "depositOther");
+    }
+
+    public void setInwardBhtPaymentDetailDepositOtherVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("depositOther", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailTotalDepositsVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "totalDeposits");
+    }
+
+    public void setInwardBhtPaymentDetailTotalDepositsVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("totalDeposits", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPaymentCashVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "paymentCash");
+    }
+
+    public void setInwardBhtPaymentDetailPaymentCashVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("paymentCash", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPaymentCardVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "paymentCard");
+    }
+
+    public void setInwardBhtPaymentDetailPaymentCardVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("paymentCard", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPaymentCreditVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "paymentCredit");
+    }
+
+    public void setInwardBhtPaymentDetailPaymentCreditVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("paymentCredit", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPaymentOtherVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "paymentOther");
+    }
+
+    public void setInwardBhtPaymentDetailPaymentOtherVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("paymentOther", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailTotalPaymentsVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "totalPayments");
+    }
+
+    public void setInwardBhtPaymentDetailTotalPaymentsVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("totalPayments", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPostPaymentCashVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "postPaymentCash");
+    }
+
+    public void setInwardBhtPaymentDetailPostPaymentCashVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("postPaymentCash", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPostPaymentCardVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "postPaymentCard");
+    }
+
+    public void setInwardBhtPaymentDetailPostPaymentCardVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("postPaymentCard", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPostPaymentCreditVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "postPaymentCredit");
+    }
+
+    public void setInwardBhtPaymentDetailPostPaymentCreditVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("postPaymentCredit", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailPostPaymentOtherVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "postPaymentOther");
+    }
+
+    public void setInwardBhtPaymentDetailPostPaymentOtherVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("postPaymentOther", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailTotalPostPaymentsVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "totalPostPayments");
+    }
+
+    public void setInwardBhtPaymentDetailTotalPostPaymentsVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("totalPostPayments", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailGrandTotalVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "grandTotal");
+    }
+
+    public void setInwardBhtPaymentDetailGrandTotalVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("grandTotal", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailTotalCreditBilledVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "totalCreditBilled");
+    }
+
+    public void setInwardBhtPaymentDetailTotalCreditBilledVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("totalCreditBilled", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailCreditSettledVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "creditSettled");
+    }
+
+    public void setInwardBhtPaymentDetailCreditSettledVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("creditSettled", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailCreditBalanceVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "creditBalance");
+    }
+
+    public void setInwardBhtPaymentDetailCreditBalanceVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("creditBalance", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailCreditCompanyVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "creditCompany");
+    }
+
+    public void setInwardBhtPaymentDetailCreditCompanyVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("creditCompany", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailFinalBillNoVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "finalBillNo");
+    }
+
+    public void setInwardBhtPaymentDetailFinalBillNoVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("finalBillNo", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailTotalBillValueVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "totalBillValue");
+    }
+
+    public void setInwardBhtPaymentDetailTotalBillValueVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("totalBillValue", visible);
+    }
+
+    public boolean isInwardBhtPaymentDetailTotalBalanceVisible() {
+        return isColumnVisible("inward_bht_payment_detail", "totalBalance");
+    }
+
+    public void setInwardBhtPaymentDetailTotalBalanceVisible(boolean visible) {
+        setBhtPaymentDetailColumnVisible("totalBalance", visible);
+    }
+
+    // Page: inward_professional_payment_summary (Issue #23515)
+    // Backs the Summary table on inward/reports/inward_professional_payment_report_dto.xhtml
+    // (InwardReportControllerBht). Also consumed directly by
+    // InwardReportControllerBht.visibleSummaryColumnKeys() to keep the
+    // hand-built Excel/PDF exports in sync with the on-screen table.
+
+    // Issue #23515 review (CodeRabbit) - same "at least one column stays
+    // visible" guard as the other two reports. Clearing every checkbox here
+    // would also make downloadProfessionalPaymentSummaryPdf() pass 0 to
+    // PdfPTable's constructor, which OpenPDF rejects - guarded again at that
+    // call site too (belt and suspenders, since the two enforcement points
+    // are independent).
+    private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_SUMMARY_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "admitted", "discharged", "finalBillNo",
+            "consultant", "speciality", "sumAddedFee", "sumPaidFee", "balanceToPay");
+
+    private void setProfessionalPaymentSummaryColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_summary");
+        if (!visible) {
+            long stillVisible = INWARD_PROFESSIONAL_PAYMENT_SUMMARY_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_professional_payment_summary", settings);
+    }
+
+    public boolean isInwardProfessionalPaymentSummaryBhtNoVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "bhtNo");
+    }
+
+    public void setInwardProfessionalPaymentSummaryBhtNoVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummaryAdmittedVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "admitted");
+    }
+
+    public void setInwardProfessionalPaymentSummaryAdmittedVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummaryDischargedVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "discharged");
+    }
+
+    public void setInwardProfessionalPaymentSummaryDischargedVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummaryFinalBillNoVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "finalBillNo");
+    }
+
+    public void setInwardProfessionalPaymentSummaryFinalBillNoVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("finalBillNo", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummaryConsultantVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "consultant");
+    }
+
+    public void setInwardProfessionalPaymentSummaryConsultantVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("consultant", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummarySpecialityVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "speciality");
+    }
+
+    public void setInwardProfessionalPaymentSummarySpecialityVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("speciality", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummarySumAddedFeeVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "sumAddedFee");
+    }
+
+    public void setInwardProfessionalPaymentSummarySumAddedFeeVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("sumAddedFee", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummarySumPaidFeeVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "sumPaidFee");
+    }
+
+    public void setInwardProfessionalPaymentSummarySumPaidFeeVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("sumPaidFee", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentSummaryBalanceToPayVisible() {
+        return isColumnVisible("inward_professional_payment_summary", "balanceToPay");
+    }
+
+    public void setInwardProfessionalPaymentSummaryBalanceToPayVisible(boolean visible) {
+        setProfessionalPaymentSummaryColumnVisible("balanceToPay", visible);
+    }
+
+    // Page: inward_professional_payment_detailed (Issue #23515)
+    // Backs the Detailed table on inward/reports/inward_professional_payment_report_dto.xhtml
+    // (InwardReportControllerBht). Also consumed directly by
+    // InwardReportControllerBht.visibleDetailedColumnKeys() to keep the
+    // hand-built Excel/PDF exports in sync with the on-screen table.
+
+    // Issue #23515 review (CodeRabbit) - same "at least one column stays
+    // visible" guard as the Summary block above.
+    // balanceToPay is deliberately excluded - it's a summary total row, not a
+    // detail column, so it must not count toward "at least one column visible"
+    // (CodeRabbit #23611: including it let every real column be hidden while
+    // the guard still saw balanceToPay's default-true isColumnVisible() read
+    // as "something is visible", leaving an empty table).
+    private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
+            "speciality", "addedFeeDate", "addedFeeValue", "paidDate",
+            "paidBillNumber", "comments", "paidFeeValue");
+
+    private void setProfessionalPaymentDetailedColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
+        if (!visible) {
+            long stillVisible = INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_professional_payment_detailed", settings);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedBhtNoVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "bhtNo");
+    }
+
+    public void setInwardProfessionalPaymentDetailedBhtNoVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedAdmittedVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "admitted");
+    }
+
+    public void setInwardProfessionalPaymentDetailedAdmittedVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedDischargedVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "discharged");
+    }
+
+    public void setInwardProfessionalPaymentDetailedDischargedVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedFinalBillNoVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "finalBillNo");
+    }
+
+    public void setInwardProfessionalPaymentDetailedFinalBillNoVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("finalBillNo", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedConsultantVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "consultant");
+    }
+
+    public void setInwardProfessionalPaymentDetailedConsultantVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("consultant", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedSpecialityVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "speciality");
+    }
+
+    public void setInwardProfessionalPaymentDetailedSpecialityVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("speciality", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedAddedFeeDateVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "addedFeeDate");
+    }
+
+    public void setInwardProfessionalPaymentDetailedAddedFeeDateVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("addedFeeDate", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedAddedFeeValueVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "addedFeeValue");
+    }
+
+    public void setInwardProfessionalPaymentDetailedAddedFeeValueVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("addedFeeValue", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedPaidDateVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "paidDate");
+    }
+
+    public void setInwardProfessionalPaymentDetailedPaidDateVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("paidDate", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedPaidBillNumberVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "paidBillNumber");
+    }
+
+    public void setInwardProfessionalPaymentDetailedPaidBillNumberVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("paidBillNumber", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedCommentsVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "comments");
+    }
+
+    public void setInwardProfessionalPaymentDetailedCommentsVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("comments", visible);
+    }
+
+    public boolean isInwardProfessionalPaymentDetailedPaidFeeValueVisible() {
+        return isColumnVisible("inward_professional_payment_detailed", "paidFeeValue");
+    }
+
+    public void setInwardProfessionalPaymentDetailedPaidFeeValueVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("paidFeeValue", visible);
+    }
+
+    // Defaults to hidden (unlike every other column above, which defaults to
+    // visible via isColumnVisible's getOrDefault(key, true)) - requested as a
+    // temporary hide of this row; users who want it back can re-check it.
+    public boolean isInwardProfessionalPaymentDetailedBalanceToPayVisible() {
+        return getColumnVisibility("inward_professional_payment_detailed")
+                .getColumnVisible().getOrDefault("balanceToPay", false);
+    }
+
+    public void setInwardProfessionalPaymentDetailedBalanceToPayVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("balanceToPay", visible);
+    }
+
+    /**
+     * Ordered list of column keys currently visible for a given
+     * "columns.visibility" page id, filtered against the full ordered key
+     * list for that page. Used by pages whose exports are hand-built
+     * (not p:dataExporter-backed) so the export logic can consult the same
+     * source of truth as the on-screen rendered attributes.
+     *
+     * @param pageId the ColumnVisibilitySettings page id
+     * @param allKeysInOrder the full ordered column key list for that page
+     * @return the subset of allKeysInOrder that are currently visible, in order
+     */
+    public java.util.List<String> getVisibleColumnKeysInOrder(String pageId, java.util.List<String> allKeysInOrder) {
+        java.util.List<String> visible = new java.util.ArrayList<>();
+        for (String key : allKeysInOrder) {
+            if (isColumnVisible(pageId, key)) {
+                visible.add(key);
+            }
+        }
+        return visible;
+    }
 }

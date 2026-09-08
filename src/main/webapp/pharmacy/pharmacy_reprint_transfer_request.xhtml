@@ -43,8 +43,8 @@
                                 onclick="PF('transferRequestConfigDialog').show();" >
                             </p:commandButton>
 
-                            <p:commandButton 
-                                disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.forwardReferenceBills.size() ne 0}"
+                            <p:commandButton
+                                disabled="#{!pharmacyBillSearch.isTransferRequestCancellable()}"
                                 class="ui-button-danger mx-1"
                                 style="float: right;"
                                 icon="fas fa-cancel"

@@ -363,6 +363,13 @@ public class InwardStaffPaymentBillController implements Serializable {
         }
         dueBillFees.removeAll(removeingBillFees);
 
+        // Default each due fee's UI-only paying amount to "pay in full" (the
+        // outstanding balance) unless the cashier edits it down for a partial
+        // payment — issue #22821.
+        for (BillFee bf : dueBillFees) {
+            bf.setPayingAmount(bf.getFeeValue() - bf.getPaidValue());
+        }
+
 //        if (configOptionApplicationController.getBooleanValueByKey("Remove Refunded Bill From OPD Staff Payment")) {
 //            List<BillFee> removeingBillFees = new ArrayList<>();
 //            for (BillFee bf : dueBillFees) {
@@ -464,17 +471,25 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     private void saveBillCompo(Bill paymentBill, Payment paymentBillPayment) {
         for (BillFee originalBillFee : getPayingBillFees()) {
+            // Partial payment support (#22821): pay only the amount the cashier
+            // entered for this fee, not necessarily the full outstanding due.
+            // Fall back to the full outstanding balance if payingAmount was
+            // somehow left unset (defensive — should always be set by
+            // calculateDueFeesForInwardForSelectedPeriod()).
+            double amountPaidNow = originalBillFee.getPayingAmount() != null
+                    ? originalBillFee.getPayingAmount()
+                    : (originalBillFee.getFeeValue() - originalBillFee.getPaidValue());
 //            saveBillItemForPaymentBill(b, bf); //for create bill fees and billfee payments
-            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment);
+            saveBillItemForPaymentBill(paymentBill, originalBillFee, paymentBillPayment, amountPaidNow);
 //            saveBillFeeForPaymentBill(b,bf); No need to add fees for this bill
-            originalBillFee.setPaidValue(originalBillFee.getFeeValue());
-            originalBillFee.setSettleValue(originalBillFee.getFeeValue());
+            originalBillFee.setPaidValue(originalBillFee.getPaidValue() + amountPaidNow);
+            originalBillFee.setSettleValue(originalBillFee.getSettleValue() + amountPaidNow);
             getBillFeeFacade().edit(originalBillFee);
             //////// // System.out.println("marking as paid");
         }
     }
 
-    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p) {
+    private void saveBillItemForPaymentBill(Bill newPaymentBill, BillFee originalBillFee, Payment p, double amountPaidNow) {
         BillItem newlyCreatedPayingBillItem = new BillItem();
         newlyCreatedPayingBillItem.setReferanceBillItem(originalBillFee.getBillItem());
         newlyCreatedPayingBillItem.setReferenceBill(originalBillFee.getBill());
@@ -483,10 +498,10 @@ public class InwardStaffPaymentBillController implements Serializable {
         newlyCreatedPayingBillItem.setCreatedAt(Calendar.getInstance().getTime());
         newlyCreatedPayingBillItem.setCreater(getSessionController().getLoggedUser());
         newlyCreatedPayingBillItem.setDiscount(0.0);
-        newlyCreatedPayingBillItem.setGrossValue(originalBillFee.getFeeValue());
-        newlyCreatedPayingBillItem.setNetValue(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setGrossValue(amountPaidNow);
+        newlyCreatedPayingBillItem.setNetValue(amountPaidNow);
         newlyCreatedPayingBillItem.setQty(1.0);
-        newlyCreatedPayingBillItem.setRate(originalBillFee.getFeeValue());
+        newlyCreatedPayingBillItem.setRate(amountPaidNow);
         getBillItemFacade().create(newlyCreatedPayingBillItem);
 
         BillFee newlyCreatedBillFee = saveBillFee(newlyCreatedPayingBillItem, p);
@@ -1407,7 +1422,8 @@ public class InwardStaffPaymentBillController implements Serializable {
             return;
         }
         for (BillFee f : payingBillFees) {
-            totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
+            Double payingAmount = f.getPayingAmount();
+            totalPaying = totalPaying + (payingAmount != null ? payingAmount : (f.getFeeValue() - f.getPaidValue()));
         }
     }
 
@@ -1775,6 +1791,16 @@ public class InwardStaffPaymentBillController implements Serializable {
         if (dueBillFees == null) {
             JsfUtil.addErrorMessage("Please select payments to update 1");
             return true;
+        }
+        if (payingBillFees != null) {
+            for (BillFee f : payingBillFees) {
+                double outstanding = f.getFeeValue() - f.getPaidValue();
+                Double amt = f.getPayingAmount();
+                if (amt == null || amt <= 0 || amt > outstanding + 0.1) {
+                    JsfUtil.addErrorMessage("Amount to pay for one of the selected fees is invalid or exceeds the due amount");
+                    return true;
+                }
+            }
         }
         System.out.println("totalPaying666 = " + totalPaying);
         if (totalPaying == 0) {

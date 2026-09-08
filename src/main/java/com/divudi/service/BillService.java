@@ -2751,6 +2751,12 @@ public class BillService {
         // norm). An earlier version of this query special-cased this bill type to skip negation,
         // which was backwards and displayed real returns with a negative out-quantity - see #21833.
         //
+        // Direct Purchase Cancellation follows the identical convention: PharmacyBillSearch.
+        // pharmacyPurchaseCancel() -> pharmacyCancelBillItemsReduceStock() calls
+        // PharmaceuticalBillItem.invertValue(), which negates qty relative to the original
+        // (positive) Direct Purchase pbi.qty - so the plain negation below is already correct
+        // for it too, no CASE WHEN needed.
+        //
         // Pending (not yet approved) Direct Purchase Return bills are excluded below: pbi.qty is
         // only sign-flipped to the correct negative-for-out value at approval time
         // (DirectPurchaseReturnWorkflowController.completeApproval() -> updateStock()); before

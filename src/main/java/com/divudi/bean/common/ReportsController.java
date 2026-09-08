@@ -7363,9 +7363,9 @@ public class ReportsController implements Serializable {
         List<BillTypeAtomic> bts = new ArrayList<>();
 
         if (visitType.equalsIgnoreCase("IP")) {
-            bts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
-            bts.add(BillTypeAtomic.INWARD_DEPOSIT);
-            bts.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            bts.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+            bts.add(BillTypeAtomic.INWARD_PAYMENT);
+            bts.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
         }
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "

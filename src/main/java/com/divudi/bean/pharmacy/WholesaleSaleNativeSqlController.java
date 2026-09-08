@@ -10,6 +10,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.PriceMatrixController;
@@ -17,7 +18,11 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
@@ -104,6 +109,8 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
     private PriceMatrixController priceMatrixController;
     @Inject
     private PatientDepositController patientDepositController;
+    @Inject
+    private PageMetadataRegistry pageMetadataRegistry;
 
     // ---- EJB ----
     @EJB
@@ -155,7 +162,88 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
 
     @PostConstruct
     public void init() {
+        registerPageMetadata();
         resetAll();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/pharmacy_bill_wholesale_sale_native",
+                "Pharmacy Wholesale Sale (Native)",
+                "Pharmacy wholesale sale billing interface using the native SQL workflow",
+                "WholesaleSaleNativeSqlController"
+        );
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Medicine Identification Codes Used",
+                "Enables medicine identification code lookup during item search",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Bill Support for Native Printers",
+                "Enables native printer support for pharmacy bill printing",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill is PosHeaderPaper",
+                "Prints the wholesale sale bill on POS paper with a header section",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 2",
+                "Prints the wholesale sale bill using custom paper format 2",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is Custom 3",
+                "Prints the wholesale sale bill using custom paper format 3",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header",
+                "Prints the wholesale sale bill on Five-Five paper without a blank header space",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper",
+                "Prints the wholesale sale bill on standard POS paper",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS Paper Custom 1",
+                "Prints the wholesale sale bill on POS paper using custom format 1",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Retail Sale Bill Paper is POS paper with header",
+                "Prints the wholesale sale bill on POS paper with a header line",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show alternative medicines available during retail sale",
+                "Displays alternative/substitute medicines available while entering a wholesale sale",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to configuration interface",
+                "Controls visibility of the Config button"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
     // -----------------------------------------------------------------------

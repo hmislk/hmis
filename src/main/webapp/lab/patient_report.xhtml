@@ -991,24 +991,24 @@
                                                         <p:outputLabel for="PatientName" value="Patient Name"  class="mt-2"></p:outputLabel>
                                                     </div>
                                                     <div class="col-md-7">
-                                                        <p:inputText 
-                                                            id="PatientName" 
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                            value="#{patientReportController.currentPatientReport.patientName}" 
+                                                        <p:inputText
+                                                            id="PatientName"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientName}"
                                                             class="w-100">
                                                         </p:inputText>
                                                     </div>
                                                 </div>
-
+                                               
                                                 <div class="row my-2">
                                                     <div class="col-md-5">
                                                         <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" class="mt-2"></p:outputLabel>
                                                     </div>
                                                     <div class="col-md-7">
-                                                        <p:inputText 
-                                                            id="PatientAge" 
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                            value="#{patientReportController.currentPatientReport.patientAge}" 
+                                                        <p:inputText
+                                                            id="PatientAge"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientAge}"
                                                             class="w-100">
                                                         </p:inputText>
                                                     </div>
@@ -1019,10 +1019,10 @@
                                                         <p:outputLabel for="PatientGender" value="Patient Gender"  class="mt-2"></p:outputLabel>
                                                     </div>
                                                     <div class="col-md-7">
-                                                        <p:inputText 
-                                                            id="PatientGender" 
-                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing')}"
-                                                            value="#{patientReportController.currentPatientReport.patientGender}" 
+                                                        <p:inputText
+                                                            id="PatientGender"
+                                                            readonly="#{patientReportController.currentPatientReport.approved || !webUserController.hasPrivilege('LabDeAutherizing') || configOptionApplicationController.getBooleanValueByKey('Lab Patient Report - Disable Manual Update of Patient Details', true)}"
+                                                            value="#{patientReportController.currentPatientReport.patientGender}"
                                                             class="w-100">
                                                         </p:inputText>
                                                     </div>

@@ -87,13 +87,14 @@
 
                                 <h:outputLabel value="Insurance Company"/>
                                 <p:selectOneMenu
+                                    id="cmbCreditCompanyIntrim"
                                     class="w-100"
                                     value="#{inwardIntrimBillSearchController.creditCompany}"
                                     filter="true"
                                     autoWidth="false"
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
-                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="creditCompanyItem" itemLabel="#{creditCompanyItem.name}" itemValue="#{creditCompanyItem}" />
                                 </p:selectOneMenu>
 
                                 <h:outputLabel value="Status"/>

@@ -31,6 +31,46 @@
                          ============================================================ -->
                     <p:panel rendered="#{!retailSaleForCashierNativeSqlController.billPreview}">
 
+                        <p:dialog
+                            header="Search Any Medicine..."
+                            widgetVar="findAMP"
+                            minHeight="300"
+                            width="1100"
+                            position="top"
+                            modal="true"
+                            closeOnEscape="true">
+                            <p:autoComplete
+                                id="exItem"
+                                forceSelection="true"
+                                class="w-100 formgrid grid"
+                                placeholder="Search Any Medicine..."
+                                maxResults="20"
+                                minQueryLength="3"
+                                inputStyleClass="w-100"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItem}"
+                                var="vt"
+                                onfocus="this.select()"
+                                itemLabel="#{vt.name}"
+                                itemValue="#{vt}">
+                                <p:column headerText="Code" style="padding: 6px;width: 4em;">
+                                    <h:outputLabel value="#{vt.code}" />
+                                </p:column>
+                                <p:column headerText="Item" style="width: 350px; padding: 6px;">
+                                    <h:outputLabel value="#{vt.name}" />
+                                </p:column>
+                                <p:column headerText="Stock" style="padding: 6px; text-align: center;width: 5em;">
+                                    <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department, vt)}">
+                                        <f:convertNumber pattern="#,###" />
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
+                                    <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                        </p:dialog>
+
                         <p:panel class="w-100">
                             <f:facet name="header">
                                 <div class="row w-100 align-items-center">
@@ -97,7 +137,18 @@
                                         <div class="row w-100 m-1 p-1">
                                             <div class="col-md-5">
                                                 <p:focus id="focusForAcIx" for="acStock" />
-                                                <p:outputLabel class="w-100" for="acStock">Medicines or Devices</p:outputLabel>
+                                                <p:outputLabel class="w-100" for="acStock">
+                                                    Medicines or Devices
+                                                    <i class="fas fa-shopping-cart"
+                                                       onclick="PF('findAMP').show()"
+                                                       onkeypress="if(event.key==='Enter'||event.key===' ')PF('findAMP').show()"
+                                                       role="button"
+                                                       tabindex="0"
+                                                       title="Search Any Medicine"
+                                                       aria-label="Open Search Any Medicine dialog"
+                                                       style="font-size: 14px; color: purple; margin-left: 8px; cursor: pointer;">
+                                                    </i>
+                                                </p:outputLabel>
                                                 <h:panelGroup id="acStock">
                                                     <p:autoComplete
                                                         id="acStockField"
@@ -143,6 +194,15 @@
                                                             headerText="Stocks"
                                                             styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
                                                             <h:outputLabel value="#{i.stockQty}">
+                                                                <f:convertNumber pattern="#,###" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+                                                        <p:column
+                                                            width="20em"
+                                                            headerText="Total Stock"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKeyReadOnly('Pharmacy Retail Sale - Show Total AMP Stock in Autocomplete', false)}"
+                                                            styleClass="text-end #{pharmacyController.getExpiryStyleClass(i.dateOfExpire)}">
+                                                            <h:outputLabel value="#{i.totalStockQty}">
                                                                 <f:convertNumber pattern="#,###" />
                                                             </h:outputLabel>
                                                         </p:column>

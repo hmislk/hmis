@@ -191,7 +191,8 @@ GET /api/inward/room-facility-charges?query=&roomId=&roomCategoryId=&size=
         "id": 5,
         "durationHours": 24.0,
         "overShootHours": 6.0,
-        "durationDaysForMoCharge": 0
+        "durationDaysForMoCharge": 0,
+        "durationUnit": "HOUR"
       }
     }
   ]
@@ -224,7 +225,8 @@ Returns a single room facility charge or 404 if not found / retired.
   "medicalCareCharge": 0.0,
   "timedItemFeeDurationHours": 24.0,
   "timedItemFeeOverShootHours": 6.0,
-  "timedItemFeeDurationDaysForMoCharge": 0
+  "timedItemFeeDurationDaysForMoCharge": 0,
+  "timedItemFeeDurationUnit": "HOUR"
 }
 ```
 
@@ -242,9 +244,10 @@ Returns a single room facility charge or 404 if not found / retired.
 | moChargeForAfterDuration | No | MO charge for after-duration |
 | adminstrationCharge | No | Administration charge per block |
 | medicalCareCharge | No | Medical care charge per block |
-| timedItemFeeDurationHours | No | Block duration in hours |
-| timedItemFeeOverShootHours | No | Over-shoot hours for last block |
+| timedItemFeeDurationHours | Yes, unless the unit is `ONE_TIME` | Block duration, counted in `timedItemFeeDurationUnit`. Must be greater than 0 — a time-based block of 0 bills nothing for every stay, so it is rejected with 400 |
+| timedItemFeeOverShootHours | No | Over-shoot for last block, in the same unit |
 | timedItemFeeDurationDaysForMoCharge | No | Duration days for MO charge calculation |
+| timedItemFeeDurationUnit | No | `ONE_TIME`, `MINUTE`, `HOUR` or `DAY` — what the two values above are counted in. Defaults to `HOUR`; `ONE_TIME` charges the block once regardless of the stay |
 
 ### PUT — Update
 
@@ -259,6 +262,71 @@ All fields optional. Only supplied fields are updated.
 ```
 DELETE /api/inward/room-facility-charges/{id}?retireComments=reason
 ```
+
+---
+
+## 4. Room Facility Timed Items — `/api/inward/room-facility-charges/{id}/timed-items`
+
+Manages the list of individual `TimedItem` services attached to a room facility charge
+(issue `#23147`), so each is auto-billed based on duration of stay alongside the fixed room charges. This
+is distinct from the `timedItemFee` block-duration/overshoot config on the parent charge (§3
+above) — that config controls *how* time-based billing is calculated; this list controls *which*
+items get billed that way.
+
+### GET — List attached timed items
+
+```text
+GET /api/inward/room-facility-charges/{id}/timed-items
+```
+
+`{id}` is the `RoomFacilityCharge` id. Returns 404 if not found / retired.
+
+**Response 200:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 7,
+      "timedItem": { "id": 42, "name": "ICU Bed Charge" },
+      "createdAt": "2026-08-20 10:15:00",
+      "retired": false
+    }
+  ]
+}
+```
+
+### POST — Attach a timed item
+
+```text
+POST /api/inward/room-facility-charges/{id}/timed-items
+Content-Type: application/json
+```
+
+```json
+{ "timedItemId": 42 }
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| timedItemId | Yes | ID of the `TimedItem` to attach |
+
+**Response 201** — created attachment record (same shape as the GET list rows).
+**Response 404** — room facility charge `{id}` not found or retired.
+**Response 409** — already attached (an active attachment for this `TimedItem` already exists on
+this room facility charge).
+**Response 400** — `timedItemId` missing, or the `TimedItem` doesn't exist / is retired.
+
+### DELETE — Soft-retire an attachment
+
+```text
+DELETE /api/inward/room-facility-charges/{id}/timed-items/{linkId}?retireComments=reason
+```
+
+Retires the attachment (`{linkId}`), not the underlying `TimedItem`. Returns 404 if the
+attachment doesn't belong to `{id}` or doesn't exist, or if the room facility charge `{id}` itself
+is not found or retired; 400 if already retired.
 
 ---
 
@@ -317,6 +385,11 @@ curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
   -X POST "$BASE/api/inward/room-facility-charges" \
   -d '{"name":"Room 101 - Cash","roomId":10,"roomCategoryId":1,"roomCharge":1500,"timedItemFeeDurationHours":24}' | python -m json.tool
 
-# 4. Verify capabilities
+# 4. Attach a Timed Item to that charge (use the charge id from step 3, TimedItem id from /api/timed-items)
+curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
+  -X POST "$BASE/api/inward/room-facility-charges/20/timed-items" \
+  -d '{"timedItemId":42}' | python -m json.tool
+
+# 5. Verify capabilities
 curl -s "$BASE/api/capabilities" | python -m json.tool
 ```

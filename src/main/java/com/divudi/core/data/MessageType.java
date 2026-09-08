@@ -44,5 +44,6 @@ public enum MessageType {
     ClientPortalRegistrationOTP,
     ClientPortalPasswordResetOTP,
     ClientPortalEmailRegistrationOTP,
-    InwardFinalBillEmail
+    InwardFinalBillEmail,
+    InpatientComposedEmail
 }

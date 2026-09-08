@@ -308,7 +308,7 @@
                                 <f:facet name="header">
                                     <h:outputText value="Description" />
                                 </f:facet>
-                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
+                                <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{not empty bip.item.printName ? bip.item.printName : bip.item.name}" style="margin: 4px; font-size: 11px!important;" >
                                 </h:outputLabel>
                                 <h:panelGroup rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id and bip.billSession ne null }"  >
                                     <br/>

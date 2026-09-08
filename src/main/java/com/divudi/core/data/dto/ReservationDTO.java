@@ -9,6 +9,16 @@ import java.util.Date;
 public class ReservationDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     
+    /**
+     * The Appointment ID - never the Reservation ID.
+     *
+     * Both consumers of this DTO (AppointmentController.navigatePatientAdmit and
+     * navigateToManageAppointment) resolve this value with appointmentFacade.find(),
+     * and they look the Reservation up themselves from the Appointment. Appointment
+     * and Reservation use independent IDENTITY sequences on different tables
+     * (patientencounter vs reservation), so putting a Reservation ID here makes the
+     * lookup fail ("No Appointment Found") or, on a colliding ID, load the wrong record.
+     */
     private Long id;
     private Date reservedFrom;
     private Date reservedTo;

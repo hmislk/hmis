@@ -156,6 +156,17 @@
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column headerText="Amount to Pay" width="9em;" class="text-end">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Amount to Pay"/>
+                                    </f:facet>
+                                    <p:inputNumber value="#{bf.payingAmount}" decimalPlaces="2" class="w-100">
+                                        <p:ajax event="blur" process="@this"
+                                                listener="#{inwardSurgeryPaymentBillController.onSelectionChanged()}"
+                                                update=":#{p:resolveFirstComponentWithId('pTotals',view).clientId} :#{p:resolveFirstComponentWithId('pnlHoldOverride',view).clientId}" />
+                                    </p:inputNumber>
+                                </p:column>
+
                                 <p:column headerText="Hold Status" width="14em;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Hold Status"/>

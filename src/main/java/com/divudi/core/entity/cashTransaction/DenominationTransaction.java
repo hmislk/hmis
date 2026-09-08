@@ -57,6 +57,14 @@ public class DenominationTransaction implements Serializable {
     @javax.persistence.Transient
     private boolean selected;
 
+    /**
+     * System-computed value the cashier is expected to hand over for this
+     * row's payment method, shown for reference next to the actual amount
+     * entered in {@link #denominationValue}. Never persisted.
+     */
+    @javax.persistence.Transient
+    private Double expectedValue;
+
     private boolean cancelled;
     @ManyToOne
     private WebUser cancelledBy;
@@ -224,6 +232,14 @@ public class DenominationTransaction implements Serializable {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    public Double getExpectedValue() {
+        return expectedValue;
+    }
+
+    public void setExpectedValue(Double expectedValue) {
+        this.expectedValue = expectedValue;
     }
 
     public boolean isCancelled() {

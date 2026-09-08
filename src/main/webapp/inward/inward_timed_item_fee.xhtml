@@ -82,19 +82,40 @@
                                         value="#{timedItemFeeController.currentFee.ffee}" 
                                         style="width: 500px;"/>
 
-                                    <h:outputLabel value="Duration Hour"/>
+                                    <h:outputLabel value="Charged By"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:inputText 
-                                        autocomplete="off" 
+                                    <p:selectOneMenu
+                                        id="cmbDurationUnit"
+                                        style="width: 500px;"
                                         class="mt-2 mb-2"
-                                        value="#{timedItemFeeController.currentFee.durationHours}" 
-                                        style="width: 500px;"/>
+                                        value="#{timedItemFeeController.currentFee.durationUnit}"
+                                        title="How the elapsed time of this service is turned into a charge">
+                                        <f:selectItems value="#{timedItemFeeController.durationUnits}"
+                                                       var="du"
+                                                       itemLabel="#{du.label}"
+                                                       itemValue="#{du}"/>
+                                        <p:ajax event="change" process="@this" update="txtDuration txtOverShoot"/>
+                                    </p:selectOneMenu>
 
-                                    <h:outputLabel value="Over Shoot Hour"/>
+                                    <h:outputLabel value="Duration"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText
+                                        id="txtDuration"
+                                        autocomplete="off"
+                                        class="mt-2 mb-2"
+                                        value="#{timedItemFeeController.currentFee.durationHours}"
+                                        disabled="#{timedItemFeeController.currentFee.oneTime}"
+                                        title="Length of one charged block, counted in the unit selected above"
+                                        style="width: 500px;"/>
+
+                                    <h:outputLabel value="Over Shoot"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:inputText
+                                        id="txtOverShoot"
                                         autocomplete="off"
                                         value="#{timedItemFeeController.currentFee.overShootHours}"
+                                        disabled="#{timedItemFeeController.currentFee.oneTime}"
+                                        title="Grace period, in the same unit, before a part-used block is charged as a full block"
                                         style="width: 500px;"/>
 
                                     <h:outputLabel value="Slot Order"/>
@@ -123,11 +144,11 @@
 
                                 </h:panelGrid>
 
-                                <p:commandButton 
-                                    id="btnAddTo" 
-                                    value="Add" 
+                                <p:commandButton
+                                    id="btnAddTo"
+                                    value="Add"
                                     icon="fa fa-plus"
-                                    update="gpDetail dtbFee"
+                                    update="gpDetail dtbFee :growl"
                                     style="width: 150px;"
                                     action="#{timedItemFeeController.saveCharge}" 
                                     class="ui-button-success mt-2 mb-3">
@@ -146,11 +167,23 @@
                                     <p:column headerText="Foreigner Fee">
                                         <p:inputText value="#{bi.ffee}" autocomplete="off" />
                                     </p:column>
-                                    <p:column headerText="Duration Hour">
-                                        <p:inputText value="#{bi.durationHours}" autocomplete="off" />
+                                    <p:column headerText="Charged By">
+                                        <p:selectOneMenu value="#{bi.durationUnit}" style="width: 100%;">
+                                            <f:selectItems value="#{timedItemFeeController.durationUnits}"
+                                                           var="du"
+                                                           itemLabel="#{du.label}"
+                                                           itemValue="#{du}"/>
+                                            <!-- Without this, switching a row away from One Time Fee leaves the two
+                                                 inputs below disabled. A disabled input submits nothing, so the row's
+                                                 Update would keep the old duration and silently price the fee at zero. -->
+                                            <p:ajax event="change" process="@this" update="rowDuration rowOverShoot"/>
+                                        </p:selectOneMenu>
+                                    </p:column>
+                                    <p:column headerText="Duration">
+                                        <p:inputText id="rowDuration" value="#{bi.durationHours}" autocomplete="off" disabled="#{bi.oneTime}" />
                                     </p:column>
                                     <p:column headerText="Over Shoot">
-                                        <p:inputText value="#{bi.overShootHours}" autocomplete="off" />
+                                        <p:inputText id="rowOverShoot" value="#{bi.overShootHours}" autocomplete="off" disabled="#{bi.oneTime}" />
                                     </p:column>
                                     <p:column headerText="Slot Order" style="width: 90px">
                                         <p:inputText value="#{bi.sortOrder}" autocomplete="off" style="width: 60px;"/>

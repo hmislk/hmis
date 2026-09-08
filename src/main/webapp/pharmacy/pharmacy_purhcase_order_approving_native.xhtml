@@ -1,0 +1,456 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+
+    <ui:define name="content">
+        <h:form id="form">
+
+            <div class="d-flex justify-content-end">
+                <!-- Small non-prominent fallback to legacy entity-based page -->
+                <p:commandButton
+                    ajax="false"
+                    value="Legacy View"
+                    title="Open original entity-based Purchase Order Approving page"
+                    action="pharmacy_purhcase_order_approving?faces-redirect=true"
+                    class="ui-button-secondary ms-3"
+                    icon="fas fa-history"
+                    style="font-size: 0.75rem; padding: 0.2rem 0.5rem;"/>
+            </div>
+
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}" >
+                You are NOT authorized
+            </h:panelGroup>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" >
+
+            <h:panelGroup rendered="#{!purchaseOrderApprovingNativeSqlController.printPreview}">
+                <p:panel >
+                    <f:facet name="header">
+                        <p:outputLabel value="Purchase order Request Order"/>
+                        <div style="float:right;" >
+                            <p:commandButton ajax="false"  
+                                             value="Approve" 
+                                             class="ui-button-success m-1" 
+                                             icon="fas fa-check" 
+                                             disabled="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                             onclick="return confirm('Are you sure you want to approve this purchase order? This action cannot be undone.');"
+                                             action="#{purchaseOrderApprovingNativeSqlController.approve}">
+                            </p:commandButton>
+                            <p:commandButton ajax="false"  
+                                             value="Back To PO List to Approve" 
+                                             class="ui-button-warning" 
+                                             icon="fas fa-arrow-left" 
+                                             action="#{searchController.navigateToPurchaseOrderApprove}">
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+
+                    <p:panel class="mb-2" id="po">
+                        <div class="row">
+                            <div class="col-12" >
+                                <p:messages id="pageMessages" ></p:messages>
+                            </div>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-10" >
+                                <p:panel>
+                                    <f:facet name="header">  
+                                        <div class="d-flex justify-content-between">
+                                            <h:outputLabel  value="Pharmacy Bill Item"/>
+                                            <p:commandButton id="btnRemoveAll" process="itemList @this" update=":#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId}" value="Remove All" class="ui-button-danger" style="float: right" onclick="return confirm('Remove all selected items? This action cannot be undone.');" action="#{purchaseOrderApprovingNativeSqlController.removeSelected()}"/>                            
+                                        </div>
+                                    </f:facet>
+                                    <p:dataTable scrollable="true" styleClass="noBorder" scrollHeight="250"
+                                                 var="bi" value="#{purchaseOrderApprovingNativeSqlController.billItems}"
+                                                 id="itemList" sortBy="#{bi.searialNo}"  rowKey="#{bi.searialNo}"
+                                                 paginator="true" 
+                                                 rows="10" 
+                                                 selectionMode="multiple"
+                                                 paginatorPosition="bottom"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="5,10,15"
+                                                 selection="#{purchaseOrderApprovingNativeSqlController.selectedItems}">  
+
+                                        <p:column selectionBox="true" style="width: 30px;"></p:column>
+
+                                        <p:column headerText="No" style="width: 50px;" >
+                                            <p:outputLabel value="#{bi.searialNo + 1}" ></p:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Item Name" >  
+                                            <h:outputText value="#{bi.item.name}" ></h:outputText>
+                                            <p:commandButton
+                                                icon="pi pi-search"
+                                                id="btnViewSelectedItemDetails"
+                                                title="View Item Details"
+                                                action="#{purchaseOrderApprovingNativeSqlController.displayItemDetails(bi)}"
+                                                update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                process="@this"
+                                                class="ui-button-icon-only mx-3"/>
+                                        </p:column>  
+
+                                        <p:column headerText="Code" styleClass="shortNumericColumn"  >  
+                                            <h:outputText value="#{bi.item.code}" ></h:outputText>
+                                        </p:column>  
+
+                                        <p:column
+                                            headerText="Qty"
+                                            class="text-end px-1"
+                                            width="6em">
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="qty"
+                                                value="#{bi.billItemFinanceDetails.quantity}"
+                                                class="w-100 text-end"
+                                                label="Qty" onfocus="this.select()">
+                                                <f:convertNumber pattern="#,#00"/>
+                                                <p:ajax event="blur" update="total :#{p:resolveFirstComponentWithId('tot',view).clientId} @this :#{p:resolveFirstComponentWithId('pageMessages',view).clientId}"  process="@this price" listener="#{purchaseOrderApprovingNativeSqlController.onEdit(bi)}" ></p:ajax>
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderApprovingNativeSqlController.onFocus(bi)}" />
+                                            </p:inputText>
+                                        </p:column>  
+                                        <p:column
+                                            width="6em"
+                                            headerText="Free Qty"
+                                            class="text-end px-1"  >
+                                            <p:inputText
+                                                autocomplete="off"
+                                                id="freeQty"
+                                                value="#{bi.billItemFinanceDetails.freeQuantity}"
+                                                class="w-100 text-end"
+                                                onfocus="this.select()">
+                                                <f:convertNumber pattern="#,#00"/>
+                                                <p:ajax event="blur" update="total :#{p:resolveFirstComponentWithId('tot',view).clientId} @this :#{p:resolveFirstComponentWithId('pageMessages',view).clientId}"  process="@this price" listener="#{purchaseOrderApprovingNativeSqlController.onEdit(bi)}" ></p:ajax>
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderApprovingNativeSqlController.onFocus(bi)}" />
+                                            </p:inputText>
+                                        </p:column> 
+                                        <p:column 
+                                            width="6em"
+                                            headerText="Purchase Price"   
+                                            class="text-end px-1"  >  
+                                            <p:inputText
+                                                id="price"
+                                                class="w-100 text-end"
+                                                style="margin: 0px;"
+                                                autocomplete="off"
+                                                value="#{bi.billItemFinanceDetails.lineGrossRate}" onfocus="this.select()">   
+                                                <f:convertNumber pattern="#00.00"/>
+                                                <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{purchaseOrderApprovingNativeSqlController.onEdit(bi)}" ></f:ajax>
+                                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderApprovingNativeSqlController.onFocus(bi)}" />
+                                            </p:inputText>
+                                        </p:column>  
+
+                                        <p:column 
+                                            headerText="Last Purchase Price" 
+                                            width="6em"
+                                            class="text-end px-1"  
+                                            >  
+                                            <h:panelGroup >
+                                                <h:outputText value="#{pharmacyController.getLastPurchaseRate(bi.item)}">
+                                                    <f:convertNumber pattern="#00.00"/>
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </p:column>  
+
+
+                                        <p:column headerText="Total" width="6em"  class="text-end px-1"  >  
+                                            <h:outputText id="total" value="#{bi.billItemFinanceDetails.lineGrossTotal}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>  
+                                        <p:column  class="text-end px-1"  width="4em" >
+                                            <p:commandButton id="btnRemoveItem" process="itemList" update="itemList :#{p:resolveFirstComponentWithId('po',view).clientId}" icon="fas fa-trash" class="ui-button-danger" onclick="return confirm('Remove this item? This action cannot be undone.');" action="#{purchaseOrderApprovingNativeSqlController.removeItem(bi)}"/>
+                                        </p:column>
+                                    </p:dataTable> 
+
+                                    <div >
+                                        <ph:history/>
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-2" >
+
+                                <p:panel header="Approved Purchase Order" id="panelPo">
+
+                                    <p:outputLabel value="Supplier"
+                                                   class="form-label"
+                                                   for="lblSupplier" />
+                                    <p:outputLabel id="lblSupplier"
+                                                   value="#{purchaseOrderApprovingNativeSqlController.approvedBill.toInstitution.name}"
+                                                   class="form-control w-100 mb-2" 
+                                                   style="font-weight: bold;" />
+
+                                    <p:outputLabel value="Payment Method"
+                                                   class="form-label"
+                                                   for="cmbPs" />
+                                    <p:selectOneMenu id="cmbPs"
+                                                     value="#{purchaseOrderApprovingNativeSqlController.approvedBill.paymentMethod}"
+                                                     class="w-100 mb-2">
+                                        <f:selectItem itemLabel="Select Payment method" />
+                                        <f:selectItems value="#{enumController.paymentMethodsForPo}" />
+                                        <p:ajax process="@this" update="po" event="change" />
+                                        <p:ajax process="@this" update="duration" event="itemSelect" />
+                                    </p:selectOneMenu>
+                                    
+                                    <p:outputLabel value="Department Type"
+                                                   class="form-label"></p:outputLabel>
+                                    <p:outputLabel
+                                        id="selDepartmentType"
+                                        value="#{purchaseOrderApprovingNativeSqlController.approvedBill.departmentType}"
+                                        class="w-100" >
+                                    </p:outputLabel>
+
+                                    <h:panelGroup rendered="#{purchaseOrderApprovingNativeSqlController.approvedBill.paymentMethod eq 'Credit'}" id="duration">
+                                        <div class="d-flex mb-3">
+                                            <div class="ui-inputgroup mx-1 my-1">
+                                                <p:inputText value="#{purchaseOrderApprovingNativeSqlController.approvedBill.creditDuration}"
+                                                             onfocus="this.select();"
+                                                             style="width: 10em;" />
+                                                <div class="ui-inputgroup-addon">Days</div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <p:spacer class="my-1"
+                                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}" />
+
+                                    <p:outputLabel 
+                                        class="my-1 w-100"
+                                        value="Consignment"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}" />
+
+                                    <h:panelGroup 
+                                        class="my-1 w-100"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                        <p:selectBooleanButton 
+                                            onLabel="Yes" 
+                                            offLabel="No"
+                                            class="w-100"
+                                            value="#{purchaseOrderApprovingNativeSqlController.approvedBill.consignment}"
+                                            />
+                                    </h:panelGroup>
+
+                                    <p:outputLabel 
+                                        value="Request Comments"
+                                        class="form-label mt-1"/>
+                                    <p:outputLabel 
+                                        class="form-control"
+                                        value="#{purchaseOrderApprovingNativeSqlController.requestedBill.comments}"/>
+
+                                    <p:outputLabel 
+                                        value="Approve Comments"
+                                        class="form-label mt-1"/>
+                                    <p:inputTextarea 
+                                        class="form-control"
+                                        value="#{purchaseOrderApprovingNativeSqlController.approvedBill.comments}"/>
+
+
+                                    <p:outputLabel value="Total Value"
+                                                   class="form-label w-100"
+                                                   for="tot" />
+                                    <p:outputLabel id="tot"
+                                                   value="#{purchaseOrderApprovingNativeSqlController.approvedBill.netTotal}"
+                                                   class="m-1 w-100"
+                                                   style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+
+                                </p:panel>
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+                    </p:panel>
+
+
+                    <p:spacer height="50"/>
+                </p:panel>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{purchaseOrderApprovingNativeSqlController.printPreview}">
+                <p:panel >
+                    <p:commandButton ajax="false" value="Back To Po List" action="pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true" class="ui-button-warning" icon="fas fa-arrow-left"/>
+                    <p:commandButton
+                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                        value="Settings"
+                        icon="fas fa-cog"
+                        class="ui-button-secondary m-1"
+                        type="button"
+                        onclick="PF('purchaseOrderConfigDialog').show();" />
+                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info m-1" icon="fas fa-print">
+                        <p:printer target=":form:gpBillPreview" ></p:printer>
+                    </p:commandButton>
+                    <p:commandButton
+                        value="Send Email"
+                        icon="fas fa-envelope"
+                        action="#{purchaseOrderApprovingNativeSqlController.prepareEmailDialog}"
+                        styleClass="ui-button-secondary m-1"
+                        oncomplete="PF('emailDialog').show();"
+                        update="emailDialogForm"/>
+
+                    <h:panelGroup  id="gpBillPreview" class="my-2">
+
+                        <ph:po_custom_1
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 1 Paper Format', true)}"
+                            bill="#{purchaseOrderApprovingNativeSqlController.approvedBill}" controller="#{purchaseOrderApprovingNativeSqlController}"/>
+
+                        <ph:po_custom_2
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - A4 Custom 2 Paper Format', true)}"
+                            bill="#{purchaseOrderApprovingNativeSqlController.approvedBill}" controller="#{purchaseOrderApprovingNativeSqlController}"/>
+
+                        <ph:po_custom_3_letter
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Letter Paper Format', true)}"
+                            bill="#{purchaseOrderApprovingNativeSqlController.approvedBill}" controller="#{purchaseOrderApprovingNativeSqlController}"/>
+                        
+                        <ph:po_custom_4_letter
+                            rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Purchase Order Approval Print - Custom 4 Paper Format', true)}"
+                            bill="#{purchaseOrderApprovingNativeSqlController.approvedBill}" controller="#{purchaseOrderApprovingNativeSqlController}"/>
+
+
+                    </h:panelGroup>
+
+                </p:panel>
+            </h:panelGroup>
+
+            </h:panelGroup>
+
+        </h:form>
+
+        <p:dialog widgetVar="emailDialog" modal="true" header="Send Purchase Order Email" width="400px" height="auto" resizable="false">
+            <h:form id="emailDialogForm">
+                <div class="p-3">
+                    <div class="mb-3">
+                        <p:outputLabel value="Supplier: " style="font-weight: bold;"/>
+                        <p:outputLabel value="#{purchaseOrderApprovingNativeSqlController.approvedBill.toInstitution.name}"/>
+                    </div>
+
+                    <div class="mb-3">
+                        <p:outputLabel for="emailRecipient" value="Email Address:" class="form-label"/>
+                        <p:inputText 
+                            id="emailRecipient" 
+                            value="#{purchaseOrderApprovingNativeSqlController.emailRecipient}" 
+                            class="w-100"
+                            placeholder="Enter email address"
+                            required="true"
+                            requiredMessage="Email address is required"/>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <p:commandButton 
+                            value="Cancel" 
+                            onclick="PF('emailDialog').hide();"
+                            class="ui-button-secondary"
+                            type="button"/>
+                        <p:commandButton 
+                            value="Send Email" 
+                            action="#{purchaseOrderApprovingNativeSqlController.sendPurchaseOrderEmail}"
+                            class="ui-button-success"
+                            icon="fas fa-envelope"
+                            ajax="false"
+                            oncomplete="PF('emailDialog').hide();"/>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
+
+        <!-- Purchase Order Configuration Dialog -->
+        <p:dialog id="purchaseOrderConfigDialog"
+                  header="Purchase Order Approving Printer Configuration"
+                  widgetVar="purchaseOrderConfigDialog"
+                  modal="true"
+                  width="800"
+                  height="500"
+                  resizable="true"
+                  maximizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{purchaseOrderConfigController.loadCurrentConfig}" update="purchaseOrderConfigForm" />
+
+            <h:form id="purchaseOrderConfigForm">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> Purchase Order Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="a4custom1paper"
+                                        value="#{purchaseOrderConfigController.a4custom1paper}" />
+                                    <p:outputLabel for="a4custom1paper" value="A4 Paper Custom Format 1" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 purchase order format - Custom 1</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="a4custom2paper"
+                                        value="#{purchaseOrderConfigController.a4custom2paper}" />
+                                    <p:outputLabel for="a4custom2paper" value="A4 Paper Custom Format 2" class="ms-2" />
+                                    <small class="form-text text-muted d-block">A4 purchase order format - Custom 2</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="letterPaper"
+                                        value="#{purchaseOrderConfigController.letterPaper}" />
+                                    <p:outputLabel for="letterPaper" value="Letter Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Purchase order format - Letter Paper</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="custom4paper"
+                                        value="#{purchaseOrderConfigController.custom4paper}" />
+                                    <p:outputLabel for="custom4paper" value="Custom 4 Paper Format" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Purchase order format - Custom 4 Paper</small>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="purchaseOrderConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Apply &amp; Close"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            ajax="false"
+                                            action="#{purchaseOrderConfigController.saveConfig}" />
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fas fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('purchaseOrderConfigDialog').hide(); return false;"
+                                            type="button" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </h:form>
+        </p:dialog>
+
+    </ui:define>
+
+</ui:composition>

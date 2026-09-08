@@ -145,9 +145,14 @@ curl -X GET "http://localhost:8080/api/pharmaceutical_items/amp/123" \
   "descreption": "Generic paracetamol tablet",
   "departmentType": "Pharmacy",
   "vtmId": 123,
-  "dosageFormId": 456
+  "dosageFormId": 456,
+  "issueUnitId": 236,
+  "strengthUnitId": 209
 }
 ```
+`issueUnitId` and `strengthUnitId` reference `MeasurementUnit` IDs (same
+lookup as `pharmaceutical_config/units`) — not to be confused with
+`dosageFormId`, which references a `DosageForm`.
 
 **AMP Request Body:**
 ```json
@@ -163,9 +168,16 @@ curl -X GET "http://localhost:8080/api/pharmaceutical_items/amp/123" \
   "discountAllowed": true,
   "allowFractions": false,
   "consumptionAllowed": true,
-  "refundsAllowed": true
+  "refundsAllowed": true,
+  "strengthOfAnIssueUnit": 500.0,
+  "strengthUnitId": 209,
+  "issueUnitId": 236
 }
 ```
+`strengthOfAnIssueUnit` is the numeric strength (e.g. `500.0` for a 500mg
+tablet) — distinct from `strengthUnitId`, which is the unit it's measured in
+(mg). `issueUnitId` is the unit the item is issued/dispensed in (e.g.
+Tablet, Capsule, ml).
 
 **VMPP Request Body:**
 ```json
@@ -198,6 +210,23 @@ curl -X POST "http://localhost:8080/api/pharmaceutical_items/vtm" \
   -H "Content-Type: application/json" \
   -d '{"name": "Paracetamol", "descreption": "Analgesic", "departmentType": "Pharmacy"}'
 ```
+
+**Duplicate-by-name detection:** create checks for an existing, non-retired
+row of the same type whose `name` matches case-insensitively before creating
+a new one. If a match is found, no row is created — the endpoint returns
+`409 Conflict` with the existing row instead:
+```json
+{
+  "status": "already_exists",
+  "code": 409,
+  "id": 123,
+  "data": { "id": 123, "name": "Paracetamol", "code": "paracetamol", "retired": false, "inactive": false }
+}
+```
+This applies to all six types (VTM, ATM, VMP, AMP, VMPP, AMPP) and matches
+the same convention used by `ClinicalMetadataApi` and `InvestigationApi`. A
+retired row with the same name does **not** block a new create — the name is
+only unique among non-retired rows of that type.
 
 ### 4. Update Item
 
@@ -348,7 +377,7 @@ All responses follow this standard format:
 | 400 | Bad request (validation error, invalid type, missing required field) |
 | 401 | Unauthorized (invalid or missing API key) |
 | 404 | Not found |
-| 409 | Conflict (already retired / not retired) |
+| 409 | Conflict (already retired / not retired / duplicate name on create) |
 | 500 | Internal server error |
 
 ## Response DTO Fields by Type
@@ -360,10 +389,15 @@ All responses follow this standard format:
 - `id`, `name`, `code`, `descreption`, `retired`, `inactive`
 
 ### VMP Response
-- `id`, `name`, `code`, `descreption`, `retired`, `inactive`, `vtmId`, `vtmName`, `dosageFormId`, `dosageFormName`
+- `id`, `name`, `code`, `descreption`, `retired`, `inactive`, `vtmId`, `vtmName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`
 
 ### AMP Response
-- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`
+- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`
+
+Note: `issueUnitId`/`strengthUnitId`/`issueUnitName`/`strengthUnitName` are
+populated on `GET`/`POST`/`PUT` (single-item) responses but not yet on the
+`search` list endpoint's DTO projection — look up the item by ID after a
+write to confirm what was saved.
 
 ### VMPP Response
 - `id`, `name`, `code`, `retired`, `inactive`, `vmpId`, `vmpName`

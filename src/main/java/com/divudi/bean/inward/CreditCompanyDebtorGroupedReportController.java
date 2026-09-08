@@ -186,7 +186,11 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION
         );
-        List<BillTypeAtomic> depositTypes = Arrays.asList(
+        List<BillTypeAtomic> paymentAndDepositTypes = Arrays.asList(
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION,
                 BillTypeAtomic.INWARD_DEPOSIT,
                 BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
                 BillTypeAtomic.INWARD_DEPOSIT_REFUND,
@@ -247,7 +251,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
 
             HashMap<String, Object> depositParams = new HashMap<>();
             depositParams.put("pe", pe);
-            depositParams.put("depositTypes", depositTypes);
+            depositParams.put("depositTypes", paymentAndDepositTypes);
             double deposited = billFacade.findDoubleByJpql(
                     "Select sum(b.netTotal) from Bill b where b.retired=false and b.patientEncounter=:pe and b.billTypeAtomic in :depositTypes",
                     depositParams);

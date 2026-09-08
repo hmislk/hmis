@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -61,6 +62,10 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private BillBeanController billBeanController;
+    @EJB
+    private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -137,6 +142,14 @@ public class InwardChargeTypeBreakdownController implements Serializable {
 
         if (selectedChargeType == null) {
             errorMessage = "Please select an Inward Charge Type before generating the report.";
+            return;
+        }
+
+        // Only reachable with a selection made before the merge setting was turned
+        // on — the picker does not offer a suppressed charge type (issue #23543).
+        if (professionalFeeClassificationService.isSuppressed(selectedChargeType)) {
+            errorMessage = "This hospital bills professional and assisting fees as one charge type,"
+                    + " so there are no separate assisting charges. Select Professional Charge instead.";
             return;
         }
 
@@ -614,14 +627,18 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     private void buildFromBillFees() {
+        Map<String, Object> params = new HashMap<>();
+
         StringBuilder jpql = new StringBuilder(
                 "select bf from BillFee bf join bf.bill b join b.patientEncounter enc"
                 + " where bf.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
-                + " and b.billType = :btp");
+                + " and b.billType = :btp"
+                // Without this both professional charge types pivoted the same full set
+                // of fees, so either selection produced an identical table (issue #23543).
+                + professionalFeeClassificationService.staffCondition("bf", selectedChargeType, params));
 
-        Map<String, Object> params = new HashMap<>();
         params.put("btp", BillType.InwardProfessional);
         appendEncounterFilters(jpql, params, "enc");
 
@@ -711,8 +728,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 if (enc.getBhtNo() == null) {
                     continue;
                 }
-                double fee = (enc.getAdmissionType() != null)
-                        ? enc.getAdmissionType().getAdmissionFee() : 0.0;
+                double fee = resolveBilledAdmissionFee(enc);
                 if (fee == 0.0) {
                     continue;
                 }
@@ -740,6 +756,27 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         columnTotals = Arrays.asList(colSum);
     }
 
+    /**
+     * Resolves the Admission Fee actually billed for an encounter, instead of
+     * recomputing it from the current (mutable) AdmissionType master fee.
+     * Prefers the persisted Final Bill admission-fee BillItem (post-discount,
+     * for discharged/finalised encounters), falling back to the persisted
+     * Interim Bill admission-fee BillItem (for admitted-but-not-discharged
+     * encounters with a saved interim bill). If neither has ever been billed
+     * for this encounter, falls back to the live AdmissionType fee as a
+     * projected value, matching prior behaviour for not-yet-billed cases.
+     */
+    private double resolveBilledAdmissionFee(PatientEncounter enc) {
+        BillItem billed = billBeanController.fetchBillItem(enc, BillType.InwardFinalBill, InwardChargeType.AdmissionFee);
+        if (billed == null) {
+            billed = billBeanController.fetchBillItem(enc, BillType.InwardIntrimBill, InwardChargeType.AdmissionFee);
+        }
+        if (billed != null) {
+            return billed.getAdjustedValue();
+        }
+        return (enc.getAdmissionType() != null) ? enc.getAdmissionType().getAdmissionFee() : 0.0;
+    }
+
     // -------------------------------------------------------------------------
     // Helper: create a new BhtBreakdownRow from a PatientEncounter
     // -------------------------------------------------------------------------
@@ -760,13 +797,13 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     public List<InwardChargeType> getAllChargeTypes() {
-        return Arrays.asList(InwardChargeType.values());
+        return professionalFeeClassificationService.visible(Arrays.asList(InwardChargeType.values()));
     }
 
     public List<InwardChargeType> completeInwardChargeType(String query) {
         String lower = query == null ? "" : query.toLowerCase();
         List<InwardChargeType> results = new ArrayList<>();
-        for (InwardChargeType ct : InwardChargeType.values()) {
+        for (InwardChargeType ct : professionalFeeClassificationService.visible(InwardChargeType.values())) {
             String label = configOptionApplicationController.getInwardChargeTypeLabel(ct);
             if (label == null) {
                 label = "";

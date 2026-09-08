@@ -7,7 +7,8 @@ import java.util.Date;
 
 /**
  * DTO for BHT Deposit and Credit Settlement Detail Report.
- * One instance per individual payment (deposit or CC settlement).
+ * One instance per individual payment ("Make a Deposit", "Make a Payment",
+ * "Post Final Payment", or CC settlement) - see {@link #getPaymentCategory()}.
  */
 public class BhtPaymentDetailDTO implements Serializable {
 
@@ -22,6 +23,18 @@ public class BhtPaymentDetailDTO implements Serializable {
     private double amount;
     private String referenceNo;
     private String creditCompanyName;
+
+    /**
+     * Distinguishes which kind of transaction this row is: "Deposit"
+     * ("Make a Deposit" / INWARD_DEPOSIT), "Payment" ("Make a Payment" /
+     * INWARD_PAYMENT), "Post Payment" ("Post Final Payment" /
+     * BillType.PostFinalBillInwardPayment), or "CC Settlement" (credit company
+     * payment). Not set by every caller of this DTO (e.g.
+     * {@code BhtDepositDetailReportController} predates this field) - callers
+     * that don't set it leave rows blank rather than defaulting to a
+     * possibly-wrong category.
+     */
+    private String paymentCategory;
 
     public BhtPaymentDetailDTO() {
     }
@@ -58,4 +71,7 @@ public class BhtPaymentDetailDTO implements Serializable {
 
     public String getCreditCompanyName() { return creditCompanyName != null ? creditCompanyName : ""; }
     public void setCreditCompanyName(String creditCompanyName) { this.creditCompanyName = creditCompanyName; }
+
+    public String getPaymentCategory() { return paymentCategory != null ? paymentCategory : ""; }
+    public void setPaymentCategory(String paymentCategory) { this.paymentCategory = paymentCategory; }
 }

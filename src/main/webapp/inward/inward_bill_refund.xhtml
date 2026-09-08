@@ -8,14 +8,15 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill">
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
     <ui:define name="content">
 
         <h:panelGroup >
-            <h:form  >
-                <h:panelGroup  class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo eq null}"> 
+            <h:form id="frmInwardRefund">
+                <h:panelGroup  class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo eq null}">
                     <div class="col-12">
                         <h:panelGroup>
                             <p:panel >
@@ -25,29 +26,14 @@
                                 </f:facet>
                                 <h:outputLabel value="Type Patient Name or BHT : "/>
 
-                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                required="true" requiredMessage="Please select a patient"
-                                                value="#{inwardRefundController.current.patientEncounter}"
-                                                completeMethod="#{admissionController.completePatientAll}" 
-                                                var="myItem" itemValue="#{myItem}" 
-                                                itemLabel="#{myItem.bhtNo}" 
-                                                class="mx-2" size="30">
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.bhtNo}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                                    </p:column>
-                                </p:autoComplete> 
+                                <admcc:admission_search
+                                    widgetVar="aPt"
+                                    inputId="acPt"
+                                    value="#{inwardRefundController.current.patientEncounter}"
+                                    completeMethod="#{admissionController.completePatientAll}"
+                                    continueClientId="frmInwardRefund:btnSelect"
+                                    required="true"
+                                    requiredMessage="Please select a patient" />
 
                                 <p:commandButton
                                     id="btnSelect"
@@ -112,6 +98,9 @@
                                         emptyMessage="No refundable payment bills found for this BHT.">
                                         <p:column headerText="Bill No">
                                             <h:outputText value="#{eb.deptId}"/>
+                                        </p:column>
+                                        <p:column headerText="Type">
+                                            <h:outputText value="#{inwardRefundController.getFeatureLabel(eb)}"/>
                                         </p:column>
                                         <p:column headerText="Paid At">
                                             <h:outputText value="#{eb.createdAt}">
@@ -216,7 +205,23 @@
                     </p:panel>
                 </h:panelGroup>
                 <p:panel rendered="#{inwardRefundController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success mb-3" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                    <div class="d-flex gap-2 mb-3">
+                        <p:commandButton ajax="false" value="New Bill" class="ui-button-success" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                        <p:commandButton
+                            ajax="false"
+                            icon="fas fa-file-invoice-dollar"
+                            value="Interim Bill"
+                            class="ui-button-info mx-1"
+                            action="#{bhtSummeryController.navigateToIntrimBillRefreshFromRefund()}"
+                            />
+                        <p:commandButton
+                            ajax="false"
+                            icon="fas fa-id-card"
+                            value="Inpatient Dashboard"
+                            class="ui-button-secondary "
+                            action="#{inwardRefundController.navigateToInpationDashbord()}"
+                            />
+                    </div>
                     <bill:paymentRefund_1 bill="#{inwardRefundController.current}"/>
                 </p:panel>
 

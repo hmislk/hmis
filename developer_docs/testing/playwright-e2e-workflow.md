@@ -12,6 +12,134 @@ waste a session.
 > This document is the *runtime* workflow; that section is the *authoring*
 > rule.
 
+## Contents
+
+111 sections. **The workflow is §0-§8; everything from §9 on is an independent
+gotcha** — jump straight to the one you need rather than reading the file.
+
+**Workflow**
+
+- [0. Before you start](#0-before-you-start)
+- [0a. Rebuild and redeploy local code changes before testing](#0a-rebuild-and-redeploy-local-code-changes-before-testing)
+- [1. Login and department selection](#1-login-and-department-selection)
+- [2. Navigating menus](#2-navigating-menus)
+- [3. Committing PrimeFaces inputs (the #1 gotcha)](#3-committing-primefaces-inputs-the-1-gotcha)
+- [4. Confirmations and double-click protection](#4-confirmations-and-double-click-protection)
+- [5. Required fields block non-AJAX actions](#5-required-fields-block-non-ajax-actions)
+- [5a. Waiting for AJAX without hard timeouts](#5a-waiting-for-ajax-without-hard-timeouts)
+- [5b. Pending-list pages may need an explicit "Refresh" click](#5b-pending-list-pages-may-need-an-explicit-refresh-click)
+- [6. Verify against the database](#6-verify-against-the-database)
+- [7. When Playwright can't find an element — fix the page, not the test](#7-when-playwright-cant-find-an-element--fix-the-page-not-the-test)
+- [8. Publishing screenshot evidence](#8-publishing-screenshot-evidence)
+
+**Gotchas and findings**
+
+- [9. Interacting with non-accessible canvas widgets (e.g. `p:timeline` / vis-timeline)](#9-interacting-with-non-accessible-canvas-widgets-eg-ptimeline--vis-timeline)
+- [10. `browser_click` / `browser_type` parameter name](#10-browser_click--browser_type-parameter-name)
+- [11. Session is lost on redeploy and on stale snapshots](#11-session-is-lost-on-redeploy-and-on-stale-snapshots)
+- [12. JSF form validation blocks navigation buttons](#12-jsf-form-validation-blocks-navigation-buttons)
+- [13. PrimeFaces `p:selectOneMenu` is not a native `<select>`](#13-primefaces-pselectonemenu-is-not-a-native-select)
+- [14. Non-AJAX search buttons can timeout on click](#14-non-ajax-search-buttons-can-timeout-on-click)
+- [15. Always generate test data — never fall back to code-only verification](#15-always-generate-test-data--never-fall-back-to-code-only-verification)
+- [16. List pages that filter by `toDepartment = session department`](#16-list-pages-that-filter-by-todepartment--session-department)
+- [17. Switching session department mid-test (no redeploy)](#17-switching-session-department-mid-test-no-redeploy)
+- [18. `p:datePicker` — changing the date via the calendar grid](#18-pdatepicker--changing-the-date-via-the-calendar-grid)
+- [19. Some `confirm()`-guarded `type="submit"` buttons never reach the server — prefer existing data](#19-some-confirm-guarded-typesubmit-buttons-never-reach-the-server--prefer-existing-data)
+- [20. A privilege-gated button that never renders may be a missing DB row, not a session issue](#20-a-privilege-gated-button-that-never-renders-may-be-a-missing-db-row-not-a-session-issue)
+- [21. Inward "Add Services" item picker — the Filter box does not load other departments' items](#21-inward-add-services-item-picker--the-filter-box-does-not-load-other-departments-items)
+- [22. Inward pharmacy margin lookup uses the *inpatient* department, not the issuing pharmacy](#22-inward-pharmacy-margin-lookup-uses-the-inpatient-department-not-the-issuing-pharmacy)
+- [23. Three authoring gotchas found via E2E on the role-template pages (issue #22023)](#23-three-authoring-gotchas-found-via-e2e-on-the-role-template-pages-issue-22023)
+- [24. Granting a privilege that doesn't exist on the checked-out branch silently blanks ALL privileges for that department](#24-granting-a-privilege-that-doesnt-exist-on-the-checked-out-branch-silently-blanks-all-privileges-for-that-department)
+- [25. A JPQL path expression through a nullable relationship silently INNER-JOINs and drops rows](#25-a-jpql-path-expression-through-a-nullable-relationship-silently-inner-joins-and-drops-rows)
+- [26. Editing a `ConfigOption` via raw SQL is invisible to the running app — use the admin UI](#26-editing-a-configoption-via-raw-sql-is-invisible-to-the-running-app--use-the-admin-ui)
+- [27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain](#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)
+- [28. Claude-in-Chrome on heavy non-AJAX report pages (full-submit + long query)](#28-claude-in-chrome-on-heavy-non-ajax-report-pages-full-submit--long-query)
+- [29. GRN costing Save→Finalize→Approve: `Difference` guard needs a real keyup on Invoice Total at EVERY step](#29-grn-costing-savefinalizeapprove-difference-guard-needs-a-real-keyup-on-invoice-total-at-every-step)
+- [30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items](#30-ward_pharmacy_bht_issue_request_billxhtml--new-bill-silently-discards-unsaved-items)
+- [31. `ward_pharmacy_bht_issue_request_bill.xhtml`'s "Add Dispense Only" path sets `department`/`toDepartment` backwards](#31-ward_pharmacy_bht_issue_request_billxhtmls-add-dispense-only-path-sets-departmenttodepartment-backwards)
+- [32. A `FacesMessage` can be server-confirmed even when the browser never shows it](#32-a-facesmessage-can-be-server-confirmed-even-when-the-browser-never-shows-it)
+- [33. Binding a `p:inputText` through a nullable session-scoped entity property crashes on first submit](#33-binding-a-pinputtext-through-a-nullable-session-scoped-entity-property-crashes-on-first-submit)
+- [34. Local dev DB can silently drift behind the entity model — watch for `Unknown column` on unrelated pages](#34-local-dev-db-can-silently-drift-behind-the-entity-model--watch-for-unknown-column-on-unrelated-pages)
+- [97. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain](#97-dont-disable--enable-the-app-to-clear-the-l2-cache--restart-the-domain)
+- [35. Department-scoped dashboards need the department actually switched, not just full privileges](#35-department-scoped-dashboards-need-the-department-actually-switched-not-just-full-privileges)
+- [36. `@SessionScoped` bean data can go stale after a direct URL hit — navigate through the real action chain](#36-sessionscoped-bean-data-can-go-stale-after-a-direct-url-hit--navigate-through-the-real-action-chain)
+- [37. A required `p:selectOneMenu` with no default silently swallows an entire non-AJAX submit — no network request, no error](#37-a-required-pselectonemenu-with-no-default-silently-swallows-an-entire-non-ajax-submit--no-network-request-no-error)
+- [38. A local dev DB missing columns for an already-shipped entity field surfaces as a hung page, and `ALTER TABLE` alone doesn't fix it — the pool needs a flush](#38-a-local-dev-db-missing-columns-for-an-already-shipped-entity-field-surfaces-as-a-hung-page-and-alter-table-alone-doesnt-fix-it--the-pool-needs-a-flush)
+- [39. Local dev DB has no `FrequencyUnit`/`DurationUnit`/`DoseUnit` seed rows — the prescription "Calculate & Add" path is untestable locally](#39-local-dev-db-has-no-frequencyunitdurationunitdoseunit-seed-rows--the-prescription-calculate--add-path-is-untestable-locally)
+- [40. Auto-substitution can silently turn a "zero stock" test case into "issued in full"](#40-auto-substitution-can-silently-turn-a-zero-stock-test-case-into-issued-in-full)
+- [41. A local dev DB with an empty `TRIGGERSUBSCRIPTION` table means notification-generating actions silently produce zero `UserNotification` rows](#41-a-local-dev-db-with-an-empty-triggersubscription-table-means-notification-generating-actions-silently-produce-zero-usernotification-rows)
+- [98. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity](#98-local-payara-can-come-up-with-a-dead-mysql-connection-pool-after-any-host-sleeprestart--every-page-hangs-not-just-one-touching-a-stale-entity)
+- [99. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows](#99-a-leftover-playwright-mcp-chrome-profile-can-lock-out-browser_navigate-with-no-relation-to-the-users-real-browser-windows)
+- [42. PrimeFaces bare `update="someId"` can 500 from inside a `p:dataTable`/`ui:repeat` row even though the id exists on the page](#42-primefaces-bare-updatesomeid-can-500-from-inside-a-pdatatableuirepeat-row-even-though-the-id-exists-on-the-page)
+- [43. Clicking a `p:printer` button hangs the whole browser session — verify with print-media emulation instead](#43-clicking-a-pprinter-button-hangs-the-whole-browser-session--verify-with-print-media-emulation-instead)
+- [44. A freshly-created test user needs a `WebUserDepartment` row, not just a `Department` field, to log in at all](#44-a-freshly-created-test-user-needs-a-webuserdepartment-row-not-just-a-department-field-to-log-in-at-all)
+- [45. `&&` written as `&amp;&amp;` inside a `<script><!CDATA...>` block parses as valid XML but throws a JS `SyntaxError` at runtime, silently breaking every function in that script](#45--written-as-ampamp-inside-a-scriptcdata-block-parses-as-valid-xml-but-throws-a-js-syntaxerror-at-runtime-silently-breaking-every-function-in-that-script)
+- [46. A fixed-position status banner (e.g. "Database Migration Pending") can silently swallow every click on the page below it](#46-a-fixed-position-status-banner-eg-database-migration-pending-can-silently-swallow-every-click-on-the-page-below-it)
+- [47. Any JSF page under a plain (non-`/faces/`) webapp path must still be loaded through `/faces/` — otherwise the raw `.xhtml` source is served unprocessed](#47-any-jsf-page-under-a-plain-non-faces-webapp-path-must-still-be-loaded-through-faces--otherwise-the-raw-xhtml-source-is-served-unprocessed)
+- [48. Raw SQL `UPDATE` on an already-cached EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific](#48-raw-sql-update-on-an-already-cached-eclipselink-mapped-entity-not-just-configoption-can-be-invisible-to-the-running-app--the-shared-l2-cache-is-general-not-configoption-specific)
+- [49. Pharmacy Transfer Issue: "Request From" is the requester, not the issuer — and the entity-based `TransferIssueForRequestsController` "Issue" button is commented out in favor of the native-SQL path](#49-pharmacy-transfer-issue-request-from-is-the-requester-not-the-issuer--and-the-entity-based-transferissueforrequestscontroller-issue-button-is-commented-out-in-favor-of-the-native-sql-path)
+- [50. `p:calendar`/`p:selectOneMenu` widgets can silently ignore a plain Playwright `fill()`/`click()` — drive the PrimeFaces widget JS API directly when the visible value won't stick](#50-pcalendarpselectonemenu-widgets-can-silently-ignore-a-plain-playwright-fillclick--drive-the-primefaces-widget-js-api-directly-when-the-visible-value-wont-stick)
+- [51. `p:dialog appendTo="@(body)"` silently drops that dialog's own bound inputs from every AJAX submission](#51-pdialog-appendtobody-silently-drops-that-dialogs-own-bound-inputs-from-every-ajax-submission)
+- [52. A non-AJAX search that looks "hung" in Playwright may actually be a real, still-running N+1 query — check a Payara thread dump before assuming the button is broken](#52-a-non-ajax-search-that-looks-hung-in-playwright-may-actually-be-a-real-still-running-n1-query--check-a-payara-thread-dump-before-assuming-the-button-is-broken)
+- [53. "Pharmacy Bill Search by Bill Type" has two different pages — pick the one keyed on `billType`, not `billTypeAtomic`](#53-pharmacy-bill-search-by-bill-type-has-two-different-pages--pick-the-one-keyed-on-billtype-not-billtypeatomic)
+- [54. `pharmacy_fast_retail_sale_for_cashier.xhtml` "Settle Bill At Cashier" 500s with a Patient cascade error if the Patient Name field is left blank](#54-pharmacy_fast_retail_sale_for_cashierxhtml-settle-bill-at-cashier-500s-with-a-patient-cascade-error-if-the-patient-name-field-is-left-blank)
+- [55. `inward_bill_professional.xhtml` "Add Professional Fee" silently no-ops if the Speciality autocomplete is left empty](#55-inward_bill_professionalxhtml-add-professional-fee-silently-no-ops-if-the-speciality-autocomplete-is-left-empty)
+- [56. `p:datePicker timeInput="true"` — typing into the input does not commit; use the PrimeFaces widget API for non-AJAX forms](#56-pdatepicker-timeinputtrue--typing-into-the-input-does-not-commit-use-the-primefaces-widget-api-for-non-ajax-forms)
+- [57. `nurse/index.xhtml` (Nursing WorkBench) Rooms/BHT tabs render empty on a plain `browser_navigate` — must click through the actual menu link](#57-nurseindexxhtml-nursing-workbench-roomsbht-tabs-render-empty-on-a-plain-browser_navigate--must-click-through-the-actual-menu-link)
+- [58. `inward_admission.xhtml` Room No autocomplete excludes the room already reserved by the very appointment being admitted; a required-config error can look like a blocked flow](#58-inward_admissionxhtml-room-no-autocomplete-excludes-the-room-already-reserved-by-the-very-appointment-being-admitted-a-required-config-error-can-look-like-a-blocked-flow)
+- [59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation](#59-creditcompanybillsearchprintpreview-is-a-single-shared-flag-reused-for-two-different-meanings--viewing-a-bill-before-cancelling-can-make-the-cancel-form-permanently-unreachable-via-normal-navigation)
+- [60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check](#60-grn-receiveapprove-invoice-total-resets-to-000-on-every-page-reload-and-needs-a-real-blur-not-just-fill-to-pass-the-invoice-does-not-match-check)
+- [61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design](#61-generate-supplier-payments-only-lists-credit-payment-method-grns--a-cash-grns-return-never-shows-up-there-by-design)
+- [62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback](#62-direct-browser_navigate-to-a-fund-bill-page-depositwithdrawaletc-leaves-currentbill-null--the-add-button-then-silently-no-ops-with-zero-visible-feedback)
+- [63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name](#63-staffid-is-not-personid--joining-billfeestaff_id-straight-to-personid-silently-returns-the-wrong-persons-name)
+- [64. A slow, unfiltered `p:dataTable` search can make *every* subsequent Playwright tool call time out — don't `browser_navigate` away to "recover", just wait longer](#64-a-slow-unfiltered-pdatatable-search-can-make-every-subsequent-playwright-tool-call-time-out--dont-browser_navigate-away-to-recover-just-wait-longer)
+- [65. Theatre "Add New Surgery" — the Surgery Name autocomplete is `Item` rows (`DTYPE='ClinicalEntity'`), not a dedicated table](#65-theatre-add-new-surgery--the-surgery-name-autocomplete-is-item-rows-dtypeclinicalentity-not-a-dedicated-table)
+- [66. PrimeFaces `p:tree` privilege picker (`admin/users/user_privileges.xhtml`) — clicking a toggler icon directly does nothing; use the Search box instead, and re-login after any privilege change](#66-primefaces-ptree-privilege-picker-adminusersuser_privilegesxhtml--clicking-a-toggler-icon-directly-does-nothing-use-the-search-box-instead-and-re-login-after-any-privilege-change)
+- [67. `inpatient_search.xhtml` / `inward_search.xhtml` date filter defaults to "last 7 days" and silently returns "No records found" for older admissions — even when searching by exact BHT No](#67-inpatient_searchxhtml--inward_searchxhtml-date-filter-defaults-to-last-7-days-and-silently-returns-no-records-found-for-older-admissions--even-when-searching-by-exact-bht-no)
+- [68. PrimeFaces `p:growl` error/success messages fade before a subsequent `browser_snapshot`/`wait_for` — snapshot immediately after the triggering action, not after a delay](#68-primefaces-pgrowl-errorsuccess-messages-fade-before-a-subsequent-browser_snapshotwait_for--snapshot-immediately-after-the-triggering-action-not-after-a-delay)
+- [69. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it](#69-an-earlier-pajax-event-mutating-the-field-a-later-buttons-enclosing-rendered-depends-on-silently-skips-that-buttons-action--canary-test-with-a-throw-to-prove-it)
+- [70. `inward/inward_bill_service.xhtml`'s "Settle" button silently returns to the edit screen — with the same items still loaded — when a fee row needs a Staff pick](#70-inwardinward_bill_servicexhtmls-settle-button-silently-returns-to-the-edit-screen--with-the-same-items-still-loaded--when-a-fee-row-needs-a-staff-pick)
+- [71. A fresh `p:selectOneMenu` visually shows its first `<option>` as selected even when the bound model value is still `null` — clicking that same-looking option fires no `change` event](#71-a-fresh-pselectonemenu-visually-shows-its-first-option-as-selected-even-when-the-bound-model-value-is-still-null--clicking-that-same-looking-option-fires-no-change-event)
+- [72. `p:calendar`'s `pattern` attribute can differ from the usual `dd/mm/yyyy` — type in the exact server-side pattern, not a guessed format](#72-pcalendars-pattern-attribute-can-differ-from-the-usual-ddmmyyyy--type-in-the-exact-server-side-pattern-not-a-guessed-format)
+- [73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`](#73-asadmin-deploy---contextroot--from-git-bash-gets-mangled-by-msys-path-conversion--set-msys_no_pathconv1)
+- [74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit](#74-exploded-payara-deployment-lets-you-hot-swap-a-single-xhtml-file-for-a-fast-testfix-loop--real-redeploy-still-required-before-commit)
+- [75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist](#75-inpatient-discharge-chain-has-a-strict-undocumented-order--and-physical-discharge-requires-the-final-bill-to-already-exist)
+- [76. `isXxx(arg)` boolean methods with a parameter don't resolve via the JSF EL property-getter convention — drop the `is` prefix](#76-isxxxarg-boolean-methods-with-a-parameter-dont-resolve-via-the-jsf-el-property-getter-convention--drop-the-is-prefix)
+- [77. `p:autoComplete` with `<p:column>` children renders suggestions as a `<table>` of `<tr data-item-label>`, not `<li>` — a `li`-only selector reports "no matches" on a working autocomplete](#77-pautocomplete-with-pcolumn-children-renders-suggestions-as-a-table-of-tr-data-item-label-not-li--a-li-only-selector-reports-no-matches-on-a-working-autocomplete)
+- [78. Typing into an input that a `p:ajax` just re-rendered prepends to the restored model value — set the dropdown first, then the numbers, and always confirm in the DB](#78-typing-into-an-input-that-a-pajax-just-re-rendered-prepends-to-the-restored-model-value--set-the-dropdown-first-then-the-numbers-and-always-confirm-in-the-db)
+- [79. Capturing a `p:growl` message in a screenshot: suppress its auto-hide timer, don't race it](#79-capturing-a-pgrowl-message-in-a-screenshot-suppress-its-auto-hide-timer-dont-race-it)
+- [80. A `p:dataTable` column present in `browser_snapshot` can still be 0px wide and invisible to the user — measure `offsetWidth`](#80-a-pdatatable-column-present-in-browser_snapshot-can-still-be-0px-wide-and-invisible-to-the-user--measure-offsetwidth)
+- [81. `theater/inward_search_surgery.xhtml`'s "Search All" checkbox does not widen the date filter](#81-theaterinward_search_surgeryxhtmls-search-all-checkbox-does-not-widen-the-date-filter)
+- [82. Any AJAX call from inside an editable `p:dataTable`'s row scope has its `update` target silently constrained to the table itself — extra ids you add are dropped, even on a plain `p:commandButton`](#82-any-ajax-call-from-inside-an-editable-pdatatables-row-scope-has-its-update-target-silently-constrained-to-the-table-itself--extra-ids-you-add-are-dropped-even-on-a-plain-pcommandbutton)
+- [83. A page-local `<style>` rule can silently lose to the PrimeFaces theme — verify with a computed-style probe, not a screenshot](#83-a-page-local-style-rule-can-silently-lose-to-the-primefaces-theme--verify-with-a-computed-style-probe-not-a-screenshot)
+- [84. A markup-less PrimeFaces component (`p:defaultCommand`, `p:focus`, …) cannot be confirmed by searching the rendered HTML — look for its event handler instead](#84-a-markup-less-primefaces-component-pdefaultcommand-pfocus--cannot-be-confirmed-by-searching-the-rendered-html--look-for-its-event-handler-instead)
+- [85. `inward_bill_service.xhtml`'s patient search auto-selects on an exact BHT match — no suggestion click needed](#85-inward_bill_servicexhtmls-patient-search-auto-selects-on-an-exact-bht-match--no-suggestion-click-needed)
+- [86. A `p:inputText`/`p:inputNumber` bound to a `Map<String, Integer>` entry silently stores the raw `String` — the write is lost with no error until you read it back](#86-a-pinputtextpinputnumber-bound-to-a-mapstring-integer-entry-silently-stores-the-raw-string--the-write-is-lost-with-no-error-until-you-read-it-back)
+- [87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect](#87-the-local-coop-dbs-webuser-rows-carry-stale-password-hashes-from-whatever-environment-they-were-synced-from--production-login-credentials-will-not-work-locally-and-even-a-direct-sql-password-reset-needs-a-domain-restart-to-take-effect)
+- [88. `pharmacy_search_pre_bill_for_return_item_only.xhtml`'s "Return Item Only" button can fail completely silently — no `p:messages`/growl update, plus `Bill` is L2-cached](#88-pharmacy_search_pre_bill_for_return_item_onlyxhtmls-return-item-only-button-can-fail-completely-silently--no-pmessagesgrowl-update-plus-bill-is-l2-cached)
+- [89. A missing `/faces/` prefix can also hang the Playwright tab itself, not just serve broken markup — don't assume item 47's symptom is the only failure mode](#89-a-missing-faces-prefix-can-also-hang-the-playwright-tab-itself-not-just-serve-broken-markup--dont-assume-item-47s-symptom-is-the-only-failure-mode)
+- [90. Simulating a barcode scan with `browser_type(..., submit: true)` on a `p:autoComplete` can submit the wrong button — use `slowly: true` and wait, don't press Enter](#90-simulating-a-barcode-scan-with-browser_type-submit-true-on-a-pautocomplete-can-submit-the-wrong-button--use-slowly-true-and-wait-dont-press-enter)
+- [91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" rejects (with a growl message, easy to miss in a scripted run) until a Porter/Staff is picked](#91-wardward_pharmacy_bht_issue_request_billxhtmls-new-bill-button-discards-the-current-draft-instead-of-saving-it-and-ward_pharmacy_bht_issuexhtmls-issue-to-bht-rejects-with-a-growl-message-easy-to-miss-in-a-scripted-run-until-a-porterstaff-is-picked)
+- [92. A `p:commandButton` save that does nothing — no growl, no error, no DB row, a clean `server.log` — is usually a required field whose message went to a `<p:messages>` you never looked at](#92-a-pcommandbutton-save-that-does-nothing--no-growl-no-error-no-db-row-a-clean-serverlog--is-usually-a-required-field-whose-message-went-to-a-pmessages-you-never-looked-at)
+- [93. Privileges are scoped per-department — a rendered button check can fail under the "wrong" department even though the user genuinely has the privilege](#93-privileges-are-scoped-per-department--a-rendered-button-check-can-fail-under-the-wrong-department-even-though-the-user-genuinely-has-the-privilege)
+- [94. PrimeFaces `p:datePicker` popups don't always close on their own — the previous field's panel can intercept clicks meant for the next field](#94-primefaces-pdatepicker-popups-dont-always-close-on-their-own--the-previous-fields-panel-can-intercept-clicks-meant-for-the-next-field)
+- [95. Theatre's "+ Add New Surgery" briefly lands on a generic, blank-looking `admission_profile.xhtml` — the surgery Bill is already created; go through "Surgeries for BHT" to reach it](#95-theatres--add-new-surgery-briefly-lands-on-a-generic-blank-looking-admission_profilexhtml--the-surgery-bill-is-already-created-go-through-surgeries-for-bht-to-reach-it)
+- [100. `PrimeFaces.current().executeScript(...)` silently no-ops on an `ajax="false"` button — use `p:dialog visible="#{bean.flag}"` instead](#100-primefacescurrentexecutescript-silently-no-ops-on-an-ajaxfalse-button--use-pdialog-visiblebeanflag-instead)
+- [101. Some PrimeFaces buttons need a jQuery-triggered click](#101-some-primefaces-buttons-need-a-jquery-triggered-click)
+- [102. A local "Unknown column" 500 is schema drift — use the app's own migration page](#102-a-local-unknown-column-500-is-schema-drift--use-the-apps-own-migration-page)
+- [103. An unchanged database does NOT prove a server-side guard ran](#103-an-unchanged-database-does-not-prove-a-server-side-guard-ran)
+- [104. A department/room created by direct SQL needs more than the FK columns](#104-a-departmentroom-created-by-direct-sql-needs-more-than-the-fk-columns)
+- [105. A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API](#105-a-pcalendar-bound-to-date-of-birth-can-ignore-real-keystrokes--use-the-widgets-setdate-api)
+- [106. A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation](#106-a-third-level-menu-item-cant-be-clicked-directly--fire-its-own-onclick-which-is-still-the-menu-path-not-url-navigation)
+- [107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action](#107-inward_lab_dashboardxhtmls-send-to-lab-has-no-pmessagespgrowl-at-all--a-missing-transporter-silently-no-ops-the-whole-action)
+- [108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly](#108-this-dashboards-sample-transporter-pautocomplete-ignores-synthetic-keystrokes--drive-widgetsearch-directly)
+- [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
+- [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
+- [Quick checklist](#quick-checklist)
+
+---
+
+
 ---
 
 ## 0. Before you start
@@ -31,7 +159,11 @@ waste a session.
 
 If the change under test isn't deployed yet, rebuild and redeploy to the local
 Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
-locations):
+locations). **This section is local dev only** — it is the `asadmin`
+build/deploy loop the `playwright-e2e` skill already mandates on a developer
+laptop. It does **not** apply to shared/staging/production Payara, where the
+"no manual/root deployment; everything through CI/CD" rule in `CLAUDE.md`
+still governs.
 
 ```powershell
 # Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
@@ -47,6 +179,26 @@ $env:JAVA_HOME="<path-to-jdk>"
   afterward.
 - Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
+- **`--name` must match the actual deployed app name.** `asadmin list-applications`
+  first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
+  wrong `--name` fails with `Application with name [...] is not deployed`.
+- **Payara must run on JDK 11.** If Payara was started with JDK 21 on `PATH`,
+  deployment fails with `Unsupported class file major version 65` (65 = Java 21).
+  Fix: `asadmin stop-domain`, then set **both** `$env:JAVA_HOME` and
+  `$env:AS_JAVA` to the JDK 11 path before `start-domain`. A failed `deploy`
+  (as opposed to `redeploy`) also *removes* the app, so the next `redeploy`
+  then fails with "not deployed" — recover with a plain
+  `deploy --name <name-from-list-applications> --contextroot <its-context-root> <war>`
+  (the name/context root you confirmed above, not a hardcoded guess).
+- **Running `asadmin` from Git Bash: set `MSYS_NO_PATHCONV=1`.** MSYS rewrites any
+  argument that looks like a Unix path, so `--contextroot /rh` is handed to Payara
+  as `D:/Program Files/Git/rh`. The deploy then fails deep inside JSF parsing —
+  `Unable to parse document 'jndi:/server/D:/Program%20Files/Git/rh/WEB-INF/faces-config.xml'`
+  — which reads like a broken WAR and is nothing of the sort. Worse, that failed
+  `redeploy` leaves the app *undeployed*, so the retry fails with "not deployed" and
+  you have to `deploy` fresh. Prefix the command:
+  `MSYS_NO_PATHCONV=1 asadmin deploy --name rh --contextroot /rh <war>`. PowerShell
+  is unaffected.
 
 ---
 
@@ -97,6 +249,51 @@ switch for these flows.
 ---
 
 ## 2. Navigating menus
+
+### 🚨 NEVER navigate by typing a page URL
+
+**Real users never reach an inner page by its URL.** Many terminals are kiosks
+with no address bar; the rest reach every page through the menus. If a page has
+no menu path to it, that page is not reachable in production and the correct
+finding is "this page has no navigation path", not "this page is broken".
+
+**Only ever type a URL for the application root / login page.** Everything after
+that must be reached by clicking through the menus, exactly as a user would.
+
+This is not a style preference. It changes what the page does:
+
+- **Session-scoped controllers are populated by the navigation method, not by
+  the page.** `sessionController.toManageDepartmentPreferences()`,
+  `inwardSearch.toSearchServiceBill()` and friends set the entity the page then
+  renders. Skipping the navigation method leaves that entity null, or leaves a
+  lazily-created transient placeholder in its place.
+- **What you observe afterwards is therefore not the real behaviour.** A
+  URL-loaded page can 500 (`Target Unreachable, 'null' returned null`), render
+  blank, render against an empty entity, or run pathologically slowly — none of
+  which any user can ever hit.
+- **Getters that lazily instantiate are the usual trap.** e.g.
+  `InwardSearch.getBill()` returns `new BilledBill()` when nothing is selected,
+  so a URL-loaded page renders every print component against an id-less entity
+  and every `WHERE bill = :bl` query against a transient parameter.
+
+Two live examples of this producing a false bug report:
+
+| Page | Symptom when opened by URL | Reality via the menus |
+|---|---|---|
+| `inward_reprint_bill_service.xhtml` | appeared to hang indefinitely, JVM into the GB range, no exception logged | loads in 0.7-5.3 s (issue #23519, retracted) |
+| `admin_mange_department_preferences.xhtml` | HTTP 500, `Target Unreachable, 'null' returned null` | works normally |
+
+**Before testing a page, establish its menu path first** and record it in the
+issue/PR, in the form the user can follow:
+
+> Menu → Inpatient → Search → Service Bill → set From Date → Search Bill
+> → click Bill No → Return
+
+If you cannot find a menu path, search `menu.xhtml` for the page name and check
+the privileges gating it — see §20. Do **not** fall back to the URL to "get on
+with the test".
+
+### Menu mechanics
 
 - The Pharmacy top menu is a PrimeFaces menubar. **Hover** the parent
   (`smPharmacy`) to expand it, then **click** the submenu link
@@ -306,10 +503,46 @@ show the fixed control without private information.
    project `tmp/` folder.
 2. For user-facing documentation, copy final screenshots into the sibling wiki
    repo under `../hmis.wiki/images/`.
-3. Reference wiki images in markdown as `images/example_name.png`.
-4. Commit and push the wiki immediately from `../hmis.wiki`.
+3. **Embed each image in the wiki page for the feature** — this is the step
+   that is most often skipped, and skipping it is why the wiki currently holds
+   ~600 images but only ~55 pages reference any. An image nobody links to
+   documents nothing.
+
+   Find the page by feature name, screen title, or menu path — pages are named
+   after the user-facing screen (e.g. `Inpatient-Nursing-Discharge.md`):
+
+   ```bash
+   cd ../hmis.wiki
+   ls *.md | grep -iE "<feature|module keyword>"
+   grep -ril "<feature name>" *.md | head
+   ```
+
+   Reference the image with a relative path. Markdown alt text is *not* a
+   rendered caption, so add a visible italic line beneath it — readers
+   skimming a long page rely on that, and screen readers use the alt text:
+
+   ```markdown
+   ![Nursing discharge blocked by pending pharmacy items](images/23222-fixed-discharge-blocked.png)
+
+   *Nursing discharge blocked: the pending pharmacy items are listed and Confirm stays disabled.*
+   ```
+
+   **Replace outdated screenshots rather than accumulating them.** If the page
+   already shows a screen your change altered — or one that no longer matches
+   the current UI at all — swap it out. Two contradictory screenshots of the
+   same screen are worse than one stale one.
+
+   If no page covers the feature: create one when the change is user-visible
+   (screen, workflow, report, setting), following a neighbouring page in the
+   same module. Skip it when the change is invisible to end users (internal
+   query fix, refactor, build change) — there the screenshot is evidence for
+   the issue/PR only.
+4. Commit and push the wiki immediately from `../hmis.wiki` — images and page
+   edits together.
 5. To embed the same image in a GitHub issue or PR comment, use the raw wiki
-   URL:
+   URL (and link the page itself as
+   `https://github.com/hmislk/hmis/wiki/<Page-Name>`, so the reader can see the
+   feature documented in context rather than a floating screenshot):
 
 ```text
 https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png
@@ -325,6 +558,33 @@ gh issue comment 21364 --repo hmislk/hmis --body "Verified with Playwright.
 
 Remove temporary screenshots from the main repository after copying the durable
 ones into the wiki so they are not accidentally committed with application code.
+
+### 8a. Bug fixes: pair "before" and "after" evidence
+
+When the underlying issue is a bug report **and reproducing it required a
+live check** (the root cause wasn't already confirmed by reading code),
+capture evidence at **two** points instead of one, and publish them together
+as a comparison rather than as a single final-state screenshot:
+
+1. **Before** — during reproduction (before any fix is written), capture the
+   broken state: a screenshot for UI bugs, or the raw request/response for
+   API-only bugs. This is also the evidence that the bug is real if the
+   report turns out to be stale — save it even when the answer turns out to
+   be "does not reproduce" (record that it didn't reproduce under the tested
+   environment/data/inputs — that is not proof the bug is absent).
+2. **After** — once the fix is deployed, capture the same view/state again
+   (or replay the same request, for API-only bugs) showing correct behavior.
+3. Redact patient identifiers, credentials, tokens, cookies, and other
+   sensitive fields from any API request/response snippet before it leaves
+   `tmp/` or is published — the same sanitization rule §8 applies to
+   screenshots.
+4. Place both images (or both sanitized response snippets) in the same issue
+   comment / PR description, labeled "Before" and "After", so a reviewer can
+   see the fix without redeploying locally.
+
+If the root cause was already confirmed by reading code (no live
+reproduction needed), there is no "before" evidence — publish only the
+post-fix confirmation, without implying a comparison.
 
 ---
 
@@ -424,8 +684,20 @@ return against it. For issues, create a purchase → issue → return. The
 For qty fields with `async="true"` blur handlers, use slow `browser_type` + Tab key to commit — do not rely on jQuery-blur (see §3).
 
 Never close a QA session with "code looks correct" as the only evidence.
-If you cannot generate data through the app, stop and discuss alternatives
-with the developer before falling back.
+
+If the app genuinely can't get you to the required state (the path is blocked
+by unrelated broken data, or needs a second user session you lack credentials
+for), **write the local database directly** — `INSERT`/`UPDATE` against a
+local DB is fine, and a local DB is disposable: don't revert test data or
+treat local rows as precious. Going through the app stays the preference
+because it exercises the same validation and business logic the fix has to
+survive, so a hand-built fixture that bypasses that validation proves less —
+weigh that when it matters, and note in the PR how the data was made.
+
+**This applies to local databases only.** A remote or SSH-tunnelled database
+(production, staging) is read-only, always. No development environment is ever
+set up on a hosting server, so "localhost, no tunnel" is a reliable proxy for
+"safe to modify freely".
 
 ## 16. List pages that filter by `toDepartment = session department`
 
@@ -502,6 +774,22 @@ to force `SessionController.fillUserPrivileges()` to re-read it — the privileg
 cached per session at login and won't pick up a new row otherwise. This came up testing
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
+
+**Before inserting a row, check whether some *other* department already has it** — picking
+that department on the login screen needs no DB write at all and is the faster route:
+
+```sql
+SELECT PRIVILEGE, DEPARTMENT_ID FROM webuserprivilege
+WHERE WEBUSER_ID = <id> AND RETIRED = 0 AND PRIVILEGE = 'SomePrivilege';
+```
+
+Testing issue #23484's pharmacy-admin pages, `PharmacyItemNameEdit` existed for `Inward`
+only, so every **Add New**/**Edit** button on `vtm_dto.xhtml`, `store_vtm.xhtml` and
+`lab_vtm.xhtml` rendered `disabled` under the default `Main Pharmacy` department — nothing
+to do with those pages, and no privilege row needed. Logging out and reselecting `Inward`
+enabled all of them. A `disabled` (rather than absent) admin button is the tell: per this
+project's convention, privilege-gated controls are disabled, not hidden, so a greyed-out
+button means "wrong department", not "broken page".
 
 **`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
 overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
@@ -803,7 +1091,7 @@ gap, not a schema change accompanying a code change). If a fresh
 `SHOW COLUMNS FROM <table>` against the entity's fields before assuming the
 feature under test is broken.
 
-## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+## 97. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
 
 The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
 earlier sessions) loads the whole application a **second time in the same JVM**, and on
@@ -994,7 +1282,7 @@ test-fixture data, not a bug.
   silently toggle the wrong control if the page has more than one:
   `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
 
-## 47. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
+## 98. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
 
 Unlike §38 (a pool holding connections from *before* an `ALTER TABLE`), this is
 the pool holding connections to a MySQL instance that was itself restarted or
@@ -1028,7 +1316,7 @@ immediately after the flush. Verified while testing issue #22423 (itself a
 stale-audit-pool-connection bug), where the local dev machine's own audit
 pool had gone stale exactly the way the issue described.
 
-## 48. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
+## 99. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
 
 `mcp__playwright__browser_navigate`/`browser_snapshot` can fail with `Browser
 is already in use for <profile-dir>, use --isolated to run multiple instances
@@ -1530,6 +1818,1305 @@ respectively. If a specific admission seems "missing" from one tab, search by
 the label that tab actually renders (BHT number on the BHT tab, room name on
 the Rooms tab), not by patient name — neither tab's buttons show it.
 
+## 58. `inward_admission.xhtml` Room No autocomplete excludes the room already reserved by the very appointment being admitted; a required-config error can look like a blocked flow
+
+While testing issue #22719 (appointment → admission → deposit conversion), two admission-form gotchas surfaced together:
+
+- **Room No autocomplete only lists currently-*available* rooms** — a room
+  already reserved for the appointment/patient being admitted (e.g. via the
+  appointment's own `Reservation`) does **not** appear in the completion list,
+  even though it's "theirs." Typing the exact room number/name returns "No
+  results found." This isn't a bug in the flow under test — just pick any
+  other available room from the list (e.g. `Room 410` instead of the
+  originally-reserved `Room 101`) to proceed; the room shown on the
+  reservation and the room picked at admission time are independent fields.
+- **A hidden `ConfigOption` boolean can block the whole Admit action with no
+  visual hint on the form.** `AdmissionController` checks
+  `"Patient Age is Required in Patient Admission"` (default `false`, but was
+  `true` on this Galle Co-op local dev DB) and rejects with "Patient Age is
+  Required" if the patient has no DOB — the message doesn't say which field
+  or where to fix it. Two related traps while fixing it:
+  - Typing into the **Years/Months/Days** age inputs on `patient_edit.xhtml`
+    looks like it commits (`textbox "Years": "30"`) but doesn't persist a DOB —
+    that widget only *computes* a DOB client-side via a JS listener that a
+    plain `fill()`/`pressSequentially()` doesn't reliably trigger. Set the
+    **Date of Birth** `p:calendar` field directly instead (click → Ctrl+A →
+    type `dd/mm/yyyy` → Escape → Save) and verify
+    `SELECT DOB FROM person WHERE ID = (SELECT PERSON_ID FROM patient WHERE ID = <patientId>)`
+    returns a non-NULL row for the specific patient under test before
+    retrying the admission — an unfiltered `SELECT DOB FROM person` returns
+    every patient in the DB and can't confirm the one that matters.
+  - To find *which* config key is blocking an error message with no field
+    reference, `grep` the exact error string in
+    `src/main/java/com/divudi/bean/inward/AdmissionController.java` to find
+    the `configOptionApplicationController.getBooleanValueByKey("...")` call,
+    then toggle it via **Admin → Manage → Application Options → List
+    Application Options → filter by key → Edit Option** (per §26 — never via
+    raw SQL, the L2 cache won't see it). If you flip a real setting to unblock
+    a test, **toggle it back afterward** and confirm via
+    `SELECT OPTIONVALUE FROM configoption WHERE OPTIONKEY = '...'` — this is
+    live config on a real hospital's local dev copy, not disposable test data.
+
+## 59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation
+
+On `credit/credit_company_bill_search.xhtml` → **View** → `inpatient_credit_company_bill_reprint.xhtml` → **To Cancel** → `inpatient_credit_company_bill_cancel.xhtml`, the cancel page conditionally
+renders either the cancel **form** (`rendered="#{!creditCompanyBillSearch.printPreview}"`) or a
+read-only "cancellation receipt" preview (`rendered="#{creditCompanyBillSearch.printPreview}"`).
+`BillSearch.navigateToViewBillByAtomicBillType()` (used by the search page's **View** button) calls
+`creditCompanyBillSearch.setBill(bill)` (which resets `printPreview=false` via `recreateModel()`)
+**immediately followed by** `creditCompanyBillSearch.setPrintPreview(true)` — by design, so the
+Reprint page shows a print preview. But `printPreview` is `@SessionScoped` and shared with the
+Cancel page, and clicking **To Cancel** is a plain outcome-string navigation (no bean method call)
+that never resets it. Result: landing on the cancel page via the only in-UI path always shows the
+receipt view instead of the cancel form — **there is no button an end user can click to actually
+reach the cancel form**, even though nothing has been cancelled yet (verify via
+`SELECT CANCELLED FROM BILL WHERE ID=...` — it's still `0`). This is a real product bug, not a
+Playwright limitation; flag/file it rather than silently building around it. Found while verifying
+issue #19931.
+
+**Workaround used only for E2E verification** (not a fix an end user has access to): reach the same
+bill via `credit/credit_company_bill_search_billItems.xhtml` → **Search BHT** → **View Bill**
+instead. That page's button does a *raw* `f:setPropertyActionListener value="#{b.bill}"
+target="#{creditCompanyBillSearch.bill}"` with no follow-up `setPrintPreview(true)`, so
+`printPreview` stays `false`. It navigates to the *generic* `credit_company_bill_reprint.xhtml`
+(whose own **To Cancel** button targets `credit_company_bill_cancel.xhtml` and the *different*
+`creditCompanyBillSearch.cancelBill()` method — **do not click that button**, it may produce the
+wrong `BillTypeAtomic` for an inpatient bill). Instead, once `creditCompanyBillSearch.bill` +
+`printPreview=false` are set, `browser_navigate` directly to
+`inpatient_credit_company_bill_cancel.xhtml` — the session-scoped bean state carries over and the
+correct cancel form (bound to `cancelCreditCompanyPaymentBill()`) renders.
+
+Separately: the cancel form's "Enter a comment" `p:inputText` is required by
+`CreditCompanyBillSearch.errorCheck()` (`"Please enter a comment"`), but that page has no visible
+`<p:messages>`/`<h:messages>` for the resulting `JsfUtil.addErrorMessage(...)` — clicking **Cancel**
+with it empty just re-renders the identical form with **zero visible feedback and zero DB change**,
+easy to mistake for the click not registering at all. Always fill the comment field first; if a
+"Cancel" (or similarly `ajax="false"`) button appears to no-op, check for this pattern before
+assuming a click/ref problem.
+
+## 60. GRN receive/approve `Invoice Total` resets to 0.00 on every page (re)load and needs a *real* blur, not just `fill()`, to pass the "invoice does not match" check
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` (both the initial Finalize and the separate
+Approve page load), `Invoice Total` starts blank/0.00 every time the page is (re)rendered —
+including the second time you land on the same GRN for the Approve step, even though you already
+filled it once during Finalize. Two gotchas stack here:
+
+1. **It must be re-filled at every stage** (Finalize *and* Approve) — don't assume a value entered
+   once persists across the finalize→approve navigation.
+2. **A plain `browser_type`/`.fill()` + `Tab` does not reliably commit it** — the page kept
+   re-showing `Difference: -<amount>` (computed server-side from the *old* 0.00) and Finalize
+   failed with "The invoice does not match..! Check again" even though the input visibly showed
+   the typed value. The fix: `browser_click` into the field, `Control+a`, `browser_type` with
+   `slowly: true`, then an explicit `browser_click` on an unrelated static element (e.g. the page
+   heading) to force a real blur — only then does `Difference` recompute to `0.00` and
+   Finalize/Approve succeed. Verify via `browser_find` on "Difference" before clicking
+   Finalize/Approve, not just by eyeballing the Invoice Total box.
+
+Found while verifying issue #18280 (GRN Return refundAmount fix).
+
+## 61. "Generate Supplier Payments" only lists Credit-payment-method GRNs — a Cash GRN's return never shows up there, by design
+
+`SupplierPaymentController.fillUnsettledCreditPharmacyBills()` (and the sibling return-bills
+method) hard-filter on `PaymentMethod.Credit`. A GRN received with Payment Method = **Cash** will
+never appear on `list_bills_to_generate_supplier_payments.xhtml` or `list_all_grns.xhtml`'s
+"Prepare Payment" flow, no matter its return/refund state — there's nothing owed to the supplier
+for a bill already settled in cash at receipt, so this is correct behavior, not a bug. If a test
+needs to reach the actual Supplier Payment screen (`generate_supplier_payment.xhtml`), the GRN
+**must** be created with Payment Method = **Credit** at receive time; a Cash-paid test GRN is only
+verifiable at the DB level (`BILL.REFUNDAMOUNT`/`PAIDAMOUNT`/`NETTOTAL`), not through this UI path.
+Found while verifying issue #18280.
+
+## 62. Direct `browser_navigate` to a fund-bill page (deposit/withdrawal/etc.) leaves `currentBill` null — the "+Add" button then silently no-ops with zero visible feedback
+
+On `cashier/fund_withdrawal_bill.xhtml` (and the same pattern likely applies
+to `deposit_funds.xhtml` and other `FinancialTransactionController` fund-bill
+pages), navigating straight to the page URL skips the menu action method
+(`navigateToCreateNewFundWithdrawalBill()` → `prepareToAddNewWithdrawalProcessingBill()`)
+that initializes the `@SessionScoped` bean's `currentBill`/`currentBillPayments`.
+The page still renders fully — Payment Method dropdown, Value field, "+Add"
+button all present and clickable — but `addPaymentToWithdrawalFundBill()`
+starts with `if (currentBill == null) { JsfUtil.addErrorMessage("Error"); return; }`,
+and the page has no `<p:messages>`/`<h:messages>` bound, so the growl error
+never renders. Clicking "+Add" just re-shows the same empty payment fields
+with **no error, no added row, no total change** — indistinguishable from a
+Playwright click/ref problem unless you check the "Withdrawal List" /
+"Deposits to Submit" table state after the click. Fix: always reach these
+pages via **Drawer tab → Withdrawals/Deposit to Safe/Bank button**, not
+`browser_navigate` to the URL directly — same root cause as §57, but here the
+consequence is a silent no-op rather than an empty page. Found while
+verifying issue #22870.
+
+## 63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name
+
+When hand-writing a verification/candidate-finding query against `billfee.staff_id`, do **not**
+join it directly to `PERSON.ID` — `Staff` is its own entity with its own `ID`, related to `Person`
+via `STAFF.PERSON_ID`. `billfee.staff_id JOIN person ON billfee.staff_id = person.id` silently
+returns a row (some unrelated person whose `ID` happens to equal the staff's `ID`) instead of an
+empty result, so the query looks correct but reports the wrong doctor's name for the due-payment
+total. Always go through the extra hop: `JOIN staff s ON bf.staff_id = s.id JOIN person p ON
+s.person_id = p.id`. Found while picking Playwright test data for issue #22860 — the initial
+candidate list mislabeled staff ID 11865 as "N H W Mahinda" when the correct name (still under the
+same ID, same due-fee totals) was "A K Liyanage"; the ID itself was fine to test with, only the
+display name was wrong.
+
+## 64. A slow, unfiltered `p:dataTable` search can make *every* subsequent Playwright tool call time out — don't `browser_navigate` away to "recover", just wait longer
+
+On `opd_search_professional_payment_due.xhtml` ("OPD Payments Due Search"), the `ajax="false"`
+Search button runs an unindexed JPQL join across `BILLFEE`/`BILL`/`STAFF`/`PERSON` with no
+department scoping. A wide date range with no name filter can run long enough that
+`browser_click`'s "waiting for scheduled navigations to finish" times out (5s), and every
+following `browser_snapshot`/`browser_wait_for` also times out (30s) because the page is still
+mid-navigation — this looks identical to a wedged browser session. **Do not `browser_navigate` away
+to recover in this situation**: a plain GET reload creates a fresh request and abandons whatever
+the slow POST was about to render, so the search results are lost even though the query eventually
+would have completed server-side (confirmed via `mysql.general_log` — the correct query, with the
+correct bind parameters, executed and matched rows, but the client never saw the response and a
+subsequent GET showed stale/empty state instead). Instead, once the click has already timed out,
+stay on the page and retry `browser_snapshot` after a real wait (`sleep 20` via Bash, not a tool
+`time` argument — those get capped short); the page does eventually render with results. Narrowing
+the date range and adding a name filter before clicking Search avoids the slow path entirely and
+should be preferred when the target staff/date are already known. Found while verifying issue #22860.
+
+## 65. Theatre "Add New Surgery" — the Surgery Name autocomplete is `Item` rows (`DTYPE='ClinicalEntity'`), not a dedicated table
+
+On `theater/patient_surgery.xhtml`'s "Add Surgery" panel, the "Surgery Name" `p:autoComplete`
+(`ProcedureController.completeProcedures`) queries `ClinicalEntity` — which is a
+`SINGLE_TABLE`-inheritance subclass of `Item` (discriminator `DTYPE='ClinicalEntity'`), not its
+own table. There is no `CLINICALENTITY` table to query directly; look up seed rows with:
+```sql
+SELECT ID, NAME FROM ITEM WHERE DTYPE='ClinicalEntity' AND SYMANTICTYPE='Therapeutic_Procedure' AND RETIRED=0;
+```
+A query for an item name absent from that set (e.g. "Appendec" typo, or a name that isn't seeded)
+silently returns "No results found" with no error — this looks like a missing feature but is just
+an empty/mistyped query. Confirmed working seed name: "Appendicectomy". Verified while testing
+issue #20891.
+
+## 66. PrimeFaces `p:tree` privilege picker (`admin/users/user_privileges.xhtml`) — clicking a toggler icon directly does nothing; use the Search box instead, and re-login after any privilege change
+
+The "Manage User Privileges" tree (widget var `privTree`) lazily renders — its
+`ui-treenode-children` `<ul>`s stay `display:none` until PrimeFaces actually
+expands that node client-side. A raw DOM `.click()` on the toggler icon (or
+calling the widget's `expandNode()` directly) does **not** flip
+`aria-expanded`/unhide the children — the tree only reliably expands and
+scrolls to a match through its own **Search** textbox: type the privilege's
+exact display label, then send a `Backspace` (a plain `fill()` doesn't fire
+the keyup the search listens on) and wait ~1-2s for the AJAX re-render. After
+that the matched `treeitem`'s checkbox can be clicked directly by locating it
+under `span.ui-treenode-label` → `closest('li.ui-treenode')` →
+`div.ui-chkbox-box`.
+
+Also: privileges are loaded into the session at login, not read live. After
+granting/revoking a privilege for the test user, you must log out and log
+back in (department re-selection included) before the new grant takes
+effect in that user's session — testing "immediately after Update User
+Privileges" without a re-login will silently show the old (stale)
+privilege behavior. Verified while testing issue #22906.
+
+## 67. `inpatient_search.xhtml` / `inward_search.xhtml` date filter defaults to "last 7 days" and silently returns "No records found" for older admissions — even when searching by exact BHT No
+
+The Admissions search page's `From Date`/`To Date` fields default to a
+rolling 7-day window and are combined with the BHT No / other filters via
+AND, not OR. Searching by an exact BHT number for an admission outside that
+window returns "No records found" with no indication that the date range
+(not the BHT number) is the reason. Always widen `From Date` back to (or
+before) the admission's actual `DATEOFADMISSION` — check it in the DB first
+(`SELECT DATEOFADMISSION FROM PATIENTENCOUNTER WHERE ID=...`) — before
+concluding a BHT number search failed. The `p:calendar` popup only navigates
+one month per "Previous Month" click; budget one click per month of gap.
+Verified while testing issue #22906.
+
+## 68. PrimeFaces `p:growl` error/success messages fade before a subsequent `browser_snapshot`/`wait_for` — snapshot immediately after the triggering action, not after a delay
+
+A validation error or success growl (e.g. from a blocked/allowed refund
+submission) can disappear from the DOM within ~1-2 seconds. If you
+`browser_wait_for` a couple of seconds and *then* snapshot, the growl may
+already be gone even though the underlying action definitely ran (verify via
+DB query if in doubt). To reliably capture the message as evidence, call
+`browser_snapshot` (or `browser_take_screenshot`) right after
+`browser_handle_dialog`/the click that triggers the AJAX response — do not
+insert a `wait_for` in between when the growl itself is the thing being
+captured. Verified while testing issue #22906.
+
+## 69. An earlier `p:ajax` event mutating the field a later button's enclosing `rendered` depends on silently skips that button's action — canary-test with a `throw` to prove it
+
+On `inward/admit_room.xhtml`, a `p:autoComplete`'s `itemSelect` ajax handler bound directly to
+`roomChangeController.current` set that field as soon as a patient was selected — *before* the
+"Continue" `p:commandButton` (bound to `roomChangeController.selectRoomForAdmit()`, `ajax="false"`)
+was ever clicked. The Continue button lived inside a panel gated
+`rendered="#{roomChangeController.current eq null}"`. By the time the Continue postback started,
+`current` was already non-null (set by that earlier ajax request, persisted in the
+`@SessionScoped` bean) — so JSF evaluated the *whole panel*, including the Continue button, as not
+rendered for this request and silently skipped decoding/invoking its action. The button's own
+network POST still looked completely normal (correct hidden field values, correct button
+parameter) — nothing in the request/response cycle hinted the action never ran.
+
+**How this was proven, not just suspected**: added `if (true) { throw new RuntimeException("canary"); }`
+as the literal first line of the suspected action method, rebuilt, redeployed, and repeated the
+click. No exception, no 500, no log line — page rendered its normal "success" output. That's the
+tell: if the action method actually executed, a first-line unconditional throw is unmissable
+(crashes the page). Silence under that canary means the method body never ran at all — reach for
+this test before trusting any subtler theory (stale ViewState, lazy-loading timing, EL caching)
+about a command button that "looks like" it does nothing.
+
+**Fix pattern**: don't bind the ajax-updated input directly to the field that gates the
+surrounding panel's `rendered`. Introduce a separate staging field (e.g. `selectedAdmission`) for
+the autocomplete's `value` and for anything displayed *before* the confirm button is clicked; only
+assign it into the gating field (`current`) inside the confirm button's own action method. That
+keeps the panel's `rendered` condition — and therefore whether the button inside it gets
+decoded/invoked at all — stable for the entire lifecycle of that button's own request. Verified
+against a real waiting-room patient (DB `ROOMADMITTED` flipped 0→1 after "Assign Room") while
+fixing issue #22911.
+
+Two other Payara/asadmin quirks hit while chasing this on the carecode dev machine, worth knowing
+before you spend time debugging "missing" log output:
+- **`java.util.logging` calls (even `.severe(...)`) can silently not reach `server.log`** despite
+  `logging.properties` listing `GFFileHandler` with `logStandardStreams=true` — don't trust
+  "no log line appeared" as proof a code path didn't run; use the canary-throw test above instead,
+  since an uncaught exception during `INVOKE_APPLICATION` reliably surfaces as a rendered error
+  page regardless of the logging pipeline's state.
+- **A `redeploy` that exceeds the foreward-call timeout can leave the domain's DAS memory-bloated
+  and totally unresponsive** (`curl` to the app hangs/times out, `asadmin` commands against the
+  same domain also hang) — matches the existing "Local DAS stalls when memory-bloated" pattern.
+  Recovery: `kill -9` the stuck DAS `java` process (find via `ps aux | grep domains/<name>`),
+  `asadmin start-domain <name>`, then a plain `deploy` (not `redeploy`).
+
+## 70. `inward/inward_bill_service.xhtml`'s "Settle" button silently returns to the edit screen — with the same items still loaded — when a fee row needs a Staff pick
+
+Clicking **Settle** (`ajax="false"`, `confirm()`-guarded) for a bill whose Fees tab
+has a row with a non-null `speciality` (e.g. a "Technician Fee") but no `staff`
+selected does **not** navigate to print preview and does **not** throw a visible
+error near the button — the page does a full reload and lands back on the exact
+same "Add Services" edit view, Bill Items/Fees tabs still populated, looking
+almost identical to the pre-click state. The only server-side evidence is a
+`Growl` message baked into the reloaded HTML (`msgs:[{summary:"Please select
+Staff",...,severity:'error'}]`), which is easy to miss since no dialog or
+distinct page state change signals failure. Confirm success/failure by grepping
+the full-postback response body for `Growl`/`severity:'error'` (per §32's
+pattern), or simply check whether the "Investigation or Service" picker /
+"Add" button are still rendered afterward — their presence means Settle did not
+go through. Fix in automation: after any Fees-tab row shows a "Select Staff"
+dropdown, pick a value from it (PrimeFaces click-option pattern, §13) before
+clicking Settle. Found verifying issue #22916.
+
+## 71. A fresh `p:selectOneMenu` visually shows its first `<option>` as selected even when the bound model value is still `null` — clicking that same-looking option fires no `change` event
+
+On `pharmacy_bill_retail_sale_native.xhtml`'s Payment Method dropdown (default
+list order: Cash, Credit Card, Multiple Payment Methods, ...), a freshly
+loaded/newly-logged-in page renders the native `<select>` showing "Cash" as
+selected — this is just the browser defaulting an unset `<select>` to its
+first `<option>`, not evidence that `paymentMethod` is actually bound to
+`PaymentMethod.Cash` server-side. It's still `null` until the user makes a
+real selection. `browser_click` on that already-visually-"Cash" option is a
+no-op: the native select's `selectedIndex` doesn't change, so no `change`
+event fires, so `p:ajax event="change"` never runs and any `rendered="#{bean.paymentMethod
+eq 'Cash'}"` block downstream stays on its null-branch (nothing rendered)
+even though the dropdown *looks* set to Cash. Symptom: fields that should
+appear for Cash (e.g. Tendered/Balance) never show up, with no error and no
+network request — easy to misdiagnose as a `rendered` condition bug in the
+code when the page itself is correct.
+
+**Fix**: to genuinely land on the visually-default option, select a
+*different* option first, then select the desired one back — each of those
+is a real change, so both `change` events fire and the bean field updates
+both times:
+```text
+click dropdown → click a different option (e.g. "Credit Card")
+click dropdown → click the target option (e.g. "Cash")
+```
+Only needed the first time a dropdown is touched in a fresh session/after a
+redeploy-forced relogin; once a real change has fired once, subsequent
+same-value clicks are fine since the model is no longer null. Found verifying
+issue #22991.
+
+## 72. `p:calendar`'s `pattern` attribute can differ from the usual `dd/mm/yyyy` — type in the exact server-side pattern, not a guessed format
+
+`pharmacy/direct_purchase.xhtml`'s "Date of Expiry" field (`bill:calDoe`) is a
+`p:calendar` with `pattern="dd MM yy"` — space-separated, numeric month, and a
+**2-digit** year, not the more common `dd/mm/yyyy`. Typing a plausibly-formatted
+date like `31-12-2027` gets silently rejected: the input renders with
+`aria-invalid`/a red border, the value never converts to a real `Date`, and
+the downstream action (`addItem()` here) hits its own `doe == null` validation
+and no-ops with an error message — easy to misread as "the button doesn't
+work" rather than "the date didn't parse". Symptom is worse than a normal
+validation error because nothing about the on-screen state screams "wrong
+format" unless you're specifically looking for the invalid-state styling.
+
+**Fix**: read the `pattern="..."` attribute straight from the component's
+source (`grep -n -A6 -B1 'id="calDoe"' src/main/webapp/pharmacy/direct_purchase.xhtml`)
+before typing anything, and match it exactly — here, `31 12 27` (Ctrl+A, type slowly,
+`Escape` to close the overlay without resetting the value, same pattern as
+the general `p:calendar` guidance in §3). Don't assume `dd/mm/yyyy` just
+because that's the most common pattern elsewhere in the app. Verified while
+testing issue #23005.
+
+## 73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`
+
+Running `asadmin.bat deploy --contextroot / --name rh <war>` from the Bash
+tool (Git Bash/MSYS) fails with a `ConfigurationException` complaining it
+can't parse `jndi:/server/D:/Program%20Files/Git//WEB-INF/faces-config.xml`.
+MSYS auto-converts any bare leading `/` argument (like `--contextroot /`) into
+an absolute Windows path rooted at the Git install dir before the argument
+ever reaches `asadmin`, corrupting the context root and breaking the app's own
+path resolution. `--port <n>` and named paths are unaffected — only a
+standalone `/` argument triggers it.
+
+**Fix**: prefix the command with `MSYS_NO_PATHCONV=1` to disable MSYS's
+argument path-mangling for that call:
+```bash
+MSYS_NO_PATHCONV=1 "D:/Payara/bin/asadmin.bat" deploy --contextroot / --name rh "<path>/target/rh-3.0.0.war"
+```
+Verified while testing issue #22993.
+
+## 74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit
+
+Local Payara deploys the WAR **exploded** (unzipped), not as a jar-in-place —
+confirmed at `<payara-install>\glassfish\domains\domain1\applications\rh\`.
+Facelets are not hot-reloaded in this configuration (production-mode
+caching), so an XHTML edit under `src/main/webapp` needs a redeploy to take
+effect — but for a JSF-only fix, copying the single corrected file straight
+into the exploded app directory is a much faster iterate-and-recheck loop
+than a full `package`/`asadmin redeploy` cycle:
+```bash
+cp "src/main/webapp/reports/inventoryReports/grn_summary_report.xhtml" \
+   "D:/Payara/glassfish/domains/domain1/applications/rh/reports/inventoryReports/grn_summary_report.xhtml"
+```
+A plain `browser_navigate` reload picks it up immediately (no restart, no
+session loss). This is a throwaway shortcut for iterating on a fix, not a
+deployment method — always finish with a real `package` + `asadmin undeploy`/
+`deploy` (§0a) before treating the change as verified, since that's what
+actually proves the WAR builds and packages the fix correctly. Verified while
+testing issue #22984 (caught an `outputLabel for=` component-id mismatch this
+way in seconds instead of a multi-minute rebuild).
+
+**Caveat — the hot-swap only works if that page has not been rendered yet in
+the current app instance.** With `javax.faces.PROJECT_STAGE=Production` (this
+project's `web.xml`) the Facelets refresh period is `-1`, so a page is compiled
+once and cached for the lifetime of the deployment. Swap the file *before* the
+first hit and the reload picks it up; swap it *after* the page has already been
+rendered once and every subsequent reload silently serves the stale cached
+facelet — the file on disk is right, the browser output is old, and nothing is
+logged. Symptom: your newly added component simply isn't in the rendered page.
+Fix: `asadmin deploy --force` (a new app classloader drops the cache); a browser
+reload or hard refresh will not. Found while verifying issue #23342, where an
+A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
+between the two halves.
+
+## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
+
+To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
+admission, the discharge steps on `admission_profile.xhtml` must run in this
+exact order — doing them out of order produces a visible error banner, not a
+silent failure:
+
+1. **Room discharge** (Room Management → "Discharge from Room") — must
+   happen before Nursing Discharge.
+2. **Nursing Discharge** (`inward_nursing_discharge.xhtml`, "Confirm Nursing
+   Discharge") and **Clinical Discharge** — both must complete before the
+   Interim Bill's own "Discharge" button will accept the bill.
+3. **Interim Bill → Discharge** (sets `PATIENTENCOUNTER.DISCHARGED=1`) —
+   only after step 2. Attempting it earlier shows "Nursing discharge must be
+   completed before the bill can be settled."
+4. **Create Final Bill** — only after step 3.
+5. **Physical Discharge** — counter-intuitively, this can only be confirmed
+   **after** the Final Bill already exists; attempting it earlier errors with
+   "administrative discharge (final bill) has not been completed."
+
+Verify each stage against `PATIENTENCOUNTER` (`NURSINGDISCHARGED`,
+`CLINICALLYDISCHARGED`, `DISCHARGED`, `PHYSICALDISCHARGED`) before moving to
+the next — see §32 below for why the UI alone can't be trusted here.
+
+A native `confirm()` dialog handled via `browser_handle_dialog(accept:true)`
+immediately returns a "Loading..." page title — that is not proof the
+server-side action succeeded. The actual result (success or an error banner)
+only appears in the *next* `browser_snapshot`/reload. Always re-snapshot (or
+re-query the DB) after handling the dialog before assuming the step passed;
+in one session `NURSINGDISCHARGED` stayed `0` for several tool calls after
+the dialog was accepted, because the click had actually been rejected
+server-side (wrong order) but nothing in the dialog-handling response showed
+that.
+
+## 76. `isXxx(arg)` boolean methods with a parameter don't resolve via the JSF EL property-getter convention — drop the `is` prefix
+
+A boolean bean method named `isHasPendingTheatreReturnForAdmission(Admission admission)` and called from EL as
+`#{bean.hasPendingTheatreReturnForAdmission(admissionController.current)}` (mirroring how existing no-arg booleans like
+`isHasPendingRequestsForDepartment()` are already referenced as `hasPendingRequestsForDepartment` elsewhere in the same
+page) throws `javax.el.MethodNotFoundException` at render time — caught immediately by a Playwright pass (500 error
+page) rather than silently misbehaving. The JavaBean `isXxx()`/`getXxx()` → property-name stripping is an EL
+*property-access* convention (`#{bean.propertyName}`, zero arguments only); once the call includes an argument list,
+EL falls back to literal method-name resolution and looks for a method named exactly `hasPendingTheatreReturnForAdmission`,
+not `isHasPendingTheatreReturnForAdmission`. **Fix**: for any boolean helper method that takes a parameter, name it
+*without* the `is` prefix (`hasPendingTheatreReturnForAdmission(Admission)`), matching how the call site will
+naturally read in EL — reserve the `is`/`get` prefix convention for genuine no-arg property getters. Verified while
+testing issue #23166 (theatre transfer per-patient page).
+
+## 77. `p:autoComplete` with `<p:column>` children renders suggestions as a `<table>` of `<tr data-item-label>`, not `<li>` — a `li`-only selector reports "no matches" on a working autocomplete
+
+`.ui-autocomplete-panel li` is the right selector only for a plain autocomplete. As soon as the component declares
+`<p:column>` children (the multi-column suggestion form used by the timed-service, admission and item pickers), the
+panel renders a `<table class="ui-autocomplete-items ui-autocomplete-table">` whose rows are
+`<tr id="<clientId>_item_N" data-item-value="…" data-item-label="…">`. Querying only `li` returns an empty list, which
+looks exactly like "the server found nothing" and sends you off debugging the `completeMethod`'s JPQL. Diagnose by
+reading the actual AJAX response (`browser_network_request` → `response-body`) — if the partial response contains the
+rows, the query is fine and only the selector is wrong. **Fix**: select `tr[id^="<clientId>_item_"]` (or query both
+`tr, li`), and click the row by `data-item-label`. Verified while testing issue #23206.
+
+## 78. Typing into an input that a `p:ajax` just re-rendered prepends to the restored model value — set the dropdown first, then the numbers, and always confirm in the DB
+
+A `p:ajax` on a `p:selectOneMenu` with `update="txtDuration txtOverShoot"` re-renders those inputs *from the server-side
+model*. Clearing them client-side beforehand is undone by that re-render, so a later `pressSequentially('1')` lands in a
+field that once again reads `0.0` and produces **`10.0`**, not `1`. Nothing errors and the page looks right at a glance —
+the wrong value only shows up in the database. **Fix**: choose the dropdown value *first*, let the AJAX settle, then fill
+the dependent inputs; and verify every configuration value with a `SELECT` after saving rather than trusting the form.
+Related: `p:datePicker` ignores a direct `input.value = '…'` assignment (it re-formats from its own internal model) —
+drive it with `PF('widgetVar').setDate(new Date(...))`, resolving the widget via
+`Object.keys(PrimeFaces.widgets).find(k => PrimeFaces.widgets[k].id === '<clientId>')` when the page sets no
+`widgetVar`. Verified while testing issue #23206.
+
+## 79. Capturing a `p:growl` message in a screenshot: suppress its auto-hide timer, don't race it
+
+§68 says snapshot immediately — but with `life="3000"` even a single `browser_take_screenshot` round-trip usually misses
+it. Reading the DOM inside one `browser_evaluate` (click, `await` ~900ms, read `#growl_container.innerText`) proves the
+message *arrived*, and `getBoundingClientRect()` on `.ui-growl-item-container` proves it was actually on screen — but
+neither produces a screenshot. To capture one, suppress only the fade timer before triggering the action:
+
+```js
+window.__origSetTimeout = window.setTimeout;
+window.setTimeout = function (fn, delay) { return delay >= 2500 ? 0 : window.__origSetTimeout.apply(window, arguments); };
+```
+
+The real growl then stays rendered for the screenshot (nothing about the message is faked — only the dismissal is
+deferred). Reload the page afterwards to drop the patch. Verified while testing issue #23206.
+
+## 80. A `p:dataTable` column present in `browser_snapshot` can still be 0px wide and invisible to the user — measure `offsetWidth`
+
+PrimeFaces renders its DataTable with `table-layout: fixed`. Under that layout the browser honours the columns that
+carry an explicit `width` first and hands the leftovers to the rest — and when the widths already declared exceed the
+table width, "the rest" gets **zero**. Those columns still render their `<th>`/`<td>` with the correct text, so they
+appear in `browser_snapshot`, in `get_page_text`, and in `innerText`. They are simply not on screen.
+
+This is how issue #23224 was misdiagnosed at first: the accessibility snapshot listed all 17 headers including
+`COST RATE` and `COST VALUE`, the footer totals were right, and the DB reconciled — so the report looked finished. The
+columns the user was asking for were 0px wide, exactly as their screenshot showed.
+
+Whenever a report "already has" a column a user says is missing, measure before concluding:
+
+```js
+[...document.querySelectorAll('.ui-datatable thead th')]
+    .map(th => ({ h: th.innerText.trim(), w: Math.round(th.offsetWidth) }))
+```
+
+Any `w: 0` is an invisible column. The fix is in the XHTML, not the test: once *any* `p:column` on a fixed-layout table
+declares a `width`, **every** column must declare one, or the undeclared ones collapse. Widening the viewport does not
+reveal them — it makes it worse, because the extra space goes to the columns that did declare a width.
+
+## 81. `theater/inward_search_surgery.xhtml`'s "Search All" checkbox does not widen the date filter
+
+`SearchController.searchSurgery()` always applies `b.createdAt between :fromDate
+and :toDate` — the From/To Date calendars default to **today only**. The
+"Search All" checkbox does *not* bypass that; it toggles a separate, required
+"select a Surgery Name to search all" filter (`searchKeyword.activeAdvanceOption`)
+and throws a validation error ("You Need To select Surgury to Search All") if
+checked with no item picked. To find an older surgery bill by BHT/bill number,
+leave "Search All" unchecked and widen the **From Date** via the calendar grid
+(§18) to cover the record's actual `createdAt` — a plain BHT-number search with
+today's default date range silently returns "No records found." for anything
+not created today. Verified while testing issue #23249.
+
+## 82. Any AJAX call from inside an editable `p:dataTable`'s row scope has its `update` target silently constrained to the table itself — extra ids you add are dropped, even on a plain `p:commandButton`
+
+`ward_pharmacy_bht_issue.xhtml`'s "Issuing Items" grid needed the row-edit
+checkmark, the inline item-swap autocomplete, AND the row's delete
+(trash) button to also refresh a separate `billDetailsPanel` outside the
+table. The obvious fix — add `billDetailsPanel` to each component's own
+`update=""` (`p:ajax event="rowEdit"`, a `p:ajax event="itemSelect"` nested
+inside an autocomplete that itself lives inside a `p:cellEditor`, and even
+a completely ordinary `p:commandButton` in a row with no cellEditor/rowEdit
+involvement at all) — compiles and deploys with no error, but the extra id
+is silently dropped at runtime in **all three cases**: the browser's actual
+AJAX request always sends `javax.faces.partial.render=<table-id>` only,
+never the second id, no matter what `update=""` says server-side. Confirmed
+by reading the button's own rendered `onclick` directly off the live DOM
+(`document.querySelector('button.ui-button-danger').getAttribute('onclick')`)
+— the compiled `PrimeFaces.ab({...})` call has `u:"<table-id>"` baked in
+verbatim, already missing the second id before the click ever happens. This
+survives a normal `asadmin deploy --force`, a full `undeploy`+`deploy`, and
+even a full `stop-domain`/`start-domain` — it isn't a caching artifact. A
+component genuinely *outside* the table (e.g. a `p:remoteCommand` declared
+as the table's sibling) is unaffected and can update `billDetailsPanel`
+freely — so this isn't about the DataTable's own `rowEdit`/`rowEditCancel`
+widget behaviors specifically (as originally assumed here); it's the row
+*scope* itself, for anything nested inside it.
+
+Confirm this is what's happening by reading the actual request body
+Playwright captured (`browser_network_request` with `part: "request-body"`)
+— or the rendered `onclick` off the live DOM for a plain button — and
+checking for the missing id, not by re-reading the source XHTML, which will
+keep looking correct.
+
+Fix: add a `p:remoteCommand name="refreshX" update="theOtherPanel"` once,
+elsewhere in the same form (outside the table), then set
+`oncomplete="refreshX();"` on every row-scoped component that needs the
+extra update — `rowEdit`/`rowEditCancel`, a nested `itemSelect`, or a plain
+`p:commandButton` alike — instead of trying to widen their own `update`.
+The remote command fires as a second, independent AJAX call that isn't
+subject to the same row-scope constraint. Verified while fixing issue
+#23328 (including a CodeRabbit-caught follow-up: the row's delete button
+needed the identical treatment, not just the two components fixed in the
+original pass).
+
+## 83. A page-local `<style>` rule can silently lose to the PrimeFaces theme — verify with a computed-style probe, not a screenshot
+
+A page-local `<style>` block that targets a PrimeFaces sub-part (title bar, row,
+header cell) can look plausible in review and still never apply, because the
+Material theme qualifies the same part with a leading element selector:
+
+```css
+/* theme.css — specificity (0,2,1): two classes PLUS the `body` element */
+body .ui-panel .ui-panel-titlebar { background: #f8f9fa; }
+
+/* page-local — specificity (0,2,0): loses, even though it comes later */
+.my-highlight > .ui-panel-titlebar { background: rgba(13,110,253,.10); }
+```
+
+Later-in-document does **not** save you here: the theme wins on specificity, so
+the rule is simply discarded. Adding the same `body` + owning-class prefix
+restores the win:
+
+```css
+body .ui-panel.my-highlight > .ui-panel-titlebar { background: rgba(13,110,253,.10); }
+```
+
+The trap is that a *partial* application looks like success — an outer `border`
+on the panel itself can land (nothing in the theme sets it) while the title-bar
+`background` on the very next line is dropped, so the screenshot shows "some
+highlight" and the defect passes review.
+
+Don't judge this from a screenshot. Read the computed style, and — when the rule
+is print-scoped — read it under emulated print media (see §43; never click the
+real `p:printer` button):
+
+```js
+async (page) => {
+  const probe = async () => await page.evaluate(() => {
+    const bar = document.querySelector('body .ui-panel.my-highlight > .ui-panel-titlebar');
+    return getComputedStyle(bar).backgroundColor;
+  });
+  await page.emulateMedia({ media: 'screen' }); const onScreen = await probe();
+  await page.emulateMedia({ media: 'print'  }); const onPrint  = await probe();
+  await page.emulateMedia({ media: 'screen' });
+  return { onScreen, onPrint };
+}
+```
+
+To find *which* rule actually won, enumerate `document.styleSheets` for rules the
+element `matches()` and print each one's `selectorText` plus originating
+stylesheet — that names the offending theme selector directly, instead of
+guessing at specificity.
+
+Found on `inward/pharmacy_bill_return_bht_issue.xhtml` while adding the Return
+Bill Preview highlight (issue #23338).
+
+## 84. A markup-less PrimeFaces component (`p:defaultCommand`, `p:focus`, …) cannot be confirmed by searching the rendered HTML — look for its event handler instead
+
+These components emit no DOM element at all, only a `PrimeFaces.cw(...)` init
+script, and PrimeFaces removes inline scripts from the document once they have
+run. So `document.documentElement.innerHTML.includes('DefaultCommand')` returns
+`false` on a page where the component is present and working — an easy false
+negative that looks like "my fix didn't deploy".
+
+Confirm it the way the widget actually manifests:
+
+```js
+// the widget object (its key is widget_<clientId>, name mangled by minification)
+Object.keys(PrimeFaces.widgets);
+// what p:defaultCommand really does: a namespaced keydown handler on the form
+jQuery._data(document.getElementById('form'), 'events').keydown.map(h => h.namespace);
+// -> ["form:j_idt579"]  ← the defaultCommand's own client id
+```
+
+Then assert the *behaviour* (press Enter, check the URL didn't change and the
+intended action ran), which is the only proof that matters anyway. Found while
+verifying issue #23342.
+
+## 85. `inward_bill_service.xhtml`'s patient search auto-selects on an exact BHT match — no suggestion click needed
+
+Typing a complete BHT number (e.g. `BHT/55359`) into the "Patient Search"
+autocomplete on the Patient Selection screen commits the encounter and re-renders
+straight into the Add Services view, without ever showing an autocomplete panel
+to click. A test that types the BHT and then waits for a `.ui-autocomplete-panel`
+row will time out on a working page. Detect the transition instead — e.g.
+`document.body.innerText.includes('Patient Selection') === false`, or the presence
+of `form:btnAddIx`. Found while verifying issue #23342.
+
+## 86. A `p:inputText`/`p:inputNumber` bound to a `Map<String, Integer>` entry silently stores the raw `String` — the write is lost with no error until you read it back
+
+Binding a form input to `#{bean.someMap[key]}` where `someMap` is declared `Map<String, Integer>`
+compiles fine and *looks* like it should coerce, because a normal bean property setter
+(`setSomeField(int)`) does get EL's automatic string-to-primitive coercion via reflection on the
+setter's declared parameter type. A `Map` entry gets no such coercion: `MapELResolver.setValue()`
+just calls `map.put(key, value)` with whatever raw type the component submitted — generics are
+erased at the bytecode level, so the resolver has no way to know the map is supposed to hold
+`Integer`. The submitted value lands in the map as a plain `String`.
+
+The failure doesn't surface where you'd look for it. The command button's `update` re-renders the
+component from that same in-memory map object, so the browser still shows the value you just typed
+— it *looks* saved. The real breakage happens the next time server-side code reads the map entry as
+`Integer` (e.g. `Integer order = orderMap.get(key);`) — a `ClassCastException: String cannot be cast
+to Integer` that aborts the whole action method, so nothing after that line (including the actual
+persistence call) ever runs. `p:messages`/`p:growl` stays silent because the exception happens inside
+the JSF lifecycle's invoke-application phase, not inside a `catch` the page bothers to show — the
+only trace is a `SEVERE javax.faces.el.EvaluationException` in `server.log`.
+
+**Fix**: keep the map typed `Map<String, String>` (matching how every other free-text-bound map in
+this codebase already works) and parse the string to the target type only where the value is actually
+consumed — never type a directly-bound map as anything but `String`. **Verification**: a screenshot or
+an in-session AJAX re-read is not proof of a save — the model object doesn't go away just because the
+action method threw. Always confirm with a fresh `SELECT` after the request completes (a full page
+reload session's own display of "the value I set" proves nothing, since it's the same still-open
+transactional model that never got rolled back). Found and fixed while testing issue #23340.
+
+## 87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect
+
+Logging into `http://localhost:8080/rh` with the production app-login credentials from the external credentials file (see `developer_docs/deployment/persistence-verification.md`) fails locally with "Invalid User! Login Failure" even though a `WEBUSER` row with that username exists. The local `coop` database is a data snapshot, not a fresh seed — its `WEBUSERPASSWORD` hash predates whatever the current production password is, and there's no way to know it from the codebase.
+
+`SessionController.checkUsersWithoutDepartment()` calls `SecurityController.matchPassword(password, u.getWebUserPassword())`, which uses jasypt's `BasicPasswordEncryptor` (salted digest, not a fixed hash you can look up) — `SecurityController.java`'s `hashAndCheck()`/`matchPassword()`. To log in locally: generate a compatible hash with the same class (the jar is already on the classpath at `~/.m2/repository/org/jasypt/jasypt/1.9.3/jasypt-1.9.3.jar` — compile and run a two-line `BasicPasswordEncryptor().encryptPassword("SomeTestPassword")` snippet), then `UPDATE WEBUSER SET WEBUSERPASSWORD='<hash>' WHERE ID=<id>` directly against the local `coop` DB (safe — local test data, no schema change, see the `dev-issue-unattended` skill's hard limits on this point).
+
+**The password won't take effect until Payara restarts.** `WebUser` is one of the reference entities EclipseLink L2-caches (`eclipselink.cache.size.default=1000` in `persistence_for_local_testing.xml`, explicitly called out for "departments, items, users"), and a plain SQL `UPDATE` doesn't invalidate that cache — the already-running app keeps serving the old hash to every subsequent login attempt from its in-memory copy, so retrying with the new password fails identically. `asadmin restart-domain domain1` (not just redeploying the WAR) clears it. This is the same L2-cache-staleness class of gotcha noted for the COGS report (`feedback_cogs_report_testing_gotcha` memory) — always double-confirm a direct SQL write against a running local Payara actually took effect, rather than assuming it did because the `UPDATE` succeeded.
+
+Found while verifying issue #22990.
+
+## 88. `pharmacy_search_pre_bill_for_return_item_only.xhtml`'s "Return Item Only" button can fail completely silently — no `p:messages`/growl update, plus `Bill` is L2-cached
+
+Two independent gotchas stack here, found while testing issue #23304 (reject negative return quantity):
+
+1. **Silent navigation failure.** `PreReturnController.navigateToReturnRetailSaleItemsOnly()` calls
+   `pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill)` and returns `null` (staying on the
+   same page) when the sale bill is older than the "no approval" day limit (default 3 days) and has no
+   approved return request — see `PharmacyRetailSaleReturnPolicyService`. `pharmacy_search_pre_bill_for_return_item_only.xhtml`
+   has **no `p:messages`/`p:growl` component at all**, so `JsfUtil.addErrorMessage(...)` is added to the
+   `FacesContext` but never rendered — clicking "Return Item Only" just silently reloads the same search
+   page with zero visible feedback. Don't mistake this for the button/click not registering; check the
+   row's day-limit first (a "Request Approval" button appearing alongside "Return Item Only" is the tell
+   that the bill is past the no-approval window).
+2. **`Bill` is also L2-cached.** Same class of staleness as `feedback_cogs_report_testing_gotcha` and item
+   87's `WebUser` case: if you shift a `Bill.createdAt` via raw SQL to get a test bill inside the day-limit
+   window, and the app already loaded that `Bill` earlier in the same session (e.g. an earlier search hit
+   it), `checkReturnAllowed` keeps evaluating against the stale cached `createdAt` — the day-limit block
+   persists even though the DB row is correct. Use a bill your test session has never touched yet for the
+   `UPDATE`, or restart the domain, rather than assuming the fresh `UPDATE` took effect.
+
+Also: revert any `createdAt` shift back to the bill's real original value immediately after the test —
+day-based reports (Cost of Goods Sold, F15) key off it, and leaving it shifted taints those reports for
+both the original date and the shifted date.
+
+## 89. A missing `/faces/` prefix can also hang the Playwright tab itself, not just serve broken markup — don't assume item 47's symptom is the only failure mode
+
+Addendum to item 47, found while testing issue #23407. Item 47 established
+that a missing `/faces/` segment makes Payara serve the raw Facelets source as
+a static file — confirmed here too: `curl -D-` against
+`http://localhost:8080/rh/inward/inward_bill_outside_charge.xhtml` (no
+`/faces/`) returns instantly with `HTTP/1.1 200`, `Content-Type:
+application/xhtml+xml`, and the literal unprocessed `<ui:composition>` source
+— consistent with item 47, and **not** a server-side hang; `TransactionLeakGuardFilter`
+(the only `/*`-mapped filter in `web.xml`) only runs cleanup after the chain
+completes and cannot cause this either.
+
+But driving the same URL through `browser_navigate` in an authenticated
+Playwright session did not render item 47's "broken page with literal EL
+text" — the tab hung indefinitely instead, with `browser_navigate` and every
+subsequent `browser_snapshot` timing out at 30s and zero new lines appended to
+`server.log` in the meantime (the server had already answered; the hang was
+client-side). The exact trigger wasn't isolated further — possibly Chromium's
+handling of a non-`text/html` `application/xhtml+xml` response during a
+Playwright-driven navigation — but don't burn time debugging the server or
+checking Payara/system health when this happens, since the server side is
+demonstrably fine either way. Close the hung tab (`browser_tabs` → `close`),
+open a fresh tab, and navigate to
+`http://localhost:8080/rh/faces/inward/inward_bill_outside_charge.xhtml`
+(with `/faces/`) instead — this always loads normally. Any local deep-link
+into an inner page (bypassing a menu click) needs the `/faces/` segment
+regardless of which of the two symptoms it would otherwise hit.
+
+## 90. Simulating a barcode scan with `browser_type(..., submit: true)` on a `p:autoComplete` can submit the wrong button — use `slowly: true` and wait, don't press Enter
+
+Found while verifying issue #23165's barcode auto-select/auto-advance
+composite (`admcc:admission_search`) on `inward_room_change.xhtml`. Filling
+the autocomplete in one shot and pressing Enter immediately
+(`browser_type(..., submit: true)`, which does `fill()` then
+`press('Enter')`) fires the Enter keypress **before** PrimeFaces' debounced
+`query` AJAX call has completed, so the autocomplete's own suggestion list is
+still empty and doesn't intercept the key. The Enter falls through to the
+browser's native implicit-form-submission behavior, which submits via the
+**first** submit-type button in the form — not the intended "Continue"
+button, and not whatever the composite's own auto-advance JS would have
+clicked. On this page that meant landing on the unrelated "Nursing
+WorkBench" page instead of the admission's detail view, silently, with no
+error in `server.log` or the browser console.
+
+This is a test-methodology artifact, not evidence of a real bug — a real
+scanner still just types characters via keyboard events, and the auto-select
+JS runs off the `query` AJAX `oncomplete` callback, not off Enter. Simulate
+it correctly instead: `browser_type` with `slowly: true` (fires per-character
+keyup events, which is what triggers PrimeFaces' query debounce), no
+`submit`, then `browser_wait_for` a second or two before asserting on the
+result. Confirmed working this way: an exact single-match query auto-selects
+and auto-advances; an exact query matching multiple admissions (e.g. several
+active admissions sharing one PHN) shows the dropdown and does not
+auto-advance.
+
+## 91. `ward/ward_pharmacy_bht_issue_request_bill.xhtml`'s "New Bill" button discards the current draft instead of saving it, and `ward_pharmacy_bht_issue.xhtml`'s "Issue to BHT" rejects (with a growl message, easy to miss in a scripted run) until a Porter/Staff is picked
+
+Found verifying issue #23470 (BHT substitute suggestions). On the ward-side
+request page, the toolbar has both **"New Bill"** and **"Settle Request"**
+next to each other. "New Bill" looks like a generic submit/save action but
+it actually **discards the in-progress request and resets the form** to a
+blank "Start Pharmacy Request for Inpatients" screen — no `BILL` row is
+written, no error is shown. Only **"Settle Request"** (which fires a native
+`confirm()` — handle it with `browser_handle_dialog`) persists the request
+as a `REQUEST_MEDICINE_INWARD` bill.
+
+On the pharmacy-side issue page (`ward_pharmacy_bht_issue.xhtml`), the
+**"Issue to BHT"** button (`PharmacySaleBhtController.settlePharmacyBhtIssueAccept`)
+also fires a `confirm()`, but if `getPreBill().getToStaff() == null` it
+rejects the attempt with the growl message **"Please select the staff
+member (porter) who will carry the medicines to the ward."** and returns —
+i.e. the **"Porter / Staff Carrying Medicines to Ward"** autocomplete near
+the top of the page must be filled first. It's not a silent no-op (the
+message is real), but it's easy to miss when driving the page via
+Playwright without checking for growl text after every action, and no
+exception is logged server-side either way. A DB check for a fresh
+`ISSUE_MEDICINE_ON_REQUEST_INWARD` row is the reliable way to catch this in
+a script: it comes back empty after a seemingly-successful click-and-confirm
+if the Porter field was skipped. Always fill the Porter field (any active
+`STAFF` row works for local testing) before clicking "Issue to BHT", and
+verify success by querying `BILL` for a new row
+rather than trusting the confirm dialog alone.
+
+Also: that Porter/Staff autocomplete searches the `STAFF`/`PERSON` tables,
+not `WEBUSER` — a logged-in user's own username (e.g. "Lawan") will not
+resolve; search by an actual staff member's name from `STAFF` joined to
+`PERSON`.
+
+## 92. A `p:commandButton` save that does nothing — no growl, no error, no DB row, a clean `server.log` — is usually a required field whose message went to a `<p:messages>` you never looked at
+
+Seen on `pharmacy/admin/lab_amp.xhtml` and `store_amp.xhtml` while verifying
+issue #23484. Clicking **Save** with Name, Code and VMP filled produced: no
+growl, nothing under `.ui-message*`, no new `Amp` row, and not a single new
+line in `server.log`. The form still held every value, so it looked like the
+action method had run and silently returned.
+
+It had not run at all. Both pages mark **Dosage Form** (`selDosageForm`) and
+**Category** (`ampCat`) `required="true"`, and the Save button uses
+`process="@form"` with `update="form:msg ..."` — so JSF failed validation in
+the Process Validations phase, never invoked `labAmpController.save()`, and
+routed both `requiredMessage`s into the `form:msg` `<p:messages>` component.
+That component contributes no accessible name when its own re-render is what
+populated it, so it does not show up in `browser_snapshot`, in
+`browser_find` for `/error|required/i`, or in a `.ui-growl-item` query.
+
+**Diagnose it this way** — the three symptoms together (form still populated
++ DB unchanged + `server.log` clean) mean the action method never fired, which
+narrows it to client-side or validation-phase rejection, not business logic:
+
+```js
+// enumerate every required input in the form and which ones are still empty
+() => Array.from(document.querySelectorAll('#form [aria-required="true"], #form .ui-state-error'))
+        .map(e => ({ id: e.id, cls: e.className, val: e.value }))
+```
+
+and read the message panel by id rather than by class:
+
+```js
+() => document.querySelector('#form\:msg')?.textContent.trim()
+```
+
+Cheaper still: `grep -n 'required="true"' <page>.xhtml` and fill every one of
+them before the first Save attempt. Note that a `required` `p:autoComplete`
+(Category here) is only satisfied by **clicking a suggestion** — typing the
+exact label and leaving it is an empty model value as far as JSF is
+concerned, even though the textbox looks filled.
+
+## 93. Privileges are scoped per-department — a rendered button check can fail under the "wrong" department even though the user genuinely has the privilege
+
+Seen verifying issue #23510 (Surgery Dashboard "Remove" a validated timed
+service). `theater/surgery_bill_summary.xhtml`'s **Validate Surgery** button
+is gated by `webUserController.hasPrivilege('InwardSurgeryValidate')`. The
+test user held that privilege (`WEBUSERPRIVILEGE` row, `PRIVILEGE =
+'InwardSurgeryValidate'`) — but the row's `DEPARTMENT_ID` pointed at "Inward",
+not the "THEATRE" department selected at login. Under THEATRE the button
+simply didn't render (no error, no disabled state — just absent), which looks
+identical to "user lacks the privilege" from the UI alone.
+
+**Diagnose it this way**: don't stop at confirming a `WEBUSERPRIVILEGE` row
+exists for the user — check its `DEPARTMENT_ID` against the department
+actually selected for the session:
+
+```sql
+SELECT ID, PRIVILEGE, DEPARTMENT_ID FROM WEBUSERPRIVILEGE
+WHERE WEBUSER_ID = <id> AND PRIVILEGE = '<PrivilegeName>';
+```
+
+If the department differs from the one under test, log out and reselect the
+department that matches the privilege row — per §1 there is no in-session
+department switch. Never grant a new `WEBUSERPRIVILEGE` row yourself to route
+around this; that is a privilege/access-control change, out of bounds for
+verifying a fix.
+
+## 94. PrimeFaces `p:datePicker` popups don't always close on their own — the previous field's panel can intercept clicks meant for the next field
+
+Seen adding a timed service on
+`theater/inward_timed_service_consume_surgery.xhtml` (Start Time / End Time,
+both `p:datePicker` with `showTime="true"`). Clicking the End Time input right
+after picking a Start Time did not open a new calendar — it silently reused
+the Start Time picker that was still open underneath, so time-spinner clicks
+kept editing the wrong field. A later click on the real End Time input then
+timed out with `<div class="ui-datepicker-header">... intercepts pointer
+events` because the stale panel from the previous field was still on top.
+
+**Fix**: click a neutral, non-input element on the page (e.g. a panel header)
+to dismiss the open picker before clicking the next date field — `Escape`
+alone was not reliable here. Re-`browser_snapshot` after opening a picker to
+confirm which field's `_panel` id is actually active before interacting with
+its spinners.
+
+## 95. Theatre's "+ Add New Surgery" briefly lands on a generic, blank-looking `admission_profile.xhtml` — the surgery Bill is already created; go through "Surgeries for BHT" to reach it
+
+Seen creating test data for issue #23510. Clicking **+ Add New Surgery** on
+`theater/patient_surgery.xhtml` navigates to `inward/admission_profile.xhtml`
+showing empty Name/Gender/DOB fields and a *different*, just-now Date of
+Admission — which looks like the action failed or created a stray blank
+encounter. It did not: the surgery `Bill` (`BILLTYPE = 'SurgeryBill'`) was
+created against the *original* BHT encounter, and a second, child
+`PatientEncounter` (the "procedure" record, `PARENTENCOUNTER_ID` = the BHT's
+id) was also created — `admission_profile.xhtml` is just rendering that new,
+still-mostly-empty child encounter, which is a separate, likely
+pre-existing display gap and not something this fix touched.
+
+**To get back to the surgery you just created**, don't fight that page —
+navigate to `theater/inward_bill_surgery_list.xhtml` ("Surgeries for BHT"),
+which lists every `SurgeryBill` for the current `patientEncounter` and has a
+**Surgery Dashboard** button per row that loads it into
+`surgeryBillController.surgeryBill` correctly.
+
+## 100. `PrimeFaces.current().executeScript(...)` silently no-ops on an `ajax="false"` button — use `p:dialog visible="#{bean.flag}"` instead
+
+Seen fixing issue #23514. `inward_admission.xhtml`'s "Admit" button is
+`ajax="false"` (a full postback, deliberately, per issue #21175's foreigner-
+checkbox fix). The pre-existing "patient already admitted" warning dialog was
+shown via `PrimeFaces.current().executeScript("PF('dlg').show();")` from the
+backing bean — that call only queues JS into an *ajax* partial response, so on
+this button it silently did nothing: no dialog, no error, no admission
+created, no evidence in `server.log` that anything was rejected. It looked
+exactly like the button doing nothing.
+
+The fix: bind the dialog's own `visible` attribute to a session-scoped
+boolean the bean sets before returning (`visible="#{bean.showWarning}"`).
+`p:dialog visible="true"` renders its own show-on-load script regardless of
+whether the surrounding request was ajax or a full page render, so it works
+for both `ajax="false"` and `ajax="true"` buttons — but only if the triggering
+`ajax="true"` request's own `update` actually includes the dialog (or the
+whole form); an ajax caller that updates some narrower region will still
+leave the dialog's old, unrendered markup in the DOM with the stale `visible`
+value baked in. Remember to also clear the flag via a real server round-trip
+on the dialog's "Cancel" button *and* on its header close ("x") icon (`p:dialog
+closable="true"` gives that its own client-side close path via `p:ajax
+event="close"`, separate from any button) — a client-only `PF('dlg').hide()`
+leaves the session-scoped flag `true`, and it will reappear on the next
+unrelated full postback of that form.
+
+## 101. Some PrimeFaces buttons need a jQuery-triggered click
+
+Most `p:commandButton`s submit fine with a normal Playwright click — including
+`ajax="false"` text-valued buttons such as `form:btnNursingDischarge` on
+`admission_profile.xhtml`, which navigate correctly on a plain
+`page.locator('#form\:btnNursingDischarge').click()`.
+
+The exception is **icon-only row controls** inside a `p:dataTable` (e.g. the
+`ui-button-icon-only` action buttons on `inpatient_search.xhtml`, which render with
+no `value` and no `onclick`). There, PrimeFaces binds the handler through jQuery and a
+raw `element.click()` from inside `browser_evaluate` can fire the DOM event without
+invoking it — the form never submits and the page silently stays put, with no error and
+no server-log entry. Fall back to triggering the jQuery handler for those:
+
+```js
+window.jQuery(document.getElementById('form:tblBills:0:j_idt638')).trigger('click');
+```
+
+Inspect `$._data(el, 'events')` if unsure — the absence of a `click` key alongside
+`mousedown`/`mouseup` is the tell. Either way, **assert the outcome** (URL change, or the
+expected element on the destination page) rather than assuming the click worked.
+Verified while testing issue #23222.
+
+## 102. A local "Unknown column" 500 is schema drift — use the app's own migration page
+
+A restored/older local DB can lag the entity model (e.g. `Unknown column 'DURATIONUNIT' in 'field list'`
+loading a `TimedItemFee`), producing a 500 on pages that are otherwise unrelated to what you're testing.
+The login screen flags this as **"Database Migration Pending"**. Fix it through the app's own UI —
+navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update Both Databases** — rather
+than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
+Verified while testing issue #23222.
+
+## 103. An unchanged database does NOT prove a server-side guard ran
+
+When a fix disables a button via `disabled="#{bean.someCheck()}"`, it is tempting to strip the
+attribute, submit, observe the DB unchanged, and call the server-side guard proven. **That
+inference is invalid** — and on JSF it is usually wrong.
+
+JSF **skips the action of a component it rendered as `disabled`**: the decode phase ignores the
+activation, so the action method is never invoked. The postback returns 200, the page re-renders,
+and the database is unchanged — identical to what a working guard looks like from the outside.
+Confirmed on `inward_nursing_discharge.xhtml`, whose Confirm button carries
+`disabled="#{nursingDischargeController.hasPendingPharmacyItems()}"`: re-POSTing the form produced
+`msgs:[]` (no growl message at all), proving `confirmNursingDischarge()` never ran.
+
+So before asserting DB state, **assert the action executed** — the expected message is the cheapest
+signal. Re-POST the form and inspect the response body directly:
+
+```js
+const fd = new FormData(document.getElementById('formNursingDischarge'));
+fd.set('formNursingDischarge:btnConfirmNursingDischarge', '');   // use the button's real (often empty) value
+const html = await (await fetch(location.href, {
+  method: 'POST', body: new URLSearchParams(fd),
+  headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+})).text();
+// msgs:[...] populated => the action ran; msgs:[] => it did not
+```
+
+An `ajax="false"` button reloads the page, so a growl is usually gone before any screenshot or
+follow-up `browser_evaluate` — read it out of the raw response as above rather than from the DOM.
+
+To exercise a guard that is unreachable while the button renders disabled, recreate the **race it
+exists for**: load the page while the record is clean (button enabled), make the blocking condition
+true, then submit the stale page.
+
+Always pair this with the **negative test** — a record with nothing pending must still succeed —
+otherwise you have not distinguished "correctly blocks" from "blocks everything". Undo any state the
+negative test creates through the app's own Cancel action, never with an `UPDATE`.
+Verified while testing issue #23222.
+
+## 104. A department/room created by direct SQL needs more than the FK columns
+
+When a test scenario needs a *new* Department or RoomFacilityCharge that doesn't already exist
+locally (e.g. to simulate a patient's room belonging to a different department than the one they
+were admitted from), inserting just the obvious FK columns produces a department that silently
+breaks large parts of the UI instead of erroring:
+
+- **`DEPARTMENT.DTYPE` must be set** (`'Department'`, matching the existing rows) — `Department` is
+  `@Inheritance`-annotated, so a `NULL` discriminator isn't just "unmapped for this row", it makes
+  the **entire polymorphic query return an empty list** (e.g. `SessionController.listLoggableDepts`
+  during login), not just exclude the bad row. Symptom: login fails with "This user has no privilage
+  to login to any Department" even though the WebUserDepartment row is correct.
+- **`DEPARTMENT.DEPARTMENTTYPE` is compared case-sensitively** against the literal used elsewhere in
+  the codebase (`'Inward'`, not `'INWARD'`). A mismatch doesn't error — the department loads and the
+  header renders, but the entire top menu bar and all page-level toolbars silently disappear because
+  their `rendered` conditions never match.
+- **`DEPARTMENT.SITE_ID` should be copied from a real department of the same kind** — leaving it
+  `NULL` is a further contributor to missing toolbar/menu regions on some pages.
+- **Privileges (`WEBUSERPRIVILEGE`) are scoped by `DEPARTMENT_ID`**, and
+  `SessionController.getUserPrivileges()` looks them up against `loggedUser.getDepartment()` (the
+  session's *currently selected* department after login), not just the user. A brand-new department
+  has zero privilege rows for any user, so every `hasPrivilege(...)`-gated button vanishes even
+  though the same user has full privileges in their usual department. Fix: copy the relevant
+  `WEBUSERPRIVILEGE` rows, changing only `DEPARTMENT_ID`, to the new department.
+- **`ROOMFACILITYCHARGE.COMPANY_ID` must be set** when the scenario will exercise an
+  institute-scoped search/filter (e.g. "Logged Institute"/"Logged Department" scope buttons) — those
+  queries `AND` on `roomFacilityCharge.company = :loggedInstitution`, and a `NULL` company silently
+  drops the row from every institute-scoped result with no error, while institute-unscoped ("Any
+  Institute") searches still find it fine. This made a genuine fix look like it wasn't working until
+  the room's `COMPANY_ID` was backfilled to match the test institution.
+
+Each of the above requires a **Payara restart** to take effect if the row (or a row referencing it)
+was already read once in the current server process — EclipseLink's shared L2 cache can otherwise
+keep serving the pre-fix version of the entity even though the DB row is already corrected and a
+brand new login/HTTP session is used. A plain redeploy is not enough; use
+`asadmin stop-domain && asadmin start-domain`.
+
+Verified while testing issue #23377.
+
+## 105. A `p:calendar` bound to Date of Birth can ignore real keystrokes — use the widget's `setDate()` API
+
+On `inward_admission_child.xhtml`'s "Admit a Baby" form, the DOB field (`dpDob`, a `p:calendar`
+with `timeInput="true"`) rejected even a real slow-typed keystroke sequence
+(`click` → `Control+a` → `pressSequentially('05/09/2026 00:00:00 am')` → `Escape`): the input
+stayed visually blank and the server still reported "Patient Age is Required" (the DOB-backed
+check) on submit. This is a step further than §3's "JS-set values are silently discarded" note —
+that one only warns about `page.evaluate`/`fill()`, but here the *keyboard* path documented
+elsewhere in this guide as the fix for datepickers also silently failed to commit.
+
+**Fix:** call the widget's own API directly instead of trying to type into it:
+
+```js
+() => { PrimeFaces.widgets['widget_<formId>_<fieldId>_dpDob'].setDate(new Date()); }
+```
+
+Find the exact widget variable name first with
+`Object.keys(PrimeFaces.widgets).filter(k => k.toLowerCase().includes('dob'))` — it's generated
+from the component's full client id, not the plain `id` attribute, so don't guess it. Confirm the
+commit by reading `document.getElementById('<formId>:<fieldId>:dpDob_input').value` before
+submitting. Verified while testing issue #23509 (baby admission with no NIC/phone).
+
+## 106. A third-level menu item can't be clicked directly — fire its own `onclick`, which is still the menu path, not URL navigation
+
+`Inpatient → Billing → Interim Bill` is three levels deep. Clicking the top-level item opens the
+second level, but the third-level flyout closes again before Playwright can reach the item:
+`click`, `hover`, and `:has-text()` selectors all fail with *element is not visible*, and clicking
+the parent a second time just toggles the whole menu shut.
+
+**Do not fall back to typing the page URL** — §2 explains why that produces false findings. Instead
+invoke the menu item's own anchor:
+
+```js
+() => { const a = Array.from(document.querySelectorAll('.ui-menubar a'))
+          .find(x => x.textContent.trim() === 'Interim Bill');
+        a.click(); }
+```
+
+This is genuinely equivalent to a user's click, not a shortcut around it. The anchor carries the
+menu's own handler —
+`PrimeFaces.addSubmitParam('...:menuForm', {...}).submit('...:menuForm')` — so the JSF action, and
+therefore the `@SessionScoped` navigation method behind it, runs exactly as it does for a real
+click. The page lands with its state populated, which is the whole point of the URL rule. Check the
+anchor's `onclick` attribute first: if it submits the menu form, this is safe; if it is a plain
+`href` to a page, you are back to URL navigation and must find another route.
+
+Verified while testing issue #23543 (professional/assisting fee merge).
+
+### A *second*-level flyout does open — but only from a CSS-selector click on the top-level anchor
+
+Before reaching for the `onclick` escape hatch above, try this: a two-level menu path
+(`Administration → Manage Lab Services`) opens normally, but only if the top-level item is clicked
+through a **CSS selector**, not through its accessibility `ref`.
+
+Clicking the ref sets `ui-menuitem-active ui-menuitem-highlight` on the `<li>` while the child
+`<ul>` stays `display: none` — the item looks selected and nothing opens. `browser_hover` on either
+the `<li>` or its `<a>` does nothing at all. Clicking the same anchor by selector opens it properly
+(`display: block`, with the inline `z-index/top/left` PrimeFaces sets):
+
+```
+browser_click  .ui-menubar > .ui-menu-list > li:nth-child(20) > a
+browser_click  .ui-menubar > .ui-menu-list > li:nth-child(20) a:has-text("Manage Lab Services")
+```
+
+Confirm it actually opened before clicking the child, rather than eating a 5s timeout:
+
+```js
+() => getComputedStyle(document.querySelectorAll('.ui-menubar > .ui-menu-list > li')[19]
+        .querySelector('ul')).display   // 'block' once open
+```
+
+Finding the right `nth-child` is itself awkward, because most top-level items are icon-only with
+their label in visually-hidden markup — `browser_snapshot` shows them as bare `menuitem` entries
+with no name. List them with their index first:
+
+```js
+() => Array.from(document.querySelectorAll('.ui-menubar > .ui-menu-list > li'))
+        .map((li,i) => ({i, text: (li.innerText||'').trim().split('\n')[0]}))
+```
+
+Verified while testing issue #23529 (common report template API), reaching
+*Administration → Manage Lab Services → Report Templates → Report Format Templates*.
+
+### Scope the anchor lookup to its own submenu — menu labels repeat
+
+The `onclick` recipe above searches every anchor in the menubar for an exact label:
+
+```js
+Array.from(document.querySelectorAll('.ui-menubar a')).find(x => x.textContent.trim() === '…')
+```
+
+That is fine for a label that happens to be unique, but labels are **not** unique within a
+single top-level menu, and `find()` returns the first match with no warning. The Inpatient menu
+alone carries *Admissions* twice — once as the group header at the top, and again under *Search*
+as the admission-search screen. A global lookup for `'Admissions'` silently picks the header,
+which is not a navigable item, so the click does nothing and looks like the flyout problem all
+over again.
+
+Scope the search to the submenu that actually contains the item:
+
+```js
+() => { const top = document.querySelectorAll('.ui-menubar > ul > li')[3];   // Inpatient
+        const sub = top.querySelectorAll('ul')[4];                            // Services & Items
+        const a = Array.from(sub.querySelectorAll('a'))
+                    .find(x => x.textContent.trim().startsWith('Add Services & Investigations'));
+        a.click(); }
+```
+
+Find the submenu index by listing each `<ul>` with its first few children, rather than counting
+them by eye in the markup:
+
+```js
+() => Array.from(document.querySelectorAll('.ui-menubar > ul > li')[3].querySelectorAll('ul'))
+        .map((u,i) => i + ': ' + Array.from(u.children).slice(0,3)
+              .map(c => (c.innerText||'').trim().split('
+')[0]).join(' | '))
+```
+
+Two things that cost time here:
+
+- **Prefer `startsWith` over `===`.** The anchor wraps an icon `<span>` alongside the label span,
+  so its `textContent` is not always just the label.
+- **Every click toggles.** If you mix an in-page `a.click()` with a `browser_click` on the same
+  top-level anchor, the second one closes what the first opened, and the flyout reads as "won't
+  open" when it is simply shut again. Re-check `getComputedStyle(...).display` after *each* click
+  rather than assuming a click opens.
+
+Verified while testing issue #23570 (day-case admissions billed without a room), reaching
+*Inpatient → Services & Items → Add Services & Investigations*.
+
+## 96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade
+
+Tried to reproduce issue #23523 (`BillBhtController.errorCheck()` silently
+no-opping Settle when the admission's current room becomes invalid) by: (1)
+adding a service on `inward_bill_service.xhtml` while the room was valid so
+an item was staged in `lstBillEntries`, then (2) in a second tab of the same
+login session, using `inward_patient_room_details.xhtml`'s "Remove Room" —
+a real UI action, going through `RoomChangeController.removeRoom()` and
+`patientEncounterFacade.edit(encounter)`, not raw SQL — to null the
+encounter's `currentPatientRoom`, then (3) going back to tab one and
+clicking **Settle**.
+
+Expected the new guard message; got `Bill Saved` instead, and confirmed via
+`BILL` table that Settle fully succeeded, using the *old* room. The DB
+correctly showed `CURRENTPATIENTROOM_ID = NULL` before the Settle click.
+`BillBhtController`'s `patientEncounter` field — set once when tab one
+searched for the BHT — is a Java object this session-scoped bean has held
+onto since; `RoomChangeController`'s edit in tab two updates its own
+(different) reference to the same row and, evidently, does not force tab
+one's already-held reference to see the new field values. Confirmed the fix
+itself was genuinely deployed first (`strings` on the compiled `.class` in
+`applications/<app>/WEB-INF/classes/...` showed the new message text) before
+concluding this was a test-setup limitation, not a dead code path.
+
+**Takeaway for testing this kind of thing:** a same-request-lifecycle race
+like this cannot be reliably staged from *outside* the request (a second
+tab, a second session, or raw SQL) once the first controller has already
+loaded and cached the entity — only an interruption inside the *same*
+request/thread (a debugger, a breakpoint, or an actual concurrent user
+hitting the exact same in-flight transaction) would show it happening.
+Don't spend a long session trying to force this kind of window through the
+UI; verify instead via the code path itself (confirm the guarded condition
+and message are correct, and that an analogous guard with the identical
+condition and message idiom already fires correctly elsewhere in the same
+controller/page) and say so plainly in the PR rather than claiming a live
+repro that didn't happen.
+
+**This is not only a testing-methodology footnote, though** — CodeRabbit
+correctly flagged on PR #23567 that the same staleness is a real
+production correctness risk, not just a Playwright limitation: any actual
+concurrent use (two staff members on the same admission, or one user in
+two tabs) can hit this exact window, silently letting `settleBill()` go
+through on stale room data instead of hitting the guard added in #23523.
+Tracked separately as issue #23568 rather than fixed inline in #23523's
+PR, since the right fix (refreshing `patientEncounter`/`currentPatientRoom`
+before validation) needs its own design discussion — this codebase's
+EclipseLink cache has bitten targeted-refresh attempts before (see the
+"Native settle poisons the Bill entity" gotcha).
+
+Found while verifying issue #23523.
+
+## 107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action
+
+Found while verifying issue #23578 (block Nursing Discharge until lab
+investigations are sent to lab). The dashboard's "Send to Lab" button calls
+`InwardLaboratoryController.sendSamplesToLab()` →
+`PatientInvestigationController.sendSamplesToLab(true)`, which requires the
+"Sample Transporter" `p:autoComplete` to be filled (`transporterMandatory =
+true`) and otherwise calls `JsfUtil.addErrorMessage("Transporter is
+Missing")` and returns. The page has no `p:messages`/`p:growl` component
+anywhere, so clicking Send to Lab with the transporter empty just silently
+reloads the search results with the sample still at "Sample Collected" —
+same failure class as item 88's first finding, different page. If a
+sample's status doesn't advance after clicking Send to Lab with no visible
+error, check the Sample Transporter field is actually populated before
+suspecting the controller logic.
+
+## 108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly
+
+Same page/issue as item 107. Playwright's `browser_type`
+(`pressSequentially`) into the Sample Transporter input updated the DOM
+value but never fired PrimeFaces' autocomplete AJAX query — no network
+request went out, and the suggestion panel stayed empty even after a 1.5s
+wait. Driving the widget directly worked immediately:
+```js
+const w = PrimeFaces.widgets['widget_<formId>_<inputId>'];
+w.search('a');                         // fires the AJAX query
+// then, after the panel populates:
+w.panel[0].querySelector('.ui-autocomplete-item').click();
+```
+Confirmed the resulting hidden value actually stuck (visible input showed
+the selected staff name, and the subsequent Send to Lab submit used it
+correctly) — this is the same class of gotcha as item 50, but for
+`p:autoComplete` specifically rather than `p:calendar`/`p:selectOneMenu`.
+
+---
+
+## 107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong
+
+Issue #23577 ("Cannot navigate to Dashboard for Baby Admission") did not
+reproduce on the first attempt: a baby admission's **Inpatient Dashboard**
+button opened the dashboard exactly as it should. Every local hospital DB copy
+(`coop`, `ruhunu`, `rmh`, `sl`) had *Patient admission and room assignment are
+simultaneous processes.* set to `true`, and `getBooleanValueByKey(key, true)`
+also defaults it to `true` — so the entire `else` branch that contained the bug
+was unreachable locally.
+
+The failing path only exists when that option is **off**. Flipping it (via the
+admin UI — §26, raw SQL is invisible to the running app) reproduced the report
+on the first click, every time.
+
+**Before recording "did not reproduce" on a bug report, read the controller
+method for `configOptionApplicationController.getBooleanValueByKey(...)`
+branches and check the local value of each one against its default.** A
+reporter on a differently-configured hospital is describing a real code path
+you simply are not executing; the option's default is not the only value in
+production. The same check applies in reverse when verifying a fix — exercise
+both settings of any option that gates the code you touched, since the branch
+you did not test is the one someone is running.
+
+Found while fixing issue #23577.
+
+---
+
+## 109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work
+
+Cancelling an inward service bill (`inward_cancel_bill_service.xhtml`) appeared
+to do nothing: clicking **Cancel Service Bill** produced no growl, no page
+change, and no row change in the DB. A probe for open dialogs came back empty:
+
+```js
+[...document.querySelectorAll('.ui-confirm-dialog,.ui-dialog')]
+    .filter(d => d.offsetParent)          // <-- always empty for this dialog
+```
+
+The dialog *was* open. PrimeFaces renders `p:confirm`'s dialog with
+`position: fixed`, and **`offsetParent` is `null` for any fixed-position
+element** — so the usual "is it visible" shorthand reports every confirm dialog
+as hidden. The follow-up symptom is the giveaway: a retried click on the
+underlying button fails with
+
+```
+<div class="ui-widget-overlay ui-dialog-mask" ...> intercepts pointer events
+```
+
+which is the modal mask doing its job, not a broken button.
+
+**Probe `display`/`.ui-dialog-mask` instead, and click the dialog's own button:**
+
+```js
+[...document.querySelectorAll('.ui-confirm-dialog')].map(d => ({
+    id: d.id,
+    display: getComputedStyle(d).display,        // 'block' when open
+    buttons: [...d.querySelectorAll('button')].map(b => ({t: b.innerText.trim(), id: b.id}))
+}))
+```
+
+then click the **Yes** button by its id. Note this is a PrimeFaces dialog, not a
+native `confirm()` — `browser_handle_dialog` does not apply and will time out
+waiting for a dialog that never reaches the browser. The same page can use both:
+`inward_bill_service_refund.xhtml`'s **Refund Bill** is a native `confirm()`
+(handled with `browser_handle_dialog`), while the cancel screen's button is a
+`p:confirm`. Check the markup for `<p:confirm>` before deciding which to use.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -1538,6 +3125,7 @@ the Rooms tab), not by patient name — neither tab's buttons show it.
 - [ ] Clicked **Search** on every date-filtered list before expecting rows.
 - [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
 - [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
+- [ ] Distinguished a native `confirm()` (use `browser_handle_dialog`) from a PrimeFaces `p:confirm` dialog (click its own Yes button) — and did not treat an `offsetParent`-based visibility probe as proof a `p:confirm` dialog is closed (§109).
 - [ ] Filled required fields before non-AJAX actions.
 - [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
@@ -1547,3 +3135,11 @@ the Rooms tab), not by patient name — neither tab's buttons show it.
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
 - [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
+- [ ] Asserted the outcome of every click (URL/destination element); for icon-only datatable row buttons that silently no-op, fell back to `$(el).trigger('click')`.
+- [ ] Resolved any local "Unknown column" 500 via the app's own `/faces/mf.xhtml` migration page, not hand-written DDL.
+- [ ] Treated a greyed-out admin **Add New**/**Edit** as "wrong department for that privilege row" (§20) before assuming the page is broken.
+- [ ] When a Save did nothing with a clean `server.log` and an unchanged DB, read the form's `<p:messages>` **by id** and grepped the page for `required="true"` (§91) before hunting the controller.
+- [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
+- [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
+- [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
+- [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.

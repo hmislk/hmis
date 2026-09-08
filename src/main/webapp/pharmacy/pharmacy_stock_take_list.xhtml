@@ -20,6 +20,7 @@
                         </div>
                         <div class="card-body">
                             <h:form id="frmFilters">
+                                <f:event type="preRenderView" listener="#{pharmacyStockTakeController.listSnapshotBillRows}"/>
                                 <p:panel header="Filters" styleClass="mb-3">
                                     <p:panelGrid columns="6" styleClass="w-100" layout="tabular">
                                         <h:outputLabel for="ins" value="Institution"/>

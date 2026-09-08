@@ -146,9 +146,40 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Admission Charges", "/api/admission-charges",
+                        "Manage AdmissionChargeItem rows — routine charges billed automatically on every "
+                        + "matching admission by AdmissionChargeApplicationBean. Resolution is two-dimensional: "
+                        + "admissionType is the outer filter, paymentMethod (Cash|Credit only; null means both) "
+                        + "the inner one, and null in either column means \"applies to all\" for that dimension. "
+                        + "Because admissionType is a filter rather than a preference, configuring an "
+                        + "admission-type-specific row set for an item completely replaces the null-type rows "
+                        + "for that item — omitting one paymentMethod row for that admission type leaves it with "
+                        + "no charge at all. Only one live row is allowed per (item, admissionType, paymentMethod) "
+                        + "triple. The item must carry a department, an institution, an inwardChargeType, and at "
+                        + "least one live ItemFee. "
+                        + "GET /search filters on itemId, admissionTypeId, paymentMethod, includeRetired, and "
+                        + "pages with limit + offset, returning {items, total, limit, offset}. GET /{id} reads "
+                        + "one row. POST creates; PUT /{id} updates (clearAdmissionType/clearPaymentMethod flags "
+                        + "reset either dimension back to null). DELETE /{id} soft-retires; PATCH /{id}/restore "
+                        + "undoes it (rejected if a live row now conflicts). "
+                        + "Note: AdmissionType.admissionFee is a separate, older mechanism already added to the "
+                        + "bill by InwardBhtChargeAggregationService — configuring both for the same admission "
+                        + "type double-charges it.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Admission Number Counters", "/api/admission-numbers",
                         "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
                         "API Key (Finance header)", "GET", "PUT"))
+                .add(resource("Admission Search", "/api/inward/admissions",
+                        "General-purpose admission search — list all currently active (not-discharged) "
+                        + "admissions, or search past or current admissions by BHT no, patient name, "
+                        + "MRN/PHN, phone, or NIC. Unlike /api/apiInward/admissions this is not scoped to "
+                        + "unpaid/open admissions and has no row cap (paginated via page/size). "
+                        + "Params: status (ADMITTED_BUT_NOT_DISCHARGED default, "
+                        + "DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED, DISCHARGED_AND_FINAL_BILL_COMPLETED, "
+                        + "ANY_STATUS), bhtNo, patientName, mrn, phone, nic, admissionTypeId, institutionId, "
+                        + "departmentId, fromDate, toDate, page, size.",
+                        "API Key (Finance header)", "GET"))
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
@@ -212,9 +243,18 @@ public class CapabilityStatementResource {
                         + "Charge fields: roomCharge, maintananceCharge, linenCharge, nursingCharge, "
                         + "moCharge, moChargeForAfterDuration, adminstrationCharge, medicalCareCharge. "
                         + "TimedItemFee fields: timedItemFeeDurationHours, timedItemFeeOverShootHours, "
-                        + "timedItemFeeDurationDaysForMoCharge.",
+                        + "timedItemFeeDurationDaysForMoCharge, timedItemFeeDurationUnit "
+                        + "(ONE_TIME | MINUTE | HOUR | DAY, default HOUR — what the hour fields are counted in).",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Room Facility Timed Items", "/api/inward/room-facility-charges/{id}/timed-items",
+                        "Manage the list of TimedItem services attached to a room facility charge (backs the "
+                        + "'Timed Items' section of /inward/inward_room_facility.xhtml), so they auto-bill "
+                        + "based on duration of stay alongside the fixed room charges. "
+                        + "POST body: timedItemId (required). A TimedItem cannot be attached twice while active "
+                        + "(409 conflict). DELETE soft-retires the attachment, not the TimedItem itself.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                 .add(resource("Item Requests", "/api/itemrequests",
                         "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as "
                         + "InwardService items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's "
@@ -271,7 +311,10 @@ public class CapabilityStatementResource {
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
                         "Pharmaceutical item master data. AMP create/update accepts "
                         + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
-                        + "for strength-ratio based dispensing substitution.",
+                        + "for strength-ratio based dispensing substitution. VMP and AMP create/update "
+                        + "also accept issueUnitId (Long, MeasurementUnit) and, for VMP, strengthUnitId "
+                        + "-- both surfaced back as issueUnitId/issueUnitName/strengthUnitId/strengthUnitName "
+                        + "on GET/POST/PUT single-item responses.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Items", "/api/pharmacy/items",
@@ -401,7 +444,10 @@ public class CapabilityStatementResource {
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows. "
                         + "Category/sample/container(tube)/analyzer(machine) can each be set via an ID referencing an existing row "
                         + "(categoryId, sampleId, containerId, analyzerId — errors if not found) or a name "
-                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists).",
+                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists). "
+                        + "discountAllowed (Item-level flag) is readable/writable on all of GET /search, GET /{id}, POST, PUT — "
+                        + "note this is distinct from the fee-level discountAllowed on /fees below; the inward discount calculation "
+                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
@@ -410,6 +456,22 @@ public class CapabilityStatementResource {
                         + "flags (reference range flags by age/sex), and dynamic labels (conditional labels by age/sex). "
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Report Formats (Common Template)", "/api/report-formats",
+                        "Manage the common report template — the CommonReportItem rows (patient-details block, "
+                        + "signature block, footer) that print on every report of a given lab report format. "
+                        + "This is what the Investigation Format API above cannot reach: those rows are keyed on the "
+                        + "report-format Category and carry no investigation. "
+                        + "GET /report-formats lists the non-retired ReportFormat categories with their template row counts. "
+                        + "Sub-resource /{categoryId}/items supports GET (list), GET /{itemId}, POST, PUT /{itemId} and "
+                        + "DELETE /{itemId} (soft-retire). "
+                        + "Geometry is percentage-based (riTop, riLeft, riWidth, riHeight) with riFontSize in points — "
+                        + "the fields to nudge when printing onto pre-printed stationery. Only the fields present in a "
+                        + "PUT body are applied, so a single coordinate can be moved on its own. Reads report the "
+                        + "rendered value, not the stored one: riWidth/riHeight/riFontSize fall back to 30/2/12 when "
+                        + "unset (see #23528). Scoped to ReportFormat categories only — the HR/clinical form templates "
+                        + "that reuse CommonReportItem under other categories are deliberately not reachable here.",
+                        "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
                         "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
@@ -447,7 +509,14 @@ public class CapabilityStatementResource {
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
-                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on fees in a category). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on ItemFee rows in a category "
+                        + "and/or item subtype; fee-level only). "
+                        + "/items/bulk-discount-allowed (POST bulk-update Item-level discountAllowed for all non-retired "
+                        + "items in a category and/or item subtype; body: categoryId, itemType, discountAllowed). "
+                        + "Both bulk endpoints accept categoryId and/or itemType (Investigation | Service | InwardService) "
+                        + "— at least one is required. itemType targets every item of that subtype directly (e.g. every "
+                        + "Investigation) since there is no API to enumerate every category id to loop over instead; "
+                        + "categoryId alone still works and is not InvestigationCategory-restricted. "
                         + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
@@ -455,9 +524,18 @@ public class CapabilityStatementResource {
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
                         + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
                         + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
-                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "durationUnit (ONE_TIME | MINUTE | HOUR | DAY, default HOUR) sets what durationHours/overShootHours are counted in. "
+                        + "sortOrder must be 1 or greater and unique per item — it is the billing slot position — and is auto-assigned "
+                        + "to the next free slot when omitted; the same rules apply on the fee page and on this API. "
+                        + "GET /search filters on query (name/code, case-insensitive), departmentType, inwardChargeType, categoryId, "
+                        + "departmentId, institutionId, inactive and includeRetired, and pages with limit + offset, returning "
+                        + "{items, total, limit, offset}. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management; PUT on that path replaces the whole slot "
+                        + "list atomically (slots absent from the body are retired). "
                         + "Sub-resource: /timed-items/categories for TimedItemCategory CRUD (GET list, GET /{id}, POST, PUT /{id}, DELETE /{id}). "
-                        + "PATCH /activate and /deactivate control availability without retiring.",
+                        + "PATCH /activate and /deactivate control availability without retiring. "
+                        + "DELETE only soft-retires; PATCH /{id}/restore and PATCH /{id}/fees/{feeId}/restore undo it, and "
+                        + "includeRetired=true on the read paths lists what was retired.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",

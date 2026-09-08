@@ -773,10 +773,10 @@ public class VmpController implements Serializable {
             // Apply status filter
             if ("active".equals(filterStatus)) {
                 j += "and v.retired=:retired ";
-                params.put("inactive", false);
+                params.put("retired", false);
             } else if ("inactive".equals(filterStatus)) {
                 j += "and v.retired=:retired ";
-                params.put("inactive", true);
+                params.put("retired", true);
             }
             // For "all", no additional filter needed
 

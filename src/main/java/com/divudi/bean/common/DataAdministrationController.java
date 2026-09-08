@@ -49,6 +49,8 @@ import com.divudi.core.facade.PharmaceuticalItemCategoryFacade;
 import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.WebUser;
+import com.divudi.service.pharmacy.PharmacyBfdBackfillService;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.CashBookEntry;
@@ -232,6 +234,8 @@ public class DataAdministrationController implements Serializable {
     com.divudi.service.CacheAdminService cacheAdminService;
     @Inject
     com.divudi.service.pharmacy.PharmacyCostingService pharmacyCostingService;
+    @EJB
+    com.divudi.service.pharmacy.PharmacyBfdBackfillService pharmacyBfdBackfillService;
 
     @EJB
     ItemFacade itemFacade;
@@ -279,6 +283,8 @@ public class DataAdministrationController implements Serializable {
     private BillService billService;
     @EJB
     private DatabaseMigrationService databaseMigrationService;
+    @EJB
+    private com.divudi.service.DatabaseMigrationVersionCheckService databaseMigrationVersionCheckService;
     @EJB
     private DatabaseMigrationFacade databaseMigrationFacade;
     @EJB
@@ -338,7 +344,6 @@ public class DataAdministrationController implements Serializable {
     private String auditDatabaseExecutionFeedback;
 
     // Wiki DDL version tracking
-    private static final String WIKI_DDL_URL = "https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide";
     private static final String WIKI_DDL_RAW_URL = "https://raw.githubusercontent.com/wiki/hmislk/hmis/files/createDDL.sql";
     private static final String CONFIG_KEY_DDL_VERSION = "DATABASE_DDL_VERSION";
     private String wikiDdlVersion;
@@ -348,6 +353,10 @@ public class DataAdministrationController implements Serializable {
     // never be rendered into a textarea that a full-form submit would echo back.
     private String wikiFetchedDdl;
     private String wikiFetchedDdlInfo;
+    // Table picked by the admin on the "Check Missing Fields and Add Fields"
+    // tab to extract that table's CREATE TABLE statement out of wikiFetchedDdl
+    // into createdSql, instead of requiring it to be hand-pasted.
+    private String selectedWikiTableName;
 
     Date fromDate;
     Date toDate;
@@ -1522,150 +1531,145 @@ public class DataAdministrationController implements Serializable {
     }
 
     /**
-     * Backfills missing BillFinanceDetails for PHARMACY_STOCK_ADJUSTMENT bills
-     * that have no finance data. adjustStockForDepartment() creates these bills
-     * via saveDeptStockAdjustmentBill() + saveDeptAdjustmentBillItems(), but the
-     * BillFinanceDetails attach intermittently fails to persist, leaving
-     * bill.billFinanceDetails NULL. Without BFD, F15's adjustment section (which
-     * joins on BillFinanceDetails, not bill.netTotal, per #18774/#17598/#18767)
-     * shows these bills as 0.00 even though real stock value changes occurred.
+     * Reconstructs missing or zeroed BillFinanceDetails for pharmacy adjustment bills,
+     * so F15's Adjustment Transactions section - which reads BillFinanceDetails rather
+     * than bill.netTotal (#18774 / #17598 / #18767) - stops showing 0.00 for real stock
+     * and price movements.
      *
-     * billItem.qty on these bills is already the signed quantity delta
-     * (afterAdjustmentValue - beforeAdjustmentValue), matching the value
-     * saveDeptAdjustmentBillItems() intended to persist in BillFinanceDetails —
-     * so the backfill recomputes from qty * rate rather than reusing
-     * billItem.netValue/grossValue, which were computed from the target
-     * quantity before the delta reassignment and are not reliably signed.
+     * <p>The derivation lives in {@link com.divudi.service.pharmacy.PharmacyBfdBackfillService},
+     * shared with {@code POST /api/pharmacy/backfill_bfd} and the adjustment API's own
+     * backfill endpoint. It used to be duplicated here with a different candidate filter
+     * and a different rate fallback, so the button and the API produced different numbers
+     * for the same bills. Issue #23411, originally #22580.</p>
      *
-     * Safe to re-run: skips bills that already have a BillFinanceDetails row.
-     * Uses the date range selected at the top of the admin page.
-     *
-     * Issue #22580.
+     * <p>Preview first: {@link #previewBackfillBfdForStockAdjustmentBills()} and
+     * {@link #previewBackfillBfdForRetailRateAdjustmentBills()} run the identical
+     * computation without persisting anything.</p>
      */
     public void backfillBfdForStockAdjustmentBills() {
+        runBfdBackfill(Arrays.asList(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT.name()),
+                "Stock Adjustment", true);
+    }
+
+    /** Dry run of {@link #backfillBfdForStockAdjustmentBills()} - computes, persists nothing. */
+    public void previewBackfillBfdForStockAdjustmentBills() {
+        runBfdBackfill(Arrays.asList(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT.name()),
+                "Stock Adjustment", false);
+    }
+
+    /**
+     * Backfill for PHARMACY_RETAIL_RATE_ADJUSTMENT bills - the price-change counterpart
+     * of the stock-quantity backfill above. Until #23411 this was reachable only through
+     * an API call, so an admin had no way to repair these bills from the website.
+     */
+    public void backfillBfdForRetailRateAdjustmentBills() {
+        runBfdBackfill(Arrays.asList(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT.name()),
+                "Retail Rate Adjustment", true);
+    }
+
+    /** Dry run of {@link #backfillBfdForRetailRateAdjustmentBills()}. */
+    public void previewBackfillBfdForRetailRateAdjustmentBills() {
+        runBfdBackfill(Arrays.asList(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT.name()),
+                "Retail Rate Adjustment", false);
+    }
+
+    private void runBfdBackfill(List<String> billTypeAtomicNames, String label, boolean apply) {
         executionFeedback = "";
         StringBuilder out = new StringBuilder();
-        int processedBills = 0;
-        int skippedBills = 0;
-        int updatedBills = 0;
+
+        if (fromDate == null || toDate == null) {
+            executionFeedback = "Select both a From and a To date before running the backfill.";
+            return;
+        }
 
         try {
-            List<BillTypeAtomic> targetTypes = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT
-            );
+            WebUser user = sessionController.getLoggedUser();
+            PharmacyBfdBackfillService.BackfillReport report =
+                    pharmacyBfdBackfillService.backfillAdjustmentBfds(
+                            billTypeAtomicNames,
+                            null,
+                            fromDate,
+                            toDate,
+                            apply,
+                            label + " BFD backfill from the Admin Backfill page",
+                            user == null ? "Unknown" : user.getName(),
+                            user);
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("types", targetTypes);
-            StringBuilder jpql = new StringBuilder();
-            jpql.append("SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic IN :types "
-                    + "AND b.billFinanceDetails IS NULL");
-            if (fromDate != null) {
-                jpql.append(" AND b.createdAt >= :fd");
-                params.put("fd", fromDate);
-            }
-            if (toDate != null) {
-                jpql.append(" AND b.createdAt <= :td");
-                params.put("td", toDate);
-            }
+            out.append(apply ? "=== " : "=== DRY RUN - nothing was saved - ")
+                    .append(label).append(" BFD Backfill ===\n");
+            out.append("Candidates in range: ").append(report.getCandidatesFound()).append("\n");
+            out.append(apply ? "Corrected:     " : "Would correct: ")
+                    .append(apply ? report.getBackfilled() : report.getWouldUpdate()).append("\n");
+            out.append("Skipped:       ").append(report.getSkipped()).append(" (nothing to correct)\n");
+            out.append("Unresolved:    ").append(report.getUnresolved())
+                    .append(" (stored values could not be interpreted - left untouched)\n");
+            out.append("Errors:        ").append(report.getErrors()).append("\n");
+            out.append("Net value ").append(apply ? "added to" : "that would be added to")
+                    .append(" F15: ")
+                    .append(report.getTotalNetChange().setScale(2, java.math.RoundingMode.HALF_UP))
+                    .append("\n");
 
-            List<Bill> candidates = billFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            out.append("Found ").append(candidates.size()).append(" PHARMACY_STOCK_ADJUSTMENT bills missing BFD in range.\n\n");
-
-            for (Bill candidate : candidates) {
-                processedBills++;
-                Bill bill = billService.reloadBill(candidate);
-                if (bill == null || bill.hasBillFinanceDetails()) {
-                    skippedBills++;
-                    continue;
-                }
-
-                if (bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-                    skippedBills++;
-                    continue;
-                }
-
-                BillFinanceDetails bfd = new BillFinanceDetails();
-                bfd.setBill(bill);
-                bill.setBillFinanceDetails(bfd);
-
-                BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
-                BigDecimal totalCostValue = BigDecimal.ZERO;
-                BigDecimal grossTotal = BigDecimal.ZERO;
-                BigDecimal netTotal = BigDecimal.ZERO;
-                BigDecimal totalQuantity = BigDecimal.ZERO;
-                BigDecimal totalBeforeAdjustmentValue = BigDecimal.ZERO;
-                BigDecimal totalAfterAdjustmentValue = BigDecimal.ZERO;
-
-                for (BillItem bi : bill.getBillItems()) {
-                    if (bi == null || bi.getQty() == null) {
-                        continue;
-                    }
-                    PharmaceuticalBillItem pharmaItem = bi.getPharmaceuticalBillItem();
-                    if (pharmaItem == null) {
-                        continue;
-                    }
-
-                    // saveDeptAdjustmentBillItems() stores the TARGET quantity on
-                    // BillItem.qty but the signed DELTA on PharmaceuticalBillItem.qty
-                    // (afterAdjustmentValue - beforeAdjustmentValue) -- use the latter,
-                    // matching the value the original save path intended for BFD.
-                    double changingQty = pharmaItem.getQty();
-                    double retailRate = pharmaItem.getRetailRate();
-                    if (retailRate <= 0 && pharmaItem.getItemBatch() != null) {
-                        retailRate = pharmaItem.getItemBatch().getRetailsaleRate();
-                    }
-
-                    Double costRateObj = pharmaItem.getItemBatch() != null ? pharmaItem.getItemBatch().getCostRate() : null;
-                    double costRate = (costRateObj != null && costRateObj > 0)
-                            ? costRateObj
-                            : (pharmaItem.getItemBatch() != null ? pharmaItem.getItemBatch().getPurcahseRate() : 0.0);
-
-                    if (changingQty == 0 && retailRate == 0) {
-                        continue;
-                    }
-
-                    BigDecimal retailChangeValue = BigDecimal.valueOf(changingQty * retailRate);
-                    BigDecimal retailAbsChangeValue = BigDecimal.valueOf(Math.abs(changingQty * retailRate));
-                    BigDecimal costChangeValue = BigDecimal.valueOf(changingQty * costRate);
-
-                    totalRetailSaleValue = totalRetailSaleValue.add(retailChangeValue);
-                    totalCostValue = totalCostValue.add(costChangeValue);
-                    grossTotal = grossTotal.add(retailAbsChangeValue);
-                    netTotal = netTotal.add(retailChangeValue);
-                    totalQuantity = totalQuantity.add(BigDecimal.valueOf(Math.abs(changingQty)));
-
-                    double beforeQty = pharmaItem.getBeforeAdjustmentValue();
-                    double afterQty = pharmaItem.getAfterAdjustmentValue();
-                    totalBeforeAdjustmentValue = totalBeforeAdjustmentValue.add(BigDecimal.valueOf(beforeQty * retailRate));
-                    totalAfterAdjustmentValue = totalAfterAdjustmentValue.add(BigDecimal.valueOf(afterQty * retailRate));
-                }
-
-                bfd.setTotalRetailSaleValue(totalRetailSaleValue);
-                bfd.setTotalCostValue(totalCostValue);
-                bfd.setGrossTotal(grossTotal);
-                bfd.setNetTotal(netTotal);
-                bfd.setTotalQuantity(totalQuantity);
-                bfd.setTotalBeforeAdjustmentValue(totalBeforeAdjustmentValue);
-                bfd.setTotalAfterAdjustmentValue(totalAfterAdjustmentValue);
-                bfd.setTotalPurchaseValue(BigDecimal.ZERO);
-                bfd.setTotalWholesaleValue(BigDecimal.ZERO);
-
-                billFacade.edit(bill);
-                updatedBills++;
-            }
-
-            out.append("=== Backfill Summary ===\n");
-            out.append("Processed: ").append(processedBills).append(" bills\n");
-            out.append("Updated:   ").append(updatedBills).append(" bills\n");
-            out.append("Skipped:   ").append(skippedBills).append(" bills (already had BFD or no items)\n");
+            appendBackfillDetail(out, report, apply);
 
         } catch (Exception e) {
             out.append("Error: ").append(getExceptionMessage(e));
-            JsfUtil.addErrorMessage("Error during stock adjustment BFD backfill: " + getExceptionMessage(e));
+            JsfUtil.addErrorMessage("Error during " + label + " BFD backfill: " + getExceptionMessage(e));
             e.printStackTrace();
         }
 
         executionFeedback = out.toString();
+    }
+
+    /**
+     * Per-bill breakdown. A dry run lists every bill it would touch so the figures can be
+     * checked before they are written; an applied run lists only what did not go through,
+     * since that is what still needs a human.
+     */
+    private void appendBackfillDetail(StringBuilder out,
+            PharmacyBfdBackfillService.BackfillReport report, boolean apply) {
+
+        List<PharmacyBfdBackfillService.BillBackfillResult> interesting = new ArrayList<>();
+        for (PharmacyBfdBackfillService.BillBackfillResult r : report.getResults()) {
+            boolean needsAttention = r.getStatus() == PharmacyBfdBackfillService.BackfillStatus.UNRESOLVED
+                    || r.getStatus() == PharmacyBfdBackfillService.BackfillStatus.ERROR;
+            if (needsAttention
+                    || (!apply && r.getStatus() == PharmacyBfdBackfillService.BackfillStatus.WOULD_UPDATE)) {
+                interesting.add(r);
+            }
+        }
+        if (interesting.isEmpty()) {
+            return;
+        }
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        out.append("\nBill No           | Date             | Status       | Reading  | Net value\n");
+        out.append("------------------|------------------|--------------|----------|-------------\n");
+        for (PharmacyBfdBackfillService.BillBackfillResult r : interesting) {
+            out.append(padRight(r.getDeptId(), 17)).append(" | ")
+                    .append(padRight(r.getBillDate() == null ? "" : df.format(r.getBillDate()), 16)).append(" | ")
+                    .append(padRight(String.valueOf(r.getStatus()), 12)).append(" | ")
+                    .append(padRight(r.getSemantics() == null ? "-" : r.getSemantics().name(), 8)).append(" | ")
+                    .append(r.getComputedNetTotal() == null
+                            ? "-"
+                            : r.getComputedNetTotal().setScale(2, java.math.RoundingMode.HALF_UP).toPlainString())
+                    .append("\n");
+            if (r.getNote() != null
+                    && r.getStatus() != PharmacyBfdBackfillService.BackfillStatus.WOULD_UPDATE) {
+                out.append("    ").append(r.getNote()).append("\n");
+            }
+        }
+    }
+
+    private String padRight(String value, int width) {
+        String v = (value == null) ? "" : value;
+        if (v.length() >= width) {
+            return v.substring(0, width);
+        }
+        StringBuilder sb = new StringBuilder(v);
+        while (sb.length() < width) {
+            sb.append(' ');
+        }
+        return sb.toString();
     }
 
     private boolean isFinanceValueNegative(BillTypeAtomic bta) {
@@ -2453,38 +2457,14 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Delegates to {@link com.divudi.service.DatabaseMigrationVersionCheckService},
+     * which also backs {@link DatabaseMigrationService}'s automatic
+     * post-startup check — kept as a shared method so the wiki-fetch/regex
+     * logic isn't duplicated between the manual and automatic paths.
+     */
     public String fetchWikiDdlVersion() {
-        java.net.HttpURLConnection conn = null;
-        try {
-            java.net.URL url = new java.net.URL(WIKI_DDL_URL);
-            conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(10000);
-            conn.setRequestProperty("User-Agent", "HMIS-Schema-Checker/1.0");
-            int status = conn.getResponseCode();
-            if (status == 200) {
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                        new java.io.InputStreamReader(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
-                    String line;
-                    // Wiki page writes the time as HH.MM (dot); accept both dot and colon
-                    Pattern versionPattern = Pattern.compile("Last Update\\s*-\\s*(\\d{4}\\.\\d{2}\\.\\d{2}\\s+\\d{2}[.:]\\d{2})");
-                    while ((line = reader.readLine()) != null) {
-                        Matcher m = versionPattern.matcher(line);
-                        if (m.find()) {
-                            return m.group(1).trim();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            // Network or parse failure — return null so caller falls back to legacy
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-        return null;
+        return databaseMigrationVersionCheckService.fetchWikiDdlVersion();
     }
 
     /**
@@ -2581,6 +2561,65 @@ public class DataAdministrationController implements Serializable {
 
     public String getWikiFetchedDdlInfo() {
         return wikiFetchedDdlInfo;
+    }
+
+    /**
+     * Table names parsed out of {@link #wikiFetchedDdl} (populated by
+     * {@link #loadDdlFromWiki()}), for the "Check Missing Fields and Add
+     * Fields" tab's table picker. Uses the same split-by-"CREATE TABLE"
+     * approach as {@link #createTablesOnDatabase}, so the list always
+     * matches what that execution path would actually operate on.
+     */
+    public List<String> getWikiTableNames() {
+        List<String> tableNames = new ArrayList<>();
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            return tableNames;
+        }
+        String[] rawParts = wikiFetchedDdl.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+            String tableName = extractTableName("CREATE TABLE " + part);
+            if (tableName != null && !tableName.isEmpty()) {
+                tableNames.add(tableName);
+            }
+        }
+        Collections.sort(tableNames);
+        return tableNames;
+    }
+
+    /**
+     * Extracts the CREATE TABLE statement for {@link #selectedWikiTableName}
+     * out of {@link #wikiFetchedDdl} and places it in {@link #createdSql},
+     * so the admin doesn't need to already know and hand-paste it before
+     * clicking "Generate Alter Statements".
+     */
+    public void loadCreateStatementForSelectedTable() {
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Load the latest DDL from wiki first.");
+            return;
+        }
+        if (selectedWikiTableName == null || selectedWikiTableName.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Select a table first.");
+            return;
+        }
+        String[] rawParts = wikiFetchedDdl.split("(?i)CREATE TABLE");
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+            String createStatement = "CREATE TABLE " + part;
+            String tableName = extractTableName(createStatement);
+            if (selectedWikiTableName.equals(tableName)) {
+                createdSql = createStatement;
+                JsfUtil.addSuccessMessage("Loaded CREATE TABLE statement for '" + tableName + "'. Click 'Generate Alter Statements' to continue.");
+                return;
+            }
+        }
+        JsfUtil.addErrorMessage("Table '" + selectedWikiTableName + "' not found in the fetched DDL.");
     }
 
     public void checkMissingFields() {
@@ -4696,6 +4735,14 @@ public class DataAdministrationController implements Serializable {
 
     public void setCreatedSql(String createdSql) {
         this.createdSql = createdSql;
+    }
+
+    public String getSelectedWikiTableName() {
+        return selectedWikiTableName;
+    }
+
+    public void setSelectedWikiTableName(String selectedWikiTableName) {
+        this.selectedWikiTableName = selectedWikiTableName;
     }
 
     public String getAlterSql() {

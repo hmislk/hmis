@@ -1168,7 +1168,7 @@
                         <p:commandLink
                             id="Goods_Receipt"
                             ajax="false"
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_dto?faces-redirect=true"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
@@ -1993,10 +1993,10 @@
                 <!-- Room Change -->
                 <h:panelGroup rendered="#{ui.icon eq 'Room_Change' and webUserController.hasPrivilege('InwardRoomRoomChange')}" layout="block" class="col-1 p-1">
                     <h:form>
-                        <p:tooltip for="Room_Change" value="Room Change" showDelay="0" hideDelay="0"/>
+                        <p:tooltip for="Room_Change" value="Room Change (Deprecated - use Patient Room Details instead)" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Room_Change" ajax="false" action="#{admissionController.navigateToRoomChange()}" styleClass="svg-link">
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Room_Change.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Room Change"/>
+                            <h:outputText style="display: none;" value="Room Change (Deprecated)"/>
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -2004,10 +2004,10 @@
                 <!-- Guardian Room Change -->
                 <h:panelGroup rendered="#{ui.icon eq 'Guardian_Room_Change' and webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}" layout="block" class="col-1 p-1">
                     <h:form>
-                        <p:tooltip for="Guardian_Room_Change" value="Guardian Room Change" showDelay="0" hideDelay="0"/>
+                        <p:tooltip for="Guardian_Room_Change" value="Guardian Room Change (Deprecated - use Patient Room Details instead)" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Guardian_Room_Change" ajax="false" action="#{admissionController.navigateToGuardianRoomChange()}" styleClass="svg-link">
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Guardian_Room_Change.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Guardian Room Change"/>
+                            <h:outputText style="display: none;" value="Guardian Room Change (Deprecated)"/>
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>

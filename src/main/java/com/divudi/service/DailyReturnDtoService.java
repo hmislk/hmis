@@ -292,10 +292,13 @@ public class DailyReturnDtoService {
                 + "and b.billTypeAtomic in :bts "
                 + "order by b.createdAt";
 
-        // Inward Payment specific BillTypeAtomic values - covers both pre-final "Inward Deposit"
-        // payments and post-final-bill inward payments (and their cancellations/refunds), reported
-        // together as a single unified "Inward Payment" bucket in Daily Return.
+        // Inward Payment specific BillTypeAtomic values - covers pre-final inward payments,
+        // inward deposits, and post-final-bill inward payments (and their cancellations/refunds),
+        // reported together as a single unified "Inward Payment" bucket in Daily Return.
         List<BillTypeAtomic> inwardPaymentBillTypes = new ArrayList<>();
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
         inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
         inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);

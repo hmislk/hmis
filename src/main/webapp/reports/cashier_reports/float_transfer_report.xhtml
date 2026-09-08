@@ -61,12 +61,12 @@
                                     value="Search"
                                     icon="pi pi-search"
                                     class="ui-button-primary me-2"
-                                    update="tblTransfers tblRequests"
+                                    update="tabFloatTransfer"
                                     action="#{financialTransactionController.fillFundTransferReport()}"/>
                             </div>
                         </div>
 
-                        <p:tabView>
+                        <p:tabView id="tabFloatTransfer">
 
                             <p:tab title="Float Transfers">
                                 <p:dataTable

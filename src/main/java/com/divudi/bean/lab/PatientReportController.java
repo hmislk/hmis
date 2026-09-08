@@ -2284,6 +2284,7 @@ public class PatientReportController implements Serializable {
                 e.setDepartment(sessionController.getLoggedUser().getDepartment());
                 e.setInstitution(sessionController.getLoggedUser().getInstitution());
                 e.setSentSuccessfully(false);
+                e.setSendingFailed(false);
                 getSmsFacade().create(e);
 
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
@@ -2310,6 +2311,7 @@ public class PatientReportController implements Serializable {
                         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
                         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                         e.setSentSuccessfully(false);
+                        e.setSendingFailed(false);
                         getSmsFacade().create(e);
                     }
                 }
@@ -2424,6 +2426,7 @@ public class PatientReportController implements Serializable {
                 e.setDepartment(getSessionController().getLoggedUser().getDepartment());
                 e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                 e.setPending(true);
+                e.setSendingFailed(false);
                 getSmsFacade().create(e);
 
                 currentSMS = e;

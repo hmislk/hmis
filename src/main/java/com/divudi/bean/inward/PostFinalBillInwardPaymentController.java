@@ -779,6 +779,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         saveRefundBillItem();
 
         getOriginalBillToRefund().setRefunded(true);
+        getOriginalBillToRefund().setRefundedBill(getRefundCurrent());
         getBillFacade().edit(getOriginalBillToRefund());
 
         printPreview = true;
@@ -807,6 +808,38 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             JsfUtil.addErrorMessage("Start Your Shift First !");
             return "/cashier/index?faces-redirect=true";
         }
+        return "/inward/inward_bill_post_final_payment_refund?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the post final bill inward payment refund page with a
+     * specific payment bill pre-selected, for the "Refund" button on the
+     * Post Final Bill Payment Reprint view page (issue #22820).
+     */
+    public String navigateToRefundFromPostFinalPaymentBill(Bill originPaymentBill) {
+        refundCurrent = null;
+        paidAmount = 0.0;
+        printPreview = false;
+        eligiblePostFinalPaymentBills = null;
+        originalBillToRefund = null;
+        remainingRefundableAmountCache = null;
+        if (originPaymentBill == null || originPaymentBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        getRefundCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());
+        loadEligiblePostFinalPaymentBills();
+        if (!getEligiblePostFinalPaymentBills().contains(originPaymentBill)) {
+            JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
+            return "";
+        }
+        originalBillToRefund = originPaymentBill;
+        selectBillToRefundListener();
         return "/inward/inward_bill_post_final_payment_refund?faces-redirect=true";
     }
 
@@ -929,6 +962,11 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
 
         if (getOriginalBillToRefund() == null) {
             JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+
+        if (getOriginalBillToRefund().isCancelled()) {
+            JsfUtil.addErrorMessage("This bill has been cancelled and cannot be refunded.");
             return true;
         }
 

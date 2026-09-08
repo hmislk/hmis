@@ -60,8 +60,9 @@
                             <p:autoComplete
                                 class="w-100"
                                 id="acVtm"
-                                value="#{vtmController.current}"
-                                completeMethod="#{vtmController.completeVtm}"
+                                value="#{vtmController.selectedVtmDto}"
+                                completeMethod="#{vtmController.completeVtmDto}"
+                                converter="vtmDtoConverter"
                                 var="i"
                                 itemLabel="#{i.name}"
                                 itemValue="#{i}"

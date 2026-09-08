@@ -45,6 +45,40 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class ConfigOptionController implements Serializable {
 
+    /**
+     * Prefix shared by every Inward Charge Type Label ConfigOption key
+     * (e.g. "Inward Charge Type Label - ROOM_CHARGE"). These options are
+     * dedicated a single-purpose editor at inward/inward_charge_type_labels.xhtml
+     * (InwardChargeTypeLabelController); editing them from the generic
+     * Application Options screen created two out-of-sync places to change the
+     * same value (issue #23257), so this generic screen refuses to
+     * create/edit/delete them.
+     */
+    private static final String INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX = "Inward Charge Type Label - ";
+
+    /**
+     * Prefix shared by every Inward Charge Type Report Order ConfigOption key
+     * (e.g. "Inward Charge Type Report Order - ROOM_CHARGE"). Same dedicated
+     * editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX} (issue #23340).
+     */
+    private static final String INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX = "Inward Charge Type Report Order - ";
+
+    /**
+     * Prefix shared by every Inward Charge Type Final Bill Order ConfigOption
+     * key (e.g. "Inward Charge Type Final Bill Order - ROOM_CHARGE"). Same
+     * dedicated editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX} (issue
+     * #23340).
+     */
+    private static final String INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX = "Inward Charge Type Final Bill Order - ";
+
+    /**
+     * Prefix shared by every Inward Charge Type Final Bill Group ConfigOption
+     * key (e.g. "Inward Charge Type Final Bill Group - ROOM_CHARGE"). Same
+     * dedicated editor as {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX}
+     * (configurable Final Bill charge-type grouping, #23340 follow-up).
+     */
+    private static final String INWARD_CHARGE_TYPE_FINAL_BILL_GROUP_KEY_PREFIX = "Inward Charge Type Final Bill Group - ";
+
     @EJB
     private ConfigOptionFacade optionFacade;
 
@@ -163,6 +197,29 @@ public class ConfigOptionController implements Serializable {
         }
     }
 
+    /**
+     * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
+     * resolves the same department-scoped-key-first lookup, but never
+     * persists a new ConfigOption row for either the department-scoped or
+     * the plain key when neither exists yet. Use this for {@code rendered}
+     * gates and other pure reads; use the mutating method only where reading
+     * a not-yet-configured key is meant to seed its default value.
+     */
+    public boolean getBooleanValueByKeyReadOnly(String key, boolean defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue = configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
     public String navigateToDepartmentOptions() {
         institution = null;
         department = sessionController.getDepartment();
@@ -215,6 +272,10 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+        if (isInwardChargeTypeLabelKey(delo.getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
+            return;
+        }
         Map<String, Object> before = new HashMap<>();
         before.put("optionKey", delo.getOptionKey());
         before.put("optionValue", delo.getOptionValue());
@@ -243,8 +304,14 @@ public class ConfigOptionController implements Serializable {
         }
 
         int deletedCount = 0;
+        int skippedInwardLabelCount = 0;
         for (ConfigOption option : selectedOptions) {
             if (option != null) {
+                if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
+                    skippedInwardLabelCount++;
+                    continue;
+                }
+
                 Map<String, Object> before = new HashMap<>();
                 before.put("optionKey", option.getOptionKey());
                 before.put("optionValue", option.getOptionValue());
@@ -268,7 +335,12 @@ public class ConfigOptionController implements Serializable {
         selectedOptions.clear();
         configOptionApplicationController.loadApplicationOptions();
         listApplicationOptions();
-        JsfUtil.addSuccessMessage("Deleted " + deletedCount + " options");
+        String message = "Deleted " + deletedCount + " options";
+        if (skippedInwardLabelCount > 0) {
+            message += ". Skipped " + skippedInwardLabelCount
+                    + " Inward Charge Type Label option(s) - change those from the Inward Charge Type Labels page.";
+        }
+        JsfUtil.addSuccessMessage(message);
     }
 
     public StreamedContent exportSelectedOptions() {
@@ -352,6 +424,7 @@ public class ConfigOptionController implements Serializable {
             int importedCount = 0;
             int updatedCount = 0;
             int skippedCount = 0;
+            int skippedInwardLabelCount = 0;
 
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i].trim();
@@ -365,6 +438,13 @@ public class ConfigOptionController implements Serializable {
                     String optionValue = parts[1];
                     String valueTypeStr = parts[2];
                     String enumType = parts.length > 3 ? parts[3] : null;
+
+                    if (optionKey != null && !optionKey.trim().isEmpty() && isInwardChargeTypeLabelKey(optionKey.trim())) {
+                        // Inward Charge Type Labels are managed exclusively via
+                        // inward/inward_charge_type_labels.xhtml - see saveOption().
+                        skippedInwardLabelCount++;
+                        continue;
+                    }
 
                     if (optionKey != null && !optionKey.trim().isEmpty()) {
                         OptionValueType valueType;
@@ -436,7 +516,11 @@ public class ConfigOptionController implements Serializable {
                 message += updatedCount + " options updated. ";
             }
             if (skippedCount > 0) {
-                message += skippedCount + " existing options skipped.";
+                message += skippedCount + " existing options skipped. ";
+            }
+            if (skippedInwardLabelCount > 0) {
+                message += skippedInwardLabelCount
+                        + " Inward Charge Type Label option(s) skipped; manage them from the Inward Charge Type Labels page.";
             }
             JsfUtil.addSuccessMessage(message);
 
@@ -508,9 +592,29 @@ public class ConfigOptionController implements Serializable {
         JsfUtil.addSuccessMessage("Saved");
     }
 
+    /**
+     * Inward Charge Type Labels, Report Orders, and Final Bill Orders are all
+     * edited exclusively via inward/inward_charge_type_labels.xhtml
+     * (InwardChargeTypeLabelController). See
+     * {@link #INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX},
+     * {@link #INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX}, and
+     * {@link #INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX}.
+     */
+    public boolean isInwardChargeTypeLabelKey(String optionKey) {
+        return optionKey != null
+                && (optionKey.startsWith(INWARD_CHARGE_TYPE_LABEL_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_REPORT_ORDER_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_ORDER_KEY_PREFIX)
+                || optionKey.startsWith(INWARD_CHARGE_TYPE_FINAL_BILL_GROUP_KEY_PREFIX));
+    }
+
     public void saveOption(ConfigOption option) {
         if (option == null) {
             JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(option.getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         Map<String, Object> before = null;
@@ -1023,6 +1127,10 @@ public class ConfigOptionController implements Serializable {
 
     public void retireDuplicateGroup(ConfigOptionDuplicateGroup g) {
         if (g == null || g.getOptions() == null || g.getOptions().size() < 2) {
+            return;
+        }
+        if (isInwardChargeTypeLabelKey(g.getOptions().get(0).getOptionKey())) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
             return;
         }
         g.getOptions().sort((a, b) -> a.getId().compareTo(b.getId()));

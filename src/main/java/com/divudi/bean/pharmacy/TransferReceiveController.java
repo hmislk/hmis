@@ -594,6 +594,14 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
+        // Reject any line whose staffStock link is missing before anything is
+        // written, instead of letting errorCheck() NPE mid-loop (#22951).
+        String missingStaffStockError = findMissingStaffStockError();
+        if (missingStaffStockError != null) {
+            JsfUtil.addErrorMessage(missingStaffStockError);
+            return;
+        }
+
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
             // Get quantity from user input (BillItemFinanceDetails) and convert to units
@@ -1022,6 +1030,14 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
+        // Reject any line whose staffStock link is missing before anything is
+        // written, instead of letting errorCheck() NPE mid-loop (#22951).
+        String missingStaffStockError = findMissingStaffStockError();
+        if (missingStaffStockError != null) {
+            JsfUtil.addErrorMessage(missingStaffStockError);
+            return;
+        }
+
         getReceivedBill().setApproveAt(new Date());
         getReceivedBill().setApproveUser(getSessionController().getLoggedUser());
 
@@ -1136,7 +1152,8 @@ public class TransferReceiveController implements Serializable {
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-        if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
+        if (tmp.getPharmaceuticalBillItem().getStaffStock() == null
+                || tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
         }
@@ -1144,11 +1161,50 @@ public class TransferReceiveController implements Serializable {
         //   getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
+    /**
+     * A null staffStock means the corresponding issue-side line never
+     * actually moved stock to the porter (see #22938) - treat that the
+     * same as insufficient stock rather than letting the missing
+     * reference NPE. findMissingStaffStockError() already rejects this
+     * case up front for settle()/settleApprove(); this guard covers
+     * onEdit() and any other caller that reaches a single line's stock
+     * check directly (see #22951).
+     */
     public boolean errorCheck(BillItem billItem) {
+        if (billItem.getPharmaceuticalBillItem().getStaffStock() == null) {
+            return true;
+        }
         if (billItem.getPharmaceuticalBillItem().getStaffStock().getStock() < billItem.getQty()) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Finds the first receive line whose PharmaceuticalBillItem has no
+     * staffStock link - e.g. because the corresponding issue-side line
+     * never actually moved stock to the porter (see #22938). Checked
+     * before any persistence starts so a bad line reports a clear error
+     * instead of letting errorCheck() NPE mid-loop and leave the request
+     * in a partially-processed state (see #22951).
+     */
+    private String findMissingStaffStockError() {
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            if (receiveQtyInUnits(i) <= 0.0) {
+                continue;
+            }
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                continue;
+            }
+            if (pbi.getStaffStock() == null) {
+                String itemName = i.getItem() != null ? i.getItem().getName() : "one of the items";
+                return "Cannot receive " + itemName + " - it was never actually transferred out by the "
+                        + "issuing department (no stock movement found for it), even though the transfer "
+                        + "note lists it. Please check the original Transfer Issue before retrying this receive.";
+            }
+        }
+        return null;
     }
 
     public void saveBill() {

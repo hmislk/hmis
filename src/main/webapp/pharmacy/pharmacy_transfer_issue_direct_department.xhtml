@@ -147,29 +147,32 @@
                                                 inputStyleClass="w-100"
                                                 id="acStock"
                                                 value="#{transferIssueDirectController.stockDto}"
-                                                minQueryLength="3" queryDelay="300" completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
+                                                minQueryLength="3" 
+                                                queryDelay="300" 
+                                                completeMethod="#{stockController.completeAvailableStocksWithItemStockDtoForAllowedDepartments}"
                                                 converter="stockDtoConverter"
                                                 var="i"
+                                                scrollHeight="450"
                                                 itemLabel="#{i.itemName}"
                                                 itemValue="#{i}"
-                                                maxResults="5">
-                                                <p:column headerText="Item">
+                                                maxResults="30">
+                                                <p:column headerText="Item" style="padding: 6px; width: 450px;">
                                                     <h:outputText value="#{i.itemName}"/>
                                                 </p:column>
-                                                <p:column headerText="Code">
+                                                <p:column headerText="Code" style="padding: 6px; width: 80px;">
                                                     <h:outputLabel value="#{i.code}"/>
                                                 </p:column>
-                                                <p:column headerText="Expiry">
+                                                <p:column headerText="Expiry" style="padding: 6px; width: 150px;">
                                                     <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Stocks" styleClass="text-end">
+                                                <p:column headerText="Stocks" styleClass="text-end" style="padding: 6px; width: 100px;">
                                                     <h:outputLabel value="#{i.stockQty}">
                                                         <f:convertNumber pattern="#,###"/>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Retail Rate" styleClass="text-end">
+                                                <p:column headerText="Retail Rate" styleClass="text-end" style="padding: 6px; width: 120px;">
                                                     <h:outputLabel value="#{i.retailRate}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
@@ -207,6 +210,7 @@
                                                 action="#{transferIssueDirectController.addNewBillItem}"
                                                 ajax="false"
                                                 update="focusItem"/>
+                                            <p:defaultCommand target="btnAdd" />
                                             <p:focus id="focusQty" for="txtQty"/>
                                             <p:focus id="focusItem" for="acStock"/>
                                         </h:panelGrid>
@@ -374,20 +378,22 @@
                                         completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                         forceSelection="true"
                                         var="w"
-                                        itemLabel="#{w.person.name}"
+                                        itemLabel="#{w.person.nameWithTitle}"
                                         itemValue="#{w}"
+                                        minQueryLength="3"
+                                        maxResults="20"
                                         placeholder="Search staff by name..."
                                         value="#{transferIssueDirectController.issuedBill.toStaff}" >
-                                        <p:column headerText="Name">
+                                        <p:column headerText="Name" style="padding: 6px; width: 450px;">
                                             <h:outputText value="#{w.person.nameWithTitle}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Speciality">
+                                        <p:column headerText="Speciality" style="padding: 6px; width: 150px;">
                                             <h:outputText value="#{w.speciality.name}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Code">
+                                        <p:column headerText="Code" style="padding: 6px; width: 100px;">
                                             <h:outputText value="#{w.code}" ></h:outputText>
                                         </p:column>
-                                        <p:column headerText="Staff Code">
+                                        <p:column headerText="Staff Code" style="padding: 6px; width: 100px;">
                                             <h:outputText value="#{w.staffCode}" ></h:outputText>
                                         </p:column>
                                     </p:autoComplete>

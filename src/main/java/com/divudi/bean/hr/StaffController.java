@@ -774,10 +774,10 @@ public class StaffController implements Serializable {
         } else {
             sql = "select p from Staff p "
                     + " where p.retired=false "
-                    + " and LENGTH(p.code) > 0 "
                     + " and LENGTH(p.person.name) > 0 "
                     + " and ((p.person.name) like '%" + query.toUpperCase() + "%' "
-                    + " or (p.code) like '%" + query.toUpperCase() + "%' )"
+                    + " or (p.code) like '%" + query.toUpperCase() + "%' "
+                    + " or (p.staffCode) like '%" + query.toUpperCase() + "%' )"
                     + " order by p.person.name";
 
             //////System.out.println(sql);
@@ -807,25 +807,27 @@ public class StaffController implements Serializable {
         return suggestions;
     }
 
-    public List<Staff> completeStaffCodeChannel(String query) {
-        List<Staff> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select p from Staff p "
-                    + " where p.retired=false "
-                    + " and LENGTH(p.code) > 0 "
-                    + " and LENGTH(p.person.name) > 0 "
-                    + " and ((p.person.name) like '%" + query.toUpperCase() + "%' "
-                    + " or (p.code)='" + query.toUpperCase() + "' )"
-                    + " order by p.person.name";
-
-            //////System.out.println(sql);
-            suggestions = getEjbFacade().findByJpql(sql, 20);
-        }
-        return suggestions;
-    }
+    // Unused (no XHTML references completeStaffCodeChannel) — kept commented
+    // pending removal in a dead-code cleanup pass. See #22491 follow-up.
+    // public List<Staff> completeStaffCodeChannel(String query) {
+    //     List<Staff> suggestions;
+    //     String sql;
+    //     if (query == null) {
+    //         suggestions = new ArrayList<>();
+    //     } else {
+    //         sql = "select p from Staff p "
+    //                 + " where p.retired=false "
+    //                 + " and LENGTH(p.code) > 0 "
+    //                 + " and LENGTH(p.person.name) > 0 "
+    //                 + " and ((p.person.name) like '%" + query.toUpperCase() + "%' "
+    //                 + " or (p.code)='" + query.toUpperCase() + "' )"
+    //                 + " order by p.person.name";
+    //
+    //         //////System.out.println(sql);
+    //         suggestions = getEjbFacade().findByJpql(sql, 20);
+    //     }
+    //     return suggestions;
+    // }
 
     public List<Staff> completeStaffCodeChannelWithOutResignOrRetierd(String query) {
         List<Staff> suggestions;
@@ -837,10 +839,10 @@ public class StaffController implements Serializable {
             sql = "select p from Staff p "
                     + " where p.retired=false "
                     + " and (p.dateLeft is null or p.dateLeft>:cd)"
-                    + " and LENGTH(p.code) > 0 "
                     + " and LENGTH(p.person.name) > 0 "
                     + " and ((p.person.name) like '%" + query.toUpperCase() + "%' "
-                    + " or (p.code)='" + query.toUpperCase() + "' )"
+                    + " or (p.code)='" + query.toUpperCase() + "' "
+                    + " or (p.staffCode)='" + query.toUpperCase() + "' )"
                     + " order by p.person.name";
 
             m.put("cd", new Date());
@@ -939,7 +941,8 @@ public class StaffController implements Serializable {
                 + " where p.retired=false "
                 + " and p.roster=:rs "
                 + " and ((p.person.name) like :q "
-                + " or  (p.code) like :q )"
+                + " or  (p.code) like :q "
+                + " or  (p.staffCode) like :q )"
                 + " order by p.person.name";
         //////System.out.println(sql);
         HashMap hm = new HashMap();

@@ -57,14 +57,14 @@
                         <p:selectOneMenu
                                 id="phmDateRange"
                                 styleClass="w-100"
-                                value="#{pharmacyReportController.dateRange}">
+                                value="#{pharmacyReportController.movementDateRange}">
                             <f:selectItem itemLabel="Select" itemValue=""/>
                             <f:selectItem itemLabel="Within 3 Months" itemValue="within3months"/>
                             <f:selectItem itemLabel="Within 6 Months" itemValue="within6months"/>
                             <f:selectItem itemLabel="Within 12 Months" itemValue="within12months"/>
                             <p:ajax
                                     event="change"
-                                    listener="#{pharmacyReportController.updateDateRange}"
+                                    listener="#{pharmacyReportController.updateMovementDateRange}"
                                     update="fromDate toDate"/>
                         </p:selectOneMenu>
 
@@ -367,7 +367,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                                 <h:outputText value="Date Range:"/>
-                                <h:outputText value="#{pharmacyReportController.dateRangeAsString}"/>
+                                <h:outputText value="#{pharmacyReportController.movementDateRangeAsString}"/>
                                 <h:outputText value="Institution:"/>
                                 <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
                                 <h:outputText value="Site:"/>
@@ -499,7 +499,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                                 <h:outputText value="Date Range:"/>
-                                <h:outputText value="#{pharmacyReportController.dateRangeAsString}"/>
+                                <h:outputText value="#{pharmacyReportController.movementDateRangeAsString}"/>
                                 <h:outputText value="Institution:"/>
                                 <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
                                 <h:outputText value="Site:"/>
@@ -633,7 +633,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
                                 <h:outputText value="Date Range:"/>
-                                <h:outputText value="#{pharmacyReportController.dateRangeAsString}"/>
+                                <h:outputText value="#{pharmacyReportController.movementDateRangeAsString}"/>
                                 <h:outputText value="Institution:"/>
                                 <h:outputText value="#{pharmacyReportController.institution != null ? pharmacyReportController.institution.name : 'All'}"/>
                                 <h:outputText value="Site:"/>
@@ -699,6 +699,16 @@
                                 </p:column>
                                 <p:column headerText="Supplier(Last Purchase)">
                                     <h:outputText value="#{no.lastSupplierName}"/>
+                                </p:column>
+                                <p:column headerText="Value of QIH" width="100" styleClass="text-end">
+                                    <h:outputText value="#{no.stockQty}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="QIH" width="80" styleClass="text-end">
+                                    <h:outputText value="#{no.stockOnHand}">
+                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                    </h:outputText>
                                 </p:column>
 
                             </p:dataTable>

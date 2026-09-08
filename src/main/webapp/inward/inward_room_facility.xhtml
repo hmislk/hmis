@@ -124,11 +124,20 @@
                                                     var="c" itemLabel="#{c.name}" itemValue="#{c}" class="w-100 ml-2" >
                                     </p:autoComplete>
 
-                                    <h:outputLabel value="Fee Calculation Block Duration in Hours"/>
+                                    <h:outputLabel value="Fee Calculation Block Unit"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
+                                    <p:selectOneMenu value="#{roomFacilityChargeController.current.timedItemFee.durationUnit}"
+                                                     class="w-100 mt-2 mb-2"
+                                                     title="The unit the block duration below is counted in">
+                                        <f:selectItems value="#{roomFacilityChargeController.durationUnits}" var="du"
+                                                       itemLabel="#{du.label}" itemValue="#{du}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="Fee Calculation Block Duration"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.durationHours}" class="w-100 mt-2 mb-2"/>
 
-                                    <h:outputLabel value="Over Shoot Hour for the last Block"/>
+                                    <h:outputLabel value="Over Shoot for the last Block"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" value="#{roomFacilityChargeController.current.timedItemFee.overShootHours}" class="w-100 ml-2"/>
 

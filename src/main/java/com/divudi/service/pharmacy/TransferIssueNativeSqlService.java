@@ -925,7 +925,20 @@ public class TransferIssueNativeSqlService {
         if (bill.getApproveUser() != null && bill.getApproveUser().getWebUserPerson() != null) {
             bill.getApproveUser().getWebUserPerson().getName();
         }
+        // Bill.forwardReferenceBills holds the bills that point AT this one via THEIR
+        // backwardReferenceBill (e.g. an Issue bill pointing at its request) - the
+        // Cancel-Request guard (PharmacyBillSearch.isTransferRequestCancellable())
+        // reads this to detect a downstream issue, so eager-load it here while the
+        // entity is still attached (issue #23112).
         if (bill.getForwardReferenceBills() != null) bill.getForwardReferenceBills().size();
+        // This page (pharmacy_transfer_request_list_approved.xhtml) links to the PRE-bill
+        // (PHARMACY_TRANSFER_REQUEST_PRE), but Transfer Issues point at the *approved*
+        // bill created at Approve time (pre-bill.forwardReferenceBill) - eager-load one
+        // hop further so the guard can detect a downstream issue from the pre-bill's view.
+        Bill approvedBill = bill.getForwardReferenceBill();
+        if (approvedBill != null && approvedBill.getForwardReferenceBills() != null) {
+            approvedBill.getForwardReferenceBills().size();
+        }
         if (bill.getBillItems() != null) {
             for (BillItem bi : bill.getBillItems()) {
                 if (bi.getItem() != null) bi.getItem().getName();

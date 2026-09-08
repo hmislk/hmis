@@ -217,7 +217,7 @@ public class PriceMatrixNativeSqlService {
             sql.append(" AND paymentScheme_ID IS NULL");
         }
         if (deptId != null) {
-            sql.append(" AND department_ID=?");
+            sql.append(" AND (department_ID=? OR department_ID IS NULL)");
         } else {
             sql.append(" AND department_ID IS NULL");
         }
