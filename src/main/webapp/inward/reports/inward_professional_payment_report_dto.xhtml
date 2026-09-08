@@ -500,8 +500,11 @@
                                                                     </td>
                                                                 </ui:fragment>
                                                             </tr>
-                                                            <!-- Temporarily hidden - #23515 follow-up: revert to a proper column-visibility toggle -->
-                                                            <tr style="font-weight: bold;" rendered="false">
+                                                            <!-- Temporarily hidden - #23515 follow-up: revert to a proper column-visibility toggle.
+                                                                 rendered is not a recognized attribute on a plain <tr> (no xmlns:jsf pass-through
+                                                                 in this file), so the whole row is wrapped in ui:fragment instead. -->
+                                                            <ui:fragment rendered="false">
+                                                            <tr style="font-weight: bold;">
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Balance to Pay</td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
                                                                     <td class="text-end">
@@ -515,6 +518,7 @@
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><td></td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}"><td></td></ui:fragment>
                                                             </tr>
+                                                            </ui:fragment>
                                                         </ui:repeat>
                                                     </ui:repeat>
                                                 </tbody>
