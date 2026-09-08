@@ -3509,10 +3509,15 @@ public class UserSettingsController implements Serializable {
 
     // Issue #23515 review (CodeRabbit) - same "at least one column stays
     // visible" guard as the Summary block above.
+    // balanceToPay is deliberately excluded - it's a summary total row, not a
+    // detail column, so it must not count toward "at least one column visible"
+    // (CodeRabbit #23611: including it let every real column be hidden while
+    // the guard still saw balanceToPay's default-true isColumnVisible() read
+    // as "something is visible", leaving an empty table).
     private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS = java.util.Arrays.asList(
             "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
             "speciality", "addedFeeDate", "addedFeeValue", "paidDate",
-            "paidBillNumber", "comments", "paidFeeValue", "balanceToPay");
+            "paidBillNumber", "comments", "paidFeeValue");
 
     private void setProfessionalPaymentDetailedColumnVisible(String columnId, boolean visible) {
         ColumnVisibilitySettings settings = getColumnVisibility("inward_professional_payment_detailed");
