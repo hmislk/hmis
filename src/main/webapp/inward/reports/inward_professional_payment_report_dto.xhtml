@@ -366,6 +366,9 @@
                                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}" itemLabel="Paid Fee Value">
                                                         <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
                                                     </p:selectBooleanCheckbox>
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedBalanceToPayVisible}" itemLabel="Balance to Pay">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
                                                 </div>
                                             </p:panel>
                                         </div>
@@ -500,10 +503,9 @@
                                                                     </td>
                                                                 </ui:fragment>
                                                             </tr>
-                                                            <!-- Temporarily hidden - #23515 follow-up: revert to a proper column-visibility toggle.
-                                                                 rendered is not a recognized attribute on a plain <tr> (no xmlns:jsf pass-through
-                                                                 in this file), so the whole row is wrapped in ui:fragment instead. -->
-                                                            <ui:fragment rendered="false">
+                                                            <!-- tr is not a JSF component, so rendered on it directly is inert
+                                                                 (no xmlns:jsf pass-through namespace in this file) - wrap in ui:fragment. -->
+                                                            <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedBalanceToPayVisible}">
                                                             <tr style="font-weight: bold;">
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Balance to Pay</td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
