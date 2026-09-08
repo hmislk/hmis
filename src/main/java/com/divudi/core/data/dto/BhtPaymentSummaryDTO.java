@@ -68,6 +68,12 @@ public class BhtPaymentSummaryDTO implements Serializable {
         return depositsByMethod.getOrDefault(method, 0.0);
     }
 
+    /**
+     * Amounts are merged with their natural sign — callers must NOT pass
+     * {@code Math.abs(...)} here. A cancelled deposit arrives as a separate
+     * negative-amount row (billTypeAtomic INWARD_DEPOSIT_CANCELLATION) that
+     * must net out against the original positive row.
+     */
     public void addDeposit(PaymentMethod method, double amount) {
         if (method == null) {
             LOG.log(Level.WARNING, "BHT {0}: deposit of {1} has null PaymentMethod — amount dropped from totals",
@@ -97,6 +103,12 @@ public class BhtPaymentSummaryDTO implements Serializable {
         return paymentsByMethod.getOrDefault(method, 0.0);
     }
 
+    /**
+     * Amounts are merged with their natural sign — callers must NOT pass
+     * {@code Math.abs(...)} here. A cancelled payment arrives as a separate
+     * negative-amount row (billTypeAtomic INWARD_PAYMENT_CANCELLATION) that
+     * must net out against the original positive row.
+     */
     public void addPayment(PaymentMethod method, double amount) {
         if (method == null) {
             LOG.log(Level.WARNING, "BHT {0}: payment of {1} has null PaymentMethod — amount dropped from totals",
@@ -132,7 +144,7 @@ public class BhtPaymentSummaryDTO implements Serializable {
 
     /**
      * Amounts are merged with their natural sign — callers must NOT pass
-     * {@code Math.abs(...)} here. Unlike deposits, post-final-bill payment
+     * {@code Math.abs(...)} here. Post-final-bill payment
      * cancellations/refunds arrive as separate negative-amount rows that
      * must net out against the original positive row.
      */

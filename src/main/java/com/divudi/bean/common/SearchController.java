@@ -11754,9 +11754,8 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-                    System.out.println(billTypesAtomics.get(1));
 
-            bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
+            bundle = createBundleForOpdProfessionalPayments(billTypesAtomics);
             bundle.calculateTotalByBills();
             bundle.setName("OPD Professional Payments Report");
             bundle.setBundleType("opdProfessionalPayments");
@@ -12499,6 +12498,68 @@ public class SearchController implements Serializable {
     @Deprecated
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
         createTableByKeyword(billType, ins, dep, null, null, null, null);
+    }
+
+    // Applies Institution/Site/Department/Category/Item/Speciality/Doctor filters for the OPD
+    // Professional Payments report. The doctor being paid is stored on Bill.toStaff (not Bill.staff) -
+    // see StaffPaymentBillController.createPaymentBill and the toStaff backfill utility below.
+    // Category/Item are matched via BillItem.referanceBillItem.item because BillItem.item is never
+    // populated on these payment bills (see StaffPaymentBillController.saveBillItemForPaymentBill),
+    // and an EXISTS subquery is used rather than a join because one payment bill can have many BillItems.
+    private ReportTemplateRowBundle createBundleForOpdProfessionalPayments(List<BillTypeAtomic> billTypesAtomics) {
+        ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
+        Map<String, Object> params = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
+                + " from Bill b "
+                + " where b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false ";
+
+        params.put("billTypesAtomics", billTypesAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (speciality != null) {
+            jpql += " and b.toStaff.speciality=:speciality ";
+            params.put("speciality", speciality);
+        }
+
+        if (staff != null) {
+            jpql += " and b.toStaff=:staff ";
+            params.put("staff", staff);
+        }
+
+        if (category != null) {
+            jpql += " and exists (select 1 from BillItem bi where bi.bill=b and bi.referanceBillItem.item.category=:cat) ";
+            params.put("cat", category);
+        }
+
+        if (item != null) {
+            jpql += " and exists (select 1 from BillItem bi where bi.bill=b and bi.referanceBillItem.item=:item) ";
+            params.put("item", item);
+        }
+
+        jpql += " order by b.createdAt desc ";
+
+        List<ReportTemplateRow> outputRows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        outputBundle.setReportTemplateRows(outputRows);
+        return outputBundle;
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
@@ -18066,6 +18127,11 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(inwardDepositCollection);
             collectionForTheDay += getSafeTotal(inwardDepositCollection);
 
+            // Generate Inward Payment Collection (interim + post-discharge payments) and add to the main bundle
+            ReportTemplateRowBundle inwardPaymentCollection = generateInwardPaymentCollection();
+            bundle.getBundles().add(inwardPaymentCollection);
+            collectionForTheDay += getSafeTotal(inwardPaymentCollection);
+
             // NOTE: Pharmacy Credit Company Payment Collection is NOT generated separately here
             // because pharmacy credit company bill types are already included in the OPD credit
             // company collection above (generateCreditCompanyCollectionForOpd() includes both
@@ -18685,6 +18751,7 @@ public class SearchController implements Serializable {
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_PAYMENT);
             inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+            inwardPayments.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -18695,6 +18762,7 @@ public class SearchController implements Serializable {
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+            inwardPaymentsCancel.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -18704,11 +18772,42 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Refund and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
             inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+            inwardPaymentsRefund.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
             bundle.getBundles().add(inwardPaymentsRefundBundle);
             collectionForTheDay += getSafeTotal(inwardPaymentsRefundBundle);
+
+// Generate Inward Deposits and add to the main bundle (issue #23507 — previously
+// entirely missing from Cashier Summary/Detailed, unlike Daily Return)
+            List<BillTypeAtomic> inwardDeposits = new ArrayList<>();
+            inwardDeposits.add(BillTypeAtomic.INWARD_DEPOSIT);
+            ReportTemplateRowBundle inwardDepositsBundle = generatePaymentMethodColumnsByBills(inwardDeposits);
+            inwardDepositsBundle.setBundleType("InwardDeposits");
+            inwardDepositsBundle.setName("Inward Deposits");
+            bundle.getBundles().add(inwardDepositsBundle);
+            collectionForTheDay += getSafeTotal(inwardDepositsBundle);
+
+// Generate Inward Deposits Cancel and add to the main bundle
+            List<BillTypeAtomic> inwardDepositsCancel = new ArrayList<>();
+            inwardDepositsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            ReportTemplateRowBundle inwardDepositsCancelBundle = generatePaymentMethodColumnsByBills(inwardDepositsCancel);
+            inwardDepositsCancelBundle.setBundleType("InwardDepositsCancel");
+            inwardDepositsCancelBundle.setName("Inward Deposit Cancellations");
+            bundle.getBundles().add(inwardDepositsCancelBundle);
+            collectionForTheDay += getSafeTotal(inwardDepositsCancelBundle);
+
+// Generate Inward Deposits Refund and add to the main bundle
+            List<BillTypeAtomic> inwardDepositsRefund = new ArrayList<>();
+            inwardDepositsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            inwardDepositsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+            ReportTemplateRowBundle inwardDepositsRefundBundle = generatePaymentMethodColumnsByBills(inwardDepositsRefund);
+            inwardDepositsRefundBundle.setBundleType("InwardDepositsRefund");
+            inwardDepositsRefundBundle.setName("Inward Deposit Refunds");
+            bundle.getBundles().add(inwardDepositsRefundBundle);
+            collectionForTheDay += getSafeTotal(inwardDepositsRefundBundle);
 
 // COMMENTED OUT: Replaced by unified Outpatient Credit Settling section below
 // This section was incomplete - missing OPD_CREDIT_COMPANY_PAYMENT_RECEIVED
@@ -18930,7 +19029,16 @@ public class SearchController implements Serializable {
             netCashForTheDayBundle.setTotal(netCashCollection);
 
             bundle.getBundles().add(netCashForTheDayBundle);
-            bundle.setName("Cashier_Summary");
+            bundle.setName("Cashier Summary Report");
+            // Snapshot the filters the report was actually generated with, so
+            // the PDF and Excel headers describe this run rather than whatever
+            // the form happens to hold when the download button is pressed.
+            bundle.setFromDate(fromDate);
+            bundle.setToDate(toDate);
+            bundle.setFilterInstitution(institution);
+            bundle.setFilterSite(site);
+            bundle.setFilterDepartment(department);
+            bundle.setFilterWebUser(webUser);
             bundle.calculateTotalsByAllChildBundles();
         }, CashierReports.CASHIER_SUMMARY, sessionController.getLoggedUser());
     }
@@ -19141,6 +19249,7 @@ public class SearchController implements Serializable {
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_PAYMENT);
             inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
+            inwardPayments.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -19151,6 +19260,7 @@ public class SearchController implements Serializable {
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+            inwardPaymentsCancel.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -19160,11 +19270,42 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Refund and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsRefund = new ArrayList<>();
             inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+            inwardPaymentsRefund.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
             bundle.getBundles().add(inwardPaymentsRefundBundle);
             collectionForTheDay += getSafeTotal(inwardPaymentsRefundBundle);
+
+// Generate Inward Deposits and add to the main bundle (issue #23507 — previously
+// entirely missing from Cashier Summary/Detailed, unlike Daily Return)
+            List<BillTypeAtomic> inwardDeposits = new ArrayList<>();
+            inwardDeposits.add(BillTypeAtomic.INWARD_DEPOSIT);
+            ReportTemplateRowBundle inwardDepositsBundle = generatePaymentMethodColumnsByBills(inwardDeposits);
+            inwardDepositsBundle.setBundleType("InwardDeposits");
+            inwardDepositsBundle.setName("Inward Deposits");
+            bundle.getBundles().add(inwardDepositsBundle);
+            collectionForTheDay += getSafeTotal(inwardDepositsBundle);
+
+// Generate Inward Deposits Cancel and add to the main bundle
+            List<BillTypeAtomic> inwardDepositsCancel = new ArrayList<>();
+            inwardDepositsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            ReportTemplateRowBundle inwardDepositsCancelBundle = generatePaymentMethodColumnsByBills(inwardDepositsCancel);
+            inwardDepositsCancelBundle.setBundleType("InwardDepositsCancel");
+            inwardDepositsCancelBundle.setName("Inward Deposit Cancellations");
+            bundle.getBundles().add(inwardDepositsCancelBundle);
+            collectionForTheDay += getSafeTotal(inwardDepositsCancelBundle);
+
+// Generate Inward Deposits Refund and add to the main bundle
+            List<BillTypeAtomic> inwardDepositsRefund = new ArrayList<>();
+            inwardDepositsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+            inwardDepositsRefund.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+            ReportTemplateRowBundle inwardDepositsRefundBundle = generatePaymentMethodColumnsByBills(inwardDepositsRefund);
+            inwardDepositsRefundBundle.setBundleType("InwardDepositsRefund");
+            inwardDepositsRefundBundle.setName("Inward Deposit Refunds");
+            bundle.getBundles().add(inwardDepositsRefundBundle);
+            collectionForTheDay += getSafeTotal(inwardDepositsRefundBundle);
 
 // COMMENTED OUT: These duplicate sections have been consolidated into the unified "Outpatient Credit Settling" sections below
             // This avoids double-counting and provides clearer separation between outpatient (OPD + Pharmacy) and inpatient credit settling
@@ -20807,6 +20948,64 @@ public class SearchController implements Serializable {
         depositCollection.setDescription("Inward Deposit Receipts, Cancellations, and Refunds");
 
         return depositCollection;
+    }
+
+    /**
+     * Interim "Make a Payment" inward payments and post-discharge (post-final-bill)
+     * inward payments, kept as their own bundle distinct from
+     * {@link #generateInwardDepositCollection()} (issue #23507) — these are a
+     * different financial concept (payment against an existing balance) from a
+     * deposit taken up front, and until this fix were never reported in Daily
+     * Return at all, unlike Cashier Summary/Detailed which already included
+     * INWARD_PAYMENT.
+     */
+    public ReportTemplateRowBundle generateInwardPaymentCollection() {
+        ReportTemplateRowBundle paymentCollection = new ReportTemplateRowBundle();
+
+        List<BillTypeAtomic> inwardPaymentBillTypes = new ArrayList<>();
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
+        inwardPaymentBillTypes.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+        inwardPaymentBillTypes.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION);
+        inwardPaymentBillTypes.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
+
+        String jpql = "select b "
+                + " from Bill b "
+                + " left join fetch b.patient patient "
+                + " left join fetch patient.person "
+                + " where b.retired = :br "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :btas ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("br", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("btas", inwardPaymentBillTypes);
+
+        if (department != null) {
+            jpql += " and b.department = :dep ";
+            m.put("dep", department);
+        }
+        if (institution != null) {
+            jpql += " and b.department.institution = :ins ";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            jpql += " and b.department.site = :site ";
+            m.put("site", site);
+        }
+
+        List<Bill> bills = billFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        billToBundleForPatientDeposits(paymentCollection, bills);
+        paymentCollection.setName("Inward Payment Collection");
+        paymentCollection.setBundleType("inwardPaymentCollection");
+        paymentCollection.setDescription("Inward Payments, Post-Discharge Payments, their Cancellations, and Refunds");
+
+        return paymentCollection;
     }
 
     public ReportTemplateRowBundle generatePharmacyCollection() {
@@ -24648,8 +24847,24 @@ public class SearchController implements Serializable {
 
     public StreamedContent getBundleAsPdf() {
         StreamedContent pdfSc = null;
+        // Shared by six report pages - cashier summary/detailed, income
+        // breakdown, service category wise bill detail and the two lab daily
+        // summaries. It must not rename the bundle or overwrite its filters:
+        // SearchController is @SessionScoped, so anything written here would
+        // stick to the report the user actually generated and follow it into
+        // the Excel export too. Each generator sets its own name and filters.
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Please generate the report before exporting it to PDF.");
+            return null;
+        }
         try {
-            pdfSc = pdfController.createPdfForBundle(bundle);
+            // Header/footer only for a bundle that snapshotted its filters -
+            // i.e. the cashier summary. The other five pages sharing this
+            // getter have no child bundles, so their own populateTableFor...
+            // already prints the report name; adding the header there would
+            // print it twice. Keeping them on the old path leaves their
+            // output byte-for-byte unchanged.
+            pdfSc = pdfController.createPdfForBundle(bundle, PageSize.A4, bundle.hasFilterSummary());
         } catch (IOException e) {
             logger.error("getBundleAsPdf: Error creating pdfSc via pdfController.createPdfForBundle", e);
             pdfSc = null;
@@ -24870,6 +25085,10 @@ public class SearchController implements Serializable {
     }
 
     public StreamedContent getBundleAsExcel() {
+        if (bundle == null) {
+            JsfUtil.addErrorMessage("Please generate the report before exporting it to Excel.");
+            return null;
+        }
         try {
             downloadingExcel = excelController.createExcelForBundle(bundle);
         } catch (IOException e) {

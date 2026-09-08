@@ -174,11 +174,20 @@
                                             ajax="false"
                                             icon="fa fa-user"
                                             value="Patient Profile"
-                                            class="ui-button-success" 
-                                            action="#{patientController.navigateToOpdPatientProfile()}" 
+                                            class="ui-button-success"
+                                            action="#{patientController.navigateToOpdPatientProfile()}"
                                             >
-                                            <f:setPropertyActionListener 
-                                                value="#{admissionController.current.patient}" 
+                                            <!-- This page's own search/selection flow only ever populates
+                                                 roomChangeController.current (bound directly on the
+                                                 admission_search composite) - bridge it into
+                                                 admissionController.current first, same as the
+                                                 "Inpatient Dashboard" button below, so the read of
+                                                 admissionController.current.patient isn't null/stale
+                                                 (issue #23491). Listener order matters: the bridge must
+                                                 run before the read. -->
+                                            <f:setPropertyActionListener value="#{roomChangeController.current}" target="#{admissionController.current}" />
+                                            <f:setPropertyActionListener
+                                                value="#{admissionController.current.patient}"
                                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:commandButton

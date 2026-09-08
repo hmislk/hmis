@@ -317,8 +317,9 @@
                             </p:column>
 
 
-                            <p:column 
-                                headerText="Speciality" 
+                            <p:column
+                                headerText="Speciality"
+                                width="10em"
                                 sortBy="#{row.bill.toStaff.speciality.name}"
                                 filterBy="#{row.bill.toStaff.speciality.name}"
                                 filterMatchMode="contains"
@@ -326,10 +327,11 @@
                                 <h:outputLabel value="#{row.bill.toStaff.speciality.name}" />
                             </p:column>
 
-                            <p:column 
-                                headerText="Staff" 
-                                sortBy="#{row.bill.staff.person.name}"
-                                filterBy="#{row.bill.staff.person.name}"
+                            <p:column
+                                headerText="Staff"
+                                width="10em"
+                                sortBy="#{row.bill.toStaff.person.name}"
+                                filterBy="#{row.bill.toStaff.person.name}"
                                 filterMatchMode="contains"
                                 style="text-align: left;">
                                 <h:outputLabel value="#{row.bill.toStaff.person.name}" />

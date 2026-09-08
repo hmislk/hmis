@@ -503,6 +503,12 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
+            return "";
+        }
+
         DepartmentType toBillDepartmentType = DepartmentType.Other;
 
         if (bill.getToDepartment() != null && bill.getToDepartment().getDepartmentType() != null) {
@@ -1581,6 +1587,12 @@ public class InwardSearch implements Serializable {
 
             if (getBill().getPatientEncounter().isDischarged()) {
                 JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter().isNursingDischarged()
+                    && !getWebUserController().hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+                JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
                 return;
             }
 
@@ -2684,7 +2696,11 @@ public class InwardSearch implements Serializable {
             }
             if (paymentMethod == PaymentMethod.Cash) {
                 Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-                double drawerBalance = userDrawer.getCashInHandValue();
+                if (userDrawer == null) {
+                    JsfUtil.addErrorMessage("Your drawer could not be found. Please contact your administrator.");
+                    return;
+                }
+                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
                 double paymentAmount = getBill().getNetTotal();
                 if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
                     if (drawerBalance < paymentAmount) {
