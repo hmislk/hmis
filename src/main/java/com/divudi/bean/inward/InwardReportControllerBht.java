@@ -916,9 +916,11 @@ public class InwardReportControllerBht implements Serializable {
     // UserSettingsController, same "ui.<pageId>.columns.visibility"
     // ConfigOption the xhtml checkboxes write to) instead of a fixed header
     // array, so the exports can never drift from what's checked on screen.
+    // "balanceToPay" temporarily removed - the Balance to Pay column broke the
+    // report layout and is commented out on the xhtml too. TODO: restore.
     private static final List<String> SUMMARY_COLUMN_KEYS_IN_ORDER = Arrays.asList(
             "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
-            "speciality", "sumAddedFee", "sumPaidFee", "balanceToPay");
+            "speciality", "sumAddedFee", "sumPaidFee");
 
     private static final List<String> DETAILED_COLUMN_KEYS_IN_ORDER = Arrays.asList(
             "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
@@ -1264,17 +1266,18 @@ public class InwardReportControllerBht implements Serializable {
                             totalPaidCell.setCellStyle(boldMoneyStyle);
                         }
 
-                        Row balanceRow = sheet.createRow(rowIdx++);
-                        if (addedFeeDateCol >= 0) {
-                            Cell balanceLabelCell = balanceRow.createCell(addedFeeDateCol);
-                            balanceLabelCell.setCellValue("Balance to Pay");
-                            balanceLabelCell.setCellStyle(boldStyle);
-                        }
-                        if (addedFeeValueCol >= 0) {
-                            Cell balanceValueCell = balanceRow.createCell(addedFeeValueCol);
-                            balanceValueCell.setCellValue(detail.getSumAddedFee() - detail.getSumPaidFee());
-                            balanceValueCell.setCellStyle(boldMoneyStyle);
-                        }
+                        // Balance to Pay row temporarily commented out - broke the report layout. TODO: restore.
+                        // Row balanceRow = sheet.createRow(rowIdx++);
+                        // if (addedFeeDateCol >= 0) {
+                        //     Cell balanceLabelCell = balanceRow.createCell(addedFeeDateCol);
+                        //     balanceLabelCell.setCellValue("Balance to Pay");
+                        //     balanceLabelCell.setCellStyle(boldStyle);
+                        // }
+                        // if (addedFeeValueCol >= 0) {
+                        //     Cell balanceValueCell = balanceRow.createCell(addedFeeValueCol);
+                        //     balanceValueCell.setCellValue(detail.getSumAddedFee() - detail.getSumPaidFee());
+                        //     balanceValueCell.setCellStyle(boldMoneyStyle);
+                        // }
 
                         if (rowIdx - 1 > consultantStartRow) {
                             if (consultantCol >= 0) {
@@ -1727,26 +1730,27 @@ public class InwardReportControllerBht implements Serializable {
                         table.addCell(totalPaidCell);
                     }
 
-                    if (addedFeeDateVisible) {
-                        table.addCell(new PdfPCell(new Phrase("Balance to Pay", boldFont)));
-                    }
-                    if (addedFeeValueVisible) {
-                        PdfPCell balanceValueCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), boldFont));
-                        balanceValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                        table.addCell(balanceValueCell);
-                    }
-                    if (paidDateVisible) {
-                        table.addCell(new Phrase("", normalFont));
-                    }
-                    if (paidBillNumberVisible) {
-                        table.addCell(new Phrase("", normalFont));
-                    }
-                    if (commentsVisible) {
-                        table.addCell(new Phrase("", normalFont));
-                    }
-                    if (paidFeeValueVisible) {
-                        table.addCell(new Phrase("", normalFont));
-                    }
+                    // Balance to Pay row temporarily commented out - broke the report layout. TODO: restore.
+                    // if (addedFeeDateVisible) {
+                    //     table.addCell(new PdfPCell(new Phrase("Balance to Pay", boldFont)));
+                    // }
+                    // if (addedFeeValueVisible) {
+                    //     PdfPCell balanceValueCell = new PdfPCell(new Phrase(df.format(detail.getSumAddedFee() - detail.getSumPaidFee()), boldFont));
+                    //     balanceValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    //     table.addCell(balanceValueCell);
+                    // }
+                    // if (paidDateVisible) {
+                    //     table.addCell(new Phrase("", normalFont));
+                    // }
+                    // if (paidBillNumberVisible) {
+                    //     table.addCell(new Phrase("", normalFont));
+                    // }
+                    // if (commentsVisible) {
+                    //     table.addCell(new Phrase("", normalFont));
+                    // }
+                    // if (paidFeeValueVisible) {
+                    //     table.addCell(new Phrase("", normalFont));
+                    // }
                 }
             }
 
