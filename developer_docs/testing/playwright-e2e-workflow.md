@@ -3103,9 +3103,9 @@ open the page's own "Settings" button/dialog (per §26, never raw SQL) and
 check which paper type is actually enabled for the current department
 against the exact set of paper-type checks the page's `rendered` attributes
 test — a Settings dialog can offer an option the page doesn't (yet) handle.
-Enable one of the paper types the page *does* check (e.g. tick "POS Paper")
-to get a renderable view for verification purposes; that's a legitimate local
-test-data setup action, not a workaround that hides a real defect.
+For local verification of the remaining receipt rendering, enable one of the
+paper types the page checks, such as "POS Paper". This does not validate
+`5×5 Custom 3 Paper`; test or fix that unsupported configuration separately.
 
 Found while fixing issue #23571.
 

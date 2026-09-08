@@ -14,6 +14,7 @@
         <cc:attribute name="titleLabel" type="java.lang.String" default="Deposit Cancellation Receipt"/>
         <cc:attribute name="dateLabel" type="java.lang.String" default="Cancelled At"/>
         <cc:attribute name="billNoLabel" type="java.lang.String" default="Cancellation Bill No"/>
+        <cc:attribute name="reasonLabel" type="java.lang.String" default="Cancellation Reason"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -122,7 +123,7 @@
                     </tr>
                     <h:panelGroup rendered="#{cc.attrs.receipt.comments ne null and cc.attrs.receipt.comments ne ''}">
                         <tr>
-                            <td><h:outputLabel value="Cancellation Reason" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td><h:outputLabel value="#{cc.attrs.reasonLabel}" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td colspan="5">
                                 <h:outputLabel value="#{cc.attrs.receipt.comments}" class="billDetailsFiveFive" ></h:outputLabel>

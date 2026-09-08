@@ -83,6 +83,8 @@ public class AppointmentRefundController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private FinancialTransactionController financialTransactionController;
+    @Inject
+    private WebUserController webUserController;
 
     private Bill current;
     private Bill originalBillToRefund;
@@ -104,6 +106,11 @@ public class AppointmentRefundController implements Serializable {
      */
     public String navigateToRefundFromAppointmentBill(Long appointmentBillId) {
         makeNull();
+
+        if (!webUserController.hasPrivilege("InwardBilling")) {
+            JsfUtil.addErrorMessage("You are not authorized to refund this bill");
+            return "";
+        }
 
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
@@ -146,6 +153,11 @@ public class AppointmentRefundController implements Serializable {
     }
 
     private boolean errorCheck() {
+        if (!webUserController.hasPrivilege("InwardBilling")) {
+            JsfUtil.addErrorMessage("You are not authorized to refund this bill");
+            return true;
+        }
+
         if (getOriginalBillToRefund() == null) {
             JsfUtil.addErrorMessage("Select a Bill to Refund");
             return true;
@@ -162,6 +174,11 @@ public class AppointmentRefundController implements Serializable {
         }
 
         if (getPaymentSchemeController().checkPaymentMethodError(getCurrent().getPaymentMethod(), paymentMethodData)) {
+            return true;
+        }
+
+        if (getCurrent().getTotal() <= 0) {
+            JsfUtil.addErrorMessage("Enter a valid refund amount");
             return true;
         }
 
@@ -187,8 +204,11 @@ public class AppointmentRefundController implements Serializable {
         saveBill();
         saveBillItem();
 
-        getOriginalBillToRefund().setRefunded(true);
-        getOriginalBillToRefund().setRefundedBill(getCurrent());
+        double remainingAfterThisRefund = computeRemainingRefundableAmount(getOriginalBillToRefund());
+        if (Math.abs(remainingAfterThisRefund) <= 0.1) {
+            getOriginalBillToRefund().setRefunded(true);
+            getOriginalBillToRefund().setRefundedBill(getCurrent());
+        }
         getBillFacade().edit(getOriginalBillToRefund());
 
         printPreview = true;

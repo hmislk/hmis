@@ -95,13 +95,13 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{inwardSearch.appointmentBillReceipt.billTypeAtomic eq 'INWARD_APPOINTMENT_BILL_REFUND'}">
                                         <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}">
-                                            <bill:FiveFiveCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true" titleLabel="Appointment Deposit Refund Receipt" dateLabel="Refunded At" billNoLabel="Refund Bill No"/>
+                                            <bill:FiveFiveCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true" titleLabel="Appointment Deposit Refund Receipt" dateLabel="Refunded At" billNoLabel="Refund Bill No" reasonLabel="Comments"/>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}">
-                                            <bill:A4PaperCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true" titleLabel="Appointment Deposit Refund Receipt" dateLabel="Refunded At" billNoLabel="Refund Bill No"/>
+                                            <bill:A4PaperCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true" titleLabel="Appointment Deposit Refund Receipt" dateLabel="Refunded At" billNoLabel="Refund Bill No" reasonLabel="Comments"/>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
-                                            <bill:PosPaperCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true" titleLabel="Appointment Deposit Refund Receipt" dateLabel="Refunded At" billNoLabel="Refund Bill No"/>
+                                            <bill:PosPaperCancellationReceipt receipt="#{inwardSearch.appointmentBillReceipt}" duplicate="true" titleLabel="Appointment Deposit Refund Receipt" dateLabel="Refunded At" billNoLabel="Refund Bill No" reasonLabel="Comments"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{inwardSearch.appointmentBillReceipt.billTypeAtomic eq 'INWARD_APPOINTMENT_BILL'}">
