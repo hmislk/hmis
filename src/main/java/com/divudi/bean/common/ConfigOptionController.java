@@ -240,9 +240,11 @@ public class ConfigOptionController implements Serializable {
             return configOptionApplicationController.getLongValueByKey(key, defaultValue);
         }
         String deptKey = departmentName + " - " + key;
-        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
-        if (appOption == null || appOption.getValueType() != OptionValueType.LONG) {
-            defaultValue = configOptionApplicationController.getLongValueByKey(key, defaultValue);
+        ConfigOption deptOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (deptOption == null || deptOption.getValueType() != OptionValueType.LONG) {
+            // No department override — return the plain application value without
+            // letting getLongValueByKey(deptKey, ...) persist a spurious department row.
+            return configOptionApplicationController.getLongValueByKey(key, defaultValue);
         }
         return configOptionApplicationController.getLongValueByKey(deptKey, defaultValue);
     }
