@@ -220,6 +220,33 @@ public class ConfigOptionController implements Serializable {
         return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
     }
 
+    public Long getLongValueByKey(String key) {
+        return getLongValueByKey(key, 0L);
+    }
+
+    /**
+     * Department-scoped-key-first lookup for a LONG option, mirroring
+     * {@link #getBooleanValueByKey(String, boolean)}: resolves
+     * {@code "<Department name> - <key>"} first and only falls back to the plain
+     * application-scoped key (and finally {@code defaultValue}) when no
+     * department override exists. Use this so an admin can tune a per-department
+     * value from Department Options without a code change.
+     */
+    public Long getLongValueByKey(String key, Long defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getLongValueByKey(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.LONG) {
+            defaultValue = configOptionApplicationController.getLongValueByKey(key, defaultValue);
+        }
+        return configOptionApplicationController.getLongValueByKey(deptKey, defaultValue);
+    }
+
     public String navigateToDepartmentOptions() {
         institution = null;
         department = sessionController.getDepartment();

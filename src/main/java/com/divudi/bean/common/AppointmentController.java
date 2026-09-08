@@ -128,6 +128,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    ConfigOptionController configOptionController;
+    @Inject
     SessionController sessionController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
@@ -190,14 +192,18 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
+    /** ~10 years, in hours — larger admission-window offsets are treated as misconfiguration. */
+    private static final long MAX_ADMISSION_WINDOW_HOURS = 24L * 366L * 10L;
+
     /**
-     * Returns {@code hours} when it is a usable non-negative value, otherwise
-     * {@code defaultHours}. Guards against a blank or corrupted {@code CONFIGOPTION}
-     * row: {@link ConfigOptionApplicationController#getLongValueByKey(String, Long)}
-     * returns {@code null} when the stored value cannot be parsed to a {@code Long}.
+     * Returns {@code hours} when it is a usable value, otherwise {@code defaultHours}.
+     * Guards against a blank or corrupted {@code CONFIGOPTION} row
+     * ({@code getLongValueByKey} returns {@code null} when the stored value cannot be
+     * parsed to a {@code Long}), a negative value, and an absurdly large value that
+     * would overflow the {@code hours * 3_600_000} millisecond conversion at the call site.
      */
     private long safeHours(Long hours, long defaultHours) {
-        if (hours == null || hours < 0L) {
+        if (hours == null || hours < 0L || hours > MAX_ADMISSION_WINDOW_HOURS) {
             return defaultHours;
         }
         return hours;
@@ -225,9 +231,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         // valid reservation, so fall back to reservedFrom as the effective end here.
         Date effectiveEnd = (resTo != null) ? resTo : resFrom;
 
-        long earlyHours = safeHours(configOptionApplicationController.getLongValueByKey(
+        // Resolved per-department-first (falls back to the application-scoped row, then 24).
+        long earlyHours = safeHours(configOptionController.getLongValueByKey(
                 "Inward - Reservation Admission Early Window (Hours)", 24L), 24L);
-        long graceHours = safeHours(configOptionApplicationController.getLongValueByKey(
+        long graceHours = safeHours(configOptionController.getLongValueByKey(
                 "Inward - Reservation Admission Grace Period (Hours)", 24L), 24L);
 
         Date now = CommonFunctions.getCurrentDateTime();
