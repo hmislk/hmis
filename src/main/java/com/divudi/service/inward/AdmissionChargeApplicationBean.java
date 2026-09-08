@@ -174,9 +174,15 @@ public class AdmissionChargeApplicationBean implements Serializable {
             return null;
         }
 
-        // The bulk update bypasses the persistence context, so refresh the
-        // in-memory encounter the caller is still holding.
+        // A bulk update bypasses the persistence context and the shared cache, so
+        // the claim alone would leave a cached encounter still reporting a null
+        // batch bill - and BhtEditController reads exactly that field to find the
+        // charges when an admission is cancelled. Merge the same value back so the
+        // in-memory copy, the persistence context and the L2 cache all agree. The
+        // conditional update above is what decided the winner; this only restores
+        // coherence, so writing the same value again is harmless.
         encounter.setAdmissionChargeBatchBill(result.getBatchBill());
+        patientEncounterFacade.edit(encounter);
 
         return result.getBatchBill();
     }
