@@ -1518,7 +1518,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             // mother's room (#9900) - so isRoomAdmitted() is false forever and the
             // room-assignment diversion below would trap it permanently, leaving the
             // baby's dashboard unreachable from every entry point. (#23577)
-            if (isBabyAdmission() || current.isRoomAdmitted() || current.isDischarged()
+            // PatientEncounter.discharged is a nullable Boolean, not a primitive, so
+            // reading it as isDischarged() unboxes null and throws on a legacy row
+            // where DISCHARGED IS NULL - leaving this button doing nothing, the exact
+            // symptom #23577 set out to remove. Read it the way the rest of the
+            // codebase does (navigateToBabyAdmission above, InwardReportControllerBht,
+            // NursingDischargeController).
+            if (isBabyAdmission() || current.isRoomAdmitted() || Boolean.TRUE.equals(current.getDischarged())
                     || current.isPaymentFinalized() || !roomChargesAllowed) {
                 current.getPatient().setEditingMode(false);
                 bhtSummeryController.setPatientEncounter(current);
