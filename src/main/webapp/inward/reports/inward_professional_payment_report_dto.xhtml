@@ -500,7 +500,8 @@
                                                                     </td>
                                                                 </ui:fragment>
                                                             </tr>
-                                                            <tr style="font-weight: bold;">
+                                                            <!-- Temporarily hidden - #23515 follow-up: revert to a proper column-visibility toggle -->
+                                                            <tr style="font-weight: bold;" rendered="false">
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Balance to Pay</td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
                                                                     <td class="text-end">
