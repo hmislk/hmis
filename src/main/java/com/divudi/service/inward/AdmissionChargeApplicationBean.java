@@ -142,13 +142,41 @@ public class AdmissionChargeApplicationBean implements Serializable {
             throw ex;
         }
 
+        // Claim the encounter atomically rather than with a plain edit(). The
+        // guard at the top of this method is a check-then-act: two concurrent
+        // saves of the same admission (a fast double-submit - the controller is
+        // @SessionScoped, so both would act on the same encounter) can both read
+        // a null batch bill and both charge the patient. This conditional update
+        // lets exactly one of them win, at the database, with no extra locking.
+        int claimed;
         try {
-            encounter.setAdmissionChargeBatchBill(result.getBatchBill());
-            patientEncounterFacade.edit(encounter);
+            Map<String, Object> claim = new HashMap<>();
+            claim.put("batch", result.getBatchBill());
+            claim.put("enc", encounter.getId());
+            claimed = patientEncounterFacade.updateByJpql(
+                    "update PatientEncounter pe "
+                    + " set pe.admissionChargeBatchBill = :batch "
+                    + " where pe.id = :enc "
+                    + " and pe.admissionChargeBatchBill is null", claim);
         } catch (RuntimeException ex) {
             retireCreatedBills(createdBills, result.getBatchBill(), loggedUser, ex);
             throw ex;
         }
+
+        if (claimed == 0) {
+            // Another run got there first. Undo everything this one created so the
+            // patient is charged once, and say nothing to the caller - the charges
+            // exist, they are just not ours.
+            logger.log(Level.WARNING,
+                    "Automatic admission charges were already applied to admission {0} by a concurrent save; "
+                    + "retiring the duplicate bills this run created.", encounter.getId());
+            retireCreatedBills(createdBills, result.getBatchBill(), loggedUser, null);
+            return null;
+        }
+
+        // The bulk update bypasses the persistence context, so refresh the
+        // in-memory encounter the caller is still holding.
+        encounter.setAdmissionChargeBatchBill(result.getBatchBill());
 
         return result.getBatchBill();
     }
@@ -162,12 +190,16 @@ public class AdmissionChargeApplicationBean implements Serializable {
      * {@code BillFee.retired = false}, so retiring only the parent bill would
      * leave the charge visible in the charge-type breakdown.</p>
      *
-     * <p>Never throws - it runs while an exception is already in flight, and
+     * <p>Never throws - it may run while an exception is already in flight, and
      * masking that exception with a second one would hide the real cause.</p>
+     *
+     * @param cause the failure being compensated, or {@code null} when this run
+     * simply lost the race to claim the encounter
      */
     private void retireCreatedBills(List<Bill> bills, Bill batchBill, WebUser loggedUser, RuntimeException cause) {
-        String reason = "Auto-retired: automatic admission charges failed - "
-                + (cause != null ? cause.getMessage() : "unknown error");
+        String reason = cause != null
+                ? "Auto-retired: automatic admission charges failed - " + cause.getMessage()
+                : "Auto-retired: duplicate automatic admission charges from a concurrent save";
         Date now = new Date();
 
         List<Bill> toRetire = new ArrayList<>(bills);
