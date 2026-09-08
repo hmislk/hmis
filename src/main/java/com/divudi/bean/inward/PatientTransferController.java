@@ -8,6 +8,7 @@ import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.TheatreRoom;
@@ -661,28 +662,73 @@ public class PatientTransferController implements Serializable {
     }
 
     public void sendToTheatre() {
-        if (current == null) {
+        // This bean is @SessionScoped, so two browser tabs sharing one
+        // session can have their requests processed concurrently against
+        // the SAME bean instance. Snapshotting these fields into locals up
+        // front - and using only the locals for the rest of this method -
+        // closes that window: a concurrent request mutating current/
+        // selectedSurgeryBill/etc. after this point can no longer cause the
+        // validated admission/bill/room/notes to diverge from what actually
+        // gets persisted below.
+        Admission admission = current;
+        Bill surgeryBill = selectedSurgeryBill;
+        RoomFacilityCharge targetRoom = targetRoomFacilityCharge;
+        String transferNotes = notes;
+
+        if (admission == null) {
             JsfUtil.addErrorMessage("No patient selected.");
             return;
         }
-        if (targetRoomFacilityCharge == null) {
+        if (targetRoom == null) {
             JsfUtil.addErrorMessage("Please select a theatre room.");
             return;
         }
-        PatientTransferRequest existing = findActiveSendToTheatreRequest(current);
+        // A stale postback from a different browser tab could carry a
+        // surgeryBill left over from a DIFFERENT admission's send-to-theatre
+        // page (current gets reset per navigation, but two tabs sharing the
+        // same session can race). Since acceptInTheatre() uses
+        // surgeryBill.getProcedure() to attribute the theatre room (and its
+        // charges), a mismatched bill here would misattribute a totally
+        // different patient's surgery - reject and clear rather than
+        // silently trusting client state.
+        if (surgeryBill != null
+                && (surgeryBill.getPatientEncounter() == null
+                || surgeryBill.getPatientEncounter().getId() == null
+                || !surgeryBill.getPatientEncounter().getId().equals(admission.getId()))) {
+            JsfUtil.addErrorMessage("Selected surgery does not belong to this admission. Please re-select.");
+            selectedSurgeryBill = null;
+            return;
+        }
+        PatientTransferRequest existing = findActiveSendToTheatreRequest(admission, surgeryBill);
         if (existing != null) {
-            JsfUtil.addErrorMessage("This patient already has an active theatre transfer in progress.");
+            JsfUtil.addErrorMessage(surgeryBill != null
+                    ? "This surgery already has an active theatre transfer in progress."
+                    : "This patient already has an active theatre transfer in progress.");
+            return;
+        }
+        // findActiveSendToTheatreRequestForReturn resolves a return request's
+        // matching SEND_TO_THEATRE row by surgery bill alone, not by the exact
+        // originating request - so if this surgery already has a pending
+        // (not yet accepted) return-to-ward, a new send now would create a
+        // second SEND_TO_THEATRE row for the same surgery bill, and accepting
+        // that pending return afterwards could resolve to the wrong (new) row
+        // instead of the one it actually belongs to. Block re-sending until
+        // the pending return is accepted.
+        if (hasPendingReturnRequest(admission, surgeryBill)) {
+            JsfUtil.addErrorMessage(surgeryBill != null
+                    ? "This surgery has a return-to-ward request awaiting acceptance. Please accept it before sending to theatre again."
+                    : "This patient has a return-to-ward request awaiting acceptance. Please accept it before sending to theatre again.");
             return;
         }
         PatientTransferRequest req = new PatientTransferRequest();
-        req.setAdmission(current);
-        req.setFromPatientRoom(current.getCurrentPatientRoom());
-        req.setToRoomFacilityCharge(targetRoomFacilityCharge);
+        req.setAdmission(admission);
+        req.setFromPatientRoom(admission.getCurrentPatientRoom());
+        req.setToRoomFacilityCharge(targetRoom);
         req.setTheatreTransferType(TheatreTransferType.SEND_TO_THEATRE);
         req.setTheatreOccupancyStatus(TheatreOccupancyStatus.SENT_TO_THEATRE);
-        req.setSurgeryBill(selectedSurgeryBill);
+        req.setSurgeryBill(surgeryBill);
         req.setStatus(TransferRequestStatus.PENDING);
-        req.setNotes(notes);
+        req.setNotes(transferNotes);
         req.setInitiatedAt(new Date());
         req.setInitiatedBy(sessionController.getLoggedUser());
         req.setCreatedAt(new Date());
@@ -713,12 +759,27 @@ public class PatientTransferController implements Serializable {
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
 
         if (persisted.getTheatreRoom() == null) {
+            // Attribute the theatre stay to the specific surgery's own
+            // procedure encounter (a child of the admission created by
+            // SurgeryBillController) when one was selected on Send to
+            // Theatre, so per-surgery room charges can be computed
+            // (SurgeryCostReportController.enrichRoomCharges). Falls back to
+            // the admission itself when no surgery bill was selected (the
+            // "Surgery (optional)" field on the send-to-theatre form), and
+            // final-bill totals (InwardBeanController.getRoomCharge et al.)
+            // already sum admission + all child encounters via
+            // fetchChildPatientEncounter, so this doesn't change what the
+            // final bill charges - only how it's broken down per surgery.
+            PatientEncounter theatreRoomEncounter = (persisted.getSurgeryBill() != null
+                    && persisted.getSurgeryBill().getProcedure() != null)
+                    ? persisted.getSurgeryBill().getProcedure()
+                    : persisted.getAdmission();
             TheatreRoom theatreRoom = new TheatreRoom();
             theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
                     theatreRoom,
                     null,
                     persisted.getToRoomFacilityCharge(),
-                    persisted.getAdmission(),
+                    theatreRoomEncounter,
                     persisted.getInitiatedAt(),
                     sessionController.getLoggedUser());
             persisted.setTheatreRoom(theatreRoom);
@@ -934,6 +995,76 @@ public class PatientTransferController implements Serializable {
         return (results != null && !results.isEmpty()) ? results.get(0) : null;
     }
 
+    /**
+     * Surgery-bill-aware variant of {@link #findActiveSendToTheatreRequest(Admission)}.
+     * A multi-surgery admission can have several surgeries in flight
+     * concurrently (different theatre rooms), so the duplicate-transfer guard
+     * in {@link #sendToTheatre()} must scope by surgery bill, not just the
+     * admission - otherwise sending the second surgery to theatre is blocked
+     * while the first is still pending/in-theatre. When no surgery bill is
+     * selected (the "Surgery (optional)" field), falls back to the
+     * admission-level check since there is nothing else to disambiguate by.
+     */
+    public PatientTransferRequest findActiveSendToTheatreRequest(Admission admission, Bill surgeryBill) {
+        if (admission == null) {
+            return null;
+        }
+        if (surgeryBill == null) {
+            return findActiveSendToTheatreRequest(admission);
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("surgeryBill", surgeryBill);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("returned", TheatreOccupancyStatus.RETURNED_TO_WARD);
+        params.put("cancelled", TransferRequestStatus.CANCELLED);
+        // A generic admission-level transfer (no surgery selected) still means
+        // this physical patient is already in transit/theatre, so it must
+        // conflict with a surgery-specific send too - only a DIFFERENT
+        // non-null surgery bill's active request is allowed to run
+        // concurrently.
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND (r.surgeryBill = :surgeryBill OR r.surgeryBill IS NULL) "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status <> :cancelled "
+                + "AND (r.theatreOccupancyStatus IS NULL OR r.theatreOccupancyStatus <> :returned) "
+                + "AND r.retired = false "
+                + "ORDER BY r.createdAt DESC";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    /**
+     * True when this admission (optionally scoped to one surgery bill) has a
+     * RETURN_TO_WARD request that is still PENDING (not yet accepted). Used
+     * by sendToTheatre() to block a second theatre trip for the same surgery
+     * while its prior trip's return hasn't been accepted yet -
+     * findActiveSendToTheatreRequestForReturn resolves by surgery bill alone,
+     * so a second SEND_TO_THEATRE row for that same surgery could otherwise
+     * let acceptReturnToWard() resolve to the wrong (newer) row.
+     */
+    private boolean hasPendingReturnRequest(Admission admission, Bill surgeryBill) {
+        if (admission == null) {
+            return false;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("type", TheatreTransferType.RETURN_TO_WARD);
+        params.put("pending", TransferRequestStatus.PENDING);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status = :pending "
+                + "AND r.retired = false ";
+        if (surgeryBill != null) {
+            jpql += "AND (r.surgeryBill = :surgeryBill OR r.surgeryBill IS NULL) ";
+            params.put("surgeryBill", surgeryBill);
+        }
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return results != null && !results.isEmpty();
+    }
+
     private PatientTransferRequest findActiveSendToTheatreRequestForReturn(PatientTransferRequest returnReq) {
         if (returnReq == null || returnReq.getAdmission() == null) {
             return null;
@@ -942,12 +1073,25 @@ public class PatientTransferController implements Serializable {
         params.put("admission", returnReq.getAdmission());
         params.put("type", TheatreTransferType.SEND_TO_THEATRE);
         params.put("accepted", TransferRequestStatus.ACCEPTED);
+        // Scope by surgery bill, matching returnReq's own surgeryBill (copied
+        // from the SEND_TO_THEATRE request in returnToWard()) - otherwise,
+        // with several surgeries' SEND_TO_THEATRE/RETURN_TO_WARD pairs active
+        // concurrently on one admission, "most recent accepted" could grab a
+        // DIFFERENT surgery's still-in-progress theatre request and wrongly
+        // mark it RETURNED_TO_WARD.
         String jpql = "SELECT r FROM PatientTransferRequest r "
                 + "WHERE r.admission = :admission "
                 + "AND r.theatreTransferType = :type "
                 + "AND r.status = :accepted "
-                + "AND r.retired = false "
-                + "ORDER BY r.createdAt DESC";
+                + "AND r.retired = false ";
+        Bill surgeryBill = returnReq.getSurgeryBill();
+        if (surgeryBill != null) {
+            jpql += "AND r.surgeryBill = :surgeryBill ";
+            params.put("surgeryBill", surgeryBill);
+        } else {
+            jpql += "AND r.surgeryBill IS NULL ";
+        }
+        jpql += "ORDER BY r.createdAt DESC";
         List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
         return (results != null && !results.isEmpty()) ? results.get(0) : null;
     }

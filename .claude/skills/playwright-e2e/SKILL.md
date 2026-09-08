@@ -53,6 +53,54 @@ is the finding — the page is unreachable in production. Do not fall back to th
 URL to get on with the test. See
 [§2](../../../developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url).
 
+## If the Playwright MCP server shows as unavailable
+
+An MCP server that failed to connect at session start (e.g. a system-reminder
+saying `playwright (CONNECT_TIMEOUT)` or similar) will **not** self-heal
+mid-session — a session's MCP connections are established once at startup, so
+retrying a Playwright tool call again later in the same session wastes a
+round-trip and always fails the same way.
+
+Instead, **immediately and without asking the user**, run:
+```bash
+claude mcp list
+```
+This performs a fresh, independent health check outside the current session's
+stale connection state. `claude mcp list` reports one of several distinct
+statuses per server — treat each differently rather than collapsing them into
+a binary "healthy or not":
+
+- **`✔ Connected`** — the server is actually reachable; the earlier failure
+  was specific to this session's startup timing, not a real outage. Tell the
+  user briefly that the initial connection attempt timed out but the server
+  is confirmed healthy, then fall back to `claude-in-chrome` for *this*
+  session (per [[feedback-prefer-playwright-over-claude-in-chrome]] project
+  memory) and recommend starting a fresh session next time to pick up the
+  working connection.
+- **`! Needs authentication`** — not an outage; the server needs a sign-in or
+  header the current session hasn't provided. Tell the user it needs
+  re-authentication (`/mcp` panel or `claude mcp login`) rather than treating
+  it as down.
+- **`⏸ Pending approval`** — project-scoped server awaiting manual approval;
+  tell the user to run `claude` interactively to approve it, not a real
+  outage either.
+- **`! Connected · tools fetch failed`** — the connection itself works but
+  tool listing errored; this is a real (if partial) problem worth surfacing,
+  distinct from a clean outage.
+- **`✘ Failed to connect` / `✘ Connection error`** — only *these* two count
+  as a genuine outage. Say so explicitly and ask the user how to proceed (fix
+  the server, proceed with `claude-in-chrome`, or skip live browser testing)
+  rather than silently substituting one tool for the other.
+
+(Statuses per the Claude Code MCP docs as of this writing — reconfirm against
+current documentation if `claude mcp list`'s output format has changed.)
+
+Never silently swap in `claude-in-chrome` without first running this check and
+telling the user which case applies — `claude-in-chrome` cannot handle native
+`confirm()`/`alert()`/`prompt()` dialogs (they freeze the extension), which
+HMIS billing/save flows trigger routinely, so the substitution carries real
+risk the user should know about upfront.
+
 ## Workflow
 
 1. **Confirm the target** with the user: which feature/page, which local

@@ -211,7 +211,19 @@ public class InwardServiceRefundController implements Serializable {
             JsfUtil.addErrorMessage("No bill to refund");
             return null;
         }
-        inwardSearch.setBill(billFacade.find(b.getId()));
+        // Reload fresh rather than trusting the session-held bill passed in -
+        // it may have been checked by another request since the reprint page
+        // loaded. Same defensive reload refundInwardServiceBill() does below.
+        Bill currentBill = billFacade.find(b.getId());
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("Bill not available");
+            return null;
+        }
+        if (currentBill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill's services cannot be returned.");
+            return null;
+        }
+        inwardSearch.setBill(currentBill);
         return "/inward/inward_bill_service_refund?faces-redirect=true";
     }
 
@@ -257,6 +269,10 @@ public class InwardServiceRefundController implements Serializable {
         Bill bill = billFacade.find(sessionBill.getId());
         if (bill == null || bill.isRetired()) {
             JsfUtil.addErrorMessage("Bill not available");
+            return null;
+        }
+        if (bill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Checked Bill. Can not return");
             return null;
         }
         if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
