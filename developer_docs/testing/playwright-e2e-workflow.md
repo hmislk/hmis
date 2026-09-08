@@ -135,7 +135,8 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly](#108-this-dashboards-sample-transporter-pautocomplete-ignores-synthetic-keystrokes--drive-widgetsearch-directly)
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
-- [109. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#109-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
+- [109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work](#109-a-pconfirm-dialog-is-position-fixed-so-an-offsetparent-visibility-probe-wrongly-reports-it-hidden--the-click-did-work)
+- [110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#110-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3078,7 +3079,49 @@ Found while fixing issue #23577.
 
 ---
 
-## 109. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query
+## 109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work
+
+Cancelling an inward service bill (`inward_cancel_bill_service.xhtml`) appeared
+to do nothing: clicking **Cancel Service Bill** produced no growl, no page
+change, and no row change in the DB. A probe for open dialogs came back empty:
+
+```js
+[...document.querySelectorAll('.ui-confirm-dialog,.ui-dialog')]
+    .filter(d => d.offsetParent)          // <-- always empty for this dialog
+```
+
+The dialog *was* open. PrimeFaces renders `p:confirm`'s dialog with
+`position: fixed`, and **`offsetParent` is `null` for any fixed-position
+element** — so the usual "is it visible" shorthand reports every confirm dialog
+as hidden. The follow-up symptom is the giveaway: a retried click on the
+underlying button fails with
+
+```
+<div class="ui-widget-overlay ui-dialog-mask" ...> intercepts pointer events
+```
+
+which is the modal mask doing its job, not a broken button.
+
+**Probe `display`/`.ui-dialog-mask` instead, and click the dialog's own button:**
+
+```js
+[...document.querySelectorAll('.ui-confirm-dialog')].map(d => ({
+    id: d.id,
+    display: getComputedStyle(d).display,        // 'block' when open
+    buttons: [...d.querySelectorAll('button')].map(b => ({t: b.innerText.trim(), id: b.id}))
+}))
+```
+
+then click the **Yes** button by its id. Note this is a PrimeFaces dialog, not a
+native `confirm()` — `browser_handle_dialog` does not apply and will time out
+waiting for a dialog that never reaches the browser. The same page can use both:
+`inward_bill_service_refund.xhtml`'s **Refund Bill** is a native `confirm()`
+(handled with `browser_handle_dialog`), while the cancel screen's button is a
+`p:confirm`. Check the markup for `<p:confirm>` before deciding which to use.
+
+---
+
+## 110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query
 
 While verifying issue #23571's new Appointment Deposit refund receipt on
 `inward_view_appointment_bill_receipt.xhtml`, the `billTypeAtomic`-keyed
@@ -3109,8 +3152,6 @@ paper types the page checks, such as "POS Paper". This does not validate
 
 Found while fixing issue #23571.
 
----
-
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -3119,6 +3160,7 @@ Found while fixing issue #23571.
 - [ ] Clicked **Search** on every date-filtered list before expecting rows.
 - [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
 - [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
+- [ ] Distinguished a native `confirm()` (use `browser_handle_dialog`) from a PrimeFaces `p:confirm` dialog (click its own Yes button) — and did not treat an `offsetParent`-based visibility probe as proof a `p:confirm` dialog is closed (§109).
 - [ ] Filled required fields before non-AJAX actions.
 - [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.

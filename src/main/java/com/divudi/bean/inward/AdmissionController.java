@@ -162,6 +162,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientPackageApplicationBean;
     }
 
+    /** Bills the configured automatic admission charges. (Issue #23594) */
+    @Inject
+    private com.divudi.service.inward.AdmissionChargeApplicationBean admissionChargeApplicationBean;
+
     @Inject
     BhtEditController bhtEditController;
     @Inject
@@ -1518,7 +1522,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             // mother's room (#9900) - so isRoomAdmitted() is false forever and the
             // room-assignment diversion below would trap it permanently, leaving the
             // baby's dashboard unreachable from every entry point. (#23577)
-            if (isBabyAdmission() || current.isRoomAdmitted() || current.isDischarged()
+            // PatientEncounter.discharged is a nullable Boolean, not a primitive, so
+            // reading it as isDischarged() unboxes null and throws on a legacy row
+            // where DISCHARGED IS NULL - leaving this button doing nothing, the exact
+            // symptom #23577 set out to remove. Read it the way the rest of the
+            // codebase does (navigateToBabyAdmission above, InwardReportControllerBht,
+            // NursingDischargeController).
+            if (isBabyAdmission() || current.isRoomAdmitted() || Boolean.TRUE.equals(current.getDischarged())
                     || current.isPaymentFinalized() || !roomChargesAllowed) {
                 current.getPatient().setEditingMode(false);
                 bhtSummeryController.setPatientEncounter(current);
@@ -3057,6 +3067,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     getSessionController().getLoggedUser());
         }
 
+        // Held outside the room block so the automatic admission charges below can
+        // retire it if they fail - a room-less Rapid / Temp A&E admission simply
+        // leaves it null. (Issue #23594)
+        PatientRoom createdPatientRoom = null;
+
         // Only create a PatientRoom record when a facility charge is actually selected.
         // For Rapid / Temp A&E admissions the room validation is skipped, so
         // getRoomFacilityCharge() may be null; attempting to save it would NPE. (Issue #21183)
@@ -3067,6 +3082,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             // controls whether a nurse handover request is also created below (Issue #23145).
             currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
             getCurrent().setRoomAdmitted(true);
+            createdPatientRoom = currentPatientRoom;
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
 
@@ -3177,6 +3193,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         saveEncounterCreditCompanies(current);
 
+        // Automatic admission charges — outside the room block on purpose, since a
+        // room-less Rapid / Temp A&E admission still has to be charged. (Issue #23594)
+        if (!applyAutomaticAdmissionCharges(createdPatientRoom)) {
+            return;
+        }
+
         if (isNewAdmission) {
             String auditTrigger = getCurrent().getParentEncounter() != null
                     ? "Baby Admission Created" : "Admission Created";
@@ -3228,9 +3250,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
+        // Held outside the room block so the automatic admission charges below can
+        // retire it if they fail. (Issue #23594)
+        PatientRoom createdPatientRoom = null;
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+            createdPatientRoom = currentPatientRoom;
 
             if (currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
@@ -3258,6 +3285,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         saveEncounterCreditCompanies(current);
 
+        // Automatic admission charges — same hook as saveSelected(). (Issue #23594)
+        if (!applyAutomaticAdmissionCharges(createdPatientRoom)) {
+            return;
+        }
+
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
         getCurrentNonBht().setDateOfDischarge(new Date());
@@ -3272,6 +3304,50 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         printPreview = true;
+    }
+
+    /**
+     * Bills the configured automatic admission charges for the admission just
+     * saved (issue #23594).
+     *
+     * <p>Compensating transaction, same pattern as the inpatient package
+     * application above: this controller is a CDI bean and is not itself
+     * transactional, so the admission and the room were each already committed
+     * in earlier transactions. A failure here cannot be rolled back by the
+     * container, and would otherwise leave a half-charged admission - so retire
+     * what was created and surface a clear error instead.</p>
+     *
+     * @return {@code true} to carry on, {@code false} when the admission was
+     * rolled back and the caller must stop
+     */
+    private boolean applyAutomaticAdmissionCharges(PatientRoom createdPatientRoom) {
+        try {
+            admissionChargeApplicationBean.applyAdmissionChargesToAdmission(
+                    getCurrent(), getSessionController().getLoggedUser(), getSessionController().getDepartment());
+            return true;
+        } catch (RuntimeException ex) {
+            logger.log(Level.SEVERE, "Automatic admission charges failed for admission " + getCurrent().getBhtNo(), ex);
+            Date now = new Date();
+            String reason = "Auto-retired: automatic admission charges failed - " + ex.getMessage();
+
+            if (createdPatientRoom != null) {
+                createdPatientRoom.setRetired(true);
+                createdPatientRoom.setRetireComments(reason);
+                createdPatientRoom.setRetirer(getSessionController().getLoggedUser());
+                createdPatientRoom.setRetiredAt(now);
+                patientRoomFacade.edit(createdPatientRoom);
+            }
+
+            getCurrent().setRetired(true);
+            getCurrent().setRetireComments(reason);
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getCurrent().setRetiredAt(now);
+            getFacade().edit(getCurrent());
+
+            JsfUtil.addErrorMessage("Automatic admission charges could not be applied and this admission has been cancelled. Please retry. (" + ex.getMessage() + ")");
+            admittingProcessStarted = false;
+            return false;
+        }
     }
 
     public void saveEncounterCreditCompanies(PatientEncounter current) {
