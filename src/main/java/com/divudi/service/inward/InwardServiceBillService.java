@@ -113,6 +113,11 @@ public class InwardServiceBillService implements Serializable {
         if (billBean.calculateNumberOfBillsPerOrder(request.getBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(request.getBillEntries().get(0).getBillItem().getItem().getDepartment(), temp, request);
+            // Collected the moment it exists, not at the end: these facades are
+            // stateless, so the row is already committed and a later failure has
+            // to be able to find it in order to retire it.
+            created.add(b);
+            request.getBillCollector().add(b);
             applyItemRequestReference(b, request.getBillEntries());
 
             List<BillItem> list = saveBillItems(b, request.getBillEntries(), request.getLoggedUser(), request);
@@ -131,12 +136,9 @@ public class InwardServiceBillService implements Serializable {
 
             billFacade.edit(b);
             billBean.calculateBillItems(b, request.getBillEntries());
-            created.add(b);
         } else {
             created.addAll(putToBills(request));
         }
-
-        request.getBillCollector().addAll(created);
 
         result.setBills(created);
         result.setBatchBill(saveBatchBill(request));
@@ -157,6 +159,9 @@ public class InwardServiceBillService implements Serializable {
         for (Department d : billDepts) {
             BilledBill myBill = new BilledBill();
             saveBill(d, myBill, request);
+            // See createServiceBills: collect on creation so a partial run is recoverable.
+            created.add(myBill);
+            request.getBillCollector().add(myBill);
             List<BillEntry> tmp = new ArrayList<>();
             for (BillEntry e : request.getBillEntries()) {
                 if (e.getBillItem().getItem().getDepartment().equals(d)) {
@@ -170,7 +175,6 @@ public class InwardServiceBillService implements Serializable {
             }
             billBean.calculateBillItems(myBill, tmp);
             myBill.setBillItems(tmpBis);
-            created.add(myBill);
         }
 
         return created;

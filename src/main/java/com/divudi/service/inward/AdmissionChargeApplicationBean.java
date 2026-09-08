@@ -20,9 +20,14 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionChargeItem;
 import com.divudi.core.facade.AdmissionChargeItemFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +72,12 @@ public class AdmissionChargeApplicationBean implements Serializable {
     private AdmissionChargeItemFacade admissionChargeItemFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    private BillItemFacade billItemFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
 
     /**
      * Resolves and bills the automatic admission charges for this encounter.
@@ -110,17 +121,97 @@ public class AdmissionChargeApplicationBean implements Serializable {
         request.setLoggedUser(loggedUser);
         request.setLoggedDepartment(loggedDepartment);
         request.setCreatingDepartment(loggedUser.getDepartment());
-        request.setBillCollector(new ArrayList<>());
         // The price comes from the configuration, so it is neither marked up by
         // the inward price matrix nor marked down by the inward discount matrix.
         request.setApplyInwardMargin(false);
 
-        InwardServiceBillResult result = inwardServiceBillService.createServiceBills(request);
+        List<Bill> createdBills = new ArrayList<>();
+        request.setBillCollector(createdBills);
 
-        encounter.setAdmissionChargeBatchBill(result.getBatchBill());
-        patientEncounterFacade.edit(encounter);
+        // The facades are stateless, so every bill this run creates is already
+        // committed by the time the next one is built. A failure part-way through
+        // therefore leaves live charge bills behind, and until the encounter
+        // carries its batch bill they are invisible to the reversal path in
+        // BhtEditController - which looks them up by that very field. Retire what
+        // was actually created before letting the failure propagate.
+        InwardServiceBillResult result;
+        try {
+            result = inwardServiceBillService.createServiceBills(request);
+        } catch (RuntimeException ex) {
+            retireCreatedBills(createdBills, null, loggedUser, ex);
+            throw ex;
+        }
+
+        try {
+            encounter.setAdmissionChargeBatchBill(result.getBatchBill());
+            patientEncounterFacade.edit(encounter);
+        } catch (RuntimeException ex) {
+            retireCreatedBills(createdBills, result.getBatchBill(), loggedUser, ex);
+            throw ex;
+        }
 
         return result.getBatchBill();
+    }
+
+    /**
+     * Retires the bills a failed run had already committed, along with their bill
+     * items and bill fees, so nothing half-charged survives.
+     *
+     * <p>Retiring all three levels matters: the interim/final bill aggregation
+     * filters {@code BillItem.retired = false} and the fee sums filter
+     * {@code BillFee.retired = false}, so retiring only the parent bill would
+     * leave the charge visible in the charge-type breakdown.</p>
+     *
+     * <p>Never throws - it runs while an exception is already in flight, and
+     * masking that exception with a second one would hide the real cause.</p>
+     */
+    private void retireCreatedBills(List<Bill> bills, Bill batchBill, WebUser loggedUser, RuntimeException cause) {
+        String reason = "Auto-retired: automatic admission charges failed - "
+                + (cause != null ? cause.getMessage() : "unknown error");
+        Date now = new Date();
+
+        List<Bill> toRetire = new ArrayList<>(bills);
+        if (batchBill != null) {
+            toRetire.add(batchBill);
+        }
+
+        for (Bill bill : toRetire) {
+            if (bill == null || bill.getId() == null) {
+                continue;
+            }
+            try {
+                Map<String, Object> params = new HashMap<>();
+                params.put("b", bill);
+
+                for (BillFee bf : billFeeFacade.findByJpql(
+                        "select bf from BillFee bf where bf.retired = false and bf.bill = :b", params)) {
+                    bf.setRetired(true);
+                    bf.setRetirer(loggedUser);
+                    bf.setRetiredAt(now);
+                    bf.setRetireComments(reason);
+                    billFeeFacade.edit(bf);
+                }
+
+                for (BillItem bi : billItemFacade.findByJpql(
+                        "select bi from BillItem bi where bi.retired = false and bi.bill = :b", params)) {
+                    bi.setRetired(true);
+                    bi.setRetirer(loggedUser);
+                    bi.setRetiredAt(now);
+                    bi.setRetireComments(reason);
+                    billItemFacade.edit(bi);
+                }
+
+                bill.setRetired(true);
+                bill.setRetirer(loggedUser);
+                bill.setRetiredAt(now);
+                bill.setRetireComments(reason);
+                billFacade.edit(bill);
+            } catch (RuntimeException cleanupFailure) {
+                logger.log(Level.SEVERE,
+                        "Could not retire admission charge bill " + bill.getId()
+                        + " after a failed run; it needs cancelling by hand.", cleanupFailure);
+            }
+        }
     }
 
     /**

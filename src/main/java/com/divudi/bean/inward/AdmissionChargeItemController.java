@@ -178,6 +178,14 @@ public class AdmissionChargeItemController implements Serializable {
             return;
         }
 
+        // Same contract as the REST layer: a non-positive qty is rejected rather
+        // than quietly normalised, so a mistyped row cannot sit in the
+        // configuration looking valid.
+        if (current.getQty() == null || current.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Qty must be greater than zero.");
+            return;
+        }
+
         if (isDuplicate(current)) {
             JsfUtil.addErrorMessage("A charge for this item, admission type and payment method already exists.");
             return;

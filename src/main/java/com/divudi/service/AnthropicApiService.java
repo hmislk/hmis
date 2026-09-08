@@ -6289,7 +6289,10 @@ public class AnthropicApiService implements Serializable {
                     Long itemIdL = itemId.isEmpty() ? null : Long.parseLong(itemId);
                     Long admissionTypeIdL = admissionTypeId.isEmpty() ? null : Long.parseLong(admissionTypeId);
                     boolean includeRetiredB = Boolean.parseBoolean(includeRetired);
-                    int limit = size.isEmpty() ? 30 : Integer.parseInt(size);
+                    // Clamped to the range the tool schema advertises; search() passes
+                    // limit straight to setMaxResults, so an unbounded value would page
+                    // the whole table into the model's context.
+                    int limit = size.isEmpty() ? 30 : Math.max(1, Math.min(100, Integer.parseInt(size)));
                     int off = offset.isEmpty() ? 0 : Integer.parseInt(offset);
                     AdmissionChargeItemPageDTO pageResult = admissionChargeApiService.search(
                             itemIdL, admissionTypeIdL, paymentMethod.isEmpty() ? null : paymentMethod,

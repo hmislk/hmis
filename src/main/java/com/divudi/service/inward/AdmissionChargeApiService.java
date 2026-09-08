@@ -139,6 +139,11 @@ public class AdmissionChargeApiService implements Serializable {
         if (request.getPrice() < 0) {
             throw new AdmissionChargeValidationException("Price must not be negative");
         }
+        // Rejected rather than silently coerced: a qty the caller did not mean is a
+        // wrong charge on every future admission. Omitting it still defaults to 1.
+        if (request.getQty() != null && request.getQty() <= 0) {
+            throw new AdmissionChargeValidationException("Qty must be greater than zero");
+        }
 
         Item item = validateItemForCharging(request.getItemId());
         AdmissionType admissionType = resolveAdmissionType(request.getAdmissionTypeId());
@@ -151,7 +156,7 @@ public class AdmissionChargeApiService implements Serializable {
         entity.setAdmissionType(admissionType);
         entity.setPaymentMethod(paymentMethod);
         entity.setPrice(request.getPrice());
-        entity.setQty(request.getQty() != null && request.getQty() > 0 ? request.getQty() : 1.0);
+        entity.setQty(request.getQty() != null ? request.getQty() : 1.0);
         entity.setOrderNo(request.getOrderNo());
         entity.setCreater(user);
         entity.setCreatedAt(Calendar.getInstance().getTime());
@@ -196,6 +201,9 @@ public class AdmissionChargeApiService implements Serializable {
         if (request.getPrice() != null && request.getPrice() < 0) {
             throw new AdmissionChargeValidationException("Price must not be negative");
         }
+        if (request.getQty() != null && request.getQty() <= 0) {
+            throw new AdmissionChargeValidationException("Qty must be greater than zero");
+        }
 
         // Re-checked whenever any identity dimension changes; a no-op update excludes
         // itself and always passes.
@@ -207,7 +215,7 @@ public class AdmissionChargeApiService implements Serializable {
         if (request.getPrice() != null) {
             entity.setPrice(request.getPrice());
         }
-        if (request.getQty() != null && request.getQty() > 0) {
+        if (request.getQty() != null) {
             entity.setQty(request.getQty());
         }
         if (request.getOrderNo() != null) {

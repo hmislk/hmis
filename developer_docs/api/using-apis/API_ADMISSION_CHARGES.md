@@ -167,10 +167,11 @@ POST /api/admission-charges
 
 `itemId` and `price` are required (`price` must be `>= 0`). `admissionTypeId` omitted/`null` means
 "any admission type". `paymentMethod` omitted/`null` means "both Cash and Credit". `qty` defaults
-to `1.0`; `orderNo` defaults to `0`.
+to `1.0` when omitted, and must be greater than zero when supplied; `orderNo` defaults to `0`.
 
 Rejected with `400` when: the item does not exist, the item fails any of the requirements above,
-`paymentMethod` is anything other than `Cash`/`Credit`/absent, `price` is negative, or a live row
+`paymentMethod` is anything other than `Cash`/`Credit`/absent, `price` is negative, `qty` is not
+greater than zero, or a live row
 already exists for the resulting `(item, admissionType, paymentMethod)` triple.
 
 ## Update
@@ -217,10 +218,9 @@ replacement row was configured while this one was retired) — resolve that conf
 
 | Code | When |
 |---|---|
-| 400 | Validation failure — missing/invalid item, bad `paymentMethod`, negative `price`, duplicate triple, malformed JSON or query param |
+| 400 | Validation failure — missing/invalid item, bad `paymentMethod`, negative `price`, non-positive `qty`, duplicate triple, restoring a row that is not retired, malformed JSON or query param |
 | 401 | Missing, unknown or expired `Finance` key |
 | 404 | Row does not exist, or is retired and `includeRetired` was not set |
-| 409 | Restoring something that is not retired |
 
 ---
 

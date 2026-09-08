@@ -79,6 +79,12 @@ public class InwardServiceBillRequest implements Serializable {
      * {@code bills} field before settling, so the batch bill has always been
      * linked over the controller's whole accumulated list. The hand-driven path
      * passes {@code getBills()}; the automatic path passes a fresh list.</p>
+     *
+     * <p>Bills are appended <b>as they are created</b>, not once the whole run
+     * succeeds. The facades are stateless, so each bill is already committed by
+     * the time the next one is built - a caller that needs to compensate for a
+     * half-finished run reads this list to find what actually reached the
+     * database.</p>
      */
     private List<Bill> billCollector;
 
