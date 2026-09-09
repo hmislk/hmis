@@ -5231,7 +5231,13 @@ public class BhtSummeryController implements Serializable {
                     (TimedItem) pi.getItem(), pi.getFromTime(), now, owner.isForiegner());
             double persistedValue = pi.getServiceValue() != null ? pi.getServiceValue() : 0.0;
             double delta = liveValue - persistedValue;
-            if (delta == 0.0) {
+            // Only ever add positive accrual. A running service can only have run
+            // longer since it was priced, so the live value should never be below
+            // the persisted one; if it is (e.g. the fee config was changed after
+            // the service was added), pulling the charge-type total down here
+            // would understate the balance against a figure the bill has not
+            // actually recorded. Leave those to the explicit stop/recalc path.
+            if (delta <= 0.0) {
                 continue;
             }
 
@@ -5245,7 +5251,7 @@ public class BhtSummeryController implements Serializable {
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             Double delta = topUpByChargeType.get(cit.getInwardChargeType());
-            if (delta != null && delta != 0.0) {
+            if (delta != null && delta > 0.0) {
                 cit.setTotal(cit.getTotal() + delta);
                 cit.setGross(cit.getGross() + delta);
             }
