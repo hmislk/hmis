@@ -25,21 +25,27 @@ allowed-tools: Read, Glob, Grep, Bash, PowerShell, mcp__playwright__browser_navi
   mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__computer,
   mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find,
   mcp__claude-in-chrome__form_input, mcp__claude-in-chrome__get_page_text,
-  mcp__claude-in-chrome__javascript_tool, mcp__claude-in-chrome__read_console_messages,
+  mcp__claude-in-chrome__read_console_messages,
   mcp__claude-in-chrome__read_network_requests, mcp__claude-in-chrome__resize_window
 ---
 
 # Demonstrate Issues (HMIS)
 
-**🚨 TOOLS: Playwright MCP is the default (`mcp__playwright__*`).** This
-skill's `allowed-tools` frontmatter restricts it to Playwright, and every
-step below uses Playwright's plain tool names (`browser_navigate`,
+**🚨 TOOLS: Playwright MCP is the default (`mcp__playwright__*`).** Every
+step below is written for Playwright's plain tool names (`browser_navigate`,
 `browser_snapshot`, `browser_take_screenshot`, ...) — don't reach for
-claude-in-chrome out of general habit. If Playwright genuinely isn't usable
-in the environment (no visible display, MCP server unavailable, etc.),
-**discuss it with the user first** rather than silently switching — they may
-prefer to solve the Playwright-side blocker (e.g. relay screenshots) over
-falling back to claude-in-chrome. Only switch tools after they say so.
+claude-in-chrome out of general habit. The `mcp__claude-in-chrome__*` tools
+in the `allowed-tools` frontmatter exist **only** for the discussed fallback
+below, not for casual use. If Playwright genuinely isn't usable in the
+environment (MCP server unavailable, the browser won't launch, etc. — a
+headless box the user simply can't watch is *not* such a case; drive it
+click-by-click per step 2), **discuss it with the user first** rather than
+silently switching — they may prefer to solve the Playwright-side blocker
+(e.g. relay screenshots) over falling back. Note the claude-in-chrome
+fallback is degraded-mode: its granted tools can't save a screenshot to a
+project path or resolve a native `confirm()`/`alert()`, so the capture and
+native-dialog steps lose fidelity — say so when discussing the switch. Only
+switch tools after they say so.
 
 **🚨 LOGIN: ask, don't assume.** At step 2, once the login page is open, ask
 the user directly whether they want to log in themselves or have Claude log
@@ -114,8 +120,16 @@ picture of each one is understood.
   Claude click-by-click if the browser isn't visible to them), or whether
   they'd rather Claude look up credentials and log in/select department on
   its own, same as `playwright-e2e`'s normal login flow.
-- Proceed however they answer — don't assume either way, and don't look up
-  or enter credentials before they've said Claude should.
+- Don't assume either way, and don't look up or enter credentials before
+  they've said Claude should.
+- **Wait until login *and* department selection are actually complete before
+  starting the demonstration loop.** If the user handles it, pause until
+  they confirm both steps are done (or the browser clearly shows the
+  authenticated post-department landing page). If Claude handles it, proceed
+  only once that landing page is reached. The shared workflow requires a
+  selected department before any inner-page action — continuing early makes
+  the demos run against unauthenticated / wrong-department state and produce
+  false failures.
 
 ## 3. Demonstration loop
 
