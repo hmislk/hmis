@@ -137,6 +137,9 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
 - [109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work](#109-a-pconfirm-dialog-is-position-fixed-so-an-offsetparent-visibility-probe-wrongly-reports-it-hidden--the-click-did-work)
 - [110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#110-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
+- [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
+- [112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety](#112-relaxing-a-required-validation-audit-every-downstream-reader-of-that-field-for-null-safety)
+- [113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`](#113-ptag-silently-drops-title--a-tooltip-on-a-tag-needs-ptooltip)
 - [Quick checklist](#quick-checklist)
 
 ---
