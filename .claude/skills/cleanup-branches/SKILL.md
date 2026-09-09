@@ -11,9 +11,11 @@ allowed-tools: Bash
 
 # Cleanup Merged Local Branches
 
-Delete every local branch whose PR has already been merged, then bring
-`development` up to date. Leave `persistence.xml` with local JNDI names
-restored (unstaged) at the end.
+Delete every local branch whose PR has already been merged — plus any branch
+with no PR of its own whose commits are all already on `origin/development`
+(e.g. a `gh pr checkout <N>` review checkout) — then bring `development` up to
+date. Leave `persistence.xml` with local JNDI names restored (unstaged) at the
+end.
 
 ## Step 1 — Stash Local persistence.xml Changes
 
@@ -53,28 +55,34 @@ Check if any PR targeting `development` from this branch is merged:
 gh pr list --head <branch> --base development --state merged --repo hmislk/hmis --json number,title,mergedAt --jq '.[0]'
 ```
 
-- If a merged PR is found → **mark for deletion**, record the PR number and title for the report.
+- If a merged PR is found → **mark for deletion (merged-PR)**, record the PR
+  number and title for the report. No further checks — Step 5 force-deletes it.
 - If no merged PR is found, also check without `--base` filter (in case the base was changed):
 
 ```bash
 gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title,baseRefName,mergedAt --jq '.[0]'
 ```
 
-- If still no merged PR is found, run a patch-equivalence check before skipping —
-  a `gh pr checkout <N>` review checkout (e.g. `pr-23617`) has no PR with *it*
-  as the head branch, but its commits may already be on `origin/development`
-  (compare against `origin/development`, freshly fetched in Step 2 — local
-  `development` is not fast-forwarded until Step 6):
+- If still no merged PR is found, do **not** delete on merge status alone — run
+  a patch-equivalence check. A `gh pr checkout <N>` review checkout (e.g.
+  `pr-23617`) has no PR with *it* as the head branch, but its commits may
+  already be on `origin/development`. Compare against `origin/development`
+  (freshly fetched in Step 2 — local `development` is not fast-forwarded until
+  Step 6):
 
   ```bash
   git cherry -v origin/development <branch>
   ```
 
   - **Empty output**, or every line starts with `-` → every commit on the branch
-    is already patch-equivalent on `origin/development`. **Mark for deletion**;
-    in the report note it as "content already in development, no PR from this head".
+    is already patch-equivalent on `origin/development`. **Mark for deletion
+    (content-merged)** — reported in its own section, separate from the
+    merged-PR deletions, so a non-standard removal is never silent.
   - **Any line starts with `+`** → the branch has a commit not on
-    `origin/development`. **Skip** (warn the user about the branch).
+    `origin/development` — genuinely unmerged work, *or* a multi-commit branch
+    whose PR was squash-merged (no per-commit equivalent exists). Either way,
+    **skip** and warn; the report line tells the user to check whether it was a
+    squashed PR and delete manually if so.
 
 ### Hotfix branches (end with `-hotfix`)
 
@@ -95,42 +103,29 @@ git checkout development
 
 ## Step 5 — Delete Marked Branches
 
-For each branch marked for deletion, first try the safe delete:
+Every branch that reaches this step was already vetted in Step 3 — it has
+either a **merged PR** or an **empty `git cherry`** against `origin/development`.
+Branches with unmerged work were skipped there and never marked. So Step 5 only
+deletes; it does not re-decide safety.
+
+For each marked branch, try the safe delete first, then force:
 
 ```bash
-git branch -d <branch>
+git branch -d <branch> || git branch -D <branch>
 ```
 
-`-d` refuses whenever the branch tip is not reachable from local `development` —
-the normal case here, both because the PR was squash- or rebase-merged and
-because local `development` is not fast-forwarded until Step 6. Before
-force-deleting, confirm the branch has no unmerged work.
+`-d` succeeds only when the branch tip is reachable from local `development`.
+It normally **refuses** here — the PR was merged with a merge commit or a
+squash, and local `development` is not fast-forwarded until Step 6, so the tip
+is not yet an ancestor. That refusal is expected, not a warning sign; the
+`|| git branch -D` completes the delete.
 
-Do **not** use `git log origin/<branch>..<branch>` for this: Step 2's
-`git fetch --prune` deletes `origin/<branch>` as soon as the PR is merged and
-GitHub removes the remote branch, so that command errors with
-`unknown revision or path not in the working tree` instead of returning empty.
-
-Compare against `origin/development` (freshly fetched in Step 2) instead:
-
-```bash
-git cherry -v origin/development <branch>
-```
-
-- **Empty output**, or every line starts with `-` — every commit is already
-  patch-equivalent on `origin/development`. Safe to force-delete:
-
-  ```bash
-  git branch -D <branch>
-  ```
-
-- **Any line starts with `+`** — that commit is not on `origin/development`; the
-  branch has work that was never merged. **Skip this branch** and warn the user
-  instead of deleting:
-
-  ```
-  ⚠ Skipped <branch>: has commit(s) not in development — delete manually after review.
-  ```
+Do **not** add a `git log origin/<branch>..<branch>` guard: Step 2's
+`git fetch --prune` deletes the `origin/<branch>` upstream as soon as the PR is
+merged and GitHub removes the remote branch, so that command errors with
+`unknown revision or path not in the working tree` rather than returning empty.
+`git branch -D` still prints the deleted SHA (`Deleted branch X (was 906d5ebbb4)`)
+and the reflog retains it, so an over-eager delete is recoverable.
 
 ## Step 6 — Fast-Forward development to origin/development
 
@@ -164,21 +159,25 @@ If no stash was created, leave `persistence.xml` as-is.
 Print a summary:
 
 ```
-✓ Deleted branches:
+✓ Deleted branches (merged PR):
   - <branch>  (PR #NNN merged → <base-branch>)
-  - <branch>  (content already in development, no PR from this head)
+  ...
+
+✓ Deleted branches (no PR, but all commits already in development):
+  - <branch>
   ...
 
 ⚠ Skipped branches:
-  - <branch>  (has commit(s) not in development)
+  - <branch>  (has commit(s) not in development — if its PR was squash-merged,
+    delete manually after confirming)
   ...
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
 ```
 
-If all branches were deleted (nothing skipped), omit the skipped section.
-If nothing was stashed, replace the last line with:
+Omit any of the three branch sections that has no entries. If nothing was
+stashed, replace the last line with:
 `✓ persistence.xml unchanged (no local changes were present)`
 
 ## Notes
