@@ -536,47 +536,77 @@ public class BhtSummeryController implements Serializable {
      * Charges grouped by inward charge type (excluding Professional Charge,
      * which is printed separately on the Professional Bill section),
      * alphabetical by display name, for the Custom2 "Final Bill" totals-only
-     * section.
+     * section. When {@link #isBundleGroupedChargeTypesOnFinalBill()} is enabled,
+     * charge types sharing a group text print as one summed line (see
+     * {@link #foldInwardCategoryTotals(Bill)}); otherwise behaviour is
+     * unchanged.
      */
     public List<Map.Entry<String, Double>> getCustom2CategoryTotals(Bill bill) {
-        Map<String, Double> totals = new TreeMap<>();
-        if (bill == null || bill.getBillItems() == null) {
-            return new ArrayList<>(totals.entrySet());
-        }
-        for (BillItem bi : bill.getBillItems()) {
-            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                continue;
-            }
-            if (bi.getAdjustedValue() == 0.0) {
-                continue;
-            }
-            String label = getChargeTypeLabel(bi.getInwardChargeType());
-            totals.merge(label, bi.getAdjustedValue(), Double::sum);
-        }
-        return new ArrayList<>(totals.entrySet());
+        return foldInwardCategoryTotals(bill);
     }
 
     /**
      * Charges grouped by inward charge type (excluding Professional Charge,
      * which is now listed as individual per-doctor fee lines), alphabetical
      * by display name, for the Custom3 5x5 impact-printer bill ("Custom Bill
-     * 2" in the UI).
+     * 2" in the UI). When {@link #isBundleGroupedChargeTypesOnFinalBill()} is
+     * enabled, charge types sharing a group text print as one summed line (see
+     * {@link #foldInwardCategoryTotals(Bill)}); otherwise behaviour is
+     * unchanged.
      */
     public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
+        return foldInwardCategoryTotals(bill);
+    }
+
+    /**
+     * Shared implementation for {@link #getCustom2CategoryTotals(Bill)} and
+     * {@link #getCustom3CategoryTotals(Bill)}: charges summed by inward charge
+     * type keyed on the display label, Professional Charge excluded,
+     * DoctorAndNurses kept, alphabetical (TreeMap) by key.
+     *
+     * When {@link #isBundleGroupedChargeTypesOnFinalBill()} is false the result
+     * is byte-identical to the pre-grouping logic (returned early, before any
+     * group lookup). When it is true, any charge type whose
+     * "Inward Charge Type Final Bill Group - X" value is non-blank (after trim)
+     * is folded under that group text instead of its own label, matching the
+     * "Bundled Custom 1" behaviour. The per-type group reads are wrapped in
+     * {@code configOptionApplicationController.seedInBatch(...)} — the same
+     * helper {@code InwardChargeTypeLabelController.init()} uses — so a batch of
+     * missing rows triggers at most one synchronized cache reload, after the
+     * loop, instead of one per lazily created row.
+     */
+    private List<Map.Entry<String, Double>> foldInwardCategoryTotals(Bill bill) {
         Map<String, Double> totals = new TreeMap<>();
         if (bill == null || bill.getBillItems() == null) {
             return new ArrayList<>(totals.entrySet());
         }
-        for (BillItem bi : bill.getBillItems()) {
-            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                continue;
+        if (!isBundleGroupedChargeTypesOnFinalBill()) {
+            for (BillItem bi : bill.getBillItems()) {
+                InwardChargeType type = bi.getInwardChargeType();
+                if (type == InwardChargeType.ProfessionalCharge) {
+                    continue;
+                }
+                if (bi.getAdjustedValue() == 0.0) {
+                    continue;
+                }
+                totals.merge(getChargeTypeLabel(type), bi.getAdjustedValue(), Double::sum);
             }
-            if (bi.getAdjustedValue() == 0.0) {
-                continue;
-            }
-            String label = getChargeTypeLabel(bi.getInwardChargeType());
-            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+            return new ArrayList<>(totals.entrySet());
         }
+        configOptionApplicationController.seedInBatch(() -> {
+            for (BillItem bi : bill.getBillItems()) {
+                InwardChargeType type = bi.getInwardChargeType();
+                if (type == InwardChargeType.ProfessionalCharge) {
+                    continue;
+                }
+                if (bi.getAdjustedValue() == 0.0) {
+                    continue;
+                }
+                String group = configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type);
+                String label = (group != null && !group.trim().isEmpty()) ? group.trim() : getChargeTypeLabel(type);
+                totals.merge(label, bi.getAdjustedValue(), Double::sum);
+            }
+        });
         return new ArrayList<>(totals.entrySet());
     }
 
@@ -5424,6 +5454,19 @@ public class BhtSummeryController implements Serializable {
 
     public String getChargeTypeLabel(com.divudi.core.data.inward.InwardChargeType type) {
         return configOptionApplicationController.getInwardChargeTypeLabel(type);
+    }
+
+    /**
+     * Opt-in toggle for folding grouped charge types into one summed line on the
+     * standard Final Bill totals sections (Custom2 / Custom3). Uses the same
+     * read-only getter and injected bean as {@code showBundledCustom1Format}
+     * (see {@link #loadCustomBillFormatVisibility()}); the key auto-creates on
+     * first read, so no migration is needed. Off by default: a hospital that
+     * only set Final Bill Group values for the #23382 "Bundled Custom 1" feature
+     * is unaffected until it explicitly enables this.
+     */
+    public boolean isBundleGroupedChargeTypesOnFinalBill() {
+        return configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Bundle Grouped Charge Types", false);
     }
 
     public List<ChargeItemTotal> getChargeItemTotals() {
