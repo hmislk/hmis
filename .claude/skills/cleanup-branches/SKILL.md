@@ -60,7 +60,21 @@ gh pr list --head <branch> --base development --state merged --repo hmislk/hmis 
 gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title,baseRefName,mergedAt --jq '.[0]'
 ```
 
-- If still no merged PR → **skip** (warn the user about the branch).
+- If still no merged PR is found, run a patch-equivalence check before skipping —
+  a `gh pr checkout <N>` review checkout (e.g. `pr-23617`) has no PR with *it*
+  as the head branch, but its commits may already be on `origin/development`
+  (compare against `origin/development`, freshly fetched in Step 2 — local
+  `development` is not fast-forwarded until Step 6):
+
+  ```bash
+  git cherry -v origin/development <branch>
+  ```
+
+  - **Empty output**, or every line starts with `-` → every commit on the branch
+    is already patch-equivalent on `origin/development`. **Mark for deletion**;
+    in the report note it as "content already in development, no PR from this head".
+  - **Any line starts with `+`** → the branch has a commit not on
+    `origin/development`. **Skip** (warn the user about the branch).
 
 ### Hotfix branches (end with `-hotfix`)
 
@@ -87,26 +101,35 @@ For each branch marked for deletion, first try the safe delete:
 git branch -d <branch>
 ```
 
-If `-d` refuses, check whether the local branch has commits that are not on
-the remote (i.e. local-only work added after the PR was merged):
+`-d` refuses whenever the branch tip is not reachable from local `development` —
+the normal case here, both because the PR was squash- or rebase-merged and
+because local `development` is not fast-forwarded until Step 6. Before
+force-deleting, confirm the branch has no unmerged work.
+
+Do **not** use `git log origin/<branch>..<branch>` for this: Step 2's
+`git fetch --prune` deletes `origin/<branch>` as soon as the PR is merged and
+GitHub removes the remote branch, so that command errors with
+`unknown revision or path not in the working tree` instead of returning empty.
+
+Compare against `origin/development` (freshly fetched in Step 2) instead:
 
 ```bash
-git log origin/<branch>..<branch> --oneline
+git cherry -v origin/development <branch>
 ```
 
-- If the output is **empty** — the local tip matches the remote; the refusal
-  is just because the merge commit was squashed/rebased and git cannot trace
-  it locally. It is safe to force-delete:
+- **Empty output**, or every line starts with `-` — every commit is already
+  patch-equivalent on `origin/development`. Safe to force-delete:
 
   ```bash
   git branch -D <branch>
   ```
 
-- If the output shows **local-only commits** — the branch has work that was
-  never pushed. **Skip this branch** and warn the user instead of deleting:
+- **Any line starts with `+`** — that commit is not on `origin/development`; the
+  branch has work that was never merged. **Skip this branch** and warn the user
+  instead of deleting:
 
   ```
-  ⚠ Skipped <branch>: has local commits not present on origin — delete manually after review.
+  ⚠ Skipped <branch>: has commit(s) not in development — delete manually after review.
   ```
 
 ## Step 6 — Fast-Forward development to origin/development
@@ -143,10 +166,11 @@ Print a summary:
 ```
 ✓ Deleted branches:
   - <branch>  (PR #NNN merged → <base-branch>)
+  - <branch>  (content already in development, no PR from this head)
   ...
 
-⚠ Skipped branches (no merged PR found):
-  - <branch>
+⚠ Skipped branches:
+  - <branch>  (has commit(s) not in development)
   ...
 
 ✓ development is now at <short-sha> (<commit subject>)
