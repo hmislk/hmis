@@ -1110,6 +1110,13 @@ public class SurgeryBillController implements Serializable {
      * timed service's BillItem onto its {@code EncounterComponent}, never
      * onto the {@code PatientItem} itself, so {@code PatientItem.billItem}
      * is always null here.
+     * <p>
+     * Filters on {@code patientItem.retired} in addition to
+     * {@code ec.retired} - {@link #removeTimeService(PatientItem)} (the
+     * Remove action on the Surgery Dashboard's Timed Services tab) only
+     * retires the {@code PatientItem}, not its {@code EncounterComponent},
+     * so a removed-but-never-stopped service would otherwise still count as
+     * running here and permanently block validation.
      */
     public long getRunningTimedServiceCount() {
         if (getSurgeryBill().getId() == null) {
@@ -1122,6 +1129,7 @@ public class SurgeryBillController implements Serializable {
         String jpql = "SELECT COUNT(ec) FROM EncounterComponent ec"
                 + " WHERE ec.retired = false"
                 + " AND ec.billItem.bill = :bill"
+                + " AND ec.billFee.patientItem.retired = false"
                 + " AND ec.billFee.patientItem.toTime IS NULL";
         HashMap<String, Object> hm = new HashMap<>();
         hm.put("bill", timedServiceBill);
