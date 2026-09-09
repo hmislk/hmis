@@ -327,7 +327,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return;
         }
 
-        if (reservedToDate.before(reservedFromDate)) {
+        // reservedToDate is optional (#23618) - only validate it when set.
+        if (reservedToDate != null && reservedToDate.before(reservedFromDate)) {
             JsfUtil.addErrorMessage("Reserved To Date not Valid");
             return;
         }
@@ -347,7 +348,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         if (res != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
             String fDate = sdf.format(res.getReservedFrom());
-            String tDate = sdf.format(res.getReservedTo());
+            // A conflicting reservation may itself have a null reservedTo (#23618).
+            Date resTo = (res.getReservedTo() != null) ? res.getReservedTo() : res.getReservedFrom();
+            String tDate = sdf.format(resTo);
             JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
             return;
         }
@@ -723,7 +726,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             if (res != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm a");
                 String fDate = sdf.format(res.getReservedFrom());
-                String tDate = sdf.format(res.getReservedTo());
+                // A conflicting reservation may itself have a null reservedTo (#23618).
+                Date resTo = (res.getReservedTo() != null) ? res.getReservedTo() : res.getReservedFrom();
+                String tDate = sdf.format(resTo);
                 JsfUtil.addErrorMessage("This room is already booked from " + fDate + " to " + tDate + ".");
                 return;
             }
