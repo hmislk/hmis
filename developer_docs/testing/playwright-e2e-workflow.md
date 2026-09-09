@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-111 sections. **The workflow is §0-§8; everything from §9 on is an independent
+118 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -3217,6 +3217,49 @@ often null), grep the whole class (and callers) for every read of that
 field — `.before(`, `.after(`, `.format(`, `.getTime()`, arithmetic — and
 guard or apply the same fallback the new code uses (here: treat a missing
 end as the start instant).
+
+## 113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`
+
+`inward_patient_room_details.xhtml` carried a room-conflict explanation as
+
+```xhtml
+<p:tag value="Overlap" severity="danger" title="#{bean.overlapDescription(rm)}"/>
+```
+
+and the text had **never once reached a user**: `p:tag` has no `title`
+passthrough, so the rendered markup is just
+
+```html
+<span class="ui-tag ui-widget ui-tag-danger">…Overlap</span>
+```
+
+with no `title` attribute at all. There is no warning at build or render time
+— the page looks right, the EL is even evaluated, and the string is thrown
+away. Found on #23641 only because the E2E check read the attribute back:
+
+```js
+() => { const t = [...document.querySelectorAll('.ui-tag')]
+          .find(e => e.textContent.trim() === 'Overlap');
+        return t && t.getAttribute('title'); }   // → null
+```
+
+Use the component the codebase already uses elsewhere
+(`admin/lims/investigation_format_multiple.xhtml`):
+
+```xhtml
+<p:tag id="roomOverlapTag" value="Overlap" severity="danger"/>
+<p:tooltip for="roomOverlapTag" position="top" showDelay="150"
+           value="#{bean.overlapDescription(rm)}"/>
+```
+
+Inside a `p:dataTable` the plain `for="roomOverlapTag"` resolves per row —
+no need to build the full row client id.
+
+**Testing rule:** a `title` tooltip is invisible to a screenshot, so
+"the page rendered" is not evidence it works. Assert the attribute (or the
+`.ui-tooltip` text after a `browser_hover`) explicitly. The same blind spot
+applies to any attribute a component may not support — verify the *rendered
+DOM*, not the source.
 
 ## Quick checklist
 

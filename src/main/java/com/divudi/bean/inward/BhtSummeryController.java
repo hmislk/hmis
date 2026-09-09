@@ -82,6 +82,7 @@ import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -92,6 +93,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.ejb.EJB;
@@ -197,6 +199,8 @@ public class BhtSummeryController implements Serializable {
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
     private PatientRoom pendingOverlapRoom;
+    /** Fallback when no shortDateTimeFormat preference is resolvable. */
+    private static final String DEFAULT_STAY_WINDOW_PATTERN = "dd MMM yyyy HH:mm";
     private List<CreditCompanyAllocation> creditCompanyAllocations;
     private EncounterCreditCompany newEncounterCreditCompany;
     private boolean creatingNewVersion;
@@ -2018,6 +2022,13 @@ public class BhtSummeryController implements Serializable {
         if (patientRoom == null || patientRoom.getAdmittedAt() == null || patientRoom.getPatientEncounter() == null) {
             return new ArrayList<>();
         }
+        // A retired stay is a room record that was withdrawn - it never occupied the
+        // bed, so it can neither have nor cause a conflict. The JPQL below already
+        // keeps retired rows out of the candidate side; this guards the subject side,
+        // which a caller can still reach with a stale in-memory row (Issue #23641).
+        if (patientRoom.isRetired()) {
+            return new ArrayList<>();
+        }
         if (patientRoom.getDischargedAt() != null && patientRoom.getDischargedAt().before(patientRoom.getAdmittedAt())) {
             return new ArrayList<>();
         }
@@ -2052,7 +2063,73 @@ public class BhtSummeryController implements Serializable {
         // midnight, so two stays merely sharing a calendar day were reported as
         // overlapping even when the times did not actually conflict.
         List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        return overlaps != null ? overlaps : new ArrayList<>();
+        if (overlaps == null) {
+            return new ArrayList<>();
+        }
+        // Re-assert every condition in memory. The query already applies them, but
+        // repeating the rule here keeps it enforced when a row arrives from a stale
+        // persistence context, and makes it unit testable without a database.
+        List<PatientRoom> conflicts = new ArrayList<>();
+        for (PatientRoom candidate : overlaps) {
+            if (isOverlapConflict(patientRoom, candidate)) {
+                conflicts.add(candidate);
+            }
+        }
+        return conflicts;
+    }
+
+    /**
+     * True when {@code candidate} is a genuine room-time conflict for
+     * {@code subject}: both are live (non-retired) ward stays, they belong either to
+     * the same encounter or to the same bed, and their occupied time ranges
+     * intersect. Mirrors the predicate in {@link #getOverlappingRooms(PatientRoom)}
+     * exactly. Static and facade-free so the rules - above all "a retired stay never
+     * counts, on either side" - are unit testable without a database (Issue #23641).
+     */
+    static boolean isOverlapConflict(PatientRoom subject, PatientRoom candidate) {
+        if (subject == null || candidate == null || subject == candidate) {
+            return false;
+        }
+        if (subject.getId() != null && subject.getId().equals(candidate.getId())) {
+            return false;
+        }
+        if (subject.isRetired() || candidate.isRetired()) {
+            return false;
+        }
+        if (isGuardianOrTheatreRoom(subject) || isGuardianOrTheatreRoom(candidate)) {
+            return false;
+        }
+        Date from = subject.getAdmittedAt();
+        Date to = subject.getDischargedAt();
+        if (from == null || candidate.getAdmittedAt() == null) {
+            return false;
+        }
+        if (to != null && to.before(from)) {
+            return false;
+        }
+        if (!isSameEncounter(subject, candidate) && !isSameBed(subject, candidate)) {
+            return false;
+        }
+        if (to != null && !candidate.getAdmittedAt().before(to)) {
+            return false;
+        }
+        return candidate.getDischargedAt() == null || candidate.getDischargedAt().after(from);
+    }
+
+    private static boolean isGuardianOrTheatreRoom(PatientRoom patientRoom) {
+        return patientRoom instanceof GuardianRoom || patientRoom instanceof TheatreRoom;
+    }
+
+    private static boolean isSameEncounter(PatientRoom a, PatientRoom b) {
+        return a.getPatientEncounter() != null
+                && b.getPatientEncounter() != null
+                && a.getPatientEncounter().equals(b.getPatientEncounter());
+    }
+
+    private static boolean isSameBed(PatientRoom a, PatientRoom b) {
+        return a.getRoomFacilityCharge() != null
+                && b.getRoomFacilityCharge() != null
+                && a.getRoomFacilityCharge().equals(b.getRoomFacilityCharge());
     }
 
     /**
@@ -2073,21 +2150,97 @@ public class BhtSummeryController implements Serializable {
      * are 3+ open (non-discharged) room stays.
      */
     public String getOverlapDescription(PatientRoom patientRoom) {
-        List<PatientRoom> overlaps = getOverlappingRooms(patientRoom);
-        if (overlaps.isEmpty()) {
+        return describeOverlaps(patientRoom, getOverlappingRooms(patientRoom), resolveStayWindowPattern());
+    }
+
+    /**
+     * The date/time pattern the row's own Admitted At / Discharged At pickers are
+     * rendered with. The conflict description sits beside those fields and is read
+     * against them, so a different format there would have staff comparing
+     * "19:19" with "07:19 PM" on the one screen meant to resolve the conflict.
+     */
+    private String resolveStayWindowPattern() {
+        if (sessionController != null && sessionController.getApplicationPreference() != null) {
+            return sessionController.getApplicationPreference().getShortDateTimeFormat();
+        }
+        return DEFAULT_STAY_WINDOW_PATTERN;
+    }
+
+    /**
+     * Formats the conflicts found for {@code subject}. A conflict on the same
+     * encounter needs only the room name - the user can see the other row on the
+     * same screen. A conflict with a DIFFERENT patient is named in full, because
+     * the room name alone renders as "Room 90 overlaps with Room 90", which reads
+     * as a false alarm and gives ward staff nothing to act on: the bed is held by
+     * someone else and they cannot tell who from this page (Issue #23641).
+     */
+    static String describeOverlaps(PatientRoom subject, List<PatientRoom> overlaps, String dateTimePattern) {
+        if (overlaps == null || overlaps.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder("Overlaps with ");
         for (int i = 0; i < overlaps.size(); i++) {
-            PatientRoom pr2 = overlaps.get(i);
             if (i > 0) {
-                sb.append(", ");
+                sb.append("; ");
             }
-            String roomName = pr2.getRoomFacilityCharge() != null && pr2.getRoomFacilityCharge().getName() != null
-                    ? pr2.getRoomFacilityCharge().getName() : "an unnamed room";
-            sb.append(roomName).append(pr2.getDischargedAt() == null ? " (Active)" : " (Left)");
+            sb.append(describeOverlap(subject, overlaps.get(i), dateTimePattern));
         }
         return sb.toString();
+    }
+
+    private static String describeOverlap(PatientRoom subject, PatientRoom other, String dateTimePattern) {
+        String roomName = other.getRoomFacilityCharge() != null && other.getRoomFacilityCharge().getName() != null
+                ? other.getRoomFacilityCharge().getName() : "an unnamed room";
+        if (subject != null && isSameEncounter(subject, other)) {
+            return roomName + (other.getDischargedAt() == null ? " (Active)" : " (Left)");
+        }
+        StringBuilder sb = new StringBuilder(roomName);
+        sb.append(" - held by ").append(bhtLabelOf(other));
+        String patientName = patientNameOf(other);
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            sb.append(" (").append(patientName.trim()).append(")");
+        }
+        sb.append(", ").append(stayWindowOf(other, dateTimePattern));
+        return sb.toString();
+    }
+
+    private static String bhtLabelOf(PatientRoom patientRoom) {
+        PatientEncounter pe = patientRoom.getPatientEncounter();
+        String bhtNo = pe != null ? pe.getBhtNo() : null;
+        return bhtNo == null || bhtNo.trim().isEmpty() ? "another patient" : bhtNo.trim();
+    }
+
+    /**
+     * The conflicting patient's name. Ward staff already see the occupant of every
+     * bed - BHT number and patient name - on the Room Occupancy screen, so naming
+     * them here discloses nothing that page does not.
+     */
+    private static String patientNameOf(PatientRoom patientRoom) {
+        PatientEncounter pe = patientRoom.getPatientEncounter();
+        if (pe == null || pe.getPatient() == null || pe.getPatient().getPerson() == null) {
+            return null;
+        }
+        return pe.getPatient().getPerson().getName();
+    }
+
+    /**
+     * Locale.ENGLISH rather than the JVM default: the rest of this UI is English,
+     * and a default-locale month name would make the rendered text depend on the
+     * server's locale (and make any assertion on it environment-dependent).
+     */
+    private static String stayWindowOf(PatientRoom patientRoom, String dateTimePattern) {
+        String pattern = dateTimePattern == null || dateTimePattern.trim().isEmpty()
+                ? DEFAULT_STAY_WINDOW_PATTERN : dateTimePattern;
+        SimpleDateFormat formatter;
+        try {
+            formatter = new SimpleDateFormat(pattern, Locale.ENGLISH);
+        } catch (IllegalArgumentException e) {
+            // A malformed preference must not take the whole room table down.
+            formatter = new SimpleDateFormat(DEFAULT_STAY_WINDOW_PATTERN, Locale.ENGLISH);
+        }
+        String from = patientRoom.getAdmittedAt() == null ? "unknown" : formatter.format(patientRoom.getAdmittedAt());
+        String to = patientRoom.getDischargedAt() == null ? "still in room" : formatter.format(patientRoom.getDischargedAt());
+        return from + " to " + to;
     }
 
     public boolean isAnyRoomOverlapping() {
@@ -2095,6 +2248,9 @@ public class BhtSummeryController implements Serializable {
             return false;
         }
         for (PatientRoom pr : patientRooms) {
+            if (pr == null || pr.isRetired()) {
+                continue;
+            }
             if (hasOverlap(pr)) {
                 return true;
             }
