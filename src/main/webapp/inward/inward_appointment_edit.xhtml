@@ -44,12 +44,23 @@
                                     action="#{appointmentController.cancelAppointment()}">
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
-                                    value="Back" 
+                                    value="Refund"
+                                    icon="fa fa-money-bill-transfer"
+                                    style="float: right"
+                                    rendered="#{webUserController.hasPrivilege('InwardBilling') and appointmentController.currentBill.billTypeAtomic eq 'INWARD_APPOINTMENT_BILL' and !appointmentController.currentBill.cancelled and !appointmentController.currentBill.refunded}"
+                                    class="ui-button-warning"
+                                    title="Refund this appointment deposit to the patient"
+                                    action="#{appointmentRefundController.navigateToRefundFromAppointmentBill(appointmentController.currentBill.id)}">
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Back"
                                     icon="fa fa-arrow-left"
                                     style="float: right"
-                                    class="ui-button-warning" 
+                                    class="ui-button-warning"
                                     action="#{appointmentController.navigateToSearchAppointmentsListFromViewAppointments()}">
                                 </p:commandButton>
                             </div>

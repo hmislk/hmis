@@ -188,9 +188,11 @@
                                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummarySumPaidFeeVisible}" itemLabel="Sum Paid Fee">
                                                         <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
                                                     </p:selectBooleanCheckbox>
+                                                    <!-- Balance to Pay temporarily commented out - broke the report layout. TODO: restore.
                                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentSummaryBalanceToPayVisible}" itemLabel="Balance to Pay">
                                                         <p:ajax update="summaryTbl panelSummaryColumnToggler professionalPaymentReportGrowl" />
                                                     </p:selectBooleanCheckbox>
+                                                    -->
                                                 </div>
                                             </p:panel>
                                         </div>
@@ -207,7 +209,9 @@
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySpecialityVisible}"><th>Speciality</th></ui:fragment>
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySumAddedFeeVisible}"><th class="text-end">Sum Added Fee</th></ui:fragment>
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummarySumPaidFeeVisible}"><th class="text-end">Sum Paid Fee</th></ui:fragment>
+                                                        <!-- Balance to Pay temporarily commented out - broke the report layout. TODO: restore.
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBalanceToPayVisible}"><th class="text-end">Balance to Pay</th></ui:fragment>
+                                                        -->
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -273,6 +277,7 @@
                                                                         </h:outputText>
                                                                     </td>
                                                                 </ui:fragment>
+                                                                <!-- Balance to Pay temporarily commented out - broke the report layout. TODO: restore.
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentSummaryBalanceToPayVisible}">
                                                                     <td class="text-end">
                                                                         <h:outputText value="#{detail.sumAddedFee - detail.sumPaidFee}">
@@ -280,6 +285,7 @@
                                                                         </h:outputText>
                                                                     </td>
                                                                 </ui:fragment>
+                                                                -->
                                                             </tr>
                                                         </ui:repeat>
                                                     </ui:repeat>
@@ -366,6 +372,11 @@
                                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}" itemLabel="Paid Fee Value">
                                                         <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
                                                     </p:selectBooleanCheckbox>
+                                                    <!-- Balance to Pay temporarily commented out - broke the report layout. TODO: restore.
+                                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardProfessionalPaymentDetailedBalanceToPayVisible}" itemLabel="Balance to Pay">
+                                                        <p:ajax update="detailedTbl panelDetailedColumnToggler professionalPaymentReportGrowl" />
+                                                    </p:selectBooleanCheckbox>
+                                                    -->
                                                 </div>
                                             </p:panel>
                                         </div>
@@ -500,6 +511,10 @@
                                                                     </td>
                                                                 </ui:fragment>
                                                             </tr>
+                                                            <!-- Balance to Pay row temporarily commented out - broke the report layout. TODO: restore.
+                                                                 tr is not a JSF component, so rendered on it directly is inert
+                                                                 (no xmlns:jsf pass-through namespace in this file) - wrap in ui:fragment.
+                                                            <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedBalanceToPayVisible}">
                                                             <tr style="font-weight: bold;">
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Balance to Pay</td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
@@ -514,6 +529,8 @@
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}"><td></td></ui:fragment>
                                                                 <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}"><td></td></ui:fragment>
                                                             </tr>
+                                                            </ui:fragment>
+                                                            -->
                                                         </ui:repeat>
                                                     </ui:repeat>
                                                 </tbody>

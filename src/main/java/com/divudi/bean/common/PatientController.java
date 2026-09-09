@@ -1739,7 +1739,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
-        return "/membership/change_membership?faces-redirect=true";
+        return "/admin/pricing/membership/change_membership?faces-redirect=true";
     }
 
     public String toAddToQueueFromSearchPatients() {
