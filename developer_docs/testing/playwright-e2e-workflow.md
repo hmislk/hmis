@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-111 sections. **The workflow is §0-§8; everything from §9 on is an independent
+118 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -137,6 +137,9 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
 - [109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work](#109-a-pconfirm-dialog-is-position-fixed-so-an-offsetparent-visibility-probe-wrongly-reports-it-hidden--the-click-did-work)
 - [110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#110-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
+- [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
+- [112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety](#112-relaxing-a-required-validation-audit-every-downstream-reader-of-that-field-for-null-safety)
+- [113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`](#113-ptag-silently-drops-title--a-tooltip-on-a-tag-needs-ptooltip)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3217,6 +3220,49 @@ often null), grep the whole class (and callers) for every read of that
 field — `.before(`, `.after(`, `.format(`, `.getTime()`, arithmetic — and
 guard or apply the same fallback the new code uses (here: treat a missing
 end as the start instant).
+
+## 113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`
+
+`inward_patient_room_details.xhtml` carried a room-conflict explanation as
+
+```xhtml
+<p:tag value="Overlap" severity="danger" title="#{bean.overlapDescription(rm)}"/>
+```
+
+and the text had **never once reached a user**: `p:tag` has no `title`
+passthrough, so the rendered markup is just
+
+```html
+<span class="ui-tag ui-widget ui-tag-danger">…Overlap</span>
+```
+
+with no `title` attribute at all. There is no warning at build or render time
+— the page looks right, the EL is even evaluated, and the string is thrown
+away. Found on #23641 only because the E2E check read the attribute back:
+
+```js
+() => { const t = [...document.querySelectorAll('.ui-tag')]
+          .find(e => e.textContent.trim() === 'Overlap');
+        return t && t.getAttribute('title'); }   // → null
+```
+
+Use the component the codebase already uses elsewhere
+(`admin/lims/investigation_format_multiple.xhtml`):
+
+```xhtml
+<p:tag id="roomOverlapTag" value="Overlap" severity="danger"/>
+<p:tooltip for="roomOverlapTag" position="top" showDelay="150"
+           value="#{bean.overlapDescription(rm)}"/>
+```
+
+Inside a `p:dataTable` the plain `for="roomOverlapTag"` resolves per row —
+no need to build the full row client id.
+
+**Testing rule:** a `title` tooltip is invisible to a screenshot, so
+"the page rendered" is not evidence it works. Assert the attribute (or the
+`.ui-tooltip` text after a `browser_hover`) explicitly. The same blind spot
+applies to any attribute a component may not support — verify the *rendered
+DOM*, not the source.
 
 ## Quick checklist
 
