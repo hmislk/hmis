@@ -128,6 +128,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    ConfigOptionController configOptionController;
+    @Inject
     SessionController sessionController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
@@ -190,30 +192,21 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/view_appointment?faces-redirect=true";
     }
 
-    public boolean isReservationWithinToday(Date resFrom, Date resTo, Date currentStartDate, Date currentEndDate) {
-        if (resFrom == null || resTo == null || currentStartDate == null || currentEndDate == null) {
-            return false;
-        }
+    /** ~10 years, in hours — larger admission-window offsets are treated as misconfiguration. */
+    private static final long MAX_ADMISSION_WINDOW_HOURS = 24L * 366L * 10L;
 
-        // Check if the entire reservation interval is within today
-        return (resFrom.compareTo(currentStartDate) >= 0 && resTo.compareTo(currentEndDate) <= 0);
-    }
-
-    public boolean doesReservationOverlapWithToday(Date resFrom, Date resTo, Date currentStartDate, Date currentEndDate) {
-        if (resFrom == null || resTo == null || currentStartDate == null || currentEndDate == null) {
-            return false;
+    /**
+     * Returns {@code hours} when it is a usable value, otherwise {@code defaultHours}.
+     * Guards against a blank or corrupted {@code CONFIGOPTION} row
+     * ({@code getLongValueByKey} returns {@code null} when the stored value cannot be
+     * parsed to a {@code Long}), a negative value, and an absurdly large value that
+     * would overflow the {@code hours * 3_600_000} millisecond conversion at the call site.
+     */
+    private long safeHours(Long hours, long defaultHours) {
+        if (hours == null || hours < 0L || hours > MAX_ADMISSION_WINDOW_HOURS) {
+            return defaultHours;
         }
-
-        int fromDateComparison  = resFrom.compareTo(currentEndDate);
-        int toDateComparison  = resTo.compareTo(currentStartDate);
-        
-        if(fromDateComparison <= 0 && toDateComparison  <= 0){
-            return false;
-        }else if(fromDateComparison <= 0 && toDateComparison  >= 0){
-            return true;
-        }else{
-            return true;
-        }
+        return hours;
     }
 
     public String navigatePatientAdmit() {
@@ -228,12 +221,31 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 
         Date resFrom = reservation.getReservedFrom();
+        if (resFrom == null) {
+            JsfUtil.addErrorMessage("Reservation Expired");
+            return "";
+        }
         Date resTo = reservation.getReservedTo();
+        // reservedTo is nullable and is null for reservations made through the normal
+        // booking flow; the calendar feed treats a null reservedTo as an open, still
+        // valid reservation, so fall back to reservedFrom as the effective end here.
+        Date effectiveEnd = (resTo != null) ? resTo : resFrom;
 
-        Date currentStartDate = CommonFunctions.getStartOfDay();
-        Date currentEndDate = CommonFunctions.getEndOfDay();
+        // Resolved per-department-first (falls back to the application-scoped row, then 24).
+        long earlyHours = safeHours(configOptionController.getLongValueByKey(
+                "Inward - Reservation Admission Early Window (Hours)", 24L), 24L);
+        long graceHours = safeHours(configOptionController.getLongValueByKey(
+                "Inward - Reservation Admission Grace Period (Hours)", 24L), 24L);
 
-        if (!doesReservationOverlapWithToday(resFrom, resTo, currentStartDate, currentEndDate)) {
+        Date now = CommonFunctions.getCurrentDateTime();
+        Date windowStart = new Date(resFrom.getTime() - earlyHours * 3_600_000L);
+        Date windowEnd = new Date(effectiveEnd.getTime() + graceHours * 3_600_000L);
+
+        if (now.before(windowStart)) {
+            JsfUtil.addErrorMessage("Reservation not yet open for admission");
+            return "";
+        }
+        if (now.after(windowEnd)) {
             JsfUtil.addErrorMessage("Reservation Expired");
             return "";
         }
