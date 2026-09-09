@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -41,6 +42,9 @@ public class InwardBillReceiptDTO implements Serializable {
     private String bhtNo;
     private Title cashierTitle;
     private String cashierName;
+    private BillTypeAtomic billTypeAtomic;
+    private Boolean cancelled;
+    private Boolean refunded;
 
     public InwardBillReceiptDTO() {
     }
@@ -87,6 +91,47 @@ public class InwardBillReceiptDTO implements Serializable {
         this.bhtNo = bhtNo;
         this.cashierTitle = cashierTitle;
         this.cashierName = cashierName;
+    }
+
+    /**
+     * Extends the base constructor with the refund-workflow fields (Issue
+     * #23571 - Appointment Deposit refund-to-patient workflow) needed to
+     * distinguish INWARD_APPOINTMENT_BILL / _CANCEL_BILL / _BILL_REFUND on
+     * the shared DTO-based receipt page. Delegates to the existing
+     * constructor via this(...) per project rule (never modify an existing
+     * constructor's signature).
+     */
+    public InwardBillReceiptDTO(Long billId,
+            String deptId,
+            Date billDate,
+            PaymentMethod paymentMethod,
+            Double amount,
+            String comments,
+            String referenceBillDeptId,
+            String departmentPrintingName,
+            String departmentAddress,
+            String departmentTelephone1,
+            String departmentTelephone2,
+            String departmentFax,
+            String departmentEmail,
+            Title patientTitle,
+            String patientName,
+            Date patientDob,
+            Sex patientSex,
+            String admissionTypeName,
+            String bhtNo,
+            Title cashierTitle,
+            String cashierName,
+            BillTypeAtomic billTypeAtomic,
+            Boolean cancelled,
+            Boolean refunded) {
+        this(billId, deptId, billDate, paymentMethod, amount, comments, referenceBillDeptId,
+                departmentPrintingName, departmentAddress, departmentTelephone1, departmentTelephone2,
+                departmentFax, departmentEmail, patientTitle, patientName, patientDob, patientSex,
+                admissionTypeName, bhtNo, cashierTitle, cashierName);
+        this.billTypeAtomic = billTypeAtomic;
+        this.cancelled = cancelled;
+        this.refunded = refunded;
     }
 
     public Long getBillId() {
@@ -145,6 +190,13 @@ public class InwardBillReceiptDTO implements Serializable {
         return patientTitle;
     }
 
+    // Setters for title / dob / sex exist so BillFacade.findInwardBillReceiptDTO
+    // can backfill them from the bill's own patient when the bill has no
+    // encounter (e.g. an appointment-deposit cancel bill). (#23622)
+    public void setPatientTitle(Title patientTitle) {
+        this.patientTitle = patientTitle;
+    }
+
     public String getPatientName() {
         return patientName;
     }
@@ -153,8 +205,16 @@ public class InwardBillReceiptDTO implements Serializable {
         return patientDob;
     }
 
+    public void setPatientDob(Date patientDob) {
+        this.patientDob = patientDob;
+    }
+
     public Sex getPatientSex() {
         return patientSex;
+    }
+
+    public void setPatientSex(Sex patientSex) {
+        this.patientSex = patientSex;
     }
 
     public String getAdmissionTypeName() {
@@ -171,6 +231,18 @@ public class InwardBillReceiptDTO implements Serializable {
 
     public String getCashierName() {
         return cashierName;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public boolean isCancelled() {
+        return Boolean.TRUE.equals(cancelled);
+    }
+
+    public boolean isRefunded() {
+        return Boolean.TRUE.equals(refunded);
     }
 
     /**

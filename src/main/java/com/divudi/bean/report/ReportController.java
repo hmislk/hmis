@@ -5119,6 +5119,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            // Porter-based ward return (ward_pharmacy_return_to_pharmacy.xhtml, #21470/#21466)
+            // is a separate return path from ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN and was
+            // missing here, so those returns never netted against the original issue - the
+            // issue kept being counted in full forever (issue #23210).
+            billtypes.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
         } else {
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -5136,6 +5141,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            billtypes.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
         }
 
         StringBuilder jpql = new StringBuilder();
@@ -5169,12 +5175,21 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("WHERE bi.bill.billTypeAtomic IN :bTypes ");
         jpql.append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
         jpql.append("AND bi.retired = :retired ");
+        // Cancelling a porter return (WardPharmacyReturnToPharmacyController.cancelReturnBill())
+        // only flags the original RETURN_MEDICINE_INWARD bill cancelled=true - unlike
+        // PHARMACY_RETAIL_SALE_CANCELLED etc., it creates no offsetting billitem rows of its
+        // own to net against (RETURN_MEDICINE_INWARD_CANCELLATION never appears on any BillItem's
+        // bill), so a cancelled return must be excluded here directly rather than relying on a
+        // sibling atomic - otherwise a cancelled return keeps permanently reducing the report
+        // even though the medicine was never actually returned (issue #23210 follow-up).
+        jpql.append("AND NOT (bi.bill.billTypeAtomic = :returnMedicineInwardType AND bi.bill.cancelled = true) ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("retired", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bTypes", billtypes);
+        m.put("returnMedicineInwardType", BillTypeAtomic.RETURN_MEDICINE_INWARD);
 
         if (institution != null) {
             jpql.append("AND bi.bill.institution = :ins ");
@@ -5212,6 +5227,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            // Porter-based ward return (ward_pharmacy_return_to_pharmacy.xhtml) - qty is
+            // stored positive at creation (WardPharmacyReturnToPharmacyController.doSettle()),
+            // so it needs forcing negative here like the other return types (issue #23210).
+            BillTypeAtomic.RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,

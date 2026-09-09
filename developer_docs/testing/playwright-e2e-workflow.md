@@ -135,6 +135,8 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly](#108-this-dashboards-sample-transporter-pautocomplete-ignores-synthetic-keystrokes--drive-widgetsearch-directly)
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
+- [109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work](#109-a-pconfirm-dialog-is-position-fixed-so-an-offsetparent-visibility-probe-wrongly-reports-it-hidden--the-click-did-work)
+- [110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#110-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3077,6 +3079,145 @@ Found while fixing issue #23577.
 
 ---
 
+## 109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work
+
+Cancelling an inward service bill (`inward_cancel_bill_service.xhtml`) appeared
+to do nothing: clicking **Cancel Service Bill** produced no growl, no page
+change, and no row change in the DB. A probe for open dialogs came back empty:
+
+```js
+[...document.querySelectorAll('.ui-confirm-dialog,.ui-dialog')]
+    .filter(d => d.offsetParent)          // <-- always empty for this dialog
+```
+
+The dialog *was* open. PrimeFaces renders `p:confirm`'s dialog with
+`position: fixed`, and **`offsetParent` is `null` for any fixed-position
+element** — so the usual "is it visible" shorthand reports every confirm dialog
+as hidden. The follow-up symptom is the giveaway: a retried click on the
+underlying button fails with
+
+```
+<div class="ui-widget-overlay ui-dialog-mask" ...> intercepts pointer events
+```
+
+which is the modal mask doing its job, not a broken button.
+
+**Probe `display`/`.ui-dialog-mask` instead, and click the dialog's own button:**
+
+```js
+[...document.querySelectorAll('.ui-confirm-dialog')].map(d => ({
+    id: d.id,
+    display: getComputedStyle(d).display,        // 'block' when open
+    buttons: [...d.querySelectorAll('button')].map(b => ({t: b.innerText.trim(), id: b.id}))
+}))
+```
+
+then click the **Yes** button by its id. Note this is a PrimeFaces dialog, not a
+native `confirm()` — `browser_handle_dialog` does not apply and will time out
+waiting for a dialog that never reaches the browser. The same page can use both:
+`inward_bill_service_refund.xhtml`'s **Refund Bill** is a native `confirm()`
+(handled with `browser_handle_dialog`), while the cancel screen's button is a
+`p:confirm`. Check the markup for `<p:confirm>` before deciding which to use.
+
+---
+
+## 110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query
+
+While verifying issue #23571's new Appointment Deposit refund receipt on
+`inward_view_appointment_bill_receipt.xhtml`, the `billTypeAtomic`-keyed
+`h:panelGroup` branch matched correctly (confirmed with a temporary debug
+`h:outputText` dumping the DTO fields) and the DB row was correct, but the
+receipt panel rendered as a completely empty `<span>` — no error, no
+exception in `server.log`.
+
+The cause: this page's three paper-type branches only check
+`'Inward Payment Bill Five Five Paper'`, `'... A4 Paper'`, and
+`'... POS Paper'`. The department's actual `ChangeReceiptPrintingPaperTypes`
+Settings dialog (opened via the page's own "Settings" button) showed a
+**fourth** option, "5×5 Custom 3 Paper", was the one actually enabled for
+that department — a paper type this particular page's code has never
+checked. All three of the page's `getBooleanValueByKey` calls legitimately
+evaluated `false`, so nothing rendered — this is not a bug in the routing or
+DTO logic, it is a pre-existing gap between the Settings dialog's options and
+the page's own `rendered` conditions.
+
+**Before concluding a receipt panel is broken because it renders blank**,
+open the page's own "Settings" button/dialog (per §26, never raw SQL) and
+check which paper type is actually enabled for the current department
+against the exact set of paper-type checks the page's `rendered` attributes
+test — a Settings dialog can offer an option the page doesn't (yet) handle.
+For local verification of the remaining receipt rendering, enable one of the
+paper types the page checks, such as "POS Paper". This does not validate
+`5×5 Custom 3 Paper`; test or fix that unsupported configuration separately.
+
+Found while fixing issue #23571.
+
+## 111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow
+
+The admission form's Room autocomplete (`roomFacilityChargeController.completeRoom`)
+only returns a room when **no** `PATIENTROOM` row exists for it with
+`RETIRED=0 AND DISCHARGED=0`, and the room's `CATEGORY.FILLED` is not `1`.
+`InwardBeanController.isRoomFilled(room)` applies the same
+`discharged=false` test. Restored production-shaped `coop` data is often at
+or near full occupancy, so the Room autocomplete legitimately returns **no
+suggestions** for any query — an admission simply cannot be completed, and
+this looks like a broken autocomplete rather than a data state.
+
+`Room` is `Room extends Category`, so room rows live in `CATEGORY` (`DTYPE='Room'`),
+not a `ROOM` table. To free rooms on the **local** DB (disposable — see the
+`dev-issue-unattended` hard limits), mark their active `PATIENTROOM` discharged
+and clear any stuck `FILLED`:
+
+```sql
+UPDATE PATIENTROOM PR
+JOIN ROOMFACILITYCHARGE RFC ON PR.ROOMFACILITYCHARGE_ID = RFC.ID
+JOIN CATEGORY C ON RFC.ROOM_ID = C.ID
+SET PR.DISCHARGED = 1
+WHERE PR.RETIRED = 0 AND PR.DISCHARGED = 0
+  AND C.NAME IN ('Room 100','Room 101','Room 102','Room 103','Room 104', ...);
+
+UPDATE CATEGORY SET FILLED = 0
+WHERE NAME IN ('Room 100','Room 101','Room 102','Room 103','Room 104', ...);
+```
+
+Verify with:
+
+```sql
+SELECT C.NAME FROM ROOMFACILITYCHARGE RFC JOIN CATEGORY C ON RFC.ROOM_ID = C.ID
+WHERE RFC.RETIRED = 0 AND (C.FILLED IS NULL OR C.FILLED <> 1)
+  AND C.ID NOT IN (
+    SELECT RFC2.ROOM_ID FROM PATIENTROOM PR
+    JOIN ROOMFACILITYCHARGE RFC2 ON PR.ROOMFACILITYCHARGE_ID = RFC2.ID
+    WHERE PR.RETIRED = 0 AND PR.DISCHARGED = 0)
+ORDER BY C.NAME;
+```
+
+(A room name repeats once per `ROOMFACILITYCHARGE` fee tier — that is normal.)
+This is a local-only shortcut; never run it against a tunnelled/remote DB.
+The proper app path is a Physical Discharge, but that is a long workflow just
+to reclaim a bed for a test.
+
+Found while verifying #23618-#23622 (admission + appointment-deposit-conversion
+flows) — every `completeRoom` query returned nothing until rooms were freed.
+
+## 112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety
+
+#23618 removed the `settleBill()` guard that forced `reservedToDate` to be
+non-null for a Room Admission appointment. That guard was also the de-facto
+protection for code that read the value unconditionally later:
+`updateChangesReservation()` did `reservedToDate.before(...)` (NPE), and both
+that method and `settleBill()` did `sdf.format(res.getReservedTo())` when
+reporting a room conflict (NPE if the *conflicting* reservation was itself
+saved with a null end). None of these are in the diff of the validation
+change, so a review that only looks at changed lines misses them — CodeRabbit
+flagged it on PR #23628.
+
+When a change makes a previously-guaranteed field nullable (or merely more
+often null), grep the whole class (and callers) for every read of that
+field — `.before(`, `.after(`, `.format(`, `.getTime()`, arithmetic — and
+guard or apply the same fallback the new code uses (here: treat a missing
+end as the start instant).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -3085,6 +3226,7 @@ Found while fixing issue #23577.
 - [ ] Clicked **Search** on every date-filtered list before expecting rows.
 - [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
 - [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
+- [ ] Distinguished a native `confirm()` (use `browser_handle_dialog`) from a PrimeFaces `p:confirm` dialog (click its own Yes button) — and did not treat an `offsetParent`-based visibility probe as proof a `p:confirm` dialog is closed (§109).
 - [ ] Filled required fields before non-AJAX actions.
 - [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
@@ -3101,4 +3243,5 @@ Found while fixing issue #23577.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
 - [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
 - [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
+- [ ] For any admission flow: confirmed the local DB actually has a vacant room (`completeRoom` returns suggestions); if not, freed some by SQL (§111) before concluding the Room autocomplete is broken.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.

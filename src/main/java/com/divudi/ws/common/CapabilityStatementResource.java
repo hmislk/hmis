@@ -146,6 +146,27 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Admission Charges", "/api/admission-charges",
+                        "Manage AdmissionChargeItem rows — routine charges billed automatically on every "
+                        + "matching admission by AdmissionChargeApplicationBean. Resolution is two-dimensional: "
+                        + "admissionType is the outer filter, paymentMethod (Cash|Credit only; null means both) "
+                        + "the inner one, and null in either column means \"applies to all\" for that dimension. "
+                        + "Because admissionType is a filter rather than a preference, configuring an "
+                        + "admission-type-specific row set for an item completely replaces the null-type rows "
+                        + "for that item — omitting one paymentMethod row for that admission type leaves it with "
+                        + "no charge at all. Only one live row is allowed per (item, admissionType, paymentMethod) "
+                        + "triple. The item must carry a department, an institution, an inwardChargeType, and at "
+                        + "least one live ItemFee. "
+                        + "GET /search filters on itemId, admissionTypeId, paymentMethod, includeRetired, and "
+                        + "pages with limit + offset, returning {items, total, limit, offset}. GET /{id} reads "
+                        + "one row. POST creates; PUT /{id} updates (clearAdmissionType/clearPaymentMethod flags "
+                        + "reset either dimension back to null). DELETE /{id} soft-retires; PATCH /{id}/restore "
+                        + "undoes it (rejected if a live row now conflicts). "
+                        + "Note: AdmissionType.admissionFee is a separate, older mechanism already added to the "
+                        + "bill by InwardBhtChargeAggregationService — configuring both for the same admission "
+                        + "type double-charges it.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Admission Number Counters", "/api/admission-numbers",
                         "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
                         "API Key (Finance header)", "GET", "PUT"))
