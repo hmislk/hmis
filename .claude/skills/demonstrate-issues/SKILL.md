@@ -41,11 +41,23 @@ environment (MCP server unavailable, the browser won't launch, etc. — a
 headless box the user simply can't watch is *not* such a case; drive it
 click-by-click per step 2), **discuss it with the user first** rather than
 silently switching — they may prefer to solve the Playwright-side blocker
-(e.g. relay screenshots) over falling back. Note the claude-in-chrome
-fallback is degraded-mode: its granted tools can't save a screenshot to a
-project path or resolve a native `confirm()`/`alert()`, so the capture and
-native-dialog steps lose fidelity — say so when discussing the switch. Only
-switch tools after they say so.
+(e.g. relay screenshots) over falling back. Only switch tools after they
+say so.
+
+**If the claude-in-chrome fallback is approved:** use the
+`mcp__claude-in-chrome__*` tools for navigation, page inspection, and form
+input; don't call Playwright-only tools. Two steps have no fallback
+equivalent — handle them explicitly rather than skipping silently:
+
+- **Screenshot capture (step 3):** take the shot with
+  `mcp__claude-in-chrome__computer`; if it can't be written into the
+  session's `tmp/` subfolder, ask the user to save/relay the image, and if
+  even that isn't possible record the demo's evidence as "screenshot
+  unavailable (claude-in-chrome fallback)".
+- **Native `confirm()`/`alert()` (step 3, "Native JS dialogs mid-demo"):**
+  there is no `browser_handle_dialog` equivalent and the dialog blocks the
+  extension — pause and ask the user to resolve it manually in their
+  browser, then continue.
 
 **🚨 LOGIN: ask, don't assume.** At step 2, once the login page is open, ask
 the user directly whether they want to log in themselves or have Claude log
