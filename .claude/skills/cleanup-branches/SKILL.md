@@ -58,56 +58,70 @@ warning icon.
 
 ### Feature branches (do NOT end with `-hotfix`)
 
-Check if any PR targeting `development` from this branch is merged:
+The comparison base is `origin/development`. Look for a merged PR from this head:
 
 ```bash
 gh pr list --head <branch> --base development --state merged --repo hmislk/hmis --json number,title,mergedAt --jq '.[0]'
-```
-
-- If a merged PR is found → **mark for deletion (merged-PR)**, record the PR
-  number and title for the report. No further checks — Step 5 force-deletes it.
-- If no merged PR is found, also check without `--base` filter (in case the base was changed):
-
-```bash
+# if that is empty, retry without --base — the PR's base may have been changed:
 gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title,baseRefName,mergedAt --jq '.[0]'
 ```
 
-- If still no merged PR is found, do **not** delete on merge status alone — run
-  a patch-equivalence check. A `gh pr checkout <N>` review checkout (e.g.
-  `pr-23617`) has no PR with *it* as the head branch, but its commits may
-  already be on `origin/development`. Compare against `origin/development`
-  (freshly fetched in Step 2 — local `development` is not fast-forwarded until
-  Step 6):
-
-  ```bash
-  git cherry -v origin/development <branch>
-  git rev-list --merges --count origin/development..<branch>
-  ```
-
-  - **`git cherry` empty or all `-`, AND the merge count is `0`** → every commit
-    on the branch is already patch-equivalent on `origin/development`. **Mark
-    for deletion (content-merged)** — reported in its own section, separate from
-    the merged-PR deletions, so a non-standard removal is never silent.
-  - **Merge count is not `0`** → the branch carries merge commits, which
-    `git cherry` does not inspect; conflict-resolution content in a merge commit
-    can be absent from `origin/development` while every non-merge commit still
-    shows `-`. Do **not** trust the `git cherry` result here — **skip** and warn.
-  - **Any `git cherry` line starts with `+`** → the branch has a non-merge
-    commit not on `origin/development` — genuinely unmerged work, *or* a
-    multi-commit branch whose PR was squash-merged (no per-commit equivalent
-    exists). Either way, **skip** and warn; the report line tells the user to
-    check whether it was a squashed PR and delete manually if so.
+Record the PR number/title if found. If the second query returns a PR with a
+`baseRefName` other than `development`, the comparison base is
+`origin/<that baseRefName>`, not `origin/development`. Whether or not a PR is
+found, continue to **Vet the branch tip** — a merged PR does not by itself
+prove the local branch is safe to force-delete (it may carry post-merge
+commits, or have been reused).
 
 ### Hotfix branches (end with `-hotfix`)
 
-Hotfix PRs target a production branch, not `development`. Check for any merged PR:
+Hotfix PRs target a production branch. Look for a merged PR:
 
 ```bash
 gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title,baseRefName,mergedAt --jq '.[0]'
 ```
 
-- If a merged PR is found → **mark for deletion**, record PR number, title, and the production branch it targeted.
-- If no merged PR → **skip** (warn the user).
+- **No merged PR** → **skip** (warn the user). A hotfix branch is never vetted
+  by patch-equivalence against `development`; its commits legitimately are not
+  there.
+- **Merged PR found** → record the PR number/title and its `baseRefName`, then
+  **Vet the branch tip** with the comparison base `origin/<baseRefName>`.
+
+### Vet the branch tip (both branch kinds)
+
+Let `<base>` be the comparison base decided above — `origin/development` for a
+feature branch (or a no-PR review checkout), `origin/<prod>` for a merged
+hotfix.
+
+```bash
+git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
+```
+
+- **CONTAINED** — the branch tip is already reachable from `<base>`; it holds
+  nothing unmerged and no post-merge commits. **Mark for deletion** — labelled
+  "merged-PR" if a PR was found, else "content-merged".
+- **AHEAD** — the tip is not reachable from `<base>`. Normal for a squash- or
+  rebase-merged PR, but also how a branch with genuine post-merge commits (or a
+  reused branch) looks. Disambiguate:
+
+  ```bash
+  git cherry -v <base> <branch>
+  git rev-list --merges --count <base>..<branch>
+  ```
+
+  - **`git cherry` empty or every line starts with `-`, AND the merge count is
+    `0`** → every non-merge commit is patch-equivalent to something already on
+    `<base>` (a clean squash/rebase merge, or a fully-absorbed no-PR checkout
+    such as `pr-23617`). **Mark for deletion** — "content-merged"; reported in
+    its own section so a non-fast-forward deletion is never silent.
+  - **any `+` line, or a non-zero merge count** → the branch has a non-merge
+    commit not on `<base>`, or a merge commit `git cherry` cannot inspect
+    (conflict-resolution content can be absent from `<base>` while every
+    non-merge commit still shows `-`). Could be post-merge work, a reused
+    branch, or a multi-commit squash whose combined diff no longer matches
+    commit-for-commit. **Skip** and warn: "PR #<n> is merged but <branch> is
+    ahead of <base> — if you squash/rebase-merged it, delete manually with
+    `git branch -D <branch>`; otherwise inspect it for unmerged work first."
 
 ## Step 4 — Switch to development
 
@@ -117,30 +131,26 @@ git checkout development
 
 ## Step 5 — Delete Marked Branches
 
-Every branch that reaches this step was already vetted in Step 3 — it has
-either a **merged PR**, or a clean patch-equivalence result (`git cherry` empty
-/ all `-` *and* zero merge commits) against `origin/development`. Branches with
-unmerged work, or merge commits `git cherry` can't see through, were skipped
-there and never marked. So Step 5 only deletes; it does not re-decide safety.
-
-For each marked branch, try the safe delete first, then force:
+Step 3's **Vet the branch tip** fully decided every marked branch — each is
+either CONTAINED in its comparison base, or AHEAD but proven patch-equivalent
+(no `+` commits, no merge commits). Branches with post-merge or unmerged work
+were skipped there. Step 5 only deletes; it does not re-decide safety.
 
 ```bash
 git branch -d <branch> || git branch -D <branch>
 ```
 
-`-d` succeeds only when the branch tip is reachable from local `development`.
-It normally **refuses** here — the PR was merged with a merge commit or a
-squash, and local `development` is not fast-forwarded until Step 6, so the tip
-is not yet an ancestor. That refusal is expected, not a warning sign; the
-`|| git branch -D` completes the delete.
+`git branch -d` refuses when the tip is not reachable from *local* `development`
+— normal here, because a squash/rebase merge leaves the tip off `development`
+and local `development` is not fast-forwarded until Step 6. The `|| git branch
+-D` completes the delete; Step 3 already established the branch is safe to drop.
+`git branch -D` prints the deleted SHA (`Deleted branch X (was 906d5ebbb4)`) and
+the reflog keeps it ~30 days, so a mistaken delete is still recoverable.
 
-Do **not** add a `git log origin/<branch>..<branch>` guard: Step 2's
-`git fetch --prune` deletes the `origin/<branch>` upstream as soon as the PR is
-merged and GitHub removes the remote branch, so that command errors with
-`unknown revision or path not in the working tree` rather than returning empty.
-`git branch -D` still prints the deleted SHA (`Deleted branch X (was 906d5ebbb4)`)
-and the reflog retains it, so an over-eager delete is recoverable.
+Do **not** re-check with `git log origin/<branch>..<branch>`: Step 2's
+`git fetch --prune` has already removed the `origin/<branch>` upstream, so that
+command errors with `unknown revision or path not in the working tree` instead
+of returning empty.
 
 ## Step 6 — Fast-Forward development to origin/development
 
