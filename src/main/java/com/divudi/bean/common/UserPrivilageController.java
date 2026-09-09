@@ -322,6 +322,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillRetire, "Inward Final Bill Retire"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillEmail, "Inward Final Bill Email"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillApprove, "Inward Final Bill Approve"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillViewUnapproved, "Inward Final Bill View / Print Unapproved"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSaveProvisionalFinalBill, "Inward Save Provisional Final Bill"), additionalPrivilegesNode);
 
         // Theatre Privileges
