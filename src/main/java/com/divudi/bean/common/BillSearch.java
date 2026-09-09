@@ -5357,6 +5357,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
             case INWARD_APPOINTMENT_BILL:
             case INWARD_APPOINTMENT_CANCEL_BILL:
+            case INWARD_APPOINTMENT_BILL_REFUND:
                 // Unlike deposit bills, InwardAppointmentBill never populates
                 // patientEncounter (it lives only on Appointment.patientEncounter,
                 // set later at admission time). inward_reprint_bill_payment.xhtml
