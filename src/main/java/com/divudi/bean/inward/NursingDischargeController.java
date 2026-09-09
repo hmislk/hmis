@@ -6,6 +6,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.PendingLabInvestigationDTO;
 import com.divudi.core.data.dto.PendingPharmacyItemDTO;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -54,6 +55,9 @@ public class NursingDischargeController implements Serializable {
 
     @Inject
     private NotificationController notificationController;
+
+    @Inject
+    private InwardBeanController inwardBean;
 
     private PatientEncounter currentEncounter;
     private List<PendingPharmacyItemDTO> pendingPharmacyItems = new ArrayList<>();
@@ -268,6 +272,14 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Cannot confirm nursing discharge: "
                     + pendingLabInvestigations.size()
                     + " lab investigation(s) must be sent to lab first.");
+            return;
+        }
+        List<PatientEncounter> cpts = inwardBean.fetchChildPatientEncounter(currentEncounter);
+        List<PatientItem> runningTimedServices = inwardBean.fetchRunningTimedPatientItems(currentEncounter, cpts);
+        if (!runningTimedServices.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot confirm nursing discharge: "
+                    + runningTimedServices.size()
+                    + " timed service(s) are still running and must be stopped first.");
             return;
         }
         Map<String, Object> before = nursingDischargeStateMap();
