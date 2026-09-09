@@ -741,6 +741,22 @@
                                                                     <td>
                                                                         <h:outputLabel value="#{fe.referencePatientRoom.name}" style="text-align: center; font-size: 9px!important;" />
                                                                     </td>
+                                                                    <td>
+                                                                        <h:outputLabel value=" || " style="text-align: center; font-size: 9px!important; width: 10px; text-align: left;" />
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputLabel value="#{fe.referencePatientRoom.printAdmittedAt}" style="text-align: center; font-size: 9px!important;">
+                                                                            <f:convertDateTime pattern="dd/MM/yyyy hh mm a" />
+                                                                        </h:outputLabel>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputLabel value=" || " style="text-align: center; font-size: 9px!important; width: 20px; text-align: center;" />
+                                                                    </td>
+                                                                    <td>
+                                                                        <h:outputLabel value="#{fe.referencePatientRoom.printDischargeAt}" style="text-align: center; font-size: 9px!important;">
+                                                                            <f:convertDateTime pattern="dd/MM/yyyy hh mm a" />
+                                                                        </h:outputLabel>
+                                                                    </td>
                                                                 </tr>
                                                             </h:panelGroup>
                                                         </ui:repeat>
