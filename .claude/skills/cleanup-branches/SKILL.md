@@ -12,10 +12,10 @@ allowed-tools: Bash
 # Cleanup Merged Local Branches
 
 Delete every local branch whose PR has already been merged — plus any branch
-with no PR of its own whose commits are all already on `origin/development`
-(e.g. a `gh pr checkout <N>` review checkout) — then bring `development` up to
-date. Leave `persistence.xml` with local JNDI names restored (unstaged) at the
-end.
+with no PR of its own whose changes are all already represented on
+`origin/development` (e.g. a `gh pr checkout <N>` review checkout) — then bring
+`development` up to date. Leave `persistence.xml` with local JNDI names restored
+(unstaged) at the end.
 
 ## Step 1 — Stash Local persistence.xml Changes
 
@@ -103,26 +103,33 @@ git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
   nothing unmerged and no post-merge commits. **Mark for deletion.**
 - **AHEAD** — the tip is not reachable from `<base>`. Normal for a squash- or
   rebase-merged PR, but also how a branch with genuine post-merge commits (or a
-  reused branch) looks. Disambiguate:
+  reused branch) looks. Decide with a **final-tree guard**: are `<branch>`'s
+  versions of the files it touched already identical to `<base>`?
 
   ```bash
-  git cherry -v <base> <branch>
-  git rev-list --merges --count <base>..<branch>
+  mb=$(git merge-base <base> <branch>)
+  git diff --quiet <base> <branch> -- $(git diff --name-only "$mb" <branch>)
   ```
 
-  - **`git cherry` empty or every line starts with `-`, AND the merge count is
-    `0`** → every non-merge commit is patch-equivalent to something already on
-    `<base>` (a clean squash/rebase merge, or a fully-absorbed no-PR checkout
-    such as `pr-23617`). **Mark for deletion.**
-  - **any `+` line, or a non-zero merge count** → the branch has a non-merge
-    commit not on `<base>`, or a merge commit `git cherry` cannot inspect
-    (conflict-resolution content can be absent from `<base>` while every
-    non-merge commit still shows `-`). Could be post-merge work, a reused
-    branch, or a multi-commit squash whose combined diff no longer matches
-    commit-for-commit. **Skip** and warn, quoting the branch's real
-    `<base>` and its PR reference (or noting it has none): "*ahead of `<base>`
-    — if PR #`<n>` was squash/rebase-merged, `git branch -D <branch>`
-    manually; otherwise inspect for unmerged work first*".
+  This compares final content, not per-commit patches, so it is correct where
+  `git cherry` is not: a clean multi-commit squash-merge (no per-commit
+  equivalent) passes; a branch whose change was applied to `<base>` and later
+  reverted there fails; a merge commit that carried unique content in fails.
+
+  - **exit `0`** — every file the branch touched already matches `<base>`;
+    deleting the branch loses nothing (a clean squash/rebase merge, or a
+    fully-absorbed no-PR checkout such as `pr-23617`). **Mark for deletion.**
+  - **exit `1`** — some file the branch touched differs from `<base>`: genuine
+    post-merge work, a reused branch, conflict-resolution content, or a
+    squash/rebase that did not land identical content. **Skip** and warn,
+    quoting the branch's real `<base>` and its PR reference (or noting it has
+    none): "*ahead of `<base>` — if PR #`<n>` was squash/rebase-merged,
+    `git branch -D <branch>` manually; otherwise inspect for unmerged work
+    first*".
+
+  (If the touched-file list is empty — the branch's commits change nothing —
+  the command degrades to a full-tree diff and will exit `1`; skip and warn,
+  which is the safe outcome for that oddity.)
 
 ## Step 4 — Switch to development
 
@@ -133,9 +140,10 @@ git checkout development
 ## Step 5 — Delete Marked Branches
 
 Step 3's **Vet the branch tip** fully decided every marked branch — each is
-either CONTAINED in its comparison base, or AHEAD but proven patch-equivalent
-(no `+` commits, no merge commits). Branches with post-merge or unmerged work
-were skipped there. Step 5 only deletes; it does not re-decide safety.
+either CONTAINED in its comparison base, or AHEAD but proven fully absorbed (the
+final-tree guard found every file it touched already identical to `<base>`).
+Branches with post-merge or unmerged work were skipped there. Step 5 only
+deletes; it does not re-decide safety.
 
 ```bash
 git branch -d <branch> || git branch -D <branch>
@@ -187,7 +195,7 @@ Print a summary:
 ```text
 ✓ Deleted branches:
   - <branch>  (PR #NNN merged → <base-branch>)
-  - <branch>  (no PR; all commits already on <base-branch>)
+  - <branch>  (no PR; all changes already represented on <base-branch>)
   ...
 
 ⚠ Skipped branches:
@@ -204,10 +212,11 @@ Print a summary:
 ✓ persistence.xml restored to local JNDI settings (unstaged)
 ```
 
-Each deleted / skipped line carries the branch's real PR reference (or "no PR")
-and its real comparison base — never assume a PR exists or that the base is
-`development`. Omit any section with no entries. If nothing was stashed, replace
-the last line with:
+Each *vetted* deleted / skipped line carries the branch's real PR reference (or
+"no PR") and its real comparison base — never assume a PR exists or that the
+base is `development`. The unvetted "hotfix, no merged PR found" line is the one
+exception: it is skipped before any base is chosen, so it carries neither. Omit
+any section with no entries. If nothing was stashed, replace the last line with:
 `✓ persistence.xml unchanged (no local changes were present)`
 
 ## Notes
