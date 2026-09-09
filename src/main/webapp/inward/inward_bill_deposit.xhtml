@@ -441,6 +441,21 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton
+                                value="Print (Dot-Matrix)"
+                                ajax="false"
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#"  >
+                                <p:printer target="gpBillPreviewDmx" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print (Raw Text)"
+                                ajax="false"
+                                icon="fa fa-file-lines"
+                                class="ui-button-help"
+                                action="#{inwardDepositController.streamCurrentDepositReceiptAsRawText}" >
+                            </p:commandButton>
+                            <p:commandButton
                                 rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                 value="Settings"
                                 icon="fas fa-cog"
@@ -487,6 +502,11 @@
 
                             </div>
 
+                        </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewDmx" style="display:none;">
+                            <div class="d-flex justify-content-center">
+                                <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardDepositController.current}" heading="Deposit Receipt" />
+                            </div>
                         </h:panelGroup>
                     </div>
                 </p:panel>
