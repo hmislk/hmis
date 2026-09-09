@@ -5154,6 +5154,8 @@ public class BhtSummeryController implements Serializable {
 
             setGrossMarginVatBreakdown();
 
+            addRunningTimedServiceLiveTopUp();
+
         }
 
         setNetAdjustValue();
@@ -5167,6 +5169,87 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+    }
+
+    /**
+     * Tops up the charge-type totals with the amount every still-running timed
+     * service ({@code toTime IS NULL}) would bill if it stopped right now.
+     * <p>
+     * The persisted-value queries behind {@link #setTimedServiceTotCategoryWise()}
+     * and {@link #setGrossMarginVatBreakdown()} only ever contributed each
+     * running service's add-time snapshot ({@code PatientItem.serviceValue} /
+     * the mirrored {@code BillItem.grossValue}) — {@code save()} prices a timed
+     * service once when it is added and it does not grow with elapsed time. The
+     * Timed Service Charges tab, on the other hand, recomputes the live figure in
+     * memory ({@link #createPatientItems()}), so tab and balance diverge the
+     * longer a service runs (issue #23607 / #23606).
+     * <p>
+     * Here we re-price each running service as of "now" ({@code toTime} null →
+     * current time, the same convention {@code calCount} already uses) with
+     * {@link InwardBeanController#calTotalTimedChargeForItem} — the tiered-fee,
+     * foreigner-rate path a manual stop or the discharge auto-close uses — and
+     * add only the difference from the persisted value onto the matching
+     * {@link ChargeItemTotal}'s {@code total} and {@code gross}. A running
+     * service accrues gross only, so margin/VAT are left untouched.
+     * <p>
+     * Nothing is persisted: {@code toTime} stays null, the service is still
+     * genuinely running and can be stopped/edited/removed normally, and merely
+     * viewing or recalculating the interim bill writes nothing to the database.
+     */
+    private void addRunningTimedServiceLiveTopUp() {
+        List<PatientItem> running = getInwardBean()
+                .fetchRunningTimedPatientItems(getPatientEncounter(), childPatientEncouters);
+        if (running == null || running.isEmpty()) {
+            return;
+        }
+
+        Date now = new Date();
+        Map<InwardChargeType, Double> topUpByChargeType = new HashMap<>();
+
+        for (PatientItem pi : running) {
+            if (pi.getItem() == null || !(pi.getItem() instanceof TimedItem)) {
+                continue;
+            }
+            // Package-locked services keep their fixed price - skip, same as the
+            // discharge-time close (finalizeRunningTimedServices).
+            if (pi.getBillItem() != null && pi.getBillItem().isFromPackage()) {
+                continue;
+            }
+            // A start time in the future has not accrued anything yet.
+            if (pi.getFromTime() == null || now.before(pi.getFromTime())) {
+                continue;
+            }
+            // No configured fee -> would price at zero; leave the persisted value
+            // alone rather than zero it out.
+            if (getInwardBean().getAllTimedItemFees((TimedItem) pi.getItem()).isEmpty()) {
+                continue;
+            }
+
+            PatientEncounter owner = pi.getPatientEncounter() != null
+                    ? pi.getPatientEncounter() : getPatientEncounter();
+            double liveValue = getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(), pi.getFromTime(), now, owner.isForiegner());
+            double persistedValue = pi.getServiceValue() != null ? pi.getServiceValue() : 0.0;
+            double delta = liveValue - persistedValue;
+            if (delta == 0.0) {
+                continue;
+            }
+
+            InwardChargeType chargeType = pi.getItem().getInwardChargeType();
+            topUpByChargeType.merge(chargeType, delta, Double::sum);
+        }
+
+        if (topUpByChargeType.isEmpty()) {
+            return;
+        }
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double delta = topUpByChargeType.get(cit.getInwardChargeType());
+            if (delta != null && delta != 0.0) {
+                cit.setTotal(cit.getTotal() + delta);
+                cit.setGross(cit.getGross() + delta);
+            }
+        }
     }
 
     private void restoreChargeItemComments() {
