@@ -53,8 +53,8 @@ Before the feature/hotfix split, skip any branch that is `master` or ends with
 `-prod` (the local mirrors of admin-managed / production branches — see Notes
 for the full list). They diverge from `development` by design, so a naïve
 patch-equivalence check could still misfire on them; the explicit skip is the
-guarantee. Report them under a separate "Protected — not touched" line, no
-warning icon.
+guarantee. List them in the report under their own "Protected — not touched"
+heading (they are expected, not a problem to flag).
 
 ### Feature branches (do NOT end with `-hotfix`)
 
@@ -89,17 +89,18 @@ gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title
 
 ### Vet the branch tip (both branch kinds)
 
-Let `<base>` be the comparison base decided above — `origin/development` for a
-feature branch (or a no-PR review checkout), `origin/<prod>` for a merged
-hotfix.
+Carry two facts forward for each branch: its **PR reference** — either
+`#<n> → <base-branch>` (from the `gh pr list` step) or *none* (a no-PR review
+checkout) — and its comparison base `<base>`: `origin/development` for a feature
+branch or a no-PR checkout, `origin/<baseRefName>` for a feature PR whose base
+was changed, `origin/<prod>` for a merged hotfix.
 
 ```bash
 git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
 ```
 
 - **CONTAINED** — the branch tip is already reachable from `<base>`; it holds
-  nothing unmerged and no post-merge commits. **Mark for deletion** — labelled
-  "merged-PR" if a PR was found, else "content-merged".
+  nothing unmerged and no post-merge commits. **Mark for deletion.**
 - **AHEAD** — the tip is not reachable from `<base>`. Normal for a squash- or
   rebase-merged PR, but also how a branch with genuine post-merge commits (or a
   reused branch) looks. Disambiguate:
@@ -112,16 +113,16 @@ git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
   - **`git cherry` empty or every line starts with `-`, AND the merge count is
     `0`** → every non-merge commit is patch-equivalent to something already on
     `<base>` (a clean squash/rebase merge, or a fully-absorbed no-PR checkout
-    such as `pr-23617`). **Mark for deletion** — "content-merged"; reported in
-    its own section so a non-fast-forward deletion is never silent.
+    such as `pr-23617`). **Mark for deletion.**
   - **any `+` line, or a non-zero merge count** → the branch has a non-merge
     commit not on `<base>`, or a merge commit `git cherry` cannot inspect
     (conflict-resolution content can be absent from `<base>` while every
     non-merge commit still shows `-`). Could be post-merge work, a reused
     branch, or a multi-commit squash whose combined diff no longer matches
-    commit-for-commit. **Skip** and warn: "PR #<n> is merged but <branch> is
-    ahead of <base> — if you squash/rebase-merged it, delete manually with
-    `git branch -D <branch>`; otherwise inspect it for unmerged work first."
+    commit-for-commit. **Skip** and warn, quoting the branch's real
+    `<base>` and its PR reference (or noting it has none): "*ahead of `<base>`
+    — if PR #`<n>` was squash/rebase-merged, `git branch -D <branch>`
+    manually; otherwise inspect for unmerged work first*".
 
 ## Step 4 — Switch to development
 
@@ -184,28 +185,28 @@ If no stash was created, leave `persistence.xml` as-is.
 Print a summary:
 
 ```text
-✓ Deleted branches (merged PR):
+✓ Deleted branches:
   - <branch>  (PR #NNN merged → <base-branch>)
-  ...
-
-✓ Deleted branches (no PR, but all commits already in development):
-  - <branch>
+  - <branch>  (no PR; all commits already on <base-branch>)
   ...
 
 ⚠ Skipped branches:
-  - <branch>  (has commit(s) not in development — if its PR was squash-merged,
-    delete manually after confirming)
-  - <branch>  (carries merge commits — verify manually before deleting)
+  - <branch>  (PR #NNN merged → <base-branch>, but tip is ahead of it —
+    squash/rebase merge? `git branch -D` manually; else inspect for unmerged work)
+  - <branch>  (no PR; tip has commit(s) not on <base-branch>)
+  - <branch>  (hotfix, no merged PR found)
   ...
 
 • Protected — not touched:
-  - master, <name>-prod  (never deleted by this skill)
+  - master, <name>-prod
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
 ```
 
-Omit any branch section that has no entries. If nothing was stashed, replace
+Each deleted / skipped line carries the branch's real PR reference (or "no PR")
+and its real comparison base — never assume a PR exists or that the base is
+`development`. Omit any section with no entries. If nothing was stashed, replace
 the last line with:
 `✓ persistence.xml unchanged (no local changes were present)`
 
