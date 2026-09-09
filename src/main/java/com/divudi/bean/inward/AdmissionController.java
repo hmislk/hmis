@@ -74,6 +74,7 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.inward.Reservation;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -174,6 +175,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    AdmissionTypeController admissionTypeController;
     @Inject
     BillSearch billSearch;
     @Inject
@@ -2660,6 +2663,65 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         setPatient(ap.getPatient());
+        prefillAdmissionFromAppointment(ap);
+    }
+
+    /**
+     * Pre-fills the admission form from the appointment being admitted so staff
+     * do not have to re-key what the appointment already captured. (#23620)
+     *
+     * <ul>
+     *   <li>Consultant &larr; the appointment bill's referring doctor.</li>
+     *   <li>Room &larr; the reservation's room, when the reservation is a room
+     *       reservation and that room is still vacant.</li>
+     *   <li>Admission Type &larr; the single {@link AdmissionType} whose fixed
+     *       {@code roomFacilityCharge} is that room, and only when exactly one
+     *       matches - otherwise it is left for staff to choose.</li>
+     * </ul>
+     *
+     * Every field is only set when it is currently empty, so this never
+     * overrides a value staff have already entered.
+     */
+    private void prefillAdmissionFromAppointment(Bill appointmentBill) {
+        if (getCurrent() == null) {
+            return;
+        }
+        if (getCurrent().getReferringConsultant() == null && appointmentBill.getReferredBy() != null) {
+            getCurrent().setReferringConsultant(appointmentBill.getReferredBy());
+        }
+        Reservation res = getCurrentReservation();
+        // currentReservation is @SessionScoped and is NOT set by every caller of
+        // this listener (the admission form's own "Appointment" search tab calls
+        // it without a reservation). Only trust it for the room / admission-type
+        // prefill when it actually belongs to the appointment being admitted -
+        // otherwise a stale reservation from an earlier, abandoned calendar
+        // "To Admit" click would apply the wrong room. (#23620)
+        if (res == null || res.getRoom() == null
+                || res.getAppointment() == null || res.getAppointment().getBill() == null
+                || !res.getAppointment().getBill().equals(appointmentBill)) {
+            return;
+        }
+        RoomFacilityCharge reservedRoom = res.getRoom();
+        if (reservedRoom.getRoom() != null && getInwardBean().isRoomFilled(reservedRoom.getRoom())) {
+            // Reserved room has since been taken - leave selection to staff.
+            return;
+        }
+        if (getPatientRoom() != null && getPatientRoom().getRoomFacilityCharge() == null) {
+            getPatientRoom().setRoomFacilityCharge(reservedRoom);
+        }
+        if (getCurrent().getAdmissionType() == null) {
+            AdmissionType matchedType = null;
+            int matchCount = 0;
+            for (AdmissionType at : admissionTypeController.getItems()) {
+                if (reservedRoom.equals(at.getRoomFacilityCharge())) {
+                    matchedType = at;
+                    matchCount++;
+                }
+            }
+            if (matchCount == 1) {
+                getCurrent().setAdmissionType(matchedType);
+            }
+        }
     }
 
     @Inject

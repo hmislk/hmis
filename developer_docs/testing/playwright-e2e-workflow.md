@@ -3152,6 +3152,72 @@ paper types the page checks, such as "POS Paper". This does not validate
 
 Found while fixing issue #23571.
 
+## 111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow
+
+The admission form's Room autocomplete (`roomFacilityChargeController.completeRoom`)
+only returns a room when **no** `PATIENTROOM` row exists for it with
+`RETIRED=0 AND DISCHARGED=0`, and the room's `CATEGORY.FILLED` is not `1`.
+`InwardBeanController.isRoomFilled(room)` applies the same
+`discharged=false` test. Restored production-shaped `coop` data is often at
+or near full occupancy, so the Room autocomplete legitimately returns **no
+suggestions** for any query — an admission simply cannot be completed, and
+this looks like a broken autocomplete rather than a data state.
+
+`Room` is `Room extends Category`, so room rows live in `CATEGORY` (`DTYPE='Room'`),
+not a `ROOM` table. To free rooms on the **local** DB (disposable — see the
+`dev-issue-unattended` hard limits), mark their active `PATIENTROOM` discharged
+and clear any stuck `FILLED`:
+
+```sql
+UPDATE PATIENTROOM PR
+JOIN ROOMFACILITYCHARGE RFC ON PR.ROOMFACILITYCHARGE_ID = RFC.ID
+JOIN CATEGORY C ON RFC.ROOM_ID = C.ID
+SET PR.DISCHARGED = 1
+WHERE PR.RETIRED = 0 AND PR.DISCHARGED = 0
+  AND C.NAME IN ('Room 100','Room 101','Room 102','Room 103','Room 104', ...);
+
+UPDATE CATEGORY SET FILLED = 0
+WHERE NAME IN ('Room 100','Room 101','Room 102','Room 103','Room 104', ...);
+```
+
+Verify with:
+
+```sql
+SELECT C.NAME FROM ROOMFACILITYCHARGE RFC JOIN CATEGORY C ON RFC.ROOM_ID = C.ID
+WHERE RFC.RETIRED = 0 AND (C.FILLED IS NULL OR C.FILLED <> 1)
+  AND C.ID NOT IN (
+    SELECT RFC2.ROOM_ID FROM PATIENTROOM PR
+    JOIN ROOMFACILITYCHARGE RFC2 ON PR.ROOMFACILITYCHARGE_ID = RFC2.ID
+    WHERE PR.RETIRED = 0 AND PR.DISCHARGED = 0)
+ORDER BY C.NAME;
+```
+
+(A room name repeats once per `ROOMFACILITYCHARGE` fee tier — that is normal.)
+This is a local-only shortcut; never run it against a tunnelled/remote DB.
+The proper app path is a Physical Discharge, but that is a long workflow just
+to reclaim a bed for a test.
+
+Found while verifying #23618-#23622 (admission + appointment-deposit-conversion
+flows) — every `completeRoom` query returned nothing until rooms were freed.
+
+## 112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety
+
+#23618 removed the `settleBill()` guard that forced `reservedToDate` to be
+non-null for a Room Admission appointment. That guard was also the de-facto
+protection for code that read the value unconditionally later:
+`updateChangesReservation()` did `reservedToDate.before(...)` (NPE), and both
+that method and `settleBill()` did `sdf.format(res.getReservedTo())` when
+reporting a room conflict (NPE if the *conflicting* reservation was itself
+saved with a null end). None of these are in the diff of the validation
+change, so a review that only looks at changed lines misses them — CodeRabbit
+flagged it on PR #23628.
+
+When a change makes a previously-guaranteed field nullable (or merely more
+often null), grep the whole class (and callers) for every read of that
+field — `.before(`, `.after(`, `.format(`, `.getTime()`, arithmetic — and
+guard or apply the same fallback the new code uses (here: treat a missing
+end as the start instant).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -3177,4 +3243,5 @@ Found while fixing issue #23571.
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
 - [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
 - [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
+- [ ] For any admission flow: confirmed the local DB actually has a vacant room (`completeRoom` returns suggestions); if not, freed some by SQL (§111) before concluding the Room autocomplete is broken.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.

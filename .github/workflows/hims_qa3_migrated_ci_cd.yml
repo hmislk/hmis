@@ -1,12 +1,12 @@
 # ═══════════════════════════════════════════════════════════════════════════
-#  HMIS QA1 — new Azure estate (East Asia)
+#  HMIS QA3 — new Azure estate (East Asia)
 #
-#  Copy to  hmis/.github/workflows/hims_qa1_migrated_ci_cd.yml
-#  Branch:  hims-qa1-migrated
-#  Serves:  https://qa-migrated.carecode.org/qa1
+#  Copy to  hmis/.github/workflows/hims_qa3_migrated_ci_cd.yml
+#  Branch:  hims-qa3-migrated
+#  Serves:  https://qa-migrated.carecode.org/qa3
 #
-#  Differs from the existing hims_qa1_ci_cd.yml in three ways only:
-#    1. triggers on hims-qa1-migrated instead of the old QA branch
+#  Differs from the existing hims_qa3_ci_cd.yml in three ways only:
+#    1. triggers on hims-qa3-migrated instead of the old QA branch
 #    2. uses QA_MIGRATED_* secrets (new VM, new key, new admin password)
 #    3. health-checks qa-migrated.carecode.org
 #
@@ -14,11 +14,11 @@
 #  Payara domain. The existing per-client convention (<CLIENT>_<ENV>_SERVER_IP)
 #  would mean four identical copies of the same four values.
 # ═══════════════════════════════════════════════════════════════════════════
-name: HIMS QA1 Migrated CI/CD
+name: HIMS QA3 Migrated CI/CD
 
 on:
   push:
-    branches: [hims-qa1-migrated]
+    branches: [hims-qa3-migrated]
   workflow_dispatch:
 
 concurrency:
@@ -34,11 +34,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  APP_NAME:     qa1
-  CONTEXT_ROOT: qa1
-  JNDI_MAIN:    jdbc/qa1
-  JNDI_AUDIT:   jdbc/qa1Audit
-  HEALTH_URL:   https://qa-migrated.carecode.org/qa1/faces/index1.xhtml
+  APP_NAME:     qa3
+  CONTEXT_ROOT: qa3
+  JNDI_MAIN:    jdbc/qa3
+  JNDI_AUDIT:   jdbc/qa3Audit
+  HEALTH_URL:   https://qa-migrated.carecode.org/qa3/faces/index1.xhtml
   WAR_DIR:      /home/appuser/app/latest
 
 jobs:
@@ -102,8 +102,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: qa1-war
-          path: target/qa1.war
+          name: qa3-war
+          path: target/qa3.war
           retention-days: 7
 
   deploy:
@@ -111,14 +111,14 @@ jobs:
     runs-on: ubuntu-latest
     environment: qa-migrated      # add a required reviewer here to gate deploys
     env:
-      APP_NAME:   qa1
-      JNDI_MAIN:  jdbc/qa1
-      JNDI_AUDIT: jdbc/qa1Audit
-      HEALTH_URL: https://qa-migrated.carecode.org/qa1/faces/index1.xhtml
+      APP_NAME:   qa3
+      JNDI_MAIN:  jdbc/qa3
+      JNDI_AUDIT: jdbc/qa3Audit
+      HEALTH_URL: https://qa-migrated.carecode.org/qa3/faces/index1.xhtml
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: qa1-war
+          name: qa3-war
           path: ./artifact
 
       - name: Configure SSH
@@ -133,7 +133,7 @@ jobs:
         run: |
           set -euo pipefail
           rsync -az -e "ssh -i ~/.ssh/id_deploy" \
-            "./artifact/qa1.war" \
+            "./artifact/qa3.war" \
             "${{ secrets.QA_MIGRATED_SERVER_USER }}@${{ secrets.QA_MIGRATED_SERVER_IP }}:/home/appuser/app/latest/"
 
       - name: Deploy to Payara
@@ -142,7 +142,7 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/id_deploy "$TARGET" \
-              APP="qa1" JNDI_MAIN="jdbc/qa1" JNDI_AUDIT="jdbc/qa1Audit" \
+              APP="qa3" JNDI_MAIN="jdbc/qa3" JNDI_AUDIT="jdbc/qa3Audit" \
               'bash -euo pipefail -s' <<'REMOTE'
           PAYARA=/opt/payara5
           WAR="/home/appuser/app/latest/${APP}.war"
@@ -199,7 +199,7 @@ jobs:
             [ "$code" = "200" ] && { echo "healthy"; exit 0; }
             sleep 10
           done
-          echo "::error::qa1 did not become healthy at $HEALTH_URL"
+          echo "::error::qa3 did not become healthy at $HEALTH_URL"
           exit 1
 
       - name: Clean up key
