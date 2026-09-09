@@ -715,22 +715,27 @@ public class InwardTimedItemController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (getCurrent().getToTime() == null) {
-            getCurrent().setToTime(new Date());
+        if (getCurrent().getFromTime() == null) {
+            getCurrent().setFromTime(new Date());
         }
+        // Stopped Time is intentionally left null when not entered - the
+        // service is still running. calTotalTimedChargeForItem/calCount
+        // already treats a null end time as "now" for interim pricing without
+        // persisting it (see fetchRunningTimedPatientItems, which queries
+        // toTime is null to find services still in progress), and the row's
+        // Update button (finalizeService) is how a real stop time gets
+        // recorded later.
         // Price from the Start Time the user entered on this page, not from the
         // date of admission. Both are stored on the item, but only fromTime is
         // what the service actually ran for — and it is what the row's Update
         // button (finalizeService) re-prices against, so pricing from the
         // admission date made Add and Update disagree. A per-minute service made
         // that glaring: a six-minute run on a two-week-old admission billed every
-        // minute since admission.
-        Date chargeFrom = getCurrent().getFromTime() != null
-                ? getCurrent().getFromTime()
-                : getCurrent().getPatientEncounter().getDateOfAdmission();
+        // minute since admission. fromTime is always set by now (see above), so
+        // there is no admission-date fallback to fall back to.
         double value = getInwardBean().calTotalTimedChargeForItem(
                 (TimedItem) getCurrent().getItem(),
-                chargeFrom,
+                getCurrent().getFromTime(),
                 getCurrent().getToTime(),
                 getCurrent().getPatientEncounter().isForiegner());
         getCurrent().setServiceValue(value);
