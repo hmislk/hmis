@@ -690,8 +690,15 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 
         if (currentAppointment.getAppointmentDate() == null) {
-            JsfUtil.addErrorMessage("Appointment Date is Missing.");
-            return;
+            // For a room appointment the reservation start date is the effective
+            // appointment date - derive it here instead of blocking the save.
+            // (#23619)
+            if (appointmentCategory.needsRoom() && getReservedFromDate() != null) {
+                currentAppointment.setAppointmentDate(getReservedFromDate());
+            } else {
+                JsfUtil.addErrorMessage("Appointment Date is Missing.");
+                return;
+            }
         }
 
         if (currentBill.getReferredBy() == null) {
@@ -1506,9 +1513,17 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     public Reservation checkRoomAvailability() {
-        if (reservedRoom == null || reservedFromDate == null || reservedToDate == null) {
-            JsfUtil.addErrorMessage("Reservation, room, and dates must not be null");
+        if (reservedRoom == null || reservedFromDate == null) {
+            JsfUtil.addErrorMessage("A room and a reservation start date are required.");
+            return null;
         }
+
+        // "Reserve To" is optional in the booking flow and is legitimately left
+        // blank. Treat a missing end as a point in time at reservedFrom for the
+        // overlap check (the same fallback navigatePatientAdmit() uses) instead
+        // of adding a spurious "must not be null" error and then saving the
+        // appointment anyway. (#23618)
+        Date effectiveReservedTo = (reservedToDate != null) ? reservedToDate : reservedFromDate;
 
         Map<String, Object> parameters = new HashMap<>();
 
@@ -1531,7 +1546,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         parameters.put("room", reservedRoom);
         parameters.put("status", AppointmentStatus.PENDING);
         parameters.put("reservedFrom", reservedFromDate);
-        parameters.put("reservedTo", reservedToDate);
+        parameters.put("reservedTo", effectiveReservedTo);
 
         Reservation r = reservationFacade.findFirstByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -1599,6 +1614,25 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public InwardAppointmentCategory[] getAppointmentCategories() {
         return InwardAppointmentCategory.values();
+    }
+
+    /**
+     * When the reservation "Reserve From" date changes and the user has not yet
+     * set an Appointment Date, mirror the reservation date into the Appointment
+     * Date field so it never has to be re-keyed. Does nothing once the user has
+     * entered their own Appointment Date. (#23619)
+     *
+     * Only used for room categories (the "Reserve From" picker is not rendered
+     * for the others), and the schedule-slot lookup does not apply to them, so
+     * it is deliberately not invoked here.
+     */
+    public void onReservedFromDateChanged() {
+        if (currentAppointment == null || reservedFromDate == null) {
+            return;
+        }
+        if (currentAppointment.getAppointmentDate() == null) {
+            currentAppointment.setAppointmentDate(reservedFromDate);
+        }
     }
 
     public void onScheduleFilterChanged() {
