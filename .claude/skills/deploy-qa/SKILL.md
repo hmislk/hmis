@@ -82,8 +82,11 @@ PR shows a merge conflict, the fix is **not** a conflict-resolution branch —
 `check-branch` (`branch_merge_validation.yml`) only allows `development` as the
 PR head for a `hims-qa*-migrated` base, so such a PR always fails CI. An admin
 must reconcile it: temporarily add a bypass actor to the `QA Branches Rules`
-ruleset (id 4778267), `git push --force origin origin/development:hims-qaN-migrated`,
-then restore the ruleset to `bypass_actors: []`.
+ruleset (id 4778267), then
+`git fetch origin && git push --force-with-lease origin origin/development:hims-qaN-migrated`
+(lease-protected so a concurrent update to the target branch aborts the push
+instead of being silently discarded), then restore the ruleset to
+`bypass_actors: []`.
 
 ## Post-Deployment
 
