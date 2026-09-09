@@ -657,11 +657,6 @@ public class InwardTimedItemController implements Serializable {
         if (isLockedForChanges(getCurrent().getPatientEncounter())) {
             return true;
         }
-        if (getCurrent().getPatientEncounter().isNursingDischarged()
-                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
-            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
-            return true;
-        }
         return false;
     }
 
@@ -680,6 +675,10 @@ public class InwardTimedItemController implements Serializable {
         }
         if (pe.isDischarged()) {
             JsfUtil.addErrorMessage("This patient has been discharged. Timed services can no longer be changed.");
+            return true;
+        }
+        if (pe.isNursingDischarged() && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot change timed services: nursing discharge has been confirmed for this patient.");
             return true;
         }
         return false;
