@@ -45,7 +45,16 @@ List every local branch except `development`:
 git branch --format='%(refname:short)' | grep -v '^development$'
 ```
 
-For each branch, determine whether it is safe to delete:
+For each branch, determine whether it is safe to delete.
+
+### Protected branches — never delete, never classify
+
+Before the feature/hotfix split, skip any branch that is `master` or ends with
+`-prod` (the local mirrors of admin-managed / production branches — see Notes
+for the full list). They diverge from `development` by design, so a naïve
+patch-equivalence check could still misfire on them; the explicit skip is the
+guarantee. Report them under a separate "Protected — not touched" line, no
+warning icon.
 
 ### Feature branches (do NOT end with `-hotfix`)
 
@@ -72,17 +81,22 @@ gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title
 
   ```bash
   git cherry -v origin/development <branch>
+  git rev-list --merges --count origin/development..<branch>
   ```
 
-  - **Empty output**, or every line starts with `-` → every commit on the branch
-    is already patch-equivalent on `origin/development`. **Mark for deletion
-    (content-merged)** — reported in its own section, separate from the
-    merged-PR deletions, so a non-standard removal is never silent.
-  - **Any line starts with `+`** → the branch has a commit not on
-    `origin/development` — genuinely unmerged work, *or* a multi-commit branch
-    whose PR was squash-merged (no per-commit equivalent exists). Either way,
-    **skip** and warn; the report line tells the user to check whether it was a
-    squashed PR and delete manually if so.
+  - **`git cherry` empty or all `-`, AND the merge count is `0`** → every commit
+    on the branch is already patch-equivalent on `origin/development`. **Mark
+    for deletion (content-merged)** — reported in its own section, separate from
+    the merged-PR deletions, so a non-standard removal is never silent.
+  - **Merge count is not `0`** → the branch carries merge commits, which
+    `git cherry` does not inspect; conflict-resolution content in a merge commit
+    can be absent from `origin/development` while every non-merge commit still
+    shows `-`. Do **not** trust the `git cherry` result here — **skip** and warn.
+  - **Any `git cherry` line starts with `+`** → the branch has a non-merge
+    commit not on `origin/development` — genuinely unmerged work, *or* a
+    multi-commit branch whose PR was squash-merged (no per-commit equivalent
+    exists). Either way, **skip** and warn; the report line tells the user to
+    check whether it was a squashed PR and delete manually if so.
 
 ### Hotfix branches (end with `-hotfix`)
 
@@ -104,9 +118,10 @@ git checkout development
 ## Step 5 — Delete Marked Branches
 
 Every branch that reaches this step was already vetted in Step 3 — it has
-either a **merged PR** or an **empty `git cherry`** against `origin/development`.
-Branches with unmerged work were skipped there and never marked. So Step 5 only
-deletes; it does not re-decide safety.
+either a **merged PR**, or a clean patch-equivalence result (`git cherry` empty
+/ all `-` *and* zero merge commits) against `origin/development`. Branches with
+unmerged work, or merge commits `git cherry` can't see through, were skipped
+there and never marked. So Step 5 only deletes; it does not re-decide safety.
 
 For each marked branch, try the safe delete first, then force:
 
@@ -158,7 +173,7 @@ If no stash was created, leave `persistence.xml` as-is.
 
 Print a summary:
 
-```
+```text
 ✓ Deleted branches (merged PR):
   - <branch>  (PR #NNN merged → <base-branch>)
   ...
@@ -170,14 +185,18 @@ Print a summary:
 ⚠ Skipped branches:
   - <branch>  (has commit(s) not in development — if its PR was squash-merged,
     delete manually after confirming)
+  - <branch>  (carries merge commits — verify manually before deleting)
   ...
+
+• Protected — not touched:
+  - master, <name>-prod  (never deleted by this skill)
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
 ```
 
-Omit any of the three branch sections that has no entries. If nothing was
-stashed, replace the last line with:
+Omit any branch section that has no entries. If nothing was stashed, replace
+the last line with:
 `✓ persistence.xml unchanged (no local changes were present)`
 
 ## Notes
