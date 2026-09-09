@@ -22,9 +22,15 @@ on:
   workflow_dispatch:
 
 concurrency:
-  # All four apps share one Payara domain. Two asadmin deploys at once against
-  # the same domain is how you get a half-deployed app and a confusing 404.
-  group: payara-qa-migrated
+  # The four QA apps share one Payara DAS but deploy as distinct applications
+  # (--name qa1..qa4) with their own WAR paths, rollback copies and JNDI
+  # pools; asadmin serialises commands at the DAS, so their deploys do not
+  # conflict and must NOT cancel each other. A shared group here caused
+  # back-to-back `deploy-qa` merges to silently cancel whichever branch
+  # landed in the middle (0 jobs, ~5s, conclusion "cancelled").
+  # cancel-in-progress stays false so a rapid re-push to the SAME branch
+  # queues instead of aborting a deploy in flight.
+  group: payara-qa-migrated-${{ github.ref_name }}
   cancel-in-progress: false
 
 env:
