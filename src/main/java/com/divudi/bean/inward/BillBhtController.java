@@ -1293,7 +1293,7 @@ public class BillBhtController implements Serializable {
         calTotals();
 
         clearBillItemValues();
-        //JsfUtil.addSuccessMessage("Item Added");
+        JsfUtil.addSuccessMessage("Service/Investigation added successfully.");
     }
 
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
