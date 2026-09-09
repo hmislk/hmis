@@ -1984,6 +1984,90 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Marks a timed service's own bill as checked from the Interim Bill, so
+     * timed services can be verified where they are listed instead of only from
+     * Search &rarr; Service Bill.
+     * <p>
+     * Deliberately the same two fields, and the same "not once the payment is
+     * finalized" refusal, as {@code InwardSearch#markAsChecked()} — a timed
+     * service checked here has to be indistinguishable from one checked there,
+     * because the settlement gate reads {@code Bill.checkedBy} and does not care
+     * which screen set it.
+     */
+    public void markTimedServiceAsChecked(PatientItem patientItem) {
+        Bill b = billOfTimedService(patientItem);
+        if (b == null) {
+            return;
+        }
+        if (b.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This timed service has already been checked.");
+            return;
+        }
+        // A running service has no final amount yet - its charge keeps growing,
+        // and the discharge closes it and reprices it (see
+        // finalizeRunningTimedServices). Checking one would stamp a verification
+        // on a figure the system itself is about to change, which is exactly
+        // what the checked-is-frozen rule exists to prevent. Verify a finished
+        // charge, not a growing one.
+        if (patientItem.getToTime() == null) {
+            JsfUtil.addErrorMessage("This timed service is still running. Enter a Stopped Time and press Update before checking it.");
+            return;
+        }
+        b.setCheckeAt(new Date());
+        b.setCheckedBy(getSessionController().getLoggedUser());
+        getBillFacade().edit(b);
+
+        patientItems = null;
+        JsfUtil.addSuccessMessage("Timed service checked.");
+    }
+
+    /**
+     * Reverses {@link #markTimedServiceAsChecked}. This is what reopens a
+     * checked timed service for editing — see
+     * {@code InwardTimedItemController#isCheckedAndLocked} — which is why it
+     * sits behind its own {@code InwardUnCheck} privilege on the page.
+     */
+    public void markTimedServiceAsUnChecked(PatientItem patientItem) {
+        Bill b = billOfTimedService(patientItem);
+        if (b == null) {
+            return;
+        }
+        if (b.getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("This timed service has not been checked.");
+            return;
+        }
+        b.setCheckeAt(null);
+        b.setCheckedBy(null);
+        getBillFacade().edit(b);
+
+        patientItems = null;
+        JsfUtil.addSuccessMessage("Timed service unchecked.");
+    }
+
+    /**
+     * The bill a timed service can be checked on, or null with the reason
+     * reported to the user. Only ward timed services own a bill; a
+     * surgery-added or pre-redesign one is charged through the PatientItem
+     * itself and has no bill of its own for a cashier to check.
+     */
+    private Bill billOfTimedService(PatientItem patientItem) {
+        if (patientItem == null || patientItem.getBill() == null) {
+            JsfUtil.addErrorMessage("This timed service has no bill of its own and cannot be checked.");
+            return null;
+        }
+        Bill b = patientItem.getBill();
+        if (b.isRetired() || b.isCancelled()) {
+            JsfUtil.addErrorMessage("This timed service's bill has been removed or cancelled.");
+            return null;
+        }
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final payment has been settled for this admission. Bills can no longer be checked or unchecked.");
+            return null;
+        }
+        return b;
+    }
+
+    /**
      * Entry point for the "Save Changes" button. If the room's current
      * admitted/discharged times overlap another (non-Guardian/Theatre) room
      * period for the same patient or bed, ask for confirmation before saving
@@ -3446,11 +3530,21 @@ public class BhtSummeryController implements Serializable {
     }
 
     public boolean checkBill() {
-        if (configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")) {
+        if (!isInwardBillCheckingEnforced()) {
             return false;
         }
 
         if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
+            JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
+            return true;
+        }
+
+        // BillFee-side only catches inward service bills that carry fees. Timed
+        // services get a bill with a BillItem and no BillFee at all
+        // (InwardTimedItemController#createBillForTimedService), so an unchecked
+        // timed service used to walk straight past this gate. The BillItem side
+        // is a superset: every unchecked InwardBill BilledBill, fees or not.
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
             JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
             return true;
         }
@@ -3510,8 +3604,38 @@ public class BhtSummeryController implements Serializable {
         return false;
     }
 
+    /**
+     * Whether unchecked inward bills should block settlement.
+     * <p>
+     * This replaces the old {@code "Need to check inward bills before
+     * discharge"} option, which was read inverted: switching it ON turned all
+     * bill checking OFF, the opposite of what it says, so a hospital that
+     * enabled it silently lost the gate entirely.
+     * <p>
+     * The fix is a new key rather than flipping how the old one is read. The
+     * old key was consulted through the single-argument
+     * {@code getBooleanValueByKey}, which <em>creates</em> the option row set to
+     * {@code "false"} the first time it is read — so by now every deployment
+     * that has ever settled an inward bill has it stored as {@code false},
+     * meaning "enforce" under the old reading. Re-reading that same stored
+     * {@code false} as "do not enforce" would have switched the gate off for
+     * every hospital at once. A new key defaults to {@code true} everywhere and
+     * means exactly what it says.
+     * <p>
+     * A hospital that had deliberately turned the old option on to bypass
+     * checking must now turn this one off instead.
+     */
+    public static final String INWARD_BILL_CHECKING_REQUIRED
+            = "Inward bills must be checked before the final bill is settled";
+
+    private boolean isInwardBillCheckingEnforced() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                INWARD_BILL_CHECKING_REQUIRED, true);
+    }
+
     private boolean hasAnyUncheckedInwardBills() {
         return getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
                 || getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)
                 || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)
                 || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)
@@ -3545,7 +3669,7 @@ public class BhtSummeryController implements Serializable {
 
         System.out.println("Privilege = " + getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck"));
 
-        System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
+        System.out.println("Bill checking enforced = " + isInwardBillCheckingEnforced());
 
         System.out.println("Starting Bills Checking Process.... ");
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
@@ -3554,7 +3678,7 @@ public class BhtSummeryController implements Serializable {
                 if (checkBill()) {
                     return "";
                 }
-            } else if (!configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")
+            } else if (isInwardBillCheckingEnforced()
                     && hasAnyUncheckedInwardBills()) {
                 JsfUtil.addWarningMessage("Settling with unchecked Inward Service / Professional / Pharmacy / Store / Payment bills. "
                         + "Proceeding because you hold the 'Inward Bill Settle Without Check' privilege.");
