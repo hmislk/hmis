@@ -20,7 +20,13 @@ allowed-tools: Read, Glob, Grep, Bash, PowerShell, mcp__playwright__browser_navi
   mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests,
   mcp__playwright__browser_evaluate, mcp__playwright__browser_resize,
   mcp__playwright__browser_tabs, mcp__playwright__browser_close,
-  mcp__playwright__browser_handle_dialog
+  mcp__playwright__browser_handle_dialog, mcp__claude-in-chrome__tabs_context_mcp,
+  mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__tabs_close_mcp,
+  mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__computer,
+  mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find,
+  mcp__claude-in-chrome__form_input, mcp__claude-in-chrome__get_page_text,
+  mcp__claude-in-chrome__javascript_tool, mcp__claude-in-chrome__read_console_messages,
+  mcp__claude-in-chrome__read_network_requests, mcp__claude-in-chrome__resize_window
 ---
 
 # Demonstrate Issues (HMIS)
