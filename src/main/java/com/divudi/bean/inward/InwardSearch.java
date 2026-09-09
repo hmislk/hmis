@@ -702,10 +702,7 @@ public class InwardSearch implements Serializable {
         }
 
         if (versions.size() == 1) {
-            bill = versions.get(0);
-            billItems = null;
-            withProfessionalFee = false;
-            return "/inward/inward_reprint_bill_final?faces-redirect=true";
+            return navigateToReprintFinalBill(versions.get(0));
         }
 
         return "/inward/inward_final_bill_list?faces-redirect=true";
@@ -726,6 +723,25 @@ public class InwardSearch implements Serializable {
         }
 
         return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    /**
+     * Shared reprint navigation into inward_reprint_bill_final.xhtml, used both
+     * by the Manage Final Bills version list ("View / Print") and by the
+     * single-version auto-navigate from {@link #navigateToFinalBillForAdmission()}.
+     * Forces {@link #withProfessionalFee} to true so the Final Bill / Custom Bill
+     * previews render the stored {@code bill.netTotal} rather than the derived
+     * hospital-only figure. Every other route into that page already sets this
+     * flag; these two were leaving it at its stale session value (issue #23652).
+     */
+    public String navigateToReprintFinalBill(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        setBill(b);
+        withProfessionalFee = true;
+        return "/inward/inward_reprint_bill_final?faces-redirect=true";
     }
 
     /**
