@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-118 sections. **The workflow is §0-§8; everything from §9 on is an independent
+121 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -140,6 +140,9 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
 - [112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety](#112-relaxing-a-required-validation-audit-every-downstream-reader-of-that-field-for-null-safety)
 - [113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`](#113-ptag-silently-drops-title--a-tooltip-on-a-tag-needs-ptooltip)
+- [114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
+- [115. Element screenshots land on the wrong region — crop the viewport shot instead](#115-element-screenshots-land-on-the-wrong-region--crop-the-viewport-shot-instead)
+- [116. `p:datePicker` with a mask silently truncates `pressSequentially`](#116-pdatepicker-with-a-mask-silently-truncates-presssequentially)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3291,3 +3294,76 @@ DOM*, not the source.
 - [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
 - [ ] For any admission flow: confirmed the local DB actually has a vacant room (`completeRoom` returns suggestions); if not, freed some by SQL (§111) before concluding the Room autocomplete is broken.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
+## 114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`
+
+The main menu's nested submenus (e.g. *Inpatient → Services & Items → Add Timed
+Services*) are `autoDisplay="false"`, so they open on **click**, not hover —
+`browser_hover` leaves the parent `ui-menuitem-active` but the child list stays
+`display: none`. Worse, each Playwright tool call is a fresh round trip, and the
+flyout collapses in between: opening the top level in one call and reaching for
+the leaf in the next always fails with *"element is not visible"*, and clicking
+the parent again just toggles it shut.
+
+Driving it click-by-click is not worth the fight. Invoke the leaf item's own
+handler in a single call:
+
+```js
+browser_evaluate(() => {
+  Array.from(document.querySelectorAll('.ui-menubar a'))
+    .find(a => a.textContent.trim() === 'Add Timed Services')
+    .click();
+});
+```
+
+This is **not** the same as URL navigation and does not violate §2: the anchor's
+`onclick` is `PrimeFaces.addSubmitParam(...).submit('menuForm')`, so the menu
+form posts exactly as it would for a user and the `@SessionScoped` navigation
+method runs normally. You are reproducing the click, not skipping it. Still
+record the human menu path in the issue/PR.
+
+Related: menubar items are icon-only with no accessible name, so
+`browser_snapshot` shows a wall of anonymous `menuitem` nodes. To map them,
+read the submenu text rather than guessing:
+
+```js
+browser_evaluate(() => Array.from(document.querySelectorAll('.ui-menubar > .ui-menu-list > li'))
+  .map((li, i) => i + ': ' + Array.from(li.querySelectorAll('.ui-menu-child a'))
+    .slice(0, 4).map(a => a.textContent.trim()).join(' / ')).join('\n'));
+```
+
+## 115. Element screenshots land on the wrong region — crop the viewport shot instead
+
+`browser_take_screenshot` with an `element`/`target` repeatedly captured the
+wrong band of the page on inward billing screens (blank, or the footer instead
+of the table). The pages have a sticky header and the browser runs at a device
+pixel ratio > 1, and the element-clip path does not agree with the rendered
+offsets.
+
+What works reliably: size the viewport wide enough for the whole table, scroll
+the target into view, take a plain **viewport** screenshot, then crop it:
+
+```python
+from PIL import Image
+im = Image.open('tmp/<issue>/_full.png')
+im.crop((0, top, im.size[0], bottom)).save('tmp/<issue>/<name>.png')
+```
+
+Cropping is also how you strip patient identifiers before anything reaches the
+wiki — a full-page inward screenshot carries name, DOB, phone, NIC and
+consultant in the Patient Details panel, none of which may be published.
+
+## 116. `p:datePicker` with a mask silently truncates `pressSequentially`
+
+Typing `10 Sep 2026 04:00:00` into a masked `p:datePicker` character by
+character produced `'10 Sep 2026 04:'` and a JSF conversion error
+(*"could not be understood as a date and time"*) — the mask consumed part of
+the input mid-type. Setting the value in one assignment works, because JSF reads
+the submitted string on the full form post:
+
+```js
+browser_evaluate(() => { document.getElementById('form:dateStamp_input').value = '10 Sep 2026 04:00:00'; });
+```
+
+Do **not** follow it with a synthetic `change` event — on these pickers that
+re-runs the mask and blanks the field again. §18's calendar-grid technique
+remains the option when the widget's own parsing needs to run.
