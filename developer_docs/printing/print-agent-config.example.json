@@ -1,0 +1,6 @@
+{
+  "WatchFolder": "C:\\hmis-print",
+  "PrinterPath": "\\\\localhost\\LQ310",
+  "FileGlob": "inward-*.prn",
+  "PollSeconds": 2
+}
