@@ -2631,18 +2631,26 @@ public class DataAdministrationController implements Serializable {
         auditDatabaseErrors = "";
         errors = "";
 
-        // Check wiki DDL version first
+        // Check wiki DDL version first — issue #23679: this used to require
+        // exact string equality between the stored and wiki versions (via
+        // .equals()), so a stored version that was already current but not
+        // byte-identical to the wiki's fell through to the expensive
+        // per-entity probe below with nothing actually wrong. Now it's a
+        // genuine "is the stored version older than the wiki's" comparison,
+        // shared with DatabaseMigrationService's automatic post-startup
+        // check via the same DatabaseMigrationVersionCheckService method.
         wikiDdlVersion = fetchWikiDdlVersion();
         if (wikiDdlVersion != null) {
             String storedVersion = configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
-            if (wikiDdlVersion.equals(storedVersion) && !"UNCHECKED".equals(storedVersion)) {
+            if (!databaseMigrationVersionCheckService.isStoredVersionOlderThanWiki(storedVersion, wikiDdlVersion)) {
                 databaseMigrationService.markMigrationComplete();
                 errors = "Schema is up to date (Wiki DDL version: " + wikiDdlVersion + "). No missing fields expected.";
                 return;
             }
         }
 
-        // Version mismatch or wiki unreachable — run legacy check
+        // Stored version isn't confirmed current (older, unverified, or
+        // unparseable), or the wiki is unreachable — run legacy check
         if (runOnMainDatabase) {
             checkMissingFieldsForDatabase(itemFacade, "Main Database");
         }
