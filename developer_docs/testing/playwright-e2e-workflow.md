@@ -143,6 +143,9 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
 - [115. Element screenshots land on the wrong region — crop the viewport shot instead](#115-element-screenshots-land-on-the-wrong-region--crop-the-viewport-shot-instead)
 - [116. `p:datePicker` with a mask silently truncates `pressSequentially`](#116-pdatepicker-with-a-mask-silently-truncates-presssequentially)
+- [117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy](#117-ptabview-renders-every-tabs-markup--a-text-matched-browser_evaluate-click-hits-a-hidden-tabs-copy)
+- [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
+- [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3411,3 +3414,59 @@ browser_evaluate(() => {
 
 Matching on a stable substring of the row (bill number) also guards against
 clicking the wrong row once the table has several entries.
+
+## 118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock
+
+A fix that moves work off the request thread (`@Asynchronous` EJB method) has
+no visible signature in the UI — the page returns quickly either way, and "the
+click felt fast" is not evidence. The proof is in `server.log`: every entry
+carries `_ThreadName`, and container-managed async work runs on an EJB pool
+thread rather than the HTTP listener.
+
+```
+[SEVERE] [com.divudi.ejb.EmailManagerEjb] [tid: _ThreadID=126 _ThreadName=__ejb-thread-pool9]
+  Email Gateway URL is not configured.
+```
+
+`__ejb-thread-pool9` confirms the dispatch really was asynchronous. A
+synchronous call would show `http-thread-pool::http-listener-1(N)` instead.
+Grep for the logging class and read the thread name:
+
+```bash
+grep -a "YourEjbClassName" /d/Payara/glassfish/domains/domain1/logs/server.log | tail -5
+```
+
+The same trick distinguishes a `@Schedule` timer (`__ejb-thread-pool`) from a
+user-triggered action, and catches the classic mistake where `@Asynchronous` is
+silently ignored because the method was invoked on `this` from inside the same
+bean (see the comment in `DatabaseMigrationService.java:80`) — self-invocation
+keeps running on the request thread, and the thread name is the only place that
+shows up.
+
+## 119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery
+
+`EmailManagerEjb` logs `SEVERE: Email Gateway URL is not configured.` and
+`SmsManagerEjb.sendSms()` returns `false` when none of the five
+`SMS Sent Using …` config booleans is set. Neither is a defect locally; both
+are simply unconfigured. So **no email or SMS feature can be verified
+end-to-end on a local deployment** — the send will always fail.
+
+Write the assertion against the persisted row instead, which is what the
+feature actually controls:
+
+```sql
+SELECT receipientemail, messagesubject, messagetype, sentsuccessfully, pending
+FROM appemail WHERE messagetype = '<YourMessageType>';
+```
+
+A correct implementation still produces the row, with the right recipient,
+subject, body and foreign keys, and records the gateway's real verdict
+(`sentsuccessfully=0`, `pending=1`) plus a log line. That distinguishes the
+three cases a green screen cannot: *never attempted* (no row — the bug), *
+attempted and refused by the gateway* (row + WARNING — correct behaviour
+locally), and *delivered* (row with `sentsuccessfully=1` — only reachable on a
+deployment with a configured gateway).
+
+Companion to §41 (an empty `TRIGGERSUBSCRIPTION` table silently produces zero
+notifications): check the subscription rows exist *and* the recipient has an
+address on file before concluding anything from a quiet run.
