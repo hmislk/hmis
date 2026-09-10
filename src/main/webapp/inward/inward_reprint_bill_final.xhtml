@@ -15,8 +15,23 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null}">
-                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt ne null}" class="">
+                    <!--
+                        An unapproved final bill is viewable/printable only by a user holding
+                        InwardFinalBillViewUnapproved, or InwardFinalBillApprove (an approver
+                        already reads the full unapproved bill on inward_final_bill_approve.xhtml).
+                        This page is the single chokepoint for every entry route into final bill
+                        printing - inward_final_bill_list, inward_search_final,
+                        inward_search_final_check and InwardSearch.navigateToFinalBillForAdmission().
+                    -->
+                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and (inwardSearch.bill.approveAt ne null or webUserController.hasPrivilege('InwardFinalBillViewUnapproved') or webUserController.hasPrivilege('InwardFinalBillApprove'))}">
+
+                        <p:panel styleClass="mb-3" rendered="#{inwardSearch.bill.approveAt eq null}">
+                            <h:outputText styleClass="fas fa-exclamation-triangle text-danger me-2"></h:outputText>
+                            <h:outputText value="This final bill has NOT been approved. It is shown for reference only and must not be issued to the patient or a credit company as a final bill."
+                                          styleClass="text-danger fw-bold" />
+                        </p:panel>
+
+                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and (inwardSearch.bill.approveAt ne null or webUserController.hasPrivilege('InwardFinalBillViewUnapproved') or webUserController.hasPrivilege('InwardFinalBillApprove'))}" class="">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
                                     <div class="d-flex">
@@ -351,6 +366,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="finalOriginalBillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /> **Hospital Bill**Original Bill**
                                                 </h:panelGroup>
 
@@ -380,6 +396,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="finalDuplicateBillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -415,6 +432,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalHospitalBillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup>
 
@@ -444,6 +462,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateHospitalBillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" hosCopy="true" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
                                                 </h:panelGroup>
 
@@ -472,6 +491,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalProfessionalBillBillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" /><!-- **Professional Bill**Original Bill**-->
                                                 </h:panelGroup>
 
@@ -494,6 +514,7 @@
                                                     </div>
                                                 </f:facet>
                                                 <h:panelGroup id="duplicateProfessionalBillBillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" /><!-- Final Bill - **Professional Bill**Duplicate Bill**-->
                                                 </h:panelGroup>
                                             </p:panel>
@@ -528,6 +549,7 @@
                                                     </div>
                                                 </f:facet>
                                                 <h:panelGroup id="OriginalFinalBillSummaryPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <h:panelGroup id="OriginalFinalBillSummarywithoutProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq false}">
                                                         <bi:finalBillGreenSheet  bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" />
                                                     </h:panelGroup>
@@ -563,6 +585,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateFinalBillSummaryPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <h:panelGroup id="duplicateFinalBillSummarywithoutProfessionalFeePriview" rendered="#{inwardSearch.withProfessionalFee eq false}">
                                                         <bi:finalBillGreenSheet  bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
                                                     </h:panelGroup>
@@ -594,6 +617,7 @@
                                         </f:facet>
 
                                         <h:panelGroup id="creditCompanyLetterPriview">
+                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                             <bi:credit_company_letter_new bill="#{inwardSearch.bill}"/>
                                         </h:panelGroup>
                                     </p:panel>
@@ -630,6 +654,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalCustom2BillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom2 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false"/>
                                                 </h:panelGroup>
 
@@ -653,6 +678,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateCustom2BillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom2 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
                                                 </h:panelGroup>
 
@@ -681,6 +707,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalCustom3BillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom3 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false"/>
                                                 </h:panelGroup>
 
@@ -704,6 +731,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateCustom3BillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom3 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
                                                 </h:panelGroup>
 
@@ -729,6 +757,8 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
                                                 <h:panelGroup id="originalCustom4BillPriview">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
@@ -751,6 +781,8 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
                                                 <h:panelGroup id="duplicateCustom4BillPriview">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
@@ -781,6 +813,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="originalBundledCustom1BillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillBundledCustom1 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -804,6 +837,7 @@
                                                 </f:facet>
 
                                                 <h:panelGroup id="duplicateBundledCustom1BillPriview">
+                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillBundledCustom1 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -1100,8 +1134,8 @@
 
                     </p:panel>
 
-                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt eq null}">
-                        <h:outputText value="This final bill has not been approved yet and cannot be viewed or printed." styleClass="text-danger" />
+                    <p:panel rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and inwardSearch.bill.approveAt eq null and not webUserController.hasPrivilege('InwardFinalBillViewUnapproved') and not webUserController.hasPrivilege('InwardFinalBillApprove')}">
+                        <h:outputText value="This final bill has not been approved yet, and you do not have permission to view or print unapproved bills." styleClass="text-danger" />
                     </p:panel>
                 </h:form>
             </ui:define>

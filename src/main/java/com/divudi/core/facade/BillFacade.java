@@ -52,14 +52,15 @@ public class BillFacade extends AbstractFacade<Bill> {
      * bills) and via {@code Bill.patient} directly (the only path populated
      * on appointment bills, per {@code AppointmentController.saveBill()} —
      * without this fallback, appointment-bill receipts render "Name: null").
-     * Title/DOB/sex are read only from the encounter-based path (EclipseLink
-     * fails the DTO constructor's reflective binding with
-     * "argument type mismatch" when an enum- or Date-typed field is wrapped
-     * in COALESCE across two different join paths in the same SELECT NEW —
-     * confirmed by temporarily logging the swallowed exception from
-     * findLightsByJpql's catch block) — so on an appointment bill's receipt,
-     * name resolves correctly but Age/Sex render blank, same as fields the
-     * bill genuinely has no data for (Admission Type, BHT No).
+     * Title/DOB/sex cannot be COALESCEd the same way: EclipseLink fails the DTO
+     * constructor's reflective binding with a ConversionException
+     * ("The object [Mrs] ... could not be converted to ... Title") when an enum-
+     * or Date-typed field is wrapped in COALESCE/CASE across two join paths in
+     * the same SELECT NEW. So they are still read from the encounter path in the
+     * main query, and when the bill has no encounter (title/dob/sex all null) a
+     * second lightweight query backfills them from {@code Bill.patient} directly.
+     * Admission Type and BHT No stay blank on such a receipt — the bill genuinely
+     * has no encounter to source them from. (#23622)
      *
      * Bill.netTotal is a primitive double and is projected directly (not
      * COALESCEd) to avoid EclipseLink DTO-constructor binding mismatches.
@@ -78,7 +79,8 @@ public class BillFacade extends AbstractFacade<Bill> {
                 + "per.title, COALESCE(per.name, per2.name), per.dob, per.sex, "
                 + "at.name, "
                 + "pe.bhtNo, "
-                + "cp.title, cp.name) "
+                + "cp.title, cp.name, "
+                + "b.billTypeAtomic, b.cancelled, b.refunded) "
                 + "FROM Bill b "
                 + "LEFT JOIN b.referenceBill rb "
                 + "LEFT JOIN b.department dept "
@@ -99,7 +101,28 @@ public class BillFacade extends AbstractFacade<Bill> {
         if (results == null || results.isEmpty()) {
             return null;
         }
-        return (InwardBillReceiptDTO) results.get(0);
+        InwardBillReceiptDTO dto = (InwardBillReceiptDTO) results.get(0);
+
+        // The demographics above come from the bill's patient ENCOUNTER. A bill
+        // with no encounter - e.g. the appointment-deposit cancel bill produced by
+        // the Convert-to-Inward-Deposit flow - therefore shows a blank title / age
+        // / sex on its receipt even though the bill's own patient has them.
+        // EclipseLink cannot COALESCE/CASE over an @Enumerated path in a
+        // constructor query (ConversionException), so fall back with a second
+        // lightweight query instead. (#23622)
+        if (dto.getPatientDob() == null && dto.getPatientSex() == null && dto.getPatientTitle() == null) {
+            List<?> fb = findLightsByJpql(
+                    "SELECT p.title, p.dob, p.sex "
+                    + "FROM Bill b JOIN b.patient pt JOIN pt.person p WHERE b.id = :billId",
+                    params);
+            if (fb != null && !fb.isEmpty() && fb.get(0) instanceof Object[]) {
+                Object[] row = (Object[]) fb.get(0);
+                dto.setPatientTitle((com.divudi.core.data.Title) row[0]);
+                dto.setPatientDob((java.util.Date) row[1]);
+                dto.setPatientSex((com.divudi.core.data.Sex) row[2]);
+            }
+        }
+        return dto;
     }
 
     /**

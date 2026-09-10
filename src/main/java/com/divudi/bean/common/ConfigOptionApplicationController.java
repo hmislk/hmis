@@ -173,6 +173,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
             loadSapIntegrationConfigurationDefaults();
+            loadInwardConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -182,6 +183,20 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadInwardConfigurationDefaults() {
+        // Reservation admission window: admission is allowed from this many hours before
+        // reservedFrom until this many hours after the reservation end (reservedTo, or
+        // reservedFrom when reservedTo is null). Consumed by AppointmentController.navigatePatientAdmit().
+        getLongValueByKey("Inward - Reservation Admission Early Window (Hours)", 24L);
+        getLongValueByKey("Inward - Reservation Admission Grace Period (Hours)", 24L);
+        // Settlement gate: unchecked inward service / professional / pharmacy /
+        // store / payment bills block the final bill. Seeded here so an admin
+        // can find and toggle it without first having to settle a bill.
+        // Replaces "Need to check inward bills before discharge", which was read
+        // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
+        getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {
@@ -1271,6 +1286,50 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    /**
+     * Create-or-update a SHORT_TEXT option by key — the text-value sibling of
+     * {@link #setLongTextValueByKey(String, String)}/{@link #setLongValueByKey(String, Long)}.
+     * Added for issue #23678 so callers reaching for the same
+     * "set{Type}ValueByKey" naming used by every other value type (e.g. for
+     * {@code POST /api/config/setShortText/...}) find a same-shaped method,
+     * without having to know the older {@link #saveShortTextOption(String, String)}
+     * name. Unlike that older method, this one also retags an existing row
+     * to SHORT_TEXT if it was created under a different type — CodeRabbit
+     * review of this PR noted that silently keeping the old type while
+     * writing a new value lets a later read return the wrong type or
+     * silently null.
+     */
+    public void setShortTextValueByKey(String key, String value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        }
+        option.setValueType(OptionValueType.SHORT_TEXT);
+        option.setOptionValue(value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
+    /**
+     * Create-or-update a DOUBLE option by key — same shape as
+     * {@link #setLongValueByKey(String, Long)}, added for issue #23678 so a
+     * brand-new DOUBLE key has a create-capable setter (previously only
+     * {@link #getDoubleValueByKey(String, Double)} could seed one, and only
+     * as a side effect of a read). Also retags an existing row to DOUBLE if
+     * it was created under a different type — see
+     * {@link #setShortTextValueByKey(String, String)}'s note on why.
+     */
+    public void setDoubleValueByKey(String key, Double value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, String.valueOf(value));
+        }
+        option.setValueType(OptionValueType.DOUBLE);
+        option.setOptionValue(String.valueOf(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
@@ -1315,6 +1374,20 @@ public class ConfigOptionApplicationController implements Serializable {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * Returns a list of {@code count} zero-based Integers, for {@code ui:repeat}
+     * loops that just need to render N copies of something (e.g. blank leading
+     * lines above a pre-printed dot-matrix letterhead). Clamps to [0, 40].
+     */
+    public java.util.List<Integer> integerList(Integer count) {
+        int n = count == null ? 0 : Math.max(0, Math.min(40, count));
+        java.util.List<Integer> out = new java.util.ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            out.add(i);
+        }
+        return out;
     }
 
     public Double getDoubleValueByKey(String key) {
@@ -1413,6 +1486,22 @@ public class ConfigOptionApplicationController implements Serializable {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
             option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, defaultValue);
+        }
+        return option.getOptionValue();
+    }
+
+    /**
+     * Read-only variant of {@link #getShortTextValueByKey(String, String)} —
+     * the text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist. Use this for {@code rendered="..."}/
+     * output-value reads that must not silently create configuration rows
+     * just because a page was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
+            return defaultValue;
         }
         return option.getOptionValue();
     }

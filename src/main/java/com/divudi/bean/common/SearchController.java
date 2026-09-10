@@ -11756,7 +11756,10 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
 
             bundle = createBundleForOpdProfessionalPayments(billTypesAtomics);
-            bundle.calculateTotalByBills();
+            // Populates total (net), grossTotal and tax - the three money columns
+            // this report renders. calculateTotalByBills() sets only total, which
+            // left the Gross and WHT totals blank on screen and in the exports.
+            bundle.calculateTotalNetTotalTaxByBills();
             bundle.setName("OPD Professional Payments Report");
             bundle.setBundleType("opdProfessionalPayments");
         }, ProfessionalPaymentReport.OPD_PROFESSIONAL_PAYMENTS_REPORT, sessionController.getLoggedUser());
@@ -17596,11 +17599,19 @@ public class SearchController implements Serializable {
 
     public String navigateToIssueForRequestListToFinalize() {
         makeListNull();
+        // A pending issue draft blocks new issues regardless of age, so default the recovery
+        // list to a wide window rather than today-only, or old orphaned drafts stay invisible
+        // while the (date-less) block persists (#23608).
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -365L));
+        toDate = CommonFunctions.getEndOfDay(new Date());
         return "/pharmacy/pharmacy_issue_for_request_list_to_finalize?faces-redirect=true";
     }
 
     public String navigateToIssueForRequestListToApprove() {
         makeListNull();
+        // See navigateToIssueForRequestListToFinalize — same reason (#23608).
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -365L));
+        toDate = CommonFunctions.getEndOfDay(new Date());
         return "/pharmacy/pharmacy_issue_for_request_list_to_approve?faces-redirect=true";
     }
 
@@ -18774,6 +18785,7 @@ public class SearchController implements Serializable {
             inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
             inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
             inwardPaymentsRefund.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
@@ -19272,6 +19284,7 @@ public class SearchController implements Serializable {
             inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND);
             inwardPaymentsRefund.add(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
             inwardPaymentsRefund.add(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
+            inwardPaymentsRefund.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL_REFUND);
             ReportTemplateRowBundle inwardPaymentsRefundBundle = generatePaymentMethodColumnsByBills(inwardPaymentsRefund);
             inwardPaymentsRefundBundle.setBundleType("InwardPaymentsRefund");
             inwardPaymentsRefundBundle.setName("Inward Payment Refunds");
@@ -20910,6 +20923,7 @@ public class SearchController implements Serializable {
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL_REFUND);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
 

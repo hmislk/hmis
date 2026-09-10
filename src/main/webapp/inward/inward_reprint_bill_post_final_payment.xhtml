@@ -37,7 +37,7 @@
                                         class="ui-button-warning"
                                         icon="fa fa-money-bill-transfer"
                                         action="#{postFinalBillInwardPaymentController.navigateToRefundFromPostFinalPaymentBill(postFinalBillInwardPaymentController.current)}"
-                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.current.refunded}"  >
+                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.calculateFreshRemainingRefundableAmount(postFinalBillInwardPaymentController.current) le 0.01}"  >
                                     </p:commandButton>
 
                                     <p:commandButton

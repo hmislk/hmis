@@ -407,6 +407,9 @@ public class InwardTimedItemController implements Serializable {
         if (patientItem != null && isLockedForChanges(patientItem.getPatientEncounter())) {
             return;
         }
+        if (isCheckedAndLocked(patientItem)) {
+            return;
+        }
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
             patientItem.setRetiredAt(new Date());
@@ -424,8 +427,12 @@ public class InwardTimedItemController implements Serializable {
      * Retires the BillItem and Bill behind a removed timed service. Without
      * this the charge would survive the removal, since the inward totals are
      * summed from the BillItem side.
+     * <p>
+     * Public because the Interim Bill's own Remove button removes timed
+     * services through {@code SurgeryBillController#removeTimeService}, which
+     * has to retire the same bill rather than duplicate this.
      */
-    private void retireTimedServiceBill(PatientItem patientItem) {
+    public void retireTimedServiceBill(PatientItem patientItem) {
         BillItem bi = patientItem.getBillItem();
         if (bi == null || bi.isFromPackage()) {
             return;
@@ -657,11 +664,6 @@ public class InwardTimedItemController implements Serializable {
         if (isLockedForChanges(getCurrent().getPatientEncounter())) {
             return true;
         }
-        if (getCurrent().getPatientEncounter().isNursingDischarged()
-                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
-            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
-            return true;
-        }
         return false;
     }
 
@@ -682,7 +684,34 @@ public class InwardTimedItemController implements Serializable {
             JsfUtil.addErrorMessage("This patient has been discharged. Timed services can no longer be changed.");
             return true;
         }
+        if (pe.isNursingDischarged() && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot change timed services: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
         return false;
+    }
+
+    /**
+     * A timed service whose bill a cashier has already checked is frozen —
+     * times cannot be edited and the service cannot be removed. Checking is a
+     * verification that the charge is correct, so letting the charge change
+     * afterwards would make the check meaningless. Reopening one is a
+     * deliberate, privileged act: uncheck the bill (needs
+     * {@code InwardUnCheck}) and the row is editable again.
+     * <p>
+     * Only ward timed services carry a bill of their own (see
+     * {@link #createBillForTimedService}); a surgery-added or pre-redesign
+     * service has none and is not locked by this.
+     */
+    public boolean isCheckedAndLocked(PatientItem pi) {
+        if (pi == null || pi.getBill() == null) {
+            return false;
+        }
+        if (pi.getBill().getCheckedBy() == null) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("This timed service's bill has been checked. Uncheck it before changing the times.");
+        return true;
     }
 
     /**
@@ -715,22 +744,27 @@ public class InwardTimedItemController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (getCurrent().getToTime() == null) {
-            getCurrent().setToTime(new Date());
+        if (getCurrent().getFromTime() == null) {
+            getCurrent().setFromTime(new Date());
         }
+        // Stopped Time is intentionally left null when not entered - the
+        // service is still running. calTotalTimedChargeForItem/calCount
+        // already treats a null end time as "now" for interim pricing without
+        // persisting it (see fetchRunningTimedPatientItems, which queries
+        // toTime is null to find services still in progress), and the row's
+        // Update button (finalizeService) is how a real stop time gets
+        // recorded later.
         // Price from the Start Time the user entered on this page, not from the
         // date of admission. Both are stored on the item, but only fromTime is
         // what the service actually ran for — and it is what the row's Update
         // button (finalizeService) re-prices against, so pricing from the
         // admission date made Add and Update disagree. A per-minute service made
         // that glaring: a six-minute run on a two-week-old admission billed every
-        // minute since admission.
-        Date chargeFrom = getCurrent().getFromTime() != null
-                ? getCurrent().getFromTime()
-                : getCurrent().getPatientEncounter().getDateOfAdmission();
+        // minute since admission. fromTime is always set by now (see above), so
+        // there is no admission-date fallback to fall back to.
         double value = getInwardBean().calTotalTimedChargeForItem(
                 (TimedItem) getCurrent().getItem(),
-                chargeFrom,
+                getCurrent().getFromTime(),
                 getCurrent().getToTime(),
                 getCurrent().getPatientEncounter().isForiegner());
         getCurrent().setServiceValue(value);
@@ -867,6 +901,9 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
         if (pic != null && isLockedForChanges(pic.getPatientEncounter())) {
+            return;
+        }
+        if (isCheckedAndLocked(pic)) {
             return;
         }
         PatientItem temPi;

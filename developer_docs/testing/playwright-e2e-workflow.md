@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-111 sections. **The workflow is §0-§8; everything from §9 on is an independent
+122 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -135,6 +135,20 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [108. This dashboard's Sample Transporter `p:autoComplete` ignores synthetic keystrokes — drive `widget.search()` directly](#108-this-dashboards-sample-transporter-pautocomplete-ignores-synthetic-keystrokes--drive-widgetsearch-directly)
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
+- [109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work](#109-a-pconfirm-dialog-is-position-fixed-so-an-offsetparent-visibility-probe-wrongly-reports-it-hidden--the-click-did-work)
+- [110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#110-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
+- [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
+- [112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety](#112-relaxing-a-required-validation-audit-every-downstream-reader-of-that-field-for-null-safety)
+- [113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`](#113-ptag-silently-drops-title--a-tooltip-on-a-tag-needs-ptooltip)
+- [114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
+- [115. Element screenshots land on the wrong region — crop the viewport shot instead](#115-element-screenshots-land-on-the-wrong-region--crop-the-viewport-shot-instead)
+- [116. `p:datePicker` with a mask silently truncates `pressSequentially`](#116-pdatepicker-with-a-mask-silently-truncates-presssequentially)
+- [117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy](#117-ptabview-renders-every-tabs-markup--a-text-matched-browser_evaluate-click-hits-a-hidden-tabs-copy)
+- [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
+- [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
+- [120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally](#120-verifying-a-pfiledownload-export-post-the-form-with-fetch-and-decode-locally)
+- [121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`](#121-pajax-update-targeting-a-raw-div-id-throws-componentnotfoundexception-at-render-time--wrap-it-in-hpanelgroup)
+- [122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data](#122-a-pcommandbuttons-processx-that-excludes-the-button-itself-silently-skips-its-own-action--no-exception-no-error-a-real-200-ok-with-the-previous-data)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -774,6 +788,33 @@ to force `SessionController.fillUserPrivileges()` to re-read it — the privileg
 cached per session at login and won't pick up a new row otherwise. This came up testing
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
+
+**Prefer granting it through the app over an `INSERT`.** *Administration → Manage Users
+→ View Staff Users → filter the user → select the row → Manage Privileges → pick the
+department → **List Privileges** → tick the node → **Update User Privileges*** does the
+same thing through the real screen, and confirms the privilege label a user would look
+for. Two things to watch:
+
+- **The tree pre-loads the user's current selection, so check the count before saving.**
+  Read it back before clicking Update — it should equal the existing active row count
+  plus the one you ticked:
+  ```js
+  Array.from(document.querySelectorAll('.ui-treenode > .ui-treenode-content .ui-chkbox-box'))
+       .filter(b => b.querySelector('.ui-icon-check')).length
+  ```
+- **The save is a full replace, and it can silently retire a privilege the tree didn't
+  represent.** Granting `ReportsProfessionalPayments` for issue #23676 also flipped
+  `LabBillSearch` to `RETIRED = 1` for the same department — with `RETIREDAT` and
+  `RETIRER_ID` left `NULL`, so nothing in the row says who did it. Snapshot the active
+  set before and diff it after:
+  ```sql
+  SELECT PRIVILEGE FROM webuserprivilege
+  WHERE WEBUSER_ID = <id> AND DEPARTMENT_ID = <dept> AND RETIRED = 0 ORDER BY PRIVILEGE;
+  ```
+
+Either way, finish with §17 (logout → login → reselect department): the privilege list is
+cached per session at login, so a freshly granted privilege does **not** appear until you
+log back in — the report button stays absent and it looks like the grant failed.
 
 **Before inserting a row, check whether some *other* department already has it** — picking
 that department on the login screen needs no DB write at all and is the faster route:
@@ -3117,6 +3158,169 @@ waiting for a dialog that never reaches the browser. The same page can use both:
 (handled with `browser_handle_dialog`), while the cancel screen's button is a
 `p:confirm`. Check the markup for `<p:confirm>` before deciding which to use.
 
+---
+
+## 110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query
+
+While verifying issue #23571's new Appointment Deposit refund receipt on
+`inward_view_appointment_bill_receipt.xhtml`, the `billTypeAtomic`-keyed
+`h:panelGroup` branch matched correctly (confirmed with a temporary debug
+`h:outputText` dumping the DTO fields) and the DB row was correct, but the
+receipt panel rendered as a completely empty `<span>` — no error, no
+exception in `server.log`.
+
+The cause: this page's three paper-type branches only check
+`'Inward Payment Bill Five Five Paper'`, `'... A4 Paper'`, and
+`'... POS Paper'`. The department's actual `ChangeReceiptPrintingPaperTypes`
+Settings dialog (opened via the page's own "Settings" button) showed a
+**fourth** option, "5×5 Custom 3 Paper", was the one actually enabled for
+that department — a paper type this particular page's code has never
+checked. All three of the page's `getBooleanValueByKey` calls legitimately
+evaluated `false`, so nothing rendered — this is not a bug in the routing or
+DTO logic, it is a pre-existing gap between the Settings dialog's options and
+the page's own `rendered` conditions.
+
+**Before concluding a receipt panel is broken because it renders blank**,
+open the page's own "Settings" button/dialog (per §26, never raw SQL) and
+check which paper type is actually enabled for the current department
+against the exact set of paper-type checks the page's `rendered` attributes
+test — a Settings dialog can offer an option the page doesn't (yet) handle.
+For local verification of the remaining receipt rendering, enable one of the
+paper types the page checks, such as "POS Paper". This does not validate
+`5×5 Custom 3 Paper`; test or fix that unsupported configuration separately.
+
+Found while fixing issue #23571.
+
+## 111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow
+
+The admission form's Room autocomplete (`roomFacilityChargeController.completeRoom`)
+only returns a room when **no** `PATIENTROOM` row exists for it with
+`RETIRED=0 AND DISCHARGED=0`, and the room's `CATEGORY.FILLED` is not `1`.
+`InwardBeanController.isRoomFilled(room)` applies the same
+`discharged=false` test. Restored production-shaped `coop` data is often at
+or near full occupancy, so the Room autocomplete legitimately returns **no
+suggestions** for any query — an admission simply cannot be completed, and
+this looks like a broken autocomplete rather than a data state.
+
+`Room` is `Room extends Category`, so room rows live in `CATEGORY` (`DTYPE='Room'`),
+not a `ROOM` table. To free rooms on the **local** DB (disposable — see the
+`dev-issue-unattended` hard limits), mark their active `PATIENTROOM` discharged
+and clear any stuck `FILLED`:
+
+```sql
+UPDATE PATIENTROOM PR
+JOIN ROOMFACILITYCHARGE RFC ON PR.ROOMFACILITYCHARGE_ID = RFC.ID
+JOIN CATEGORY C ON RFC.ROOM_ID = C.ID
+SET PR.DISCHARGED = 1
+WHERE PR.RETIRED = 0 AND PR.DISCHARGED = 0
+  AND C.NAME IN ('Room 100','Room 101','Room 102','Room 103','Room 104', ...);
+
+UPDATE CATEGORY SET FILLED = 0
+WHERE NAME IN ('Room 100','Room 101','Room 102','Room 103','Room 104', ...);
+```
+
+Verify with:
+
+```sql
+SELECT C.NAME FROM ROOMFACILITYCHARGE RFC JOIN CATEGORY C ON RFC.ROOM_ID = C.ID
+WHERE RFC.RETIRED = 0 AND (C.FILLED IS NULL OR C.FILLED <> 1)
+  AND C.ID NOT IN (
+    SELECT RFC2.ROOM_ID FROM PATIENTROOM PR
+    JOIN ROOMFACILITYCHARGE RFC2 ON PR.ROOMFACILITYCHARGE_ID = RFC2.ID
+    WHERE PR.RETIRED = 0 AND PR.DISCHARGED = 0)
+ORDER BY C.NAME;
+```
+
+(A room name repeats once per `ROOMFACILITYCHARGE` fee tier — that is normal.)
+This is a local-only shortcut; never run it against a tunnelled/remote DB.
+The proper app path is a Physical Discharge, but that is a long workflow just
+to reclaim a bed for a test.
+
+Found while verifying #23618-#23622 (admission + appointment-deposit-conversion
+flows) — every `completeRoom` query returned nothing until rooms were freed.
+
+## 112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety
+
+#23618 removed the `settleBill()` guard that forced `reservedToDate` to be
+non-null for a Room Admission appointment. That guard was also the de-facto
+protection for code that read the value unconditionally later:
+`updateChangesReservation()` did `reservedToDate.before(...)` (NPE), and both
+that method and `settleBill()` did `sdf.format(res.getReservedTo())` when
+reporting a room conflict (NPE if the *conflicting* reservation was itself
+saved with a null end). None of these are in the diff of the validation
+change, so a review that only looks at changed lines misses them — CodeRabbit
+flagged it on PR #23628.
+
+When a change makes a previously-guaranteed field nullable (or merely more
+often null), grep the whole class (and callers) for every read of that
+field — `.before(`, `.after(`, `.format(`, `.getTime()`, arithmetic — and
+guard or apply the same fallback the new code uses (here: treat a missing
+end as the start instant).
+
+## 113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`
+
+`inward_patient_room_details.xhtml` carried a room-conflict explanation as
+
+```xhtml
+<p:tag value="Overlap" severity="danger" title="#{bean.overlapDescription(rm)}"/>
+```
+
+and the text had **never once reached a user**: `p:tag` has no `title`
+passthrough, so the rendered markup is just
+
+```html
+<span class="ui-tag ui-widget ui-tag-danger">…Overlap</span>
+```
+
+with no `title` attribute at all. There is no warning at build or render time
+— the page looks right, the EL is even evaluated, and the string is thrown
+away. Found on #23641 only because the E2E check read the attribute back:
+
+```js
+() => { const t = [...document.querySelectorAll('.ui-tag')]
+          .find(e => e.textContent.trim() === 'Overlap');
+        return t && t.getAttribute('title'); }   // → null
+```
+
+Use the component the codebase already uses elsewhere
+(`admin/lims/investigation_format_multiple.xhtml`):
+
+```xhtml
+<p:tag id="roomOverlapTag" value="Overlap" severity="danger"/>
+<p:tooltip for="roomOverlapTag" position="top" showDelay="150"
+           value="#{bean.overlapDescription(rm)}"/>
+```
+
+Inside a `p:dataTable` the plain `for="roomOverlapTag"` resolves per row —
+no need to build the full row client id.
+
+**Testing rule:** a `title` tooltip is invisible to a screenshot, so
+"the page rendered" is not evidence it works. Assert the attribute (or the
+`.ui-tooltip` text after a `browser_hover`) explicitly. The same blind spot
+applies to any attribute a component may not support — verify the *rendered
+DOM*, not the source.
+
+## 114. To make a SQL-inserted `ConfigOption` visible without a redeploy, click **Reload Config** on the Application Options page
+
+Verifying a *new* toggle (one the code reads via `getBooleanValueByKeyReadOnly`,
+which by design never creates the row) has a chicken-and-egg problem: the
+Application Options admin page (*Administration → Manage Institutions →
+Application Options*) only lets you Edit/Delete rows that already exist, so a
+key with no row can't be set there. `INSERT` the row directly
+(`OPTIONKEY`, `OPTIONVALUE`, `RETIRED=0`, `SCOPE='APPLICATION'`,
+`VALUETYPE='BOOLEAN'`) — but per §26/§48 that write is invisible to the
+running app because `ConfigOptionApplicationController` caches the whole table
+at load. Instead of restarting the domain (§97), click the **Reload Config**
+button on that same Application Options page: it re-runs `loadApplicationOptions()`
+and the new value takes effect immediately. Used on #23651 to flip
+`Inward Final Bill - Bundle Grouped Charge Types` between runs.
+
+Note the department-scoped-key-first resolution (`feedback_config_option_scope_resolution`):
+`getBooleanValueByKeyReadOnly("X", …)` with a department selected looks up
+`"<Dept> - X"` before the plain `"X"`, so an admin who saved the toggle from a
+department context produces a `"Inward - X"` row, not `"X"`. Insert whichever
+one matches how it will really be set (the plain global key is usually right).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -3142,4 +3346,275 @@ waiting for a dialog that never reaches the browser. The same page can use both:
 - [ ] For a guard fix: asserted the **action actually executed** (expected message in the response) before treating unchanged DB state as proof — a JSF-disabled button skips its action entirely — and ran the negative test (clean record still succeeds), reverting it through the app.
 - [ ] For a menu item nested three levels deep, fired the anchor's own `onclick` (which submits the menu form, so the navigation method still runs) instead of falling back to typing the page URL — scoping the lookup to its own submenu, since labels repeat within one menu.
 - [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
+- [ ] For any admission flow: confirmed the local DB actually has a vacant room (`completeRoom` returns suggestions); if not, freed some by SQL (§111) before concluding the Room autocomplete is broken.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
+## 114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`
+
+The main menu's nested submenus (e.g. *Inpatient → Services & Items → Add Timed
+Services*) are `autoDisplay="false"`, so they open on **click**, not hover —
+`browser_hover` leaves the parent `ui-menuitem-active` but the child list stays
+`display: none`. Worse, each Playwright tool call is a fresh round trip, and the
+flyout collapses in between: opening the top level in one call and reaching for
+the leaf in the next always fails with *"element is not visible"*, and clicking
+the parent again just toggles it shut.
+
+Driving it click-by-click is not worth the fight. Invoke the leaf item's own
+handler in a single call:
+
+```js
+browser_evaluate(() => {
+  Array.from(document.querySelectorAll('.ui-menubar a'))
+    .find(a => a.textContent.trim() === 'Add Timed Services')
+    .click();
+});
+```
+
+This is **not** the same as URL navigation and does not violate §2: the anchor's
+`onclick` is `PrimeFaces.addSubmitParam(...).submit('menuForm')`, so the menu
+form posts exactly as it would for a user and the `@SessionScoped` navigation
+method runs normally. You are reproducing the click, not skipping it. Still
+record the human menu path in the issue/PR.
+
+Related: menubar items are icon-only with no accessible name, so
+`browser_snapshot` shows a wall of anonymous `menuitem` nodes. To map them,
+read the submenu text rather than guessing:
+
+```js
+browser_evaluate(() => Array.from(document.querySelectorAll('.ui-menubar > .ui-menu-list > li'))
+  .map((li, i) => i + ': ' + Array.from(li.querySelectorAll('.ui-menu-child a'))
+    .slice(0, 4).map(a => a.textContent.trim()).join(' / ')).join('\n'));
+```
+
+## 115. Element screenshots land on the wrong region — crop the viewport shot instead
+
+`browser_take_screenshot` with an `element`/`target` repeatedly captured the
+wrong band of the page on inward billing screens (blank, or the footer instead
+of the table). The pages have a sticky header and the browser runs at a device
+pixel ratio > 1, and the element-clip path does not agree with the rendered
+offsets.
+
+What works reliably: size the viewport wide enough for the whole table, scroll
+the target into view, take a plain **viewport** screenshot, then crop it:
+
+```python
+from PIL import Image
+im = Image.open('tmp/<issue>/_full.png')
+im.crop((0, top, im.size[0], bottom)).save('tmp/<issue>/<name>.png')
+```
+
+Cropping is also how you strip patient identifiers before anything reaches the
+wiki — a full-page inward screenshot carries name, DOB, phone, NIC and
+consultant in the Patient Details panel, none of which may be published.
+
+## 116. `p:datePicker` with a mask silently truncates `pressSequentially`
+
+Typing `10 Sep 2026 04:00:00` into a masked `p:datePicker` character by
+character produced `'10 Sep 2026 04:'` and a JSF conversion error
+(*"could not be understood as a date and time"*) — the mask consumed part of
+the input mid-type. Setting the value in one assignment works, because JSF reads
+the submitted string on the full form post:
+
+```js
+browser_evaluate(() => { document.getElementById('form:dateStamp_input').value = '10 Sep 2026 04:00:00'; });
+```
+
+Do **not** follow it with a synthetic `change` event — on these pickers that
+re-runs the mask and blanks the field again. §18's calendar-grid technique
+remains the option when the widget's own parsing needs to run.
+
+## 117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy
+
+`inward_bill_intrim.xhtml` has a "View Bill" `p:commandButton` in **six**
+different tabs (Room Charges, Professional Fees, Deposits & Payments, …). A
+`p:tabView` keeps all inactive panels in the DOM (just `display:none`), so
+`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'View Bill')`
+returns the **first in document order** — a hidden tab's button — and clicking it
+fires that tab's action (it navigated to `inward_reprint_bill_service.xhtml` for
+a bill that did not exist, "No records found").
+
+Scope the query to the active panel by its server id before matching text:
+
+```js
+browser_evaluate(() => {
+  const panel = document.querySelector('[id="pageForm:tvPt:tabP"]');   // the Deposits & Payments panel
+  const row = [...panel.querySelectorAll('tr')].find(r => /050558/.test(r.textContent)); // the exact bill row
+  row.querySelector('button').click();
+});
+```
+
+Matching on a stable substring of the row (bill number) also guards against
+clicking the wrong row once the table has several entries.
+
+## 118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock
+
+A fix that moves work off the request thread (`@Asynchronous` EJB method) has
+no visible signature in the UI — the page returns quickly either way, and "the
+click felt fast" is not evidence. The proof is in `server.log`: every entry
+carries `_ThreadName`, and container-managed async work runs on an EJB pool
+thread rather than the HTTP listener.
+
+```
+[SEVERE] [com.divudi.ejb.EmailManagerEjb] [tid: _ThreadID=126 _ThreadName=__ejb-thread-pool9]
+  Email Gateway URL is not configured.
+```
+
+`__ejb-thread-pool9` confirms the dispatch really was asynchronous. A
+synchronous call would show `http-thread-pool::http-listener-1(N)` instead.
+Grep for the logging class and read the thread name:
+
+```bash
+grep -a "YourEjbClassName" /d/Payara/glassfish/domains/domain1/logs/server.log | tail -5
+```
+
+The same trick distinguishes a `@Schedule` timer (`__ejb-thread-pool`) from a
+user-triggered action, and catches the classic mistake where `@Asynchronous` is
+silently ignored because the method was invoked on `this` from inside the same
+bean (see the comment in `DatabaseMigrationService.java:80`) — self-invocation
+keeps running on the request thread, and the thread name is the only place that
+shows up.
+
+## 119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery
+
+`EmailManagerEjb` logs `SEVERE: Email Gateway URL is not configured.` and
+`SmsManagerEjb.sendSms()` returns `false` when none of the five
+`SMS Sent Using …` config booleans is set. Neither is a defect locally; both
+are simply unconfigured. So **no email or SMS feature can be verified
+end-to-end on a local deployment** — the send will always fail.
+
+Write the assertion against the persisted row instead, which is what the
+feature actually controls:
+
+```sql
+SELECT receipientemail, messagesubject, messagetype, sentsuccessfully, pending
+FROM appemail WHERE messagetype = '<YourMessageType>';
+```
+
+A correct implementation still produces the row, with the right recipient,
+subject, body and foreign keys, and records the gateway's real verdict
+(`sentsuccessfully=0`, `pending=1`) plus a log line. That distinguishes the
+three cases a green screen cannot: *never attempted* (no row — the bug), *
+attempted and refused by the gateway* (row + WARNING — correct behaviour
+locally), and *delivered* (row with `sentsuccessfully=1` — only reachable on a
+deployment with a configured gateway).
+
+Companion to §41 (an empty `TRIGGERSUBSCRIPTION` table silently produces zero
+notifications): check the subscription rows exist *and* the recipient has an
+address on file before concluding anything from a quiet run.
+
+## 120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally
+
+Clicking a `p:fileDownload` button in Playwright kills the MCP session — the browser
+starts a native download the driver never returns from. So an Excel/PDF export can't be
+verified by clicking it, and "the numbers are right on screen" is not evidence the
+export is right: the on-screen footer and the export read different getters, which is
+exactly how issue #23676 shipped (the screen had no Gross/WHT footer at all while
+`ExcelController` null-guarded `bundle.getGrossTotal()` to `0.0` and `PdfController`
+printed the literal `null`).
+
+Submit the same POST the button would, from inside the page, and hand the bytes back as
+base64. Generate the report first — these exports read the `bundle` already in session:
+
+```js
+async () => {
+  const form = document.getElementById('<formId>');
+  const fd = new FormData(form);
+  fd.append('<buttonId>', '<buttonId>');          // the p:commandButton's own name/value
+  const res = await fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' });
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return JSON.stringify({ status: res.status, ct: res.headers.get('content-type'),
+                          cd: res.headers.get('content-disposition'), len: bytes.length,
+                          b64: btoa(bin) });
+}
+```
+
+Pass `filename:` to `browser_evaluate` so the base64 goes to a file instead of the
+transcript, then decode it:
+
+```powershell
+$o = Get-Content <result>.json -Raw | ConvertFrom-Json
+[IO.File]::WriteAllBytes("tmp\export.xlsx", [Convert]::FromBase64String($o.b64))
+```
+
+`Content-Disposition` also proves the filename logic (date range, report name) that no
+screenshot shows.
+
+**Reading the file back:**
+
+- **`.xlsx`** — `Expand-Archive` refuses the extension, so copy to `.zip` first, then
+  read `xl/worksheets/sheet1.xml`. Numeric cells hold raw values, so the totals row is
+  directly assertable without resolving `sharedStrings.xml`:
+  ```powershell
+  Copy-Item export.xlsx export.zip; Expand-Archive export.zip -DestinationPath ex -Force
+  [regex]::Matches((Get-Content ex\xl\worksheets\sheet1.xml -Raw), '<row[^>]*>.*?</row>') |
+    Select-Object -Last 1 | ForEach-Object { $_.Value }
+  ```
+- **`.pdf`** — `Read` needs poppler, which the dev box doesn't have. iText streams are
+  zlib-deflated: walk each `stream`…`endstream`, skip the 2-byte zlib header, run it
+  through `DeflateStream`, and pull the text out of the `(…)` literals. That recovers
+  the whole table including the totals row, which is enough to assert on.
+
+Both are read-only and touch no local state, so they're safe to repeat.
+
+## 121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`
+
+Found while building the "Add New Option" dialog for issue #23678. A
+`p:selectOneMenu` with a `<p:ajax update=":someForm:someContainer" />`
+listener, where `someContainer` was a plain `<div id="someContainer">`
+(no JSF component behind that `id`, just an HTML attribute), fails the
+*entire page render* — not just the ajax call — with:
+
+```
+javax.faces.component.search.ComponentNotFoundException: Cannot find
+component for expressions ":addOptionForm:newOptionInitialValue"
+referenced from "addOptionForm:j_idt653".
+```
+
+PrimeFaces resolves `update`/`process` search expressions against the JSF
+component tree, not the rendered HTML DOM — a raw `<div id="...">` has no
+corresponding `UIComponent`, so the search fails even on the component's
+first, non-ajax render (the failing call is inside `SelectOneMenuRenderer`
+building the `onchange` script, not inside any ajax round-trip). The fix is
+the same one already documented for `p:printer`/`p:dataExporter target=` in
+the [Report Favorites Implementation Guide](../feature/report-favorites.md):
+give the target container a real JSF component id via `h:panelGroup
+layout="block" id="..."` (never a bare `<div id="...">`) wherever anything
+elsewhere on the page names that id in `update`, `process`, or `target`.
+
+## 122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data
+
+Found while fixing issue #23678's Department/Institution Options pages,
+which had "List Department Options" / "List Options" buttons wired as
+`process="cmbDepartment"` (only the picker, not the button). Clicking such a
+button produces a completely normal-looking ajax exchange — real `200 OK`,
+a `<partial-response>` that updates the target table, no console error, no
+server-log exception — but the bound `action`/`actionListener` **never
+runs**. The rendered table is whatever `update` happens to touch given
+whatever state the backing bean was already in (here: `null`/stale from an
+earlier action), which can look deceptively like "the query returned the
+wrong rows" when the real story is "the query never ran at all."
+
+This is a JSF partial-processing rule: `process` (like `execute`) scopes
+which components participate in `APPLY_REQUEST_VALUES` through
+`INVOKE_APPLICATION`. A `p:commandButton` is itself a component that must be
+processed for its own `action`/`actionListener` to fire — restricting
+`process` to *only* some other input, with no `@this` (and no `@all`/form
+default), removes the button from every one of those phases, so JSF never
+invokes it. The symptom looks exactly like a query bug (verified here by
+adding a temporary `System.out.println` at the very top of the suspected
+method — it never printed, proving the method wasn't entered at all, before
+tracing it back to this `process` misconfiguration).
+
+Fix: always include the button in its own `process` — `process="@this
+cmbDepartment"` — whenever `process` is set to anything narrower than the
+default. A button with no `process` attribute at all (defaulting to the
+enclosing form) does not have this problem; it only bites when `process` is
+explicitly restricted and the button is left out.
+
+**Diagnostic recipe** when an ajax button "does nothing" with a real `200`
+response and no logged exception: add a one-line `System.out.println` (or
+check EclipseLink SQL logging, `eclipselink.logging.level.sql=FINE` in
+`persistence.xml`, temporarily) at the very top of the bound method. If it
+never prints despite a `200` response, the action isn't being invoked at
+all — go straight to the button's `process`/`execute` attribute rather than
+debugging the method's own logic.
