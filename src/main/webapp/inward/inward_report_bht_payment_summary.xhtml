@@ -196,6 +196,17 @@
 
                             </h:panelGroup>
 
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0ec;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Transaction Type" for="txnTypeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="txnTypeMenu" styleClass="w-100 form-control"
+                                             value="#{bhtPaymentDetailReportController.transactionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItem itemLabel="Deposit" itemValue="Deposit" />
+                                <f:selectItem itemLabel="Payment" itemValue="Payment" />
+                            </p:selectOneMenu>
+
                         </h:panelGrid>
 
                         <p:commandButton
@@ -207,49 +218,49 @@
                         </p:commandButton>
 
                     </p:panel>
-                    
-                                            <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
-                            <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
-                                <f:facet name="header">
-                                    <span style="font-size: 0.85rem; color: #6c757d;">
-                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
-                                        Configure Columns
-                                    </span>
-                                </f:facet>
-                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAdmissionTypeVisible}" itemLabel="Admission Type">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAdmittedVisible}" itemLabel="Admitted">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryDischargedVisible}" itemLabel="Discharged">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryTypeVisible}" itemLabel="Type">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryBillNoVisible}" itemLabel="Bill No">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryDateTimeVisible}" itemLabel="Date / Time">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryPaymentMethodVisible}" itemLabel="Payment Method">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAmountVisible}" itemLabel="Amount">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryReferenceNoVisible}" itemLabel="Reference No">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryCreditCompanyVisible}" itemLabel="Credit Company">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                </div>
-                            </p:panel>
-                        </div>
+
+                    <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                        <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                            <f:facet name="header">
+                                <span style="font-size: 0.85rem; color: #6c757d;">
+                                    <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                    Configure Columns
+                                </span>
+                            </f:facet>
+                            <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAdmissionTypeVisible}" itemLabel="Admission Type">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAdmittedVisible}" itemLabel="Admitted">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryDischargedVisible}" itemLabel="Discharged">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryTypeVisible}" itemLabel="Type">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryBillNoVisible}" itemLabel="Bill No">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryDateTimeVisible}" itemLabel="Date / Time">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryPaymentMethodVisible}" itemLabel="Payment Method">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAmountVisible}" itemLabel="Amount">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryReferenceNoVisible}" itemLabel="Reference No">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                                <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryCreditCompanyVisible}" itemLabel="Credit Company">
+                                    <p:ajax update="tblReport panelColumnToggler" />
+                                </p:selectBooleanCheckbox>
+                            </div>
+                        </p:panel>
+                    </div>
 
                     <p:panel id="pnlResults" rendered="#{bhtPaymentDetailReportController.reportRows != null}">
 
