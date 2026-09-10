@@ -1289,16 +1289,25 @@ public class ConfigOptionApplicationController implements Serializable {
     /**
      * Create-or-update a SHORT_TEXT option by key — the text-value sibling of
      * {@link #setLongTextValueByKey(String, String)}/{@link #setLongValueByKey(String, Long)}.
-     * Delegates to {@link #saveShortTextOption(String, String)}, which already
-     * has this exact create-if-absent-else-update behavior under an older
-     * name; this method exists so callers reaching for the same
-     * "set{Type}ValueByKey" naming used by every other value type (issue
-     * #23678 — added so {@code POST /api/config/setShortText/...} has a
-     * same-shaped method to call) find it without having to know the
-     * pre-existing name.
+     * Added for issue #23678 so callers reaching for the same
+     * "set{Type}ValueByKey" naming used by every other value type (e.g. for
+     * {@code POST /api/config/setShortText/...}) find a same-shaped method,
+     * without having to know the older {@link #saveShortTextOption(String, String)}
+     * name. Unlike that older method, this one also retags an existing row
+     * to SHORT_TEXT if it was created under a different type — CodeRabbit
+     * review of this PR noted that silently keeping the old type while
+     * writing a new value lets a later read return the wrong type or
+     * silently null.
      */
     public void setShortTextValueByKey(String key, String value) {
-        saveShortTextOption(key, value);
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        }
+        option.setValueType(OptionValueType.SHORT_TEXT);
+        option.setOptionValue(value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
     }
 
     /**
@@ -1306,13 +1315,16 @@ public class ConfigOptionApplicationController implements Serializable {
      * {@link #setLongValueByKey(String, Long)}, added for issue #23678 so a
      * brand-new DOUBLE key has a create-capable setter (previously only
      * {@link #getDoubleValueByKey(String, Double)} could seed one, and only
-     * as a side effect of a read).
+     * as a side effect of a read). Also retags an existing row to DOUBLE if
+     * it was created under a different type — see
+     * {@link #setShortTextValueByKey(String, String)}'s note on why.
      */
     public void setDoubleValueByKey(String key, Double value) {
         ConfigOption option = getApplicationOption(key);
-        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+        if (option == null) {
             option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, String.valueOf(value));
         }
+        option.setValueType(OptionValueType.DOUBLE);
         option.setOptionValue(String.valueOf(value));
         optionFacade.edit(option);
         loadApplicationOptions();

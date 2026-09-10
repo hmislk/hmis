@@ -138,8 +138,7 @@ public class ConfigResource {
     public Response setShortTextValue(@PathParam("key") String key,
             String requestBody,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         String value;
@@ -177,8 +176,7 @@ public class ConfigResource {
     public Response setDoubleValue(@PathParam("key") String key,
             String requestBody,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         Double value;

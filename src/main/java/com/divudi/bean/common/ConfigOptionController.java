@@ -10,6 +10,8 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -32,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -93,6 +96,12 @@ public class ConfigOptionController implements Serializable {
 
     @EJB
     AuditService auditService;
+
+    @EJB
+    private DepartmentFacade departmentFacade;
+
+    @EJB
+    private InstitutionFacade institutionFacade;
 
     private ConfigOption option;
     private Institution institution;
@@ -756,10 +765,12 @@ public class ConfigOptionController implements Serializable {
     public void saveNewOption(Object scopePrefixSource) {
         if (newOptionKeySuffix == null || newOptionKeySuffix.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Option Key is required");
+            rejectNewOption();
             return;
         }
         if (optionValueType == null) {
             JsfUtil.addErrorMessage("Value Type is required");
+            rejectNewOption();
             return;
         }
         String fullKey;
@@ -773,9 +784,20 @@ public class ConfigOptionController implements Serializable {
             throw new IllegalArgumentException("Unsupported scope prefix source: " + scopePrefixSource.getClass());
         }
 
+        // Same guard saveOption() applies silently (it just returns without
+        // saving) - checked here too so this method can tell the caller the
+        // create was rejected, instead of reporting success for a row that
+        // was never actually persisted.
+        if (isInwardChargeTypeLabelKey(fullKey)) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
+            rejectNewOption();
+            return;
+        }
+
         ConfigOption existing = configOptionApplicationController.getApplicationOption(fullKey);
         if (existing != null) {
             JsfUtil.addErrorMessage("An option with key \"" + fullKey + "\" already exists. Edit it instead of creating a duplicate.");
+            rejectNewOption();
             return;
         }
 
@@ -798,7 +820,21 @@ public class ConfigOptionController implements Serializable {
 
         saveOption(newOption);
         JsfUtil.addSuccessMessage("Created \"" + fullKey + "\"");
+        PrimeFaces.current().ajax().addCallbackParam("newOptionSaved", true);
         prepareNewOption();
+    }
+
+    /**
+     * Tells the "Add New Option" dialog's {@code oncomplete} that the create
+     * was rejected, via the same PrimeFaces ajax callback-param channel the
+     * success path uses ({@code newOptionSaved}) — so the dialog stays open
+     * (with the error growl visible) instead of hiding as if the row had
+     * been persisted. Missing/omitting the callback param defaults to
+     * "falsy" client-side, but set it explicitly here for clarity at each
+     * rejection call site in {@link #saveNewOption(Object)}.
+     */
+    private void rejectNewOption() {
+        PrimeFaces.current().ajax().addCallbackParam("newOptionSaved", false);
     }
 
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
@@ -1057,14 +1093,48 @@ public class ConfigOptionController implements Serializable {
         // every real department/institution name, whether it is a *longer*
         // match for this key than the one we searched for - if so, the key
         // actually belongs to that longer name and is excluded here
-        // (issue #23678).
+        // (issue #23678). Deliberately checked against *every* active
+        // department/institution name (not just the current user's
+        // sessionController.getLoggableDepartments()/getLoggableInstitutions()
+        // — those are scoped to what this user can log into, and a
+        // department/institution this user has no access to could still
+        // exist with a name that collides, which the loggable-only lists
+        // would silently miss, leaking that other entity's rows into this
+        // one's list).
         if (entity instanceof Department) {
-            results = filterOutLongerNameCollisions(results, ((Department) entity).getName(), sessionController.getLoggableDepartments(), Department::getName);
+            results = filterOutLongerNameCollisions(results, ((Department) entity).getName(), getAllDepartmentNames());
         } else if (entity instanceof Institution) {
-            results = filterOutLongerNameCollisions(results, ((Institution) entity).getName(), sessionController.getLoggableInstitutions(), Institution::getName);
+            results = filterOutLongerNameCollisions(results, ((Institution) entity).getName(), getAllInstitutionNames());
         }
 
         return results;
+    }
+
+    /**
+     * All non-retired department names, for the key-prefix collision guard
+     * in {@link #getAllOptions(Object)} — deliberately not
+     * {@code sessionController.getLoggableDepartments()}, which is scoped to
+     * the current user and would miss a colliding name outside that scope.
+     */
+    private List<String> getAllDepartmentNames() {
+        List<Department> departments = departmentFacade.findByJpql("SELECT d FROM Department d WHERE COALESCE(d.retired, false) = false");
+        List<String> names = new ArrayList<>();
+        for (Department d : departments) {
+            names.add(d.getName());
+        }
+        return names;
+    }
+
+    /**
+     * Institution counterpart of {@link #getAllDepartmentNames()}.
+     */
+    private List<String> getAllInstitutionNames() {
+        List<Institution> institutions = institutionFacade.findByJpql("SELECT i FROM Institution i WHERE COALESCE(i.retired, false) = false");
+        List<String> names = new ArrayList<>();
+        for (Institution i : institutions) {
+            names.add(i.getName());
+        }
+        return names;
     }
 
     /**
@@ -1075,13 +1145,12 @@ public class ConfigOptionController implements Serializable {
      * longer than {@code targetName} is itself a prefix-match root for that
      * row's key.
      */
-    private <E> List<ConfigOption> filterOutLongerNameCollisions(List<ConfigOption> candidates, String targetName, List<E> allNames, java.util.function.Function<E, String> nameExtractor) {
+    private List<ConfigOption> filterOutLongerNameCollisions(List<ConfigOption> candidates, String targetName, List<String> allNames) {
         if (candidates.isEmpty() || allNames == null) {
             return candidates;
         }
         List<String> longerNames = new ArrayList<>();
-        for (E e : allNames) {
-            String name = nameExtractor.apply(e);
+        for (String name : allNames) {
             if (name != null && name.length() > targetName.length() && name.startsWith(targetName)) {
                 longerNames.add(name);
             }

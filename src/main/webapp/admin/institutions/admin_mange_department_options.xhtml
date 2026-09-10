@@ -58,6 +58,7 @@
                                            var="d"
                                            itemLabel="#{d.name}"
                                            itemValue="#{d}" ></f:selectItems>
+                            <p:ajax update="btnAddNewDepartmentOption" />
                         </p:selectOneMenu>
                         <p:commandButton id="btnSave"
                                          ajax="false"
@@ -73,7 +74,8 @@
                                          action="#{configOptionController.listDepartmentOptions}"
                                          update="departmentOptionsForm:optionsTable"></p:commandButton>
 
-                        <p:commandButton value="Add New Option"
+                        <p:commandButton id="btnAddNewDepartmentOption"
+                                         value="Add New Option"
                                          icon="fas fa-plus"
                                          class="ui-button-primary mx-2"
                                          disabled="#{configOptionController.department eq null}"
@@ -320,7 +322,7 @@
                                         style="width: 250px; background-color: #da8545; float: right;"
                                         action="#{configOptionController.saveNewOption(configOptionController.department)}"
                                         process="@this @form"
-                                        oncomplete="PF('addOptionDialog').hide();"
+                                        oncomplete="if (args &amp;&amp; args.newOptionSaved) { PF('addOptionDialog').hide(); }"
                                         update=":departmentOptionsForm:optionsTable :addOptionForm">
                                     </p:commandButton>
                                 </div>

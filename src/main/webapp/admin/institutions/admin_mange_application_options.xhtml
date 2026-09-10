@@ -384,7 +384,7 @@
                                         style="width: 250px; background-color: #da8545; float: right;"
                                         action="#{configOptionController.saveNewOption(null)}"
                                         process="@this @form"
-                                        oncomplete="PF('addOptionDialog').hide();"
+                                        oncomplete="if (args &amp;&amp; args.newOptionSaved) { PF('addOptionDialog').hide(); }"
                                         update=":optionsForm:optionsTable :addOptionForm">
                                     </p:commandButton>
                                 </div>
