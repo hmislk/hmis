@@ -93,9 +93,9 @@
                                             styleClass="ui-button-stage-approve"
                                             icon="fas fa-check-double"
                                             value="Approve"
-                                            title="Open and Approve Issue"
+                                            title="Open and Approve Issue #{g.deptId}"
                                             ajax="false"
-                                            action="#{transferIssueForRequestsController.loadDraftIssueForEditing(g)}"
+                                            action="#{transferIssueNativeSqlController.loadDraftNativeIssueForEditing(g)}"
                                             style="min-width: 80px;"/>
                                     </p:column>
                                 </p:dataTable>
