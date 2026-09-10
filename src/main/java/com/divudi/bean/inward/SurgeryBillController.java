@@ -402,10 +402,21 @@ public class SurgeryBillController implements Serializable {
             JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
+        if (inwardTimedItemController.isCheckedAndLocked(patientItem)) {
+            return;
+        }
         patientItem.setRetirer(getSessionController().getLoggedUser());
         patientItem.setRetiredAt(new Date());
         patientItem.setRetired(true);
         getPatientItemFacade().edit(patientItem);
+        // Retiring only the PatientItem hid the row but kept the charge: the
+        // inward totals are summed from the BillItem side
+        // (InwardBeanController#calServiceBillItemsTotalByInwardChargeTypeBulk),
+        // so a removed ward timed service went on billing - and, once unchecked
+        // service bills block the final bill, would have blocked it from a bill
+        // no screen still listed. No-ops for surgery-added services, whose
+        // PatientItem carries no BillItem of its own.
+        inwardTimedItemController.retireTimedServiceBill(patientItem);
         refreshTimedEncounterComponents();
     }
 

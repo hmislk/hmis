@@ -37,6 +37,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.InwardReceiptTextRenderer;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -49,6 +50,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -78,8 +80,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     PatientDepositService patientDepositService;
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    private com.divudi.service.BillService billService;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
@@ -1092,6 +1096,50 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
     public void setCurrent(BilledBill current) {
         this.current = current;
+    }
+
+    /**
+     * Streams the current payment receipt as a raw byte file (.prn) for
+     * dot-matrix printing that bypasses the browser rasteriser. See
+     * developer_docs/printing/raw-text-print-agent.ps1.
+     */
+    public void streamCurrentPaymentReceiptAsRawText() {
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("No saved payment to print.");
+            return;
+        }
+        com.divudi.core.entity.Department dept = sessionController.getDepartment();
+        boolean preprinted = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
+        Long topMarginRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
+        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
+        boolean emitEscP = configOptionApplicationController
+                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+
+        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
+                getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
+                        ? billService.fetchBillPayments(getCurrent()) : null;
+        String text = InwardReceiptTextRenderer.render(getCurrent(), "Payment Receipt",
+                false, preprinted, topMargin, emitEscP, multiplePayments);
+
+        String fileName = "inward-payment-"
+                + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())
+                        : getCurrent().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
+                + ".prn";
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        try (java.io.OutputStream os = response.getOutputStream()) {
+            os.write(text.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
+            os.flush();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            return;
+        }
+        context.responseComplete();
     }
 
     public BillNumberGenerator getBillNumberBean() {

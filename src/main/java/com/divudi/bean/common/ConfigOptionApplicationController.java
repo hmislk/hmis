@@ -191,6 +191,12 @@ public class ConfigOptionApplicationController implements Serializable {
         // reservedFrom when reservedTo is null). Consumed by AppointmentController.navigatePatientAdmit().
         getLongValueByKey("Inward - Reservation Admission Early Window (Hours)", 24L);
         getLongValueByKey("Inward - Reservation Admission Grace Period (Hours)", 24L);
+        // Settlement gate: unchecked inward service / professional / pharmacy /
+        // store / payment bills block the final bill. Seeded here so an admin
+        // can find and toggle it without first having to settle a bill.
+        // Replaces "Need to check inward bills before discharge", which was read
+        // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
+        getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {
@@ -1324,6 +1330,20 @@ public class ConfigOptionApplicationController implements Serializable {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * Returns a list of {@code count} zero-based Integers, for {@code ui:repeat}
+     * loops that just need to render N copies of something (e.g. blank leading
+     * lines above a pre-printed dot-matrix letterhead). Clamps to [0, 40].
+     */
+    public java.util.List<Integer> integerList(Integer count) {
+        int n = count == null ? 0 : Math.max(0, Math.min(40, count));
+        java.util.List<Integer> out = new java.util.ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            out.add(i);
+        }
+        return out;
     }
 
     public Double getDoubleValueByKey(String key) {
