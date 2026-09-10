@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <!--
         Inward Final Bill ("Custom Bill 2" in the Custom Bills tab), printed
@@ -183,6 +184,8 @@
                     <td style="text-align: left;">Bill Prepared By : <h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
                 </tr>
             </table>
+
+            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
 
             <div style="text-align: center; font-size: 10px; margin-top: 8px;">
                 <h:outputLabel value="Powered by CareCode (Pvt) Ltd." />

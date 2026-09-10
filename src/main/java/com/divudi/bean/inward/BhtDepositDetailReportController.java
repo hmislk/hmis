@@ -13,7 +13,9 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -27,6 +29,8 @@ import javax.persistence.TemporalType;
 /**
  * Controller for BHT Deposit Detail Report.
  * One row per individual deposit payment. CC settlements excluded.
+ * Also covers Inpatient Payment and Post Discharge (post-final-bill) payment
+ * rows via the {@code reportType} filter, not just deposits.
  */
 @Named
 @SessionScoped
@@ -40,6 +44,7 @@ public class BhtDepositDetailReportController implements Serializable {
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
     private String dateBasis = "dischargeDate";
+    private String reportType = "DEPOSIT";
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
@@ -154,10 +159,21 @@ public class BhtDepositDetailReportController implements Serializable {
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
                 + " and p.bill.cancelled = false"
-                + " and p.bill.billTypeAtomic = :bta"
+                + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
-        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        List<BillTypeAtomic> btas;
+        if ("DEPOSIT".equals(reportType)) {
+            btas = Collections.singletonList(BillTypeAtomic.INWARD_DEPOSIT);
+        } else if ("PAYMENT".equals(reportType)) {
+            btas = Collections.singletonList(BillTypeAtomic.INWARD_PAYMENT);
+        } else if ("POST_FINAL".equals(reportType)) {
+            btas = Collections.singletonList(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+        } else {
+            btas = Arrays.asList(BillTypeAtomic.INWARD_DEPOSIT, BillTypeAtomic.INWARD_PAYMENT,
+                    BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+        }
+        params.put("btas", btas);
         params.put("enc", enc);
         if (paymentMethod != null) {
             jpql.append(" and p.paymentMethod = :pm");
@@ -175,6 +191,7 @@ public class BhtDepositDetailReportController implements Serializable {
         fromDate = startOfCurrentMonth();
         toDate = new Date();
         dateBasis = "dischargeDate";
+        reportType = "DEPOSIT";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
         paymentMethod = null;
@@ -205,6 +222,9 @@ public class BhtDepositDetailReportController implements Serializable {
 
     public String getDateBasis() { return dateBasis; }
     public void setDateBasis(String dateBasis) { this.dateBasis = dateBasis; }
+
+    public String getReportType() { return reportType; }
+    public void setReportType(String reportType) { this.reportType = reportType; }
 
     public AdmissionStatus getAdmissionStatus() { return admissionStatus; }
     public void setAdmissionStatus(AdmissionStatus admissionStatus) { this.admissionStatus = admissionStatus; }
