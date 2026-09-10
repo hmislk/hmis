@@ -3408,4 +3408,54 @@ public class InwardSearch implements Serializable {
         this.originalBillPaymentMethodData = originalBillPaymentMethodData;
     }
 
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn for dot-matrix
+     * printing. Always a duplicate. Heading derived from the bill type.
+     */
+    public void streamReprintReceiptAsRawText() {
+        if (getBill() == null || getBill().getId() == null) {
+            JsfUtil.addErrorMessage("Select a bill to reprint first.");
+            return;
+        }
+        com.divudi.core.entity.Department dept = getBill().getDepartment();
+        boolean preprinted = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
+        int topMargin = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L).intValue();
+        boolean emitEscP = configOptionApplicationController
+                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+
+        String heading = "Receipt";
+        if (getBill().getBillTypeAtomic() != null) {
+            String n = getBill().getBillTypeAtomic().name();
+            if (n.contains("DEPOSIT")) {
+                heading = "Deposit Receipt";
+            } else if (n.contains("PAYMENT")) {
+                heading = "Payment Receipt";
+            }
+        }
+
+        String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
+                true, preprinted, topMargin, emitEscP);
+
+        String fileName = "inward-reprint-"
+                + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
+                        : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
+                + ".prn";
+
+        javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();
+        javax.servlet.http.HttpServletResponse response =
+                (javax.servlet.http.HttpServletResponse) context.getExternalContext().getResponse();
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        try (java.io.OutputStream os = response.getOutputStream()) {
+            os.write(text.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
+            os.flush();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            return;
+        }
+        context.responseComplete();
+    }
+
 }
