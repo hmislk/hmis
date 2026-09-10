@@ -38,10 +38,11 @@
                     </p:confirmDialog>
 
                     <p:dialog id="dlgRoomOverlapConfirm" widgetVar="dlgRoomOverlapConfirm" header="&#9888; Room Time Overlap Warning"
-                              modal="true" resizable="false" closable="true" style="width:480px">
+                              modal="true" resizable="false" closable="true" style="width:560px">
                         <div style="padding:12px">
                             <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
-                                &#9888; WARNING: This room's time range overlaps another room period for this patient or bed.
+                                &#9888; WARNING: This room's time range overlaps another room stay - either another
+                                stay for this patient, or another patient recorded in the same bed.
                             </p>
                             <p style="color:#b71c1c;">
                                 <h:outputText value="#{bhtSummeryController.pendingOverlapDescription}"/>
@@ -160,8 +161,12 @@
                                                     <p:badge value="Active" severity="warning"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{bhtSummeryController.hasOverlap(rm)}">
-                                                    <p:tag value="Overlap" icon="fa fa-exclamation-triangle" severity="danger"
-                                                           title="#{bhtSummeryController.getOverlapDescription(rm)}"/>
+                                                    <!-- p:tag drops a plain title attribute, so the conflict details need
+                                                         p:tooltip to reach the screen at all (Issue #23641). -->
+                                                    <p:tag id="roomOverlapTag" value="Overlap"
+                                                           icon="fa fa-exclamation-triangle" severity="danger"/>
+                                                    <p:tooltip for="roomOverlapTag" position="top" showDelay="150"
+                                                               value="#{bhtSummeryController.getOverlapDescription(rm)}"/>
                                                 </h:panelGroup>
                                             </div>
                                         </p:column>
