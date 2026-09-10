@@ -503,7 +503,8 @@
                             </div>
 
                         </h:panelGroup>
-                        <h:panelGroup id="gpBillPreviewDmx" style="display:none;">
+                        <h:panelGroup id="gpBillPreviewDmx"
+                                      style="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false) ? '' : 'display:none;'}">
                             <div class="d-flex justify-content-center">
                                 <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardDepositController.current}" heading="Deposit Receipt" />
                             </div>
@@ -542,6 +543,10 @@
                         <div class="mb-3">
                             <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
                             <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentDotMatrix" value="#{pharmacyConfigController.inwardPaymentDotMatrixPaper}"/>
+                            <h:outputLabel for="inwardPaymentDotMatrix" value="Dot-Matrix Paper (LQ-310)" class="ms-2"/>
                         </div>
                     </div>
                 </div>
