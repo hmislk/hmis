@@ -147,6 +147,8 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
 - [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally](#120-verifying-a-pfiledownload-export-post-the-form-with-fetch-and-decode-locally)
+- [121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`](#121-pajax-update-targeting-a-raw-div-id-throws-componentnotfoundexception-at-render-time--wrap-it-in-hpanelgroup)
+- [122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data](#122-a-pcommandbuttons-processx-that-excludes-the-button-itself-silently-skips-its-own-action--no-exception-no-error-a-real-200-ok-with-the-previous-data)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3553,3 +3555,66 @@ screenshot shows.
   the whole table including the totals row, which is enough to assert on.
 
 Both are read-only and touch no local state, so they're safe to repeat.
+
+## 121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`
+
+Found while building the "Add New Option" dialog for issue #23678. A
+`p:selectOneMenu` with a `<p:ajax update=":someForm:someContainer" />`
+listener, where `someContainer` was a plain `<div id="someContainer">`
+(no JSF component behind that `id`, just an HTML attribute), fails the
+*entire page render* — not just the ajax call — with:
+
+```
+javax.faces.component.search.ComponentNotFoundException: Cannot find
+component for expressions ":addOptionForm:newOptionInitialValue"
+referenced from "addOptionForm:j_idt653".
+```
+
+PrimeFaces resolves `update`/`process` search expressions against the JSF
+component tree, not the rendered HTML DOM — a raw `<div id="...">` has no
+corresponding `UIComponent`, so the search fails even on the component's
+first, non-ajax render (the failing call is inside `SelectOneMenuRenderer`
+building the `onchange` script, not inside any ajax round-trip). The fix is
+the same one already documented for `p:printer`/`p:dataExporter target=` in
+the [Report Favorites Implementation Guide](../feature/report-favorites.md):
+give the target container a real JSF component id via `h:panelGroup
+layout="block" id="..."` (never a bare `<div id="...">`) wherever anything
+elsewhere on the page names that id in `update`, `process`, or `target`.
+
+## 122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data
+
+Found while fixing issue #23678's Department/Institution Options pages,
+which had "List Department Options" / "List Options" buttons wired as
+`process="cmbDepartment"` (only the picker, not the button). Clicking such a
+button produces a completely normal-looking ajax exchange — real `200 OK`,
+a `<partial-response>` that updates the target table, no console error, no
+server-log exception — but the bound `action`/`actionListener` **never
+runs**. The rendered table is whatever `update` happens to touch given
+whatever state the backing bean was already in (here: `null`/stale from an
+earlier action), which can look deceptively like "the query returned the
+wrong rows" when the real story is "the query never ran at all."
+
+This is a JSF partial-processing rule: `process` (like `execute`) scopes
+which components participate in `APPLY_REQUEST_VALUES` through
+`INVOKE_APPLICATION`. A `p:commandButton` is itself a component that must be
+processed for its own `action`/`actionListener` to fire — restricting
+`process` to *only* some other input, with no `@this` (and no `@all`/form
+default), removes the button from every one of those phases, so JSF never
+invokes it. The symptom looks exactly like a query bug (verified here by
+adding a temporary `System.out.println` at the very top of the suspected
+method — it never printed, proving the method wasn't entered at all, before
+tracing it back to this `process` misconfiguration).
+
+Fix: always include the button in its own `process` — `process="@this
+cmbDepartment"` — whenever `process` is set to anything narrower than the
+default. A button with no `process` attribute at all (defaulting to the
+enclosing form) does not have this problem; it only bites when `process` is
+explicitly restricted and the button is left out.
+
+**Diagnostic recipe** when an ajax button "does nothing" with a real `200`
+response and no logged exception: add a one-line `System.out.println` (or
+check EclipseLink SQL logging, `eclipselink.logging.level.sql=FINE` in
+`persistence.xml`, temporarily) at the very top of the bound method. If it
+never prints despite a `200` response, the action isn't being invoked at
+all — go straight to the button's `process`/`execute` attribute rather than
+debugging the method's own logic.
