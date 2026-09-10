@@ -3388,3 +3388,26 @@ browser_evaluate(() => { document.getElementById('form:dateStamp_input').value =
 Do **not** follow it with a synthetic `change` event — on these pickers that
 re-runs the mask and blanks the field again. §18's calendar-grid technique
 remains the option when the widget's own parsing needs to run.
+
+## 117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy
+
+`inward_bill_intrim.xhtml` has a "View Bill" `p:commandButton` in **six**
+different tabs (Room Charges, Professional Fees, Deposits & Payments, …). A
+`p:tabView` keeps all inactive panels in the DOM (just `display:none`), so
+`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'View Bill')`
+returns the **first in document order** — a hidden tab's button — and clicking it
+fires that tab's action (it navigated to `inward_reprint_bill_service.xhtml` for
+a bill that did not exist, "No records found").
+
+Scope the query to the active panel by its server id before matching text:
+
+```js
+browser_evaluate(() => {
+  const panel = document.querySelector('[id="pageForm:tvPt:tabP"]');   // the Deposits & Payments panel
+  const row = [...panel.querySelectorAll('tr')].find(r => /050558/.test(r.textContent)); // the exact bill row
+  row.querySelector('button').click();
+});
+```
+
+Matching on a stable substring of the row (bill number) also guards against
+clicking the wrong row once the table has several entries.
