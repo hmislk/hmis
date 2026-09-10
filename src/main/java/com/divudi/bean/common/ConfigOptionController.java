@@ -220,6 +220,32 @@ public class ConfigOptionController implements Serializable {
         return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
     }
 
+    /**
+     * Read-only variant of a department-scoped-key-first text lookup — the
+     * text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * resolves {@code "<Department name> - <key>"} first and only falls back
+     * to the plain application-scoped key (and finally {@code defaultValue})
+     * when no department override exists. Never persists a new ConfigOption
+     * row for either key. Use this for {@code rendered="..."}/output-value
+     * reads (e.g. a per-department receipt title or registration number)
+     * that must not silently create configuration rows just because a page
+     * was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.SHORT_TEXT) {
+            defaultValue = configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
+        }
+        return configOptionApplicationController.getShortTextValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
     public Long getLongValueByKey(String key) {
         return getLongValueByKey(key, 0L);
     }
