@@ -44,23 +44,22 @@
 
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Hospital Bill**" rendered="#{cc.attrs.hosCopy eq true }"/>
-                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Original Bill**" rendered="#{cc.attrs.duplicate ne true }"/>
-                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="4">
                                 <h:outputLabel style="font-size: 17px;" value="#{configOptionApplicationController.getLongTextValueByKey('Final Bill Title','Tax Invoice')}"/>
                             </td>
                         </tr>
 
+                        <tr>
+                            <td colspan="4">
+                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Hospital Bill**" rendered="#{cc.attrs.hosCopy eq true }"/>
+                                <h:outputLabel class="mark" style="font-size: 18px;" value="**Duplicate Bill**" rendered="#{cc.attrs.duplicate eq true}"/>
+                            </td>
+                        </tr>
                     </table>
 
 
                     <!-- ===== A4 Bill Header (BHT, Name, ...) - auto-wrapping 2-column grid ===== -->
-                    <div style="font-size: 13px; width: 90%; margin-left: 5%; margin-right: 5%" class="mt-4 mb-4">
-                        <div class="row gx-0">
+                    <div style="font-size: 13px; width: 90%; margin-left: 5%; margin-right: 5%; line-height: 1.2;" class="mt-4 mb-4">
+                        <div class="row gx-0 custom4-header-details-row">
 
                             <!-- BHT No -->
                             <div class="col-6 d-flex mb-1">
