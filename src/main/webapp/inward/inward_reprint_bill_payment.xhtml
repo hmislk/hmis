@@ -37,7 +37,7 @@
                                         class="ui-button-warning"
                                         icon="fa fa-money-bill-transfer"
                                         action="#{inwardRefundController.navigateToRefundFromPaymentBill(inwardSearch.bill)}"
-                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded}"  >
+                                        disabled="#{inwardSearch.bill.cancelled or inwardRefundController.calculateFreshRemainingRefundableAmount(inwardSearch.bill) le 0.01}"  >
                                     </p:commandButton>
 
                                     <p:commandButton
