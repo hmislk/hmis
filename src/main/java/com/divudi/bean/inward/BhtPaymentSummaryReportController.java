@@ -11,6 +11,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -51,6 +53,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private PaymentFacade paymentFacade;
     @EJB
     private BillFacade billFacade;
+    @Inject
+    private UserSettingsController userSettingsController;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -450,6 +454,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalFinalBills = 0;
         grandTotalBalance = 0;
         grandTotalAllMoneyIn = 0;
+
+        // Every Configure Columns checkbox must show checked whenever the
+        // user navigates in fresh, regardless of any previously saved
+        // per-user preference from an earlier visit.
+        userSettingsController.resetInwardBhtPaymentDetailColumnsVisible();
     }
 
     // -------------------------------------------------------------------------
