@@ -12,8 +12,15 @@
                     <p:panel styleClass="panel-header-right">
                         <f:facet name="header">
                             <h:outputText value="Application Options" style="float: left;"/>
+                            <!-- Add New Option button -->
+                            <p:commandButton value="Add New Option" icon="pi pi-plus"
+                                             styleClass="ui-button-primary"
+                                             actionListener="#{configOptionController.prepareNewOption()}"
+                                             oncomplete="PF('addOptionDialog').show()"
+                                             update=":addOptionForm"
+                                             style="float: right; margin-right: 0.5em;" />
                             <!-- Import button -->
-                            <p:commandButton value="Import" icon="pi pi-upload" 
+                            <p:commandButton value="Import" icon="pi pi-upload"
                                              styleClass="ui-button-info"
                                              onclick="PF('importDialog').show();"
                                              style="float: right; margin-right: 0.5em;" />
@@ -277,6 +284,112 @@
                             </div>
                         </p:panel>
 
+                    </h:form>
+                </p:dialog>
+
+                <!-- Add New Option Dialog -->
+                <p:dialog
+                    header="Add New Option" widgetVar="addOptionDialog" modal="true"
+                    style="min-width: 60%; min-height: 300px;">
+                    <h:form id="addOptionForm" class="w-100">
+                        <p:panel class="w-100">
+                            <f:facet name="header">
+                                <p:outputPanel styleClass="header-style">New Option Details</p:outputPanel>
+                            </f:facet>
+
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="newOptionKeyInput" value="Option Key" class="w-100" />
+                                </div>
+                                <div class="col-9">
+                                    <p:inputText
+                                        class="w-100"
+                                        id="newOptionKeyInput"
+                                        value="#{configOptionController.newOptionKeySuffix}"
+                                        placeholder="e.g. My Feature - Enable Something" />
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Value Type" />
+                                </div>
+                                <div class="col-9">
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        value="#{configOptionController.optionValueType}">
+                                        <f:selectItem itemLabel="Select Value Type" noSelectionOption="true" />
+                                        <f:selectItems
+                                            value="#{configOptionController.newOptionValueTypes}"
+                                            var="t"
+                                            itemLabel="#{t}"
+                                            itemValue="#{t}" />
+                                        <p:ajax update=":addOptionForm:newOptionInitialValue" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Initial Value" />
+                                </div>
+                                <h:panelGroup layout="block" styleClass="col-9" id="newOptionInitialValue">
+                                    <!-- For SHORT_TEXT / LONG -->
+                                    <p:inputText
+                                        class="w-100"
+                                        value="#{configOptionController.value}"
+                                        rendered="#{configOptionController.optionValueType eq 'SHORT_TEXT' or configOptionController.optionValueType eq 'LONG'}" />
+
+                                    <!-- For LONG_TEXT -->
+                                    <p:inputTextarea
+                                        class="w-100"
+                                        rows="5"
+                                        value="#{configOptionController.value}"
+                                        rendered="#{configOptionController.optionValueType eq 'LONG_TEXT'}"
+                                        autoResize="false"/>
+
+                                    <!-- For DOUBLE -->
+                                    <p:inputText
+                                        class="w-100"
+                                        value="#{configOptionController.value}"
+                                        rendered="#{configOptionController.optionValueType eq 'DOUBLE'}" />
+
+                                    <!-- For BOOLEAN -->
+                                    <p:toggleSwitch
+                                        value="#{configOptionController.value}"
+                                        onIcon="pi pi-check"
+                                        offIcon="pi pi-times"
+                                        rendered="#{configOptionController.optionValueType eq 'BOOLEAN'}">
+                                    </p:toggleSwitch>
+
+                                    <h:outputText
+                                        value="Select a Value Type above to enter an initial value."
+                                        class="text-muted"
+                                        rendered="#{configOptionController.optionValueType eq null}" />
+                                </h:panelGroup>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-4">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <p:commandButton
+                                        icon="pi pi-save"
+                                        value="Create"
+                                        style="width: 250px; background-color: #da8545; float: right;"
+                                        action="#{configOptionController.saveNewOption(null)}"
+                                        process="@this @form"
+                                        oncomplete="PF('addOptionDialog').hide();"
+                                        update=":optionsForm:optionsTable :addOptionForm">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
                     </h:form>
                 </p:dialog>
 

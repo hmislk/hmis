@@ -1286,6 +1286,38 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    /**
+     * Create-or-update a SHORT_TEXT option by key — the text-value sibling of
+     * {@link #setLongTextValueByKey(String, String)}/{@link #setLongValueByKey(String, Long)}.
+     * Delegates to {@link #saveShortTextOption(String, String)}, which already
+     * has this exact create-if-absent-else-update behavior under an older
+     * name; this method exists so callers reaching for the same
+     * "set{Type}ValueByKey" naming used by every other value type (issue
+     * #23678 — added so {@code POST /api/config/setShortText/...} has a
+     * same-shaped method to call) find it without having to know the
+     * pre-existing name.
+     */
+    public void setShortTextValueByKey(String key, String value) {
+        saveShortTextOption(key, value);
+    }
+
+    /**
+     * Create-or-update a DOUBLE option by key — same shape as
+     * {@link #setLongValueByKey(String, Long)}, added for issue #23678 so a
+     * brand-new DOUBLE key has a create-capable setter (previously only
+     * {@link #getDoubleValueByKey(String, Double)} could seed one, and only
+     * as a side effect of a read).
+     */
+    public void setDoubleValueByKey(String key, Double value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, String.valueOf(value));
+        }
+        option.setOptionValue(String.valueOf(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate

@@ -113,6 +113,17 @@ public class ConfigOptionController implements Serializable {
     private String globalFilter;
 
     /**
+     * Backing field for the "Add New Option" dialog's Option Key input
+     * (issue #23678). Deliberately separate from {@link #key} — on the
+     * Department/Institution Options pages this holds only the suffix after
+     * the "&lt;Department name&gt; - " / "&lt;Institution name&gt; - " prefix,
+     * which {@link #saveNewOption()} adds back before creating the row. On
+     * the Application Options page, this suffix is the whole key (no
+     * prefix).
+     */
+    private String newOptionKeySuffix;
+
+    /**
      * Creates a new instance of OptionController
      */
     public ConfigOptionController() {
@@ -711,6 +722,85 @@ public class ConfigOptionController implements Serializable {
         auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), trigger);
     }
 
+    /**
+     * Resets the "Add New Option" dialog to a blank state. Call before
+     * showing the dialog (issue #23678) — mirrors
+     * {@link #prepareOptionForApplicationEdit(String)}/
+     * {@link #prepareOptionForDepartmentEdit(String, Department)}, but for a
+     * brand-new key instead of an existing row.
+     */
+    public void prepareNewOption() {
+        newOptionKeySuffix = null;
+        value = null;
+        optionValueType = null;
+    }
+
+    /**
+     * Creates a brand-new ConfigOption from the "Add New Option" dialog
+     * (issue #23678). Builds the full key from {@link #newOptionKeySuffix}
+     * plus whichever scope prefix applies to the page this was called from
+     * ({@link #department}, {@link #institution}, or neither for Application
+     * Options), then delegates to the existing {@link #saveOption(ConfigOption)}
+     * — the same create path every lazily-seeded key already goes through
+     * ({@code scope=APPLICATION}, {@code department}/{@code institution}/
+     * {@code webUser} all null; see {@code ConfigOptionFacade.createOptionIfNotExists}
+     * and {@code ConfigOptionApplicationController.createApplicationOptionIfAbsent}
+     * for the equivalent lazy-create shape this matches).
+     *
+     * @param scopePrefixSource the {@link Department} or {@link Institution}
+     * the calling page is scoped to, or {@code null} for Application
+     * Options. Passed explicitly (rather than read from {@link #department}/
+     * {@link #institution}) so the same method serves all three pages
+     * without guessing which field the caller meant.
+     */
+    public void saveNewOption(Object scopePrefixSource) {
+        if (newOptionKeySuffix == null || newOptionKeySuffix.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Option Key is required");
+            return;
+        }
+        if (optionValueType == null) {
+            JsfUtil.addErrorMessage("Value Type is required");
+            return;
+        }
+        String fullKey;
+        if (scopePrefixSource instanceof Department) {
+            fullKey = ((Department) scopePrefixSource).getName() + " - " + newOptionKeySuffix.trim();
+        } else if (scopePrefixSource instanceof Institution) {
+            fullKey = ((Institution) scopePrefixSource).getName() + " - " + newOptionKeySuffix.trim();
+        } else if (scopePrefixSource == null) {
+            fullKey = newOptionKeySuffix.trim();
+        } else {
+            throw new IllegalArgumentException("Unsupported scope prefix source: " + scopePrefixSource.getClass());
+        }
+
+        ConfigOption existing = configOptionApplicationController.getApplicationOption(fullKey);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("An option with key \"" + fullKey + "\" already exists. Edit it instead of creating a duplicate.");
+            return;
+        }
+
+        String initialValue = value;
+        if (optionValueType == OptionValueType.BOOLEAN && (initialValue == null || initialValue.trim().isEmpty())) {
+            initialValue = "false";
+        }
+        if (initialValue == null) {
+            initialValue = "";
+        }
+
+        ConfigOption newOption = new ConfigOption();
+        newOption.setOptionKey(fullKey);
+        newOption.setValueType(optionValueType);
+        newOption.setOptionValue(initialValue);
+        newOption.setScope(OptionScope.APPLICATION);
+        // department/institution/webUser intentionally left null — the scope
+        // lives entirely in the key text, matching every existing
+        // "<Department name> - <key>" / "<Institution name> - <key>" row.
+
+        saveOption(newOption);
+        JsfUtil.addSuccessMessage("Created \"" + fullKey + "\"");
+        prepareNewOption();
+    }
+
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope AND COALESCE(o.retired, false) = false");
         Map<String, Object> params = new HashMap<>();
@@ -930,11 +1020,22 @@ public class ConfigOptionController implements Serializable {
         if (entity == null) {
             jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL";
         } else if (entity instanceof Department) {
-            jpql += " AND o.department = :dept AND o.institution IS NULL AND o.webUser IS NULL";
-            params.put("dept", (Department) entity);
+            // Department-scoped options are never actually stored with the
+            // `department` FK set (see ConfigOptionController.saveNewOption()
+            // and every existing getXxxValueByKey department-scoped-key-first
+            // lookup) - the scope lives entirely in a
+            // "<Department name> - <key>" key prefix, with department left
+            // NULL. Filtering on the FK here always returned an empty list
+            // for the rows this page actually needs to manage (issue #23678).
+            jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL"
+                    + " AND o.optionKey LIKE :keyPrefix";
+            params.put("keyPrefix", ((Department) entity).getName() + " - %");
         } else if (entity instanceof Institution) {
-            jpql += " AND o.institution = :ins AND o.department IS NULL AND o.webUser IS NULL";
-            params.put("ins", (Institution) entity);
+            // Same key-prefix convention as the Department branch above -
+            // see that comment.
+            jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL"
+                    + " AND o.optionKey LIKE :keyPrefix";
+            params.put("keyPrefix", ((Institution) entity).getName() + " - %");
         } else if (entity instanceof WebUser) {
             jpql += " AND o.webUser = :usr AND o.department IS NULL AND o.institution IS NULL";
             params.put("usr", (WebUser) entity);
@@ -944,7 +1045,65 @@ public class ConfigOptionController implements Serializable {
 
         jpql += " ORDER BY o.optionKey";
 
-        return getFacade().findByJpql(jpql, params);
+        List<ConfigOption> results = getFacade().findByJpql(jpql, params);
+
+        // A plain "LIKE '<name> - %'" prefix match is ambiguous when one
+        // department/institution's name is itself a prefix of another's
+        // (e.g. "OPD" vs "OPD - Diagnostic Centre") - a key belonging to the
+        // longer, more specific one (e.g. "OPD - Diagnostic Centre - Enable
+        // token system...") also matches the shorter name's "LIKE" filter,
+        // since the LOCATE-first-dash trick can't tell which department's
+        // name the match is really rooted at. Resolve it by checking, for
+        // every real department/institution name, whether it is a *longer*
+        // match for this key than the one we searched for - if so, the key
+        // actually belongs to that longer name and is excluded here
+        // (issue #23678).
+        if (entity instanceof Department) {
+            results = filterOutLongerNameCollisions(results, ((Department) entity).getName(), sessionController.getLoggableDepartments(), Department::getName);
+        } else if (entity instanceof Institution) {
+            results = filterOutLongerNameCollisions(results, ((Institution) entity).getName(), sessionController.getLoggableInstitutions(), Institution::getName);
+        }
+
+        return results;
+    }
+
+    /**
+     * Removes rows from {@code candidates} whose key is actually rooted at a
+     * longer {@code allNames} entry than {@code targetName} (see the
+     * "LIKE '<name> - %'" ambiguity note in {@link #getAllOptions(Object)}).
+     * A row is kept only when no other name in {@code allNames} that is
+     * longer than {@code targetName} is itself a prefix-match root for that
+     * row's key.
+     */
+    private <E> List<ConfigOption> filterOutLongerNameCollisions(List<ConfigOption> candidates, String targetName, List<E> allNames, java.util.function.Function<E, String> nameExtractor) {
+        if (candidates.isEmpty() || allNames == null) {
+            return candidates;
+        }
+        List<String> longerNames = new ArrayList<>();
+        for (E e : allNames) {
+            String name = nameExtractor.apply(e);
+            if (name != null && name.length() > targetName.length() && name.startsWith(targetName)) {
+                longerNames.add(name);
+            }
+        }
+        if (longerNames.isEmpty()) {
+            return candidates;
+        }
+        List<ConfigOption> filtered = new ArrayList<>();
+        for (ConfigOption option : candidates) {
+            String key = option.getOptionKey();
+            boolean belongsToLongerName = false;
+            for (String longerName : longerNames) {
+                if (key != null && key.startsWith(longerName + " - ")) {
+                    belongsToLongerName = true;
+                    break;
+                }
+            }
+            if (!belongsToLongerName) {
+                filtered.add(option);
+            }
+        }
+        return filtered;
     }
 
     public List<ConfigOption> getDepartmentOptions(Department department) {
@@ -1105,12 +1264,36 @@ public class ConfigOptionController implements Serializable {
         return optionFacade;
     }
 
+    /**
+     * Value types offered by the "Add New Option" dialog (issue #23678) —
+     * the subset the issue asked for by name (BOOLEAN / SHORT_TEXT /
+     * LONG_TEXT / LONG / DOUBLE). INTEGER/ENUM/COLOR are intentionally left
+     * out here: ENUM needs an {@code enumType} the dialog has no way to
+     * collect, and INTEGER/COLOR aren't part of what this issue asked for.
+     */
+    public List<OptionValueType> getNewOptionValueTypes() {
+        return java.util.Arrays.asList(
+                OptionValueType.BOOLEAN,
+                OptionValueType.SHORT_TEXT,
+                OptionValueType.LONG_TEXT,
+                OptionValueType.LONG,
+                OptionValueType.DOUBLE);
+    }
+
     public String getKey() {
         return key;
     }
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getNewOptionKeySuffix() {
+        return newOptionKeySuffix;
+    }
+
+    public void setNewOptionKeySuffix(String newOptionKeySuffix) {
+        this.newOptionKeySuffix = newOptionKeySuffix;
     }
 
     public String getValue() {
