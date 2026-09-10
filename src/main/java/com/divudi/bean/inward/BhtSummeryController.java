@@ -2618,6 +2618,35 @@ public class BhtSummeryController implements Serializable {
 
     }
 
+    /**
+     * Guarantees the INWARD_ORIGINAL_FINAL_BILL snapshot exists before a final
+     * or provisional bill is written against it.
+     * <p>
+     * {@code settleOriginalBill()} normally creates it while navigating in
+     * ({@link #toSettle()} / {@link #createNewVersionFromBill(Bill)}), but it is
+     * gated by the full settlement {@link #errorCheck()} and returns silently
+     * when that fails — leaving {@code originalBill} null on a page the cashier
+     * can still settle from. The reproducible case is a new final bill version
+     * on a Credit admission: {@link #createNewVersionFromBill(Bill)} seeds the
+     * allocation split from the source bill, but a payment or discount recorded
+     * since then has already moved the live net due, so
+     * {@link #checkCreditAllocationTotal()} rejects the seeded split and the
+     * original bill is never written. The cashier corrects the split on screen,
+     * errorCheck() then passes on Save Final Bill — and the settle path
+     * dereferenced a null originalBill (NPE at
+     * {@code originalBill.setDiscount(...)}).
+     * <p>
+     * Creating it here instead of failing means the snapshot is written at
+     * settle time with the same values the final bill is settled on.
+     */
+    private void ensureOriginalBillSaved() {
+        if (originalBill != null) {
+            return;
+        }
+        saveOriginalBill();
+        saveOriginalBillItem();
+    }
+
     public void createTempBill() {
         // Capture the current grouped (doctor-by-doctor) professional fee order so the
         // Temporary Bill preview shows the combined doctor list with the latest adjusted
@@ -2633,6 +2662,8 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck()) {
             return;
         }
+
+        ensureOriginalBillSaved();
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
@@ -2656,6 +2687,8 @@ public class BhtSummeryController implements Serializable {
         }
 
         persistGroupedProfessionalFeeOrder();
+
+        ensureOriginalBillSaved();
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
