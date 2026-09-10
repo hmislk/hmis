@@ -449,7 +449,13 @@ public class TransferIssueForRequestsController implements Serializable {
 
     /**
      * Loads a saved PHARMACY_ISSUE_PRE bill for editing (Finalize or Approve).
+     *
+     * @deprecated No callers as of #23608 — the Finalize/Approve Issues recovery lists now
+     * route to {@code TransferIssueNativeSqlController.loadDraftNativeIssueForEditing(Bill)},
+     * which handles native-created drafts (they carry no BillItem rows). Safe to delete once
+     * confirmed no deployment still references it.
      */
+    @Deprecated
     public String loadDraftIssueForEditing(Bill draft) {
         makeNull();
         issuedBill = draft;
@@ -760,7 +766,12 @@ public class TransferIssueForRequestsController implements Serializable {
 
     /**
      * Cancels a saved/finalized PHARMACY_ISSUE_PRE draft (retires it before approval).
+     *
+     * @deprecated No callers as of #23608 — the Finalize Issues recovery list now routes its
+     * Cancel button to {@code TransferIssueNativeSqlController.cancelPendingNativeIssueDraft(Bill)}.
+     * Safe to delete once confirmed no deployment still references it.
      */
+    @Deprecated
     public void cancelPendingIssue() {
         if (!isAuthorized("CANCEL_PENDING_ISSUE", "PharmacyTransferIssueCancel")) {
             return;

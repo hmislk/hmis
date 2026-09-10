@@ -73,6 +73,14 @@ public class TransferIssueNativeSqlController implements Serializable {
     private boolean printPreview;
     private boolean draftMode;
 
+    /**
+     * Non-retired, unapproved PHARMACY_ISSUE_PRE drafts for the session department that are
+     * currently blocking a new Fast Issue. Populated by {@link #navigateToIssueRequestNative()}
+     * when the block fires, so pharmacy_transfer_request_list.xhtml can list them with a
+     * one-click cancel instead of leaving the user stuck (#23608).
+     */
+    private List<Bill> blockingPendingDrafts;
+
     // ---- Injected ----
     @Inject
     private SessionController sessionController;
@@ -177,11 +185,16 @@ public class TransferIssueNativeSqlController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey(
-                "Use Save Finalize Approve Workflow for Issue for Requests", false)
-                && hasPendingNativeIssueForDepartment()) {
-            JsfUtil.addErrorMessage("There is already a pending fast issue for this department. Please finalize or cancel it first.");
-            return null;
+                "Use Save Finalize Approve Workflow for Issue for Requests", false)) {
+            blockingPendingDrafts = loadPendingNativeIssueDraftsForDepartment();
+            if (blockingPendingDrafts != null && !blockingPendingDrafts.isEmpty()) {
+                JsfUtil.addErrorMessage("There is already a pending fast issue for this department. "
+                        + "Finalize or approve it from Disbursement → Issues → Finalize/Approve Issues, "
+                        + "or cancel it in the list shown below if it was started by mistake.");
+                return null;
+            }
         }
+        blockingPendingDrafts = null;
 
         printPreview = false;
         printDto = null;
@@ -215,18 +228,58 @@ public class TransferIssueNativeSqlController implements Serializable {
     // Save → Finalize → Approve draft workflow (native / fast issue)
     // -----------------------------------------------------------------------
 
-    private boolean hasPendingNativeIssueForDepartment() {
-        String jpql = "Select count(b) From Bill b "
-                + " where b.retired=false "
+    /**
+     * Loads the non-retired, unapproved PHARMACY_ISSUE_PRE drafts for the session department.
+     * A non-empty result blocks a new Fast Issue; the caller surfaces the list to the user so
+     * they can finalize/approve or cancel it rather than being stuck (#23608).
+     */
+    private List<Bill> loadPendingNativeIssueDraftsForDepartment() {
+        String jpql = "select b from Bill b "
+                + " where b.retired = false "
                 + " and b.billTypeAtomic = :bTp "
                 + " and b.checked = :checked "
-                + " and b.department = :dept";
+                + " and b.department = :dept "
+                + " order by b.createdAt";
         Map<String, Object> params = new HashMap<>();
         params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
         params.put("checked", false);
         params.put("dept", sessionController.getDepartment());
-        long count = billFacade.findLongByJpql(jpql, params);
-        return count > 0;
+        return billFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * Cancels (soft-retires) a single pending PHARMACY_ISSUE_PRE draft identified by row.
+     * Serves both the blocking-draft panel on pharmacy_transfer_request_list.xhtml and the
+     * Cancel button on the Finalize Issues recovery list. An already-approved (checked) draft
+     * cannot be cancelled here.
+     */
+    public void cancelPendingNativeIssueDraft(Bill draft) {
+        if (!isAuthorized("CANCEL_PENDING_NATIVE_ISSUE", "PharmacyTransferIssueCancel")) {
+            return;
+        }
+        if (draft == null || draft.getId() == null) {
+            JsfUtil.addErrorMessage("No pending fast issue selected to cancel.");
+            return;
+        }
+        Bill fresh = billFacade.find(draft.getId());
+        if (fresh == null || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("This pending fast issue was not found or is already cancelled.");
+        } else if (fresh.isChecked()) {
+            JsfUtil.addErrorMessage("This fast issue is already approved and cannot be cancelled here.");
+        } else {
+            fresh.setRetired(true);
+            fresh.setRetiredAt(new Date());
+            fresh.setRetirer(sessionController.getLoggedUser());
+            fresh.setRetireComments("Pending fast issue draft cancelled to unblock the department (#23608)");
+            billFacade.edit(fresh);
+            JsfUtil.addSuccessMessage("Pending fast issue "
+                    + (fresh.getDeptId() != null ? fresh.getDeptId() : ("#" + fresh.getId()))
+                    + " cancelled. You can start a new issue now.");
+        }
+        blockingPendingDrafts = loadPendingNativeIssueDraftsForDepartment();
+        if (blockingPendingDrafts.isEmpty()) {
+            blockingPendingDrafts = null;
+        }
     }
 
     public void saveDraftNativeIssue() {
@@ -572,6 +625,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         printDto = null;
         printPreview = false;
         draftMode = false;
+        blockingPendingDrafts = null;
     }
 
     /**
@@ -856,6 +910,10 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     public void setDraftMode(boolean draftMode) {
         this.draftMode = draftMode;
+    }
+
+    public List<Bill> getBlockingPendingDrafts() {
+        return blockingPendingDrafts;
     }
 
     /**
