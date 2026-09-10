@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -47,6 +49,8 @@ public class BhtPaymentDetailReportController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @Inject
+    private UserSettingsController userSettingsController;
 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
@@ -54,6 +58,13 @@ public class BhtPaymentDetailReportController implements Serializable {
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
+    /**
+     * Restricts the report to one transaction category: {@code "Deposit"}
+     * (INWARD_DEPOSIT rows) or {@code "Payment"} (INWARD_PAYMENT rows).
+     * {@code null} means all categories, including Post Payment and CC
+     * Settlement rows which this filter does not otherwise touch.
+     */
+    private String transactionType;
     private Institution institution;
     private Institution site;
     private Department department;
@@ -109,7 +120,8 @@ public class BhtPaymentDetailReportController implements Serializable {
                     ? enc.getPatient().getPerson().getNameWithTitle() : "";
 
             // "Make a Deposit" (INWARD_DEPOSIT) payments — one row per Payment record
-            List<Payment> deposits = fetchDepositPayments(enc);
+            List<Payment> deposits = transactionType == null || "Deposit".equals(transactionType)
+                    ? fetchDepositPayments(enc) : new ArrayList<>();
             for (Payment p : deposits) {
                 BhtPaymentDetailDTO row = new BhtPaymentDetailDTO();
                 row.setBhtNo(enc.getBhtNo());
@@ -137,7 +149,8 @@ public class BhtPaymentDetailReportController implements Serializable {
             // "Make a Payment" (INWARD_PAYMENT) payments — one row per Payment
             // record. Issue #23262: kept a separate category from deposits and
             // from post-final-bill payments.
-            List<Payment> payments = fetchPayments(enc);
+            List<Payment> payments = transactionType == null || "Payment".equals(transactionType)
+                    ? fetchPayments(enc) : new ArrayList<>();
             for (Payment p : payments) {
                 BhtPaymentDetailDTO row = new BhtPaymentDetailDTO();
                 row.setBhtNo(enc.getBhtNo());
@@ -167,7 +180,8 @@ public class BhtPaymentDetailReportController implements Serializable {
             // Issue #23263: these were never queried here, so a BHT whose only
             // recorded payment was a post-final settlement (no deposit, no CC
             // settlement) was silently absent from this report.
-            List<Payment> postPayments = fetchPostFinalPayments(enc);
+            List<Payment> postPayments = transactionType == null
+                    ? fetchPostFinalPayments(enc) : new ArrayList<>();
             for (Payment p : postPayments) {
                 BhtPaymentDetailDTO row = new BhtPaymentDetailDTO();
                 row.setBhtNo(enc.getBhtNo());
@@ -195,7 +209,8 @@ public class BhtPaymentDetailReportController implements Serializable {
             }
 
             // CC settlement items — one row per BillItem
-            List<BillItem> ccItems = fetchCreditSettlementItems(enc);
+            List<BillItem> ccItems = transactionType == null
+                    ? fetchCreditSettlementItems(enc) : new ArrayList<>();
             for (BillItem bi : ccItems) {
                 String companyName = "";
                 if (bi.getReferenceBill() != null && bi.getReferenceBill().getCreditCompany() != null) {
@@ -427,6 +442,7 @@ public class BhtPaymentDetailReportController implements Serializable {
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
         paymentMethod = null;
+        transactionType = null;
         institution = null;
         site = null;
         department = null;
@@ -441,6 +457,11 @@ public class BhtPaymentDetailReportController implements Serializable {
         usedPaymentMethods = new ArrayList<>();
         postPaymentTotalByMethod = new LinkedHashMap<>();
         usedPostPaymentMethods = new ArrayList<>();
+
+        // Every Configure Columns checkbox must show checked whenever the
+        // user navigates in fresh, regardless of any previously saved
+        // per-user preference from an earlier visit.
+        userSettingsController.resetInwardBhtPaymentSummaryColumnsVisible();
     }
 
     private static Date startOfCurrentMonth() {
@@ -472,6 +493,9 @@ public class BhtPaymentDetailReportController implements Serializable {
 
     public PaymentMethod getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public String getTransactionType() { return transactionType; }
+    public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
 
     public Institution getInstitution() { return institution; }
     public void setInstitution(Institution institution) { this.institution = institution; }

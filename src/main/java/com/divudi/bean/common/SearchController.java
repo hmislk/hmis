@@ -11756,7 +11756,10 @@ public class SearchController implements Serializable {
             billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
 
             bundle = createBundleForOpdProfessionalPayments(billTypesAtomics);
-            bundle.calculateTotalByBills();
+            // Populates total (net), grossTotal and tax - the three money columns
+            // this report renders. calculateTotalByBills() sets only total, which
+            // left the Gross and WHT totals blank on screen and in the exports.
+            bundle.calculateTotalNetTotalTaxByBills();
             bundle.setName("OPD Professional Payments Report");
             bundle.setBundleType("opdProfessionalPayments");
         }, ProfessionalPaymentReport.OPD_PROFESSIONAL_PAYMENTS_REPORT, sessionController.getLoggedUser());
