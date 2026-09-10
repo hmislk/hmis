@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-111 sections. **The workflow is §0-§8; everything from §9 on is an independent
+121 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -137,6 +137,15 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [107. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
 - [109. A `p:confirm` dialog is `position: fixed`, so an `offsetParent` visibility probe wrongly reports it hidden — the click did work](#109-a-pconfirm-dialog-is-position-fixed-so-an-offsetparent-visibility-probe-wrongly-reports-it-hidden--the-click-did-work)
 - [110. A print receipt rendering completely blank can mean the department's paper-type preference isn't one the page checks — not a broken query](#110-a-print-receipt-rendering-completely-blank-can-mean-the-departments-paper-type-preference-isnt-one-the-page-checks--not-a-broken-query)
+- [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
+- [112. Relaxing a "required" validation? Audit every downstream reader of that field for null-safety](#112-relaxing-a-required-validation-audit-every-downstream-reader-of-that-field-for-null-safety)
+- [113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`](#113-ptag-silently-drops-title--a-tooltip-on-a-tag-needs-ptooltip)
+- [114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
+- [115. Element screenshots land on the wrong region — crop the viewport shot instead](#115-element-screenshots-land-on-the-wrong-region--crop-the-viewport-shot-instead)
+- [116. `p:datePicker` with a mask silently truncates `pressSequentially`](#116-pdatepicker-with-a-mask-silently-truncates-presssequentially)
+- [117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy](#117-ptabview-renders-every-tabs-markup--a-text-matched-browser_evaluate-click-hits-a-hidden-tabs-copy)
+- [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
+- [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3218,6 +3227,70 @@ field — `.before(`, `.after(`, `.format(`, `.getTime()`, arithmetic — and
 guard or apply the same fallback the new code uses (here: treat a missing
 end as the start instant).
 
+## 113. `p:tag` silently drops `title` — a tooltip on a tag needs `p:tooltip`
+
+`inward_patient_room_details.xhtml` carried a room-conflict explanation as
+
+```xhtml
+<p:tag value="Overlap" severity="danger" title="#{bean.overlapDescription(rm)}"/>
+```
+
+and the text had **never once reached a user**: `p:tag` has no `title`
+passthrough, so the rendered markup is just
+
+```html
+<span class="ui-tag ui-widget ui-tag-danger">…Overlap</span>
+```
+
+with no `title` attribute at all. There is no warning at build or render time
+— the page looks right, the EL is even evaluated, and the string is thrown
+away. Found on #23641 only because the E2E check read the attribute back:
+
+```js
+() => { const t = [...document.querySelectorAll('.ui-tag')]
+          .find(e => e.textContent.trim() === 'Overlap');
+        return t && t.getAttribute('title'); }   // → null
+```
+
+Use the component the codebase already uses elsewhere
+(`admin/lims/investigation_format_multiple.xhtml`):
+
+```xhtml
+<p:tag id="roomOverlapTag" value="Overlap" severity="danger"/>
+<p:tooltip for="roomOverlapTag" position="top" showDelay="150"
+           value="#{bean.overlapDescription(rm)}"/>
+```
+
+Inside a `p:dataTable` the plain `for="roomOverlapTag"` resolves per row —
+no need to build the full row client id.
+
+**Testing rule:** a `title` tooltip is invisible to a screenshot, so
+"the page rendered" is not evidence it works. Assert the attribute (or the
+`.ui-tooltip` text after a `browser_hover`) explicitly. The same blind spot
+applies to any attribute a component may not support — verify the *rendered
+DOM*, not the source.
+
+## 114. To make a SQL-inserted `ConfigOption` visible without a redeploy, click **Reload Config** on the Application Options page
+
+Verifying a *new* toggle (one the code reads via `getBooleanValueByKeyReadOnly`,
+which by design never creates the row) has a chicken-and-egg problem: the
+Application Options admin page (*Administration → Manage Institutions →
+Application Options*) only lets you Edit/Delete rows that already exist, so a
+key with no row can't be set there. `INSERT` the row directly
+(`OPTIONKEY`, `OPTIONVALUE`, `RETIRED=0`, `SCOPE='APPLICATION'`,
+`VALUETYPE='BOOLEAN'`) — but per §26/§48 that write is invisible to the
+running app because `ConfigOptionApplicationController` caches the whole table
+at load. Instead of restarting the domain (§97), click the **Reload Config**
+button on that same Application Options page: it re-runs `loadApplicationOptions()`
+and the new value takes effect immediately. Used on #23651 to flip
+`Inward Final Bill - Bundle Grouped Charge Types` between runs.
+
+Note the department-scoped-key-first resolution (`feedback_config_option_scope_resolution`):
+`getBooleanValueByKeyReadOnly("X", …)` with a department selected looks up
+`"<Dept> - X"` before the plain `"X"`, so an admin who saved the toggle from a
+department context produces a `"Inward - X"` row, not `"X"`. Insert whichever
+one matches how it will really be set (the plain global key is usually right).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -3245,3 +3318,155 @@ end as the start instant).
 - [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
 - [ ] For any admission flow: confirmed the local DB actually has a vacant room (`completeRoom` returns suggestions); if not, freed some by SQL (§111) before concluding the Room autocomplete is broken.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
+## 114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`
+
+The main menu's nested submenus (e.g. *Inpatient → Services & Items → Add Timed
+Services*) are `autoDisplay="false"`, so they open on **click**, not hover —
+`browser_hover` leaves the parent `ui-menuitem-active` but the child list stays
+`display: none`. Worse, each Playwright tool call is a fresh round trip, and the
+flyout collapses in between: opening the top level in one call and reaching for
+the leaf in the next always fails with *"element is not visible"*, and clicking
+the parent again just toggles it shut.
+
+Driving it click-by-click is not worth the fight. Invoke the leaf item's own
+handler in a single call:
+
+```js
+browser_evaluate(() => {
+  Array.from(document.querySelectorAll('.ui-menubar a'))
+    .find(a => a.textContent.trim() === 'Add Timed Services')
+    .click();
+});
+```
+
+This is **not** the same as URL navigation and does not violate §2: the anchor's
+`onclick` is `PrimeFaces.addSubmitParam(...).submit('menuForm')`, so the menu
+form posts exactly as it would for a user and the `@SessionScoped` navigation
+method runs normally. You are reproducing the click, not skipping it. Still
+record the human menu path in the issue/PR.
+
+Related: menubar items are icon-only with no accessible name, so
+`browser_snapshot` shows a wall of anonymous `menuitem` nodes. To map them,
+read the submenu text rather than guessing:
+
+```js
+browser_evaluate(() => Array.from(document.querySelectorAll('.ui-menubar > .ui-menu-list > li'))
+  .map((li, i) => i + ': ' + Array.from(li.querySelectorAll('.ui-menu-child a'))
+    .slice(0, 4).map(a => a.textContent.trim()).join(' / ')).join('\n'));
+```
+
+## 115. Element screenshots land on the wrong region — crop the viewport shot instead
+
+`browser_take_screenshot` with an `element`/`target` repeatedly captured the
+wrong band of the page on inward billing screens (blank, or the footer instead
+of the table). The pages have a sticky header and the browser runs at a device
+pixel ratio > 1, and the element-clip path does not agree with the rendered
+offsets.
+
+What works reliably: size the viewport wide enough for the whole table, scroll
+the target into view, take a plain **viewport** screenshot, then crop it:
+
+```python
+from PIL import Image
+im = Image.open('tmp/<issue>/_full.png')
+im.crop((0, top, im.size[0], bottom)).save('tmp/<issue>/<name>.png')
+```
+
+Cropping is also how you strip patient identifiers before anything reaches the
+wiki — a full-page inward screenshot carries name, DOB, phone, NIC and
+consultant in the Patient Details panel, none of which may be published.
+
+## 116. `p:datePicker` with a mask silently truncates `pressSequentially`
+
+Typing `10 Sep 2026 04:00:00` into a masked `p:datePicker` character by
+character produced `'10 Sep 2026 04:'` and a JSF conversion error
+(*"could not be understood as a date and time"*) — the mask consumed part of
+the input mid-type. Setting the value in one assignment works, because JSF reads
+the submitted string on the full form post:
+
+```js
+browser_evaluate(() => { document.getElementById('form:dateStamp_input').value = '10 Sep 2026 04:00:00'; });
+```
+
+Do **not** follow it with a synthetic `change` event — on these pickers that
+re-runs the mask and blanks the field again. §18's calendar-grid technique
+remains the option when the widget's own parsing needs to run.
+
+## 117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy
+
+`inward_bill_intrim.xhtml` has a "View Bill" `p:commandButton` in **six**
+different tabs (Room Charges, Professional Fees, Deposits & Payments, …). A
+`p:tabView` keeps all inactive panels in the DOM (just `display:none`), so
+`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'View Bill')`
+returns the **first in document order** — a hidden tab's button — and clicking it
+fires that tab's action (it navigated to `inward_reprint_bill_service.xhtml` for
+a bill that did not exist, "No records found").
+
+Scope the query to the active panel by its server id before matching text:
+
+```js
+browser_evaluate(() => {
+  const panel = document.querySelector('[id="pageForm:tvPt:tabP"]');   // the Deposits & Payments panel
+  const row = [...panel.querySelectorAll('tr')].find(r => /050558/.test(r.textContent)); // the exact bill row
+  row.querySelector('button').click();
+});
+```
+
+Matching on a stable substring of the row (bill number) also guards against
+clicking the wrong row once the table has several entries.
+
+## 118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock
+
+A fix that moves work off the request thread (`@Asynchronous` EJB method) has
+no visible signature in the UI — the page returns quickly either way, and "the
+click felt fast" is not evidence. The proof is in `server.log`: every entry
+carries `_ThreadName`, and container-managed async work runs on an EJB pool
+thread rather than the HTTP listener.
+
+```
+[SEVERE] [com.divudi.ejb.EmailManagerEjb] [tid: _ThreadID=126 _ThreadName=__ejb-thread-pool9]
+  Email Gateway URL is not configured.
+```
+
+`__ejb-thread-pool9` confirms the dispatch really was asynchronous. A
+synchronous call would show `http-thread-pool::http-listener-1(N)` instead.
+Grep for the logging class and read the thread name:
+
+```bash
+grep -a "YourEjbClassName" /d/Payara/glassfish/domains/domain1/logs/server.log | tail -5
+```
+
+The same trick distinguishes a `@Schedule` timer (`__ejb-thread-pool`) from a
+user-triggered action, and catches the classic mistake where `@Asynchronous` is
+silently ignored because the method was invoked on `this` from inside the same
+bean (see the comment in `DatabaseMigrationService.java:80`) — self-invocation
+keeps running on the request thread, and the thread name is the only place that
+shows up.
+
+## 119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery
+
+`EmailManagerEjb` logs `SEVERE: Email Gateway URL is not configured.` and
+`SmsManagerEjb.sendSms()` returns `false` when none of the five
+`SMS Sent Using …` config booleans is set. Neither is a defect locally; both
+are simply unconfigured. So **no email or SMS feature can be verified
+end-to-end on a local deployment** — the send will always fail.
+
+Write the assertion against the persisted row instead, which is what the
+feature actually controls:
+
+```sql
+SELECT receipientemail, messagesubject, messagetype, sentsuccessfully, pending
+FROM appemail WHERE messagetype = '<YourMessageType>';
+```
+
+A correct implementation still produces the row, with the right recipient,
+subject, body and foreign keys, and records the gateway's real verdict
+(`sentsuccessfully=0`, `pending=1`) plus a log line. That distinguishes the
+three cases a green screen cannot: *never attempted* (no row — the bug), *
+attempted and refused by the gateway* (row + WARNING — correct behaviour
+locally), and *delivered* (row with `sentsuccessfully=1` — only reachable on a
+deployment with a configured gateway).
+
+Companion to §41 (an empty `TRIGGERSUBSCRIPTION` table silently produces zero
+notifications): check the subscription rows exist *and* the recipient has an
+address on file before concluding anything from a quiet run.

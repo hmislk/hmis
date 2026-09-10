@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -507,6 +508,41 @@ public class EmailManagerEjb {
 
     public EmailFacade getEmailFacade() {
         return emailFacade;
+    }
+
+    /**
+     * Dispatches a persisted {@link AppEmail} row asynchronously and updates
+     * its sending status. Must never throw: this runs on a container-managed
+     * async thread, so an escaping exception would be invisible to the caller.
+     */
+    @Asynchronous
+    public void sendAppEmailAsync(AppEmail email) {
+        try {
+            if (email == null || email.getReceipientEmail() == null || email.getReceipientEmail().trim().isEmpty()) {
+                return;
+            }
+            boolean success = sendEmail(
+                    Collections.singletonList(email.getReceipientEmail()),
+                    email.getMessageBody(),
+                    email.getMessageSubject(),
+                    true
+            );
+            if (success) {
+                email.setSentSuccessfully(true);
+                email.setPending(false);
+                email.setSentAt(new Date());
+            } else {
+                email.setSentSuccessfully(false);
+                email.setPending(true);
+                Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.WARNING,
+                        "Failed to send AppEmail to {0} with subject \"{1}\"",
+                        new Object[]{email.getReceipientEmail(), email.getMessageSubject()});
+            }
+            emailFacade.edit(email);
+        } catch (Exception e) {
+            Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.WARNING,
+                    "Unexpected error while sending AppEmail: " + e.getMessage(), e);
+        }
     }
 
 }

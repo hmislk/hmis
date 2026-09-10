@@ -441,6 +441,21 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton
+                                value="Print (Dot-Matrix)"
+                                ajax="false"
+                                icon="fa fa-print"
+                                class="ui-button-info"
+                                action="#"  >
+                                <p:printer target="gpBillPreviewDmx" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print (Raw Text)"
+                                ajax="false"
+                                icon="fa fa-file-lines"
+                                class="ui-button-help"
+                                action="#{inwardDepositController.streamCurrentDepositReceiptAsRawText}" >
+                            </p:commandButton>
+                            <p:commandButton
                                 rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                 value="Settings"
                                 icon="fas fa-cog"
@@ -488,6 +503,13 @@
                             </div>
 
                         </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewDmx">
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}">
+                                <div class="d-flex justify-content-center">
+                                    <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardDepositController.current}" heading="Deposit Receipt" />
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
                     </div>
                 </p:panel>
             </h:form>
@@ -522,6 +544,10 @@
                         <div class="mb-3">
                             <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
                             <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="inwardPaymentDotMatrix" value="#{pharmacyConfigController.inwardPaymentDotMatrixPaper}"/>
+                            <h:outputLabel for="inwardPaymentDotMatrix" value="Dot-Matrix Paper (LQ-310)" class="ms-2"/>
                         </div>
                     </div>
                 </div>

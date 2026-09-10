@@ -407,6 +407,9 @@ public class InwardTimedItemController implements Serializable {
         if (patientItem != null && isLockedForChanges(patientItem.getPatientEncounter())) {
             return;
         }
+        if (isCheckedAndLocked(patientItem)) {
+            return;
+        }
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
             patientItem.setRetiredAt(new Date());
@@ -424,8 +427,12 @@ public class InwardTimedItemController implements Serializable {
      * Retires the BillItem and Bill behind a removed timed service. Without
      * this the charge would survive the removal, since the inward totals are
      * summed from the BillItem side.
+     * <p>
+     * Public because the Interim Bill's own Remove button removes timed
+     * services through {@code SurgeryBillController#removeTimeService}, which
+     * has to retire the same bill rather than duplicate this.
      */
-    private void retireTimedServiceBill(PatientItem patientItem) {
+    public void retireTimedServiceBill(PatientItem patientItem) {
         BillItem bi = patientItem.getBillItem();
         if (bi == null || bi.isFromPackage()) {
             return;
@@ -685,6 +692,29 @@ public class InwardTimedItemController implements Serializable {
     }
 
     /**
+     * A timed service whose bill a cashier has already checked is frozen —
+     * times cannot be edited and the service cannot be removed. Checking is a
+     * verification that the charge is correct, so letting the charge change
+     * afterwards would make the check meaningless. Reopening one is a
+     * deliberate, privileged act: uncheck the bill (needs
+     * {@code InwardUnCheck}) and the row is editable again.
+     * <p>
+     * Only ward timed services carry a bill of their own (see
+     * {@link #createBillForTimedService}); a surgery-added or pre-redesign
+     * service has none and is not locked by this.
+     */
+    public boolean isCheckedAndLocked(PatientItem pi) {
+        if (pi == null || pi.getBill() == null) {
+            return false;
+        }
+        if (pi.getBill().getCheckedBy() == null) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("This timed service's bill has been checked. Uncheck it before changing the times.");
+        return true;
+    }
+
+    /**
      * Department the service was physically delivered in. Defaults to the
      * service item's own department and can be overridden by the user before
      * adding, since the same service may be given in a different ward or unit.
@@ -871,6 +901,9 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
         if (pic != null && isLockedForChanges(pic.getPatientEncounter())) {
+            return;
+        }
+        if (isCheckedAndLocked(pic)) {
             return;
         }
         PatientItem temPi;
