@@ -143,8 +143,9 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [114. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
 - [115. Element screenshots land on the wrong region — crop the viewport shot instead](#115-element-screenshots-land-on-the-wrong-region--crop-the-viewport-shot-instead)
 - [116. `p:datePicker` with a mask silently truncates `pressSequentially`](#116-pdatepicker-with-a-mask-silently-truncates-presssequentially)
-- [117. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#117-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
-- [118. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#118-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
+- [117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy](#117-ptabview-renders-every-tabs-markup--a-text-matched-browser_evaluate-click-hits-a-hidden-tabs-copy)
+- [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
+- [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3391,7 +3392,30 @@ Do **not** follow it with a synthetic `change` event — on these pickers that
 re-runs the mask and blanks the field again. §18's calendar-grid technique
 remains the option when the widget's own parsing needs to run.
 
-## 117. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock
+## 117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy
+
+`inward_bill_intrim.xhtml` has a "View Bill" `p:commandButton` in **six**
+different tabs (Room Charges, Professional Fees, Deposits & Payments, …). A
+`p:tabView` keeps all inactive panels in the DOM (just `display:none`), so
+`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'View Bill')`
+returns the **first in document order** — a hidden tab's button — and clicking it
+fires that tab's action (it navigated to `inward_reprint_bill_service.xhtml` for
+a bill that did not exist, "No records found").
+
+Scope the query to the active panel by its server id before matching text:
+
+```js
+browser_evaluate(() => {
+  const panel = document.querySelector('[id="pageForm:tvPt:tabP"]');   // the Deposits & Payments panel
+  const row = [...panel.querySelectorAll('tr')].find(r => /050558/.test(r.textContent)); // the exact bill row
+  row.querySelector('button').click();
+});
+```
+
+Matching on a stable substring of the row (bill number) also guards against
+clicking the wrong row once the table has several entries.
+
+## 118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock
 
 A fix that moves work off the request thread (`@Asynchronous` EJB method) has
 no visible signature in the UI — the page returns quickly either way, and "the
@@ -3419,7 +3443,7 @@ bean (see the comment in `DatabaseMigrationService.java:80`) — self-invocation
 keeps running on the request thread, and the thread name is the only place that
 shows up.
 
-## 118. The local dev box has no email or SMS gateway — verify the queued row, not the delivery
+## 119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery
 
 `EmailManagerEjb` logs `SEVERE: Email Gateway URL is not configured.` and
 `SmsManagerEjb.sendSms()` returns `false` when none of the five
