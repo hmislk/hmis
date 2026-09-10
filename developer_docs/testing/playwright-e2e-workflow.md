@@ -3267,6 +3267,27 @@ no need to build the full row client id.
 applies to any attribute a component may not support — verify the *rendered
 DOM*, not the source.
 
+## 114. To make a SQL-inserted `ConfigOption` visible without a redeploy, click **Reload Config** on the Application Options page
+
+Verifying a *new* toggle (one the code reads via `getBooleanValueByKeyReadOnly`,
+which by design never creates the row) has a chicken-and-egg problem: the
+Application Options admin page (*Administration → Manage Institutions →
+Application Options*) only lets you Edit/Delete rows that already exist, so a
+key with no row can't be set there. `INSERT` the row directly
+(`OPTIONKEY`, `OPTIONVALUE`, `RETIRED=0`, `SCOPE='APPLICATION'`,
+`VALUETYPE='BOOLEAN'`) — but per §26/§48 that write is invisible to the
+running app because `ConfigOptionApplicationController` caches the whole table
+at load. Instead of restarting the domain (§97), click the **Reload Config**
+button on that same Application Options page: it re-runs `loadApplicationOptions()`
+and the new value takes effect immediately. Used on #23651 to flip
+`Inward Final Bill - Bundle Grouped Charge Types` between runs.
+
+Note the department-scoped-key-first resolution (`feedback_config_option_scope_resolution`):
+`getBooleanValueByKeyReadOnly("X", …)` with a department selected looks up
+`"<Dept> - X"` before the plain `"X"`, so an admin who saved the toggle from a
+department context produces a `"Inward - X"` row, not `"X"`. Insert whichever
+one matches how it will really be set (the plain global key is usually right).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
