@@ -3182,6 +3182,20 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("inward_bht_payment_detail", settings);
     }
 
+    /**
+     * Explicitly marks every inward_bht_payment_detail column checkbox true.
+     * Called on navigating into the report so every "Configure Columns"
+     * checkbox is always checked on entry, regardless of what the user
+     * unchecked on a previous visit.
+     */
+    public void resetInwardBhtPaymentDetailColumnsVisible() {
+        ColumnVisibilitySettings settings = new ColumnVisibilitySettings();
+        for (String key : INWARD_BHT_PAYMENT_DETAIL_COLUMN_KEYS) {
+            settings.setColumnVisible(key, true);
+        }
+        saveColumnVisibility("inward_bht_payment_detail", settings);
+    }
+
     public boolean isInwardBhtPaymentDetailBhtNoVisible() {
         return isColumnVisible("inward_bht_payment_detail", "bhtNo");
     }
@@ -3424,6 +3438,20 @@ public class UserSettingsController implements Serializable {
             }
         }
         settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_payment_summary", settings);
+    }
+
+    /**
+     * Explicitly marks every inward_bht_payment_summary column checkbox true.
+     * Called on navigating into the report so every "Configure Columns"
+     * checkbox is always checked on entry, regardless of what the user
+     * unchecked on a previous visit.
+     */
+    public void resetInwardBhtPaymentSummaryColumnsVisible() {
+        ColumnVisibilitySettings settings = new ColumnVisibilitySettings();
+        for (String key : INWARD_BHT_PAYMENT_SUMMARY_COLUMN_KEYS) {
+            settings.setColumnVisible(key, true);
+        }
         saveColumnVisibility("inward_bht_payment_summary", settings);
     }
 

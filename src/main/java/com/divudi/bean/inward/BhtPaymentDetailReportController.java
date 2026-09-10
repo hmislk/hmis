@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -47,6 +49,8 @@ public class BhtPaymentDetailReportController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @Inject
+    private UserSettingsController userSettingsController;
 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
@@ -441,6 +445,11 @@ public class BhtPaymentDetailReportController implements Serializable {
         usedPaymentMethods = new ArrayList<>();
         postPaymentTotalByMethod = new LinkedHashMap<>();
         usedPostPaymentMethods = new ArrayList<>();
+
+        // Every Configure Columns checkbox must show checked whenever the
+        // user navigates in fresh, regardless of any previously saved
+        // per-user preference from an earlier visit.
+        userSettingsController.resetInwardBhtPaymentSummaryColumnsVisible();
     }
 
     private static Date startOfCurrentMonth() {
