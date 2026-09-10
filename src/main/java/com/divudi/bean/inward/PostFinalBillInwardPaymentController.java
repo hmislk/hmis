@@ -999,7 +999,11 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return true;
         }
 
-        double remaining = getRemainingRefundableAmount(getOriginalBillToRefund());
+        // Read fresh from the DB, not remainingRefundableAmountCache: this
+        // guard runs at click time, and on a @SessionScoped bean the cache
+        // can hold a balance from before another cashier refunded the same
+        // bill. A stale value here would let this refund exceed what is left.
+        double remaining = calculateFreshRemainingRefundableAmount(getOriginalBillToRefund());
 
         if (Math.abs(remaining) < getRefundCurrent().getTotal()) {
             double different = Math.abs(Math.abs(remaining) - Math.abs(getRefundCurrent().getTotal()));
