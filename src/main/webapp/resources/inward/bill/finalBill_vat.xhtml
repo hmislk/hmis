@@ -455,13 +455,16 @@
                         <div class="d-flex  px-1 mt-4 mb-4" style="">
                             <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.code}">
                             </h:outputLabel>
-                            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                             <p:spacer height="1" width="160" ></p:spacer>
                             <h:outputLabel value="Cashier :" >
                             </h:outputLabel>
                             <p:spacer height="1" width="160" ></p:spacer>
                             <h:outputLabel value="Patient/Guardian" >
                             </h:outputLabel>
+                        </div>
+
+                        <div class="px-1 mb-4">
+                            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         </div>
 
                     </div>

@@ -591,7 +591,6 @@
                             <div class="d-grid justify-content-center">
                                 <h:outputLabel value="-----------------------------" />
                                 <h:outputLabel value="Prepared by : #{cc.attrs.bill.creater.name}"  class="w-100 d-flex justify-content-center"/>
-                                <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                             </div>
                         </div>
                         <div class="col-4">
@@ -599,6 +598,12 @@
                                 <h:outputLabel value="-----------------------------" />
                                 <h:outputLabel value="Cashier"  class="w-100 d-flex justify-content-center"/>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         </div>
                     </div>
 
