@@ -1137,6 +1137,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             os.flush();
         } catch (java.io.IOException e) {
             JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            context.responseComplete();
             return;
         }
         context.responseComplete();
