@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -89,9 +90,9 @@ public final class InwardReceiptTextRenderer {
         String bht = pe != null ? safe(pe.getBhtNo()) : "";
 
         DecimalFormat money = new DecimalFormat("#,##0.00");
-        SimpleDateFormat dfDate = new SimpleDateFormat("dd/MMM/yyyy");
+        SimpleDateFormat dfDate = new SimpleDateFormat("dd/MMM/yyyy", Locale.ENGLISH);
         dfDate.setTimeZone(COLOMBO);
-        SimpleDateFormat dfTime = new SimpleDateFormat("hh:mm a");
+        SimpleDateFormat dfTime = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
         dfTime.setTimeZone(COLOMBO);
         Date created = bill.getCreatedAt();
 
@@ -103,7 +104,7 @@ public final class InwardReceiptTextRenderer {
         field(sb, "BHT No", bht);
         field(sb, "Bill No", safe(bill.getDeptId()));
         field(sb, "Bill Date", created == null ? "" : dfDate.format(created));
-        field(sb, "Bill Time", created == null ? "" : dfTime.format(created));
+        field(sb, "Bill Time", created == null ? "" : dfTime.format(created).toLowerCase(Locale.ROOT));
         field(sb, "Payment", bill.getPaymentMethod() == null ? ""
                 : bill.getPaymentMethod().toString());
 
