@@ -191,6 +191,12 @@ public class ConfigOptionApplicationController implements Serializable {
         // reservedFrom when reservedTo is null). Consumed by AppointmentController.navigatePatientAdmit().
         getLongValueByKey("Inward - Reservation Admission Early Window (Hours)", 24L);
         getLongValueByKey("Inward - Reservation Admission Grace Period (Hours)", 24L);
+        // Settlement gate: unchecked inward service / professional / pharmacy /
+        // store / payment bills block the final bill. Seeded here so an admin
+        // can find and toggle it without first having to settle a bill.
+        // Replaces "Need to check inward bills before discharge", which was read
+        // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
+        getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {
