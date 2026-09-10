@@ -757,9 +757,10 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
                                                 <h:panelGroup id="originalCustom4BillPriview">
-                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -780,9 +781,10 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
                                                 <h:panelGroup id="duplicateCustom4BillPriview">
-                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
