@@ -80,8 +80,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     PatientDepositService patientDepositService;
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    private com.divudi.service.BillService billService;
     // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
@@ -1115,8 +1117,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
 
+        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
+                getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
+                        ? billService.fetchBillPayments(getCurrent()) : null;
         String text = InwardReceiptTextRenderer.render(getCurrent(), "Payment Receipt",
-                false, preprinted, topMargin, emitEscP);
+                false, preprinted, topMargin, emitEscP, multiplePayments);
 
         String fileName = "inward-payment-"
                 + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())

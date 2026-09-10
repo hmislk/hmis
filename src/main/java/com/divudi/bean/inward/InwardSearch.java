@@ -109,6 +109,8 @@ public class InwardSearch implements Serializable {
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
     private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
+    @EJB
+    private com.divudi.service.BillService billService;
 
     /**
      * JSF Controllers
@@ -3436,8 +3438,11 @@ public class InwardSearch implements Serializable {
             }
         }
 
+        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
+                getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
+                        ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP);
+                true, preprinted, topMargin, emitEscP, multiplePayments);
 
         String fileName = "inward-reprint-"
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())

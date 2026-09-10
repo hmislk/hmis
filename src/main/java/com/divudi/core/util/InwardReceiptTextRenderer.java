@@ -3,9 +3,12 @@ package com.divudi.core.util;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Payment;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Renders an inward deposit / payment receipt as fixed-width plain text for
@@ -18,12 +21,20 @@ public final class InwardReceiptTextRenderer {
 
     public static final int WIDTH = 40;
     private static final int LABEL_WIDTH = 15; // "Admission Type " then ':'
+    private static final TimeZone COLOMBO = TimeZone.getTimeZone("Asia/Colombo");
 
     private InwardReceiptTextRenderer() {
     }
 
+    /**
+     * @param multiplePayments the bill's individual tender rows (from
+     * {@code BillService.fetchBillPayments(bill)}), rendered as a breakdown
+     * when {@code bill.getPaymentMethod()} is {@code MultiplePaymentMethods}.
+     * May be {@code null} or empty — the breakdown is then simply omitted.
+     */
     public static String render(Bill bill, String heading, boolean duplicate,
-            boolean preprintedStationery, int topMarginLines, boolean emitEscP) {
+            boolean preprintedStationery, int topMarginLines, boolean emitEscP,
+            List<Payment> multiplePayments) {
         StringBuilder sb = new StringBuilder(1024);
 
         if (emitEscP) {
@@ -79,7 +90,9 @@ public final class InwardReceiptTextRenderer {
 
         DecimalFormat money = new DecimalFormat("#,##0.00");
         SimpleDateFormat dfDate = new SimpleDateFormat("dd/MMM/yyyy");
+        dfDate.setTimeZone(COLOMBO);
         SimpleDateFormat dfTime = new SimpleDateFormat("hh:mm a");
+        dfTime.setTimeZone(COLOMBO);
         Date created = bill.getCreatedAt();
 
         field(sb, "Admission Type", admissionType);
@@ -93,6 +106,24 @@ public final class InwardReceiptTextRenderer {
         field(sb, "Bill Time", created == null ? "" : dfTime.format(created));
         field(sb, "Payment", bill.getPaymentMethod() == null ? ""
                 : bill.getPaymentMethod().toString());
+
+        if (bill.getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
+                && multiplePayments != null && !multiplePayments.isEmpty()) {
+            rule(sb, '-');
+            for (Payment p : multiplePayments) {
+                String label = p.getPaymentMethod() == null ? "" : p.getPaymentMethod().toString();
+                if (p.getPaymentMethod() == com.divudi.core.data.PaymentMethod.Card
+                        && notBlank(p.getCreditCardRefNo())) {
+                    label = label + " (" + p.getCreditCardRefNo().trim() + ")";
+                }
+                String value = money.format(p.getPaidValue());
+                int payPad = WIDTH - label.length() - value.length();
+                if (payPad < 1) {
+                    payPad = 1;
+                }
+                sb.append(label).append(spaces(payPad)).append(value).append('\n');
+            }
+        }
 
         rule(sb, '=');
         String amt = money.format(bill.getTotal());
