@@ -36,17 +36,22 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.InwardReceiptTextRenderer;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller for the inpatient "Make a Deposit" workflow.
@@ -1092,6 +1097,49 @@ public class InwardDepositController implements Serializable, ControllerWithMult
 
     public void setCurrent(BilledBill current) {
         this.current = current;
+    }
+
+    /**
+     * Streams the current deposit receipt as a raw byte file (.prn) for
+     * dot-matrix printing that bypasses the browser rasteriser. A watched-folder
+     * agent on the cashier PC raw-copies the file to the LQ-310. See
+     * developer_docs/printing/raw-text-print-agent.ps1 and the wiki page
+     * "Dot-Matrix-Printing-for-Inward-Deposit-and-Payment-Receipts".
+     */
+    public void streamCurrentDepositReceiptAsRawText() {
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("No saved deposit to print.");
+            return;
+        }
+        com.divudi.core.entity.Department dept = sessionController.getDepartment();
+        boolean preprinted = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
+        int topMargin = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L).intValue();
+        boolean emitEscP = configOptionApplicationController
+                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+
+        String text = InwardReceiptTextRenderer.render(getCurrent(), "Deposit Receipt",
+                false, preprinted, topMargin, emitEscP);
+
+        String fileName = "inward-deposit-"
+                + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())
+                        : getCurrent().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
+                + ".prn";
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        try (OutputStream os = response.getOutputStream()) {
+            // ISO-8859-1 so ESC/P control bytes (0x1B, 0x0C) pass through unchanged.
+            os.write(text.getBytes(Charset.forName("ISO-8859-1")));
+            os.flush();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            return;
+        }
+        context.responseComplete();
     }
 
     public BillNumberGenerator getBillNumberBean() {
