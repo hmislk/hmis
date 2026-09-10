@@ -48,9 +48,21 @@ public class RawPrinterHelper {
                     Marshal.Copy(bytes, 0, pUnmanagedBytes, bytes.Length);
                     bSuccess = WritePrinter(hPrinter, pUnmanagedBytes, bytes.Length, out dwWritten);
                     Marshal.FreeCoTaskMem(pUnmanagedBytes);
-                    EndPagePrinter(hPrinter);
+                    if (!bSuccess) {
+                        error = "WritePrinter failed: " + Marshal.GetLastWin32Error();
+                    } else if (dwWritten != bytes.Length) {
+                        bSuccess = false;
+                        error = "WritePrinter wrote " + dwWritten + " of " + bytes.Length + " bytes";
+                    }
+                    if (!EndPagePrinter(hPrinter) && bSuccess) {
+                        bSuccess = false;
+                        error = "EndPagePrinter failed: " + Marshal.GetLastWin32Error();
+                    }
                 } else { error = "StartPagePrinter failed: " + Marshal.GetLastWin32Error(); }
-                EndDocPrinter(hPrinter);
+                if (!EndDocPrinter(hPrinter) && bSuccess) {
+                    bSuccess = false;
+                    error = "EndDocPrinter failed: " + Marshal.GetLastWin32Error();
+                }
             } else { error = "StartDocPrinter failed: " + Marshal.GetLastWin32Error(); }
             ClosePrinter(hPrinter);
         } else { error = "OpenPrinter failed: " + Marshal.GetLastWin32Error(); }

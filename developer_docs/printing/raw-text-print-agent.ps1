@@ -33,10 +33,28 @@ $PollSeconds = 2                      # how often to check the folder
 if (Test-Path $ConfigPath) {
     try {
         $cfg = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
-        if ($cfg.WatchFolder) { $WatchFolder = $cfg.WatchFolder }
-        if ($cfg.PrinterPath) { $PrinterPath = $cfg.PrinterPath }
-        if ($cfg.FileGlob)    { $FileGlob    = $cfg.FileGlob }
-        if ($cfg.PollSeconds) { $PollSeconds = [int]$cfg.PollSeconds }
+
+        # Validate into temp variables first so a bad value can't leave the
+        # config partially applied (some fields overridden, others still
+        # defaults) while the warning below claims "using built-in defaults".
+        $newWatchFolder = $WatchFolder
+        $newPrinterPath = $PrinterPath
+        $newFileGlob    = $FileGlob
+        $newPollSeconds = $PollSeconds
+        if ($cfg.WatchFolder) { $newWatchFolder = $cfg.WatchFolder }
+        if ($cfg.PrinterPath) { $newPrinterPath = $cfg.PrinterPath }
+        if ($cfg.FileGlob)    { $newFileGlob    = $cfg.FileGlob }
+        if ($cfg.PollSeconds) {
+            $newPollSeconds = [int]$cfg.PollSeconds
+            if ($newPollSeconds -lt 1) {
+                throw "PollSeconds must be at least 1, got $($cfg.PollSeconds)"
+            }
+        }
+
+        $WatchFolder = $newWatchFolder
+        $PrinterPath = $newPrinterPath
+        $FileGlob    = $newFileGlob
+        $PollSeconds = $newPollSeconds
     } catch {
         Write-Warning ("Could not parse {0}, using built-in defaults: {1}" -f $ConfigPath, $_.Exception.Message)
     }
@@ -51,6 +69,7 @@ function Write-Log($msg) {
 }
 
 function Send-Raw($file) {
+    $printed = $false
     for ($i = 0; $i -lt 5; $i++) {
         try {
             $bytes = [System.IO.File]::ReadAllBytes($file)
@@ -59,14 +78,34 @@ function Send-Raw($file) {
             if (-not $ok) {
                 throw "spooler write failed: $err"
             }
-            Remove-Item -LiteralPath $file -Force
-            Write-Log ("printed and removed {0}" -f (Split-Path $file -Leaf))
-            return
+            $printed = $true
+            break
         } catch {
             Start-Sleep -Milliseconds 400
         }
     }
-    Write-Log ("WARNING: could not print {0} after retries, left in place for manual retry" -f (Split-Path $file -Leaf))
+    if (-not $printed) {
+        Write-Log ("WARNING: could not print {0} after retries, left in place for manual retry" -f (Split-Path $file -Leaf))
+        return
+    }
+
+    # Printing already succeeded above — from here on, never let a cleanup
+    # failure fall back into a retry (that would resubmit an already-printed
+    # receipt). Remove-Item's non-terminating errors are made catchable with
+    # -ErrorAction Stop so a locked/permission-denied delete is handled here
+    # instead of silently leaving the file for the next poll to reprint.
+    try {
+        Remove-Item -LiteralPath $file -Force -ErrorAction Stop
+        Write-Log ("printed and removed {0}" -f (Split-Path $file -Leaf))
+    } catch {
+        $renamedLeaf = (Split-Path $file -Leaf) + ".printed"
+        try {
+            Rename-Item -LiteralPath $file -NewName $renamedLeaf -Force -ErrorAction Stop
+            Write-Log ("WARNING: printed {0} but could not delete it ({1}); renamed to {2} for manual cleanup" -f (Split-Path $file -Leaf), $_.Exception.Message, $renamedLeaf)
+        } catch {
+            Write-Log ("WARNING: printed {0} but could neither delete nor rename it ({1}); it WILL be resubmitted next poll" -f (Split-Path $file -Leaf), $_.Exception.Message)
+        }
+    }
 }
 
 Write-Log ("watching {0} for {1} -> {2} (polling every {3}s)" -f $WatchFolder, $FileGlob, $PrinterPath, $PollSeconds)
