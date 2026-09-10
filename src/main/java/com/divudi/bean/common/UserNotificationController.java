@@ -741,8 +741,16 @@ public class UserNotificationController implements Serializable {
      * #createSmsForUserNotification(Notification)}: bill-backed notifications
      * describe the bill that triggered them, a free-text notification message
      * is used as-is, and everything else falls back to the configured
-     * template. The resulting text is HTML-escaped and wrapped since the
-     * email is sent as HTML.
+     * template.
+     *
+     * Some producers build the EMAIL-medium body as a complete HTML document
+     * on purpose — {@code NotificationController.createOpdBillCancellationNotification()}
+     * and its batch-bill counterpart switch on the medium and store a full
+     * document carrying the signed {@code requests/bill.xhtml} link that the
+     * recipient is meant to click. Escaping that would deliver literal markup
+     * and break the cancellation workflow, so a body that is already a whole
+     * document is passed through untouched; anything else is treated as plain
+     * text, escaped and wrapped, since the email is sent as HTML.
      */
     public String createEmailBodyForUserNotification(Notification notification) {
         String text = null;
@@ -760,7 +768,24 @@ public class UserNotificationController implements Serializable {
             String template = configOptionController.getLongTextValueByKey("Email Template for User Notification", OptionScope.APPLICATION, null, null, null);
             text = (template == null) ? "" : template.trim();
         }
+        if (isCompleteHtmlDocument(text)) {
+            return text;
+        }
         return "<p>" + escapeHtml(text) + "</p>";
+    }
+
+    /**
+     * True only for a body that opens as a whole HTML document. Deliberately
+     * narrow: matching on stray tags anywhere in the text would let an
+     * ordinary message containing a "&lt;" escape escaping, so nothing short
+     * of a document root counts.
+     */
+    private boolean isCompleteHtmlDocument(String text) {
+        if (text == null) {
+            return false;
+        }
+        String start = text.trim().toLowerCase();
+        return start.startsWith("<!doctype html") || start.startsWith("<html");
     }
 
     private String escapeHtml(String text) {
