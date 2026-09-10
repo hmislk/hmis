@@ -54,9 +54,9 @@
                     <table class="headingPrinting" >
                         <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
                             <tr >
-                                <td colspan="4">
+                                <td colspan="4" style="text-align: center;">
                                     <h:graphicImage
-                                        style="width: 100%;"
+                                        style="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Image Style','width: 200px; height: auto;')}"
                                         class="mb-4"
                                         url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
                                         >
@@ -465,9 +465,12 @@
                     <div class="d-flex justify-content-between px-5 mt-4">
                         <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.name}">
                         </h:outputLabel>
-                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         <h:outputLabel value="Patient/Guardian" >
                         </h:outputLabel>
+                    </div>
+
+                    <div class="px-5 mt-2">
+                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                     </div>
 
                     <p:spacer></p:spacer>
