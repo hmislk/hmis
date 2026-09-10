@@ -367,8 +367,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         }
         issuedBill = draft;
         stampDepartmentTypeIfMissing();
-        billFacade.create(draft);
-        persistDraftItemSnapshot(draft, issueItems);
+        persistDraftWithItemSnapshot(draft, issueItems);
         draftMode = true;
         JsfUtil.addSuccessMessage("Draft fast issue saved. Please proceed to Finalize.");
     }
@@ -378,17 +377,26 @@ public class TransferIssueNativeSqlController implements Serializable {
      * reopening the draft later (a different session Finalizing or Approving it) would have to
      * recompute item rows and quantities from the request's *current* remaining quantities,
      * silently issuing something other than what was saved (#23608 review, CodeRabbit).
+     *
+     * The draft bill header and every snapshot row are persisted via a single call to
+     * {@code pharmacyTransferIssueDraftItemFacade.createDraftWithItems(...)} — one
+     * container-managed EJB transaction — rather than a separate {@code billFacade.create(draft)}
+     * plus one {@code create(...)} call per row: this controller is a plain CDI bean, not itself
+     * transactional, so N+1 separate facade calls would each commit independently, and a failure
+     * partway through could leave the draft bill committed with an incomplete item selection
+     * (#23608 review, CodeRabbit).
      */
-    private void persistDraftItemSnapshot(Bill draft, List<TransferIssueItemRowDto> items) {
-        if (items == null) {
-            return;
+    private void persistDraftWithItemSnapshot(Bill draft, List<TransferIssueItemRowDto> items) {
+        List<PharmacyTransferIssueDraftItem> snapshots = new ArrayList<>();
+        if (items != null) {
+            Date now = new Date();
+            for (TransferIssueItemRowDto dto : items) {
+                PharmacyTransferIssueDraftItem snapshot = toDraftItemEntity(dto, draft);
+                snapshot.setCreatedAt(now);
+                snapshots.add(snapshot);
+            }
         }
-        Date now = new Date();
-        for (TransferIssueItemRowDto dto : items) {
-            PharmacyTransferIssueDraftItem snapshot = toDraftItemEntity(dto, draft);
-            snapshot.setCreatedAt(now);
-            pharmacyTransferIssueDraftItemFacade.create(snapshot);
-        }
+        pharmacyTransferIssueDraftItemFacade.createDraftWithItems(draft, snapshots);
     }
 
     private PharmacyTransferIssueDraftItem toDraftItemEntity(TransferIssueItemRowDto dto, Bill draft) {

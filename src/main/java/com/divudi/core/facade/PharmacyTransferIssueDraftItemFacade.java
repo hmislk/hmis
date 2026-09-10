@@ -44,4 +44,18 @@ public class PharmacyTransferIssueDraftItemFacade extends AbstractFacade<Pharmac
         params.put("draftBill", draftBill);
         return findByJpql(jpql, params);
     }
+
+    /**
+     * Persists the native Fast Issue draft bill header and every item-selection snapshot row
+     * in one container-managed EJB transaction. The caller (a plain CDI bean, not itself
+     * transactional) cannot get this guarantee from separate {@code create(...)} calls — each
+     * would commit independently, so a failure partway through the snapshot rows could leave
+     * the draft bill committed with an incomplete item selection (#23608 review, CodeRabbit).
+     */
+    public void createDraftWithItems(Bill draft, List<PharmacyTransferIssueDraftItem> items) {
+        getEntityManager().persist(draft);
+        for (PharmacyTransferIssueDraftItem item : items) {
+            getEntityManager().persist(item);
+        }
+    }
 }
