@@ -203,11 +203,12 @@
                                                           (bip.adjustedValue!=0 and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}"
                                               style="font-size: 12px;">
                                     <tr style="width: 100%; font-weight: 400; line-height: 18px;" >
-                                        <td style="text-align: left;font-size: 13px!important; margin-top: -10px;">
-                                            <h:outputLabel   value="#{bip.inwardChargeType.name}" >
-                                            </h:outputLabel>
+                                        <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                            <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                         </td>
-                                        <td style="margin-top: -10px;">
+                                        <td style="margin-top: 10px;">
                                             <h:panelGroup style="font-size: 10px;" >
                                                 <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge'
                                                                           and bip.inwardChargeType eq 'RoomCharges' )}">
@@ -293,9 +294,11 @@
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{bip.inwardChargeType eq 'AdmissionFee' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                            </td>
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
+                                                </td>
                                             <td style="margin-top: -10px;">
                                             </td>
                                             <td style="width: 30%; text-align: right; font-size: 13px!important;">
@@ -311,9 +314,11 @@
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{bip.inwardChargeType eq 'RoomCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                            </td>
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
+                                                </td>
                                             <td style="margin-top: -10px;">
                                                 <h:panelGroup style="font-size: 10px;">
                                                     <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' and bip.inwardChargeType eq 'RoomCharges')}">
@@ -369,8 +374,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'NursingCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                 </td>
@@ -387,8 +394,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'MOCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                 </td>
@@ -405,8 +414,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'LinenCharges' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                 </td>
@@ -423,8 +434,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'MedicalCareICU' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                 </td>
@@ -441,8 +454,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'AdministrationCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                 </td>
@@ -460,9 +475,11 @@
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge' and bip.inwardChargeType ne 'DoctorAndNurses' and bip.inwardChargeType ne 'AdmissionFee' and bip.inwardChargeType ne 'NursingCharges' and bip.inwardChargeType ne 'MOCharges' and bip.inwardChargeType ne 'LinenCharges' and bip.inwardChargeType ne 'MedicalCareICU' and bip.inwardChargeType ne 'AdministrationCharge' and bip.inwardChargeType ne 'Medicine' and (bip.inwardChargeType ne 'MedicinesAndSurgicalSupplies' or !configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false)) and bip.inwardChargeType ne 'Laboratory' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                            </td>
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
+                                                </td>
                                             <td style="margin-top: -10px;">
                                                 <h:panelGroup style="font-size: 10px;">
                                                     <h:panelGroup rendered="#{!(bip.inwardChargeType eq 'ProfessionalCharge' and bip.inwardChargeType eq 'RoomCharges' and bip.inwardChargeType eq 'DoctorAndNurses')}">
@@ -501,9 +518,11 @@
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{bip.inwardChargeType eq 'Medicine' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                            </td>
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
+                                                </td>
                                             <td style="margin-top: -10px;">
                                             </td>
                                             <td style="width: 30%; text-align: right; font-size: 13px!important;">
@@ -519,9 +538,11 @@
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Separate Medicines and Surgical Supplies Tab', false) and bip.inwardChargeType eq 'MedicinesAndSurgicalSupplies' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                            </td>
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
+                                                </td>
                                             <td style="margin-top: -10px;">
                                             </td>
                                             <td style="width: 30%; text-align: right; font-size: 13px!important;">
@@ -537,9 +558,11 @@
                                 <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                     <h:panelGroup rendered="#{bip.inwardChargeType eq 'Laboratory' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                         <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                            <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
-                                            </td>
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
+                                                </td>
                                             <td style="margin-top: -10px;">
                                             </td>
                                             <td style="width: 30%; text-align: right; font-size: 13px!important;">
@@ -556,8 +579,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                     <h:panelGroup style="font-size: 10px;">
@@ -608,8 +633,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                     <h:panelGroup style="font-size: 10px;">
@@ -651,8 +678,10 @@
                                     <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter)}" var="bip">
                                         <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{bip.inwardChargeType.name}"/>
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                     <h:panelGroup style="font-size: 10px;">
