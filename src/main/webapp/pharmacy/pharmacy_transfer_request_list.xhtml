@@ -27,6 +27,51 @@
 
                 </f:facet>
 
+                <h:panelGroup layout="block" styleClass="mb-3"
+                              rendered="#{not empty transferIssueNativeSqlController.blockingPendingDrafts}">
+                    <p:panel styleClass="mb-2" style="border: 1px solid #dc3545;">
+                        <f:facet name="header">
+                            <i class="fas fa-exclamation-triangle" style="color:#dc3545; margin-right:.5rem;"/>
+                            <h:outputText value="A pending fast issue is blocking new issues for this department"/>
+                        </f:facet>
+                        <p class="mb-2">
+                            Finalize or approve it from <b>Disbursement &#8594; Issues &#8594; Finalize Issues / Approve Issues</b>,
+                            or cancel it here if it was started by mistake.
+                        </p>
+                        <p:dataTable id="tblBlockingPendingDrafts" widgetVar="wvBlockingPendingDrafts"
+                                     value="#{transferIssueNativeSqlController.blockingPendingDrafts}" var="d"
+                                     rowKey="#{d.id}" size="small">
+                            <p:column headerText="Issue No">
+                                <h:outputText value="#{d.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Created">
+                                <h:outputText value="#{d.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Created By">
+                                <h:outputText value="#{d.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="#{d.completed ? 'Finalized — awaiting approval' : 'Draft — awaiting finalize'}"/>
+                            </p:column>
+                            <p:column headerText="Action">
+                                <p:commandButton value="Cancel Draft"
+                                                 icon="fas fa-times"
+                                                 ajax="false"
+                                                 styleClass="ui-button-danger"
+                                                 title="Cancel pending fast issue #{d.deptId}"
+                                                 onclick="if(!confirm('Cancel this pending fast issue draft? This cannot be undone.')) return false;"
+                                                 action="#{transferIssueNativeSqlController.cancelPendingNativeIssueDraft(d)}"
+                                                 rendered="#{webUserController.hasPrivilege('PharmacyTransferIssueCancel')}"/>
+                                <h:outputText value="Ask a supervisor to cancel this draft."
+                                              rendered="#{!webUserController.hasPrivilege('PharmacyTransferIssueCancel')}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:panelGroup>
+
                 <div class="row">
                     <div class="col-md-2">
                         <h:outputLabel value="From Date"/>

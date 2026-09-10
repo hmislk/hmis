@@ -82,6 +82,7 @@ import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -92,6 +93,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.ejb.EJB;
@@ -175,7 +177,6 @@ public class BhtSummeryController implements Serializable {
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
-    private List<BillFee> allDoctorCharges;
     // Holds the doctor whose fee breakdown is shown in the "how the total is calculated" popup.
     private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
@@ -198,6 +199,8 @@ public class BhtSummeryController implements Serializable {
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
     private PatientRoom pendingOverlapRoom;
+    /** Fallback when no shortDateTimeFormat preference is resolvable. */
+    private static final String DEFAULT_STAY_WINDOW_PATTERN = "dd MMM yyyy HH:mm";
     private List<CreditCompanyAllocation> creditCompanyAllocations;
     private EncounterCreditCompany newEncounterCreditCompany;
     private boolean creatingNewVersion;
@@ -533,47 +536,77 @@ public class BhtSummeryController implements Serializable {
      * Charges grouped by inward charge type (excluding Professional Charge,
      * which is printed separately on the Professional Bill section),
      * alphabetical by display name, for the Custom2 "Final Bill" totals-only
-     * section.
+     * section. When {@link #isBundleGroupedChargeTypesOnFinalBill()} is enabled,
+     * charge types sharing a group text print as one summed line (see
+     * {@link #foldInwardCategoryTotals(Bill)}); otherwise behaviour is
+     * unchanged.
      */
     public List<Map.Entry<String, Double>> getCustom2CategoryTotals(Bill bill) {
-        Map<String, Double> totals = new TreeMap<>();
-        if (bill == null || bill.getBillItems() == null) {
-            return new ArrayList<>(totals.entrySet());
-        }
-        for (BillItem bi : bill.getBillItems()) {
-            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                continue;
-            }
-            if (bi.getAdjustedValue() == 0.0) {
-                continue;
-            }
-            String label = getChargeTypeLabel(bi.getInwardChargeType());
-            totals.merge(label, bi.getAdjustedValue(), Double::sum);
-        }
-        return new ArrayList<>(totals.entrySet());
+        return foldInwardCategoryTotals(bill);
     }
 
     /**
      * Charges grouped by inward charge type (excluding Professional Charge,
      * which is now listed as individual per-doctor fee lines), alphabetical
      * by display name, for the Custom3 5x5 impact-printer bill ("Custom Bill
-     * 2" in the UI).
+     * 2" in the UI). When {@link #isBundleGroupedChargeTypesOnFinalBill()} is
+     * enabled, charge types sharing a group text print as one summed line (see
+     * {@link #foldInwardCategoryTotals(Bill)}); otherwise behaviour is
+     * unchanged.
      */
     public List<Map.Entry<String, Double>> getCustom3CategoryTotals(Bill bill) {
+        return foldInwardCategoryTotals(bill);
+    }
+
+    /**
+     * Shared implementation for {@link #getCustom2CategoryTotals(Bill)} and
+     * {@link #getCustom3CategoryTotals(Bill)}: charges summed by inward charge
+     * type keyed on the display label, Professional Charge excluded,
+     * DoctorAndNurses kept, alphabetical (TreeMap) by key.
+     *
+     * When {@link #isBundleGroupedChargeTypesOnFinalBill()} is false the result
+     * is byte-identical to the pre-grouping logic (returned early, before any
+     * group lookup). When it is true, any charge type whose
+     * "Inward Charge Type Final Bill Group - X" value is non-blank (after trim)
+     * is folded under that group text instead of its own label, matching the
+     * "Bundled Custom 1" behaviour. The per-type group reads are wrapped in
+     * {@code configOptionApplicationController.seedInBatch(...)} — the same
+     * helper {@code InwardChargeTypeLabelController.init()} uses — so a batch of
+     * missing rows triggers at most one synchronized cache reload, after the
+     * loop, instead of one per lazily created row.
+     */
+    private List<Map.Entry<String, Double>> foldInwardCategoryTotals(Bill bill) {
         Map<String, Double> totals = new TreeMap<>();
         if (bill == null || bill.getBillItems() == null) {
             return new ArrayList<>(totals.entrySet());
         }
-        for (BillItem bi : bill.getBillItems()) {
-            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                continue;
+        if (!isBundleGroupedChargeTypesOnFinalBill()) {
+            for (BillItem bi : bill.getBillItems()) {
+                InwardChargeType type = bi.getInwardChargeType();
+                if (type == InwardChargeType.ProfessionalCharge) {
+                    continue;
+                }
+                if (bi.getAdjustedValue() == 0.0) {
+                    continue;
+                }
+                totals.merge(getChargeTypeLabel(type), bi.getAdjustedValue(), Double::sum);
             }
-            if (bi.getAdjustedValue() == 0.0) {
-                continue;
-            }
-            String label = getChargeTypeLabel(bi.getInwardChargeType());
-            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+            return new ArrayList<>(totals.entrySet());
         }
+        configOptionApplicationController.seedInBatch(() -> {
+            for (BillItem bi : bill.getBillItems()) {
+                InwardChargeType type = bi.getInwardChargeType();
+                if (type == InwardChargeType.ProfessionalCharge) {
+                    continue;
+                }
+                if (bi.getAdjustedValue() == 0.0) {
+                    continue;
+                }
+                String group = configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type);
+                String label = (group != null && !group.trim().isEmpty()) ? group.trim() : getChargeTypeLabel(type);
+                totals.merge(label, bi.getAdjustedValue(), Double::sum);
+            }
+        });
         return new ArrayList<>(totals.entrySet());
     }
 
@@ -1981,6 +2014,90 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Marks a timed service's own bill as checked from the Interim Bill, so
+     * timed services can be verified where they are listed instead of only from
+     * Search &rarr; Service Bill.
+     * <p>
+     * Deliberately the same two fields, and the same "not once the payment is
+     * finalized" refusal, as {@code InwardSearch#markAsChecked()} — a timed
+     * service checked here has to be indistinguishable from one checked there,
+     * because the settlement gate reads {@code Bill.checkedBy} and does not care
+     * which screen set it.
+     */
+    public void markTimedServiceAsChecked(PatientItem patientItem) {
+        Bill b = billOfTimedService(patientItem);
+        if (b == null) {
+            return;
+        }
+        if (b.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This timed service has already been checked.");
+            return;
+        }
+        // A running service has no final amount yet - its charge keeps growing,
+        // and the discharge closes it and reprices it (see
+        // finalizeRunningTimedServices). Checking one would stamp a verification
+        // on a figure the system itself is about to change, which is exactly
+        // what the checked-is-frozen rule exists to prevent. Verify a finished
+        // charge, not a growing one.
+        if (patientItem.getToTime() == null) {
+            JsfUtil.addErrorMessage("This timed service is still running. Enter a Stopped Time and press Update before checking it.");
+            return;
+        }
+        b.setCheckeAt(new Date());
+        b.setCheckedBy(getSessionController().getLoggedUser());
+        getBillFacade().edit(b);
+
+        patientItems = null;
+        JsfUtil.addSuccessMessage("Timed service checked.");
+    }
+
+    /**
+     * Reverses {@link #markTimedServiceAsChecked}. This is what reopens a
+     * checked timed service for editing — see
+     * {@code InwardTimedItemController#isCheckedAndLocked} — which is why it
+     * sits behind its own {@code InwardUnCheck} privilege on the page.
+     */
+    public void markTimedServiceAsUnChecked(PatientItem patientItem) {
+        Bill b = billOfTimedService(patientItem);
+        if (b == null) {
+            return;
+        }
+        if (b.getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("This timed service has not been checked.");
+            return;
+        }
+        b.setCheckeAt(null);
+        b.setCheckedBy(null);
+        getBillFacade().edit(b);
+
+        patientItems = null;
+        JsfUtil.addSuccessMessage("Timed service unchecked.");
+    }
+
+    /**
+     * The bill a timed service can be checked on, or null with the reason
+     * reported to the user. Only ward timed services own a bill; a
+     * surgery-added or pre-redesign one is charged through the PatientItem
+     * itself and has no bill of its own for a cashier to check.
+     */
+    private Bill billOfTimedService(PatientItem patientItem) {
+        if (patientItem == null || patientItem.getBill() == null) {
+            JsfUtil.addErrorMessage("This timed service has no bill of its own and cannot be checked.");
+            return null;
+        }
+        Bill b = patientItem.getBill();
+        if (b.isRetired() || b.isCancelled()) {
+            JsfUtil.addErrorMessage("This timed service's bill has been removed or cancelled.");
+            return null;
+        }
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final payment has been settled for this admission. Bills can no longer be checked or unchecked.");
+            return null;
+        }
+        return b;
+    }
+
+    /**
      * Entry point for the "Save Changes" button. If the room's current
      * admitted/discharged times overlap another (non-Guardian/Theatre) room
      * period for the same patient or bed, ask for confirmation before saving
@@ -2019,6 +2136,13 @@ public class BhtSummeryController implements Serializable {
         if (patientRoom == null || patientRoom.getAdmittedAt() == null || patientRoom.getPatientEncounter() == null) {
             return new ArrayList<>();
         }
+        // A retired stay is a room record that was withdrawn - it never occupied the
+        // bed, so it can neither have nor cause a conflict. The JPQL below already
+        // keeps retired rows out of the candidate side; this guards the subject side,
+        // which a caller can still reach with a stale in-memory row (Issue #23641).
+        if (patientRoom.isRetired()) {
+            return new ArrayList<>();
+        }
         if (patientRoom.getDischargedAt() != null && patientRoom.getDischargedAt().before(patientRoom.getAdmittedAt())) {
             return new ArrayList<>();
         }
@@ -2053,7 +2177,73 @@ public class BhtSummeryController implements Serializable {
         // midnight, so two stays merely sharing a calendar day were reported as
         // overlapping even when the times did not actually conflict.
         List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        return overlaps != null ? overlaps : new ArrayList<>();
+        if (overlaps == null) {
+            return new ArrayList<>();
+        }
+        // Re-assert every condition in memory. The query already applies them, but
+        // repeating the rule here keeps it enforced when a row arrives from a stale
+        // persistence context, and makes it unit testable without a database.
+        List<PatientRoom> conflicts = new ArrayList<>();
+        for (PatientRoom candidate : overlaps) {
+            if (isOverlapConflict(patientRoom, candidate)) {
+                conflicts.add(candidate);
+            }
+        }
+        return conflicts;
+    }
+
+    /**
+     * True when {@code candidate} is a genuine room-time conflict for
+     * {@code subject}: both are live (non-retired) ward stays, they belong either to
+     * the same encounter or to the same bed, and their occupied time ranges
+     * intersect. Mirrors the predicate in {@link #getOverlappingRooms(PatientRoom)}
+     * exactly. Static and facade-free so the rules - above all "a retired stay never
+     * counts, on either side" - are unit testable without a database (Issue #23641).
+     */
+    static boolean isOverlapConflict(PatientRoom subject, PatientRoom candidate) {
+        if (subject == null || candidate == null || subject == candidate) {
+            return false;
+        }
+        if (subject.getId() != null && subject.getId().equals(candidate.getId())) {
+            return false;
+        }
+        if (subject.isRetired() || candidate.isRetired()) {
+            return false;
+        }
+        if (isGuardianOrTheatreRoom(subject) || isGuardianOrTheatreRoom(candidate)) {
+            return false;
+        }
+        Date from = subject.getAdmittedAt();
+        Date to = subject.getDischargedAt();
+        if (from == null || candidate.getAdmittedAt() == null) {
+            return false;
+        }
+        if (to != null && to.before(from)) {
+            return false;
+        }
+        if (!isSameEncounter(subject, candidate) && !isSameBed(subject, candidate)) {
+            return false;
+        }
+        if (to != null && !candidate.getAdmittedAt().before(to)) {
+            return false;
+        }
+        return candidate.getDischargedAt() == null || candidate.getDischargedAt().after(from);
+    }
+
+    private static boolean isGuardianOrTheatreRoom(PatientRoom patientRoom) {
+        return patientRoom instanceof GuardianRoom || patientRoom instanceof TheatreRoom;
+    }
+
+    private static boolean isSameEncounter(PatientRoom a, PatientRoom b) {
+        return a.getPatientEncounter() != null
+                && b.getPatientEncounter() != null
+                && a.getPatientEncounter().equals(b.getPatientEncounter());
+    }
+
+    private static boolean isSameBed(PatientRoom a, PatientRoom b) {
+        return a.getRoomFacilityCharge() != null
+                && b.getRoomFacilityCharge() != null
+                && a.getRoomFacilityCharge().equals(b.getRoomFacilityCharge());
     }
 
     /**
@@ -2074,21 +2264,97 @@ public class BhtSummeryController implements Serializable {
      * are 3+ open (non-discharged) room stays.
      */
     public String getOverlapDescription(PatientRoom patientRoom) {
-        List<PatientRoom> overlaps = getOverlappingRooms(patientRoom);
-        if (overlaps.isEmpty()) {
+        return describeOverlaps(patientRoom, getOverlappingRooms(patientRoom), resolveStayWindowPattern());
+    }
+
+    /**
+     * The date/time pattern the row's own Admitted At / Discharged At pickers are
+     * rendered with. The conflict description sits beside those fields and is read
+     * against them, so a different format there would have staff comparing
+     * "19:19" with "07:19 PM" on the one screen meant to resolve the conflict.
+     */
+    private String resolveStayWindowPattern() {
+        if (sessionController != null && sessionController.getApplicationPreference() != null) {
+            return sessionController.getApplicationPreference().getShortDateTimeFormat();
+        }
+        return DEFAULT_STAY_WINDOW_PATTERN;
+    }
+
+    /**
+     * Formats the conflicts found for {@code subject}. A conflict on the same
+     * encounter needs only the room name - the user can see the other row on the
+     * same screen. A conflict with a DIFFERENT patient is named in full, because
+     * the room name alone renders as "Room 90 overlaps with Room 90", which reads
+     * as a false alarm and gives ward staff nothing to act on: the bed is held by
+     * someone else and they cannot tell who from this page (Issue #23641).
+     */
+    static String describeOverlaps(PatientRoom subject, List<PatientRoom> overlaps, String dateTimePattern) {
+        if (overlaps == null || overlaps.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder("Overlaps with ");
         for (int i = 0; i < overlaps.size(); i++) {
-            PatientRoom pr2 = overlaps.get(i);
             if (i > 0) {
-                sb.append(", ");
+                sb.append("; ");
             }
-            String roomName = pr2.getRoomFacilityCharge() != null && pr2.getRoomFacilityCharge().getName() != null
-                    ? pr2.getRoomFacilityCharge().getName() : "an unnamed room";
-            sb.append(roomName).append(pr2.getDischargedAt() == null ? " (Active)" : " (Left)");
+            sb.append(describeOverlap(subject, overlaps.get(i), dateTimePattern));
         }
         return sb.toString();
+    }
+
+    private static String describeOverlap(PatientRoom subject, PatientRoom other, String dateTimePattern) {
+        String roomName = other.getRoomFacilityCharge() != null && other.getRoomFacilityCharge().getName() != null
+                ? other.getRoomFacilityCharge().getName() : "an unnamed room";
+        if (subject != null && isSameEncounter(subject, other)) {
+            return roomName + (other.getDischargedAt() == null ? " (Active)" : " (Left)");
+        }
+        StringBuilder sb = new StringBuilder(roomName);
+        sb.append(" - held by ").append(bhtLabelOf(other));
+        String patientName = patientNameOf(other);
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            sb.append(" (").append(patientName.trim()).append(")");
+        }
+        sb.append(", ").append(stayWindowOf(other, dateTimePattern));
+        return sb.toString();
+    }
+
+    private static String bhtLabelOf(PatientRoom patientRoom) {
+        PatientEncounter pe = patientRoom.getPatientEncounter();
+        String bhtNo = pe != null ? pe.getBhtNo() : null;
+        return bhtNo == null || bhtNo.trim().isEmpty() ? "another patient" : bhtNo.trim();
+    }
+
+    /**
+     * The conflicting patient's name. Ward staff already see the occupant of every
+     * bed - BHT number and patient name - on the Room Occupancy screen, so naming
+     * them here discloses nothing that page does not.
+     */
+    private static String patientNameOf(PatientRoom patientRoom) {
+        PatientEncounter pe = patientRoom.getPatientEncounter();
+        if (pe == null || pe.getPatient() == null || pe.getPatient().getPerson() == null) {
+            return null;
+        }
+        return pe.getPatient().getPerson().getName();
+    }
+
+    /**
+     * Locale.ENGLISH rather than the JVM default: the rest of this UI is English,
+     * and a default-locale month name would make the rendered text depend on the
+     * server's locale (and make any assertion on it environment-dependent).
+     */
+    private static String stayWindowOf(PatientRoom patientRoom, String dateTimePattern) {
+        String pattern = dateTimePattern == null || dateTimePattern.trim().isEmpty()
+                ? DEFAULT_STAY_WINDOW_PATTERN : dateTimePattern;
+        SimpleDateFormat formatter;
+        try {
+            formatter = new SimpleDateFormat(pattern, Locale.ENGLISH);
+        } catch (IllegalArgumentException e) {
+            // A malformed preference must not take the whole room table down.
+            formatter = new SimpleDateFormat(DEFAULT_STAY_WINDOW_PATTERN, Locale.ENGLISH);
+        }
+        String from = patientRoom.getAdmittedAt() == null ? "unknown" : formatter.format(patientRoom.getAdmittedAt());
+        String to = patientRoom.getDischargedAt() == null ? "still in room" : formatter.format(patientRoom.getDischargedAt());
+        return from + " to " + to;
     }
 
     public boolean isAnyRoomOverlapping() {
@@ -2096,6 +2362,9 @@ public class BhtSummeryController implements Serializable {
             return false;
         }
         for (PatientRoom pr : patientRooms) {
+            if (pr == null || pr.isRetired()) {
+                continue;
+            }
             if (hasOverlap(pr)) {
                 return true;
             }
@@ -3291,11 +3560,21 @@ public class BhtSummeryController implements Serializable {
     }
 
     public boolean checkBill() {
-        if (configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")) {
+        if (!isInwardBillCheckingEnforced()) {
             return false;
         }
 
         if (getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
+            JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
+            return true;
+        }
+
+        // BillFee-side only catches inward service bills that carry fees. Timed
+        // services get a bill with a BillItem and no BillFee at all
+        // (InwardTimedItemController#createBillForTimedService), so an unchecked
+        // timed service used to walk straight past this gate. The BillItem side
+        // is a superset: every unchecked InwardBill BilledBill, fees or not.
+        if (getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardBill)) {
             JsfUtil.addErrorMessage("Some Inward Service Bills Are Not Checked ");
             return true;
         }
@@ -3355,8 +3634,38 @@ public class BhtSummeryController implements Serializable {
         return false;
     }
 
+    /**
+     * Whether unchecked inward bills should block settlement.
+     * <p>
+     * This replaces the old {@code "Need to check inward bills before
+     * discharge"} option, which was read inverted: switching it ON turned all
+     * bill checking OFF, the opposite of what it says, so a hospital that
+     * enabled it silently lost the gate entirely.
+     * <p>
+     * The fix is a new key rather than flipping how the old one is read. The
+     * old key was consulted through the single-argument
+     * {@code getBooleanValueByKey}, which <em>creates</em> the option row set to
+     * {@code "false"} the first time it is read — so by now every deployment
+     * that has ever settled an inward bill has it stored as {@code false},
+     * meaning "enforce" under the old reading. Re-reading that same stored
+     * {@code false} as "do not enforce" would have switched the gate off for
+     * every hospital at once. A new key defaults to {@code true} everywhere and
+     * means exactly what it says.
+     * <p>
+     * A hospital that had deliberately turned the old option on to bypass
+     * checking must now turn this one off instead.
+     */
+    public static final String INWARD_BILL_CHECKING_REQUIRED
+            = "Inward bills must be checked before the final bill is settled";
+
+    private boolean isInwardBillCheckingEnforced() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                INWARD_BILL_CHECKING_REQUIRED, true);
+    }
+
     private boolean hasAnyUncheckedInwardBills() {
         return getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
+                || getInwardBean().checkByBillItem(getPatientEncounter(), new BilledBill(), BillType.InwardBill)
                 || getInwardBean().checkByBillFee(getPatientEncounter(), new BilledBill(), BillType.InwardProfessional)
                 || getInwardBean().checkByBillItem(getPatientEncounter(), new PreBill(), BillType.PharmacyBhtPre)
                 || getInwardBean().checkByBillItem(getPatientEncounter(), new RefundBill(), BillType.PharmacyBhtPre)
@@ -3390,7 +3699,7 @@ public class BhtSummeryController implements Serializable {
 
         System.out.println("Privilege = " + getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck"));
 
-        System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
+        System.out.println("Bill checking enforced = " + isInwardBillCheckingEnforced());
 
         System.out.println("Starting Bills Checking Process.... ");
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission) {
@@ -3399,7 +3708,7 @@ public class BhtSummeryController implements Serializable {
                 if (checkBill()) {
                     return "";
                 }
-            } else if (!configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge")
+            } else if (isInwardBillCheckingEnforced()
                     && hasAnyUncheckedInwardBills()) {
                 JsfUtil.addWarningMessage("Settling with unchecked Inward Service / Professional / Pharmacy / Store / Payment bills. "
                         + "Proceeding because you hold the 'Inward Bill Settle Without Check' privilege.");
@@ -3420,23 +3729,6 @@ public class BhtSummeryController implements Serializable {
 
         childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         createTables();
-
-        if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-            // Both lists already have feeAdjusted = feeValue (set by setProfesionallFeeAdjusted /
-            // setAssistingFeeAdjusted in createTables), so the merged list shows matching adjusted values.
-            allDoctorCharges = new ArrayList<>();
-            allDoctorCharges.addAll(profesionallFee);
-            allDoctorCharges.addAll(doctorAndNurseFee);
-
-            profesionallFee.clear();
-            doctorAndNurseFee.clear();
-
-            profesionallFee.addAll(allDoctorCharges);
-
-            allDoctorCharges.clear();
-
-            createChargeItemTotals();
-        }
 
         calculateDiscount();
         updateTotal();
@@ -4081,7 +4373,6 @@ public class BhtSummeryController implements Serializable {
         paid = 0.0;
         profesionallFee = null;
         doctorAndNurseFee = null;
-        allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
         postFinalPaymentBill = null;
@@ -5017,6 +5308,8 @@ public class BhtSummeryController implements Serializable {
 
             setGrossMarginVatBreakdown();
 
+            addRunningTimedServiceLiveTopUp();
+
         }
 
         setNetAdjustValue();
@@ -5030,6 +5323,93 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+    }
+
+    /**
+     * Tops up the charge-type totals with the amount every still-running timed
+     * service ({@code toTime IS NULL}) would bill if it stopped right now.
+     * <p>
+     * The persisted-value queries behind {@link #setTimedServiceTotCategoryWise()}
+     * and {@link #setGrossMarginVatBreakdown()} only ever contributed each
+     * running service's add-time snapshot ({@code PatientItem.serviceValue} /
+     * the mirrored {@code BillItem.grossValue}) — {@code save()} prices a timed
+     * service once when it is added and it does not grow with elapsed time. The
+     * Timed Service Charges tab, on the other hand, recomputes the live figure in
+     * memory ({@link #createPatientItems()}), so tab and balance diverge the
+     * longer a service runs (issue #23607 / #23606).
+     * <p>
+     * Here we re-price each running service as of "now" ({@code toTime} null →
+     * current time, the same convention {@code calCount} already uses) with
+     * {@link InwardBeanController#calTotalTimedChargeForItem} — the tiered-fee,
+     * foreigner-rate path a manual stop or the discharge auto-close uses — and
+     * add only the difference from the persisted value onto the matching
+     * {@link ChargeItemTotal}'s {@code total} and {@code gross}. A running
+     * service accrues gross only, so margin/VAT are left untouched.
+     * <p>
+     * Nothing is persisted: {@code toTime} stays null, the service is still
+     * genuinely running and can be stopped/edited/removed normally, and merely
+     * viewing or recalculating the interim bill writes nothing to the database.
+     */
+    private void addRunningTimedServiceLiveTopUp() {
+        List<PatientItem> running = getInwardBean()
+                .fetchRunningTimedPatientItems(getPatientEncounter(), childPatientEncouters);
+        if (running == null || running.isEmpty()) {
+            return;
+        }
+
+        Date now = new Date();
+        Map<InwardChargeType, Double> topUpByChargeType = new HashMap<>();
+
+        for (PatientItem pi : running) {
+            if (pi.getItem() == null || !(pi.getItem() instanceof TimedItem)) {
+                continue;
+            }
+            // Package-locked services keep their fixed price - skip, same as the
+            // discharge-time close (finalizeRunningTimedServices).
+            if (pi.getBillItem() != null && pi.getBillItem().isFromPackage()) {
+                continue;
+            }
+            // A start time in the future has not accrued anything yet.
+            if (pi.getFromTime() == null || now.before(pi.getFromTime())) {
+                continue;
+            }
+            // No configured fee -> would price at zero; leave the persisted value
+            // alone rather than zero it out.
+            if (getInwardBean().getAllTimedItemFees((TimedItem) pi.getItem()).isEmpty()) {
+                continue;
+            }
+
+            PatientEncounter owner = pi.getPatientEncounter() != null
+                    ? pi.getPatientEncounter() : getPatientEncounter();
+            double liveValue = getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(), pi.getFromTime(), now, owner.isForiegner());
+            double persistedValue = pi.getServiceValue() != null ? pi.getServiceValue() : 0.0;
+            double delta = liveValue - persistedValue;
+            // Only ever add positive accrual. A running service can only have run
+            // longer since it was priced, so the live value should never be below
+            // the persisted one; if it is (e.g. the fee config was changed after
+            // the service was added), pulling the charge-type total down here
+            // would understate the balance against a figure the bill has not
+            // actually recorded. Leave those to the explicit stop/recalc path.
+            if (delta <= 0.0) {
+                continue;
+            }
+
+            InwardChargeType chargeType = pi.getItem().getInwardChargeType();
+            topUpByChargeType.merge(chargeType, delta, Double::sum);
+        }
+
+        if (topUpByChargeType.isEmpty()) {
+            return;
+        }
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double delta = topUpByChargeType.get(cit.getInwardChargeType());
+            if (delta != null && delta > 0.0) {
+                cit.setTotal(cit.getTotal() + delta);
+                cit.setGross(cit.getGross() + delta);
+            }
+        }
     }
 
     private void restoreChargeItemComments() {
@@ -5152,30 +5532,18 @@ public class BhtSummeryController implements Serializable {
             docVat += bf.getFeeVat();
         }
 
-        boolean mergedProAndDoc = configOptionApplicationController.getBooleanValueByKey(
-                "Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false);
-
+        // No merge special case: for a merged hospital getProfesionallFee() already
+        // holds every fee and getDoctorAndNurseFee() is empty, and the assisting
+        // ChargeItemTotal does not exist at all (issue #23543).
         for (ChargeItemTotal cit : chargeItemTotals) {
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                if (mergedProAndDoc) {
-                    cit.setGross(proGross + docGross);
-                    cit.setMargin(proMargin + docMargin);
-                    cit.setVat(proVat + docVat);
-                } else {
-                    cit.setGross(proGross);
-                    cit.setMargin(proMargin);
-                    cit.setVat(proVat);
-                }
+                cit.setGross(proGross);
+                cit.setMargin(proMargin);
+                cit.setVat(proVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
-                if (mergedProAndDoc) {
-                    cit.setGross(0.0);
-                    cit.setMargin(0.0);
-                    cit.setVat(0.0);
-                } else {
-                    cit.setGross(docGross);
-                    cit.setMargin(docMargin);
-                    cit.setVat(docVat);
-                }
+                cit.setGross(docGross);
+                cit.setMargin(docMargin);
+                cit.setVat(docVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
                 cit.setGross(cit.getTotal());
                 cit.setMargin(0.0);
@@ -5301,6 +5669,19 @@ public class BhtSummeryController implements Serializable {
         return configOptionApplicationController.getInwardChargeTypeLabel(type);
     }
 
+    /**
+     * Opt-in toggle for folding grouped charge types into one summed line on the
+     * standard Final Bill totals sections (Custom2 / Custom3). Uses the same
+     * read-only getter and injected bean as {@code showBundledCustom1Format}
+     * (see {@link #loadCustomBillFormatVisibility()}); the key auto-creates on
+     * first read, so no migration is needed. Off by default: a hospital that
+     * only set Final Bill Group values for the #23382 "Bundled Custom 1" feature
+     * is unaffected until it explicitly enables this.
+     */
+    public boolean isBundleGroupedChargeTypesOnFinalBill() {
+        return configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Bundle Grouped Charge Types", false);
+    }
+
     public List<ChargeItemTotal> getChargeItemTotals() {
         if (chargeItemTotals == null) {
             if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
@@ -5403,20 +5784,11 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().calNetCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-                        double professionalFee = getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView);
-                        double assistingFee = getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters);
-                        i.setTotal(professionalFee + assistingFee);
-                    } else {
-                        i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
-                    }
+                    // Already covers assisting fees for a merged hospital.
+                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
                     break;
                 case DoctorAndNurses:
-                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-                        i.setTotal(0.0);
-                    } else {
-                        i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
-                    }
+                    i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
                     break;
             }
         }
@@ -5901,14 +6273,6 @@ public class BhtSummeryController implements Serializable {
             return null;
         }
         return (pr.getMarginRoomCharge() / slotRate) * 100.0;
-    }
-
-    public List<BillFee> getAllDoctorCharges() {
-        return allDoctorCharges;
-    }
-
-    public void setAllDoctorCharges(List<BillFee> allDoctorCharges) {
-        this.allDoctorCharges = allDoctorCharges;
     }
 
     public static class RoomDurationBreakdown {

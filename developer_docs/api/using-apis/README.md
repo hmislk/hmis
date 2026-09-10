@@ -13,6 +13,7 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 
 | File | Module | Auth |
 |---|---|---|
+| [API_ADMISSION_CHARGES.md](API_ADMISSION_CHARGES.md) | Configure automatic routine admission charges (AdmissionChargeItem) | `Finance` |
 | [API_ADMISSION_DETAILS.md](API_ADMISSION_DETAILS.md) | Consolidated index: which API to call for admission worklist/BHT numbers/clinical forms | `Finance` |
 | [API_ADMISSION_NUMBERS.md](API_ADMISSION_NUMBERS.md) | View/reset BHT/OPD admission-number sequence counters | `Finance` |
 | [API_BALANCE_HISTORY.md](API_BALANCE_HISTORY.md) | Drawer/patient-deposit/agent balance change history | `Finance` |
@@ -36,6 +37,7 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 | [API_PHARMACEUTICAL_MANAGEMENT.md](API_PHARMACEUTICAL_MANAGEMENT.md) | VTM/ATM/VMP/AMP/VMPP/AMPP item master CRUD + backfill | `Finance` |
 | [API_PHARMACY_STOCK_ADJUSTMENTS.md](API_PHARMACY_STOCK_ADJUSTMENTS.md) | Search stocks, adjust qty/rates/expiry, create batches | `Finance` |
 | [API_QUICKBOOKS.md](API_QUICKBOOKS.md) | Read-only export of financial data for QuickBooks | `Finance` |
+| [API_REPORT_FORMATS.md](API_REPORT_FORMATS.md) | Lab report common template — patient-details/signature/footer layout | `Finance` |
 | [API_SERVICE_MANAGEMENT.md](API_SERVICE_MANAGEMENT.md) | `/api/services` service master data | `Finance` |
 | [API_SITES.md](API_SITES.md) | Sites (collection points, satellite clinics) | `Finance` |
 | [API_STOCK_HISTORY.md](API_STOCK_HISTORY.md) | Transaction-level stock movement records | `Finance` |

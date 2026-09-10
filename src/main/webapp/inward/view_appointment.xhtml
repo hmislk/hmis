@@ -150,26 +150,23 @@
                                     </p:column>
 
                                     <p:column headerText="Patient" style="padding: 8px;">
-                                        <i class="fas fa-user text-primary" style="width: 27px;"></i> <!-- Name Icon -->
                                         <h:outputLabel value="#{r.patientNameWithTitle}" />
                                     </p:column>
 
-                                    <p:column headerText="Age / Gender"  width="17em;" style="padding: 8px;">
-                                        <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i> <!-- Age Icon -->
-                                        <h:outputLabel value="#{r.patientAge}" />
-                                        <h:outputLabel value="/" class="text-center" style="width: 25px;"/>
-                                        <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
-                                        <h:outputLabel value="#{r.patientGender}" />
+                                    <p:column headerText="Age / Gender" width="9em;" style="padding: 8px;">
+                                        <h:outputLabel value="#{r.patientAgeShort}" />
+                                        <h:outputText value=" / " />
+                                        <h:outputText styleClass="fas fa-mars text-primary" title="Male"
+                                                      rendered="#{r.patientGender eq 'Male'}" />
+                                        <h:outputText styleClass="fas fa-venus text-danger" title="Female"
+                                                      rendered="#{r.patientGender eq 'Female'}" />
+                                        <h:outputText styleClass="fas fa-genderless text-muted" title="#{r.patientGender}"
+                                                      rendered="#{r.patientGender ne 'Male' and r.patientGender ne 'Female'}" />
                                     </p:column>
 
                                     <p:column headerText="Mobile"  width="10em;" style="padding: 8px;">
-                                        <h:panelGroup rendered="#{not empty r.patientMobile.blank}">
-                                            <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                                            <h:outputLabel value="#{r.patientMobile}" />
-                                        </h:panelGroup>
-                                        <h:panelGroup rendered="#{empty r.patientMobile}">
-                                            <h:outputLabel value="N/A" />
-                                        </h:panelGroup>
+                                        <h:outputLabel value="#{r.patientMobile}" rendered="#{not empty r.patientMobile}" />
+                                        <h:outputLabel value="N/A" rendered="#{empty r.patientMobile}" />
                                     </p:column>
 
                                     <p:column headerText="Status" width="8em;" style="padding: 8px;">
@@ -178,12 +175,12 @@
                                         <p:badge rendered="#{r.status eq'CANCEL'}" severity="danger" value="#{r.status.name}"></p:badge>
                                     </p:column>
 
-                                    <p:column headerText="Actions" width="220px;" style="padding: 8px;" >
+                                    <p:column headerText="Actions" width="260px;" style="padding: 8px;" >
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
-                                                value="Admit"
+                                                value="To Admit"
                                                 rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}"
                                                 disabled="#{r.status eq 'CANCEL' or r.status eq 'COMPLETE'}"
                                                 action="#{appointmentController.navigatePatientAdmit(r.id)}"

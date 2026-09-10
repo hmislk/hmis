@@ -15,7 +15,24 @@ argument-hint: "<issue-number>"
 
 Invoking this skill is the explicit authorization for every commit/push/PR
 step below — do not re-ask before each one. Discussion gates (steps 2a
-non-repro case, 3, 4, 14) are the points where you pause for the user.
+non-repro case and any state-changing step taken there to prove an
+*unconfirmed* bug, 3, 4's environment choice only, 14) are the points where
+you pause for the user. Everything else in 2a and 4 (which department/record
+to use against local test data) is a local-testing-environment choice, not a
+product decision — decide it yourself and say what you picked, rather than
+pausing.
+
+That 2a gate is narrow and does not extend to step 7. 2a's risk is spending
+effort chasing a bug that might not be real; once step 3 has been through
+Plan Mode and the user has approved a fix, that risk is gone — exercising
+the approved fix in step 7, including any state-changing UI action needed to
+set up the scenario (e.g. removing a room, changing a status, editing a
+record) against local test data, is the same no-need-to-ask
+local-testing-environment judgment call as picking which department/record
+to use. Decide it yourself, do it through the real app UI (never raw SQL for
+setup — see step 7), and report exactly what you did as evidence. Only ask
+first if the action would reach outside local test data (a remote
+environment, or anything step 4's environment-choice gate already covers).
 
 This authorization also covers `superpowers:writing-plans`' Execution
 Handoff question, if that chain gets invoked anywhere in this flow (e.g.
@@ -49,10 +66,14 @@ Run it when the issue is a bug and step 2 left the cause unconfirmed or
 unfound:
 
 - Prefer reproducing against existing data first (read-only navigation or
-  API `GET`s). If reproduction requires creating or modifying a record,
-  confirm the target department/record with the user first
-  (`AskUserQuestion`, same pattern as step 4) rather than picking one
-  unilaterally.
+  API `GET`s) — picking which department/record to *read* is the same
+  no-need-to-ask judgment call as step 4. If reproduction requires a
+  state-changing step (creating, modifying, or deleting a record, or running
+  direct SQL), that's a different risk category: confirm with the user
+  first (`AskUserQuestion`) before creating a disposable record,
+  modifying/deleting an existing record, or running direct SQL — don't
+  extend the "don't ask" judgment call to writes. If the user approves a
+  disposable record, clean it up in the same session where possible.
 - Reproduce live against local Payara — the `playwright-e2e` skill for
   UI-facing bugs, or direct REST calls (per `api-development`) for API-only
   ones.
@@ -80,18 +101,27 @@ Exit Plan Mode only once the user approves or adjusts the plan.
 
 ## 4. Gather test context
 
-Before writing code, ask the user (via `AskUserQuestion`):
-- **Department** to use for Playwright testing (must match a real department
-  in the local DB the feature touches — e.g. Pharmacy, Inward, OPD)
+Local Payara / local DB is a testing environment — pick department and
+records yourself rather than gating on the user for them:
+- **Department**: query the local DB for one that's real and relevant to the
+  feature (e.g. Pharmacy, Inward, OPD), and say which one you picked before
+  testing.
 - **Specific records** to exercise (e.g. an admission ID, bill number, item
-  code) — pick something that exists in the local DB and is relevant to the
-  feature
+  code): query the local DB for existing records that fit the feature and
+  use those — report exactly which ones you used (BHT no, bill no, etc.) in
+  the PR/issue evidence. Only ask the user if the local DB has no suitable
+  record at all (e.g. the feature needs a state nothing local is in) — that
+  is a real blocker, not a preference question.
 - **Environment**: local Payara (default) unless the issue specifically
-  requires testing against a remote env, in which case confirm which one.
-  Credentials live outside the repo in `C:\Credentials\` — never inlined
+  requires testing against a remote env, in which case confirm which one
+  with the user (this one *is* a real decision — remote envs carry real
+  data/credentials risk that local doesn't). Credentials live outside the
+  repo in `C:\Credentials\` — never inlined.
 
-Don't guess these — wrong department/record selection wastes the whole
-Playwright pass later.
+Only the environment choice is a discussion gate here. Department/record
+selection against local test data is not — deciding it yourself and moving
+straight to step 5 keeps this step from wasting a round-trip on a question
+that has no wrong answer in a disposable local DB.
 
 ## 5. Develop
 
@@ -132,6 +162,19 @@ errors before moving on.
 
 Run the `playwright-e2e` skill workflow:
 - Login, select the department from step 4
+- If verifying the fix requires putting a record into a specific state first
+  (e.g. a race-condition fix needs a room removed, a status changed, a second
+  record created), do that live through the real app UI yourself — this is
+  the same local-testing-environment judgment call as step 4's
+  department/record choice, not a fresh discussion gate. (Unlike step 2a,
+  which gates state-changing actions because it's proving an *unconfirmed*
+  bug, step 7 is exercising a fix the user already approved in step 3.)
+  Report exactly what you did (menu path, record IDs, before/after DB state)
+  as part of the evidence.
+- **Navigate to the page through the menus, never by URL** — HMIS page state is
+  set by the `@SessionScoped` navigation method, so a URL-loaded page renders
+  against uninitialised state and produces false findings (`playwright-e2e` §2).
+  Record the menu path in the issue/PR.
 - Exercise the feature using the records chosen in step 4
 - **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
   folder at each meaningful stage (before/after states, confirmation dialogs,

@@ -907,15 +907,35 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
      * populates, so it never reflects referenceBill-linked refunds.
      */
     private double computeRemainingRefundableAmount(Bill originalBill) {
-        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
-        HashMap hm = new HashMap();
-        hm.put("orig", originalBill);
-        double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm);
-        double remaining = originalBill.getNetTotal() + refundedSoFar;
-        if (remainingRefundableAmountCache != null && originalBill.getId() != null) {
+        double remaining = calculateFreshRemainingRefundableAmount(originalBill);
+        if (remainingRefundableAmountCache != null && originalBill != null && originalBill.getId() != null) {
             remainingRefundableAmountCache.put(originalBill.getId(), remaining);
         }
         return remaining;
+    }
+
+    /**
+     * Fresh (uncached, cache-bypassing) remaining refundable amount for a
+     * post-final payment bill: the bill's own netTotal plus the SUM of
+     * netTotal of every RefundBill linked to it by referenceBill (each
+     * &lt;= 0). A positive result means that much is still refundable.
+     *
+     * Used by the Post Final Payment Reprint page to decide whether the
+     * "Refund" button is still live after one or more partial refunds
+     * (issue #23646). Deliberately does NOT read or write
+     * remainingRefundableAmountCache - that cache belongs to the bill-picker
+     * render loop and, on a @SessionScoped bean, can still hold a value from
+     * an earlier visit to the refund page.
+     */
+    public double calculateFreshRemainingRefundableAmount(Bill originalBill) {
+        if (originalBill == null || originalBill.getId() == null) {
+            return 0.0;
+        }
+        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("orig", originalBill);
+        double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm, true);
+        return originalBill.getNetTotal() + refundedSoFar;
     }
 
     public void selectBillToRefundListener() {
@@ -979,7 +999,11 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return true;
         }
 
-        double remaining = getRemainingRefundableAmount(getOriginalBillToRefund());
+        // Read fresh from the DB, not remainingRefundableAmountCache: this
+        // guard runs at click time, and on a @SessionScoped bean the cache
+        // can hold a balance from before another cashier refunded the same
+        // bill. A stale value here would let this refund exceed what is left.
+        double remaining = calculateFreshRemainingRefundableAmount(getOriginalBillToRefund());
 
         if (Math.abs(remaining) < getRefundCurrent().getTotal()) {
             double different = Math.abs(Math.abs(remaining) - Math.abs(getRefundCurrent().getTotal()));

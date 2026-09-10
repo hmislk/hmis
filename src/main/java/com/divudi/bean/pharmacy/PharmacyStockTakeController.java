@@ -104,10 +104,18 @@ public class PharmacyStockTakeController implements Serializable {
     private StockTakeApprovalService stockTakeApprovalService;
     @EJB
     private ApprovalProgressTracker approvalProgressTracker;
-    @EJB
-    private StockCountGenerationService stockCountGenerationService;
-    @EJB
-    private StockCountGenerationTracker stockCountGenerationTracker;
+    // DEAD CODE — unreachable from any XHTML page (no button/link calls
+    // generateStockCountBillAsync(), and nothing navigates to
+    // pharmacy_stock_take_progress.xhtml). Commented out per CodeRabbit
+    // finding on PR #23601 (async path never set/filtered by
+    // departmentType, unlike the sync path). TODO: delete this whole
+    // async stock-count-generation chain (this class + StockCountGenerationService
+    // + StockCountGenerationTracker + pharmacy_stock_take_progress.xhtml) if it
+    // remains unused.
+    // @EJB
+    // private StockCountGenerationService stockCountGenerationService;
+    // @EJB
+    // private StockCountGenerationTracker stockCountGenerationTracker;
     @EJB
     private StockTakePersistService stockTakePersistService;
     @EJB
@@ -147,7 +155,8 @@ public class PharmacyStockTakeController implements Serializable {
     private int zeroStockBatchLimit = 5; // default limit of 5 zero-stock batches per item
 
     // Stock count generation job tracking
-    private String generationJobId;
+    // DEAD CODE — only used by the unreachable async chain. See note above stockCountGenerationService. TODO: delete.
+    // private String generationJobId;
 
     // Performance optimization: HashMap indexes for O(1) snapshot lookups
     private HashMap<String, BillItem> snapshotLookupByCodeBatch;
@@ -420,112 +429,130 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
     }
 
-    /**
-     * Start async stock count bill generation with progress tracking. This is
-     * the recommended method for large departments to avoid timeouts.
-     */
-    public String generateStockCountBillAsync() {
-        // Check privilege
-        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
-            JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
-            return null;
-        }
-
-        // Check department
-        if (department == null) {
-            JsfUtil.addErrorMessage("Please select a department");
-            return null;
-        }
-
-        if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
-            JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
-            return null;
-        }
-
-        // Generate unique job ID
-        generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
-
-        // Initialize progress tracker
-        stockCountGenerationTracker.start(generationJobId, 0, "Starting stock count generation...");
-
-        // Start async generation
-        stockCountGenerationService.generateStockCountBillAsync(
-                generationJobId,
-                department,
-                includeZeroStockBatches,
-                zeroStockBatchLimit,
-                sessionController.getLoggedUser()
-        );
-
-        JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
-        return "/pharmacy/pharmacy_stock_take_progress?faces-redirect=true";
-    }
-
-    /**
-     * Check progress of async stock count generation. Called by polling
-     * mechanism on progress page.
-     */
-    public void checkGenerationProgress() {
-        // This method is called by p:poll, no action needed
-        // Progress is retrieved via getGenerationProgress()
-    }
-
-    /**
-     * Get current generation progress.
-     *
-     * @return Progress object or null if no job in progress
-     */
-    public StockCountGenerationTracker.Progress getGenerationProgress() {
-        if (generationJobId == null) {
-            return null;
-        }
-        return stockCountGenerationTracker.get(generationJobId);
-    }
-
-    /**
-     * Complete the generation process and load the generated bill. Called when
-     * progress indicates completion.
-     */
-    public String completeGeneration() {
-        if (generationJobId == null) {
-            JsfUtil.addErrorMessage("No generation job found");
-            return null;
-        }
-
-        StockCountGenerationTracker.Progress progress = stockCountGenerationTracker.get(generationJobId);
-
-        if (progress == null) {
-            JsfUtil.addErrorMessage("Generation progress not found");
-            return null;
-        }
-
-        if (progress.failed) {
-            JsfUtil.addErrorMessage("Generation failed: " + progress.errorMessage);
-            stockCountGenerationTracker.remove(generationJobId);
-            generationJobId = null;
-            return null;
-        }
-
-        if (!progress.completed) {
-            JsfUtil.addErrorMessage("Generation not yet completed");
-            return null;
-        }
-
-        // Get the in-memory bill (NOT persisted yet - like sync method)
-        snapshotBill = progress.getGeneratedBill();
-
-        if (snapshotBill != null) {
-            JsfUtil.addSuccessMessage("Stock count bill generated successfully with "
-                    + snapshotBill.getBillItems().size() + " items");
-            stockCountGenerationTracker.remove(generationJobId);
-            generationJobId = null;
-            // User can now review and click "Record/Settle Stock Count" to persist
-            return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
-        }
-
-        JsfUtil.addErrorMessage("Failed to retrieve generated bill");
-        return null;
-    }
+    // DEAD CODE — the async stock-count-generation chain below
+    // (generateStockCountBillAsync/checkGenerationProgress/getGenerationProgress/completeGeneration)
+    // is unreachable: no XHTML button calls generateStockCountBillAsync(), and
+    // nothing navigates to pharmacy_stock_take_progress.xhtml, which is the only
+    // page that calls the other three. Commented out per CodeRabbit finding on
+    // PR #23601 — the async path never set/filtered items by departmentType,
+    // unlike the sync generateStockCountBill() path, so a NULL-departmentType
+    // bill from this chain could silently overlap a typed stock take. Since the
+    // chain is unreachable, the fix is to retire it rather than patch it.
+    // TODO: delete this chain, StockCountGenerationService,
+    // StockCountGenerationTracker, and pharmacy_stock_take_progress.xhtml.
+    //
+    // /**
+    //  * Start async stock count bill generation with progress tracking. This is
+    //  * the recommended method for large departments to avoid timeouts.
+    //  */
+    // public String generateStockCountBillAsync() {
+    //     // Check privilege
+    //     if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+    //         JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
+    //         return null;
+    //     }
+    //
+    //     // Check department
+    //     if (department == null) {
+    //         JsfUtil.addErrorMessage("Please select a department");
+    //         return null;
+    //     }
+    //
+    //     if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
+    //         JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
+    //         return null;
+    //     }
+    //
+    //     if (selectedDepartmentType == null) {
+    //         JsfUtil.addErrorMessage("Please select a department type");
+    //         return null;
+    //     }
+    //
+    //     // Generate unique job ID
+    //     generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
+    //
+    //     // Initialize progress tracker
+    //     stockCountGenerationTracker.start(generationJobId, 0, "Starting stock count generation...");
+    //
+    //     // Start async generation
+    //     stockCountGenerationService.generateStockCountBillAsync(
+    //             generationJobId,
+    //             department,
+    //             selectedDepartmentType,
+    //             includeZeroStockBatches,
+    //             zeroStockBatchLimit,
+    //             sessionController.getLoggedUser()
+    //     );
+    //
+    //     JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
+    //     return "/pharmacy/pharmacy_stock_take_progress?faces-redirect=true";
+    // }
+    //
+    // /**
+    //  * Check progress of async stock count generation. Called by polling
+    //  * mechanism on progress page.
+    //  */
+    // public void checkGenerationProgress() {
+    //     // This method is called by p:poll, no action needed
+    //     // Progress is retrieved via getGenerationProgress()
+    // }
+    //
+    // /**
+    //  * Get current generation progress.
+    //  *
+    //  * @return Progress object or null if no job in progress
+    //  */
+    // public StockCountGenerationTracker.Progress getGenerationProgress() {
+    //     if (generationJobId == null) {
+    //         return null;
+    //     }
+    //     return stockCountGenerationTracker.get(generationJobId);
+    // }
+    //
+    // /**
+    //  * Complete the generation process and load the generated bill. Called when
+    //  * progress indicates completion.
+    //  */
+    // public String completeGeneration() {
+    //     if (generationJobId == null) {
+    //         JsfUtil.addErrorMessage("No generation job found");
+    //         return null;
+    //     }
+    //
+    //     StockCountGenerationTracker.Progress progress = stockCountGenerationTracker.get(generationJobId);
+    //
+    //     if (progress == null) {
+    //         JsfUtil.addErrorMessage("Generation progress not found");
+    //         return null;
+    //     }
+    //
+    //     if (progress.failed) {
+    //         JsfUtil.addErrorMessage("Generation failed: " + progress.errorMessage);
+    //         stockCountGenerationTracker.remove(generationJobId);
+    //         generationJobId = null;
+    //         return null;
+    //     }
+    //
+    //     if (!progress.completed) {
+    //         JsfUtil.addErrorMessage("Generation not yet completed");
+    //         return null;
+    //     }
+    //
+    //     // Get the in-memory bill (NOT persisted yet - like sync method)
+    //     snapshotBill = progress.getGeneratedBill();
+    //
+    //     if (snapshotBill != null) {
+    //         JsfUtil.addSuccessMessage("Stock count bill generated successfully with "
+    //                 + snapshotBill.getBillItems().size() + " items");
+    //         stockCountGenerationTracker.remove(generationJobId);
+    //         generationJobId = null;
+    //         // User can now review and click "Record/Settle Stock Count" to persist
+    //         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+    //     }
+    //
+    //     JsfUtil.addErrorMessage("Failed to retrieve generated bill");
+    //     return null;
+    // }
 
     /**
      * Persist the generated stock count bill and navigate to print view.
@@ -540,11 +567,14 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        // Check if there's an ongoing stock taking for this department
+        // Check if there's an ongoing stock taking for this department and department type
         // Use department from snapshotBill to prevent bypass via mutable controller field
         Department deptFromBill = snapshotBill.getDepartment();
-        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill)) {
-            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department. Please complete the existing session first.");
+        com.divudi.core.data.DepartmentType deptTypeFromBill = snapshotBill.getDepartmentType();
+        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill, deptTypeFromBill)) {
+            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department"
+                    + (deptTypeFromBill != null ? " and department type (" + deptTypeFromBill.name() + ")" : "")
+                    + ". Please complete the existing session first.");
             //LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
@@ -3555,16 +3585,23 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Check if there's an ongoing (incomplete) stock taking for the given
-     * department. An ongoing stock taking is one where bill.completed = false.
+     * department and department type. An ongoing stock taking is one where
+     * bill.completed = false. Stock takes for different department types
+     * (e.g. Pharmacy vs Store) within the same department cover disjoint
+     * item sets, so they are allowed to run concurrently. A legacy bill
+     * with a NULL departmentType (predating this field) is treated as
+     * conflicting with every department type, since its item scope is
+     * unknown and may overlap.
      */
-    private boolean hasOngoingStockTaking(Department dept) {
+    private boolean hasOngoingStockTaking(Department dept, com.divudi.core.data.DepartmentType deptType) {
         if (dept == null || dept.getId() == null) {
             return false;
         }
-        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false)";
+        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false) and (b.departmentType is null or b.departmentType=:deptType)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacySnapshotBill);
         params.put("deptId", dept.getId());
+        params.put("deptType", deptType);
         Long count = billFacade.countByJpql(jpql, params);
         return count != null && count > 0;
     }
@@ -4932,13 +4969,14 @@ public class PharmacyStockTakeController implements Serializable {
         this.zeroStockBatchLimit = zeroStockBatchLimit;
     }
 
-    public String getGenerationJobId() {
-        return generationJobId;
-    }
-
-    public void setGenerationJobId(String generationJobId) {
-        this.generationJobId = generationJobId;
-    }
+    // DEAD CODE — only used by the unreachable async chain. See note above stockCountGenerationService. TODO: delete.
+    // public String getGenerationJobId() {
+    //     return generationJobId;
+    // }
+    //
+    // public void setGenerationJobId(String generationJobId) {
+    //     this.generationJobId = generationJobId;
+    // }
 
     /**
      * Generate a sanitized filename for variance report Excel export. Includes

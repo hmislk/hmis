@@ -449,6 +449,12 @@ public class TransferIssueForRequestsController implements Serializable {
 
     /**
      * Loads a saved PHARMACY_ISSUE_PRE bill for editing (Finalize or Approve).
+     *
+     * The Finalize/Approve Issues recovery lists route through
+     * {@code TransferIssueNativeSqlController.loadDraftNativeIssueForEditing(Bill)}, which
+     * dispatches here for a draft that already carries persisted BillItem rows (an
+     * entity-backed draft saved through {@link #saveDraftIssue()} before the native-SQL
+     * workflow existed) rather than mishandling it on the native path (#23608).
      */
     public String loadDraftIssueForEditing(Bill draft) {
         makeNull();
@@ -760,6 +766,11 @@ public class TransferIssueForRequestsController implements Serializable {
 
     /**
      * Cancels a saved/finalized PHARMACY_ISSUE_PRE draft (retires it before approval).
+     *
+     * The Finalize Issues recovery list's Cancel button routes through
+     * {@code TransferIssueNativeSqlController.cancelPendingNativeIssueDraft(Bill)}, which
+     * dispatches here (after {@code setIssuedBill(draft)}) for an entity-backed draft so its
+     * persisted BillItem rows are retired too, not just the bill header (#23608).
      */
     public void cancelPendingIssue() {
         if (!isAuthorized("CANCEL_PENDING_ISSUE", "PharmacyTransferIssueCancel")) {

@@ -11,9 +11,11 @@ allowed-tools: Bash
 
 # Cleanup Merged Local Branches
 
-Delete every local branch whose PR has already been merged, then bring
-`development` up to date. Leave `persistence.xml` with local JNDI names
-restored (unstaged) at the end.
+Delete every local branch whose PR has already been merged — plus any branch
+with no PR of its own whose changes are all already represented on
+`origin/development` (e.g. a `gh pr checkout <N>` review checkout) — then bring
+`development` up to date. Leave `persistence.xml` with local JNDI names restored
+(unstaged) at the end.
 
 ## Step 1 — Stash Local persistence.xml Changes
 
@@ -43,35 +45,91 @@ List every local branch except `development`:
 git branch --format='%(refname:short)' | grep -v '^development$'
 ```
 
-For each branch, determine whether it is safe to delete:
+For each branch, determine whether it is safe to delete.
+
+### Protected branches — never delete, never classify
+
+Before the feature/hotfix split, skip any branch that is `master` or ends with
+`-prod` (the local mirrors of admin-managed / production branches — see Notes
+for the full list). They diverge from `development` by design, so a naïve
+patch-equivalence check could still misfire on them; the explicit skip is the
+guarantee. List them in the report under their own "Protected — not touched"
+heading (they are expected, not a problem to flag).
 
 ### Feature branches (do NOT end with `-hotfix`)
 
-Check if any PR targeting `development` from this branch is merged:
+The comparison base is `origin/development`. Look for a merged PR from this head:
 
 ```bash
 gh pr list --head <branch> --base development --state merged --repo hmislk/hmis --json number,title,mergedAt --jq '.[0]'
-```
-
-- If a merged PR is found → **mark for deletion**, record the PR number and title for the report.
-- If no merged PR is found, also check without `--base` filter (in case the base was changed):
-
-```bash
+# if that is empty, retry without --base — the PR's base may have been changed:
 gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title,baseRefName,mergedAt --jq '.[0]'
 ```
 
-- If still no merged PR → **skip** (warn the user about the branch).
+Record the PR number/title if found. If the second query returns a PR with a
+`baseRefName` other than `development`, the comparison base is
+`origin/<that baseRefName>`, not `origin/development`. Whether or not a PR is
+found, continue to **Vet the branch tip** — a merged PR does not by itself
+prove the local branch is safe to force-delete (it may carry post-merge
+commits, or have been reused).
 
 ### Hotfix branches (end with `-hotfix`)
 
-Hotfix PRs target a production branch, not `development`. Check for any merged PR:
+Hotfix PRs target a production branch. Look for a merged PR:
 
 ```bash
 gh pr list --head <branch> --state merged --repo hmislk/hmis --json number,title,baseRefName,mergedAt --jq '.[0]'
 ```
 
-- If a merged PR is found → **mark for deletion**, record PR number, title, and the production branch it targeted.
-- If no merged PR → **skip** (warn the user).
+- **No merged PR** → **skip** (warn the user). A hotfix branch is never vetted
+  by patch-equivalence against `development`; its commits legitimately are not
+  there.
+- **Merged PR found** → record the PR number/title and its `baseRefName`, then
+  **Vet the branch tip** with the comparison base `origin/<baseRefName>`.
+
+### Vet the branch tip (both branch kinds)
+
+Carry two facts forward for each branch: its **PR reference** — either
+`#<n> → <base-branch>` (from the `gh pr list` step) or *none* (a no-PR review
+checkout) — and its comparison base `<base>`: `origin/development` for a feature
+branch or a no-PR checkout, `origin/<baseRefName>` for a feature PR whose base
+was changed, `origin/<prod>` for a merged hotfix.
+
+```bash
+git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
+```
+
+- **CONTAINED** — the branch tip is already reachable from `<base>`; it holds
+  nothing unmerged and no post-merge commits. **Mark for deletion.**
+- **AHEAD** — the tip is not reachable from `<base>`. Normal for a squash- or
+  rebase-merged PR, but also how a branch with genuine post-merge commits (or a
+  reused branch) looks. Decide with a **final-tree guard**: are `<branch>`'s
+  versions of the files it touched already identical to `<base>`?
+
+  ```bash
+  mb=$(git merge-base <base> <branch>)
+  git diff --quiet <base> <branch> -- $(git diff --name-only "$mb" <branch>)
+  ```
+
+  This compares final content, not per-commit patches, so it is correct where
+  `git cherry` is not: a clean multi-commit squash-merge (no per-commit
+  equivalent) passes; a branch whose change was applied to `<base>` and later
+  reverted there fails; a merge commit that carried unique content in fails.
+
+  - **exit `0`** — every file the branch touched already matches `<base>`;
+    deleting the branch loses nothing (a clean squash/rebase merge, or a
+    fully-absorbed no-PR checkout such as `pr-23617`). **Mark for deletion.**
+  - **exit `1`** — some file the branch touched differs from `<base>`: genuine
+    post-merge work, a reused branch, conflict-resolution content, or a
+    squash/rebase that did not land identical content. **Skip** and warn,
+    quoting the branch's real `<base>` and its PR reference (or noting it has
+    none): "*ahead of `<base>` — if PR #`<n>` was squash/rebase-merged,
+    `git branch -D <branch>` manually; otherwise inspect for unmerged work
+    first*".
+
+  (If the touched-file list is empty — the branch's commits change nothing —
+  the command degrades to a full-tree diff and will exit `1`; skip and warn,
+  which is the safe outcome for that oddity.)
 
 ## Step 4 — Switch to development
 
@@ -81,33 +139,27 @@ git checkout development
 
 ## Step 5 — Delete Marked Branches
 
-For each branch marked for deletion, first try the safe delete:
+Step 3's **Vet the branch tip** fully decided every marked branch — each is
+either CONTAINED in its comparison base, or AHEAD but proven fully absorbed (the
+final-tree guard found every file it touched already identical to `<base>`).
+Branches with post-merge or unmerged work were skipped there. Step 5 only
+deletes; it does not re-decide safety.
 
 ```bash
-git branch -d <branch>
+git branch -d <branch> || git branch -D <branch>
 ```
 
-If `-d` refuses, check whether the local branch has commits that are not on
-the remote (i.e. local-only work added after the PR was merged):
+`git branch -d` refuses when the tip is not reachable from *local* `development`
+— normal here, because a squash/rebase merge leaves the tip off `development`
+and local `development` is not fast-forwarded until Step 6. The `|| git branch
+-D` completes the delete; Step 3 already established the branch is safe to drop.
+`git branch -D` prints the deleted SHA (`Deleted branch X (was 906d5ebbb4)`) and
+the reflog keeps it ~30 days, so a mistaken delete is still recoverable.
 
-```bash
-git log origin/<branch>..<branch> --oneline
-```
-
-- If the output is **empty** — the local tip matches the remote; the refusal
-  is just because the merge commit was squashed/rebased and git cannot trace
-  it locally. It is safe to force-delete:
-
-  ```bash
-  git branch -D <branch>
-  ```
-
-- If the output shows **local-only commits** — the branch has work that was
-  never pushed. **Skip this branch** and warn the user instead of deleting:
-
-  ```
-  ⚠ Skipped <branch>: has local commits not present on origin — delete manually after review.
-  ```
+Do **not** re-check with `git log origin/<branch>..<branch>`: Step 2's
+`git fetch --prune` has already removed the `origin/<branch>` upstream, so that
+command errors with `unknown revision or path not in the working tree` instead
+of returning empty.
 
 ## Step 6 — Fast-Forward development to origin/development
 
@@ -140,21 +192,31 @@ If no stash was created, leave `persistence.xml` as-is.
 
 Print a summary:
 
-```
+```text
 ✓ Deleted branches:
   - <branch>  (PR #NNN merged → <base-branch>)
+  - <branch>  (no PR; all changes already represented on <base-branch>)
   ...
 
-⚠ Skipped branches (no merged PR found):
-  - <branch>
+⚠ Skipped branches:
+  - <branch>  (PR #NNN merged → <base-branch>, but tip is ahead of it —
+    squash/rebase merge? `git branch -D` manually; else inspect for unmerged work)
+  - <branch>  (no PR; tip has commit(s) not on <base-branch>)
+  - <branch>  (hotfix, no merged PR found)
   ...
+
+• Protected — not touched:
+  - master, <name>-prod
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
 ```
 
-If all branches were deleted (nothing skipped), omit the skipped section.
-If nothing was stashed, replace the last line with:
+Each *vetted* deleted / skipped line carries the branch's real PR reference (or
+"no PR") and its real comparison base — never assume a PR exists or that the
+base is `development`. The unvetted "hotfix, no merged PR found" line is the one
+exception: it is skipped before any base is chosen, so it carries neither. Omit
+any section with no entries. If nothing was stashed, replace the last line with:
 `✓ persistence.xml unchanged (no local changes were present)`
 
 ## Notes

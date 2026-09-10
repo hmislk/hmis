@@ -16466,6 +16466,13 @@ public class PharmacyReportController implements Serializable {
             dto.setDosageFormName(itm != null && itm.getDosageForm() != null ? itm.getDosageForm().getName() : "");
             String supplierName = itm != null ? supplierMap.getOrDefault(itm.getId(), "") : "";
             dto.setLastSupplierName(supplierName);
+            if (department != null) {
+                dto.setStockQty(getPharmacyBean().getStockByPurchaseValue(itm, department));
+                dto.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(itm, department));
+            } else {
+                dto.setStockQty(getPharmacyBean().getStockByPurchaseValue(itm));
+                dto.setStockOnHand(getPharmacyBean().getStockWithoutPurchaseValue(itm));
+            }
             itemLastSuppliers.add(dto);
         }
 
@@ -18571,7 +18578,7 @@ public class PharmacyReportController implements Serializable {
             document.add(titlePara);
             document.add(new Paragraph(" "));
 
-            int columnCount = 6;
+            int columnCount = 8;
 
             Map<String, Object> filters = getFiltersForSlowFastNonMovementReport();
             PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
@@ -18585,8 +18592,8 @@ public class PharmacyReportController implements Serializable {
             float[] columnWidths;
             String[] headers;
 
-            columnWidths = new float[]{2f, 3f, 5f, 4f, 3f, 5f};
-            headers = new String[]{"Sl No", "Item Code", "Item Name", "Drug Form", "Dosage Form", "Supplier (Last Purchase)"};
+            columnWidths = new float[]{2f, 3f, 5f, 4f, 3f, 5f, 4f, 4f};
+            headers = new String[]{"Sl No", "Item Code", "Item Name", "Drug Form", "Dosage Form", "Supplier (Last Purchase)", "Value of QIH", "QIH"};
 
             table.setWidths(columnWidths);
 
@@ -18604,6 +18611,12 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getCategoryName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getDosageFormName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
                 table.addCell(new PdfPCell(new Phrase(deptEntry.getLastSupplierName(), FontFactory.getFont(FontFactory.HELVETICA, 8))));
+                PdfPCell stockQtyCell = new PdfPCell(new Phrase(df.format(deptEntry.getStockQty()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                stockQtyCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockQtyCell);
+                PdfPCell stockOnHandCell = new PdfPCell(new Phrase(df.format(deptEntry.getStockOnHand()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                stockOnHandCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(stockOnHandCell);
             }
 
             document.add(table);
@@ -18770,6 +18783,8 @@ public class PharmacyReportController implements Serializable {
             headerRow.createCell(3).setCellValue("Drug Form");
             headerRow.createCell(4).setCellValue("Dosage Form");
             headerRow.createCell(5).setCellValue("Supplier (Last Purchase)");
+            headerRow.createCell(6).setCellValue("Value of QIH");
+            headerRow.createCell(7).setCellValue("QIH");
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy hh:mm a");
 
@@ -18784,6 +18799,8 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getCategoryName());
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getDosageFormName());
                 dataRow.createCell(colIndex++).setCellValue(deptEntry.getLastSupplierName());
+                dataRow.createCell(colIndex++).setCellValue(deptEntry.getStockQty());
+                dataRow.createCell(colIndex++).setCellValue(deptEntry.getStockOnHand());
             }
 
             // Footer: reported by and printed time

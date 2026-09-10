@@ -91,6 +91,7 @@ public enum Privileges {
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
     InwardProcessReturnAfterNursingDischarge("Inward Process Return After Nursing Discharge"),
+    InwardProcessCancelAfterNursingDischarge("Inward Process Cancel After Nursing Discharge"),
     InwardHoldProfessionalPayments("Hold Professional Payments"),
     InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
@@ -116,6 +117,7 @@ public enum Privileges {
     InwardFinalBillRetire("Inward Final Bill Retire"),
     InwardFinalBillEmail("Inward Final Bill Email"),
     InwardFinalBillApprove("Inward Final Bill Approve"),
+    InwardFinalBillViewUnapproved("Inward Final Bill View / Print Unapproved"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     // Inpatient Dashboard - Reports Panel individual button privileges (issue: admission_profile.xhtml Reports panel)
@@ -1666,6 +1668,7 @@ public enum Privileges {
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
             case InwardProcessReturnAfterNursingDischarge:
+            case InwardProcessCancelAfterNursingDischarge:
             case InwardHoldProfessionalPayments:
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
@@ -1681,6 +1684,7 @@ public enum Privileges {
             case InwardFinalBillRetire:
             case InwardFinalBillEmail:
             case InwardFinalBillApprove:
+            case InwardFinalBillViewUnapproved:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:

@@ -146,6 +146,27 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Admission Charges", "/api/admission-charges",
+                        "Manage AdmissionChargeItem rows — routine charges billed automatically on every "
+                        + "matching admission by AdmissionChargeApplicationBean. Resolution is two-dimensional: "
+                        + "admissionType is the outer filter, paymentMethod (Cash|Credit only; null means both) "
+                        + "the inner one, and null in either column means \"applies to all\" for that dimension. "
+                        + "Because admissionType is a filter rather than a preference, configuring an "
+                        + "admission-type-specific row set for an item completely replaces the null-type rows "
+                        + "for that item — omitting one paymentMethod row for that admission type leaves it with "
+                        + "no charge at all. Only one live row is allowed per (item, admissionType, paymentMethod) "
+                        + "triple. The item must carry a department, an institution, an inwardChargeType, and at "
+                        + "least one live ItemFee. "
+                        + "GET /search filters on itemId, admissionTypeId, paymentMethod, includeRetired, and "
+                        + "pages with limit + offset, returning {items, total, limit, offset}. GET /{id} reads "
+                        + "one row. POST creates; PUT /{id} updates (clearAdmissionType/clearPaymentMethod flags "
+                        + "reset either dimension back to null). DELETE /{id} soft-retires; PATCH /{id}/restore "
+                        + "undoes it (rejected if a live row now conflicts). "
+                        + "Note: AdmissionType.admissionFee is a separate, older mechanism already added to the "
+                        + "bill by InwardBhtChargeAggregationService — configuring both for the same admission "
+                        + "type double-charges it.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Admission Number Counters", "/api/admission-numbers",
                         "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
                         "API Key (Finance header)", "GET", "PUT"))
@@ -435,6 +456,22 @@ public class CapabilityStatementResource {
                         + "flags (reference range flags by age/sex), and dynamic labels (conditional labels by age/sex). "
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Report Formats (Common Template)", "/api/report-formats",
+                        "Manage the common report template — the CommonReportItem rows (patient-details block, "
+                        + "signature block, footer) that print on every report of a given lab report format. "
+                        + "This is what the Investigation Format API above cannot reach: those rows are keyed on the "
+                        + "report-format Category and carry no investigation. "
+                        + "GET /report-formats lists the non-retired ReportFormat categories with their template row counts. "
+                        + "Sub-resource /{categoryId}/items supports GET (list), GET /{itemId}, POST, PUT /{itemId} and "
+                        + "DELETE /{itemId} (soft-retire). "
+                        + "Geometry is percentage-based (riTop, riLeft, riWidth, riHeight) with riFontSize in points — "
+                        + "the fields to nudge when printing onto pre-printed stationery. Only the fields present in a "
+                        + "PUT body are applied, so a single coordinate can be moved on its own. Reads report the "
+                        + "rendered value, not the stored one: riWidth/riHeight/riFontSize fall back to 30/2/12 when "
+                        + "unset (see #23528). Scoped to ReportFormat categories only — the HR/clinical form templates "
+                        + "that reuse CommonReportItem under other categories are deliberately not reachable here.",
+                        "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
                         "Manage InvestigationComponent groupings used to organize report items within an investigation's format "

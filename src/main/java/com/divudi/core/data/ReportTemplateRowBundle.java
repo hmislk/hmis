@@ -167,6 +167,103 @@ public class ReportTemplateRowBundle implements Serializable {
     private boolean cashierExcludedTotalComputed;
     private List<PaymentMethod> cashierCollectionPaymentMethods = new ArrayList<>();
     private List<PaymentMethod> cashierExcludedPaymentMethods = new ArrayList<>();
+    
+    private Date fromDate;
+    private Date toDate;
+    private Institution filterInstitution;
+    private Institution filterSite;
+    private Department filterDepartment;
+    private WebUser filterWebUser;
+    
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public Institution getFilterInstitution() {
+        return filterInstitution;
+    }
+
+    public void setFilterInstitution(Institution filterInstitution) {
+        this.filterInstitution = filterInstitution;
+    }
+
+    public Institution getFilterSite() {
+        return filterSite;
+    }
+
+    public void setFilterSite(Institution filterSite) {
+        this.filterSite = filterSite;
+    }
+
+    public Department getFilterDepartment() {
+        return filterDepartment;
+    }
+
+    public void setFilterDepartment(Department filterDepartment) {
+        this.filterDepartment = filterDepartment;
+    }
+
+    public WebUser getFilterWebUser() {
+        return filterWebUser;
+    }
+
+    public void setFilterWebUser(WebUser filterWebUser) {
+        this.filterWebUser = filterWebUser;
+    }
+
+    /**
+     * True once a report generator has snapshotted the filters it actually ran
+     * with. Exporters gate the filter summary block on this: a bundle that
+     * never set them must not get "All Institutions / All Users" printed
+     * against it, because that asserts a scope the report never applied.
+     */
+    public boolean hasFilterSummary() {
+        return fromDate != null
+                || toDate != null
+                || filterInstitution != null
+                || filterSite != null
+                || filterDepartment != null
+                || filterWebUser != null;
+    }
+
+    /**
+     * The report title to print, or null when no generator ever named this
+     * bundle. Unlike {@link #getName()} this does not lazily assign a
+     * "BundleName&lt;uuid&gt;" placeholder - that placeholder exists to keep
+     * download file names unique, and printing it as a report heading shows
+     * the user a raw UUID.
+     */
+    public String getPrintableName() {
+        return (name == null || name.trim().isEmpty()) ? null : name;
+    }
+
+    /**
+     * Name to show for the filtered user. WebUser.getName() is the login name,
+     * not the person's name, so prefer the person and fall back to the login.
+     */
+    public String getFilterWebUserDisplayName() {
+        if (filterWebUser == null) {
+            return null;
+        }
+        if (filterWebUser.getWebUserPerson() != null
+                && filterWebUser.getWebUserPerson().getName() != null
+                && !filterWebUser.getWebUserPerson().getName().trim().isEmpty()) {
+            return filterWebUser.getWebUserPerson().getName();
+        }
+        return filterWebUser.getName();
+    }
 
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();

@@ -173,6 +173,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
             loadSapIntegrationConfigurationDefaults();
+            loadInwardConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -182,6 +183,20 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadInwardConfigurationDefaults() {
+        // Reservation admission window: admission is allowed from this many hours before
+        // reservedFrom until this many hours after the reservation end (reservedTo, or
+        // reservedFrom when reservedTo is null). Consumed by AppointmentController.navigatePatientAdmit().
+        getLongValueByKey("Inward - Reservation Admission Early Window (Hours)", 24L);
+        getLongValueByKey("Inward - Reservation Admission Grace Period (Hours)", 24L);
+        // Settlement gate: unchecked inward service / professional / pharmacy /
+        // store / payment bills block the final bill. Seeded here so an admin
+        // can find and toggle it without first having to settle a bill.
+        // Replaces "Need to check inward bills before discharge", which was read
+        // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
+        getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {
@@ -1317,6 +1332,20 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    /**
+     * Returns a list of {@code count} zero-based Integers, for {@code ui:repeat}
+     * loops that just need to render N copies of something (e.g. blank leading
+     * lines above a pre-printed dot-matrix letterhead). Clamps to [0, 40].
+     */
+    public java.util.List<Integer> integerList(Integer count) {
+        int n = count == null ? 0 : Math.max(0, Math.min(40, count));
+        java.util.List<Integer> out = new java.util.ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            out.add(i);
+        }
+        return out;
+    }
+
     public Double getDoubleValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
@@ -1413,6 +1442,22 @@ public class ConfigOptionApplicationController implements Serializable {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
             option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, defaultValue);
+        }
+        return option.getOptionValue();
+    }
+
+    /**
+     * Read-only variant of {@link #getShortTextValueByKey(String, String)} —
+     * the text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist. Use this for {@code rendered="..."}/
+     * output-value reads that must not silently create configuration rows
+     * just because a page was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
+            return defaultValue;
         }
         return option.getOptionValue();
     }
@@ -1560,6 +1605,27 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, dv);
         }
         return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    /**
+     * Key of the option that makes a hospital treat assisting (non-Consultant)
+     * professional fees as ordinary professional charges.
+     */
+    public static final String PROFESSIONAL_AND_ASSISTING_FEES_MERGED
+            = "Professional Fee and Assisting Fees are shown as one charge type on the final bill.";
+
+    /**
+     * True when professional and assisting fees are a single professional
+     * charge for this hospital, i.e. {@code InwardChargeType.DoctorAndNurses}
+     * should not appear anywhere — not as a bill row, a report column, or a
+     * selectable charge type.
+     *
+     * <p>Read-only on purpose: this is consulted from {@code rendered="..."}
+     * gates and from charge-type list building, neither of which should create
+     * a ConfigOption row just because a page was viewed.
+     */
+    public boolean isProfessionalAndAssistingFeesMerged() {
+        return getBooleanValueByKeyReadOnly(PROFESSIONAL_AND_ASSISTING_FEES_MERGED, false);
     }
 
     /**

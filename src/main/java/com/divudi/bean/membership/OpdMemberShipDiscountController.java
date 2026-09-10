@@ -228,12 +228,12 @@ public class OpdMemberShipDiscountController implements Serializable {
     }
 
     public String toManageDiscountMatrixForChannellingByDepartment() {
-        return "/membership/membership_scheme_discount_channelling_by_department";
+        return "/admin/pricing/membership/membership_scheme_discount_channelling_by_department";
     }
 
     public String toManageDiscountMatrixForPharmacyByDepartmentAndCategory() {
         fillDiscountMetrixesForPharmacyForDepartmentAndCategory();
-        return "/membership/membership_scheme_discount_pharmacy_by_department_and_category";
+        return "/admin/pricing/membership/membership_scheme_discount_pharmacy_by_department_and_category";
     }
 
     public void saveSelectedChannelPaymentScheme() {
@@ -1085,7 +1085,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
         items = getFacade().findByJpql(sql);
-        return "/membership/membership_scheme_discount_opd_by_department";
+        return "/admin/pricing/membership/membership_scheme_discount_opd_by_department";
 
     }
 

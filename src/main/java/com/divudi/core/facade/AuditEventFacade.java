@@ -51,4 +51,24 @@ public class AuditEventFacade extends AbstractFacade<AuditEvent> {
         super(AuditEvent.class);
     }
 
+    // create()/edit() are inherited from the generic AbstractFacade<T>. Per the
+    // EJB spec a class-level @TransactionAttribute on this subclass applies only
+    // to methods *defined here*, not to un-overridden inherited ones, and the
+    // container dispatches writes through the synthetic bridge create(Object)/
+    // edit(Object). Override both here so the REQUIRES_NEW attribute is
+    // unambiguously in effect for the audit write path regardless of container
+    // interpretation.
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void create(AuditEvent entity) {
+        super.create(entity);
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void edit(AuditEvent entity) {
+        super.edit(entity);
+    }
+
 }
