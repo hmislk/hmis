@@ -27,9 +27,9 @@ public final class InwardReceiptTextRenderer {
         StringBuilder sb = new StringBuilder(1024);
 
         if (emitEscP) {
-            sb.append('').append('@');   // ESC @  — initialise
-            sb.append('').append('x').append(''); // ESC x 1 — LQ mode
-            sb.append('').append('P');   // ESC P  — 10 CPI
+            sb.append('\u001B').append('@');   // ESC @  — initialise
+            sb.append('\u001B').append('x').append('\u0001'); // ESC x 1 — LQ mode
+            sb.append('\u001B').append('P');   // ESC P  — 10 CPI
         }
 
         int margin = Math.max(0, Math.min(40, topMarginLines));

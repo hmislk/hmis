@@ -486,11 +486,12 @@
                             </div>
 
                         </h:panelGroup>
-                        <h:panelGroup id="gpBillPreviewDmx"
-                                      style="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false) ? '' : 'display:none;'}">
-                            <div class="d-flex justify-content-center">
-                                <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardPaymentController.current}" heading="Payment Receipt" />
-                            </div>
+                        <h:panelGroup id="gpBillPreviewDmx">
+                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}">
+                                <div class="d-flex justify-content-center">
+                                    <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardPaymentController.current}" heading="Payment Receipt" />
+                                </div>
+                            </h:panelGroup>
                         </h:panelGroup>
                     </div>
                 </p:panel>

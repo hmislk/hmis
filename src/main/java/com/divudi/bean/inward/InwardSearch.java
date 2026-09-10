@@ -3420,8 +3420,9 @@ public class InwardSearch implements Serializable {
         com.divudi.core.entity.Department dept = getBill().getDepartment();
         boolean preprinted = configOptionApplicationController
                 .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
-        int topMargin = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L).intValue();
+        Long topMarginRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
+        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
 

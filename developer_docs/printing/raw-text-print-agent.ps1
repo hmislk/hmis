@@ -17,6 +17,7 @@
 $WatchFolder = "C:\hmis-print"          # where the browser saves .prn files
 $PrinterPath = "\\localhost\LQ310"      # printer share  (or "\\.\LPT1")
 $FileGlob    = "inward-*.prn"           # only touch our receipts
+$PollSeconds = 2                        # how often to check the folder
 # ------------------------------------------------------------------------------
 
 if (-not (Test-Path $WatchFolder)) { New-Item -ItemType Directory -Path $WatchFolder | Out-Null }
@@ -26,6 +27,9 @@ function Send-Raw($file) {
         try {
             # /b = binary copy, no EOF translation, no driver involvement
             cmd /c copy /b "`"$file`"" "$PrinterPath" | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "copy /b exited with code $LASTEXITCODE"
+            }
             Remove-Item -LiteralPath $file -Force
             Write-Host ("{0}  printed {1}" -f (Get-Date), (Split-Path $file -Leaf))
             return
@@ -36,16 +40,14 @@ function Send-Raw($file) {
     Write-Warning ("Could not print {0} after retries" -f $file)
 }
 
-# print anything already waiting
-Get-ChildItem -Path $WatchFolder -Filter $FileGlob -File -ErrorAction SilentlyContinue |
-    ForEach-Object { Send-Raw $_.FullName }
+Write-Host ("{0}  watching {1} for {2} -> {3} (polling every {4}s)" -f (Get-Date), $WatchFolder, $FileGlob, $PrinterPath, $PollSeconds)
 
-$fsw = New-Object System.IO.FileSystemWatcher $WatchFolder, $FileGlob
-$fsw.EnableRaisingEvents = $true
-Register-ObjectEvent $fsw Created -Action {
-    Start-Sleep -Milliseconds 500          # let the download finish
-    Send-Raw $Event.SourceEventArgs.FullPath
-} | Out-Null
-
-Write-Host ("{0}  watching {1} for {2} -> {3}" -f (Get-Date), $WatchFolder, $FileGlob, $PrinterPath)
-while ($true) { Start-Sleep -Seconds 3600 }
+# Simple poll loop instead of FileSystemWatcher: Register-ObjectEvent's -Action
+# scriptblock runs in a separate event-job runspace that does not inherit this
+# script's functions or variables, so Send-Raw/$PrinterPath would be undefined
+# there. A poll loop is simpler and reliable for a low-volume receipt printer.
+while ($true) {
+    Get-ChildItem -Path $WatchFolder -Filter $FileGlob -File -ErrorAction SilentlyContinue |
+        ForEach-Object { Send-Raw $_.FullName }
+    Start-Sleep -Seconds $PollSeconds
+}

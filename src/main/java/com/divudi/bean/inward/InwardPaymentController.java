@@ -40,9 +40,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.InwardReceiptTextRenderer;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -1111,8 +1109,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         com.divudi.core.entity.Department dept = sessionController.getDepartment();
         boolean preprinted = configOptionApplicationController
                 .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
-        int topMargin = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L).intValue();
+        Long topMarginRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
+        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
 

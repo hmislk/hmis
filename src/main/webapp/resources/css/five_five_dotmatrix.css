@@ -78,9 +78,6 @@
     }
     /* Page/form geometry is left to the printer driver (custom 5x5, tractor feed).
        Do NOT set negative margins or fixed cm boxes here. */
-    @page {
-        margin: 0;
-    }
 }
 
 @media screen {
@@ -90,4 +87,6 @@
         background: #fff;
         padding: 4px;
     }
+
+    .dmx-print-only { display: none; }
 }
