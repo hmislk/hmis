@@ -81,21 +81,21 @@
                             </div>
 
                             <!-- Patient Name -->
-                            <div class="col-6 d-flex mb-1">
+                            <div class="col-12 d-flex mb-1">
                                 <span style="width: 130px;">Patient Name</span>
                                 <span style="width: 12px; text-align: center;">:</span>
-                                <span class="flex-fill ps-2">
+                                <span class="flex-fill ps-2" style="min-width: 0; white-space: normal; word-break: break-word;">
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
                                 </span>
                             </div>
 
                             <!-- Address -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                            <h:panelGroup layout="block" styleClass="col-12 d-flex mb-1"
                                           rendered="#{bhtSummeryController.custom4ShowAddress}">
                                 <span style="width: 130px;">Address</span>
                                 <span style="width: 12px; text-align: center;">:</span>
-                                <span class="flex-fill ps-2">
-                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
+                                <span class="flex-fill ps-2" style="min-width: 0; white-space: normal; word-break: break-word;">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address ne null and !cc.attrs.bill.patientEncounter.patient.person.address.equals('') ? cc.attrs.bill.patientEncounter.patient.person.address : 'N/A'}"/>
                                 </span>
                             </h:panelGroup>
 
@@ -125,7 +125,17 @@
                                 <span style="width: 130px;">Phone No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
-                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.mobile}"/>
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.mobile ne null and !cc.attrs.bill.patientEncounter.patient.person.mobile.equals('') ? cc.attrs.bill.patientEncounter.patient.person.mobile : 'N/A'}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Guardian -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{bhtSummeryController.custom4ShowGuardian}">
+                                <span style="width: 130px;">Guardian</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian ne null and cc.attrs.bill.patientEncounter.guardian.name ne null and !cc.attrs.bill.patientEncounter.guardian.name.equals('') ? cc.attrs.bill.patientEncounter.guardian.nameWithTitle : 'N/A'}" />
                                 </span>
                             </h:panelGroup>
 
@@ -151,15 +161,7 @@
                                 </span>
                             </div>
 
-                            <!-- Guardian -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowGuardian}">
-                                <span style="width: 130px;">Guardian</span>
-                                <span style="width: 12px; text-align: center;">:</span>
-                                <span class="flex-fill ps-2">
-                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
-                                </span>
-                            </h:panelGroup>
+
 
                             <!-- Room -->
                             <div class="col-6 d-flex mb-1">
