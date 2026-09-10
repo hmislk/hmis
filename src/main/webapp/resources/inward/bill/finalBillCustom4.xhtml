@@ -818,14 +818,20 @@
                                                                               (b.cancelled eq false
                                                                               and b.refundedBill eq null
                                                                               and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
-                                                            <h:outputLabel value="#{b.deptId}"/>
-                                                            <h:outputLabel value="#{b.paymentMethod}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
-                                                            <h:outputLabel value="#{b.netTotal}"
-                                                                           style="text-align: right;">
+                                                            <h:outputLabel value="#{b.deptId}" style="width: 110px;"/>
+
+                                                            <h:outputLabel value="#{b.paymentMethod}"  style="width: 40px;" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
+
+                                                            <h:outputLabel value="#{b.netTotal}" style="text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputLabel>
-                                                            <h:outputLabel value="(#{b.comments})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false) and b.comments ne null and b.comments ne ''}"/>
+
+                                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Type on Final Bill On Final Bill Print',false)}">
+                                                                <h:outputLabel value="(#{b.billTypeAtomic.label})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Deposit label on Final Bill Print',false) and b.billTypeAtomic eq 'INWARD_DEPOSIT'}" style="max-width: 100px; white-space: nowrap;overflow: visible; text-overflow: ellipsis;"/>
+                                                                <h:outputLabel value="(#{b.billTypeAtomic.label})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Payment label on Final Bill Print',false) and b.billTypeAtomic eq 'INWARD_PAYMENT'}" style="max-width: 100px; white-space: nowrap;overflow: visible; text-overflow: ellipsis;"/>
+                                                            </h:panelGroup>
 
                                                         </div>
 
