@@ -190,6 +190,13 @@ public class InwardBillReceiptDTO implements Serializable {
         return patientTitle;
     }
 
+    // Setters for title / dob / sex exist so BillFacade.findInwardBillReceiptDTO
+    // can backfill them from the bill's own patient when the bill has no
+    // encounter (e.g. an appointment-deposit cancel bill). (#23622)
+    public void setPatientTitle(Title patientTitle) {
+        this.patientTitle = patientTitle;
+    }
+
     public String getPatientName() {
         return patientName;
     }
@@ -198,8 +205,16 @@ public class InwardBillReceiptDTO implements Serializable {
         return patientDob;
     }
 
+    public void setPatientDob(Date patientDob) {
+        this.patientDob = patientDob;
+    }
+
     public Sex getPatientSex() {
         return patientSex;
+    }
+
+    public void setPatientSex(Sex patientSex) {
+        this.patientSex = patientSex;
     }
 
     public String getAdmissionTypeName() {

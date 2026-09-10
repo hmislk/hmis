@@ -402,10 +402,21 @@ public class SurgeryBillController implements Serializable {
             JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
+        if (inwardTimedItemController.isCheckedAndLocked(patientItem)) {
+            return;
+        }
         patientItem.setRetirer(getSessionController().getLoggedUser());
         patientItem.setRetiredAt(new Date());
         patientItem.setRetired(true);
         getPatientItemFacade().edit(patientItem);
+        // Retiring only the PatientItem hid the row but kept the charge: the
+        // inward totals are summed from the BillItem side
+        // (InwardBeanController#calServiceBillItemsTotalByInwardChargeTypeBulk),
+        // so a removed ward timed service went on billing - and, once unchecked
+        // service bills block the final bill, would have blocked it from a bill
+        // no screen still listed. No-ops for surgery-added services, whose
+        // PatientItem carries no BillItem of its own.
+        inwardTimedItemController.retireTimedServiceBill(patientItem);
         refreshTimedEncounterComponents();
     }
 
@@ -1096,6 +1107,46 @@ public class SurgeryBillController implements Serializable {
         return getBillFacade().findLongByJpql(jpql, hm);
     }
 
+    /**
+     * Counts still-running ({@code toTime IS NULL}) timed services scoped to
+     * this surgery specifically, not the whole admission - a patient can have
+     * more than one surgery per admission. Every timed-service PatientItem
+     * for a surgery is billed on the single TimedService Bill found via
+     * {@code fetchByForwardBill}, the same lookup
+     * {@code InwardTimedItemController.selectSurgeryBillListener()} uses.
+     * <p>
+     * Joined through {@code EncounterComponent} rather than
+     * {@code PatientItem.billItem} - the surgery Add flow
+     * ({@code InwardTimedItemController.saveTimeServiceBill()}) links a
+     * timed service's BillItem onto its {@code EncounterComponent}, never
+     * onto the {@code PatientItem} itself, so {@code PatientItem.billItem}
+     * is always null here.
+     * <p>
+     * Filters on {@code patientItem.retired} in addition to
+     * {@code ec.retired} - {@link #removeTimeService(PatientItem)} (the
+     * Remove action on the Surgery Dashboard's Timed Services tab) only
+     * retires the {@code PatientItem}, not its {@code EncounterComponent},
+     * so a removed-but-never-stopped service would otherwise still count as
+     * running here and permanently block validation.
+     */
+    public long getRunningTimedServiceCount() {
+        if (getSurgeryBill().getId() == null) {
+            return 0;
+        }
+        Bill timedServiceBill = getBillBean().fetchByForwardBill(getSurgeryBill(), SurgeryBillType.TimedService);
+        if (timedServiceBill == null) {
+            return 0;
+        }
+        String jpql = "SELECT COUNT(ec) FROM EncounterComponent ec"
+                + " WHERE ec.retired = false"
+                + " AND ec.billItem.bill = :bill"
+                + " AND ec.billFee.patientItem.retired = false"
+                + " AND ec.billFee.patientItem.toTime IS NULL";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", timedServiceBill);
+        return getEncounterComponentFacade().findLongByJpql(jpql, hm);
+    }
+
     public void validateSurgery() {
         if (getSurgeryBill().getId() == null) {
             JsfUtil.addErrorMessage("Select Surgery");
@@ -1108,6 +1159,12 @@ public class SurgeryBillController implements Serializable {
         if (!isAllSurgeryBillsChecked()) {
             JsfUtil.addErrorMessage("Cannot validate: " + getUncheckedSurgeryBillCount()
                     + " bill(s) under this surgery are not yet checked.");
+            return;
+        }
+        long runningTimedServices = getRunningTimedServiceCount();
+        if (runningTimedServices > 0) {
+            JsfUtil.addErrorMessage("Cannot validate: " + runningTimedServices
+                    + " timed service(s) under this surgery are still running. Stop them first.");
             return;
         }
         Map<String, Object> before = new LinkedHashMap<>();

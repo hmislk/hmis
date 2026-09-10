@@ -27,12 +27,16 @@ run before the merge lands.
 | `rh-local` | `rh-local-staging`    | Local RH staging — does NOT share prod's `ruhunu` DB |
 | `all`      | all five branches above | Run each independently; one failing doesn't block the rest |
 
-**Do not use** the non-`-migrated` branches (`hims-qa1`, `hims-qa2`, `hims-qa4`) or
-`hims-qa2-old` / `rh-stg-old` — these are stale/legacy (weeks-to-months since last
-commit) and superseded by the `-migrated` branches. `hims-qa3` (no suffix) and
-`rh-stg` / `rh-stg-migrated` are separate, actively-diverging lineages — do not
-touch them under this skill without explicit confirmation from the user, since
-they are not necessarily the same environments as `qa3` / `rh-local` above.
+**Do not use** the non-`-migrated` `hims-qa*` branches. The old
+`hims-qa1` / `hims-qa2` / `hims-qa3` / `hims-qa4` branches (on
+`qa.carecode.org`) plus `hims-qa2-old` and `rh-stg-old` were retired and
+**deleted** on 2026-09-09 — they were superseded by the `-migrated` branches
+and their deploy workflows were removed in PR #23634. If any reappears, it is
+stale and must not be deployed to.
+
+`rh-stg` / `rh-stg-migrated` are separate, actively-diverging lineages — do
+not touch them under this skill without explicit confirmation from the user,
+since they are not necessarily the same environment as `rh-local` above.
 
 Note: `hims-qa1-migrated` through `hims-qa4-migrated` are sometimes synced
 automatically by an external process — if `gh pr create` reports "No commits
@@ -63,14 +67,26 @@ gh pr merge <PR-number> --repo hmislk/hmis --merge --delete-branch=false
 ```
 
 GitHub Actions will then automatically build with Maven, deploy to the target
-QA/staging server, and restart the Payara application server — **except for
-`hims-qa1-migrated` through `hims-qa4-migrated`, which currently have no
-matching CI/CD workflow** (`.github/workflows/hims_qa*_ci_cd.yml` still trigger
-only on the non-migrated `hims-qa1`..`hims-qa4` branch names). Merging into
-those four branches updates the branch content but does not deploy it — verify
-with whoever owns those environments before relying on this to actually push
-code live. `rh-local-staging` does have a working deploy trigger
-(`ruhunu_local_server_ci_cd.yml`).
+QA/staging server, and restart the Payara application server. Each
+`hims-qaN-migrated` branch has its own working pipeline
+(`.github/workflows/hims_qaN_migrated_ci_cd.yml`, all four on `development`
+since PR #23634); `rh-local-staging` deploys via
+`ruhunu_local_server_ci_cd.yml`. The four migrated workflows use a per-branch
+concurrency group, so deploying several in one `deploy-qa all` run no longer
+cancels each other (that was a real bug before #23634 — a shared
+`payara-qa-migrated` group silently cancelled whichever branch merged in the
+middle).
+
+If a `hims-qaN-migrated` branch has drifted such that a `development`-headed
+PR shows a merge conflict, the fix is **not** a conflict-resolution branch —
+`check-branch` (`branch_merge_validation.yml`) only allows `development` as the
+PR head for a `hims-qa*-migrated` base, so such a PR always fails CI. An admin
+must reconcile it: temporarily add a bypass actor to the `QA Branches Rules`
+ruleset (id 4778267), then
+`git fetch origin && git push --force-with-lease origin origin/development:hims-qaN-migrated`
+(lease-protected so a concurrent update to the target branch aborts the push
+instead of being silently discarded), then restore the ruleset to
+`bypass_actors: []`.
 
 ## Post-Deployment
 

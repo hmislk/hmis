@@ -17596,11 +17596,19 @@ public class SearchController implements Serializable {
 
     public String navigateToIssueForRequestListToFinalize() {
         makeListNull();
+        // A pending issue draft blocks new issues regardless of age, so default the recovery
+        // list to a wide window rather than today-only, or old orphaned drafts stay invisible
+        // while the (date-less) block persists (#23608).
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -365L));
+        toDate = CommonFunctions.getEndOfDay(new Date());
         return "/pharmacy/pharmacy_issue_for_request_list_to_finalize?faces-redirect=true";
     }
 
     public String navigateToIssueForRequestListToApprove() {
         makeListNull();
+        // See navigateToIssueForRequestListToFinalize — same reason (#23608).
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -365L));
+        toDate = CommonFunctions.getEndOfDay(new Date());
         return "/pharmacy/pharmacy_issue_for_request_list_to_approve?faces-redirect=true";
     }
 
