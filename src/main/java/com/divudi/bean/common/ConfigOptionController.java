@@ -220,6 +220,43 @@ public class ConfigOptionController implements Serializable {
         return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
     }
 
+    /**
+     * Read-only variant of a department-scoped-key-first text lookup — the
+     * text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * resolves {@code "<Department name> - <key>"} first and only falls back
+     * to the plain application-scoped key (and finally {@code defaultValue})
+     * when no department override exists. Never persists a new ConfigOption
+     * row for either key. Use this for {@code rendered="..."}/output-value
+     * reads (e.g. a per-department receipt title or registration number)
+     * that must not silently create configuration rows just because a page
+     * was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        return getShortTextValueByKeyReadOnly(key, defaultValue, sessionController.getDepartment());
+    }
+
+    /**
+     * Department-explicit overload of {@link #getShortTextValueByKeyReadOnly(String, String)}.
+     * Use this on print/reprint templates and anywhere else the record being
+     * rendered (a {@code Bill}, etc.) carries its own department that may
+     * differ from {@code sessionController.getDepartment()} — e.g. a user
+     * logged into one department reprinting a bill created in another. Pass
+     * {@code bill.getDepartment()} rather than relying on the session's
+     * currently-selected department, or the wrong department's override
+     * (or no override at all) can be shown on that bill's receipt.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue, Department department) {
+        if (department == null) {
+            return configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
+        }
+        String deptKey = department.getName() + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.SHORT_TEXT) {
+            defaultValue = configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
+        }
+        return configOptionApplicationController.getShortTextValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
     public Long getLongValueByKey(String key) {
         return getLongValueByKey(key, 0L);
     }

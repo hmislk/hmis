@@ -20,7 +20,7 @@
                             <div class="d-flex justify-content-between">
                                 <div class="d-flex">
                                     <h:outputText styleClass="fas fa-gavel"></h:outputText>
-                                    <h:outputLabel value="Approve Final Bill" class="mx-4"></h:outputLabel>
+                                    <h:outputLabel value="Approve Final Bill (Read Only)" class="mx-4"></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.deptId}" styleClass="text-muted"></h:outputLabel>
                                 </div>
                                 <div class="d-flex gap-2">
@@ -35,25 +35,12 @@
                                 </div>
                             </div>
                         </f:facet>
-
-                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" class="mb-3">
-                            <h:outputText value="This bill has already been approved." styleClass="text-success" />
-                        </p:panel>
-
-                        <p:panel class="mt-3">
-                            <f:facet name="header">
-                                <h:outputLabel value="Final Bill (Read Only)"></h:outputLabel>
-                            </f:facet>
-
-                            <bi:finalBill bill="#{inwardSearch.bill}" />
-
-                        </p:panel>
-
-                        <div class="d-flex gap-2 mt-3">
+                        
+                        <div class="d-flex  justify-content-end gap-2 mt-3">
                             <p:commandButton
                                 ajax="false"
                                 icon="fa fa-gavel"
-                                class="ui-button-primary"
+                                class="ui-button-warning"
                                 value="Approve"
                                 title="Approve #{inwardSearch.bill.deptId}"
                                 actionListener="#{inwardSearch.approveFinalBillVersion(inwardSearch.bill)}"
@@ -71,6 +58,14 @@
                                 title="Back to Final Bills">
                             </p:commandButton>
                         </div>
+
+                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" class="mb-3">
+                            <h:outputText value="This bill has already been approved." styleClass="text-success" />
+                        </p:panel>
+
+                        <h:panelGroup class="mt-3">
+                            <bi:finalBill bill="#{inwardSearch.bill}" />
+                        </h:panelGroup>
 
                     </p:panel>
 

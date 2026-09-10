@@ -1446,6 +1446,22 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
+    /**
+     * Read-only variant of {@link #getShortTextValueByKey(String, String)} —
+     * the text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist. Use this for {@code rendered="..."}/
+     * output-value reads that must not silently create configuration rows
+     * just because a page was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
+            return defaultValue;
+        }
+        return option.getOptionValue();
+    }
+
     public String getInwardChargeTypeLabel(InwardChargeType type) {
         String key = "Inward Charge Type Label - " + type.name();
         String custom = getShortTextValueByKey(key, "");
