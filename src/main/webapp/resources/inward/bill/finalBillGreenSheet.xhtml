@@ -465,9 +465,12 @@
                     <div class="d-flex justify-content-between px-5 mt-4">
                         <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.name}">
                         </h:outputLabel>
-                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         <h:outputLabel value="Patient/Guardian" >
                         </h:outputLabel>
+                    </div>
+
+                    <div class="px-5 mt-2">
+                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                     </div>
 
                     <p:spacer></p:spacer>
