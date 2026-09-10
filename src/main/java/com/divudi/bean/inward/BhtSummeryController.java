@@ -4592,10 +4592,30 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        List<FinalBillPrintRowDTO> rows = new ArrayList<>(individualRows);
+        // Merge on the FINAL printed label, not on the group key alone: an
+        // ungrouped charge type whose own label already reads the same as a
+        // group ("Room Charges" the charge type vs "Room Charges" the group)
+        // would otherwise print as a second, visually identical line that no
+        // one reading the bill can tell apart — which is exactly what COOP hit
+        // after grouping two of three room-related charge types and leaving
+        // RoomCharges itself ungrouped. Two rows carrying the same label are
+        // indistinguishable on paper, so they are always one row.
+        Map<String, Double> amountByLabel = new LinkedHashMap<>();
+        Map<String, Integer> orderByLabel = new LinkedHashMap<>();
+        for (FinalBillPrintRowDTO row : individualRows) {
+            amountByLabel.merge(row.getLabel(), row.getAmount(), Double::sum);
+            orderByLabel.merge(row.getLabel(), row.getOrder(), Math::min);
+        }
         for (Map.Entry<String, Double> entry : groupedTotals.entrySet()) {
             String group = entry.getKey();
-            rows.add(new FinalBillPrintRowDTO(group, entry.getValue(), groupedOrder.get(group)));
+            amountByLabel.merge(group, entry.getValue(), Double::sum);
+            orderByLabel.merge(group, groupedOrder.get(group), Math::min);
+        }
+
+        List<FinalBillPrintRowDTO> rows = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : amountByLabel.entrySet()) {
+            rows.add(new FinalBillPrintRowDTO(entry.getKey(), entry.getValue(),
+                    orderByLabel.get(entry.getKey())));
         }
 
         rows.removeIf(row -> Math.abs(row.getAmount()) < 0.005);
@@ -4641,7 +4661,11 @@ public class BhtSummeryController implements Serializable {
             }
             groupByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
             orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
-            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeLabel(type));
+            // Final-bill-specific resolver: keeps the legacy per-hospital charge
+            // type names the non-bundled Final Bill already prints, so turning
+            // bundling on changes grouping only, never row names. See
+            // ConfigOptionApplicationController#getInwardChargeTypeFinalBillLabel.
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type));
         }
 
         return buildBundledRows(items, groupByType, orderByType, labelByType);

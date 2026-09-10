@@ -1506,6 +1506,19 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
+    /**
+     * Read-only variant of {@link #getLongTextValueByKey(String, String)} —
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist.
+     */
+    public String getLongTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            return defaultValue;
+        }
+        return option.getOptionValue();
+    }
+
     public String getInwardChargeTypeLabel(InwardChargeType type) {
         String key = "Inward Charge Type Label - " + type.name();
         String custom = getShortTextValueByKey(key, "");
@@ -1513,6 +1526,51 @@ public class ConfigOptionApplicationController implements Serializable {
             return type.getLabel();
         }
         return custom;
+    }
+
+    /**
+     * Display name for an inward charge type <b>on the Final Bill print only</b>.
+     * <p>
+     * Two naming mechanisms exist side by side:
+     * <ul>
+     * <li>legacy — {@code "Inward Charge Type - Name For <default label>"},
+     * loaded onto the enum's mutable {@code name} field at login by
+     * {@code SessionController#init()}. This is what the Final Bill has always
+     * printed, via {@code #{bip.inwardChargeType.name}}.</li>
+     * <li>current — {@code "Inward Charge Type Label - <EnumName>"}, read by
+     * {@link #getInwardChargeTypeLabel(InwardChargeType)} and used by the
+     * interim bill, the charge-type breakdown/detail reports, the invoice
+     * journal and the config API.</li>
+     * </ul>
+     * The bundled Final Bill row builder resolved labels through the current
+     * key, so switching on "Inward Final Bill - Bundle Grouped Charge Types"
+     * silently renamed rows: COOP has 22 legacy names ("Resident Medical
+     * Officer Charges", "Radiology &amp; Imaging", "Theatre Surgical
+     * Consumables &amp; Drugs" …) and would have lost all of them just by
+     * enabling bundling.
+     * <p>
+     * Legacy therefore wins here, so enabling bundling changes only how rows
+     * are <em>grouped</em>, never what they are <em>called</em>. This resolver
+     * is deliberately separate from
+     * {@link #getInwardChargeTypeLabel(InwardChargeType)} so nothing outside
+     * the Final Bill changes.
+     * <p>
+     * The legacy read is read-only: {@code SessionController#init()} already
+     * creates all of those rows at login, so this never needs to create one —
+     * and must not create a full set from a session-less context.
+     */
+    public String getInwardChargeTypeFinalBillLabel(InwardChargeType type) {
+        String legacy = getLongTextValueByKeyReadOnly(
+                "Inward Charge Type - Name For " + type.getLabel(), "");
+        if (legacy != null && !legacy.trim().isEmpty()) {
+            return legacy;
+        }
+        String custom = getShortTextValueByKeyReadOnly(
+                "Inward Charge Type Label - " + type.name(), "");
+        if (custom != null && !custom.trim().isEmpty()) {
+            return custom;
+        }
+        return type.getLabel();
     }
 
     public void saveInwardChargeTypeLabel(InwardChargeType type, String customLabel) {
