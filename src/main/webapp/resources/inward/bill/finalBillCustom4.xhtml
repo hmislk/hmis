@@ -40,7 +40,7 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <table class="headingPrinting" >
+                    <table class="headingPrinting" style="line-height: 1.1;">
 
                         <tr>
                             <td colspan="4">
@@ -58,7 +58,7 @@
 
 
                     <!-- ===== A4 Bill Header (BHT, Name, ...) - auto-wrapping 2-column grid ===== -->
-                    <div style="font-size: 13px; width: 90%; margin-left: 5%; margin-right: 5%; line-height: 1.2;" class="mt-4 mb-4">
+                    <div style="font-size: 13px; width: 90%; margin-left: 5%; margin-right: 5%; line-height: 1.2;" class="mt-3 mb-2">
                         <div class="row gx-0 custom4-header-details-row">
 
                             <!-- BHT No -->
@@ -185,8 +185,8 @@
                     </div>
 
                     <div style="width: 90%; margin-left: 5%; margin-right: 5%">
-                        <table class=" w-100"  >
-                            <tr style="t">
+                        <table class=" w-100" style="line-height: 1.05;"  >
+                            <tr style="t" class="mb-2">
                                 <td style="text-align: left; font-weight: bold; font-size: 14px;">
                                     <h:outputLabel value="Description" />
                                 </td>
@@ -646,7 +646,7 @@
                                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                                                             <table>
                                                                 <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                    <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                                    <h:panelGroup style="line-height: 1.0;" rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
                                                                                 <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
@@ -810,7 +810,7 @@
                                         <td>
                                             <table>
                                                 <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
-                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 )
+                                                    <h:panelGroup style="line-height: 1.05;" rendered="#{(b.netTotal ne 0 )
                                                                               and
                                                                               ((b.cancelled eq false
                                                                               and b.billClass eq 'class com.divudi.core.entity.BilledBill')
