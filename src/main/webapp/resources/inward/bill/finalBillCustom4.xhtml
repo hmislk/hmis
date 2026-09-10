@@ -5,7 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -1077,6 +1078,7 @@
                             <div class="d-grid justify-content-center">
                                 <h:outputLabel value="-----------------------------" />
                                 <h:outputLabel value="Prepared by : #{cc.attrs.bill.creater.name}"  class="w-100 d-flex justify-content-center"/>
+                                <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                             </div>
                         </div>
                         <div class="col-4">
