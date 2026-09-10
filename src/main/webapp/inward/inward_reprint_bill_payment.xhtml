@@ -50,6 +50,14 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
+                                    <p:commandButton value="Print (Dot-Matrix)" ajax="false" icon="fa fa-print"
+                                                     class="ui-button-info" action="#" >
+                                        <p:printer target="gpBillPreviewDmx" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                                     class="ui-button-help"
+                                                     action="#{inwardSearch.streamReprintReceiptAsRawText}" />
+
                                     <p:commandButton
                                         id="btnMarkAsChecked"
                                         ajax="false"
@@ -199,6 +207,10 @@
                                         <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
                                     </h:panelGroup>
 
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreviewDmx" styleClass="dmx-print-only">
+                                    <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardSearch.bill}" heading="Payment Receipt" duplicate="true" />
                                 </h:panelGroup>
                             </div>
                         </p:panel>

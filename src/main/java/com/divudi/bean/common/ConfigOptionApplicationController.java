@@ -1332,6 +1332,20 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    /**
+     * Returns a list of {@code count} zero-based Integers, for {@code ui:repeat}
+     * loops that just need to render N copies of something (e.g. blank leading
+     * lines above a pre-printed dot-matrix letterhead). Clamps to [0, 40].
+     */
+    public java.util.List<Integer> integerList(Integer count) {
+        int n = count == null ? 0 : Math.max(0, Math.min(40, count));
+        java.util.List<Integer> out = new java.util.ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            out.add(i);
+        }
+        return out;
+    }
+
     public Double getDoubleValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
