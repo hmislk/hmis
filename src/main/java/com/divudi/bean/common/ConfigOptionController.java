@@ -232,13 +232,24 @@ public class ConfigOptionController implements Serializable {
      * was viewed.
      */
     public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
-        String departmentName;
-        if (sessionController.getDepartment() != null) {
-            departmentName = sessionController.getDepartment().getName();
-        } else {
+        return getShortTextValueByKeyReadOnly(key, defaultValue, sessionController.getDepartment());
+    }
+
+    /**
+     * Department-explicit overload of {@link #getShortTextValueByKeyReadOnly(String, String)}.
+     * Use this on print/reprint templates and anywhere else the record being
+     * rendered (a {@code Bill}, etc.) carries its own department that may
+     * differ from {@code sessionController.getDepartment()} — e.g. a user
+     * logged into one department reprinting a bill created in another. Pass
+     * {@code bill.getDepartment()} rather than relying on the session's
+     * currently-selected department, or the wrong department's override
+     * (or no override at all) can be shown on that bill's receipt.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue, Department department) {
+        if (department == null) {
             return configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
         }
-        String deptKey = departmentName + " - " + key;
+        String deptKey = department.getName() + " - " + key;
         ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
         if (appOption == null || appOption.getValueType() != OptionValueType.SHORT_TEXT) {
             defaultValue = configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);

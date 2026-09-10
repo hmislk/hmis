@@ -157,8 +157,8 @@
                         <div >
                             <h:outputLabel value="#{cc.attrs.bill.department.email}" />
                         </div>
-                        <h:panelGroup layout="block" rendered="#{not empty configOptionController.getShortTextValueByKeyReadOnly('OPD Bill Registration Number', '')}">
-                            <h:outputLabel value="Reg. No: #{configOptionController.getShortTextValueByKeyReadOnly('OPD Bill Registration Number', '')}" />
+                        <h:panelGroup layout="block" rendered="#{not empty configOptionController.getShortTextValueByKeyReadOnly('OPD Bill Registration Number', '', cc.attrs.bill.department)}">
+                            <h:outputLabel value="Reg. No: #{configOptionController.getShortTextValueByKeyReadOnly('OPD Bill Registration Number', '', cc.attrs.bill.department)}" />
                         </h:panelGroup>
                     </div>
                     <div class="separator"></div>
@@ -167,7 +167,7 @@
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                     <br/>
-                    <h:outputLabel value="#{configOptionController.getShortTextValueByKeyReadOnly('OPD Bill Receipt Title', 'OPD Receipt')}"/>
+                    <h:outputLabel value="#{configOptionController.getShortTextValueByKeyReadOnly('OPD Bill Receipt Title', 'OPD Receipt', cc.attrs.bill.department)}"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
