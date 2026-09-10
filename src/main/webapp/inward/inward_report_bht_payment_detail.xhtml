@@ -25,6 +25,7 @@
     <h:body>
         <ui:composition template="/inward/inward_reports.xhtml">
             <ui:define name="subcontent">
+
                 <h:form id="frm">
 
                     <p:panel header="BHT Deposit and Credit Settlement Detail" class="m-1">
@@ -347,44 +348,47 @@
                             var="row"
                             emptyMessage="No records found"
                             paginator="true"
-                            rows="20"
+                            rows="10"
                             paginatorAlwaysVisible="false"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                             rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                            scrollable="true"
+                            scrollWidth="100%"
+                            frozenColumns="2"
                             styleClass="w-100">
 
-                            <p:column headerText="BHT No" style="white-space:nowrap;"
+                            <p:column headerText="BHT No" width="6em" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailBhtNoVisible}">
                                 <h:outputText value="#{row.bhtNo}" />
                             </p:column>
 
-                            <p:column headerText="Patient Name"
+                            <p:column headerText="Patient Name" width="20em"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPatientNameVisible}">
                                 <h:outputText value="#{row.patientName}" />
                             </p:column>
 
-                            <p:column headerText="Admission Type" style="white-space:nowrap;"
+                            <p:column headerText="Admission Type" width="8em" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailAdmissionTypeVisible}">
                                 <h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" />
                             </p:column>
 
-                            <p:column headerText="Admitted" style="white-space:nowrap;"
+                            <p:column headerText="Admitted" width="6em" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailAdmittedVisible}">
                                 <h:outputText value="#{row.dateOfAdmission}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Discharged" style="white-space:nowrap;"
+                            <p:column headerText="Discharged" width="6em" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailDischargedVisible}">
                                 <h:outputText value="#{row.dateOfDischarge}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Deposit Cash" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Deposit Cash" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailDepositCashVisible}">
                                 <h:outputText value="#{row.depositCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -396,7 +400,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Deposit Card" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Deposit Card" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailDepositCardVisible}">
                                 <h:outputText value="#{row.depositCard}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -408,7 +412,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Deposit Other" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Deposit Other" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailDepositOtherVisible}">
                                 <h:outputText value="#{row.depositOther}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -420,7 +424,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Deposits" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                            <p:column headerText="Total Deposits" width="7em" style="text-align:right; white-space:nowrap; font-weight:bold;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailTotalDepositsVisible}">
                                 <h:outputText value="#{row.totalDeposits}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -432,7 +436,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Payment Cash" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Payment Cash" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentCashVisible}">
                                 <h:outputText value="#{row.paymentCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -444,7 +448,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Payment Card" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Payment Card" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentCardVisible}">
                                 <h:outputText value="#{row.paymentCard}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -456,7 +460,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Payment Credit" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Payment Credit" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentCreditVisible}">
                                 <h:outputText value="#{row.paymentCredit}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -468,7 +472,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Payment Other" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Payment Other" width="6em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPaymentOtherVisible}">
                                 <h:outputText value="#{row.paymentOther}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -480,7 +484,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Payments" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                            <p:column headerText="Total Payments" width="7em" style="text-align:right; white-space:nowrap; font-weight:bold;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailTotalPaymentsVisible}">
                                 <h:outputText value="#{row.totalPayments}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -492,7 +496,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post Payment Cash" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Post Payment Cash" width="7em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCashVisible}">
                                 <h:outputText value="#{row.postFinalCash}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -504,7 +508,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post Payment Card" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Post Payment Card" width="7em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCardVisible}">
                                 <h:outputText value="#{row.postFinalCard}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -516,7 +520,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post Payment Credit" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Post Payment Credit" width="7em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentCreditVisible}">
                                 <h:outputText value="#{row.postFinalCredit}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -528,7 +532,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Post Payment Other" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Post Payment Other" width="7em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailPostPaymentOtherVisible}">
                                 <h:outputText value="#{row.postFinalOther}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -540,7 +544,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Post Payments" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                            <p:column headerText="Total Post Payments" width="8em" style="text-align:right; white-space:nowrap; font-weight:bold;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailTotalPostPaymentsVisible}">
                                 <h:outputText value="#{row.totalPostFinalPayments}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -552,7 +556,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Grand Total" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                            <p:column headerText="Grand Total" width="7em" style="text-align:right; white-space:nowrap; font-weight:bold;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailGrandTotalVisible}">
                                 <h:outputText value="#{row.totalAllMoneyIn}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -564,7 +568,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Credit Billed" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Total Credit Billed" width="8em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailTotalCreditBilledVisible}">
                                 <h:outputText value="#{row.creditBilledTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -576,7 +580,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Settled" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Credit Settled" width="7em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailCreditSettledVisible}">
                                 <h:outputText value="#{row.creditSettlementTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -588,7 +592,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Balance" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                            <p:column headerText="Credit Balance" width="7em" style="text-align:right; white-space:nowrap; font-weight:bold;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailCreditBalanceVisible}">
                                 <h:outputText value="#{row.creditBalance}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -600,17 +604,17 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Company"
+                            <p:column headerText="Credit Company" width="10em"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailCreditCompanyVisible}">
                                 <h:outputText value="#{row.creditCompanyNames}" />
                             </p:column>
 
-                            <p:column headerText="Final Bill No" style="white-space:nowrap;"
+                            <p:column headerText="Final Bill No" width="7em" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailFinalBillNoVisible}">
                                 <h:outputText value="#{row.finalBillNumber}" />
                             </p:column>
 
-                            <p:column headerText="Total Bill Value" style="text-align:right; white-space:nowrap;"
+                            <p:column headerText="Total Bill Value" width="7em" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailTotalBillValueVisible}">
                                 <h:outputText value="#{row.finalBillTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
@@ -622,7 +626,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Total Balance" style="text-align:right; white-space:nowrap; font-weight:bold;"
+                            <p:column headerText="Total Balance" width="7em" style="text-align:right; white-space:nowrap; font-weight:bold;"
                                       rendered="#{userSettingsController.inwardBhtPaymentDetailTotalBalanceVisible}">
                                 <h:outputText value="#{row.totalBalance}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
