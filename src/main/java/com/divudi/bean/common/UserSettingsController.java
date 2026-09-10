@@ -3398,6 +3398,115 @@ public class UserSettingsController implements Serializable {
         setBhtPaymentDetailColumnVisible("totalBalance", visible);
     }
 
+    // Page: inward_bht_payment_summary
+    // Backs inward_report_bht_payment_summary.xhtml (bhtPaymentDetailReportController - see #23258).
+    // BHT No and Patient Name are always shown (no toggle) - only the
+    // remaining columns are user-hideable.
+
+    private static final java.util.List<String> INWARD_BHT_PAYMENT_SUMMARY_COLUMN_KEYS = java.util.Arrays.asList(
+            "admissionType", "admitted", "discharged", "type", "billNo",
+            "dateTime", "paymentMethod", "amount", "referenceNo", "creditCompany");
+
+    /**
+     * Shared setter for every inward_bht_payment_summary column checkbox.
+     * Refuses to hide the last remaining visible optional column, matching
+     * the guard used for inward_bht_payment_detail.
+     */
+    private void setBhtPaymentSummaryColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_summary");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_PAYMENT_SUMMARY_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_payment_summary", settings);
+    }
+
+    public boolean isInwardBhtPaymentSummaryAdmissionTypeVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "admissionType");
+    }
+
+    public void setInwardBhtPaymentSummaryAdmissionTypeVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryAdmittedVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "admitted");
+    }
+
+    public void setInwardBhtPaymentSummaryAdmittedVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryDischargedVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "discharged");
+    }
+
+    public void setInwardBhtPaymentSummaryDischargedVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryTypeVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "type");
+    }
+
+    public void setInwardBhtPaymentSummaryTypeVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("type", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryBillNoVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "billNo");
+    }
+
+    public void setInwardBhtPaymentSummaryBillNoVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("billNo", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryDateTimeVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "dateTime");
+    }
+
+    public void setInwardBhtPaymentSummaryDateTimeVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("dateTime", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryPaymentMethodVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "paymentMethod");
+    }
+
+    public void setInwardBhtPaymentSummaryPaymentMethodVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("paymentMethod", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryAmountVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "amount");
+    }
+
+    public void setInwardBhtPaymentSummaryAmountVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("amount", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryReferenceNoVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "referenceNo");
+    }
+
+    public void setInwardBhtPaymentSummaryReferenceNoVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("referenceNo", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryCreditCompanyVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "creditCompany");
+    }
+
+    public void setInwardBhtPaymentSummaryCreditCompanyVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("creditCompany", visible);
+    }
+
     // Page: inward_professional_payment_summary (Issue #23515)
     // Backs the Summary table on inward/reports/inward_professional_payment_report_dto.xhtml
     // (InwardReportControllerBht). Also consumed directly by

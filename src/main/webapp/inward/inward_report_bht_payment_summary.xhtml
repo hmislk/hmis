@@ -203,38 +203,86 @@
                             icon="fas fa-cogs"
                             action="#{bhtPaymentDetailReportController.generateReport()}"
                             ajax="false"
-                            class="ui-button-success m-1" />
+                            class="ui-button-success m-1" >
+                        </p:commandButton>
 
                     </p:panel>
+                    
+                                            <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                            <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Configure Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAdmissionTypeVisible}" itemLabel="Admission Type">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAdmittedVisible}" itemLabel="Admitted">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryDischargedVisible}" itemLabel="Discharged">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryTypeVisible}" itemLabel="Type">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryBillNoVisible}" itemLabel="Bill No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryDateTimeVisible}" itemLabel="Date / Time">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryPaymentMethodVisible}" itemLabel="Payment Method">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryAmountVisible}" itemLabel="Amount">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryReferenceNoVisible}" itemLabel="Reference No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtPaymentSummaryCreditCompanyVisible}" itemLabel="Credit Company">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </p:panel>
+                        </div>
 
-                    <p:panel id="pnlResults"
-                             rendered="#{bhtPaymentDetailReportController.reportRows != null}">
+                    <p:panel id="pnlResults" rendered="#{bhtPaymentDetailReportController.reportRows != null}">
 
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h:outputText value="Results" />
                                 <div>
-                                    <p:commandButton value="Print"
-                                                     icon="fas fa-print"
-                                                     class="ui-button-info me-1"
-                                                     ajax="false">
+                                    <p:commandButton 
+                                        value="Print"
+                                        icon="fas fa-print"
+                                        class="ui-button-info me-1"
+                                        ajax="false">
                                         <p:printer target="tblReport" />
                                     </p:commandButton>
-                                    <p:commandButton value="Excel"
-                                                     icon="fas fa-file-excel"
-                                                     class="ui-button-success"
-                                                     ajax="false">
-                                        <p:dataExporter type="xlsx"
-                                                        target="tblReport"
-                                                        fileName="BHT_Payment_Summary" />
+                                    <p:commandButton 
+                                        value="Excel"
+                                        icon="fas fa-file-excel"
+                                        class="ui-button-success"
+                                        ajax="false">
+                                        <p:dataExporter 
+                                            type="xlsx"
+                                            target="tblReport"
+                                            fileName="BHT_Payment_Summary" />
                                     </p:commandButton>
-                                    <p:commandButton value="PDF"
-                                                     icon="fas fa-file-pdf"
-                                                     class="ui-button-danger mx-1"
-                                                     ajax="false">
-                                        <p:dataExporter type="pdf"
-                                                        target="tblReport"
-                                                        fileName="BHT_Payment_Summary" />
+                                    <p:commandButton 
+                                        value="PDF"
+                                        icon="fas fa-file-pdf"
+                                        class="ui-button-danger mx-1"
+                                        ajax="false">
+                                        <p:dataExporter 
+                                            type="pdf"
+                                            target="tblReport"
+                                            fileName="BHT_Payment_Summary" />
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -262,51 +310,61 @@
                                 <h:outputText value="#{row.patientName}" />
                             </p:column>
 
-                            <p:column headerText="Admission Type" style="white-space:nowrap;">
+                            <p:column headerText="Admission Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryAdmissionTypeVisible}">
                                 <h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" />
                             </p:column>
 
-                            <p:column headerText="Admitted" style="white-space:nowrap;">
+                            <p:column headerText="Admitted" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryAdmittedVisible}">
                                 <h:outputText value="#{row.dateOfAdmission}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Discharged" style="white-space:nowrap;">
+                            <p:column headerText="Discharged" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryDischargedVisible}">
                                 <h:outputText value="#{row.dateOfDischarge}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Type" style="white-space:nowrap;">
+                            <p:column headerText="Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryTypeVisible}">
                                 <h:outputText value="#{row.paymentCategory}" />
                             </p:column>
 
-                            <p:column headerText="Bill No" style="white-space:nowrap;">
+                            <p:column headerText="Bill No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryBillNoVisible}">
                                 <h:outputText value="#{row.billNo}" />
                             </p:column>
 
-                            <p:column headerText="Date / Time" style="white-space:nowrap;">
+                            <p:column headerText="Date / Time" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryDateTimeVisible}">
                                 <h:outputText value="#{row.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Payment Method" style="white-space:nowrap;">
+                            <p:column headerText="Payment Method" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryPaymentMethodVisible}">
                                 <h:outputText value="#{row.paymentMethod != null ? row.paymentMethod.label : 'CC Settlement'}" />
                             </p:column>
 
-                            <p:column headerText="Amount" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Amount" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryAmountVisible}">
                                 <h:outputText value="#{row.amount}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Reference No" style="white-space:nowrap;">
+                            <p:column headerText="Reference No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryReferenceNoVisible}">
                                 <h:outputText value="#{row.referenceNo}" />
                             </p:column>
 
-                            <p:column headerText="Credit Company">
+                            <p:column headerText="Credit Company"
+                                      rendered="#{userSettingsController.inwardBhtPaymentSummaryCreditCompanyVisible}">
                                 <h:outputText value="#{row.creditCompanyName}" />
                             </p:column>
 
