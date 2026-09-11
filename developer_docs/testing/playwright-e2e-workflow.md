@@ -3645,10 +3645,14 @@ let idx = -1;
 headers.each(function (i) { if (this.textContent.trim() === 'Inventory Reports') idx = i; });
 w.select(idx);
 ```
-Then `browser_wait_for({time: 1.5})` before searching the DOM for the target
-report button — `select()` still triggers the same lazy-load AJAX, it just
-does so through the real widget lifecycle instead of a spoofed click, so the
-panel populates instead of toggling shut.
+`select()` still triggers the same lazy-load AJAX that a real click would,
+it just does so through the real widget lifecycle instead of a spoofed
+click, so the panel populates instead of toggling shut — but the AJAX is
+still async, so don't search the DOM immediately after `select()`. Per §5a,
+wait on content rather than a fixed delay: `browser_wait_for({text: '<a
+label expected in that category, e.g. "1. Closing Stock">'})` before
+searching the DOM for the target report button. A fixed-time wait risks
+checking before a slow response has populated the panel.
 
 ## 124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter
 
