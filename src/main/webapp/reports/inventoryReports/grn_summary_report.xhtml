@@ -283,12 +283,12 @@
                                     <h:outputText value="#{bill.paymentMethod.label}"/>
                                 </p:column>
                                 <p:column headerText="Amount" styleClass="text-end">
-                                    <h:outputText value="#{bill.netTotal}">
+                                    <h:outputText value="#{pharmacyController.getGrnDisplayAmount(bill)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Dis. Amount" styleClass="text-end">
-                                    <h:outputText value="#{bill.discount}">
+                                    <h:outputText value="#{pharmacyController.getGrnDisplayDiscount(bill)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
