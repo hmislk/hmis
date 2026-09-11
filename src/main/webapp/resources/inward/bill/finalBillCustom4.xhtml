@@ -741,7 +741,9 @@
                                      BhtSummeryController#getBundledFinalBillRows. -->
                                 <ui:repeat value="#{bhtSummeryController.getBundledFinalBillRows(cc.attrs.bill)}" var="row">
                                     <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                        <td style="text-align: left;font-size: 13px!important; margin-top: -10px;">
+                                        <td style="text-align: left; font-size: 13px !important;
+                                                    max-width: 150px; white-space: nowrap;
+                                                    overflow: visible; text-overflow: ellipsis;">
                                             <h:outputLabel value="#{row.label}" />
                                         </td>
                                         <td style="margin-top: -10px;">
@@ -761,8 +763,10 @@
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'DoctorAndNurses' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeLabel(bip.inwardChargeType)}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                            max-width: 150px; white-space: nowrap;
+                                                            overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeFinalBillLabel(bip.inwardChargeType)}" />
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                     <table>
@@ -809,13 +813,15 @@
                                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                                             <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
                                                 <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                    <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                        <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeLabel(bip.inwardChargeType)}" />
+                                                    <td style="text-align: left; font-size: 13px !important;
+                                                                max-width: 150px; white-space: nowrap;
+                                                                overflow: visible; text-overflow: ellipsis;">
+                                                        <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeFinalBillLabel(bip.inwardChargeType)}" />
                                                     </td>
                                                     <td style="margin-top: -10px;">
                                                         <table>
                                                             <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                                <h:panelGroup style="line-height: 1.0;" rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                     <tr>
                                                                         <td style="text-align: left; font-size: 10px!important;">
                                                                             <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
@@ -853,8 +859,10 @@
                                     <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter,cc.attrs.showProfessional)}" var="bip">
                                         <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
-                                                <td style="text-align: left; font-size: 13px!important; margin-top: -10px;">
-                                                    <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeLabel(bip.inwardChargeType)}" />
+                                                <td style="text-align: left; font-size: 13px !important;
+                                                            max-width: 150px; white-space: nowrap;
+                                                            overflow: visible; text-overflow: ellipsis;">
+                                                    <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeFinalBillLabel(bip.inwardChargeType)}" />
                                                 </td>
                                                 <td style="margin-top: -10px;">
                                                     <table>
