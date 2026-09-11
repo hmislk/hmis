@@ -151,6 +151,7 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data](#122-a-pcommandbuttons-processx-that-excludes-the-button-itself-silently-skips-its-own-action--no-exception-no-error-a-real-200-ok-with-the-previous-data)
 - [123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab](#123-reportsindexxhtmls-report-category-accordion-needs-the-primefaces-widget-api-not-a-plain-click-to-reliably-expand-a-tab)
 - [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
+- [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -2244,6 +2245,17 @@ reload or hard refresh will not. Found while verifying issue #23342, where an
 A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
 between the two halves.
 
+**Second caveat — a swap can also break the view that is already open.** While
+verifying issue #23723, `inward_bill_final.xhtml` was swapped while the page was
+open in the browser. The swap *was* picked up (a fresh open rendered the new
+markup), but the next AJAX postback from the already-open view failed: first
+silently (the `p:ajax` listener never ran, so the edit didn't persist), then as
+an HTTP 500 `IndexOutOfBoundsException: Index 0 out of bounds for length 0` at
+`AttachedObjectListHolder.restoreState`. The saved view state no longer matches
+the rebuilt component tree. That is a test artifact, not a defect. After any
+swap, leave the page (Home → back through the menus) to get a fresh view before
+testing again, and don't trust anything a pre-swap view did after the swap.
+
 ## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
 
 To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
@@ -3677,3 +3689,39 @@ the report's menu entry — the report page's own `Institution`/`Site`/
 `Department-Store` filter fields are independent of the session department,
 so once on the page, point those filters back at the department whose data
 you actually need to verify.
+
+## 125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre
+
+Found while verifying issue #23723 on the local `coop` DB.
+
+- **Pick a fully open admission.** *Inpatient → Services & Items → Add Services &
+  Investigations* refuses to settle for a discharged BHT ("Sorry Patient is
+  Discharged!!!") and also for one whose nursing discharge is confirmed ("Cannot
+  add charges: nursing discharge has been confirmed for this patient."). Both
+  messages appear only in a `p:messages`/growl on a full-page reload that looks
+  like the edit screen (§70), so check the messages or the DB. Add every charge
+  and professional fee first, then run the discharge chain (§75): Room Details →
+  Discharge from Room, Nursing Discharge, Clinical Discharge, then Interim Bill →
+  set **Discharge Time** (a `p:datePicker`; use the widget's `setDate()`, §56) →
+  Discharge, then Create Final Bill.
+- **MRI items (`REPORTING - Dr ...`, `MRI - ...`) live in the `MRI` department,
+  which is not one of the department buttons on the Inward session's Add Services
+  page.** In production they're billed by the Karapitiya Diagnostic Centre. To
+  reproduce that, log in to **OPD - Diagnostic Centre**, open the same Add
+  Services menu item, set the page's **Institution** dropdown to *Galle Co
+  Operative Hospital* (it defaults to the Diagnostic Centre, and the BHT search
+  then finds nothing), search the BHT, and click the **MRI** department button.
+  The resulting bill number is `OPDDC//...`, like production's.
+- **Add Professional Fee's patient search** only finds the BHT when its Institution
+  is right. Changing that dropdown on the Diagnostic Centre session did not take
+  effect, but the Inward session defaults to *All Institutions* and works. Enter
+  professional fees from the Inward department.
+- **Save Final Bill stays disabled until you click Process**, and it silently
+  refuses (`checkCatTotal()`) while any category's Adjusted Total differs from
+  its Total. That's the default of `Block Inward Final Bill When Category
+  Adjusted Total Differs From Actual Total`. Undo test adjustments, or balance
+  them, before saving.
+- **Creating a new final bill version** (Admission Profile → Manage Final Bills →
+  Create New Version) reopens `inward_bill_final.xhtml` in edit mode on an
+  already-settled admission. That's a quick way to get a fresh edit view without
+  building another admission.

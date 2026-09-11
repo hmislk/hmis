@@ -273,6 +273,23 @@
                                                             </tr>
                                                         </h:panelGroup>
                                                     </ui:repeat>
+                                                        <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}" style="">
+                                                            <tr>
+
+                                                                <td style="text-align: left;font-size: 8px!important;">
+                                                                    <h:panelGroup>
+                                                                        #{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Professional Charges Without A Doctor', 'Other Professional Charges')}
+                                                                    </h:panelGroup>
+                                                                </td>
+                                                                <td  style="text-align: right;font-size: 8px!important;">
+                                                                    <h:panelGroup>
+                                                                        <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputLabel>
+                                                                    </h:panelGroup>
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
                                                 </table>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="sessionController.userPreference.applicationInstitution ne 'Ruhuna'">
