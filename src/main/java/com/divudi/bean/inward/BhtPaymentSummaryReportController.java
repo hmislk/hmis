@@ -15,6 +15,7 @@ import com.divudi.bean.common.UserSettingsController;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -465,10 +466,22 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // Getters / setters
     // -------------------------------------------------------------------------
 
-    public Date getFromDate() { return fromDate; }
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
     public void setFromDate(Date fromDate) { this.fromDate = fromDate; }
 
-    public Date getToDate() { return toDate; }
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
     public void setToDate(Date toDate) { this.toDate = toDate; }
 
     public String getDateBasis() { return dateBasis; }
