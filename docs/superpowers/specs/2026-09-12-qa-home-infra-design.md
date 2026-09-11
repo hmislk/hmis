@@ -52,13 +52,25 @@ under that account/machine — not a new dedicated domain. Rationale: there's
 already isolation at the machine/account level, and uptime isn't critical
 enough to justify managing a second domain per target.
 
-Each QA app reuses that domain's **already-configured local JNDI datasource
-names** for its hospital DB (e.g. this laptop's carecode-account domain
-already has `jdbc/ruhunu` / `jdbc/ruhunuAudit` configured for local dev — QA1
-uses those same names, not a new `jdbc/qa1` pool). This mirrors the existing
-CI substitution mechanism (`${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}`
-in `persistence.xml`), just resolved to local pool names instead of Azure's
-`jdbc/qaN`.
+Each QA app reuses **whichever existing local JNDI datasource already points
+at the correct hospital database** — verified per machine, not assumed from
+naming. This matters: on this laptop's carecode account, the existing
+`jdbc/coop` JNDI resource turned out to point at a database literally named
+`coop` (the developer's own dev/testing convention), not `ruhunu`, despite
+the confusing name. QA1 therefore gets its **own new** JDBC pool/resource
+(`jdbc/qa1Main`) pointing at the actual local `ruhunu` database, so it tests
+real Ruhunu data and never shares state with the developer's personal
+`coop`-pool dev work. QA1's audit JNDI reuses the existing `jdbc/ruhunuAudit`
+→ `rhAuditPool` → `rhAudit` database as-is (shared with personal dev use;
+audit tables are generic change logs, low risk to mix).
+
+The other three machines must go through the same verification (check what
+database a candidate JNDI/pool actually connects to — `asadmin get
+resources.jdbc-connection-pool.<pool>.property.databaseName` — before
+assuming it's reusable) rather than trusting the JNDI name alone. This
+mirrors the existing CI substitution mechanism (`${JDBC_DATASOURCE}` /
+`${JDBC_AUDIT_DATASOURCE}` in `persistence.xml`), just resolved to local pool
+names instead of Azure's `jdbc/qaN`.
 
 ## CI/CD
 
