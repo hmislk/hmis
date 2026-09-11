@@ -19,11 +19,25 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        <!-- This composite is always printed alone (one p:printer target = one
+             instance of this composite), never combined with other .a4bill
+             siblings. printing.css's shared ".a4bill{page-break-after:always}"
+             rule (meant to separate consecutive bills when several are printed
+             together) then leaves a trailing blank page after the only content
+             there is. Override it locally rather than touching the shared rule
+             other consumers may still depend on for separation (issue #23713). -->
+        <style>
+            @media print {
+                .finalProfessionalBillA4 {
+                    page-break-after: auto !important;
+                }
+            }
+        </style>
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <div  >
             <h:panelGroup id="gpBillPreview" style="margin: auto; padding: 0px; " >
 
-                <div class="a4bill"  >
+                <div class="a4bill finalProfessionalBillA4"  >
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
