@@ -611,31 +611,28 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * "Paid By Patient" breakdown rows for a final bill print — the
+     * admission's deposits, payments and their refunds, read from the
+     * admission itself. See
+     * {@link InwardBeanController#fetchPatientPaymentBillsForFinalBill(PatientEncounter)}.
+     */
+    public List<Bill> getPatientPaymentBillsForFinalBill(Bill bill) {
+        if (bill == null) {
+            return new ArrayList<>();
+        }
+        return getInwardBean().fetchPatientPaymentBillsForFinalBill(bill.getPatientEncounter());
+    }
+
+    /**
      * Sum of prior payments/receipts recorded against this admission — the
-     * Custom3 bill's "Deposit" line. Same backwardReferenceBills source and
-     * qualifying filter as the Custom2 receipts table (finalBillCustom2.xhtml
-     * lines 280-291), just summed instead of rendered row by row.
+     * Custom3 bill's "Deposit" line. Same source as the "Paid By Patient"
+     * breakdown ({@link #getPatientPaymentBillsForFinalBill(Bill)}), just
+     * summed instead of rendered row by row.
      */
     public double getCustom3DepositTotal(Bill bill) {
-        if (bill == null) {
-            return 0.0;
-        }
-        List<Bill> receipts = (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null)
-                ? bill.getPatientEncounter().getFinalBill().getBackwardReferenceBills()
-                : bill.getBackwardReferenceBills();
         double total = 0.0;
-        if (receipts == null) {
-            return total;
-        }
-        for (Bill b : receipts) {
-            if (b.getNetTotal() == 0.0) {
-                continue;
-            }
-            boolean qualifies = (!b.isCancelled() && "class com.divudi.core.entity.BilledBill".equals(b.getBillClass()))
-                    || (!b.isCancelled() && b.getRefundedBill() == null && "class com.divudi.core.entity.RefundBill".equals(b.getBillClass()));
-            if (qualifies) {
-                total += b.getNetTotal();
-            }
+        for (Bill b : getPatientPaymentBillsForFinalBill(bill)) {
+            total += b.getNetTotal();
         }
         return total;
     }
