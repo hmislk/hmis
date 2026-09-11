@@ -1286,6 +1286,50 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    /**
+     * Create-or-update a SHORT_TEXT option by key — the text-value sibling of
+     * {@link #setLongTextValueByKey(String, String)}/{@link #setLongValueByKey(String, Long)}.
+     * Added for issue #23678 so callers reaching for the same
+     * "set{Type}ValueByKey" naming used by every other value type (e.g. for
+     * {@code POST /api/config/setShortText/...}) find a same-shaped method,
+     * without having to know the older {@link #saveShortTextOption(String, String)}
+     * name. Unlike that older method, this one also retags an existing row
+     * to SHORT_TEXT if it was created under a different type — CodeRabbit
+     * review of this PR noted that silently keeping the old type while
+     * writing a new value lets a later read return the wrong type or
+     * silently null.
+     */
+    public void setShortTextValueByKey(String key, String value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        }
+        option.setValueType(OptionValueType.SHORT_TEXT);
+        option.setOptionValue(value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
+    /**
+     * Create-or-update a DOUBLE option by key — same shape as
+     * {@link #setLongValueByKey(String, Long)}, added for issue #23678 so a
+     * brand-new DOUBLE key has a create-capable setter (previously only
+     * {@link #getDoubleValueByKey(String, Double)} could seed one, and only
+     * as a side effect of a read). Also retags an existing row to DOUBLE if
+     * it was created under a different type — see
+     * {@link #setShortTextValueByKey(String, String)}'s note on why.
+     */
+    public void setDoubleValueByKey(String key, Double value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, String.valueOf(value));
+        }
+        option.setValueType(OptionValueType.DOUBLE);
+        option.setOptionValue(String.valueOf(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
@@ -1462,6 +1506,19 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
+    /**
+     * Read-only variant of {@link #getLongTextValueByKey(String, String)} —
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist.
+     */
+    public String getLongTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            return defaultValue;
+        }
+        return option.getOptionValue();
+    }
+
     public String getInwardChargeTypeLabel(InwardChargeType type) {
         String key = "Inward Charge Type Label - " + type.name();
         String custom = getShortTextValueByKey(key, "");
@@ -1469,6 +1526,51 @@ public class ConfigOptionApplicationController implements Serializable {
             return type.getLabel();
         }
         return custom;
+    }
+
+    /**
+     * Display name for an inward charge type <b>on the Final Bill print only</b>.
+     * <p>
+     * Two naming mechanisms exist side by side:
+     * <ul>
+     * <li>legacy — {@code "Inward Charge Type - Name For <default label>"},
+     * loaded onto the enum's mutable {@code name} field at login by
+     * {@code SessionController#init()}. This is what the Final Bill has always
+     * printed, via {@code #{bip.inwardChargeType.name}}.</li>
+     * <li>current — {@code "Inward Charge Type Label - <EnumName>"}, read by
+     * {@link #getInwardChargeTypeLabel(InwardChargeType)} and used by the
+     * interim bill, the charge-type breakdown/detail reports, the invoice
+     * journal and the config API.</li>
+     * </ul>
+     * The bundled Final Bill row builder resolved labels through the current
+     * key, so switching on "Inward Final Bill - Bundle Grouped Charge Types"
+     * silently renamed rows: COOP has 22 legacy names ("Resident Medical
+     * Officer Charges", "Radiology &amp; Imaging", "Theatre Surgical
+     * Consumables &amp; Drugs" …) and would have lost all of them just by
+     * enabling bundling.
+     * <p>
+     * Legacy therefore wins here, so enabling bundling changes only how rows
+     * are <em>grouped</em>, never what they are <em>called</em>. This resolver
+     * is deliberately separate from
+     * {@link #getInwardChargeTypeLabel(InwardChargeType)} so nothing outside
+     * the Final Bill changes.
+     * <p>
+     * The legacy read is read-only: {@code SessionController#init()} already
+     * creates all of those rows at login, so this never needs to create one —
+     * and must not create a full set from a session-less context.
+     */
+    public String getInwardChargeTypeFinalBillLabel(InwardChargeType type) {
+        String legacy = getLongTextValueByKeyReadOnly(
+                "Inward Charge Type - Name For " + type.getLabel(), "");
+        if (legacy != null && !legacy.trim().isEmpty()) {
+            return legacy;
+        }
+        String custom = getShortTextValueByKeyReadOnly(
+                "Inward Charge Type Label - " + type.name(), "");
+        if (custom != null && !custom.trim().isEmpty()) {
+            return custom;
+        }
+        return type.getLabel();
     }
 
     public void saveInwardChargeTypeLabel(InwardChargeType type, String customLabel) {

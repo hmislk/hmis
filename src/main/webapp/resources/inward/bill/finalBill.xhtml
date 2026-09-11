@@ -55,9 +55,9 @@
                     <table class="headingPrinting" >
                         <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
                             <tr >
-                                <td colspan="4">
+                                <td colspan="4" style="text-align: center;">
                                     <h:graphicImage
-                                        style="width: 100%;"
+                                        style="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Image Style','width: 200px; height: auto;')}"
                                         class="mb-4"
                                         url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
                                         >
@@ -967,9 +967,9 @@
                                         </td>
                                         <td>
                                             <table>
-                                                <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
+                                                <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
                                                     
-                                                    <h:panelGroup rendered="#{(b.netTotal ne 0 ) and ((b.cancelled eq false and b.billClass eq 'class com.divudi.core.entity.BilledBill')or(b.cancelled eq false and b.refundedBill eq null and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                    <h:panelGroup rendered="#{b.netTotal ne 0}">
                                                         
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel value="#{b.deptId}"/>
@@ -1101,7 +1101,6 @@
                             <div class="d-grid justify-content-center">
                                 <h:outputLabel value="-----------------------------" />
                                 <h:outputLabel value="Prepared by : #{cc.attrs.bill.creater.name}"  class="w-100 d-flex justify-content-center"/>
-                                <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                             </div>
                         </div>
                         <div class="col-4">
@@ -1109,6 +1108,12 @@
                                 <h:outputLabel value="-----------------------------" />
                                 <h:outputLabel value="Cashier"  class="w-100 d-flex justify-content-center"/>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         </div>
                     </div>
 

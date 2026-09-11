@@ -54,9 +54,9 @@
                     <table class="headingPrinting" >
                         <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
                             <tr >
-                                <td colspan="4">
+                                <td colspan="4" style="text-align: center;">
                                     <h:graphicImage
-                                        style="width: 100%;"
+                                        style="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Image Style','width: 200px; height: auto;')}"
                                         class="mb-4"
                                         url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
                                         >
@@ -409,16 +409,9 @@
                                     <h:outputLabel   value="Paid By Patient " rendered="#{cc.attrs.bill.paidAmount !=0}"/>
                                 </td>
                                 <td style="text-align: left;font-size: 13px!important;">
-                                    <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
+                                    <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
                                         <h:panelGroup
-                                            rendered="#{(b.netTotal ne 0 )
-                                                        and
-                                                        ((b.cancelled eq false
-                                                        and b.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                        or
-                                                        (b.cancelled eq false
-                                                        and b.refundedBill eq null
-                                                        and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}" >
+                                            rendered="#{b.netTotal ne 0}" >
 
                                             <div class="d-flex gap-2">
                                                 <h:outputLabel value="#{b.deptId} - "/>
@@ -465,9 +458,12 @@
                     <div class="d-flex justify-content-between px-5 mt-4">
                         <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.name}">
                         </h:outputLabel>
-                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         <h:outputLabel value="Patient/Guardian" >
                         </h:outputLabel>
+                    </div>
+
+                    <div class="px-5 mt-2">
+                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                     </div>
 
                     <p:spacer></p:spacer>
