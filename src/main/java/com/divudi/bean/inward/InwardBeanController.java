@@ -1979,6 +1979,38 @@ public class InwardBeanController implements Serializable {
 
     }
 
+    /**
+     * The admission's own deposits and payments, and their refunds, for the
+     * "Paid By Patient" breakdown on the final bill prints.
+     * <p>
+     * Read straight from {@code Bill.patientEncounter} — deliberately NOT from
+     * the {@code forwardReferenceBill}/{@code backwardReferenceBills} links to
+     * a final bill version, which drift when an admission has more than one
+     * version and left the confirmed version printing the paid total with no
+     * lines. Appointment deposits are not listed: they are converted into an
+     * Inward Deposit, which is. Credit company receipts are not part of this
+     * list.
+     */
+    public List<Bill> fetchPatientPaymentBillsForFinalBill(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "select b from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.patientEncounter = :pe "
+                + " and b.billTypeAtomic in :bts "
+                + " order by b.createdAt";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        params.put("bts", Arrays.asList(
+                BillTypeAtomic.INWARD_DEPOSIT,
+                BillTypeAtomic.INWARD_DEPOSIT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND));
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
     public List<Bill> fetchPostFinalPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
 
         HashMap hm = new HashMap();
