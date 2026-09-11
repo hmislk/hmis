@@ -611,31 +611,28 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * "Paid By Patient" breakdown rows for a final bill print — the
+     * admission's deposits, payments and their refunds, read from the
+     * admission itself. See
+     * {@link InwardBeanController#fetchPatientPaymentBillsForFinalBill(PatientEncounter)}.
+     */
+    public List<Bill> getPatientPaymentBillsForFinalBill(Bill bill) {
+        if (bill == null) {
+            return new ArrayList<>();
+        }
+        return getInwardBean().fetchPatientPaymentBillsForFinalBill(bill.getPatientEncounter());
+    }
+
+    /**
      * Sum of prior payments/receipts recorded against this admission — the
-     * Custom3 bill's "Deposit" line. Same backwardReferenceBills source and
-     * qualifying filter as the Custom2 receipts table (finalBillCustom2.xhtml
-     * lines 280-291), just summed instead of rendered row by row.
+     * Custom3 bill's "Deposit" line. Same source as the "Paid By Patient"
+     * breakdown ({@link #getPatientPaymentBillsForFinalBill(Bill)}), just
+     * summed instead of rendered row by row.
      */
     public double getCustom3DepositTotal(Bill bill) {
-        if (bill == null) {
-            return 0.0;
-        }
-        List<Bill> receipts = (bill.getPatientEncounter() != null && bill.getPatientEncounter().getFinalBill() != null)
-                ? bill.getPatientEncounter().getFinalBill().getBackwardReferenceBills()
-                : bill.getBackwardReferenceBills();
         double total = 0.0;
-        if (receipts == null) {
-            return total;
-        }
-        for (Bill b : receipts) {
-            if (b.getNetTotal() == 0.0) {
-                continue;
-            }
-            boolean qualifies = (!b.isCancelled() && "class com.divudi.core.entity.BilledBill".equals(b.getBillClass()))
-                    || (!b.isCancelled() && b.getRefundedBill() == null && "class com.divudi.core.entity.RefundBill".equals(b.getBillClass()));
-            if (qualifies) {
-                total += b.getNetTotal();
-            }
+        for (Bill b : getPatientPaymentBillsForFinalBill(bill)) {
+            total += b.getNetTotal();
         }
         return total;
     }
@@ -2618,6 +2615,35 @@ public class BhtSummeryController implements Serializable {
 
     }
 
+    /**
+     * Guarantees the INWARD_ORIGINAL_FINAL_BILL snapshot exists before a final
+     * or provisional bill is written against it.
+     * <p>
+     * {@code settleOriginalBill()} normally creates it while navigating in
+     * ({@link #toSettle()} / {@link #createNewVersionFromBill(Bill)}), but it is
+     * gated by the full settlement {@link #errorCheck()} and returns silently
+     * when that fails — leaving {@code originalBill} null on a page the cashier
+     * can still settle from. The reproducible case is a new final bill version
+     * on a Credit admission: {@link #createNewVersionFromBill(Bill)} seeds the
+     * allocation split from the source bill, but a payment or discount recorded
+     * since then has already moved the live net due, so
+     * {@link #checkCreditAllocationTotal()} rejects the seeded split and the
+     * original bill is never written. The cashier corrects the split on screen,
+     * errorCheck() then passes on Save Final Bill — and the settle path
+     * dereferenced a null originalBill (NPE at
+     * {@code originalBill.setDiscount(...)}).
+     * <p>
+     * Creating it here instead of failing means the snapshot is written at
+     * settle time with the same values the final bill is settled on.
+     */
+    private void ensureOriginalBillSaved() {
+        if (originalBill != null) {
+            return;
+        }
+        saveOriginalBill();
+        saveOriginalBillItem();
+    }
+
     public void createTempBill() {
         // Capture the current grouped (doctor-by-doctor) professional fee order so the
         // Temporary Bill preview shows the combined doctor list with the latest adjusted
@@ -2633,6 +2659,8 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck()) {
             return;
         }
+
+        ensureOriginalBillSaved();
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
@@ -2656,6 +2684,8 @@ public class BhtSummeryController implements Serializable {
         }
 
         persistGroupedProfessionalFeeOrder();
+
+        ensureOriginalBillSaved();
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
@@ -4559,10 +4589,30 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        List<FinalBillPrintRowDTO> rows = new ArrayList<>(individualRows);
+        // Merge on the FINAL printed label, not on the group key alone: an
+        // ungrouped charge type whose own label already reads the same as a
+        // group ("Room Charges" the charge type vs "Room Charges" the group)
+        // would otherwise print as a second, visually identical line that no
+        // one reading the bill can tell apart — which is exactly what COOP hit
+        // after grouping two of three room-related charge types and leaving
+        // RoomCharges itself ungrouped. Two rows carrying the same label are
+        // indistinguishable on paper, so they are always one row.
+        Map<String, Double> amountByLabel = new LinkedHashMap<>();
+        Map<String, Integer> orderByLabel = new LinkedHashMap<>();
+        for (FinalBillPrintRowDTO row : individualRows) {
+            amountByLabel.merge(row.getLabel(), row.getAmount(), Double::sum);
+            orderByLabel.merge(row.getLabel(), row.getOrder(), Math::min);
+        }
         for (Map.Entry<String, Double> entry : groupedTotals.entrySet()) {
             String group = entry.getKey();
-            rows.add(new FinalBillPrintRowDTO(group, entry.getValue(), groupedOrder.get(group)));
+            amountByLabel.merge(group, entry.getValue(), Double::sum);
+            orderByLabel.merge(group, groupedOrder.get(group), Math::min);
+        }
+
+        List<FinalBillPrintRowDTO> rows = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : amountByLabel.entrySet()) {
+            rows.add(new FinalBillPrintRowDTO(entry.getKey(), entry.getValue(),
+                    orderByLabel.get(entry.getKey())));
         }
 
         rows.removeIf(row -> Math.abs(row.getAmount()) < 0.005);
@@ -4608,7 +4658,11 @@ public class BhtSummeryController implements Serializable {
             }
             groupByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
             orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
-            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeLabel(type));
+            // Final-bill-specific resolver: keeps the legacy per-hospital charge
+            // type names the non-bundled Final Bill already prints, so turning
+            // bundling on changes grouping only, never row names. See
+            // ConfigOptionApplicationController#getInwardChargeTypeFinalBillLabel.
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type));
         }
 
         return buildBundledRows(items, groupByType, orderByType, labelByType);

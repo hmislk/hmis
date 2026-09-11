@@ -876,9 +876,49 @@ public class InwardSearch implements Serializable {
         pe.setNetTotal(newConfirmed.getNetTotal());
         getPatientEncounterFacade().edit(pe);
 
+        relinkPaymentBillsToConfirmedVersion(pe, newConfirmed);
+
         auditService.logEncounterAudit(pe, "Final Bill Version Confirmed",
                 previousFinalBillId, newConfirmed.getId(), sessionController.getLoggedUser(),
                 "Bill", newConfirmed.getId());
+    }
+
+    /**
+     * Re-points the admission's payment receipts at {@code newConfirmed}.
+     * <p>
+     * Every final bill print lists the "Paid By Patient" / "Paid By Company"
+     * breakdown from {@code pe.finalBill.backwardReferenceBills} — the receipts
+     * whose {@code forwardReferenceBill} is the confirmed version. Settle keeps
+     * that in step via {@code BhtSummeryController#updatePaymentBillList()},
+     * but confirming a different version only moved {@code pe.finalBill}: the
+     * receipts stayed on whichever version was settled last, and the newly
+     * confirmed version printed the paid total with no breakdown lines.
+     * <p>
+     * Uses the same receipt set as settle (the admission's and its child
+     * admissions' {@code InwardPaymentBill}s) so both paths agree. The previous
+     * holder's in-memory collection is trimmed and merged too, so the shared
+     * cache does not keep listing a receipt against a version it has left.
+     */
+    private void relinkPaymentBillsToConfirmedVersion(PatientEncounter pe, Bill newConfirmed) {
+        List<PatientEncounter> childEncounters = getInwardBean().fetchChildPatientEncounter(pe);
+        List<Bill> paymentBills = getInwardBean().fetchPaymentBill(pe, childEncounters);
+        if (paymentBills == null || paymentBills.isEmpty()) {
+            return;
+        }
+        for (Bill payment : paymentBills) {
+            Bill previousHolder = payment.getForwardReferenceBill();
+            if (previousHolder == null || !previousHolder.getId().equals(newConfirmed.getId())) {
+                payment.setForwardReferenceBill(newConfirmed);
+                getBillFacade().edit(payment);
+                if (previousHolder != null && previousHolder.getBackwardReferenceBills().remove(payment)) {
+                    getBillFacade().edit(previousHolder);
+                }
+            }
+            if (!newConfirmed.getBackwardReferenceBills().contains(payment)) {
+                newConfirmed.getBackwardReferenceBills().add(payment);
+            }
+        }
+        getBillFacade().edit(newConfirmed);
     }
 
     /**
@@ -3459,6 +3499,7 @@ public class InwardSearch implements Serializable {
             os.flush();
         } catch (java.io.IOException e) {
             JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            context.responseComplete();
             return;
         }
         context.responseComplete();
