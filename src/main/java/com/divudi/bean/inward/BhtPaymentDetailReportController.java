@@ -31,11 +31,11 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
- * Controller for BHT Deposit and Credit Settlement Detail Report.
- * One row per individual transaction: a "Make a Deposit" (INWARD_DEPOSIT)
- * payment, a "Make a Payment" (INWARD_PAYMENT) payment, a "Post Final Payment"
- * (BillType.PostFinalBillInwardPayment) payment, or a CC settlement item -
- * see {@link com.divudi.core.data.dto.BhtPaymentDetailDTO#getPaymentCategory()}.
+ * Controller for BHT Deposit and Credit Settlement Detail Report. One row per
+ * individual transaction: a "Make a Deposit" (INWARD_DEPOSIT) payment, a "Make
+ * a Payment" (INWARD_PAYMENT) payment, a "Post Final Payment"
+ * (BillType.PostFinalBillInwardPayment) payment, or a CC settlement item - see
+ * {@link com.divudi.core.data.dto.BhtPaymentDetailDTO#getPaymentCategory()}.
  * The three payment kinds are kept as separate categories and separate
  * per-method footer totals (issue #23262).
  */
@@ -53,7 +53,7 @@ public class BhtPaymentDetailReportController implements Serializable {
     private UserSettingsController userSettingsController;
 
     private Date fromDate = startOfCurrentMonth();
-    private Date toDate = new Date();
+    private Date toDate = endOfCurrentMonth();
     private String dateBasis = "dischargeDate";
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
@@ -79,7 +79,9 @@ public class BhtPaymentDetailReportController implements Serializable {
      * only methods with non-zero totals.
      */
     private Map<PaymentMethod, Double> depositTotalByMethod = new LinkedHashMap<>();
-    /** Deposit payment methods in the order they appeared, for UI iteration. */
+    /**
+     * Deposit payment methods in the order they appeared, for UI iteration.
+     */
     private List<PaymentMethod> usedDepositMethods = new ArrayList<>();
     /**
      * Ordered map of payment method → "Make a Payment" (INWARD_PAYMENT) total.
@@ -321,10 +323,10 @@ public class BhtPaymentDetailReportController implements Serializable {
      * bill and creates a companion reversal Bill+Payment with an inverted
      * (negative) amount under the CANCELLATION billTypeAtomic, rather than
      * flagging the original row. Filtering to a single billTypeAtomic and
-     * excluding cancelled bills would make a cancelled deposit vanish from
-     * this report with no trace it ever happened. Including both rows and
-     * keeping each row's natural sign (no {@code Math.abs()} in the caller)
-     * lets the per-method totals net out correctly. Mirrors
+     * excluding cancelled bills would make a cancelled deposit vanish from this
+     * report with no trace it ever happened. Including both rows and keeping
+     * each row's natural sign (no {@code Math.abs()} in the caller) lets the
+     * per-method totals net out correctly. Mirrors
      * {@link #fetchPostFinalPayments} and {@link #fetchCreditSettlementItems}.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
@@ -359,10 +361,10 @@ public class BhtPaymentDetailReportController implements Serializable {
      * bill and creates a companion reversal Bill+Payment with an inverted
      * (negative) amount under the CANCELLATION billTypeAtomic, rather than
      * flagging the original row. Filtering to a single billTypeAtomic and
-     * excluding cancelled bills would make a cancelled payment vanish from
-     * this report with no trace it ever happened. Including both rows and
-     * keeping each row's natural sign (no {@code Math.abs()} in the caller)
-     * lets the per-method totals net out correctly. Mirrors
+     * excluding cancelled bills would make a cancelled payment vanish from this
+     * report with no trace it ever happened. Including both rows and keeping
+     * each row's natural sign (no {@code Math.abs()} in the caller) lets the
+     * per-method totals net out correctly. Mirrors
      * {@link #fetchPostFinalPayments} and {@link #fetchCreditSettlementItems}.
      */
     private List<Payment> fetchPayments(PatientEncounter enc) {
@@ -387,12 +389,13 @@ public class BhtPaymentDetailReportController implements Serializable {
     /**
      * Fetch post-final-bill ("Make Payment") payments for this encounter.
      *
-     * Deliberately does NOT filter on {@code p.cancelled} / {@code p.bill.cancelled}:
-     * mirrors {@link BhtPaymentSummaryReportController#fetchPostFinalPayments}
-     * - cancellation of a post-final-bill payment arrives as a separate
-     * negative-amount row of the same bill type rather than a cancelled flag
-     * on the original, so each row is kept as its own line (with its natural
-     * sign) instead of being filtered or netted here. Issue #23263.
+     * Deliberately does NOT filter on {@code p.cancelled} /
+     * {@code p.bill.cancelled}: mirrors
+     * {@link BhtPaymentSummaryReportController#fetchPostFinalPayments} -
+     * cancellation of a post-final-bill payment arrives as a separate
+     * negative-amount row of the same bill type rather than a cancelled flag on
+     * the original, so each row is kept as its own line (with its natural sign)
+     * instead of being filtered or netted here. Issue #23263.
      */
     private List<Payment> fetchPostFinalPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
@@ -413,12 +416,13 @@ public class BhtPaymentDetailReportController implements Serializable {
 
     /**
      * Fetch BillItems from INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED and
-     * INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION bills that reference this encounter.
-     * Deliberately does NOT filter on bi.bill.cancelled: cancelling a CC payment sets
-     * cancelled=true on the original RECEIVED bill while its negative-value items live on
-     * a separate CANCELLATION bill, so filtering by cancelled would drop the original
-     * positive row and leave only the negative one. Including both rows with their signed
-     * netValue preserves the audit trail and nets out correctly.
+     * INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION bills that reference this
+     * encounter. Deliberately does NOT filter on bi.bill.cancelled: cancelling
+     * a CC payment sets cancelled=true on the original RECEIVED bill while its
+     * negative-value items live on a separate CANCELLATION bill, so filtering
+     * by cancelled would drop the original positive row and leave only the
+     * negative one. Including both rows with their signed netValue preserves
+     * the audit trail and nets out correctly.
      */
     private List<BillItem> fetchCreditSettlementItems(PatientEncounter enc) {
         String jpql = "select bi from BillItem bi"
@@ -437,7 +441,7 @@ public class BhtPaymentDetailReportController implements Serializable {
 
     public void makeNull() {
         fromDate = startOfCurrentMonth();
-        toDate = new Date();
+        toDate = endOfCurrentMonth();
         dateBasis = "dischargeDate";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
@@ -474,57 +478,138 @@ public class BhtPaymentDetailReportController implements Serializable {
         return cal.getTime();
     }
 
+    private static Date endOfCurrentMonth() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+
     // Getters / setters
+    public Date getFromDate() {
+        return fromDate;
+    }
 
-    public Date getFromDate() { return fromDate; }
-    public void setFromDate(Date fromDate) { this.fromDate = fromDate; }
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
 
-    public Date getToDate() { return toDate; }
-    public void setToDate(Date toDate) { this.toDate = toDate; }
+    public Date getToDate() {
+        return toDate;
+    }
 
-    public String getDateBasis() { return dateBasis; }
-    public void setDateBasis(String dateBasis) { this.dateBasis = dateBasis; }
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
 
-    public AdmissionStatus getAdmissionStatus() { return admissionStatus; }
-    public void setAdmissionStatus(AdmissionStatus admissionStatus) { this.admissionStatus = admissionStatus; }
+    public String getDateBasis() {
+        return dateBasis;
+    }
 
-    public AdmissionType getAdmissionType() { return admissionType; }
-    public void setAdmissionType(AdmissionType admissionType) { this.admissionType = admissionType; }
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
 
-    public PaymentMethod getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
 
-    public String getTransactionType() { return transactionType; }
-    public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
 
-    public Institution getInstitution() { return institution; }
-    public void setInstitution(Institution institution) { this.institution = institution; }
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
 
-    public Institution getSite() { return site; }
-    public void setSite(Institution site) { this.site = site; }
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
 
-    public Department getDepartment() { return department; }
-    public void setDepartment(Department department) { this.department = department; }
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
 
-    public List<BhtPaymentDetailDTO> getReportRows() { return reportRows; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 
-    public double getGrandTotal() { return grandTotal; }
+    public String getTransactionType() {
+        return transactionType;
+    }
 
-    public double getGrandTotalCcSettlement() { return grandTotalCcSettlement; }
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
+    }
 
-    public double getGrandTotalPayments() { return grandTotalPayments; }
+    public Institution getInstitution() {
+        return institution;
+    }
 
-    public double getGrandTotalPostPayments() { return grandTotalPostPayments; }
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
 
-    public List<PaymentMethod> getUsedDepositMethods() { return usedDepositMethods; }
+    public Institution getSite() {
+        return site;
+    }
 
-    public Map<PaymentMethod, Double> getDepositTotalByMethod() { return depositTotalByMethod; }
+    public void setSite(Institution site) {
+        this.site = site;
+    }
 
-    public List<PaymentMethod> getUsedPaymentMethods() { return usedPaymentMethods; }
+    public Department getDepartment() {
+        return department;
+    }
 
-    public Map<PaymentMethod, Double> getPaymentTotalByMethod() { return paymentTotalByMethod; }
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 
-    public List<PaymentMethod> getUsedPostPaymentMethods() { return usedPostPaymentMethods; }
+    public List<BhtPaymentDetailDTO> getReportRows() {
+        return reportRows;
+    }
 
-    public Map<PaymentMethod, Double> getPostPaymentTotalByMethod() { return postPaymentTotalByMethod; }
+    public double getGrandTotal() {
+        return grandTotal;
+    }
+
+    public double getGrandTotalCcSettlement() {
+        return grandTotalCcSettlement;
+    }
+
+    public double getGrandTotalPayments() {
+        return grandTotalPayments;
+    }
+
+    public double getGrandTotalPostPayments() {
+        return grandTotalPostPayments;
+    }
+
+    public List<PaymentMethod> getUsedDepositMethods() {
+        return usedDepositMethods;
+    }
+
+    public Map<PaymentMethod, Double> getDepositTotalByMethod() {
+        return depositTotalByMethod;
+    }
+
+    public List<PaymentMethod> getUsedPaymentMethods() {
+        return usedPaymentMethods;
+    }
+
+    public Map<PaymentMethod, Double> getPaymentTotalByMethod() {
+        return paymentTotalByMethod;
+    }
+
+    public List<PaymentMethod> getUsedPostPaymentMethods() {
+        return usedPostPaymentMethods;
+    }
+
+    public Map<PaymentMethod, Double> getPostPaymentTotalByMethod() {
+        return postPaymentTotalByMethod;
+    }
 }
