@@ -342,8 +342,8 @@
                             <td style="text-align: right; font-weight: bold;">Receipt Amount</td>
                             <td style="text-align: right; font-weight: bold;">Adjusted Amount</td>
                         </tr>
-                        <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
-                            <h:panelGroup rendered="#{(b.netTotal ne 0) and ((b.cancelled eq false and b.billClass eq 'class com.divudi.core.entity.BilledBill') or (b.cancelled eq false and b.refundedBill eq null and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}">
+                        <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
+                            <h:panelGroup rendered="#{b.netTotal ne 0}">
                                 <tr>
                                     <td><h:outputLabel value="#{b.deptId}"/></td>
                                     <td><h:outputLabel value="#{b.createdAt}"><f:convertDateTime pattern="dd/MM/yyyy HH:mm" /></h:outputLabel></td>
@@ -365,8 +365,8 @@
                             <td style="font-weight: bold;">Payment type</td>
                             <td style="text-align: right; font-weight: bold;">Amount</td>
                         </tr>
-                        <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
-                            <h:panelGroup rendered="#{(b.netTotal ne 0) and ((b.cancelled eq false and b.billClass eq 'class com.divudi.core.entity.BilledBill') or (b.cancelled eq false and b.refundedBill eq null and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}">
+                        <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
+                            <h:panelGroup rendered="#{b.netTotal ne 0}">
                                 <tr>
                                     <td><h:outputLabel value="#{b.deptId}"/></td>
                                     <td><h:outputLabel value="#{b.createdAt}"><f:convertDateTime pattern="dd/MM/yyyy HH:mm" /></h:outputLabel></td>

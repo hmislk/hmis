@@ -982,15 +982,8 @@
                                         </td>
                                         <td>
                                             <table>
-                                                <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
-                                                    <h:panelGroup style="line-height: 1.05;" rendered="#{(b.netTotal ne 0 )
-                                                                              and
-                                                                              ((b.cancelled eq false
-                                                                              and b.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                                              or
-                                                                              (b.cancelled eq false
-                                                                              and b.refundedBill eq null
-                                                                              and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
+                                                <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
+                                                    <h:panelGroup style="line-height: 1.05;" rendered="#{b.netTotal ne 0}">
 
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
                                                             <h:outputLabel value="#{b.deptId}" style="width: 110px;"/>
