@@ -494,10 +494,6 @@ public class EnumController implements Serializable {
         return sts;
     }
 
-    public TheatreItemListingStrategy[] getTheatreItemListingStrategys() {
-        return TheatreItemListingStrategy.values();
-    }
-
     public ItemListingStrategy[] getInwardItemListingStrategys() {
         ItemListingStrategy[] sts
                 = {ItemListingStrategy.ALL_ITEMS,
