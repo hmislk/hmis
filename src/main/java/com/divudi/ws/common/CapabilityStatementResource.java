@@ -517,7 +517,19 @@ public class CapabilityStatementResource {
                         + "— at least one is required. itemType targets every item of that subtype directly (e.g. every "
                         + "Investigation) since there is no API to enumerate every category id to loop over instead; "
                         + "categoryId alone still works and is not InvestigationCategory-restricted. "
-                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
+                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null). "
+                        + "GET /search also filters on code (item code, substring), so a bulk load can be made idempotent on "
+                        + "the natural key rather than on an inexact name match. "
+                        + "financialCategoryId (a Category of type FINANCIAL_CATEGORY — the income account) is settable on "
+                        + "POST and PUT and returned on search and get. "
+                        + "/item-categories/search?query=X&categoryType=Y (GET any Category row, not only the ServiceCategory "
+                        + "DTYPE that /categories/search sees, so the categories services actually use and FINANCIAL_CATEGORY "
+                        + "rows are discoverable). "
+                        + "/{id}/recalculate-totals (POST recompute the denormalised total/totalForForeigner from current fees; "
+                        + "they go stale when fees are written outside this API and several screens read them instead of "
+                        + "summing fees). "
+                        + "Fee responses carry forInstitution/forDepartment/forCategory, which distinguish a base fee from a "
+                        + "site-, department- or collecting-centre-specific one.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Timed Items", "/api/timed-items",

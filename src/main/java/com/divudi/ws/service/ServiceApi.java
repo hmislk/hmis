@@ -84,6 +84,7 @@ public class ServiceApi {
             }
 
             String query = uriInfo.getQueryParameters().getFirst("query");
+            String code = uriInfo.getQueryParameters().getFirst("code");
             String serviceType = uriInfo.getQueryParameters().getFirst("serviceType");
             String categoryIdStr = uriInfo.getQueryParameters().getFirst("categoryId");
             String inactiveStr = uriInfo.getQueryParameters().getFirst("inactive");
@@ -114,7 +115,7 @@ public class ServiceApi {
             }
 
             List<ServiceSearchResultDTO> results = serviceApiService.searchServices(
-                    query, serviceType, categoryId, inactive, limit);
+                    query, code, serviceType, categoryId, inactive, limit);
             return successResponse(results);
 
         } catch (Exception e) {
@@ -630,6 +631,78 @@ public class ServiceApi {
      * Search service categories.
      * GET /api/services/categories/search?query=surgery&limit=20
      */
+    /**
+     * Recalculate an item's total and totalForForeigner from its current fees.
+     * POST /api/services/{id}/recalculate-totals
+     */
+    @POST
+    @Path("/{id}/recalculate-totals")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response recalculateTotals(@PathParam("id") Long id) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            ServiceResponseDTO response = serviceApiService.recalculateTotals(id);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                return errorResponse(msg, 404);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
+    /**
+     * Search any Category row, optionally narrowed to one CategoryType.
+     * Unlike /categories/search this is not limited to the ServiceCategory
+     * DTYPE, so it can find the categories services actually use and the
+     * FINANCIAL_CATEGORY rows used as income accounts.
+     *
+     * GET /api/services/item-categories/search?query=theatre&categoryType=FINANCIAL_CATEGORY&limit=20
+     */
+    @GET
+    @Path("/item-categories/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchAllCategories() {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            String query = uriInfo.getQueryParameters().getFirst("query");
+            String categoryType = uriInfo.getQueryParameters().getFirst("categoryType");
+            String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+
+            int limit = 30;
+            if (limitStr != null && !limitStr.trim().isEmpty()) {
+                try {
+                    int parsed = Integer.parseInt(limitStr.trim());
+                    limit = Math.min(Math.max(parsed, 1), 100);
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid limit format", 400);
+                }
+            }
+
+            List<ServiceCategoryDTO> results = serviceApiService.searchCategories(query, categoryType, limit);
+            return successResponse(results);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.startsWith("Invalid categoryType")) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
     @GET
     @Path("/categories/search")
     @Produces(MediaType.APPLICATION_JSON)
