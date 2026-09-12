@@ -856,7 +856,7 @@
 
                                         <p:ajax event="open" listener="#{bhtSummeryController.loadCustom2Config}" update="custom2ConfigForm" />
 
-                                        <h:form id="custom2ConfigForm" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                                        <h:panelGroup id="custom2ConfigForm" layout="block" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
                                             <div class="card-body">
                                                 <h6>Which formats print</h6>
                                                 <div class="mb-3">
@@ -941,7 +941,7 @@
                                                         type="button" />
                                                 </div>
                                             </div>
-                                        </h:form>
+                                        </h:panelGroup>
                                     </p:dialog>
                                 </p:tab>
                             </p:tabView>
