@@ -4,3 +4,4 @@ self-hosted-runner:
   labels:
     - qa1
     - qa3
+    - qa4
