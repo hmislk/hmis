@@ -2251,7 +2251,8 @@ public class PharmacySaleBhtController implements Serializable {
         Double issStrength = issuingItem.getStrengthOfAnIssueUnit();
         MeasurementUnit reqUnit = requestedItem.getStrengthUnit();
         MeasurementUnit issUnit = issuingItem.getStrengthUnit();
-        if (reqStrength == null || issStrength == null || issStrength <= 0.0
+        if (reqStrength == null || reqStrength <= 0.0
+                || issStrength == null || issStrength <= 0.0
                 || reqUnit == null || issUnit == null
                 || reqUnit.getId() == null || !reqUnit.getId().equals(issUnit.getId())) {
             return remaining;
