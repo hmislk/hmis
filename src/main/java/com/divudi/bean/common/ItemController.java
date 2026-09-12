@@ -38,6 +38,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.InvestigationController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.SessionNumberType;
+import com.divudi.core.data.TheatreItemListingStrategy;
 import com.divudi.core.data.Sex;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.core.facade.DepartmentFacade;
@@ -3342,30 +3343,66 @@ public class ItemController implements Serializable {
         JsfUtil.addSuccessMessage("All Servies and Investigations were made to allow discounts.");
     }
 
+    /**
+     * Items offered by the theatre surgery service bill's autocomplete
+     * (theater/inward_bill_surgery_service.xhtml).
+     *
+     * Which items qualify is a per-department setting
+     * ({@link UserPreference#getTheatreItemListingStrategy()}): a hospital that
+     * maintains a dedicated Theatre Service master keeps the default
+     * THEATRE_SERVICES, while one that bills theatre consumables from its
+     * existing OPD/Inward service master uses ALL_SERVICES or maps the items it
+     * wants to the theatre department and uses
+     * ITEMS_MAPPED_TO_LOGGED_DEPARTMENT.
+     */
     public List<Item> completeTheatreItems(String query) {
-        List<Item> suggestions;
-        HashMap m = new HashMap();
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from Item c "
-                    + " where c.retired=false "
-                    + " and type(c)=:the "
-                    //                    + " and type(c)!=:pac "
-                    //                    + " and (type(c)=:ser "
-                    //                    + " or type(c)=:inv "
-                    //                    + " or type(c)=:the)  "
-                    + " and (c.name) like :q"
-                    + " order by c.name";
-//            m.put("pac", Packege.class);
-//            m.put("ser", Service.class);
-//            m.put("inv", Investigation.class);
-            m.put("the", TheatreService.class);
-            m.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, m, 20);
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
         }
-        return suggestions;
+
+        TheatreItemListingStrategy strategy = getSessionController()
+                .getDepartmentPreference().getTheatreItemListingStrategy();
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + query.trim().toUpperCase() + "%");
+        String sql;
+
+        switch (strategy) {
+            case ALL_SERVICES:
+                // Service is the common superclass of InwardService and
+                // TheatreService, so this covers all three in one query.
+                sql = "select c from Service c "
+                        + " where c.retired=false "
+                        + " and (c.inactive=false or c.inactive is null) "
+                        + " and (c.name) like :q"
+                        + " order by c.name";
+                break;
+
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                sql = "select im.item from ItemMapping im "
+                        + " where im.retired=false "
+                        + " and im.item.retired=false "
+                        + " and (im.item.inactive=false or im.item.inactive is null) "
+                        + " and im.department=:dept "
+                        + " and (im.item.name) like :q"
+                        + " order by im.item.name";
+                m.put("dept", getSessionController().getDepartment());
+                break;
+
+            case THEATRE_SERVICES:
+            default:
+                sql = "select c from Item c "
+                        + " where c.retired=false "
+                        + " and (c.inactive=false or c.inactive is null) "
+                        + " and type(c)=:the "
+                        + " and (c.name) like :q"
+                        + " order by c.name";
+                m.put("the", TheatreService.class);
+                break;
+        }
+
+        List<Item> suggestions = getFacade().findByJpql(sql, m, 20);
+        return suggestions != null ? suggestions : new ArrayList<>();
     }
 
     Category category;

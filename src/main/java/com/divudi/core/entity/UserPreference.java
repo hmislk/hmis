@@ -12,6 +12,7 @@ import com.divudi.core.data.OpdTokenNumberGenerationStrategy;
 import com.divudi.core.data.PaperType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.RestAuthenticationType;
+import com.divudi.core.data.TheatreItemListingStrategy;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -229,6 +230,9 @@ public class UserPreference implements Serializable {
 
     @Enumerated(value = EnumType.STRING)
     private ItemListingStrategy inwardItemListingStrategy;
+
+    @Enumerated(value = EnumType.STRING)
+    private TheatreItemListingStrategy theatreItemListingStrategy;
 
     @Enumerated(value = EnumType.STRING)
     private OpdTokenNumberGenerationStrategy opdTokenNumberGenerationStrategy;
@@ -1298,6 +1302,23 @@ public class UserPreference implements Serializable {
 
     public void setInwardItemListingStrategy(ItemListingStrategy inwardItemListingStrategy) {
         this.inwardItemListingStrategy = inwardItemListingStrategy;
+    }
+
+    /**
+     * Strategy used by the theatre surgery service bill's item autocomplete.
+     * Defaults to {@link TheatreItemListingStrategy#THEATRE_SERVICES} so
+     * departments that have never set it keep the long-standing behaviour of
+     * listing only dedicated Theatre Service items.
+     */
+    public TheatreItemListingStrategy getTheatreItemListingStrategy() {
+        if (theatreItemListingStrategy == null) {
+            return TheatreItemListingStrategy.THEATRE_SERVICES;
+        }
+        return theatreItemListingStrategy;
+    }
+
+    public void setTheatreItemListingStrategy(TheatreItemListingStrategy theatreItemListingStrategy) {
+        this.theatreItemListingStrategy = theatreItemListingStrategy;
     }
 
     public Integer getNumberOfOPDBillCopies() {
