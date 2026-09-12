@@ -1,7 +1,11 @@
 # ═══════════════════════════════════════════════════════════════════════════
 #  HMIS QA1 — home-hosted (hiu-laptop, carecode account)
 #
-#  Branch:  hims-qa1-home
+#  Branch:  home-qa1 (NOT hims-qa1-home - the "QA Branches Rules" repo
+#           ruleset locks down any hims-qa* branch to PR-only pushes with a
+#           check-branch status check that's only ever attached via a PR,
+#           so a brand-new hims-qa*-pattern branch can't be created by a
+#           direct push at all. home-qa1 falls outside that pattern.)
 #  Serves:  http://localhost:9080/qa1 today; https://qa1.carecode.org/qa1
 #           once the Desktop's nginx (QA3 runbook, hmislk/qa-home-infra) is
 #           wired up.
@@ -14,7 +18,7 @@ name: HIMS QA1 Home CI/CD
 
 on:
   push:
-    branches: [hims-qa1-home]
+    branches: [home-qa1]
   workflow_dispatch:
 
 concurrency:
