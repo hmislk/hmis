@@ -148,9 +148,10 @@ jobs:
             [ "$code" = "200" ] && { echo "healthy"; exit 0; }
             sleep 10
           done
-          echo "::error::qa1 did not become healthy at $HEALTH_URL - restoring previous WAR"
+          echo "::error::qa1 did not become healthy at $HEALTH_URL - removing it"
+          $ASADMIN undeploy "$APP_NAME" 2>/dev/null || true
           if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
-            $ASADMIN undeploy "$APP_NAME" 2>/dev/null || true
+            echo "restoring previous WAR"
             $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$DEPLOY_DIR/${APP_NAME}.war.previous"
             cp "$DEPLOY_DIR/${APP_NAME}.war.previous" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
           fi
