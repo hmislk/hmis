@@ -1,0 +1,5 @@
+self-hosted-runner:
+  # Home-hosted QA self-hosted runners (see hmislk/qa-home-infra for the
+  # tracking repo). Add qa2/qa3/qa4 here as those machines come online.
+  labels:
+    - qa1
