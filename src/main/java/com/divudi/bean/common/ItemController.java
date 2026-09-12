@@ -3385,6 +3385,19 @@ public class ItemController implements Serializable {
                 THEATRE_LIST_MAPPED_SERVICES, false);
         boolean listAllServices = configOptionController.getBooleanValueByKeyReadOnly(
                 THEATRE_LIST_ALL_SERVICES, false);
+        boolean listTheatreServicesOnly = configOptionController.getBooleanValueByKeyReadOnly(
+                THEATRE_LIST_THEATRE_SERVICES_ONLY, true);
+
+        // THEATRE_LIST_THEATRE_SERVICES_ONLY is a declarative marker for the
+        // default mode rather than a live switch: it names the mode the final
+        // branch runs, but because that branch is the default, its value cannot
+        // change the outcome. Read here, with the all-disabled guard, so the
+        // intent is explicit and the key is not silently ignored. This mirrors
+        // TransferIssueController's three transfer-rate booleans, which have
+        // the same shape.
+        if (!listMapped && !listAllServices && !listTheatreServicesOnly) {
+            listTheatreServicesOnly = true;
+        }
 
         Map<String, Object> m = new HashMap<>();
         m.put("q", "%" + query.trim().toUpperCase() + "%");
@@ -3396,7 +3409,7 @@ public class ItemController implements Serializable {
                     + " and im.item.retired=false "
                     + " and (im.item.inactive=false or im.item.inactive is null) "
                     + " and im.department=:dept "
-                    + " and (im.item.name) like :q"
+                    + " and UPPER(im.item.name) like :q"
                     + " order by im.item.name";
             m.put("dept", getSessionController().getDepartment());
         } else if (listAllServices) {
@@ -3405,15 +3418,16 @@ public class ItemController implements Serializable {
             sql = "select c from Service c "
                     + " where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
-                    + " and (c.name) like :q"
+                    + " and UPPER(c.name) like :q"
                     + " order by c.name";
         } else {
-            // Default: dedicated Theatre Service master only.
+            // listTheatreServicesOnly — the default mode: the dedicated
+            // Theatre Service master only.
             sql = "select c from Item c "
                     + " where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
                     + " and type(c)=:the "
-                    + " and (c.name) like :q"
+                    + " and UPPER(c.name) like :q"
                     + " order by c.name";
             m.put("the", TheatreService.class);
         }

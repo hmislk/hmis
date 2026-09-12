@@ -63,7 +63,13 @@ result:
 
 1. `Theatre Surgery Bill - List Services Mapped to the Logged Department`
 2. `Theatre Surgery Bill - List All Services`
-3. `Theatre Surgery Bill - List Theatre Services Only` — the default mode and the `else` branch
+3. `Theatre Surgery Bill - List Theatre Services Only` — the default mode
+
+`List Theatre Services Only` is a **declarative marker for the default mode, not a live switch**.
+It names what the final branch does, but since that branch is the default, unticking it does not
+change the item list — the bill still falls back to theatre services only. It is read alongside the
+other two, with an all-disabled guard, so the key is not silently ignored.
+`TransferIssueController`'s three transfer-rate booleans have the same shape.
 
 All three resolve **department-scoped key first, then application-wide**, via
 `ConfigOptionController.getBooleanValueByKeyReadOnly`. To override for one department only, set
