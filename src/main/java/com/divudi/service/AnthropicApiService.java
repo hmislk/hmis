@@ -1067,7 +1067,8 @@ public class AnthropicApiService implements Serializable {
                         + "to map many items to one target at once, reporting a per-item outcome. Use RETIRE to "
                         + "soft-retire one mapping by id (never a hard delete). An outside-charge mapping is "
                         + "stored as an institution mapping with outsideChargeMapping=true — use "
-                        + "outside_charge_site_id (not institution_id) to create or search those.")
+                        + "outside_charge_site_id (not institution_id) to create or search those. "
+                        + "Always confirm with the user before CREATE, BULK_CREATE, or RETIRE.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
