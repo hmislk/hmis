@@ -10,9 +10,15 @@
 #           once the Desktop's nginx (QA3 runbook, hmislk/qa-home-infra) is
 #           wired up.
 #
-#  Differs from hims_qa1_migrated_ci_cd.yml: the deploy job runs ON the
-#  target machine itself (self-hosted runner, label qa1) instead of SSHing
-#  into an Azure VM, so there are no SSH secrets and no inbound deploy port.
+#  Single job, entirely on the qa1 self-hosted runner (which already lives
+#  on this machine) - checkout, build, and deploy all run locally. This
+#  replaces an earlier split build(ubuntu-latest)+deploy(self-hosted)
+#  design: uploading/downloading the ~135MB WAR over the home connection
+#  took ~20 minutes by itself (measured on the first deploy, run
+#  34674533704), dwarfing the ~2 minute build. Building locally means only
+#  a small incremental `git fetch` crosses the network - the same fix
+#  ruhunu_local_server_ci_cd.yml (rh-local-staging) already applies after
+#  hitting the identical WAR-transfer bottleneck.
 # ═══════════════════════════════════════════════════════════════════════════
 name: HIMS QA1 Home CI/CD
 
@@ -30,22 +36,23 @@ env:
   JNDI_MAIN:    jdbc/qa1Main
   JNDI_AUDIT:   jdbc/ruhunuAudit
   HEALTH_URL:   http://localhost:9080/qa1/faces/index1.xhtml
+  PAYARA:       /home/carecode/payara
+  ASADMIN_PORT: "9048"
+  DEPLOY_DIR:   /home/carecode/qa1-deploy
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: [self-hosted, qa1]
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '11'
-          cache: maven
-
+      # This machine already has JDK 11 + Maven on PATH (system packages,
+      # confirmed at /usr/bin/java -> /usr/lib/jvm/java-11-openjdk-amd64 and
+      # /usr/bin/mvn) - no actions/setup-java needed, and none wanted: it
+      # would otherwise re-download a JDK distribution over the same slow
+      # link this workflow exists to avoid.
       - name: Substitute datasource JNDI names
         run: |
           set -euo pipefail
@@ -81,34 +88,11 @@ jobs:
           test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
           mv "$war" "target/${APP_NAME}.war"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: qa1-war
-          path: target/qa1.war
-          retention-days: 7
-
-  deploy:
-    needs: build
-    runs-on: [self-hosted, qa1]
-    env:
-      APP_NAME:     qa1
-      JNDI_MAIN:    jdbc/qa1Main
-      JNDI_AUDIT:   jdbc/ruhunuAudit
-      HEALTH_URL:   http://localhost:9080/qa1/faces/index1.xhtml
-      PAYARA:       /home/carecode/payara
-      ASADMIN_PORT: "9048"
-      DEPLOY_DIR:   /home/carecode/qa1-deploy
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: qa1-war
-          path: ./artifact
-
       - name: Deploy to Payara
         run: |
           set -euo pipefail
           ASADMIN="$PAYARA/glassfish/bin/asadmin --port $ASADMIN_PORT"
-          WAR="$GITHUB_WORKSPACE/artifact/qa1.war"
+          WAR="$GITHUB_WORKSPACE/target/${APP_NAME}.war"
           test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
 
           for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
