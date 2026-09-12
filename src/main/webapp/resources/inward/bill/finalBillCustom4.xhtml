@@ -245,6 +245,22 @@
                                                                 </tr>
                                                             </h:panelGroup>
                                                         </ui:repeat>
+                                                            <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                                                <tr>
+                                                                    <td style="text-align: left;font-size: 10px!important;" width="90%">
+                                                                        <h:panelGroup>
+                                                                            #{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}
+                                                                        </h:panelGroup>
+                                                                    </td>
+                                                                    <td  style="text-align: right;font-size: 10px!important; padding-left: 15px;" width="100%">
+                                                                            <h:panelGroup>
+                                                                                <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                                </h:outputLabel>
+                                                                            </h:panelGroup>
+                                                                    </td>
+                                                                </tr>
+                                                            </h:panelGroup>
                                                     </table>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide Room Charges Details in Final Bill',false)}" >
@@ -667,6 +683,18 @@
                                                                         </tr>
                                                                     </h:panelGroup>
                                                                 </ui:repeat>
+                                                                    <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                                                        <tr>
+                                                                            <td style="text-align: left; font-size: 10px!important;">
+                                                                                <h:panelGroup>#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}</h:panelGroup>
+                                                                            </td>
+                                                                            <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
+                                                                                <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                                </h:outputLabel>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </h:panelGroup>
                                                             </table>
                                                         </h:panelGroup>
                                                     </h:panelGroup>
@@ -713,6 +741,19 @@
                                                                         </tr>
                                                                     </h:panelGroup>
                                                                 </ui:repeat>
+                                                                    <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                                                        <tr>
+                                                                            <td style="text-align: left; font-size: 10px!important;">
+                                                                                <h:panelGroup>#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}</h:panelGroup>
+                                                                            </td>
+                                                                            <td>&emsp;</td>
+                                                                            <td style="text-align: right; font-size: 10px!important;">
+                                                                                <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                                </h:outputLabel>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </h:panelGroup>
                                                             </table>
                                                         </h:panelGroup>
                                                     </h:panelGroup>
@@ -834,6 +875,18 @@
                                                                     </tr>
                                                                 </h:panelGroup>
                                                             </ui:repeat>
+                                                                <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                                                    <tr>
+                                                                        <td style="text-align: left; font-size: 10px!important;">
+                                                                            <h:panelGroup>#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}</h:panelGroup>
+                                                                        </td>
+                                                                        <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
+                                                                            <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                            </h:outputLabel>
+                                                                        </td>
+                                                                    </tr>
+                                                                </h:panelGroup>
                                                         </table>
                                                     </td>
                                                     <td style="width: 30%; text-align: right; font-size: 13px!important;">
@@ -881,6 +934,19 @@
                                                                 </tr>
                                                             </h:panelGroup>
                                                         </ui:repeat>
+                                                            <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                                                <tr>
+                                                                    <td style="text-align: left; font-size: 10px!important;">
+                                                                        <h:panelGroup>#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}</h:panelGroup>
+                                                                    </td>
+                                                                    <td>&emsp;</td>
+                                                                    <td style="text-align: right; font-size: 10px!important;">
+                                                                        <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputLabel>
+                                                                    </td>
+                                                                </tr>
+                                                            </h:panelGroup>
                                                     </table>
                                                 </td>
                                                 <td style="width: 30%; text-align: right; font-size: 13px!important;">
@@ -1111,7 +1177,8 @@
                         <div class="col-5">
                             <div class="d-grid justify-content-center">
                                 <h:outputLabel value="-----------------------------" />
-                                <h:outputLabel value="Cashier"  class="w-100 d-flex justify-content-center"/>
+                                <h:outputLabel value="Prepared by" class="w-100 d-flex justify-content-center"/>
+                                <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" class="w-100 d-flex justify-content-center"/>
                             </div>
                         </div>
                     </div>

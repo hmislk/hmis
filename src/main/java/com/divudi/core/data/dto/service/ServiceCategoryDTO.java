@@ -18,6 +18,7 @@ public class ServiceCategoryDTO {
     private String name;
     private String code;
     private String description;
+    private String categoryType; // CategoryType name, e.g. FINANCIAL_CATEGORY; null for untyped rows
     private boolean retired;
     private Date createdAt;
     private String message;
@@ -79,5 +80,13 @@ public class ServiceCategoryDTO {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getCategoryType() {
+        return categoryType;
+    }
+
+    public void setCategoryType(String categoryType) {
+        this.categoryType = categoryType;
     }
 }

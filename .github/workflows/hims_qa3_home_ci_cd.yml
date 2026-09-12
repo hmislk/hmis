@@ -1,0 +1,178 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  HMIS QA3 — home-hosted (Desktop, BuddhikaDesktop / Buddhika account)
+#
+#  Branch:  home-qa3  (NOT hims-qa3-home: the `hims-qa*` pattern is claimed by
+#           the "QA Branches Rules" ruleset, which demands a PR + check-branch
+#           status check for every push, including the branch-creating one —
+#           see hmislk/hmis#23736, which renamed QA1's trigger the same way.)
+#  Serves:  http://localhost:8080/qa3 on the LAN today; https://qa3.carecode.org/qa3
+#           through this same machine's nginx (see hmislk/qa-home-infra,
+#           runbooks/desktop-qa3.md) — the Desktop is the only
+#           internet-facing host, forwarding 80/443 for all four QA subdomains.
+#
+#  Differs from hims_qa1_home_ci_cd.yml: the deploy runner here is **Windows**,
+#  so every deploy step pins `shell: bash` (Git Bash), asadmin is the `.bat`
+#  wrapper, and Windows-style paths are converted with `cygpath` before being
+#  handed to asadmin.
+#
+#  Database: local MySQL `sl` (Southern Lanka), reached through the existing
+#  `jdbc/sl` resource. NOTE: this domain also has `jdbc/southernlanka` and
+#  `jdbc/southernLankaAzure`, which tunnel to the **production** southernlanka
+#  database — never point QA3 at those.
+# ═══════════════════════════════════════════════════════════════════════════
+name: HIMS QA3 Home CI/CD
+
+on:
+  push:
+    branches: [home-qa3]
+  workflow_dispatch:
+
+concurrency:
+  group: payara-qa3-home
+  cancel-in-progress: false
+
+env:
+  APP_NAME:     qa3
+  JNDI_MAIN:    jdbc/sl
+  JNDI_AUDIT:   jdbc/ruhunuAudit
+  HEALTH_URL:   http://localhost:8080/qa3/faces/index1.xhtml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved datasources ---"
+          grep -E 'jta-data-source|non-jta-data-source' "$PU"
+
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted JDBC placeholder remains in $PU"
+            exit 1
+          fi
+
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want}."
+              grep -E 'jta-data-source' "$PU"
+              exit 1; }
+          done
+          echo "datasources verified: $JNDI_MAIN, $JNDI_AUDIT"
+
+      - name: Build
+        run: mvn -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP_NAME}.war"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qa3-war
+          path: target/qa3.war
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, qa3]
+    defaults:
+      run:
+        shell: bash
+    env:
+      APP_NAME:     qa3
+      JNDI_MAIN:    jdbc/sl
+      JNDI_AUDIT:   jdbc/ruhunuAudit
+      HEALTH_URL:   http://localhost:8080/qa3/faces/index1.xhtml
+      ASADMIN:      D:\Payara\glassfish\bin\asadmin.bat
+      ASADMIN_PORT: "4848"
+      DEPLOY_DIR:   /d/qa3-deploy
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: qa3-war
+          path: ./artifact
+
+      - name: Deploy to Payara
+        run: |
+          set -euo pipefail
+          asadmin() { "$ASADMIN" --port "$ASADMIN_PORT" "$@"; }
+
+          test -f ./artifact/qa3.war || { echo "::error::WAR missing: ./artifact/qa3.war"; exit 1; }
+          WAR_WIN=$(cygpath -w "$(pwd)/artifact/qa3.war")
+          echo "WAR: $WAR_WIN"
+
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            asadmin list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "::error::JNDI resource $j not found in this domain."
+              exit 1; }
+            # Pool name is NOT derivable from the JNDI name (e.g.
+            # jdbc/ruhunuAudit -> poolRuhunuAudit) - look it up.
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$(asadmin get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "::error::could not resolve pool behind $j"; exit 1; }
+            asadmin ping-connection-pool "$pool" || {
+              echo "::error::pool $pool (behind $j) is not reachable"; exit 1; }
+            echo "$j -> $pool OK"
+          done
+
+          # Keep a rollback copy before touching the running app.
+          mkdir -p "$DEPLOY_DIR"
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.deployed" ]; then
+            cp "$DEPLOY_DIR/${APP_NAME}.war.deployed" "$DEPLOY_DIR/${APP_NAME}.war.previous"
+          fi
+
+          asadmin undeploy "$APP_NAME" 2>/dev/null || echo "not previously deployed"
+          if ! asadmin deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$WAR_WIN"; then
+            echo "::error::deploy failed"
+            if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+              echo "restoring previous WAR"
+              asadmin deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true \
+                "$(cygpath -w "$DEPLOY_DIR/${APP_NAME}.war.previous")"
+            fi
+            exit 1
+          fi
+          cp ./artifact/qa3.war "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          asadmin list-applications
+
+      - name: Health check
+        run: |
+          set -euo pipefail
+          asadmin() { "$ASADMIN" --port "$ASADMIN_PORT" "$@"; }
+
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { echo "healthy"; exit 0; }
+            sleep 10
+          done
+          echo "::error::qa3 did not become healthy at $HEALTH_URL - removing it"
+          asadmin undeploy "$APP_NAME" 2>/dev/null || true
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+            echo "restoring previous WAR"
+            asadmin deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true \
+              "$(cygpath -w "$DEPLOY_DIR/${APP_NAME}.war.previous")"
+            cp "$DEPLOY_DIR/${APP_NAME}.war.previous" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          fi
+          exit 1

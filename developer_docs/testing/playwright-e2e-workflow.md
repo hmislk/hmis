@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-122 sections. **The workflow is §0-§8; everything from §9 on is an independent
+124 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -149,6 +149,9 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally](#120-verifying-a-pfiledownload-export-post-the-form-with-fetch-and-decode-locally)
 - [121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`](#121-pajax-update-targeting-a-raw-div-id-throws-componentnotfoundexception-at-render-time--wrap-it-in-hpanelgroup)
 - [122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data](#122-a-pcommandbuttons-processx-that-excludes-the-button-itself-silently-skips-its-own-action--no-exception-no-error-a-real-200-ok-with-the-previous-data)
+- [123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab](#123-reportsindexxhtmls-report-category-accordion-needs-the-primefaces-widget-api-not-a-plain-click-to-reliably-expand-a-tab)
+- [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
+- [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -2242,6 +2245,17 @@ reload or hard refresh will not. Found while verifying issue #23342, where an
 A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
 between the two halves.
 
+**Second caveat — a swap can also break the view that is already open.** While
+verifying issue #23723, `inward_bill_final.xhtml` was swapped while the page was
+open in the browser. The swap *was* picked up (a fresh open rendered the new
+markup), but the next AJAX postback from the already-open view failed: first
+silently (the `p:ajax` listener never ran, so the edit didn't persist), then as
+an HTTP 500 `IndexOutOfBoundsException: Index 0 out of bounds for length 0` at
+`AttachedObjectListHolder.restoreState`. The saved view state no longer matches
+the rebuilt component tree. That is a test artifact, not a defect. After any
+swap, leave the page (Home → back through the menus) to get a fresh view before
+testing again, and don't trust anything a pre-swap view did after the swap.
+
 ## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
 
 To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
@@ -3618,3 +3632,96 @@ check EclipseLink SQL logging, `eclipselink.logging.level.sql=FINE` in
 never prints despite a `200` response, the action isn't being invoked at
 all — go straight to the button's `process`/`execute` attribute rather than
 debugging the method's own logic.
+
+## 123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab
+
+Found while testing issue #23604 (GRN Summary Report). The category strip
+("Inventory Reports", "Financial Reports", …) at the top of
+`reports/index.xhtml` looks like a `p:tabView` (ARIA `role="tab"`/`tablist`)
+but is actually a `p:accordionPanel` whose headers are styled to look like
+tabs. A `browser_click` (or `getByRole('tab', {name: ...}).click()`) on a
+header is unreliable for two reasons: (1) the panel's report buttons are lazy
+— the ARIA state can flip to `expanded`/`selected` before the AJAX call that
+actually populates the panel content has returned, so an immediate DOM check
+finds an "open" but still-empty panel; (2) a raw `element.click()` via
+`browser_evaluate` bypasses jQuery's bound handler and can **toggle the
+accordion closed** if PrimeFaces already considered it open from an earlier
+click, silently undoing the navigation.
+
+Reliable pattern: drive the PrimeFaces widget directly instead of clicking.
+```js
+const w = PrimeFaces.widgets['widget_j_idt533_reportsAccordion']; // find via
+  // Object.keys(PrimeFaces.widgets).filter(k => /reportsAccordion$/.test(k))
+const headers = w.headers;
+let idx = -1;
+headers.each(function (i) { if (this.textContent.trim() === 'Inventory Reports') idx = i; });
+w.select(idx);
+```
+`select()` still triggers the same lazy-load AJAX that a real click would,
+it just does so through the real widget lifecycle instead of a spoofed
+click, so the panel populates instead of toggling shut — but the AJAX is
+still async, so don't search the DOM immediately after `select()`. Per §5a,
+wait on content rather than a fixed delay: `browser_wait_for({text: '<a
+label expected in that category, e.g. "1. Closing Stock">'})` before
+searching the DOM for the target report button. A fixed-time wait risks
+checking before a slow response has populated the panel.
+
+## 124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter
+
+Also found on issue #23604. `reports/index.xhtml`'s report buttons are each
+wrapped `rendered="#{webUserController.hasPrivilege('ReportsGrnSummaryReport')}"`,
+and `WebUserController.hasPrivilege()` checks
+`sessionController.getUserPrivileges()` — the privilege set loaded for
+whichever department was picked on the **Select Department** screen at
+login, not the department the report will actually query. A local test user
+can hold `ReportsGrnSummaryReport` for one department (e.g. `Inward`) but not
+another (e.g. `Main Pharmacy`) — querying
+`WEBUSERPRIVILEGE.DEPARTMENT_ID` confirms which. If the button is missing
+(or, per §123, the whole accordion panel renders as a set of empty
+`<div class="d-flex...">` wrappers with **zero** child buttons — every
+`rendered` in the panel evaluating false, not just one), check this before
+assuming a defect: query
+`SELECT wup.PRIVILEGE, d.NAME FROM WEBUSERPRIVILEGE wup JOIN WEBUSER wu ON wu.ID=wup.WEBUSER_ID LEFT JOIN DEPARTMENT d ON d.ID=wup.DEPARTMENT_ID WHERE wu.NAME='<user>' AND wup.PRIVILEGE LIKE '%<ReportPrivilege>%'`.
+
+If the privilege exists only for a different department, switch to that
+department per §17 (`logout.xhtml` → login → **Select Department**) to reach
+the report's menu entry — the report page's own `Institution`/`Site`/
+`Department-Store` filter fields are independent of the session department,
+so once on the page, point those filters back at the department whose data
+you actually need to verify.
+
+## 125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre
+
+Found while verifying issue #23723 on the local `coop` DB.
+
+- **Pick a fully open admission.** *Inpatient → Services & Items → Add Services &
+  Investigations* refuses to settle for a discharged BHT ("Sorry Patient is
+  Discharged!!!") and also for one whose nursing discharge is confirmed ("Cannot
+  add charges: nursing discharge has been confirmed for this patient."). Both
+  messages appear only in a `p:messages`/growl on a full-page reload that looks
+  like the edit screen (§70), so check the messages or the DB. Add every charge
+  and professional fee first, then run the discharge chain (§75): Room Details →
+  Discharge from Room, Nursing Discharge, Clinical Discharge, then Interim Bill →
+  set **Discharge Time** (a `p:datePicker`; use the widget's `setDate()`, §56) →
+  Discharge, then Create Final Bill.
+- **MRI items (`REPORTING - Dr ...`, `MRI - ...`) live in the `MRI` department,
+  which is not one of the department buttons on the Inward session's Add Services
+  page.** In production they're billed by the Karapitiya Diagnostic Centre. To
+  reproduce that, log in to **OPD - Diagnostic Centre**, open the same Add
+  Services menu item, set the page's **Institution** dropdown to *Galle Co
+  Operative Hospital* (it defaults to the Diagnostic Centre, and the BHT search
+  then finds nothing), search the BHT, and click the **MRI** department button.
+  The resulting bill number is `OPDDC//...`, like production's.
+- **Add Professional Fee's patient search** only finds the BHT when its Institution
+  is right. Changing that dropdown on the Diagnostic Centre session did not take
+  effect, but the Inward session defaults to *All Institutions* and works. Enter
+  professional fees from the Inward department.
+- **Save Final Bill stays disabled until you click Process**, and it silently
+  refuses (`checkCatTotal()`) while any category's Adjusted Total differs from
+  its Total. That's the default of `Block Inward Final Bill When Category
+  Adjusted Total Differs From Actual Total`. Undo test adjustments, or balance
+  them, before saving.
+- **Creating a new final bill version** (Admission Profile → Manage Final Bills →
+  Create New Version) reopens `inward_bill_final.xhtml` in edit mode on an
+  already-settled admission. That's a quick way to get a fresh edit view without
+  building another admission.

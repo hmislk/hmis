@@ -23,6 +23,8 @@ public class ServiceSearchResultDTO {
     private boolean inactive;
     private Long categoryId;
     private String categoryName;
+    private Long financialCategoryId;
+    private String financialCategoryName;
     private String inwardChargeType;
 
     public ServiceSearchResultDTO() {
@@ -114,6 +116,22 @@ public class ServiceSearchResultDTO {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Long getFinancialCategoryId() {
+        return financialCategoryId;
+    }
+
+    public void setFinancialCategoryId(Long financialCategoryId) {
+        this.financialCategoryId = financialCategoryId;
+    }
+
+    public String getFinancialCategoryName() {
+        return financialCategoryName;
+    }
+
+    public void setFinancialCategoryName(String financialCategoryName) {
+        this.financialCategoryName = financialCategoryName;
     }
 
     public String getInwardChargeType() {
