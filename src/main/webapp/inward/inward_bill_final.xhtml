@@ -875,10 +875,13 @@
 
                         </p:dataTable>
 
+                        <!-- Professional charges that were not entered through Add Professional Fee
+                             (service items typed ProfessionalCharge) are not listed per doctor; they
+                             print as one "Other Professional Charges" line on the bill. -->
                         <h:panelGroup id="unattributedProfessionalNoteWrap">
                             <h:panelGroup id="unattributedProfessionalNote" layout="block" styleClass="mt-2 text-muted"
                                           rendered="#{bhtSummeryController.unattributedProfessionalChargeTotal ge 0.01}">
-                                <h:outputText value="Professional charges without a doctor (from service bills): "/>
+                                <h:outputText value="Other professional charges, not entered as professional fees (printed as one line): "/>
                                 <h:outputText value="#{bhtSummeryController.unattributedProfessionalChargeTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -922,14 +925,7 @@
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Adjusted Value" style="text-align: right; padding: 6px;">
-                                        <!-- A doctor fee charged on a service bill (e.g. an MRI reporting item) is
-                                             not adjustable here and always counts at its fee value. -->
-                                        <h:outputText value="#{fb.feeValue}" rendered="#{fb.bill.billType eq 'InwardBill'}"
-                                                      title="Charged on a service bill - adjust it on that bill, not here">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-                                        <p:inputText autocomplete="off" value="#{fb.feeAdjusted}" style="text-align: right;"
-                                                     rendered="#{fb.bill.billType ne 'InwardBill'}">
+                                        <p:inputText autocomplete="off" value="#{fb.feeAdjusted}" style="text-align: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                             <p:ajax event="blur" process="@this"
                                                     update=":#{p:resolveFirstComponentWithId('breakdownTable',view).clientId} :#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('unattributedProfessionalNoteWrap',view).clientId}"

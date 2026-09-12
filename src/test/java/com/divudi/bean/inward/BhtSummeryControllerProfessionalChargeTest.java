@@ -1,10 +1,7 @@
 package com.divudi.bean.inward;
 
-import com.divudi.core.data.BillType;
-import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Staff;
 import org.junit.jupiter.api.Test;
 
@@ -15,27 +12,25 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Regression tests for issue #23723: the Final Bill's ProfessionalCharge TOTAL
- * (InwardBeanController.calculateProfessionalCharges() +
- * calServiceBillItemsTotalByInwardChargeTypeBulk(), which includes Staff fees
- * on ProfessionalCharge-typed service items, e.g. an MRI "REPORTING - Dr X"
- * item) used to disagree with the per-doctor LIST (BhtSummeryController's
- * profesionallFee, InwardProfessional bills only) — a radiologist fee billed
- * on the service bill was missing from the doctor list.
+ * Regression tests for issue #23723's ProfessionalCharge money fix: adjusting
+ * one doctor's fee on the Final Bill must move the ProfessionalCharge
+ * category's adjusted total by that fee's delta only, never by replacing it
+ * with the sum of the doctor rows (which does not cover the whole category —
+ * the category total also contains service items typed ProfessionalCharge,
+ * plus timed/additional charges, that the per-doctor list never lists).
  * <p>
  * These tests cover the pure, CDI-free pieces of the fix:
  * <ul>
  * <li>{@link BhtSummeryController#sumFeesByStaff(List)} — the per-staff
- * summation {@code addMergedDoctorFeesToProFees} uses to merge a
- * pro-fee-bill fee and a service-bill fee for the same doctor, and to net a
- * refunded service fee against its original.</li>
+ * summation {@code addMergedDoctorFeesToProFees} uses to merge a doctor's
+ * individual fees into one, and to net a refunded fee against its
+ * original.</li>
  * <li>{@link BhtSummeryController#professionalAdjustedTotal(double, List)} —
- * the delta-based adjusted-total helper that keeps the service-item part of
- * the ProfessionalCharge total when an editable (non-service-bill) fee is
- * adjusted.</li>
+ * the delta-based adjusted-total helper that keeps the untouched part of the
+ * ProfessionalCharge total (the part not covered by any doctor row) when a
+ * doctor's fee is adjusted.</li>
  * <li>{@link BillItem#getUnattributedProfessionalFeeValue()} — the remainder
  * of a bill item's adjustedValue not covered by any doctor in proFees.</li>
  * </ul>
@@ -43,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * distinct ids are used throughout to avoid accidentally merging two
  * different doctors (both otherwise default to id=null).
  */
-class BhtSummeryControllerServiceProfessionalFeeTest {
+class BhtSummeryControllerProfessionalChargeTest {
 
     private static Staff staff(long id) {
         Staff s = new Staff();
@@ -60,38 +55,31 @@ class BhtSummeryControllerServiceProfessionalFeeTest {
         return bf;
     }
 
-    private static Bill billOfType(BillType type) {
-        // BilledBill is a concrete Bill subclass already used elsewhere in the
-        // inward tests/entities as a stand-in "real billed bill".
-        BilledBill b = new BilledBill();
-        b.setBillType(type);
-        return b;
-    }
-
     // ---- sumFeesByStaff -----------------------------------------------
 
     @Test
-    void sumFeesByStaff_mergesProFeeBillFeeAndServiceBillFee_forSameDoctor() {
+    void sumFeesByStaff_sumsTwoFees_forSameDoctor() {
         Staff doctor = staff(1L);
-        // A pro-fee-bill fee (InwardProfessional) and a service-bill fee
-        // (InwardBill, e.g. the MRI "REPORTING - Dr X" item) for the same
-        // doctor must be summed together.
-        BillFee proFeeBillFee = fee(doctor, 10_000.0, 0.0, 0);
-        BillFee serviceBillFee = fee(doctor, 7_500.0, 0.0, 1);
+        // Two individual fees for the same doctor must be summed together.
+        // The second fee's non-zero feeAdjusted differs from its feeValue, so
+        // the effective-adjusted rule (feeAdjusted != 0 ? feeAdjusted :
+        // feeValue) is exercised for both fees in the merge.
+        BillFee feeOne = fee(doctor, 10_000.0, 0.0, 0);
+        BillFee feeTwo = fee(doctor, 7_500.0, 6_000.0, 1);
 
-        Map<Staff, double[]> sums = BhtSummeryController.sumFeesByStaff(Arrays.asList(proFeeBillFee, serviceBillFee));
+        Map<Staff, double[]> sums = BhtSummeryController.sumFeesByStaff(Arrays.asList(feeOne, feeTwo));
 
         assertEquals(1, sums.size());
         double[] sum = sums.get(doctor);
         assertEquals(17_500.0, sum[0], 0.001, "feeValue sum");
-        assertEquals(17_500.0, sum[1], 0.001, "feeAdjusted sum (falls back to feeValue when feeAdjusted is 0)");
+        assertEquals(16_000.0, sum[1], 0.001, "adjusted sum uses feeTwo's feeAdjusted, not its feeValue");
     }
 
     @Test
     void sumFeesByStaff_netsToZero_forPositiveFeeAndNegativeRefund() {
         Staff doctor = staff(2L);
-        // A billed service fee fully reversed by a RefundBill's negative
-        // contra fee for the same doctor nets to zero — the condition
+        // A billed fee fully reversed by a refund's negative contra fee for
+        // the same doctor nets to zero — the condition
         // addMergedDoctorFeesToProFees uses (abs < 0.005 on both sums) to
         // skip persisting/showing a doctor row with nothing left to pay.
         BillFee billed = fee(doctor, 5_000.0, 0.0, 0);
@@ -121,11 +109,12 @@ class BhtSummeryControllerServiceProfessionalFeeTest {
     // ---- professionalAdjustedTotal --------------------------------------
 
     @Test
-    void professionalAdjustedTotal_keepsServicePart_whenEditableFeeIsAdjusted() {
-        // Total already includes both the InwardProfessional pro-fee part and
-        // the service-item part (issue #23723's whole point); adjusting one
-        // editable (non-service-bill) fee down by 2000 must only move the
-        // total by that 2000, never dropping the untouched service part.
+    void professionalAdjustedTotal_keepsUnattributedPart_whenADoctorFeeIsAdjusted() {
+        // Total already includes both the doctor-row part and the
+        // unattributed part (service items typed ProfessionalCharge, timed/
+        // additional charges); adjusting one doctor's fee down by 2000 must
+        // only move the total by that 2000, never dropping the untouched
+        // unattributed part.
         BillFee editableFee = fee(staff(5L), 10_000.0, 8_000.0, 0);
 
         double result = BhtSummeryController.professionalAdjustedTotal(26_500.0, Collections.singletonList(editableFee));
@@ -150,23 +139,6 @@ class BhtSummeryControllerServiceProfessionalFeeTest {
         double result = BhtSummeryController.professionalAdjustedTotal(26_500.0, Arrays.asList(feeA, feeB));
 
         assertEquals(25_000.0, result, 0.001);
-    }
-
-    // ---- isServiceBillFee -------------------------------------------------
-
-    @Test
-    void isServiceBillFee_trueForInwardBill_falseOtherwise() {
-        BillFee onServiceBill = new BillFee();
-        onServiceBill.setBill(billOfType(BillType.InwardBill));
-
-        BillFee onProFeeBill = new BillFee();
-        onProFeeBill.setBill(billOfType(BillType.InwardProfessional));
-
-        BillFee noBill = new BillFee();
-
-        assertTrue(BhtSummeryController.isServiceBillFee(onServiceBill));
-        assertTrue(!BhtSummeryController.isServiceBillFee(onProFeeBill));
-        assertTrue(!BhtSummeryController.isServiceBillFee(noBill));
     }
 
     // ---- BillItem.getUnattributedProfessionalFeeValue ----------------------

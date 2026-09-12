@@ -904,49 +904,6 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    /**
-     * Staff BillFees carried on InwardBill (service/investigation) bill items
-     * whose item is typed ProfessionalCharge — e.g. an MRI "REPORTING - Dr X"
-     * item with a Staff fee. These are missing from
-     * {@link #createProfesionallFee(PatientEncounter, List)}, which only looks
-     * at InwardProfessional bills, so the Final Bill's per-doctor list used to
-     * silently drop them while the ProfessionalCharge total (which sums
-     * service bill items too) already included them (issue #23723).
-     * <p>
-     * Cancelled originals (and their negative contra fees) are excluded via
-     * {@code bt.bill.cancelled=false and type(bt.bill) <> CancelledBill}, the
-     * same pattern used elsewhere (e.g. {@code ClinicService}) to keep a
-     * cancelled bill and its cancellation contra out of a sum together.
-     * RefundBill negative fees are NOT excluded — a RefundBill has
-     * {@code billType=InwardBill} too and its negative fee nets against the
-     * original positive fee for the same doctor, which is the desired
-     * behaviour for a partial refund.
-     */
-    public List<BillFee> fetchServiceBillProfessionalFees(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        HashMap hm = new HashMap();
-        String sql = "SELECT bt FROM BillFee bt WHERE "
-                + " bt.retired=false "
-                + " and bt.billItem.retired=false "
-                + " and bt.staff is not null "
-                + " and bt.bill.billType=:btp "
-                + " and bt.billItem.item.inwardChargeType=:ict "
-                + " and bt.bill.cancelled=false "
-                + " and type(bt.bill) <> :cancelledClass "
-                + " and bt.bill.patientEncounter IN :pe "
-                + " order by bt.createdAt ";
-        hm.put("btp", BillType.InwardBill);
-        hm.put("ict", InwardChargeType.ProfessionalCharge);
-        hm.put("cancelledClass", CancelledBill.class);
-        List<PatientEncounter> pts = new ArrayList<>();
-        pts.add(patientEncounter);
-        if (cpts != null && !cpts.isEmpty()) {
-            pts.addAll(cpts);
-        }
-        hm.put("pe", pts);
-
-        return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
-    }
-
     public List<BillFee> createProfesionallFeeEstimated(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
         String sql = "SELECT bt FROM BillFee bt WHERE "

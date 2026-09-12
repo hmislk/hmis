@@ -1005,10 +1005,11 @@ public class BillItem implements Serializable, RetirableEntity {
 
     /**
      * The part of this line's adjustedValue not covered by any doctor in
-     * proFees — e.g. a service item configured with a hospital fee only, with
-     * no Staff fee attached. Used by final-bill print templates to show the
-     * part of the Professional Charge total that has no doctor, so the
-     * printed lines always add up (issue #23723).
+     * proFees — e.g. a service item typed ProfessionalCharge, whether or not
+     * it carries a Staff fee, and whether or not that fee is attached to a
+     * doctor. Used by final-bill print templates to show the part of the
+     * Professional Charge total that is not listed against any doctor, so
+     * the printed lines always add up (issue #23723).
      */
     public double getUnattributedProfessionalFeeValue() {
         double proFeesTotal = 0;

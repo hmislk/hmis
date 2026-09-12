@@ -176,11 +176,6 @@ public class BhtSummeryController implements Serializable {
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
     private List<BillFee> profesionallFee;
-    // Staff BillFees carried on InwardBill service items typed ProfessionalCharge
-    // (e.g. an MRI "REPORTING - Dr X" item) — missing from profesionallFee, which
-    // only covers InwardProfessional bills. See InwardBeanController#fetchServiceBillProfessionalFees
-    // and issue #23723.
-    private List<BillFee> serviceProfessionalFees;
     private List<BillFee> doctorAndNurseFee;
     // Holds the doctor whose fee breakdown is shown in the "how the total is calculated" popup.
     private DoctorFeeGroup selectedDoctorFeeGroup;
@@ -1069,25 +1064,14 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
-     * True for a professional-fee BillFee charged on a service/investigation
-     * bill item (InwardBill, e.g. an MRI "REPORTING - Dr X" item) rather than
-     * on an InwardProfessional bill. These are read-only in the Professional
-     * Fee adjustment flow below — they belong to a different bill and are not
-     * this bean's to edit (issue #23723).
-     */
-    static boolean isServiceBillFee(BillFee bf) {
-        return bf.getBill() != null && bf.getBill().getBillType() == BillType.InwardBill;
-    }
-
-    /**
      * ProfessionalCharge adjusted total as a delta off the category total: the
-     * category total plus, for each editable (non-service-bill) fee, how far
-     * its effective adjusted value ({@code feeAdjusted != 0 ? feeAdjusted :
-     * feeValue}) has moved from its own feeValue. Delta-based so it never
-     * drops the service-item part, hospital-fee-only items, timed charges, or
-     * additional charges folded into the category total — only ever applying
-     * the doctor-level adjustments the user actually made. Static and
-     * CDI-free so it can be unit tested directly.
+     * category total plus, for each fee, how far its effective adjusted value
+     * ({@code feeAdjusted != 0 ? feeAdjusted : feeValue}) has moved from its
+     * own feeValue. Delta-based so it never drops the service-item part
+     * (service items typed ProfessionalCharge), hospital-fee-only items,
+     * timed charges, or additional charges folded into the category total —
+     * only ever applying the doctor-level adjustments the user actually made.
+     * Static and CDI-free so it can be unit tested directly.
      */
     static double professionalAdjustedTotal(double total, List<BillFee> editableFees) {
         double delta = 0;
@@ -1101,9 +1085,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void changeAdjustedProValue(BillFee billFee) {
-        if (isServiceBillFee(billFee)) {
-            return;
-        }
         getBillFeeFacade().edit(billFee);
         refreshProfessionalChargeAdjustedTotal();
         updateTotal();
@@ -1131,12 +1112,6 @@ public class BhtSummeryController implements Serializable {
         int serial = 0;
         for (DoctorFeeGroup grp : groups) {
             for (BillFee bf : grp.getFees()) {
-                // Service-bill fees belong to a different bill (the service/
-                // investigation bill, not this final/temp bill) — never persist
-                // an orderNo change onto them.
-                if (isServiceBillFee(bf)) {
-                    continue;
-                }
                 bf.setOrderNo(serial++);
                 getBillFeeFacade().edit(bf);
             }
@@ -1155,11 +1130,6 @@ public class BhtSummeryController implements Serializable {
         int serial = 0;
         for (DoctorFeeGroup grp : getGroupedProfessionalFees()) {
             for (BillFee bf : grp.getFees()) {
-                // Service-bill fees belong to a different bill — skip, same as
-                // onGroupedProfessionalFeeReorder.
-                if (isServiceBillFee(bf)) {
-                    continue;
-                }
                 bf.setOrderNo(serial++);
                 getBillFeeFacade().edit(bf);
             }
@@ -1198,49 +1168,7 @@ public class BhtSummeryController implements Serializable {
                 group.setTotalAdjusted(group.getTotalAdjusted() + adjusted);
             }
         }
-        // Staff fees on ProfessionalCharge-typed service/investigation items
-        // (e.g. an MRI "REPORTING - Dr X" item) — merged into the same doctor
-        // group so the list matches the ProfessionalCharge total, which already
-        // includes them (issue #23723). fetchServiceBillProfessionalFees()
-        // already excludes cancelled originals (bt.bill.cancelled=false and
-        // type<>CancelledBill); unlike the loop above, no BilledBill/isCancelled
-        // filter is applied here, so a RefundBill's negative fee is allowed
-        // through to net against the original fee for the same doctor.
-        for (BillFee bf : getServiceProfessionalFees()) {
-            if (bf.getStaff() == null || bf.getBill() == null) {
-                continue;
-            }
-            if (bf.getFeeValue() == 0) {
-                continue;
-            }
-            DoctorFeeGroup group = groups.get(bf.getStaff());
-            if (group == null) {
-                group = new DoctorFeeGroup(bf.getStaff());
-                groups.put(bf.getStaff(), group);
-            }
-            group.getFees().add(bf);
-            // Service-bill fees are never independently adjusted, so they
-            // contribute their feeValue to both the raw and adjusted totals.
-            group.setTotal(group.getTotal() + bf.getFeeValue());
-            group.setTotalAdjusted(group.getTotalAdjusted() + bf.getFeeValue());
-        }
-
-        List<DoctorFeeGroup> result = new ArrayList<>();
-        for (DoctorFeeGroup group : groups.values()) {
-            boolean allServiceFees = true;
-            for (BillFee bf : group.getFees()) {
-                if (!isServiceBillFee(bf)) {
-                    allServiceFees = false;
-                    break;
-                }
-            }
-            // A doctor whose only fees are service-bill fees that net to ~0
-            // (e.g. fully refunded) has nothing left to show.
-            if (allServiceFees && Math.abs(group.getTotal()) < 0.005) {
-                continue;
-            }
-            result.add(group);
-        }
+        List<DoctorFeeGroup> result = new ArrayList<>(groups.values());
         // Order doctors by the smallest orderNo among their fees so a manual
         // drag-reorder (which writes orderNo) is reproduced. A stable sort keeps
         // first-appearance order when nothing has been reordered (all orderNo 0).
@@ -1264,25 +1192,8 @@ public class BhtSummeryController implements Serializable {
         if (group == null || group.getFees().isEmpty()) {
             return;
         }
-        // Service-bill fees belong to a different bill and are not editable
-        // here — only distribute the entered total across the remaining,
-        // editable (non-service-bill) fees.
-        double serviceSum = 0;
-        List<BillFee> fees = new ArrayList<>();
-        for (BillFee bf : group.getFees()) {
-            if (isServiceBillFee(bf)) {
-                serviceSum += bf.getFeeValue();
-            } else {
-                fees.add(bf);
-            }
-        }
-        if (fees.isEmpty()) {
-            group.setTotalAdjusted(serviceSum);
-            JsfUtil.addErrorMessage("This doctor's fee is charged on a service bill and cannot be adjusted here.");
-            return;
-        }
-
-        double newTotal = group.getTotalAdjusted() - serviceSum;
+        double newTotal = group.getTotalAdjusted();
+        List<BillFee> fees = group.getFees();
 
         double oldSum = 0;
         for (BillFee bf : fees) {
@@ -1313,28 +1224,24 @@ public class BhtSummeryController implements Serializable {
 
     /**
      * Refreshes the ProfessionalCharge category adjusted total as a delta off
-     * the category total ({@link #professionalAdjustedTotal}), using every
-     * editable (non-service-bill) fee the user actually sees in the grouped
-     * doctor table. Delta-based — rather than replacing the total outright —
-     * so it never drops the service-item part, hospital-fee-only items, timed
-     * charges, or additional charges folded into the category total; it only
-     * ever applies the doctor-level adjustments actually made. This also keeps
-     * the total consistent when the config flag merges assisting fees into
-     * {@code profesionallFee}, since those are included via the same grouped
-     * list.
+     * the category total ({@link #professionalAdjustedTotal}), using every fee
+     * the user actually sees in the grouped doctor table. Delta-based — rather
+     * than replacing the total outright — because the category total also
+     * contains service items typed ProfessionalCharge (plus timed/additional
+     * charges), which the doctor rows never cover; applying only the delta
+     * from the doctor-level adjustments actually made leaves that part of the
+     * total untouched. This also keeps the total consistent when the config
+     * flag merges assisting fees into {@code profesionallFee}, since those are
+     * included via the same grouped list.
      */
     private void refreshProfessionalChargeAdjustedTotal() {
-        List<BillFee> editableFees = new ArrayList<>();
+        List<BillFee> fees = new ArrayList<>();
         for (DoctorFeeGroup g : getGroupedProfessionalFees()) {
-            for (BillFee bf : g.getFees()) {
-                if (!isServiceBillFee(bf)) {
-                    editableFees.add(bf);
-                }
-            }
+            fees.addAll(g.getFees());
         }
         for (ChargeItemTotal chargeItemTotal : chargeItemTotals) {
             if (chargeItemTotal.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                chargeItemTotal.setAdjustedTotal(professionalAdjustedTotal(chargeItemTotal.getTotal(), editableFees));
+                chargeItemTotal.setAdjustedTotal(professionalAdjustedTotal(chargeItemTotal.getTotal(), fees));
             }
         }
     }
@@ -1352,12 +1259,6 @@ public class BhtSummeryController implements Serializable {
      * and grouped row) and the professional charge totals.
      */
     public void changeFeeAdjustedInBreakdown(BillFee billFee) {
-        if (isServiceBillFee(billFee)) {
-            // Read-only here — belongs to a different (service) bill. The
-            // breakdown popup's adjusted-value input is disabled for these rows;
-            // this is the server-side backstop.
-            return;
-        }
         getBillFeeFacade().edit(billFee);
         if (selectedDoctorFeeGroup != null) {
             double sum = 0;
@@ -1379,11 +1280,13 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
-     * The part of the ProfessionalCharge category total that is not covered by
-     * any doctor row in {@link #getGroupedProfessionalFees()} — e.g. a service
-     * item configured with a hospital fee only, with no Staff fee attached.
-     * Lets the final bill page show "Professional charges without a doctor"
-     * so the printed lines always add up to the category total (issue #23723).
+     * The part of the ProfessionalCharge category total that is not listed
+     * against any doctor row in {@link #getGroupedProfessionalFees()} — i.e.
+     * everything charged through service items typed ProfessionalCharge
+     * (whether or not they carry a Staff fee, and whether or not that fee is
+     * attached to a doctor). Shown on the final bill page as a single "Other
+     * Professional Charges" line under Professional Charge so the printed
+     * lines always add up to the category total (issue #23723).
      */
     public double getUnattributedProfessionalChargeTotal() {
         double proTotal = 0;
@@ -4247,9 +4150,7 @@ public class BhtSummeryController implements Serializable {
             if (staff == null) {
                 continue;
             }
-            // Service-bill fees are never adjusted on the final bill (see
-            // getGroupedProfessionalFees), so they always count at feeValue.
-            double adjusted = isServiceBillFee(bf) || bf.getFeeAdjusted() == 0 ? bf.getFeeValue() : bf.getFeeAdjusted();
+            double adjusted = bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
             double[] sum = sums.computeIfAbsent(staff, s -> new double[2]);
             sum[0] += bf.getFeeValue();
             sum[1] += adjusted;
@@ -4263,16 +4164,16 @@ public class BhtSummeryController implements Serializable {
      * feeAdjusted, via {@link #sumFeesByStaff}) attached to the final/temp bill
      * item via referenceBillItem, preserving the manual doctor order via
      * orderNo. A doctor whose summed feeValue AND feeAdjusted both net to ~0
-     * (e.g. a fully refunded service-bill fee) is skipped entirely — not added
-     * to {@code bItem.getProFees()} and not persisted — since there is nothing
-     * left to show or pay.
+     * (e.g. a fully refunded fee) is skipped entirely — not added to {@code
+     * bItem.getProFees()} and not persisted — since there is nothing left to
+     * show or pay.
      * <p>
-     * The original per-encounter fees are left untouched on their source bills
-     * (InwardProfessional, or InwardBill for service-item fees), so
-     * doctor-payment/commission reports (which read those bills) stay correct.
-     * The merged fees belong to the final bill (InwardFinalBill), so they are
-     * distinguishable from the source fees by bill type. When {@code persist}
-     * is false (temp preview) the merged fees are kept in memory only.
+     * The original per-encounter fees are left untouched on their
+     * InwardProfessional bills, so doctor-payment/commission reports (which
+     * read those bills) stay correct. The merged fees belong to the final bill
+     * (InwardFinalBill), so they are distinguishable from the source fees by
+     * bill type. When {@code persist} is false (temp preview) the merged fees
+     * are kept in memory only.
      */
     private void addMergedDoctorFeesToProFees(List<BillFee> sourceFees, BillItem bItem, boolean persist) {
         Map<Staff, double[]> sums = sumFeesByStaff(sourceFees);
@@ -4308,15 +4209,11 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void updateProBillFee(BillItem bItem) {
-        List<BillFee> combined = new ArrayList<>(getProfesionallFee());
-        combined.addAll(getServiceProfessionalFees());
-        addMergedDoctorFeesToProFees(combined, bItem, true);
+        addMergedDoctorFeesToProFees(getProfesionallFee(), bItem, true);
     }
 
     private void updateProTempBillFee(BillItem bItem) {
-        List<BillFee> combined = new ArrayList<>(getProfesionallFee());
-        combined.addAll(getServiceProfessionalFees());
-        addMergedDoctorFeesToProFees(combined, bItem, false);
+        addMergedDoctorFeesToProFees(getProfesionallFee(), bItem, false);
     }
 
     private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
@@ -4459,7 +4356,6 @@ public class BhtSummeryController implements Serializable {
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
-        serviceProfessionalFees = getInwardBean().fetchServiceBillProfessionalFees(getPatientEncounter(), childPatientEncouters);
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
@@ -4507,7 +4403,6 @@ public class BhtSummeryController implements Serializable {
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFeeEstimated(getPatientEncounter());
-        serviceProfessionalFees = getInwardBean().fetchServiceBillProfessionalFees(getPatientEncounter(), childPatientEncouters);
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
@@ -4581,7 +4476,6 @@ public class BhtSummeryController implements Serializable {
         due = 0.0;
         paid = 0.0;
         profesionallFee = null;
-        serviceProfessionalFees = null;
         doctorAndNurseFee = null;
         patientItems = null;
         paymentBill = null;
@@ -5322,29 +5216,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
-     * Staff BillFees on InwardBill service items typed ProfessionalCharge
-     * (e.g. an MRI "REPORTING - Dr X" item) — the part of the Professional
-     * Charge total that {@link #getProfesionallFee()} (InwardProfessional
-     * bills only) does not cover. See
-     * {@link InwardBeanController#fetchServiceBillProfessionalFees} and issue
-     * #23723.
-     */
-    public List<BillFee> getServiceProfessionalFees() {
-        if (serviceProfessionalFees == null) {
-            if (getPatientEncounter() != null) {
-                serviceProfessionalFees = getInwardBean().fetchServiceBillProfessionalFees(getPatientEncounter(), childPatientEncouters);
-            } else {
-                serviceProfessionalFees = new ArrayList<>();
-            }
-        }
-        return serviceProfessionalFees;
-    }
-
-    public void setServiceProfessionalFees(List<BillFee> serviceProfessionalFees) {
-        this.serviceProfessionalFees = serviceProfessionalFees;
-    }
-
-    /**
      * Invalidates the cached Professional Fees tab list so the next call to
      * {@link #getProfesionallFee()} re-queries the database. This bean is
      * @SessionScoped and many pages navigate directly to inward_bill_intrim.xhtml
@@ -5355,7 +5226,6 @@ public class BhtSummeryController implements Serializable {
      */
     public void refreshProfesionallFee() {
         profesionallFee = null;
-        serviceProfessionalFees = null;
     }
 
     public List<Bill> getPaymentBill() {
