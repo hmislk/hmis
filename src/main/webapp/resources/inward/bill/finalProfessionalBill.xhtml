@@ -302,6 +302,17 @@
                                         </h:panelGroup>
                                     </p:column>
                                     <p:columnGroup type="footer">
+                                        <p:row rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                            <p:column style="text-align: left!important;"
+                                                      footerText="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}"/>
+                                            <p:column style="text-align: right;" >
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
                                         <p:row>
                                             <p:column footerText="Total"/>
                                             <p:column style="text-align: right;" >
