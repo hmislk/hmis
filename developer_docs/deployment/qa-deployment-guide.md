@@ -5,6 +5,19 @@
 > `git push origin development:hims-qa1 --force` flow they used are **retired**.
 > QA now runs on the migrated Azure estate via the `hims-qaN-migrated` branches.
 
+> **🚧 2026-09-12: migration off Azure to home-hosted machines is in
+> progress.** QA1-3 are already live on home machines (QA4 close behind);
+> everything below this point still describes the Azure estate, which
+> remains the working environment until cutover. The home setup — trigger
+> branches (`home-qaN`, not `hims-qaN-home` — that pattern collides with
+> the `QA Branches Rules` ruleset below), self-hosted-runner workflows
+> (`hims_qaN_home_ci_cd.yml`), per-machine runbooks, and all the gotchas
+> hit along the way — is tracked separately in the private
+> [`hmislk/qa-home-infra`](https://github.com/hmislk/qa-home-infra) repo
+> (`MASTER-PLAN.md` for status, `GOTCHAS.md` for the detail). This guide
+> will be rewritten again once cutover completes and the Azure
+> `hims-qaN-migrated` branches are retired.
+
 ## How QA deployment works now
 
 Four QA apps (`qa1`–`qa4`) run on **one** Payara domain on the migrated Azure
