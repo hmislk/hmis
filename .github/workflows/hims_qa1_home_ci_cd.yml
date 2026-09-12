@@ -32,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 11
         uses: actions/setup-java@v4
@@ -85,12 +87,13 @@ jobs:
     needs: build
     runs-on: [self-hosted, qa1]
     env:
-      APP_NAME:   qa1
-      JNDI_MAIN:  jdbc/qa1Main
-      JNDI_AUDIT: jdbc/ruhunuAudit
-      HEALTH_URL: http://localhost:9080/qa1/faces/index1.xhtml
-      PAYARA:     /home/carecode/payara
+      APP_NAME:     qa1
+      JNDI_MAIN:    jdbc/qa1Main
+      JNDI_AUDIT:   jdbc/ruhunuAudit
+      HEALTH_URL:   http://localhost:9080/qa1/faces/index1.xhtml
+      PAYARA:       /home/carecode/payara
       ASADMIN_PORT: "9048"
+      DEPLOY_DIR:   /home/carecode/qa1-deploy
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -117,18 +120,38 @@ jobs:
             $ASADMIN ping-connection-pool "$pool" || { echo "pool $pool (behind $j) is not reachable"; exit 1; }
           done
 
+          # Keep a rollback copy before touching the running app.
+          mkdir -p "$DEPLOY_DIR"
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.deployed" ]; then
+            cp "$DEPLOY_DIR/${APP_NAME}.war.deployed" "$DEPLOY_DIR/${APP_NAME}.war.previous"
+          fi
+
           $ASADMIN undeploy "$APP_NAME" 2>/dev/null || echo "not previously deployed"
-          $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$WAR"
+          if ! $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$WAR"; then
+            echo "::error::deploy failed"
+            if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+              echo "restoring previous WAR"
+              $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$DEPLOY_DIR/${APP_NAME}.war.previous"
+            fi
+            exit 1
+          fi
+          cp "$WAR" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
           $ASADMIN list-applications
 
       - name: Health check
         run: |
           set -euo pipefail
+          ASADMIN="$PAYARA/glassfish/bin/asadmin --port $ASADMIN_PORT"
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
             echo "attempt $i: HTTP $code"
             [ "$code" = "200" ] && { echo "healthy"; exit 0; }
             sleep 10
           done
-          echo "::error::qa1 did not become healthy at $HEALTH_URL"
+          echo "::error::qa1 did not become healthy at $HEALTH_URL - restoring previous WAR"
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+            $ASADMIN undeploy "$APP_NAME" 2>/dev/null || true
+            $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$DEPLOY_DIR/${APP_NAME}.war.previous"
+            cp "$DEPLOY_DIR/${APP_NAME}.war.previous" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          fi
           exit 1
