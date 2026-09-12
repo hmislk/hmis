@@ -92,10 +92,15 @@ Workflow shape mirrors the existing `hims_qaN_migrated_ci_cd.yml` files:
 
 New workflow files (e.g. `hims_qa1_home_ci_cd.yml`, one per QA instance)
 live in the main `hmis` repo alongside the existing 30+ workflows, triggered
-by `hims-qaN-home` branches, using the same `deploy-qa`-skill-driven
-PR/merge flow as today. The Azure `hims-qaN-migrated` workflows and branches
-are retired once cutover is verified per instance (not deleted immediately —
-kept as a rollback path until the home instance has proven stable).
+by `home-qaN` branches (**not** `hims-qaN-home` — the repo's "QA Branches
+Rules" ruleset locks any `hims-qa*` branch to PR-only pushes with a
+`check-branch` status check that's only ever attached via a PR, so a
+brand-new branch under that pattern can never be created by a direct push;
+`home-qaN` falls outside it, discovered and fixed 2026-09-12 during QA1's
+first deploy). The Azure `hims-qaN-migrated` workflows and branches are
+retired once cutover is verified per instance (not deleted immediately —
+kept as a rollback path until the home instance has proven stable; the user
+explicitly confirmed 2026-09-12 not to delete them early).
 
 ## Tracking repo
 

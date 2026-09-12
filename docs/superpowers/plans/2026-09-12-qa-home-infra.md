@@ -103,7 +103,7 @@ change so progress is visible to the other machines.
 - [ ] New JDBC pool `qa1MainPool` → local `ruhunu` DB created and pinging
 - [ ] Self-hosted GitHub Actions runner registered (label `qa1`), running as a service
 - [ ] `hims_qa1_home_ci_cd.yml` merged to `development`
-- [ ] `hims-qa1-home` branch pushed, first deploy succeeded
+- [ ] `home-qa1` branch pushed, first deploy succeeded
 - [ ] `http://localhost:9080/qa1/faces/index1.xhtml` verified reachable (HTTP 200)
 - [ ] Login verified against the real `ruhunu` data (not just page render)
 
@@ -112,7 +112,7 @@ change so progress is visible to the other machines.
 - [ ] Confirmed which local JDBC pool actually points at the `coop` database (don't trust the name — verify with `asadmin get resources.jdbc-connection-pool.<pool>.property.databaseName`)
 - [ ] Self-hosted GitHub Actions runner registered (label `qa2`), running as a service
 - [ ] `hims_qa2_home_ci_cd.yml` merged to `development`
-- [ ] `hims-qa2-home` branch pushed, first deploy succeeded
+- [ ] `home-qa2` branch pushed, first deploy succeeded
 - [ ] Local health check passed; this row's Payara HTTP port recorded here: `____`
 
 ### QA3 — Desktop (also runs nginx)
@@ -120,7 +120,7 @@ change so progress is visible to the other machines.
 - [ ] Confirmed which local JDBC pool actually points at the `southernlanka` database
 - [ ] Self-hosted GitHub Actions runner registered (label `qa3`), running as a service
 - [ ] `hims_qa3_home_ci_cd.yml` merged to `development`
-- [ ] `hims-qa3-home` branch pushed, first deploy succeeded
+- [ ] `home-qa3` branch pushed, first deploy succeeded
 - [ ] Local health check passed; this row's Payara HTTP port recorded here: `____`
 - [ ] nginx installed, config from `nginx/qa-home.conf` applied
 - [ ] certbot issued certs for all 4 subdomains (HTTP-01, port 80 forwarded)
@@ -135,7 +135,7 @@ change so progress is visible to the other machines.
 - [ ] Confirmed which local JDBC pool actually points at the `roseth` database
 - [ ] Self-hosted GitHub Actions runner registered (label `qa4`), running as a service
 - [ ] `hims_qa4_home_ci_cd.yml` merged to `development`
-- [ ] `hims-qa4-home` branch pushed, first deploy succeeded
+- [ ] `home-qa4` branch pushed, first deploy succeeded
 - [ ] Local health check passed; this row's Payara HTTP port recorded here: `____`
 
 ### Cutover
@@ -162,7 +162,7 @@ Summary of what this machine ended up with:
 - Payara domain: existing `rh` domain, HTTP port 9080, admin port 9048
 - App context-root: `qa1` (alongside the existing `rh` app on the same port)
 - Self-hosted runner label: `qa1`
-- Workflow: `.github/workflows/hims_qa1_home_ci_cd.yml`, branch `hims-qa1-home`
+- Workflow: `.github/workflows/hims_qa1_home_ci_cd.yml`, branch `home-qa1`
 - Local URL: `http://localhost:9080/qa1/faces/index1.xhtml`
 ```
 
@@ -204,7 +204,7 @@ from QA1's, since it's a different OS user).
 ## 3. Workflow file
 
 Copy `.github/workflows/hims_qa1_home_ci_cd.yml`, rename to
-`hims_qa2_home_ci_cd.yml`, and change: branch trigger to `hims-qa2-home`,
+`hims_qa2_home_ci_cd.yml`, and change: branch trigger to `home-qa2`,
 `APP_NAME`/`CONTEXT_ROOT` to `qa2`, `JNDI_MAIN` to whatever resource name you
 created in step 1, `JNDI_AUDIT` to that account's existing audit resource,
 `HEALTH_URL` to `http://localhost:<this account's HTTP port>/qa2/faces/index1.xhtml`,
@@ -213,7 +213,7 @@ and `runs-on: [self-hosted, qa2]` on the deploy job. Open a PR to
 
 ## 4. First deploy
 
-Push `origin/development` to a new `hims-qa2-home` branch, watch the
+Push `origin/development` to a new `home-qa2` branch, watch the
 workflow run (`gh run watch`), confirm the health check passes, then log in
 through the real UI to confirm it works against real coop data (per CLAUDE.md
 "always end-to-end test a real workflow, not just page render").
@@ -238,7 +238,7 @@ from a checkout of `hmis`.
 
 Same pattern as QA2's runbook (`hiu-laptop-buddhika-qa2.md`) steps 1-4,
 substituting: database `southernlanka`, label `qa3`, workflow file
-`hims_qa3_home_ci_cd.yml`, branch `hims-qa3-home`, context-root `qa3`.
+`hims_qa3_home_ci_cd.yml`, branch `home-qa3`, context-root `qa3`.
 QA3's `runs-on` is still `[self-hosted, qa3]` even though this machine also
 runs nginx — those are unrelated services.
 
@@ -306,7 +306,7 @@ Run this from a Claude Code session on carecode-laptop (LAN IP
 
 Same pattern as QA2's runbook (`hiu-laptop-buddhika-qa2.md`) steps 1-5,
 substituting: database `roseth`, label `qa4`, workflow file
-`hims_qa4_home_ci_cd.yml`, branch `hims-qa4-home`, context-root `qa4`,
+`hims_qa4_home_ci_cd.yml`, branch `home-qa4`, context-root `qa4`,
 `HEALTH_URL` `http://localhost:<this machine's HTTP port>/qa4/faces/index1.xhtml`.
 
 This machine does not run nginx — once its own local deploy and health check
@@ -547,7 +547,7 @@ git checkout -b qa1-home-ci-cd origin/development
 # .github/workflows/hims_qa1_home_ci_cd.yml
 #
 # HMIS QA1 — home-hosted (hiu-laptop, carecode account)
-# Branch:  hims-qa1-home
+# Branch:  home-qa1
 # Serves:  http://localhost:9080/qa1 today; https://qa1.carecode.org/qa1
 #          once the Desktop's nginx (QA3 runbook) is wired up.
 #
@@ -559,7 +559,7 @@ name: HIMS QA1 Home CI/CD
 
 on:
   push:
-    branches: [hims-qa1-home]
+    branches: [home-qa1]
   workflow_dispatch:
 
 concurrency:
@@ -728,8 +728,8 @@ Expected: checks pass, PR merges into `development`.
 ```bash
 git checkout development
 git pull origin development
-git checkout -b hims-qa1-home origin/development
-git push origin hims-qa1-home
+git checkout -b home-qa1 origin/development
+git push origin home-qa1
 ```
 
 This push triggers the workflow for the first time.
