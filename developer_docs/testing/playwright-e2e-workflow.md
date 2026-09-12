@@ -41,6 +41,7 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [13. PrimeFaces `p:selectOneMenu` is not a native `<select>`](#13-primefaces-pselectonemenu-is-not-a-native-select)
 - [14. Non-AJAX search buttons can timeout on click](#14-non-ajax-search-buttons-can-timeout-on-click)
 - [15. Always generate test data — never fall back to code-only verification](#15-always-generate-test-data--never-fall-back-to-code-only-verification)
+- [15a. Leave test data where it is — never clean up unasked](#15a-leave-test-data-where-it-is--never-clean-up-unasked)
 - [16. List pages that filter by `toDepartment = session department`](#16-list-pages-that-filter-by-todepartment--session-department)
 - [17. Switching session department mid-test (no redeploy)](#17-switching-session-department-mid-test-no-redeploy)
 - [18. `p:datePicker` — changing the date via the calendar grid](#18-pdatepicker--changing-the-date-via-the-calendar-grid)
@@ -715,6 +716,41 @@ weigh that when it matters, and note in the PR how the data was made.
 (production, staging) is read-only, always. No development environment is ever
 set up on a hosting server, so "localhost, no tunnel" is a reliable proxy for
 "safe to modify freely".
+
+## 15a. Leave test data where it is — never clean up unasked
+
+Test records you create while verifying a fix — patients, admissions, bills,
+surgeries, config rows — **stay**. Do not offer to remove them, and do not
+remove them on your own initiative after a test passes.
+
+A testing environment exists to hold test data. Records left behind are a
+worked example the next person can pick up, and deleting them costs the setup
+effort again. Cancelling a bill or discharging a test patient to "tidy up" is
+also not free: it writes further rows (contra-bills, room-change history) and
+can leave the data in a stranger state than just leaving it alone.
+
+Clean up **only when explicitly asked**, and only what was asked for.
+
+### The environment tells you whether you should be writing at all
+
+| Environment | Create test data? | Clean up afterwards? |
+|---|---|---|
+| Local (`localhost`, no tunnel) | Yes, freely | No — and the DB is disposable anyway (§15) |
+| Hospital test/staging box (e.g. `rhLocal`) | Yes | No, unless explicitly asked |
+| Production on Azure | You should not be testing here | n/a — if you are about to write, stop and ask |
+
+Production is the real signal: a request to *test* a workflow is essentially
+never a request to test it in production. If a verification step is about to
+write to a production environment, that is a sign the target is wrong — stop
+and confirm which environment is meant, rather than proceeding carefully.
+
+Say what you created, so the user can decide:
+
+> Test data created on rhLocal: patient ZZ TEST THEATRE PATIENT, admission
+> Day Case/3, settled service bill RHDDC006INWSER/71 (5.00).
+
+That sentence is the whole obligation. Naming records with an obvious test
+prefix (`ZZ TEST ...`) is what makes them harmless to leave.
 
 ## 16. List pages that filter by `toDepartment = session department`
 
