@@ -18,6 +18,7 @@ public class ServiceUpdateRequestDTO {
     private String printName;
     private String fullName;
     private Long categoryId;
+    private Long financialCategoryId;
     private Long institutionId;
     private Long departmentId;
     private String inwardChargeType;
@@ -37,7 +38,8 @@ public class ServiceUpdateRequestDTO {
     public boolean isValid() {
         // At least one field must be set
         return name != null || code != null || printName != null || fullName != null
-                || categoryId != null || institutionId != null || departmentId != null
+                || categoryId != null || financialCategoryId != null
+                || institutionId != null || departmentId != null
                 || inwardChargeType != null || inactive != null || discountAllowed != null
                 || userChangable != null || chargesVisibleForInward != null
                 || marginNotAllowed != null || requestForQuentity != null
@@ -82,6 +84,14 @@ public class ServiceUpdateRequestDTO {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public Long getFinancialCategoryId() {
+        return financialCategoryId;
+    }
+
+    public void setFinancialCategoryId(Long financialCategoryId) {
+        this.financialCategoryId = financialCategoryId;
     }
 
     public Long getInstitutionId() {
