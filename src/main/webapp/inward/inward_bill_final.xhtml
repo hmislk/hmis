@@ -24,6 +24,13 @@
                 margin-top: 0 !important;
                 padding-top: 0 !important;
                 }
+                .save-final-bill-loading-dialog {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                margin: 0 !important;
+                transform: translate(-50%, -50%) !important;
+                }
             </h:outputStylesheet>
         </h:head>
 
@@ -95,8 +102,10 @@
                                     styleClass="ui-button-success"
                                     icon="fa fa-check"
                                     style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                    onclick="PF('saveFinalBillLoadingDlg').show();"
                                     rendered="#{webUserController.hasPrivilege('InwardSettleFinalBill')}">
                                 </p:commandButton>
+                                
                             </div>
 
                         </div>
@@ -1190,6 +1199,24 @@
 
                     </p:panel>
                 </p:panel>
+
+                <p:dialog 
+                    widgetVar="saveFinalBillLoadingDlg"
+                    modal="true"
+                    closable="false"
+                    showHeader="true"
+                    header="Processing - Please Wait"
+                    position="center"
+                    appendTo="@(body)"
+                    styleClass="save-final-bill-loading-dialog"
+                    style="min-width: 320px; text-align: center;">
+                    <div style="padding: 20px;">
+                        <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                        <p style="margin-top: 15px; font-size: 1rem;">Saving the final bill, please wait...</p>
+                        <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                    </div>
+                </p:dialog>
+
             </h:form>
 
         </h:panelGroup>
