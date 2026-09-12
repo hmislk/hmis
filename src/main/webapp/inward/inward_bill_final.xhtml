@@ -854,7 +854,7 @@
                                 <p:inputText autocomplete="off" value="#{g.totalAdjusted}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax event="blur" process="@this"
-                                            update=":#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                            update=":#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('unattributedProfessionalNoteWrap',view).clientId}"
                                             listener="#{bhtSummeryController.changeGroupedAdjustedValue(g)}"/>
                                     <p:ajax process="@this" event="keyup"
                                             update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
@@ -874,6 +874,19 @@
                             </p:column>
 
                         </p:dataTable>
+
+                        <!-- Professional charges that were not entered through Add Professional Fee
+                             (service items typed ProfessionalCharge) are not listed per doctor; they
+                             print as one "Other Professional Charges" line on the bill. -->
+                        <h:panelGroup id="unattributedProfessionalNoteWrap">
+                            <h:panelGroup id="unattributedProfessionalNote" layout="block" styleClass="mt-2 text-muted"
+                                          rendered="#{bhtSummeryController.unattributedProfessionalChargeTotal ge 0.01}">
+                                <h:outputText value="Other professional charges, not entered as professional fees (printed as one line): "/>
+                                <h:outputText value="#{bhtSummeryController.unattributedProfessionalChargeTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </h:panelGroup>
+                        </h:panelGroup>
                     </p:panel>
 
                     <p:dialog header="Fee Breakdown"
@@ -915,7 +928,7 @@
                                         <p:inputText autocomplete="off" value="#{fb.feeAdjusted}" style="text-align: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                             <p:ajax event="blur" process="@this"
-                                                    update=":#{p:resolveFirstComponentWithId('breakdownTable',view).clientId} :#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                                    update=":#{p:resolveFirstComponentWithId('breakdownTable',view).clientId} :#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('unattributedProfessionalNoteWrap',view).clientId}"
                                                     listener="#{bhtSummeryController.changeFeeAdjustedInBreakdown(fb)}"/>
                                             <p:ajax process="@this" event="keyup"
                                                     update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
