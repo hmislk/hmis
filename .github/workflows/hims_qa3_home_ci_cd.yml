@@ -47,8 +47,23 @@ concurrency:
   group: payara-qa3-home
   cancel-in-progress: false
 
+# Only actions/checkout uses GITHUB_TOKEN here, and it only reads. Note that
+# `persist-credentials: false` stops the token being written into .git/config;
+# it does not narrow the token's own scopes, which is what this does.
+permissions:
+  contents: read
+
 jobs:
   build-and-deploy:
+    # Hard ref guard. `workflow_dispatch` lets anyone with write access pick an
+    # arbitrary branch or tag, and GitHub would then check that ref out and run
+    # it on this machine's self-hosted runner. Pinning the ref keeps a stray
+    # dispatch of some unrelated feature branch from building and deploying
+    # itself onto QA3. (Dispatch is kept because redeploying the current branch
+    # without an empty commit is genuinely useful, and anyone who can dispatch
+    # could push to `home-qa3` anyway - so this bounds mistakes more than it
+    # bounds a determined insider.)
+    if: github.ref == 'refs/heads/home-qa3'
     runs-on: [self-hosted, qa3]
     defaults:
       run:
