@@ -4883,6 +4883,7 @@ public class AnthropicApiService implements Serializable {
                 return "Error: Unsupported method for manage_item_mappings: " + method
                         + ". Allowed methods are SEARCH, CREATE, BULK_CREATE, RETIRE.";
             }
+            rb.timeout(Duration.ofSeconds(15));
             if (!key.isEmpty()) rb.header("Finance", key);
             HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             return "HTTP " + resp.statusCode() + "\n" + resp.body();

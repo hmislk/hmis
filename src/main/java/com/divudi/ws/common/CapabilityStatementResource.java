@@ -550,7 +550,7 @@ public class CapabilityStatementResource {
                         + "institution mapping with outsideChargeMapping=true on the same row; there is no "
                         + "separate site table, so outsideChargeSiteId and institutionId both resolve against "
                         + "Institution but are mutually exclusive per request.",
-                        "API Key",
+                        "API Key (Finance header)",
                         "GET", "POST", "DELETE"))
                 .add(resource("Timed Items", "/api/timed-items",
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
