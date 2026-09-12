@@ -60,9 +60,11 @@
                                 <p:printer target="lst"  />
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel"  >
-                                <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"  />
-                            </p:commandButton>
+                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel"
+                                             actionListener="#{creditCompanyDueController.createInwardCreditDue()}"
+                                             action="#{creditCompanyDueController.downloadInwardCreditDueExcel()}"
+                                             ajax="false" value="Excel"  />
+
                         </h:panelGrid>
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
                             <f:facet name="header">
@@ -84,9 +86,9 @@
                                     <p:column headerText="Date Of Discharge"/>
                                     <p:column headerText="Patient Name"/>
                                     <p:column headerText="Credit Company"/>
-                                    <p:column headerText="Bill Amount"/>
-                                    <p:column headerText="Paid"/>
-                                    <p:column headerText="Outstanding"/>
+                                    <p:column headerText="Bill Amount" class="text-end"/>
+                                    <p:column headerText="Paid" class="text-end"/>
+                                    <p:column headerText="Outstanding" class="text-end"/>
                                 </p:row>
                             </p:columnGroup>
                             <p:subTable value="#{i.bills}" var="bill">
