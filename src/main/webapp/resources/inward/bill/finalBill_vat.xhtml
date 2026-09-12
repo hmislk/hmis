@@ -5,7 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -59,16 +60,44 @@
 
             <div class="container-fluid" >
                 <!-- Header Section -->
-                <div class="row text-center">
-                    <div class="col-12">
-                        <h1><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
-                        <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
-                        <h3>#{cc.attrs.bill.institution.phone}</h3>
-                        <h4>#{cc.attrs.bill.institution.fax}</h4>
-                        <h4>#{cc.attrs.bill.institution.email}</h4>
-                        <h4>#{cc.attrs.bill.institution.web}</h4>
+                <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
+                    <div class="row">
+                        <div class="col-12">
+                            <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}"
+                                          escape="false"
+                                          >
+                            </h:outputText>
+                        </div>
                     </div>
-                </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Final bill header with institution details', true)}">
+                        <div class="row text-center">
+                            <div class="col-12">
+                                <h1><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
+                                <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
+                                <h3>#{cc.attrs.bill.institution.phone}</h3>
+                                <h4>#{cc.attrs.bill.institution.fax}</h4>
+                                <h4>#{cc.attrs.bill.institution.email}</h4>
+                                <h4>#{cc.attrs.bill.institution.web}</h4>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
+                    <div class="row">
+                        <div class="col-12" style="text-align: center;">
+                            <h:graphicImage
+                                style="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Image Style','width: 200px; height: auto;')}"
+                                class="mb-4"
+                                url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
+                                >
+                            </h:graphicImage>
+                        </div>
+                    </div>
+                </h:panelGroup>
                 <div class="row text-center">
                     <div class="col-12">
                         <h2>
@@ -223,6 +252,23 @@
                                                                 </tr>
                                                             </h:panelGroup>
                                                         </ui:repeat>
+                                                            <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}" style="">
+                                                                <tr>
+
+                                                                    <td style="text-align: left;font-size: 8px!important;">
+                                                                        <h:panelGroup>
+                                                                            #{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}
+                                                                        </h:panelGroup>
+                                                                    </td>
+                                                                    <td  style="text-align: right;font-size: 8px!important;">
+                                                                        <h:panelGroup>
+                                                                            <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                                <f:convertNumber pattern="#,##0.00" />
+                                                                            </h:outputLabel>
+                                                                        </h:panelGroup>
+                                                                    </td>
+                                                                </tr>
+                                                            </h:panelGroup>
                                                     </table>
                                                 </h:panelGroup>
                                                 <h:panelGroup>
@@ -432,6 +478,10 @@
                             <p:spacer height="1" width="160" ></p:spacer>
                             <h:outputLabel value="Patient/Guardian" >
                             </h:outputLabel>
+                        </div>
+
+                        <div class="px-1 mb-4">
+                            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                         </div>
 
                     </div>

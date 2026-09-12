@@ -1003,6 +1003,27 @@ public class BillItem implements Serializable, RetirableEntity {
         this.proFees = proFees;
     }
 
+    /**
+     * The part of this line's adjustedValue not covered by any doctor in
+     * proFees — e.g. a service item typed ProfessionalCharge, whether or not
+     * it carries a Staff fee, and whether or not that fee is attached to a
+     * doctor. Used by final-bill print templates to show the part of the
+     * Professional Charge total that is not listed against any doctor, so
+     * the printed lines always add up (issue #23723).
+     */
+    public double getUnattributedProfessionalFeeValue() {
+        double proFeesTotal = 0;
+        if (proFees != null) {
+            for (BillFee bf : proFees) {
+                if (bf != null) {
+                    proFeesTotal += bf.getFeeAdjusted();
+                }
+            }
+        }
+        double result = adjustedValue - proFeesTotal;
+        return result < 0.005 ? 0 : result;
+    }
+
     public String getDescreption() {
         return descreption;
     }

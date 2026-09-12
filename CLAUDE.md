@@ -10,6 +10,9 @@
 ### Working Directory
 - **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory. Do NOT use `isolation: "worktree"` when spawning agents. If you find yourself in a path like `.claude/worktrees/*`, stop and perform all file edits in the main project directory instead. Worktrees cause the developer's local branch to go out of sync with remote commits, leading to confusing stale-file compilation errors. (Issue: hmislk/hmis#19944)
 
+### Deliverable Output Format
+- **🚨 DO NOT USE THE ARTIFACT TOOL — PREFER PLAIN MARKDOWN FILES**: Do NOT use the Artifact tool (published HTML pages, leaflets, reports, etc.) for deliverables. Currently Artifacts **cannot be exported or edited** in this environment, and viewing a published Artifact **requires the viewer to have a Claude account** — most intended recipients (pharmacists, hospital staff, other stakeholders) do not have one, so a private Artifact link is unusable to them in practice. Instead, write a plain `.md` file: use `tmp/` for temporary/working deliverables (per the Project tmp Folder rule above), `developer_docs/` for tracked documentation, or `../hmis.wiki/` for wiki documentation. Never place wiki documentation inside this repository. Revisit this rule once Artifact export/edit works and Artifacts can be viewed without a Claude account. (Issue: hmislk/hmis#23720)
+
 ### Code Integrity
 - **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
 - **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach

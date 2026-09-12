@@ -1,0 +1,162 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  HMIS QA1 — home-hosted (hiu-laptop, carecode account)
+#
+#  Branch:  home-qa1 (NOT hims-qa1-home - the "QA Branches Rules" repo
+#           ruleset locks down any hims-qa* branch to PR-only pushes with a
+#           check-branch status check that's only ever attached via a PR,
+#           so a brand-new hims-qa*-pattern branch can't be created by a
+#           direct push at all. home-qa1 falls outside that pattern.)
+#  Serves:  http://localhost:9080/qa1 today; https://qa1.carecode.org/qa1
+#           once the Desktop's nginx (QA3 runbook, hmislk/qa-home-infra) is
+#           wired up.
+#
+#  Differs from hims_qa1_migrated_ci_cd.yml: the deploy job runs ON the
+#  target machine itself (self-hosted runner, label qa1) instead of SSHing
+#  into an Azure VM, so there are no SSH secrets and no inbound deploy port.
+# ═══════════════════════════════════════════════════════════════════════════
+name: HIMS QA1 Home CI/CD
+
+on:
+  push:
+    branches: [home-qa1]
+  workflow_dispatch:
+
+concurrency:
+  group: payara-qa1-home
+  cancel-in-progress: false
+
+env:
+  APP_NAME:     qa1
+  JNDI_MAIN:    jdbc/qa1Main
+  JNDI_AUDIT:   jdbc/ruhunuAudit
+  HEALTH_URL:   http://localhost:9080/qa1/faces/index1.xhtml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved datasources ---"
+          grep -E 'jta-data-source|non-jta-data-source' "$PU"
+
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted JDBC placeholder remains in $PU"
+            exit 1
+          fi
+
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want}."
+              grep -E 'jta-data-source' "$PU"
+              exit 1; }
+          done
+          echo "datasources verified: $JNDI_MAIN, $JNDI_AUDIT"
+
+      - name: Build
+        run: mvn -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP_NAME}.war"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qa1-war
+          path: target/qa1.war
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted, qa1]
+    env:
+      APP_NAME:     qa1
+      JNDI_MAIN:    jdbc/qa1Main
+      JNDI_AUDIT:   jdbc/ruhunuAudit
+      HEALTH_URL:   http://localhost:9080/qa1/faces/index1.xhtml
+      PAYARA:       /home/carecode/payara
+      ASADMIN_PORT: "9048"
+      DEPLOY_DIR:   /home/carecode/qa1-deploy
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: qa1-war
+          path: ./artifact
+
+      - name: Deploy to Payara
+        run: |
+          set -euo pipefail
+          ASADMIN="$PAYARA/glassfish/bin/asadmin --port $ASADMIN_PORT"
+          WAR="$GITHUB_WORKSPACE/artifact/qa1.war"
+          test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
+
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            $ASADMIN list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "JNDI resource $j not found. Run Task 2 of the QA1 plan first."
+              exit 1; }
+            # Pool name is NOT derivable from the JNDI name (e.g.
+            # jdbc/ruhunuAudit -> rhAuditPool) - look it up.
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$($ASADMIN get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "could not resolve pool behind $j"; exit 1; }
+            $ASADMIN ping-connection-pool "$pool" || { echo "pool $pool (behind $j) is not reachable"; exit 1; }
+          done
+
+          # Keep a rollback copy before touching the running app.
+          mkdir -p "$DEPLOY_DIR"
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.deployed" ]; then
+            cp "$DEPLOY_DIR/${APP_NAME}.war.deployed" "$DEPLOY_DIR/${APP_NAME}.war.previous"
+          fi
+
+          $ASADMIN undeploy "$APP_NAME" 2>/dev/null || echo "not previously deployed"
+          if ! $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$WAR"; then
+            echo "::error::deploy failed"
+            if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+              echo "restoring previous WAR"
+              $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$DEPLOY_DIR/${APP_NAME}.war.previous"
+            fi
+            exit 1
+          fi
+          cp "$WAR" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          $ASADMIN list-applications
+
+      - name: Health check
+        run: |
+          set -euo pipefail
+          ASADMIN="$PAYARA/glassfish/bin/asadmin --port $ASADMIN_PORT"
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { echo "healthy"; exit 0; }
+            sleep 10
+          done
+          echo "::error::qa1 did not become healthy at $HEALTH_URL - removing it"
+          $ASADMIN undeploy "$APP_NAME" 2>/dev/null || true
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+            echo "restoring previous WAR"
+            $ASADMIN deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$DEPLOY_DIR/${APP_NAME}.war.previous"
+            cp "$DEPLOY_DIR/${APP_NAME}.war.previous" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          fi
+          exit 1

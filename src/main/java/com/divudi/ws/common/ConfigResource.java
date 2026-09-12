@@ -116,6 +116,90 @@ public class ConfigResource {
         return successResponse();
     }
 
+    /**
+     * Create-or-update a SHORT_TEXT config option. Added for issue #23678 —
+     * previously there was no API path to create a brand-new SHORT_TEXT key
+     * at all (only Boolean/LongText/Integer had a create-capable {@code setX}
+     * endpoint); {@code PUT /api/config/{key}} deliberately requires the key
+     * to already exist. Takes the value in the request body rather than as a
+     * path segment (unlike the legacy {@code setBoolean}/{@code setLongText}/
+     * {@code setInteger} endpoints above) because a SHORT_TEXT value may
+     * contain spaces or slashes (e.g. a registration number like
+     * "PHSRC/ MC/357" from the case that surfaced this issue), which a raw
+     * path segment cannot safely carry.
+     *
+     * POST /api/config/setShortText/{key}
+     * Body: {"value":"..."}
+     */
+    @POST
+    @Path("setShortText/{key}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response setShortTextValue(@PathParam("key") String key,
+            String requestBody,
+            @Context HttpHeaders headers) {
+        if (validateConfigKey(headers) == null) {
+            return unauthorizedResponse();
+        }
+        String value;
+        try {
+            if (requestBody == null || requestBody.trim().isEmpty()) {
+                return badRequestResponse("Request body with a \"value\" field is required");
+            }
+            JsonReader reader = Json.createReader(new StringReader(requestBody));
+            JsonObject body = reader.readObject();
+            if (!body.containsKey("value") || body.isNull("value")) {
+                return badRequestResponse("\"value\" field is required");
+            }
+            value = body.getString("value");
+        } catch (JsonException | IllegalStateException e) {
+            return badRequestResponse("Invalid JSON body: " + e.getMessage());
+        }
+        configOptionApplicationController.setShortTextValueByKey(key, value);
+        return successResponse();
+    }
+
+    /**
+     * Create-or-update a DOUBLE config option. Same rationale as
+     * {@link #setShortTextValue(String, String, HttpHeaders)} — added for
+     * issue #23678 so a brand-new DOUBLE key can be created via the API, not
+     * only via the admin UI or raw SQL. Body-based for consistency with the
+     * new SHORT_TEXT endpoint above.
+     *
+     * POST /api/config/setDouble/{key}
+     * Body: {"value":"1.08"}
+     */
+    @POST
+    @Path("setDouble/{key}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response setDoubleValue(@PathParam("key") String key,
+            String requestBody,
+            @Context HttpHeaders headers) {
+        if (validateConfigKey(headers) == null) {
+            return unauthorizedResponse();
+        }
+        Double value;
+        try {
+            if (requestBody == null || requestBody.trim().isEmpty()) {
+                return badRequestResponse("Request body with a \"value\" field is required");
+            }
+            JsonReader reader = Json.createReader(new StringReader(requestBody));
+            JsonObject body = reader.readObject();
+            if (!body.containsKey("value") || body.isNull("value")) {
+                return badRequestResponse("\"value\" field is required");
+            }
+            javax.json.JsonValue jv = body.get("value");
+            String rawValue = jv.getValueType() == javax.json.JsonValue.ValueType.STRING
+                    ? body.getString("value") : jv.toString();
+            value = Double.valueOf(rawValue);
+        } catch (JsonException | IllegalStateException | NumberFormatException e) {
+            return badRequestResponse("Invalid JSON body: " + e.getMessage());
+        }
+        configOptionApplicationController.setDoubleValueByKey(key, value);
+        return successResponse();
+    }
+
     @GET
     @Path("search")
     @Produces(MediaType.APPLICATION_JSON)

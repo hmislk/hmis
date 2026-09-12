@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-121 sections. **The workflow is §0-§8; everything from §9 on is an independent
+124 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -146,6 +146,12 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [117. `p:tabView` renders every tab's markup — a text-matched `browser_evaluate` click hits a hidden tab's copy](#117-ptabview-renders-every-tabs-markup--a-text-matched-browser_evaluate-click-hits-a-hidden-tabs-copy)
 - [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
 - [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
+- [120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally](#120-verifying-a-pfiledownload-export-post-the-form-with-fetch-and-decode-locally)
+- [121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`](#121-pajax-update-targeting-a-raw-div-id-throws-componentnotfoundexception-at-render-time--wrap-it-in-hpanelgroup)
+- [122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data](#122-a-pcommandbuttons-processx-that-excludes-the-button-itself-silently-skips-its-own-action--no-exception-no-error-a-real-200-ok-with-the-previous-data)
+- [123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab](#123-reportsindexxhtmls-report-category-accordion-needs-the-primefaces-widget-api-not-a-plain-click-to-reliably-expand-a-tab)
+- [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
+- [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -785,6 +791,33 @@ to force `SessionController.fillUserPrivileges()` to re-read it — the privileg
 cached per session at login and won't pick up a new row otherwise. This came up testing
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
+
+**Prefer granting it through the app over an `INSERT`.** *Administration → Manage Users
+→ View Staff Users → filter the user → select the row → Manage Privileges → pick the
+department → **List Privileges** → tick the node → **Update User Privileges*** does the
+same thing through the real screen, and confirms the privilege label a user would look
+for. Two things to watch:
+
+- **The tree pre-loads the user's current selection, so check the count before saving.**
+  Read it back before clicking Update — it should equal the existing active row count
+  plus the one you ticked:
+  ```js
+  Array.from(document.querySelectorAll('.ui-treenode > .ui-treenode-content .ui-chkbox-box'))
+       .filter(b => b.querySelector('.ui-icon-check')).length
+  ```
+- **The save is a full replace, and it can silently retire a privilege the tree didn't
+  represent.** Granting `ReportsProfessionalPayments` for issue #23676 also flipped
+  `LabBillSearch` to `RETIRED = 1` for the same department — with `RETIREDAT` and
+  `RETIRER_ID` left `NULL`, so nothing in the row says who did it. Snapshot the active
+  set before and diff it after:
+  ```sql
+  SELECT PRIVILEGE FROM webuserprivilege
+  WHERE WEBUSER_ID = <id> AND DEPARTMENT_ID = <dept> AND RETIRED = 0 ORDER BY PRIVILEGE;
+  ```
+
+Either way, finish with §17 (logout → login → reselect department): the privilege list is
+cached per session at login, so a freshly granted privilege does **not** appear until you
+log back in — the report button stays absent and it looks like the grant failed.
 
 **Before inserting a row, check whether some *other* department already has it** — picking
 that department on the login screen needs no DB write at all and is the faster route:
@@ -2212,6 +2245,17 @@ reload or hard refresh will not. Found while verifying issue #23342, where an
 A/B run (original file → reproduce, fixed file → verify) needed a real redeploy
 between the two halves.
 
+**Second caveat — a swap can also break the view that is already open.** While
+verifying issue #23723, `inward_bill_final.xhtml` was swapped while the page was
+open in the browser. The swap *was* picked up (a fresh open rendered the new
+markup), but the next AJAX postback from the already-open view failed: first
+silently (the `p:ajax` listener never ran, so the edit didn't persist), then as
+an HTTP 500 `IndexOutOfBoundsException: Index 0 out of bounds for length 0` at
+`AttachedObjectListHolder.restoreState`. The saved view state no longer matches
+the rebuilt component tree. That is a test artifact, not a defect. After any
+swap, leave the page (Home → back through the menus) to get a fresh view before
+testing again, and don't trust anything a pre-swap view did after the swap.
+
 ## 75. Inpatient discharge chain has a strict, undocumented order — and Physical Discharge requires the Final Bill to already exist
 
 To reach "Create Final Bill" on `inward_bill_intrim.xhtml` for a fresh test
@@ -3470,3 +3514,214 @@ deployment with a configured gateway).
 Companion to §41 (an empty `TRIGGERSUBSCRIPTION` table silently produces zero
 notifications): check the subscription rows exist *and* the recipient has an
 address on file before concluding anything from a quiet run.
+
+## 120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally
+
+Clicking a `p:fileDownload` button in Playwright kills the MCP session — the browser
+starts a native download the driver never returns from. So an Excel/PDF export can't be
+verified by clicking it, and "the numbers are right on screen" is not evidence the
+export is right: the on-screen footer and the export read different getters, which is
+exactly how issue #23676 shipped (the screen had no Gross/WHT footer at all while
+`ExcelController` null-guarded `bundle.getGrossTotal()` to `0.0` and `PdfController`
+printed the literal `null`).
+
+Submit the same POST the button would, from inside the page, and hand the bytes back as
+base64. Generate the report first — these exports read the `bundle` already in session:
+
+```js
+async () => {
+  const form = document.getElementById('<formId>');
+  const fd = new FormData(form);
+  fd.append('<buttonId>', '<buttonId>');          // the p:commandButton's own name/value
+  const res = await fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin' });
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return JSON.stringify({ status: res.status, ct: res.headers.get('content-type'),
+                          cd: res.headers.get('content-disposition'), len: bytes.length,
+                          b64: btoa(bin) });
+}
+```
+
+Pass `filename:` to `browser_evaluate` so the base64 goes to a file instead of the
+transcript, then decode it:
+
+```powershell
+$o = Get-Content <result>.json -Raw | ConvertFrom-Json
+[IO.File]::WriteAllBytes("tmp\export.xlsx", [Convert]::FromBase64String($o.b64))
+```
+
+`Content-Disposition` also proves the filename logic (date range, report name) that no
+screenshot shows.
+
+**Reading the file back:**
+
+- **`.xlsx`** — `Expand-Archive` refuses the extension, so copy to `.zip` first, then
+  read `xl/worksheets/sheet1.xml`. Numeric cells hold raw values, so the totals row is
+  directly assertable without resolving `sharedStrings.xml`:
+  ```powershell
+  Copy-Item export.xlsx export.zip; Expand-Archive export.zip -DestinationPath ex -Force
+  [regex]::Matches((Get-Content ex\xl\worksheets\sheet1.xml -Raw), '<row[^>]*>.*?</row>') |
+    Select-Object -Last 1 | ForEach-Object { $_.Value }
+  ```
+- **`.pdf`** — `Read` needs poppler, which the dev box doesn't have. iText streams are
+  zlib-deflated: walk each `stream`…`endstream`, skip the 2-byte zlib header, run it
+  through `DeflateStream`, and pull the text out of the `(…)` literals. That recovers
+  the whole table including the totals row, which is enough to assert on.
+
+Both are read-only and touch no local state, so they're safe to repeat.
+
+## 121. `p:ajax update="..."` targeting a raw `<div id="...">` throws `ComponentNotFoundException` at render time — wrap it in `h:panelGroup`
+
+Found while building the "Add New Option" dialog for issue #23678. A
+`p:selectOneMenu` with a `<p:ajax update=":someForm:someContainer" />`
+listener, where `someContainer` was a plain `<div id="someContainer">`
+(no JSF component behind that `id`, just an HTML attribute), fails the
+*entire page render* — not just the ajax call — with:
+
+```
+javax.faces.component.search.ComponentNotFoundException: Cannot find
+component for expressions ":addOptionForm:newOptionInitialValue"
+referenced from "addOptionForm:j_idt653".
+```
+
+PrimeFaces resolves `update`/`process` search expressions against the JSF
+component tree, not the rendered HTML DOM — a raw `<div id="...">` has no
+corresponding `UIComponent`, so the search fails even on the component's
+first, non-ajax render (the failing call is inside `SelectOneMenuRenderer`
+building the `onchange` script, not inside any ajax round-trip). The fix is
+the same one already documented for `p:printer`/`p:dataExporter target=` in
+the [Report Favorites Implementation Guide](../feature/report-favorites.md):
+give the target container a real JSF component id via `h:panelGroup
+layout="block" id="..."` (never a bare `<div id="...">`) wherever anything
+elsewhere on the page names that id in `update`, `process`, or `target`.
+
+## 122. A `p:commandButton`'s `process="X"` that excludes the button itself silently skips its own `action` — no exception, no error, a real `200 OK` with the *previous* data
+
+Found while fixing issue #23678's Department/Institution Options pages,
+which had "List Department Options" / "List Options" buttons wired as
+`process="cmbDepartment"` (only the picker, not the button). Clicking such a
+button produces a completely normal-looking ajax exchange — real `200 OK`,
+a `<partial-response>` that updates the target table, no console error, no
+server-log exception — but the bound `action`/`actionListener` **never
+runs**. The rendered table is whatever `update` happens to touch given
+whatever state the backing bean was already in (here: `null`/stale from an
+earlier action), which can look deceptively like "the query returned the
+wrong rows" when the real story is "the query never ran at all."
+
+This is a JSF partial-processing rule: `process` (like `execute`) scopes
+which components participate in `APPLY_REQUEST_VALUES` through
+`INVOKE_APPLICATION`. A `p:commandButton` is itself a component that must be
+processed for its own `action`/`actionListener` to fire — restricting
+`process` to *only* some other input, with no `@this` (and no `@all`/form
+default), removes the button from every one of those phases, so JSF never
+invokes it. The symptom looks exactly like a query bug (verified here by
+adding a temporary `System.out.println` at the very top of the suspected
+method — it never printed, proving the method wasn't entered at all, before
+tracing it back to this `process` misconfiguration).
+
+Fix: always include the button in its own `process` — `process="@this
+cmbDepartment"` — whenever `process` is set to anything narrower than the
+default. A button with no `process` attribute at all (defaulting to the
+enclosing form) does not have this problem; it only bites when `process` is
+explicitly restricted and the button is left out.
+
+**Diagnostic recipe** when an ajax button "does nothing" with a real `200`
+response and no logged exception: add a one-line `System.out.println` (or
+check EclipseLink SQL logging, `eclipselink.logging.level.sql=FINE` in
+`persistence.xml`, temporarily) at the very top of the bound method. If it
+never prints despite a `200` response, the action isn't being invoked at
+all — go straight to the button's `process`/`execute` attribute rather than
+debugging the method's own logic.
+
+## 123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab
+
+Found while testing issue #23604 (GRN Summary Report). The category strip
+("Inventory Reports", "Financial Reports", …) at the top of
+`reports/index.xhtml` looks like a `p:tabView` (ARIA `role="tab"`/`tablist`)
+but is actually a `p:accordionPanel` whose headers are styled to look like
+tabs. A `browser_click` (or `getByRole('tab', {name: ...}).click()`) on a
+header is unreliable for two reasons: (1) the panel's report buttons are lazy
+— the ARIA state can flip to `expanded`/`selected` before the AJAX call that
+actually populates the panel content has returned, so an immediate DOM check
+finds an "open" but still-empty panel; (2) a raw `element.click()` via
+`browser_evaluate` bypasses jQuery's bound handler and can **toggle the
+accordion closed** if PrimeFaces already considered it open from an earlier
+click, silently undoing the navigation.
+
+Reliable pattern: drive the PrimeFaces widget directly instead of clicking.
+```js
+const w = PrimeFaces.widgets['widget_j_idt533_reportsAccordion']; // find via
+  // Object.keys(PrimeFaces.widgets).filter(k => /reportsAccordion$/.test(k))
+const headers = w.headers;
+let idx = -1;
+headers.each(function (i) { if (this.textContent.trim() === 'Inventory Reports') idx = i; });
+w.select(idx);
+```
+`select()` still triggers the same lazy-load AJAX that a real click would,
+it just does so through the real widget lifecycle instead of a spoofed
+click, so the panel populates instead of toggling shut — but the AJAX is
+still async, so don't search the DOM immediately after `select()`. Per §5a,
+wait on content rather than a fixed delay: `browser_wait_for({text: '<a
+label expected in that category, e.g. "1. Closing Stock">'})` before
+searching the DOM for the target report button. A fixed-time wait risks
+checking before a slow response has populated the panel.
+
+## 124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter
+
+Also found on issue #23604. `reports/index.xhtml`'s report buttons are each
+wrapped `rendered="#{webUserController.hasPrivilege('ReportsGrnSummaryReport')}"`,
+and `WebUserController.hasPrivilege()` checks
+`sessionController.getUserPrivileges()` — the privilege set loaded for
+whichever department was picked on the **Select Department** screen at
+login, not the department the report will actually query. A local test user
+can hold `ReportsGrnSummaryReport` for one department (e.g. `Inward`) but not
+another (e.g. `Main Pharmacy`) — querying
+`WEBUSERPRIVILEGE.DEPARTMENT_ID` confirms which. If the button is missing
+(or, per §123, the whole accordion panel renders as a set of empty
+`<div class="d-flex...">` wrappers with **zero** child buttons — every
+`rendered` in the panel evaluating false, not just one), check this before
+assuming a defect: query
+`SELECT wup.PRIVILEGE, d.NAME FROM WEBUSERPRIVILEGE wup JOIN WEBUSER wu ON wu.ID=wup.WEBUSER_ID LEFT JOIN DEPARTMENT d ON d.ID=wup.DEPARTMENT_ID WHERE wu.NAME='<user>' AND wup.PRIVILEGE LIKE '%<ReportPrivilege>%'`.
+
+If the privilege exists only for a different department, switch to that
+department per §17 (`logout.xhtml` → login → **Select Department**) to reach
+the report's menu entry — the report page's own `Institution`/`Site`/
+`Department-Store` filter fields are independent of the session department,
+so once on the page, point those filters back at the department whose data
+you actually need to verify.
+
+## 125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre
+
+Found while verifying issue #23723 on the local `coop` DB.
+
+- **Pick a fully open admission.** *Inpatient → Services & Items → Add Services &
+  Investigations* refuses to settle for a discharged BHT ("Sorry Patient is
+  Discharged!!!") and also for one whose nursing discharge is confirmed ("Cannot
+  add charges: nursing discharge has been confirmed for this patient."). Both
+  messages appear only in a `p:messages`/growl on a full-page reload that looks
+  like the edit screen (§70), so check the messages or the DB. Add every charge
+  and professional fee first, then run the discharge chain (§75): Room Details →
+  Discharge from Room, Nursing Discharge, Clinical Discharge, then Interim Bill →
+  set **Discharge Time** (a `p:datePicker`; use the widget's `setDate()`, §56) →
+  Discharge, then Create Final Bill.
+- **MRI items (`REPORTING - Dr ...`, `MRI - ...`) live in the `MRI` department,
+  which is not one of the department buttons on the Inward session's Add Services
+  page.** In production they're billed by the Karapitiya Diagnostic Centre. To
+  reproduce that, log in to **OPD - Diagnostic Centre**, open the same Add
+  Services menu item, set the page's **Institution** dropdown to *Galle Co
+  Operative Hospital* (it defaults to the Diagnostic Centre, and the BHT search
+  then finds nothing), search the BHT, and click the **MRI** department button.
+  The resulting bill number is `OPDDC//...`, like production's.
+- **Add Professional Fee's patient search** only finds the BHT when its Institution
+  is right. Changing that dropdown on the Diagnostic Centre session did not take
+  effect, but the Inward session defaults to *All Institutions* and works. Enter
+  professional fees from the Inward department.
+- **Save Final Bill stays disabled until you click Process**, and it silently
+  refuses (`checkCatTotal()`) while any category's Adjusted Total differs from
+  its Total. That's the default of `Block Inward Final Bill When Category
+  Adjusted Total Differs From Actual Total`. Undo test adjustments, or balance
+  them, before saving.
+- **Creating a new final bill version** (Admission Profile → Manage Final Bills →
+  Create New Version) reopens `inward_bill_final.xhtml` in edit mode on an
+  already-settled admission. That's a quick way to get a fresh edit view without
+  building another admission.

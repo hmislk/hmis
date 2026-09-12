@@ -5,7 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -36,19 +37,34 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
-                        <div>
-                            <div class="col-12 text-center">
-                                <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
-                                <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
-                                <h3>#{cc.attrs.bill.institution.phone}</h3>
-                                <h4>#{cc.attrs.bill.institution.fax}</h4>
-                                <h4>#{cc.attrs.bill.institution.email}</h4>
-                                <h4>#{cc.attrs.bill.institution.web}</h4>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Inward Final bill header with institution details', true)}">
+                            <div>
+                                <div class="col-12 text-center">
+                                    <h1 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
+                                    <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
+                                    <h3>#{cc.attrs.bill.institution.phone}</h3>
+                                    <h4>#{cc.attrs.bill.institution.fax}</h4>
+                                    <h4>#{cc.attrs.bill.institution.email}</h4>
+                                    <h4>#{cc.attrs.bill.institution.web}</h4>
+                                </div>
                             </div>
-                        </div>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                     <table class="headingPrinting" >
+                        <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
+                            <tr >
+                                <td colspan="4" style="text-align: center;">
+                                    <h:graphicImage
+                                        style="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Image Style','width: 200px; height: auto;')}"
+                                        class="mb-4"
+                                        url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
+                                        >
+                                    </h:graphicImage>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
                         <tr>
                             <td colspan="4">
                                 <h:outputLabel style="font-size: 18px;" class="mark" value="**Dialysis Invoice**"
@@ -257,6 +273,23 @@
                                                             </tr>
                                                         </h:panelGroup>
                                                     </ui:repeat>
+                                                        <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}" style="">
+                                                            <tr>
+
+                                                                <td style="text-align: left;font-size: 8px!important;">
+                                                                    <h:panelGroup>
+                                                                        #{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}
+                                                                    </h:panelGroup>
+                                                                </td>
+                                                                <td  style="text-align: right;font-size: 8px!important;">
+                                                                    <h:panelGroup>
+                                                                        <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </h:outputLabel>
+                                                                    </h:panelGroup>
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
                                                 </table>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="sessionController.userPreference.applicationInstitution ne 'Ruhuna'">
@@ -393,16 +426,9 @@
                                     <h:outputLabel   value="Paid By Patient " rendered="#{cc.attrs.bill.paidAmount !=0}"/>
                                 </td>
                                 <td style="text-align: left;font-size: 13px!important;">
-                                    <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
+                                    <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
                                         <h:panelGroup
-                                            rendered="#{(b.netTotal ne 0 )
-                                                        and
-                                                        ((b.cancelled eq false
-                                                        and b.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                        or
-                                                        (b.cancelled eq false
-                                                        and b.refundedBill eq null
-                                                        and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}" >
+                                            rendered="#{b.netTotal ne 0}" >
 
                                             <div class="d-flex gap-2">
                                                 <h:outputLabel value="#{b.deptId} - "/>
@@ -451,6 +477,10 @@
                         </h:outputLabel>
                         <h:outputLabel value="Patient/Guardian" >
                         </h:outputLabel>
+                    </div>
+
+                    <div class="px-5 mt-2">
+                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                     </div>
 
                     <p:spacer></p:spacer>

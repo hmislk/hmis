@@ -6,7 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
 
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -18,11 +19,25 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
+        <!-- This composite is always printed alone (one p:printer target = one
+             instance of this composite), never combined with other .a4bill
+             siblings. printing.css's shared ".a4bill{page-break-after:always}"
+             rule (meant to separate consecutive bills when several are printed
+             together) then leaves a trailing blank page after the only content
+             there is. Override it locally rather than touching the shared rule
+             other consumers may still depend on for separation (issue #23713). -->
+        <style>
+            @media print {
+                .finalProfessionalBillA4 {
+                    page-break-after: auto !important;
+                }
+            }
+        </style>
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <div  >
             <h:panelGroup id="gpBillPreview" style="margin: auto; padding: 0px; " >
 
-                <div class="a4bill"  >
+                <div class="a4bill finalProfessionalBillA4"  >
 
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
@@ -49,6 +64,19 @@
                     </h:panelGroup>
 
                     <table class="headingPrinting" >
+                        <h:panelGroup rendered="#{not empty configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}" >
+                            <tr >
+                                <td colspan="4" style="text-align: center;">
+                                    <h:graphicImage
+                                        style="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Image Style','width: 200px; height: auto;')}"
+                                        class="mb-4"
+                                        url="#{configOptionApplicationController.getLongTextValueByKey('Inaptient Final Bill Header Image URL')}"
+                                        >
+                                    </h:graphicImage>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
+
                         <tr>
                             <td colspan="4">
                                 <h:outputLabel
@@ -274,6 +302,17 @@
                                         </h:panelGroup>
                                     </p:column>
                                     <p:columnGroup type="footer">
+                                        <p:row rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                            <p:column style="text-align: left!important;"
+                                                      footerText="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}"/>
+                                            <p:column style="text-align: right;" >
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
                                         <p:row>
                                             <p:column footerText="Total"/>
                                             <p:column style="text-align: right;" >
@@ -288,6 +327,10 @@
                                 </p:dataTable>
                             </h:panelGroup>
                         </ui:repeat>
+                    </div>
+
+                    <div class="px-5">
+                        <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
                     </div>
 
                     <p:spacer height="40px"></p:spacer>
