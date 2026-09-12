@@ -51,6 +51,34 @@ This document lists the configuration options used in the application and their 
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Theatre
+
+The theatre surgery service bill (`theater/inward_bill_surgery_service.xhtml`) chooses its item
+list from three booleans rather than one setting, matching the multi-boolean mode idiom used
+elsewhere (e.g. `Pharmacy Transfer is by Cost Rate` / `by Purchase Rate` / `by Retail Rate`).
+
+They are read in a **fixed precedence, most restrictive first**, by
+`ItemController.completeTheatreItems`, so a hospital that ticks more than one still gets a defined
+result:
+
+1. `Theatre Surgery Bill - List Services Mapped to the Logged Department`
+2. `Theatre Surgery Bill - List All Services`
+3. `Theatre Surgery Bill - List Theatre Services Only` — the default mode and the `else` branch
+
+All three resolve **department-scoped key first, then application-wide**, via
+`ConfigOptionController.getBooleanValueByKeyReadOnly`. To override for one department only, set
+`<Department Name> - <key>`, e.g. `Operation Theatre - Theatre Surgery Bill - List All Services`.
+The read-only accessor is deliberate: this runs on every autocomplete keystroke and must not
+persist a ConfigOption row just because someone typed.
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Theatre Surgery Bill - List Services Mapped to the Logged Department` | Boolean | `false` | Lists only items mapped to the logged department via `ItemMapping`. Highest precedence. Use when the theatre needs a curated subset. Note there is no API for creating these mappings yet (issue #23748) — use Administration → Manage Items → Item Mapping. |
+| `Theatre Surgery Bill - List All Services`                       | Boolean   | `false` | Lists `Service`, `InwardService` and `TheatreService` (one polymorphic query — the latter two extend `Service`). Use when the hospital bills theatre consumables from its ordinary service master rather than a dedicated Theatre Service master. |
+| `Theatre Surgery Bill - List Theatre Services Only`              | Boolean   | `true`  | The default mode: only items whose DTYPE is `TheatreService`. This was the hardcoded behaviour before the setting existed, so a hospital that changes nothing sees no change. Note that most deployments have an **empty** Theatre Service master, in which case this mode lists nothing — see issue #23743. |
+
+Inactive items are excluded in all three modes.
+
 ## Pharmacy Procurement
 
 | Key                                                              | Type      | Default | Description                                                                                             |
