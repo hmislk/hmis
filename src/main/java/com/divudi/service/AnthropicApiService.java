@@ -1054,6 +1054,53 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageItemMappingsTool = Json.createObjectBuilder()
+                .add("name", "manage_item_mappings")
+                .add("description",
+                        "Search, create, bulk-create, or retire ItemMapping rows — which items a "
+                        + "department, an institution, or an outside-charge site may bill. Use SEARCH to "
+                        + "list current mappings (the audit/diff primitive) filtered by at most one of "
+                        + "department_id/institution_id/outside_charge_site_id, plus optional item_id/query. "
+                        + "Use CREATE to map one item to exactly one target — idempotent: mapping an "
+                        + "already-active pair returns already_exists, and mapping a previously-retired pair "
+                        + "reactivates it instead of duplicating. Use BULK_CREATE with item_ids (comma-separated) "
+                        + "to map many items to one target at once, reporting a per-item outcome. Use RETIRE to "
+                        + "soft-retire one mapping by id (never a hard delete). An outside-charge mapping is "
+                        + "stored as an institution mapping with outsideChargeMapping=true — use "
+                        + "outside_charge_site_id (not institution_id) to create or search those.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Operation: SEARCH, CREATE, BULK_CREATE, or RETIRE. Required."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ItemMapping ID. Required for RETIRE."))
+                                .add("item_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Item ID. Required for CREATE. Optional filter for SEARCH."))
+                                .add("item_ids", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Comma-separated Item IDs. Required for BULK_CREATE."))
+                                .add("department_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID target. Exactly one of department_id/institution_id/outside_charge_site_id is required for CREATE/BULK_CREATE; at most one for SEARCH."))
+                                .add("institution_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution ID target (plain institution mapping, not outside-charge)."))
+                                .add("outside_charge_site_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution ID target for an outside-charge mapping (sets outsideChargeMapping=true)."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text matched against the mapped item's name (case-insensitive). Used with SEARCH."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results to return (1–200). Defaults to 30. Used with SEARCH.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject manageInvestigationFormatTool = Json.createObjectBuilder()
                 .add("name", "manage_investigation_format")
                 .add("description",
@@ -2260,6 +2307,7 @@ public class AnthropicApiService implements Serializable {
                 .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
                 .add(manageServicesTool)
+                .add(manageItemMappingsTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageReportFormatsTool)
                 .add(manageInvestigationComponentsTool)
@@ -2517,6 +2565,18 @@ public class AnthropicApiService implements Serializable {
                     String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
                     String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
                     return callServiceApi(method, id, query, serviceType, categoryId, inactive, limit, name, code, printName, fullName, inwardChargeType, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_item_mappings": {
+                    String method = toolInput.getString("method", "SEARCH");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String itemId = toolInput.containsKey("item_id") ? toolInput.getString("item_id", "") : "";
+                    String itemIds = toolInput.containsKey("item_ids") ? toolInput.getString("item_ids", "") : "";
+                    String departmentId = toolInput.containsKey("department_id") ? toolInput.getString("department_id", "") : "";
+                    String institutionId = toolInput.containsKey("institution_id") ? toolInput.getString("institution_id", "") : "";
+                    String outsideChargeSiteId = toolInput.containsKey("outside_charge_site_id") ? toolInput.getString("outside_charge_site_id", "") : "";
+                    String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String limit = toolInput.containsKey("limit") ? toolInput.getString("limit", "30") : "30";
+                    return callItemMappingApi(method, id, itemId, itemIds, departmentId, institutionId, outsideChargeSiteId, query, limit, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigation_format": {
                     String resourceType = toolInput.getString("resource_type", "ITEM");
@@ -4773,6 +4833,60 @@ public class AnthropicApiService implements Serializable {
             }
             if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
         } catch (Exception e) { return "Service API error: "+e.getMessage(); }
+    }
+
+    private String callItemMappingApi(String method, String id, String itemId, String itemIds,
+            String departmentId, String institutionId, String outsideChargeSiteId,
+            String query, String limit, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb;
+
+            if ("SEARCH".equalsIgnoreCase(method)) {
+                StringBuilder url = new StringBuilder(root + "/api/item-mappings/search?limit=" + URLEncoder.encode(limit, StandardCharsets.UTF_8));
+                if (departmentId != null && !departmentId.isEmpty()) url.append("&departmentId=").append(URLEncoder.encode(departmentId, StandardCharsets.UTF_8));
+                if (institutionId != null && !institutionId.isEmpty()) url.append("&institutionId=").append(URLEncoder.encode(institutionId, StandardCharsets.UTF_8));
+                if (outsideChargeSiteId != null && !outsideChargeSiteId.isEmpty()) url.append("&outsideChargeSiteId=").append(URLEncoder.encode(outsideChargeSiteId, StandardCharsets.UTF_8));
+                if (itemId != null && !itemId.isEmpty()) url.append("&itemId=").append(URLEncoder.encode(itemId, StandardCharsets.UTF_8));
+                if (query != null && !query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                rb = HttpRequest.newBuilder().uri(URI.create(url.toString())).GET();
+            } else if ("CREATE".equalsIgnoreCase(method)) {
+                if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for CREATE.";
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("itemId", Long.parseLong(itemId));
+                if (departmentId != null && !departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                if (institutionId != null && !institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                if (outsideChargeSiteId != null && !outsideChargeSiteId.isEmpty()) b.add("outsideChargeSiteId", Long.parseLong(outsideChargeSiteId));
+                rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/item-mappings"))
+                        .method("POST", HttpRequest.BodyPublishers.ofString(b.build().toString()))
+                        .header("Content-Type", "application/json");
+            } else if ("BULK_CREATE".equalsIgnoreCase(method)) {
+                if (itemIds == null || itemIds.isEmpty()) return "Error: item_ids is required for BULK_CREATE.";
+                javax.json.JsonArrayBuilder idsArray = Json.createArrayBuilder();
+                for (String idStr : itemIds.split(",")) {
+                    String trimmed = idStr.trim();
+                    if (!trimmed.isEmpty()) idsArray.add(Long.parseLong(trimmed));
+                }
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("itemIds", idsArray);
+                if (departmentId != null && !departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                if (institutionId != null && !institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                if (outsideChargeSiteId != null && !outsideChargeSiteId.isEmpty()) b.add("outsideChargeSiteId", Long.parseLong(outsideChargeSiteId));
+                rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/item-mappings/bulk"))
+                        .method("POST", HttpRequest.BodyPublishers.ofString(b.build().toString()))
+                        .header("Content-Type", "application/json");
+            } else if ("RETIRE".equalsIgnoreCase(method)) {
+                if (id == null || id.isEmpty()) return "Error: id is required for RETIRE.";
+                rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/item-mappings/" + id)).DELETE();
+            } else {
+                return "Error: Unsupported method for manage_item_mappings: " + method
+                        + ". Allowed methods are SEARCH, CREATE, BULK_CREATE, RETIRE.";
+            }
+            if (!key.isEmpty()) rb.header("Finance", key);
+            HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + resp.statusCode() + "\n" + resp.body();
+        } catch (Exception e) { return "Item Mapping API error: " + e.getMessage(); }
     }
 
     private String callInvestigationFormatApi(String resourceType, String method,
@@ -7375,6 +7489,25 @@ public class AnthropicApiService implements Serializable {
                     {"GET",  "/itemrequests/{id}",      "Get a single item/service request by ID, including status and lines. Poll this for status changes"},
                     {"GET",  "/itemrequests",           "List/search item/service requests. Query params: targetDepartmentId, status, fromDate, toDate (yyyy-MM-dd), limit"},
                     {"PUT",  "/itemrequests/{id}/cancel", "Cancel a still-PENDING request. Body: {reason}"}
+                });
+
+        appendModule(sb, "Item Mappings", "/item-mappings",
+                "Which items a department, an institution, or an outside-charge site may bill (ItemMapping "
+                + "entity) — backs the ITEMS_MAPPED_TO_LOGGED_DEPARTMENT / ..._INSTITUTION item-listing "
+                + "strategies. GET /search lists current mappings for at most one target kind at a time "
+                + "(department/institution/outside-charge-site) — the audit/diff primitive. POST maps one "
+                + "item to exactly one target; idempotent — re-mapping an active pair returns already_exists, "
+                + "re-mapping a previously-retired pair reactivates it instead of duplicating. POST /bulk maps "
+                + "many itemIds to one target with a per-item outcome (created/reactivated/already_mapped/"
+                + "item_not_found). DELETE /{id} soft-retires a mapping — never a hard delete. An "
+                + "outside-charge mapping is an institution mapping with outsideChargeMapping=true; there is "
+                + "no separate site table.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_ITEM_MAPPINGS.md"),
+                new String[][]{
+                    {"GET",    "/item-mappings/search", "List mappings. Query: departmentId, institutionId, outsideChargeSiteId, itemId, query, limit"},
+                    {"POST",   "/item-mappings",        "Map one item to one target. Body: {itemId, departmentId|institutionId|outsideChargeSiteId}"},
+                    {"POST",   "/item-mappings/bulk",   "Map many items to one target. Body: {itemIds:[...], departmentId|institutionId|outsideChargeSiteId}"},
+                    {"DELETE", "/item-mappings/{id}",   "Soft-retire one mapping"}
                 });
 
         appendModule(sb, "Timed Items", "/timed-items",
