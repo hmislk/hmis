@@ -5,20 +5,36 @@
 #           the "QA Branches Rules" ruleset, which demands a PR + check-branch
 #           status check for every push, including the branch-creating one —
 #           see hmislk/hmis#23736, which renamed QA1's trigger the same way.)
-#  Serves:  http://localhost:8080/qa3 on the LAN today; https://qa3.carecode.org/qa3
-#           through this same machine's nginx (see hmislk/qa-home-infra,
-#           runbooks/desktop-qa3.md) — the Desktop is the only
-#           internet-facing host, forwarding 80/443 for all four QA subdomains.
+#  Serves:  http://localhost:8080/qa3 on the LAN, and
+#           https://qa3.carecode.org/qa3 publicly through this same machine's
+#           nginx — the Desktop is the only internet-facing host, terminating
+#           TLS for all four QA subdomains (hmislk/qa-home-infra).
 #
-#  Differs from hims_qa1_home_ci_cd.yml: the deploy runner here is **Windows**,
-#  so every deploy step pins `shell: bash` (Git Bash), asadmin is the `.bat`
-#  wrapper, and Windows-style paths are converted with `cygpath` before being
-#  handed to asadmin.
+#  Single job, entirely on the qa3 self-hosted runner: checkout, build and
+#  deploy all run locally. This replaces the earlier split
+#  build(ubuntu-latest) + deploy(self-hosted) design, where shipping the
+#  ~127 MB WAR back down the home link took ~30 minutes at ~80 KB/s and
+#  dwarfed the ~2 minute build (measured on run 34674309931). Now only an
+#  incremental `git fetch` crosses the network. Same fix as QA1 (#23741) and
+#  ruhunu_local_server_ci_cd.yml.
 #
-#  Database: local MySQL `sl` (Southern Lanka), reached through the existing
-#  `jdbc/sl` resource. NOTE: this domain also has `jdbc/southernlanka` and
-#  `jdbc/southernLankaAzure`, which tunnel to the **production** southernlanka
-#  database — never point QA3 at those.
+#  WINDOWS-SPECIFIC NOTES (QA1/QA2 are Linux; QA4 is Windows and needs these):
+#   * Every step pins `shell: bash` (Git Bash). That needs `bash.exe` on PATH,
+#     and a stock Git-for-Windows install only puts `Git\cmd` there — which
+#     has git.exe but NOT bash.exe. Git's `bin` must be on the **machine**
+#     PATH here, because the runner runs as SYSTEM and would never see a
+#     user-scoped PATH entry.
+#   * JAVA_HOME is pinned to JDK 11 below. It is NOT inherited: this machine's
+#     machine-scope JAVA_HOME points at `C:\Program Files\Java\jdk-17`, which
+#     this project does not build under.
+#   * Maven is not on PATH at all on this machine, so MVN is an explicit path.
+#   * asadmin is the `.bat` wrapper, and the WAR path is converted with
+#     `cygpath -w` before being handed to it.
+#
+#  Database: local MySQL `sl` (Southern Lanka), via the `jdbc/sl` resource.
+#  NOTE: this domain also has `jdbc/southernlanka` and `jdbc/southernLankaAzure`,
+#  which tunnel to the **production** southernlanka database — never point QA3
+#  at those.
 # ═══════════════════════════════════════════════════════════════════════════
 name: HIMS QA3 Home CI/CD
 
@@ -31,26 +47,56 @@ concurrency:
   group: payara-qa3-home
   cancel-in-progress: false
 
-env:
-  APP_NAME:     qa3
-  JNDI_MAIN:    jdbc/sl
-  JNDI_AUDIT:   jdbc/ruhunuAudit
-  HEALTH_URL:   http://localhost:8080/qa3/faces/index1.xhtml
+# Only actions/checkout uses GITHUB_TOKEN here, and it only reads. Note that
+# `persist-credentials: false` stops the token being written into .git/config;
+# it does not narrow the token's own scopes, which is what this does.
+permissions:
+  contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    # Hard ref guard. `workflow_dispatch` lets anyone with write access pick an
+    # arbitrary branch or tag, and GitHub would then check that ref out and run
+    # it on this machine's self-hosted runner. Pinning the ref keeps a stray
+    # dispatch of some unrelated feature branch from building and deploying
+    # itself onto QA3. (Dispatch is kept because redeploying the current branch
+    # without an empty commit is genuinely useful, and anyone who can dispatch
+    # could push to `home-qa3` anyway - so this bounds mistakes more than it
+    # bounds a determined insider.)
+    if: github.ref == 'refs/heads/home-qa3'
+    runs-on: [self-hosted, qa3]
+    defaults:
+      run:
+        shell: bash
+    env:
+      APP_NAME:     qa3
+      JNDI_MAIN:    jdbc/sl
+      JNDI_AUDIT:   jdbc/ruhunuAudit
+      HEALTH_URL:   http://localhost:8080/qa3/faces/index1.xhtml
+      ASADMIN:      D:\Payara\glassfish\bin\asadmin.bat
+      ASADMIN_PORT: "4848"
+      DEPLOY_DIR:   /d/qa3-deploy
+      # Pinned deliberately - see the Windows notes in the header.
+      JAVA_HOME:    C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot
+      MVN:          D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd
+
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '11'
-          cache: maven
+      # Fail loudly and immediately if the toolchain is not what we expect,
+      # rather than part-way through a build.
+      - name: Verify local toolchain
+        run: |
+          set -euo pipefail
+          command -v bash >/dev/null || { echo "::error::bash not on PATH"; exit 1; }
+          test -x "$JAVA_HOME/bin/java.exe" || { echo "::error::no JDK at JAVA_HOME=$JAVA_HOME"; exit 1; }
+          test -f "$MVN" || { echo "::error::maven not found at $MVN"; exit 1; }
+          "$JAVA_HOME/bin/java.exe" -version
+          "$MVN" -v | head -3
+          java_major=$("$JAVA_HOME/bin/java.exe" -version 2>&1 | head -1 | grep -oE '"[0-9]+' | tr -d '"')
+          [ "$java_major" = "11" ] || { echo "::error::expected JDK 11, got $java_major"; exit 1; }
 
       - name: Substitute datasource JNDI names
         run: |
@@ -78,7 +124,9 @@ jobs:
           echo "datasources verified: $JNDI_MAIN, $JNDI_AUDIT"
 
       - name: Build
-        run: mvn -B -ntp clean package -DskipTests
+        run: |
+          set -euo pipefail
+          "$MVN" -B -ntp clean package -DskipTests
 
       - name: Rename artifact
         run: |
@@ -86,46 +134,20 @@ jobs:
           war=$(find target -maxdepth 1 -name '*.war' | head -1)
           test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
           mv "$war" "target/${APP_NAME}.war"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: qa3-war
-          path: target/qa3.war
-          retention-days: 7
-
-  deploy:
-    needs: build
-    runs-on: [self-hosted, qa3]
-    defaults:
-      run:
-        shell: bash
-    env:
-      APP_NAME:     qa3
-      JNDI_MAIN:    jdbc/sl
-      JNDI_AUDIT:   jdbc/ruhunuAudit
-      HEALTH_URL:   http://localhost:8080/qa3/faces/index1.xhtml
-      ASADMIN:      D:\Payara\glassfish\bin\asadmin.bat
-      ASADMIN_PORT: "4848"
-      DEPLOY_DIR:   /d/qa3-deploy
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: qa3-war
-          path: ./artifact
+          ls -l "target/${APP_NAME}.war"
 
       - name: Deploy to Payara
         run: |
           set -euo pipefail
           asadmin() { "$ASADMIN" --port "$ASADMIN_PORT" "$@"; }
 
-          test -f ./artifact/qa3.war || { echo "::error::WAR missing: ./artifact/qa3.war"; exit 1; }
-          WAR_WIN=$(cygpath -w "$(pwd)/artifact/qa3.war")
+          test -f "target/${APP_NAME}.war" || { echo "::error::WAR missing"; exit 1; }
+          WAR_WIN=$(cygpath -w "$(pwd)/target/${APP_NAME}.war")
           echo "WAR: $WAR_WIN"
 
           for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
             asadmin list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
-              echo "::error::JNDI resource $j not found in this domain."
-              exit 1; }
+              echo "::error::JNDI resource $j not found in this domain."; exit 1; }
             # Pool name is NOT derivable from the JNDI name (e.g.
             # jdbc/ruhunuAudit -> poolRuhunuAudit) - look it up.
             key="resources.jdbc-resource.${j}.pool-name"
@@ -153,7 +175,7 @@ jobs:
             fi
             exit 1
           fi
-          cp ./artifact/qa3.war "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          cp "target/${APP_NAME}.war" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
           asadmin list-applications
 
       - name: Health check
@@ -161,6 +183,8 @@ jobs:
           set -euo pipefail
           asadmin() { "$ASADMIN" --port "$ASADMIN_PORT" "$@"; }
 
+          # Payara can take minutes to finish PU init on this box, passing
+          # through 404 then 500 before serving - hence the generous budget.
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
             echo "attempt $i: HTTP $code"
