@@ -101,10 +101,18 @@ public class ItemMappingApi {
                 return errorResponse("Not a valid key", 401);
             }
 
-            Long departmentId = parseLongParam("departmentId");
-            Long institutionId = parseLongParam("institutionId");
-            Long outsideChargeSiteId = parseLongParam("outsideChargeSiteId");
-            Long itemId = parseLongParam("itemId");
+            Long departmentId;
+            Long institutionId;
+            Long outsideChargeSiteId;
+            Long itemId;
+            try {
+                departmentId = requireValidLongParam("departmentId");
+                institutionId = requireValidLongParam("institutionId");
+                outsideChargeSiteId = requireValidLongParam("outsideChargeSiteId");
+                itemId = requireValidLongParam("itemId");
+            } catch (NumberFormatException e) {
+                return errorResponse(e.getMessage(), 400);
+            }
             String query = uriInfo.getQueryParameters().getFirst("query");
 
             int given = 0;
@@ -211,6 +219,7 @@ public class ItemMappingApi {
             if ("already_mapped".equals(outcome.result)) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("status", "already_exists");
+                response.put("code", 200);
                 response.put("id", outcome.mapping.getId());
                 response.put("data", toMap(outcome.mapping));
                 return Response.status(200).entity(gson.toJson(response)).build();
@@ -219,6 +228,7 @@ public class ItemMappingApi {
             if ("reactivated".equals(outcome.result)) {
                 Map<String, Object> response = new HashMap<>();
                 response.put("status", "reactivated");
+                response.put("code", 200);
                 response.put("id", outcome.mapping.getId());
                 response.put("data", toMap(outcome.mapping));
                 return Response.status(200).entity(gson.toJson(response)).build();
@@ -542,8 +552,23 @@ public class ItemMappingApi {
         return map;
     }
 
-    private Long parseLongParam(String name) {
-        return toLong(uriInfo.getQueryParameters().getFirst(name));
+    /**
+     * Reads a query param as a Long, returning null when omitted/empty but
+     * throwing NumberFormatException when present and unparseable — so a
+     * typo like departmentId=bad is rejected with a 400 instead of silently
+     * falling through as "no filter", which could also bypass the
+     * mutually-exclusive-target check in search().
+     */
+    private Long requireValidLongParam(String name) {
+        String raw = uriInfo.getQueryParameters().getFirst(name);
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(raw.trim());
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Invalid " + name + " format");
+        }
     }
 
     private Long toLong(Object value) {
