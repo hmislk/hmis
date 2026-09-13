@@ -79,8 +79,9 @@
         font-family: sans-serif!important;
         font-size: 11px!important;
         /*        position: relative!important;  */
-        margin: 0px!important;
-        width: 100%;
+        margin-top: 1%;
+        margin-left: 12%;
+        width: 88%;
         height: 100%;
         /*        width: 95%;
                 height: 95%;*/
@@ -235,7 +236,9 @@
         page-break-after:always!important;
 
     }
-
+    .a4bill1{
+        width: 221mm;
+    }
     .a4bill{
 
         font-family: sans-serif!important;
