@@ -18,14 +18,14 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="inwardpayments.css" ></h:outputStylesheet>
-        <!--<div class="a4bill" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >-->
-        <h:panelGroup id="gpBillPreview" >
-            <div class="a4bill1" style="align-items: center; margin: 0; padding: 0; max-width: 210mm" >
 
+        <h:panelGroup id="gpBillPreview" >
+            <div class="a4bill1" style="align-items: center; " >
+                
                 <div class="institutionName">
                     <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
                 </div>
-                <div class="institutionName">
+<!--                <div class="institutionName">
                     <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
                 </div>
                 <div class="institutionContact" >
@@ -43,7 +43,7 @@
                     <div >
                         <h:outputLabel value="Email : #{cc.attrs.bill.department.email}" rendered="#{!empty cc.attrs.bill.department.email}"/>
                     </div>
-                </div>
+                </div>-->
 
                 <div class="" style=" text-align: center;font-weight: bold;font-size: 13pt">
                     <h:outputLabel value="CASH PAYMENT VOUCHER" />
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="billDetailsFiveFive" >
-                    <table style="width: 100%!important;" align="center" >
+                    <table style="width: 100%!important; line-height: 1.1;" align="center" >
 
                         <tr>
                             <td width="15%" ><h:outputLabel value="Voucher No" class="billDetailsFiveFive" ></h:outputLabel></td>
@@ -80,6 +80,14 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
+                        
+                        <tr>
+                            <td width="15%" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
+                            <td width="2%" style="text-align: center;" >:</td>
+                            <td width="83%" >
+                                <h:outputLabel value="#{cc.attrs.bill.staff.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
+                            </td>
+                        </tr>
 
                         <tr>
                             <td width="15%" ><h:outputLabel value="Payee" class="billDetailsFiveFive" ></h:outputLabel></td>
@@ -89,24 +97,18 @@
                             </td>
                         </tr>
 
-                        <tr>
-                            <td width="15%" ><h:outputLabel value="Speciality" class="billDetailsFiveFive" ></h:outputLabel></td>
-                            <td width="2%" style="text-align: center;" >:</td>
-                            <td width="83%" >
-                                <h:outputLabel value="#{cc.attrs.bill.staff.speciality.name}" class="billDetailsFiveFive" ></h:outputLabel>
-                            </td>
-                        </tr>
                     </table>
                 </div>
 
                 <div style="width:100%;">
 
-                    <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
+                    <h:dataTable 
+                        value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
                                  var="bip"
-                                 style="border-top:1px solid #999; margin-top:10px;"
+                                 style="border-top:1px solid #999; margin-top:10px; line-height: 1.1;"
                                  styleClass="billTable">
 
-                        <h:column>
+                        <h:column >
                             <f:facet name="header">
                                 <h:outputText value="Description"/>
                             </f:facet>
@@ -147,12 +149,22 @@
                     <h:outputLabel value="Amount in words : " style="font-weight: 500; font-size: 15px"/>
                     <h:outputLabel value="***#{inwardStaffPaymentBillController.convertToWord(cc.attrs.bill.netTotal)} only.***" style="font-weight: 500; font-size: 15px" class="w-100"/>
                 </div>
+                
+                <div class="d-flex justify-content-between mt-2">
+                    <div class="d-grid text-center">
+                        
+                    </div>
+                    <div class="d-grid text-center">
+                        <h:outputLabel value="----------------------------------" style="font-weight: 600"/>
+                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" style="font-weight: 600; font-size: 13px"/>
+                    </div>
+                </div>
 
                 <div class="mt-3" >
                     <div class="d-flex justify-content-between ">
                         <div class="d-flex gap-2">
                             <h:outputLabel value="Paid by : " style="font-weight: 500; font-size: 15px"/>
-                            <h:outputLabel value="#{cc.attrs.bill.creater.name}" style="font-size: 15px"/>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" style="font-size: 15px"/>
                         </div>
                         <div class="d-flex gap-2">
                             <h:outputLabel value="Paid Date : "  style="font-weight: 500; font-size: 15px"/>
@@ -164,7 +176,7 @@
                     <div class="d-flex justify-content-between ">
                         <div class="d-flex gap-2">
                             <h:outputLabel value="Printed by : " style="font-weight: 500; font-size: 15px"/>
-                            <h:outputLabel value="#{sessionController.loggedUser.name}" style="font-size: 15px"/>
+                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="font-size: 15px"/>
                         </div>
                         <div class="d-flex gap-2">
                             <h:outputLabel value="Printed Date : " style="font-weight: 500; font-size: 15px"/>
@@ -175,14 +187,18 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between mt-4">
+                <div class="d-flex justify-content-between mt-5">
                     <div class="d-grid text-center">
-                        <h:outputLabel value="---------------------------------------" style="font-weight: 600"/>
-                        <h:outputLabel value="Signature (Paid by)" style="font-weight: 600; font-size: 13px"/>
+                        <h:outputLabel value="----------------------------------" style="font-weight: 600"/>
+                        <h:outputLabel value="Checked By" style="font-size: 13px"/>
                     </div>
                     <div class="d-grid text-center">
-                        <h:outputLabel value="---------------------------------------------" style="font-weight: 600"/>
-                        <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" style="font-weight: 600; font-size: 13px"/>
+                        <h:outputLabel value="----------------------------------" style="font-weight: 600"/>
+                        <h:outputLabel value="Approved By" style="font-size: 13px"/>
+                    </div>
+                    <div class="d-grid text-center">
+                        <h:outputLabel value="----------------------------------" style="font-weight: 600"/>
+                        <h:outputLabel value="Approved By" style="font-size: 13px"/>
                     </div>
                 </div>
 
