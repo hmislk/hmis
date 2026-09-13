@@ -364,17 +364,27 @@ public class AiChatController implements Serializable {
             boolean loopback = "localhost".equalsIgnoreCase(host)
                     || "127.0.0.1".equals(host) || "::1".equals(host) || "[::1]".equals(host);
             boolean https = "https".equalsIgnoreCase(uri.getScheme());
+            boolean forwardedHttps = false;
             if (!https && !loopback) {
                 // Payara sits behind an NGINX reverse proxy in production (TLS terminated
                 // there), so the request Payara sees is plain HTTP even on an HTTPS
                 // deployment. Trust the standard forwarded-proto header in that case.
                 HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
                         .getExternalContext().getRequest();
-                https = "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+                forwardedHttps = "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
             }
-            if (!https && !loopback) {
+            if (!https && !loopback && !forwardedHttps) {
                 LOG.log(Level.WARNING, "Refusing to send HMIS API key over non-HTTPS base URL: {0}", url);
                 return "";
+            }
+            if (forwardedHttps) {
+                // url still has the internal http:// scheme/port that AnthropicApiService
+                // would otherwise reconnect to literally. Rebuild it as the public https
+                // endpoint (default port 443) so the Finance header is actually sent
+                // over TLS end-to-end, not just validated as if it were.
+                String path = uri.getRawPath() == null ? "" : uri.getRawPath();
+                String query = uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery();
+                url = "https://" + host + path + query;
             }
             return url;
         } catch (Exception e) {
