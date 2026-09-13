@@ -28,8 +28,10 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.component.api.UIColumn;
 
 /**
  * Controller for the Coop-specific sibling of the BHT Deposit Detail report
@@ -256,6 +258,36 @@ public class BhtDepositDetailWithCreditCompaniesReportController implements Seri
 
     public double getTotalForMethod(PaymentMethod pm) {
         return totalByMethod.getOrDefault(pm, 0.0);
+    }
+
+    /**
+     * p:column exportFunction for the Credit Companies column - PrimeFaces'
+     * exporter cannot resolve a nested ui:repeat's content on its own (it
+     * falls back to the component's toString()), so this flattens the
+     * current row's settlements into the same text shown on screen. Invoked
+     * with the row variable ("row") still bound to the row being exported.
+     */
+    public String exportCreditCompanySettlements(UIColumn column) {
+        Object rowValue = FacesContext.getCurrentInstance().getELContext()
+                .getELResolver().getValue(FacesContext.getCurrentInstance().getELContext(), null, "row");
+        if (!(rowValue instanceof BhtPaymentDetailDTO)) {
+            return "";
+        }
+        List<CreditCompanySettlement> settlements = ((BhtPaymentDetailDTO) rowValue).getCreditCompanySettlements();
+        if (settlements == null || settlements.isEmpty()) {
+            return "-";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (CreditCompanySettlement s : settlements) {
+            if (sb.length() > 0) {
+                sb.append("\n");
+            }
+            sb.append(s.getCreditCompanyName()).append(": Due ")
+                    .append(String.format("%,.2f", s.getDue())).append(" / Paid ")
+                    .append(String.format("%,.2f", s.getPaid())).append(" / Balance ")
+                    .append(String.format("%,.2f", s.getBalance()));
+        }
+        return sb.toString();
     }
 
     public void makeNull() {
