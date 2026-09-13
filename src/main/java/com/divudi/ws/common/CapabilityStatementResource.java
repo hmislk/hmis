@@ -532,6 +532,26 @@ public class CapabilityStatementResource {
                         + "site-, department- or collecting-centre-specific one.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Item Mappings", "/api/item-mappings",
+                        "Which items a department, an institution, or an outside-charge site may bill "
+                        + "(ItemMapping entity) — previously only reachable through the "
+                        + "manage_department_item_mappings / manage_institution_item_mappings / "
+                        + "manage_outside_charge_item_mappings admin pages. Backs the "
+                        + "ITEMS_MAPPED_TO_LOGGED_DEPARTMENT / ..._INSTITUTION item-listing strategies. "
+                        + "GET /search?departmentId=&institutionId=&outsideChargeSiteId=&itemId=&query=&limit= "
+                        + "lists current mappings for at most one target kind at a time (the audit/diff primitive). "
+                        + "POST maps one item to exactly one of departmentId/institutionId/outsideChargeSiteId; "
+                        + "idempotent — re-mapping an existing active pair returns status=already_exists, and "
+                        + "re-mapping a previously soft-retired pair reactivates that same row (status=reactivated) "
+                        + "rather than creating a duplicate. POST /bulk maps many itemIds to one target in a call "
+                        + "and reports a per-item outcome (created | reactivated | already_mapped | item_not_found | "
+                        + "invalid_item_id) instead of failing the whole batch on one bad id. DELETE /{id} soft-retires a mapping "
+                        + "(retired=true) — never a hard delete. An outside-charge mapping is stored as an "
+                        + "institution mapping with outsideChargeMapping=true on the same row; there is no "
+                        + "separate site table, so outsideChargeSiteId and institutionId both resolve against "
+                        + "Institution but are mutually exclusive per request.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "DELETE"))
                 .add(resource("Timed Items", "/api/timed-items",
                         "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
                         + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
