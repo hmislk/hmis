@@ -3521,6 +3521,124 @@ public class UserSettingsController implements Serializable {
         setBhtDepositDetailColumnVisible("referenceNo", visible);
     }
 
+    // Page: inward_bht_deposit_detail_with_credit_companies (Issue #23770)
+    // Backs inward_report_bht_deposit_detail_with_credit_companies.xhtml
+    // (BhtDepositDetailWithCreditCompaniesReportController). Independent
+    // pageId/column-visibility state from inward_bht_deposit_detail above -
+    // this is a separate sibling report, not a shared one, so the original
+    // report's stored preferences must stay untouched.
+    private static final java.util.List<String> INWARD_BHT_DEPOSIT_DETAIL_WITH_CC_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admissionType", "admitted", "discharged",
+            "billNo", "dateTime", "paymentMethod", "amount", "referenceNo", "creditCompanies");
+
+    /**
+     * Shared setter for every inward_bht_deposit_detail_with_credit_companies
+     * column checkbox. Refuses to hide the last remaining visible column, same
+     * rule as setBhtDepositDetailColumnVisible above.
+     */
+    private void setBhtDepositDetailWithCcColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_deposit_detail_with_credit_companies");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_DEPOSIT_DETAIL_WITH_CC_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_deposit_detail_with_credit_companies", settings);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcBhtNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "bhtNo");
+    }
+
+    public void setInwardBhtDepositDetailWithCcBhtNoVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcPatientNameVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "patientName");
+    }
+
+    public void setInwardBhtDepositDetailWithCcPatientNameVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("patientName", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcAdmissionTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "admissionType");
+    }
+
+    public void setInwardBhtDepositDetailWithCcAdmissionTypeVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcAdmittedVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "admitted");
+    }
+
+    public void setInwardBhtDepositDetailWithCcAdmittedVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcDischargedVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "discharged");
+    }
+
+    public void setInwardBhtDepositDetailWithCcDischargedVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcBillNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "billNo");
+    }
+
+    public void setInwardBhtDepositDetailWithCcBillNoVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("billNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcDateTimeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "dateTime");
+    }
+
+    public void setInwardBhtDepositDetailWithCcDateTimeVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("dateTime", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcPaymentMethodVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "paymentMethod");
+    }
+
+    public void setInwardBhtDepositDetailWithCcPaymentMethodVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("paymentMethod", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcAmountVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "amount");
+    }
+
+    public void setInwardBhtDepositDetailWithCcAmountVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("amount", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcReferenceNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "referenceNo");
+    }
+
+    public void setInwardBhtDepositDetailWithCcReferenceNoVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("referenceNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcCreditCompaniesVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "creditCompanies");
+    }
+
+    public void setInwardBhtDepositDetailWithCcCreditCompaniesVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("creditCompanies", visible);
+    }
+
     // Page: inward_bht_payment_summary
     // Backs inward_report_bht_payment_summary.xhtml (bhtPaymentDetailReportController - see #23258).
     // BHT No and Patient Name are always shown (no toggle) - only the
