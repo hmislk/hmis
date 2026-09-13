@@ -64,3 +64,7 @@ jobs:
             max_attempts: 3
             retry_wait_seconds: 30
             command: mvn clean compile -B -U
+
+        - name: Run unit tests
+          timeout-minutes: 20
+          run: mvn test -B
