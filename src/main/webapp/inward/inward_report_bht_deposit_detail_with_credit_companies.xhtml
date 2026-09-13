@@ -1,0 +1,366 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="frm">
+
+                    <p:panel header="BHT Deposit Detail with Credit Companies" class="m-1">
+
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control"
+                                        id="fromDate"
+                                        value="#{bhtDepositDetailWithCreditCompaniesReportController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control"
+                                        id="toDate"
+                                        value="#{bhtDepositDetailWithCreditCompaniesReportController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf017;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="dateBasisMenu" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.dateBasis}">
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf05a;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Status" for="admStatusMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="admStatusMenu" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.admissionStatus}">
+                                <f:selectItems value="#{enumController.admissionStatuses}"
+                                               var="s" itemValue="#{s}" itemLabel="#{s.label}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="admTypeMenu" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.admissionType}">
+                                <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}"
+                                               var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <p:spacer width="50" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Payment Method" for="pmMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="pmMenu" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="siteMenu" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu
+                                    rendered="#{bhtDepositDetailWithCreditCompaniesReportController.institution eq null and bhtDepositDetailWithCreditCompaniesReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtDepositDetailWithCreditCompaniesReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{bhtDepositDetailWithCreditCompaniesReportController.institution eq null and bhtDepositDetailWithCreditCompaniesReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtDepositDetailWithCreditCompaniesReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtDepositDetailWithCreditCompaniesReportController.site)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{bhtDepositDetailWithCreditCompaniesReportController.institution ne null and bhtDepositDetailWithCreditCompaniesReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtDepositDetailWithCreditCompaniesReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(bhtDepositDetailWithCreditCompaniesReportController.institution)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{bhtDepositDetailWithCreditCompaniesReportController.institution ne null and bhtDepositDetailWithCreditCompaniesReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{bhtDepositDetailWithCreditCompaniesReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(bhtDepositDetailWithCreditCompaniesReportController.institution, bhtDepositDetailWithCreditCompaniesReportController.site)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf1ec;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Report Type" for="reportTypeMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="reportTypeMenu" styleClass="w-100 form-control"
+                                             value="#{bhtDepositDetailWithCreditCompaniesReportController.reportType}">
+                                <f:selectItem itemValue="ALL" itemLabel="All" />
+                                <f:selectItem itemValue="DEPOSIT" itemLabel="Inpatient Deposits" />
+                                <f:selectItem itemValue="PAYMENT" itemLabel="Inpatient Payment" />
+                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Discharge Payments" />
+                            </p:selectOneMenu>
+
+                        </h:panelGrid>
+
+                        <p:commandButton value="Generate" icon="fas fa-cogs"
+                                         action="#{bhtDepositDetailWithCreditCompaniesReportController.generateReport()}"
+                                         ajax="false" class="ui-button-success m-1" />
+
+                    </p:panel>
+
+                    <p:panel id="pnlResults"
+                             rendered="#{bhtDepositDetailWithCreditCompaniesReportController.reportRows != null}">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="Results" />
+                                <div>
+                                    <p:commandButton value="Print" icon="fas fa-print"
+                                                     class="ui-button-info me-1" ajax="false">
+                                        <p:printer target="tblReport" />
+                                    </p:commandButton>
+                                    <p:commandButton value="Excel" icon="fas fa-file-excel"
+                                                     class="ui-button-success" ajax="false">
+                                        <p:dataExporter type="xlsx" target="tblReport"
+                                                        fileName="BHT_Deposit_Detail_With_Credit_Companies" />
+                                    </p:commandButton>
+                                    <p:commandButton value="PDF" icon="fas fa-file-pdf"
+                                                     class="ui-button-danger mx-1" ajax="false">
+                                        <p:dataExporter type="pdf" target="tblReport"
+                                                        fileName="BHT_Deposit_Detail_With_Credit_Companies" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <!-- Column Visibility Settings - same pattern as inward_report_bht_deposit_detail.xhtml -->
+                        <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                            <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Configure Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcBhtNoVisible}" itemLabel="BHT No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcPatientNameVisible}" itemLabel="Patient Name">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcAdmissionTypeVisible}" itemLabel="Admission Type">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcAdmittedVisible}" itemLabel="Admitted">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcDischargedVisible}" itemLabel="Discharged">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcBillNoVisible}" itemLabel="Bill No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcDateTimeVisible}" itemLabel="Date / Time">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcPaymentMethodVisible}" itemLabel="Payment Method">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcAmountVisible}" itemLabel="Amount">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcReferenceNoVisible}" itemLabel="Reference No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcCreditCompaniesVisible}" itemLabel="Credit Companies">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                        <p:dataTable id="tblReport"
+                                     value="#{bhtDepositDetailWithCreditCompaniesReportController.reportRows}"
+                                     var="row"
+                                     emptyMessage="No records found"
+                                     paginator="true" rows="20"
+                                     paginatorAlwaysVisible="false" paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                                     styleClass="w-100">
+
+                            <p:column headerText="BHT No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcBhtNoVisible}">
+                                <h:outputText value="#{row.bhtNo}" />
+                            </p:column>
+
+                            <p:column headerText="Patient Name"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcPatientNameVisible}">
+                                <h:outputText value="#{row.patientName}" />
+                            </p:column>
+
+                            <p:column headerText="Admission Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcAdmissionTypeVisible}">
+                                <h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" />
+                            </p:column>
+
+                            <p:column headerText="Admitted" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcAdmittedVisible}">
+                                <h:outputText value="#{row.dateOfAdmission}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Discharged" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcDischargedVisible}">
+                                <h:outputText value="#{row.dateOfDischarge}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bill No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcBillNoVisible}">
+                                <h:outputText value="#{row.billNo}" />
+                            </p:column>
+
+                            <p:column headerText="Date / Time" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcDateTimeVisible}">
+                                <h:outputText value="#{row.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Payment Method" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcPaymentMethodVisible}">
+                                <h:outputText value="#{row.paymentMethod != null ? row.paymentMethod.label : ''}" />
+                            </p:column>
+
+                            <p:column headerText="Amount" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcAmountVisible}">
+                                <h:outputText value="#{row.amount}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Reference No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcReferenceNoVisible}">
+                                <h:outputText value="#{row.referenceNo}" />
+                            </p:column>
+
+                            <p:column headerText="Credit Companies" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcCreditCompaniesVisible}"
+                                      exportFunction="#{bhtDepositDetailWithCreditCompaniesReportController.exportCreditCompanySettlements}">
+                                <ui:fragment rendered="#{empty row.creditCompanySettlements}">
+                                    <h:outputText value="-" />
+                                </ui:fragment>
+                                <ui:repeat value="#{row.creditCompanySettlements}" var="ccs">
+                                    <div>
+                                        <strong><h:outputText value="#{ccs.creditCompanyName}" />: </strong>
+                                        <h:outputText value="Due " />
+                                        <h:outputText value="#{ccs.due}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        <h:outputText value=" / Paid " />
+                                        <h:outputText value="#{ccs.paid}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        <h:outputText value=" / Balance " />
+                                        <h:outputText value="#{ccs.balance}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                    </div>
+                                </ui:repeat>
+                            </p:column>
+
+                            <f:facet name="footer">
+                                <div class="text-end">
+                                    <ui:repeat value="#{bhtDepositDetailWithCreditCompaniesReportController.usedPaymentMethods}" var="pm">
+                                        <strong>
+                                            <h:outputText value="#{pm.label}" />:
+                                        </strong>
+                                        <h:outputText value="#{bhtDepositDetailWithCreditCompaniesReportController.getTotalForMethod(pm)}">
+                                            <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                        </h:outputText>
+                                        &#160;&#160;&#160;
+                                    </ui:repeat>
+                                    <strong>Grand Total: </strong>
+                                    <h:outputText value="#{bhtDepositDetailWithCreditCompaniesReportController.grandTotal}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </div>
+                            </f:facet>
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
