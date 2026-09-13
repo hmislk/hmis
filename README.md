@@ -35,7 +35,7 @@ Started in 2004 by Dr. M H B Ariyaratne as an EMR for general practice. Evolved 
 ## Community & Support
 
 - **GitHub**: [hmislk/hmis](https://github.com/hmislk/hmis)
-- **License**: AGPL (see LICENSE.md)
+- **License**: GPL-3.0 (see LICENSE)
 - **Commercial Support**: Available for installations, training, and maintenance
 
 ## Contributing Healthcare Institutions
@@ -54,6 +54,6 @@ Over 40 institutions have supported this project since 2004, including:
 **Technical Lead**: Mr Geeth Madhushan (2024 - present)
 
 ## License
-AGPL License - see LICENSE.md for details
+GNU General Public License v3.0 - see LICENSE for details
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/hmislk/hmis?utm_source=oss&utm_medium=github&utm_campaign=hmislk%2Fhmis&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
