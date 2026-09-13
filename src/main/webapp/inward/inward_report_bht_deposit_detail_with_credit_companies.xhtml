@@ -313,7 +313,8 @@
                             </p:column>
 
                             <p:column headerText="Credit Companies" style="white-space:nowrap;"
-                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcCreditCompaniesVisible}">
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcCreditCompaniesVisible}"
+                                      exportFunction="#{bhtDepositDetailWithCreditCompaniesReportController.exportCreditCompanySettlements}">
                                 <ui:fragment rendered="#{empty row.creditCompanySettlements}">
                                     <h:outputText value="-" />
                                 </ui:fragment>
