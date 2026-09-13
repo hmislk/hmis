@@ -3,7 +3,9 @@ package com.divudi.core.data.dto;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.inward.AdmissionType;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * DTO for BHT Deposit and Credit Settlement Detail Report.
@@ -36,7 +38,52 @@ public class BhtPaymentDetailDTO implements Serializable {
      */
     private String paymentCategory;
 
+    /**
+     * Credit companies on this row's admission's Final Bill, each with its
+     * own Due/Paid/Balance - populated only by
+     * {@code BhtDepositDetailWithCreditCompaniesReportController} (issue
+     * #23770); every other caller of this DTO leaves this empty. An
+     * admission can carry more than one credit company, so this is a list
+     * rather than reusing the single {@link #creditCompanyName} field above.
+     */
+    private List<CreditCompanySettlement> creditCompanySettlements = new ArrayList<>();
+
     public BhtPaymentDetailDTO() {
+    }
+
+    public List<CreditCompanySettlement> getCreditCompanySettlements() {
+        return creditCompanySettlements;
+    }
+
+    public void setCreditCompanySettlements(List<CreditCompanySettlement> creditCompanySettlements) {
+        this.creditCompanySettlements = creditCompanySettlements != null ? creditCompanySettlements : new ArrayList<>();
+    }
+
+    /**
+     * One credit company's commitment on an admission's Final Bill: Due
+     * (commitment bill netTotal), Paid (recomputed via the
+     * CREDIT_SETTLE_BY_COMPANY settlement pattern, never the stored
+     * paidAmount - see developer_docs/billing/inward-cc-settlement-tracking.md),
+     * and Balance (Due - Paid).
+     */
+    public static class CreditCompanySettlement implements Serializable {
+
+        private final String creditCompanyName;
+        private final double due;
+        private final double paid;
+        private final double balance;
+
+        public CreditCompanySettlement(String creditCompanyName, double due, double paid, double balance) {
+            this.creditCompanyName = creditCompanyName;
+            this.due = due;
+            this.paid = paid;
+            this.balance = balance;
+        }
+
+        public String getCreditCompanyName() { return creditCompanyName; }
+        public double getDue() { return due; }
+        public double getPaid() { return paid; }
+        public double getBalance() { return balance; }
     }
 
     public String getBhtNo() { return bhtNo; }
