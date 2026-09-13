@@ -229,7 +229,7 @@ public class LoginHistoryApi {
         String key = requestContext.getHeader("Finance");
         if (key == null || key.trim().isEmpty()) return null;
         ApiKey apiKey = apiKeyController.findApiKey(key);
-        if (apiKey == null || apiKey.getWebUser() == null || apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
+        if (apiKey == null || apiKey.isRetired() || apiKey.getWebUser() == null || apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
         WebUser u = apiKey.getWebUser();
         if (u.isRetired() || !u.isActivated()) return null;
         return u;

@@ -88,6 +88,7 @@ public class PaymentSchemeApi {
         if (key == null || key.trim().isEmpty()) return null;
         ApiKey apiKey = apiKeyController.findApiKey(key);
         if (apiKey == null) return null;
+        if (apiKey.isRetired()) return null;
         WebUser user = apiKey.getWebUser();
         if (user == null || user.isRetired() || !user.isActivated()) return null;
         if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;

@@ -336,7 +336,7 @@ public class StaffApi {
         String key = requestContext.getHeader("Finance");
         if (key == null || key.trim().isEmpty()) return null;
         ApiKey apiKey = apiKeyController.findApiKey(key);
-        if (apiKey == null || apiKey.getWebUser() == null
+        if (apiKey == null || apiKey.isRetired() || apiKey.getWebUser() == null
                 || apiKey.getDateOfExpiary() == null
                 || apiKey.getDateOfExpiary().before(new Date())) return null;
         WebUser u = apiKey.getWebUser();

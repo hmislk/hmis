@@ -16,6 +16,7 @@ import com.divudi.service.AnthropicApiService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -27,8 +28,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -355,7 +358,35 @@ public class AiChatController implements Serializable {
      */
     private String resolveHmisBaseUrl() {
         try {
-            return CommonFunctions.getBaseUrl();
+            String url = CommonFunctions.getBaseUrl();
+            URI uri = URI.create(url);
+            String host = uri.getHost();
+            boolean loopback = "localhost".equalsIgnoreCase(host)
+                    || "127.0.0.1".equals(host) || "::1".equals(host) || "[::1]".equals(host);
+            boolean https = "https".equalsIgnoreCase(uri.getScheme());
+            boolean forwardedHttps = false;
+            if (!https && !loopback) {
+                // Payara sits behind an NGINX reverse proxy in production (TLS terminated
+                // there), so the request Payara sees is plain HTTP even on an HTTPS
+                // deployment. Trust the standard forwarded-proto header in that case.
+                HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                        .getExternalContext().getRequest();
+                forwardedHttps = "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+            }
+            if (!https && !loopback && !forwardedHttps) {
+                LOG.log(Level.WARNING, "Refusing to send HMIS API key over non-HTTPS base URL: {0}", url);
+                return "";
+            }
+            if (forwardedHttps) {
+                // url still has the internal http:// scheme/port that AnthropicApiService
+                // would otherwise reconnect to literally. Rebuild it as the public https
+                // endpoint (default port 443) so the Finance header is actually sent
+                // over TLS end-to-end, not just validated as if it were.
+                String path = uri.getRawPath() == null ? "" : uri.getRawPath();
+                String query = uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery();
+                url = "https://" + host + path + query;
+            }
+            return url;
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Could not auto-detect HMIS base URL", e);
             return "";
