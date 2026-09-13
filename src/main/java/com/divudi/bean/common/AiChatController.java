@@ -16,6 +16,7 @@ import com.divudi.service.AnthropicApiService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -27,8 +28,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -355,7 +358,25 @@ public class AiChatController implements Serializable {
      */
     private String resolveHmisBaseUrl() {
         try {
-            return CommonFunctions.getBaseUrl();
+            String url = CommonFunctions.getBaseUrl();
+            URI uri = URI.create(url);
+            String host = uri.getHost();
+            boolean loopback = "localhost".equalsIgnoreCase(host)
+                    || "127.0.0.1".equals(host) || "::1".equals(host) || "[::1]".equals(host);
+            boolean https = "https".equalsIgnoreCase(uri.getScheme());
+            if (!https && !loopback) {
+                // Payara sits behind an NGINX reverse proxy in production (TLS terminated
+                // there), so the request Payara sees is plain HTTP even on an HTTPS
+                // deployment. Trust the standard forwarded-proto header in that case.
+                HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance()
+                        .getExternalContext().getRequest();
+                https = "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto"));
+            }
+            if (!https && !loopback) {
+                LOG.log(Level.WARNING, "Refusing to send HMIS API key over non-HTTPS base URL: {0}", url);
+                return "";
+            }
+            return url;
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Could not auto-detect HMIS base URL", e);
             return "";

@@ -345,6 +345,9 @@ public class AdmissionChargeApi {
         if (apiKey == null) {
             return null;
         }
+        if (apiKey.isRetired()) {
+            return null;
+        }
         WebUser user = apiKey.getWebUser();
         if (user == null || user.isRetired() || !user.isActivated()) {
             return null;
