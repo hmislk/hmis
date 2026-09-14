@@ -82,17 +82,11 @@
                                     </p:column>
 
                                     <p:column headerText="Qty"  class="text-end" width="8em">
-                                        <p:inputText 
-                                            autocomplete="off" 
-                                            id="qty" 
-                                            class="w-100 text-end"
-                                            value="#{bi.qty}"
-                                            label="Qty">
-                                            <p:ajax 
-                                                event="blur" 
-                                                update="itemList requestTotals" 
-                                                listener="#{transferRequestController.onEdit(bi)}"/>
-                                        </p:inputText>
+                                        <h:outputText
+                                            id="qty"
+                                            value="#{bi.qty}">
+                                            <f:convertNumber pattern="#,##0.#"/>
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Available Qty (Requesting Department)" class="text-end" width="10em">
@@ -118,10 +112,9 @@
                                     </p:column>
 
                                     <p:column headerText="Transfer Rate" class="text-end" width="8em">
-                                        <p:inputText value="#{bi.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
+                                        <h:outputText value="#{bi.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax event="blur" listener="#{transferRequestController.onLineGrossRateChange(bi)}" update="itemList requestTotals"/>
-                                        </p:inputText>
+                                        </h:outputText>
                                     </p:column>
 
                                     <p:column headerText="Transfer Value" class="text-end" width="8em">
