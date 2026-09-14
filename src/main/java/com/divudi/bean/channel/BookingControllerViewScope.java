@@ -7969,6 +7969,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
+        Bill currentBookingBill = getBillFacade().findWithLock(getBillSession().getBill().getId());
+        if (currentBookingBill != null && (currentBookingBill.getPaidAmount() != 0 || currentBookingBill.getPaidBill() != null)) {
+            JsfUtil.addErrorMessage("Payment Already Settled.");
+            return true;
+        }
+
         if (settlePaymentMethod == paymentMethod.OnCall) {
             JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
             return true;
