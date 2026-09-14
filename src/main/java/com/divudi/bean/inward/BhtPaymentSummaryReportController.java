@@ -84,6 +84,17 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     private List<BhtPaymentSummaryDTO> reportRows;
 
+    /**
+     * Snapshot of fromDate/toDate/dateBasis as of the last generateReport()
+     * call, so the PDF export subtitle (built on a later request, after the
+     * From/To/Date Basis inputs on the same form may have been edited again
+     * without re-clicking Generate) always describes reportRows and not
+     * whatever is currently sitting in the filter fields (issue #23446).
+     */
+    private Date reportFromDate;
+    private Date reportToDate;
+    private String reportDateBasis;
+
     private double grandTotalDeposits;
     private double grandTotalDepositCash;
     private double grandTotalDepositCard;
@@ -109,6 +120,10 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // Main generate method
     // -------------------------------------------------------------------------
     public void generateReport() {
+        reportFromDate = fromDate;
+        reportToDate = toDate;
+        reportDateBasis = dateBasis;
+
         reportRows = new ArrayList<>();
         grandTotalDeposits = 0;
         grandTotalDepositCash = 0;
@@ -510,9 +525,9 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
         com.lowagie.text.Font subFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA, 9);
         SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat());
-        String range = "From: " + (fromDate != null ? sdf.format(fromDate) : "-")
-                + "   To: " + (toDate != null ? sdf.format(toDate) : "-")
-                + "   Date Basis: " + ("admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date");
+        String range = "From: " + (reportFromDate != null ? sdf.format(reportFromDate) : "-")
+                + "   To: " + (reportToDate != null ? sdf.format(reportToDate) : "-")
+                + "   Date Basis: " + ("admissionDate".equals(reportDateBasis) ? "Admission Date" : "Discharge Date");
         com.lowagie.text.Paragraph subPara = new com.lowagie.text.Paragraph(range, subFont);
         subPara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
         subPara.setSpacingAfter(10f);
