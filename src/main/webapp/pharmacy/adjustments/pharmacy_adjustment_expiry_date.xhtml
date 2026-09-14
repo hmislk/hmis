@@ -310,8 +310,13 @@
 
                                     <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
                                                      onclick="return confirm('Are you sure you want to make this adjustment?');"
+                                                     rendered="#{!pharmacyAdjustmentController.requiresApproval or pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
                                                      action="#{pharmacyAdjustmentController.adjustExDate()}" />
-                                    <p:defaultCommand target="btnAdjust"/>
+                                    <p:commandButton id="btnSendForApproval" value="Send for Approval" ajax="false"  class="mt-2 ui-button-warning" icon="fa fa-paper-plane"
+                                                     onclick="return confirm('Are you sure you want to make this adjustment?');"
+                                                     rendered="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}"
+                                                     action="#{pharmacyAdjustmentController.adjustExDate()}" />
+                                    <p:defaultCommand target="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null ? 'btnSendForApproval' : 'btnAdjust'}"/>
                                 </p:panel>
                             </div>
                         </div>

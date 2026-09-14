@@ -25,7 +25,10 @@ public enum RequestType {
     
     PETTYCASH_APROVEL("Petty Cash Request" ,RequestCategory.APROVEL, "PTY-CH"),
     PETTYCASH_CANCELLATION("Cancel Petty Cash" ,RequestCategory.APROVEL, "CAN-PTY-CH"),
-    PHARMACY_RETAIL_SALE_RETURN_APPROVAL("Pharmacy Retail Sale Return Approval", RequestCategory.APROVEL, "PH-RET-APV");
+    PHARMACY_RETAIL_SALE_RETURN_APPROVAL("Pharmacy Retail Sale Return Approval", RequestCategory.APROVEL, "PH-RET-APV"),
+    PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL("Pharmacy Stock Quantity Adjustment Approval", RequestCategory.APROVEL, "PH-QTY-APV"),
+    PHARMACY_PRICE_ADJUSTMENT_APPROVAL("Pharmacy Price Adjustment Approval", RequestCategory.APROVEL, "PH-PRC-APV"),
+    PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL("Pharmacy Expiry Date Adjustment Approval", RequestCategory.APROVEL, "PH-EXP-APV");
     
     private final String displayName;
     private final RequestCategory category;

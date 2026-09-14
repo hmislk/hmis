@@ -138,8 +138,17 @@
                                                 ajax="false"
                                                 styleClass="ui-button-danger ui-button-lg"
                                                 icon="fas fa-dollar-sign"
+                                                rendered="#{!pharmacyAdjustmentController.requiresApproval or pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
                                                 action="#{pharmacyAdjustmentController.adjustPurchaseRates()}" />
-                                            <p:defaultCommand target="btnAdjust"/>
+                                            <p:commandButton
+                                                id="btnSendForApproval"
+                                                value="Send for Approval"
+                                                ajax="false"
+                                                styleClass="ui-button-danger ui-button-lg"
+                                                icon="fa fa-paper-plane"
+                                                rendered="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}"
+                                                action="#{pharmacyAdjustmentController.adjustPurchaseRates()}" />
+                                            <p:defaultCommand target="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null ? 'btnSendForApproval' : 'btnAdjust'}"/>
                                         </div>
                                     </div>
                                 </p:panel>

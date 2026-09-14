@@ -90,6 +90,12 @@
                                             <p:commandButton id="btnAdjust" value="Make Adjustments" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust this record?'))
                                                         return false;"
                                                              class="w-100 justify-content-end d-flex ui-button-warning" icon="fa-solid fa-sliders"
+                                                             rendered="#{!pharmacyAdjustmentController.requiresApproval or pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
+                                                             action="#{pharmacyAdjustmentController.adjustDepartmentStockAll}" ></p:commandButton>
+                                            <p:commandButton id="btnSendForApproval" value="Send for Approval" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust this record?'))
+                                                        return false;"
+                                                             class="w-100 justify-content-end d-flex ui-button-warning" icon="fa fa-paper-plane"
+                                                             rendered="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}"
                                                              action="#{pharmacyAdjustmentController.adjustDepartmentStockAll}" ></p:commandButton>
                                         </div>
                                     </div>

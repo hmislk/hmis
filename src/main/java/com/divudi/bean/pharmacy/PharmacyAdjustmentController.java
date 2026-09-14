@@ -12,10 +12,13 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.RequestStatus;
+import com.divudi.core.data.RequestType;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
@@ -23,6 +26,7 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
@@ -109,10 +113,26 @@ public class PharmacyAdjustmentController implements Serializable {
     private BillService billService;
     @Inject
     private StockSearchService stockSearchService;
+    @Inject
+    private com.divudi.bean.common.WebUserController webUserController;
+    @Inject
+    private com.divudi.bean.common.AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    private com.divudi.service.RequestService requestService;
+    @EJB
+    private com.divudi.core.facade.RequestFacade requestFacade;
 
 /////////////////////////
 //    Item selectedAlternative;
     private Bill deptAdjustmentPreBill;
+    /**
+     * Set only when the user has arrived at an adjustment page from the
+     * "approved requests" list (Stage 3) to fulfil a previously-approved
+     * request. When non-null, the direct-apply mutation runs even if
+     * {@link #requiresApproval()} is true - this is what distinguishes
+     * "Adjust" (direct) from "Send for Approval" on the target pages.
+     */
+    private Bill fulfillingApprovedRequest;
     private Bill saleBill;
     Bill bill;
     BillItem billItem;
@@ -1708,6 +1728,628 @@ public class PharmacyAdjustmentController implements Serializable {
         return tbi.getPharmaceuticalBillItem();
     }
 
+    // <editor-fold defaultstate="collapsed" desc="Submit-for-Approval (Stage 1 of the opt-in approval gate)">
+    /**
+     * Method #1 - {@link #adjustStockForDepartment()} (single-stock
+     * department quantity adjustment). Builds a request pre-bill using the
+     * same {@link #saveDeptStockAdjustmentBill()} /
+     * {@link #saveDeptAdjustmentBillItems()} helpers the direct-apply path
+     * uses, but under the REQUEST atomic and without touching stock.
+     */
+    private void submitStockQtyAdjustmentForApproval() {
+        saveDeptStockAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+        saveDeptAdjustmentBillItems();
+        deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
+
+        createPendingAdjustmentApprovalRequest(deptAdjustmentPreBill, RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitStockQtyAdjustmentForApproval", deptAdjustmentPreBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #2 - {@link #adjustDepartmentStockAll()} (bulk, positive
+     * quantities). One combined request pre-bill with one line item per
+     * changed stock, matching the shape of the direct-apply path.
+     */
+    private void submitDepartmentStockAllForApproval() {
+        deptAdjustmentPreBill = new PreBill();
+        boolean any = false;
+        for (Stock s : stocks) {
+            if (s.getStock() != s.getCalculated()) {
+                any = true;
+                stock = s;
+                saveDeptSingleStockAdjustmentBill();
+                getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_REQUEST);
+                getBillFacade().edit(getDeptAdjustmentPreBill());
+                saveDeptAdjustmentBillItems(s);
+            }
+        }
+        if (!any) {
+            JsfUtil.addErrorMessage("Please Select Correct Stock");
+            return;
+        }
+        deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
+
+        createPendingAdjustmentApprovalRequest(deptAdjustmentPreBill, RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitDepartmentStockAllForApproval", deptAdjustmentPreBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #3 - {@link #adjustDepartmentStockAllZero()} (bulk, zero-out).
+     * The direct-apply path creates one separate bill per changed stock
+     * (collected into {@link #bills}); mirrored here with one separate
+     * request (and Request record) per changed stock.
+     */
+    private void submitDepartmentStockAllZeroForApproval() {
+        bills = new ArrayList<>();
+        boolean any = false;
+        for (Stock s : stocks) {
+            if (s.getStock() != s.getCalculated()) {
+                any = true;
+                deptAdjustmentPreBill = null;
+                stock = s;
+                saveDeptAdjustmentBill();
+                getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_REQUEST);
+                getBillFacade().edit(getDeptAdjustmentPreBill());
+                saveDeptAdjustmentBillItems(s);
+                Bill requestBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
+                bills.add(requestBill);
+                createPendingAdjustmentApprovalRequest(requestBill, RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+            }
+        }
+        if (!any) {
+            JsfUtil.addErrorMessage("Please Select Correct Stock Qty");
+            return;
+        }
+
+        logAdjustmentAuditEvent("submitDepartmentStockAllZeroForApproval", null);
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #4 - {@link #adjustStaffStock()}.
+     */
+    private void submitStaffStockAdjustmentForApproval() {
+        saveStaffStockAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+        saveDeptAdjustmentBillItems();
+        deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
+
+        createPendingAdjustmentApprovalRequest(deptAdjustmentPreBill, RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitStaffStockAdjustmentForApproval", deptAdjustmentPreBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #5 - {@link #adjustPurchaseRates()} (bulk). Records the
+     * requested old/new purchase rate per stock via
+     * {@link #savePrAdjustmentBillItems} but never touches
+     * {@code ItemBatch.purcahseRate} or stock history.
+     */
+    private void submitPurchaseRateAdjustmentForApproval() {
+        savePurchaseRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+
+        boolean any = false;
+        for (StockDTO dto : ampStock) {
+            if (dto.getNewPurchaseRate() == null) {
+                continue;
+            }
+            any = true;
+            Stock s = stockFacade.find(dto.getStockId());
+            if (s == null) {
+                continue;
+            }
+            stock = s;
+
+            double oldPurchaseRate = dto.getPurchaseRate();
+            double newPurchaseRate = dto.getNewPurchaseRate();
+            double purchaseRateChange = newPurchaseRate - oldPurchaseRate;
+            double changeValue = dto.getStockQty() * purchaseRateChange;
+
+            savePrAdjustmentBillItems(dto, oldPurchaseRate, newPurchaseRate, purchaseRateChange, changeValue);
+        }
+
+        if (!any) {
+            JsfUtil.addErrorMessage("Enter at least one new purchase rate");
+            return;
+        }
+
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+
+        deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
+        createPendingAdjustmentApprovalRequest(deptAdjustmentPreBill, RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitPurchaseRateAdjustmentForApproval", deptAdjustmentPreBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #6 - {@link #adjustCostRates()} (bulk).
+     */
+    private void submitCostRateAdjustmentForApproval() {
+        saveCostRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+
+        boolean any = false;
+        for (StockDTO dto : costRateStockDtos) {
+            if (dto.getNewCostRate() == null) {
+                continue;
+            }
+            any = true;
+            Stock s = stockFacade.find(dto.getStockId());
+            if (s == null || s.getItemBatch() == null) {
+                continue;
+            }
+            stock = s;
+
+            double oldCostRate = s.getItemBatch().getCostRate() != null ? s.getItemBatch().getCostRate() : 0.0;
+            double newCostRate = dto.getNewCostRate();
+            double costRateChange = newCostRate - oldCostRate;
+            double changeValue = dto.getStockQty() * costRateChange;
+
+            saveCrAdjustmentBillItems(dto, oldCostRate, newCostRate, costRateChange, changeValue);
+        }
+
+        if (!any) {
+            JsfUtil.addErrorMessage("Enter at least one new cost rate");
+            return;
+        }
+
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+
+        deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
+        createPendingAdjustmentApprovalRequest(deptAdjustmentPreBill, RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitCostRateAdjustmentForApproval", deptAdjustmentPreBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #7 - {@link #adjustRetailRates()} (bulk).
+     */
+    private void submitRetailRateAdjustmentForApproval() {
+        saveSaleRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+
+        boolean any = false;
+        for (StockDTO dto : retailRateStockDtos) {
+            if (dto.getNewRetailRate() == null) {
+                continue;
+            }
+            any = true;
+            Stock s = stockFacade.find(dto.getStockId());
+            if (s == null) {
+                continue;
+            }
+            stock = s;
+
+            double oldRetailRate = dto.getRetailRate();
+            double newRetailRate = dto.getNewRetailRate();
+            double retailRateChange = newRetailRate - oldRetailRate;
+            double changeValue = dto.getStockQty() * retailRateChange;
+
+            saveRsrAdjustmentBillItems(dto, oldRetailRate, newRetailRate, retailRateChange, changeValue);
+        }
+
+        if (!any) {
+            JsfUtil.addErrorMessage("Enter at least one new retail rate");
+            return;
+        }
+
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+
+        deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
+        createPendingAdjustmentApprovalRequest(deptAdjustmentPreBill, RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitRetailRateAdjustmentForApproval", deptAdjustmentPreBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #8 - {@link #adjustWholesaleRate()} (single).
+     */
+    private void submitWholesaleRateAdjustmentForApproval() {
+        saveWholeSaleRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+        saveWsrAdjustmentBillItems();
+        Bill requestBill = billFacade.find(getDeptAdjustmentPreBill().getId());
+
+        createPendingAdjustmentApprovalRequest(requestBill, RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitWholesaleRateAdjustmentForApproval", requestBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+
+    /**
+     * Method #9 - {@link #adjustExDate()} (single).
+     */
+    private void submitExpiryDateAdjustmentForApproval() {
+        saveExpiryDateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST);
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+        saveExDateAdjustmentBillItems();
+        Bill requestBill = billFacade.find(getDeptAdjustmentPreBill().getId());
+
+        createPendingAdjustmentApprovalRequest(requestBill, RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL);
+        logAdjustmentAuditEvent("submitExpiryDateAdjustmentForApproval", requestBill.getId());
+
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Submitted for approval.");
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Approved Request Fulfilment (Stage 3 of the opt-in approval gate)">
+    /**
+     * Backing list for the new "approved requests" page
+     * ({@code pharmacy_adjustment_approved_requests.xhtml}): every
+     * pharmacy stock/rate/expiry-date adjustment {@link Request} that has
+     * been {@code APPROVED} for the logged-in user's department but whose
+     * pre-bill has not yet been fulfilled (i.e. its bill has no
+     * {@code forwardReferenceBill} yet - reusing the same
+     * {@code Bill.forwardReferenceBill}/{@code backwardReferenceBill} link
+     * {@code StockTakeApprovalService} already uses for its own approval
+     * flow). Queried fresh on every page visit - no caching.
+     */
+    public List<Request> getPendingApprovedAdjustmentRequests() {
+        if (getSessionController().getDepartment() == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("dept", getSessionController().getDepartment());
+        m.put("st", RequestStatus.APPROVED);
+        m.put("t1", RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+        m.put("t2", RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        m.put("t3", RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL);
+        String jpql = "select r from Request r "
+                + " where r.department = :dept "
+                + " and r.status = :st "
+                + " and r.requestType in (:t1, :t2, :t3) "
+                + " and r.bill.forwardReferenceBill is null "
+                + " order by r.approvedAt desc";
+        return requestFacade.findByJpql(jpql, m);
+    }
+
+    /**
+     * Stage 3 entry point. Called from the new "approved requests" list page
+     * (a separate frontend task) when the submitting user - or anyone with
+     * the same submit privilege - picks up an approved request to actually
+     * apply it. Re-checks the submit-side privilege and department
+     * server-side (the real security boundary for the 6 of 9 target pages
+     * that have no privilege check on the form itself), stages the exact
+     * controller fields the target adjustment page needs, and routes there
+     * so the user re-triggers the unmodified direct-apply {@code adjustXxx()}
+     * method themselves - approval never mutates anything itself.
+     */
+    public String processApprovedAdjustment(Bill approvedRequest) {
+        if (approvedRequest == null || approvedRequest.getId() == null) {
+            JsfUtil.addErrorMessage("No approved request selected.");
+            return "";
+        }
+        if (approvedRequest.getDepartment() == null
+                || getSessionController().getDepartment() == null
+                || approvedRequest.getDepartment().getId() == null
+                || getSessionController().getDepartment().getId() == null
+                || !approvedRequest.getDepartment().getId().equals(getSessionController().getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You must log in to "
+                    + (approvedRequest.getDepartment() != null ? approvedRequest.getDepartment().getName() : "the originating department")
+                    + " to fulfil this request.");
+            return "";
+        }
+
+        BillTypeAtomic atomic = approvedRequest.getBillTypeAtomic();
+        if (atomic == null) {
+            JsfUtil.addErrorMessage("Unrecognised approved request.");
+            return "";
+        }
+
+        List<BillItem> lines = approvedRequest.getBillItems();
+        if (lines == null || lines.isEmpty()) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("b", approvedRequest);
+            lines = getBillItemFacade().findByJpql("select bi from BillItem bi where bi.bill=:b order by bi.id", params);
+        }
+        if (lines == null || lines.isEmpty()) {
+            JsfUtil.addErrorMessage("This request has no line items.");
+            return "";
+        }
+
+        switch (atomic) {
+            case PHARMACY_STOCK_ADJUSTMENT_REQUEST:
+                if (lines.size() > 1) {
+                    if (!webUserController.hasPrivilege("PharmacyAdjustmentDepartmentStockBySingleItemQTY")
+                            || !webUserController.hasPrivilege("PharmacyStockAdjustmentSingleItem")) {
+                        JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                        return "";
+                    }
+                    return stageDepartmentStockAllFulfillment(approvedRequest, lines);
+                } else {
+                    if (!webUserController.hasPrivilege("PharmacyAdjustmentDepartmentStockQTY")) {
+                        JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                        return "";
+                    }
+                    return stageStockQtyFulfillment(approvedRequest, lines);
+                }
+            case PHARMACY_STAFF_STOCK_ADJUSTMENT_REQUEST:
+                if (!webUserController.hasPrivilege("PharmacyAdjustmentStaffStockAdjustment")) {
+                    JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                    return "";
+                }
+                return stageStaffStockFulfillment(approvedRequest, lines);
+            case PHARMACY_PURCHASE_RATE_ADJUSTMENT_REQUEST:
+                if (!webUserController.hasPrivilege("PharmacyAdjustmentPurchaseRate")) {
+                    JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                    return "";
+                }
+                return stagePurchaseRateFulfillment(approvedRequest, lines);
+            case PHARMACY_COST_RATE_ADJUSTMENT_REQUEST:
+                if (!webUserController.hasPrivilege("PharmacyAdjustmentCostRate")) {
+                    JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                    return "";
+                }
+                return stageCostRateFulfillment(approvedRequest, lines);
+            case PHARMACY_RETAIL_RATE_ADJUSTMENT_REQUEST:
+                if (!webUserController.hasPrivilege("PharmacyAdjustmentSaleRate")) {
+                    JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                    return "";
+                }
+                return stageRetailRateFulfillment(approvedRequest, lines);
+            case PHARMACY_WHOLESALE_RATE_ADJUSTMENT_REQUEST:
+                if (!webUserController.hasPrivilege("PharmacyAdjustmentWholeSaleRate")) {
+                    JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                    return "";
+                }
+                return stageWholesaleRateFulfillment(approvedRequest, lines);
+            case PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST:
+                if (!webUserController.hasPrivilege("PharmacyAdjustmentExpiryDate")) {
+                    JsfUtil.addErrorMessage("You are not authorized to fulfil this request.");
+                    return "";
+                }
+                return stageExpiryDateFulfillment(approvedRequest, lines);
+            default:
+                JsfUtil.addErrorMessage("Approval fulfilment is not supported for this request type.");
+                return "";
+        }
+    }
+
+    private String stageStockQtyFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        PharmaceuticalBillItem pbi = lines.get(0).getPharmaceuticalBillItem();
+        if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        stock = getStockFacade().find(pbi.getStock().getId());
+        qty = pbi.getAfterAdjustmentValue();
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_department?faces-redirect=true";
+    }
+
+    private String stageDepartmentStockAllFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        List<Stock> targetStocks = new ArrayList<>();
+        Item resolvedItem = null;
+        double totalQty = 0.0;
+        for (BillItem line : lines) {
+            PharmaceuticalBillItem pbi = line.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+                continue;
+            }
+            Stock liveStock = getStockFacade().find(pbi.getStock().getId());
+            if (liveStock == null) {
+                continue;
+            }
+            liveStock.setCalculated(pbi.getAfterAdjustmentValue());
+            targetStocks.add(liveStock);
+            totalQty += pbi.getAfterAdjustmentValue();
+            if (resolvedItem == null && liveStock.getItemBatch() != null) {
+                resolvedItem = liveStock.getItemBatch().getItem();
+            }
+        }
+        if (targetStocks.isEmpty()) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        stocks = targetStocks;
+        item = resolvedItem;
+        qty = totalQty != 0.0 ? totalQty : 1.0;
+        // Prevent the qty-keyup listener from re-distributing calculated targets -
+        // the per-stock values were fixed at submission time.
+        manualAdjust = true;
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_department_by_item?faces-redirect=true";
+    }
+
+    private String stageStaffStockFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        PharmaceuticalBillItem pbi = lines.get(0).getPharmaceuticalBillItem();
+        if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        stock = getStockFacade().find(pbi.getStock().getId());
+        qty = pbi.getAfterAdjustmentValue();
+        comment = approvedRequest.getComments();
+        selectedStaff = stock != null ? stock.getStaff() : null;
+        return "/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true";
+    }
+
+    /**
+     * Reloads live "current" values for a rate-adjustment fulfilment DTO -
+     * only the requested "new rate" comes from the request bill, never the
+     * "current" side, per the design note in the issue.
+     */
+    private StockDTO buildRateFulfillmentDto(BillItem line) {
+        PharmaceuticalBillItem pbi = line.getPharmaceuticalBillItem();
+        if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+            return null;
+        }
+        Stock liveStock = getStockFacade().find(pbi.getStock().getId());
+        if (liveStock == null || liveStock.getItemBatch() == null) {
+            return null;
+        }
+        ItemBatch ib = liveStock.getItemBatch();
+        StockDTO dto = new StockDTO();
+        dto.setStockId(liveStock.getId());
+        dto.setItemBatchId(ib.getId());
+        dto.setItemId(ib.getItem() != null ? ib.getItem().getId() : null);
+        dto.setItemName(ib.getItem() != null ? ib.getItem().getName() : null);
+        dto.setStockQty(liveStock.getStock());
+        dto.setPurchaseRate(ib.getPurcahseRate());
+        dto.setCostRate(ib.getCostRate());
+        dto.setRetailRate(ib.getRetailsaleRate());
+        dto.setWholesaleRate(ib.getWholesaleRate());
+        dto.setDateOfExpire(ib.getDateOfExpire());
+        dto.setBatchNo(ib.getBatchNo());
+        return dto;
+    }
+
+    private String stagePurchaseRateFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        List<StockDTO> dtos = new ArrayList<>();
+        Amp resolvedAmp = null;
+        for (BillItem line : lines) {
+            PharmaceuticalBillItem pbi = line.getPharmaceuticalBillItem();
+            StockDTO dto = buildRateFulfillmentDto(line);
+            if (dto == null) {
+                continue;
+            }
+            dto.setNewPurchaseRate(pbi.getAfterAdjustmentValue());
+            dtos.add(dto);
+            if (resolvedAmp == null && dto.getItemBatchId() != null) {
+                ItemBatch ib = itemBatchFacade.find(dto.getItemBatchId());
+                if (ib != null && ib.getItem() instanceof Amp) {
+                    resolvedAmp = (Amp) ib.getItem();
+                }
+            }
+        }
+        if (dtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        ampStock = dtos;
+        amp = resolvedAmp;
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_purchase_rate?faces-redirect=true";
+    }
+
+    private String stageCostRateFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        List<StockDTO> dtos = new ArrayList<>();
+        Amp resolvedAmp = null;
+        for (BillItem line : lines) {
+            PharmaceuticalBillItem pbi = line.getPharmaceuticalBillItem();
+            StockDTO dto = buildRateFulfillmentDto(line);
+            if (dto == null) {
+                continue;
+            }
+            dto.setNewCostRate(pbi.getAfterAdjustmentValue());
+            dtos.add(dto);
+            if (resolvedAmp == null && dto.getItemBatchId() != null) {
+                ItemBatch ib = itemBatchFacade.find(dto.getItemBatchId());
+                if (ib != null && ib.getItem() instanceof Amp) {
+                    resolvedAmp = (Amp) ib.getItem();
+                }
+            }
+        }
+        if (dtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        costRateStockDtos = dtos;
+        amp = resolvedAmp;
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_cost_rate?faces-redirect=true";
+    }
+
+    private String stageRetailRateFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        List<StockDTO> dtos = new ArrayList<>();
+        Amp resolvedAmp = null;
+        for (BillItem line : lines) {
+            PharmaceuticalBillItem pbi = line.getPharmaceuticalBillItem();
+            StockDTO dto = buildRateFulfillmentDto(line);
+            if (dto == null) {
+                continue;
+            }
+            dto.setNewRetailRate(pbi.getAfterAdjustmentValue());
+            dtos.add(dto);
+            if (resolvedAmp == null && dto.getItemBatchId() != null) {
+                ItemBatch ib = itemBatchFacade.find(dto.getItemBatchId());
+                if (ib != null && ib.getItem() instanceof Amp) {
+                    resolvedAmp = (Amp) ib.getItem();
+                }
+            }
+        }
+        if (dtos.isEmpty()) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        retailRateStockDtos = dtos;
+        amp = resolvedAmp;
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_retail_sale_rate?faces-redirect=true";
+    }
+
+    private String stageWholesaleRateFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        PharmaceuticalBillItem pbi = lines.get(0).getPharmaceuticalBillItem();
+        if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        stock = getStockFacade().find(pbi.getStock().getId());
+        wsr = pbi.getAfterAdjustmentValue();
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_whole_sale_rate?faces-redirect=true";
+    }
+
+    private String stageExpiryDateFulfillment(Bill approvedRequest, List<BillItem> lines) {
+        PharmaceuticalBillItem pbi = lines.get(0).getPharmaceuticalBillItem();
+        if (pbi == null || pbi.getStock() == null || pbi.getStock().getId() == null) {
+            JsfUtil.addErrorMessage("Request is missing stock information.");
+            return "";
+        }
+        fulfillingApprovedRequest = approvedRequest;
+        stock = getStockFacade().find(pbi.getStock().getId());
+        exDate = pbi.getAfterAdjustmentExpiry();
+        comment = approvedRequest.getComments();
+        return "/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true";
+    }
+    // </editor-fold>
+
     private boolean errorCheck() {
         if (getStock() == null) {
             JsfUtil.addErrorMessage("Please Select Stocke");
@@ -1940,6 +2582,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitStockQtyAdjustmentForApproval();
+            return;
+        }
+
         double stockQtyBeforeAdjustmentForBfd = getStockFacade().find(stock.getId()).getStock();
         double changingQtyForBfd = qty - stockQtyBeforeAdjustmentForBfd;
         double retailRateForBfd = stock.getItemBatch().getRetailsaleRate();
@@ -1983,6 +2630,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Stock Adjustment Successfully..");
 
+        linkFulfilledApprovedRequest(deptAdjustmentPreBill, "executeApprovedStockQtyAdjustment");
+
     }
 
     public void adjustStaffStock() {
@@ -1998,6 +2647,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitStaffStockAdjustmentForApproval();
+            return;
+        }
+
         saveStaffStockAdjustmentBill();
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
@@ -2009,12 +2663,20 @@ public class PharmacyAdjustmentController implements Serializable {
 
         JsfUtil.addSuccessMessage("Staff Stock Adjustment Successfully..");
 
+        linkFulfilledApprovedRequest(deptAdjustmentPreBill, "executeApprovedStaffStockAdjustment");
+
     }
 
     public void adjustDepartmentStockAll() {
         if (errorCheckAll()) {
             return;
         }
+
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitDepartmentStockAllForApproval();
+            return;
+        }
+
         deptAdjustmentPreBill = new PreBill();
         for (Stock s : stocks) {
             if (s.getStock() != s.getCalculated()) {
@@ -2034,12 +2696,20 @@ public class PharmacyAdjustmentController implements Serializable {
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         printPreview = true;
 
+        linkFulfilledApprovedRequest(getDeptAdjustmentPreBill(), "executeApprovedDepartmentStockAllAdjustment");
+
     }
 
     public void adjustDepartmentStockAllZero() {
         if (errorCheckAllZero()) {
             return;
         }
+
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitDepartmentStockAllZeroForApproval();
+            return;
+        }
+
         bills = new ArrayList<>();
         for (Stock s : stocks) {
             if (s.getStock() != s.getCalculated()) {
@@ -2057,6 +2727,10 @@ public class PharmacyAdjustmentController implements Serializable {
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         printPreview = true;
+
+        if (fulfillingApprovedRequest != null && !bills.isEmpty()) {
+            linkFulfilledApprovedRequest(bills.get(bills.size() - 1), "executeApprovedDepartmentStockAllZeroAdjustment");
+        }
 
     }
 
@@ -2130,6 +2804,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitPurchaseRateAdjustmentForApproval();
+            return;
+        }
+
         savePurchaseRateAdjustmentBill();
 
         boolean any = false;
@@ -2184,6 +2863,8 @@ public class PharmacyAdjustmentController implements Serializable {
         deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
         printPreview = true;
         JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully");
+
+        linkFulfilledApprovedRequest(deptAdjustmentPreBill, "executeApprovedPurchaseRateAdjustment");
     }
 
     public void adjustCostRates() {
@@ -2194,6 +2875,11 @@ public class PharmacyAdjustmentController implements Serializable {
 
         if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitCostRateAdjustmentForApproval();
             return;
         }
 
@@ -2242,6 +2928,8 @@ public class PharmacyAdjustmentController implements Serializable {
         deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
         printPreview = true;
         JsfUtil.addSuccessMessage("Cost Rate Adjustment Successfully");
+
+        linkFulfilledApprovedRequest(deptAdjustmentPreBill, "executeApprovedCostRateAdjustment");
     }
 
     public void adjustRetailRates() {
@@ -2252,6 +2940,11 @@ public class PharmacyAdjustmentController implements Serializable {
 
         if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitRetailRateAdjustmentForApproval();
             return;
         }
 
@@ -2309,6 +3002,8 @@ public class PharmacyAdjustmentController implements Serializable {
         deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
         printPreview = true;
         JsfUtil.addSuccessMessage("Retail Sale Rate Adjustment Successfully");
+
+        linkFulfilledApprovedRequest(deptAdjustmentPreBill, "executeApprovedRetailRateAdjustment");
     }
 
     public void adjustExDate() {
@@ -2331,6 +3026,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitExpiryDateAdjustmentForApproval();
+            return;
+        }
+
         saveExpiryDateAdjustmentBill();
         PharmaceuticalBillItem ph = saveExDateAdjustmentBillItems();
         getStock().getItemBatch().setDateOfExpire(exDate);
@@ -2345,6 +3045,8 @@ public class PharmacyAdjustmentController implements Serializable {
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Expiry Date Adjustment Successfully..");
+
+        linkFulfilledApprovedRequest(bill, "executeApprovedExpiryDateAdjustment");
 
     }
 
@@ -2409,6 +3111,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (requiresApproval() && fulfillingApprovedRequest == null) {
+            submitWholesaleRateAdjustmentForApproval();
+            return;
+        }
+
         saveWholeSaleRateAdjustmentBill();
         saveWsrAdjustmentBillItems();
         getStock().getItemBatch().setWholesaleRate(wsr);
@@ -2417,6 +3124,8 @@ public class PharmacyAdjustmentController implements Serializable {
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Wholesale Rate Adjustment Successfully..");
+
+        linkFulfilledApprovedRequest(bill, "executeApprovedWholesaleRateAdjustment");
 
     }
 
@@ -2583,6 +3292,122 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setDeptAdjustmentPreBill(Bill deptAdjustmentPreBill) {
         this.deptAdjustmentPreBill = deptAdjustmentPreBill;
+    }
+
+    public Bill getFulfillingApprovedRequest() {
+        return fulfillingApprovedRequest;
+    }
+
+    public void setFulfillingApprovedRequest(Bill fulfillingApprovedRequest) {
+        this.fulfillingApprovedRequest = fulfillingApprovedRequest;
+    }
+
+    /**
+     * Whether pharmacy stock-quantity, rate and expiry-date adjustments
+     * should be routed through an approval request instead of applying
+     * immediately. Resolved per-department-first via
+     * {@link ConfigOptionApplicationController#getBooleanValueByKeyForDepartment(String, Department, boolean)}.
+     * Defaults to {@code false} so existing behaviour is unchanged unless an
+     * admin explicitly opts in.
+     */
+    private boolean requiresApproval() {
+        return configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                "Pharmacy Stock & Price Adjustments - Require Approval",
+                getSessionController().getDepartment(),
+                false);
+    }
+
+    /**
+     * Public accessor so the adjustment pages can switch between the
+     * "Adjust" and "Send for Approval" buttons via EL
+     * ({@code #{pharmacyAdjustmentController.requiresApproval}}).
+     */
+    public boolean isRequiresApproval() {
+        return requiresApproval();
+    }
+
+    /**
+     * Shared audit-log helper for the approval-gate feature (submission,
+     * completion). Single synchronous "Completed" event - there is no
+     * separate started/completed pair since these calls are not long
+     * running.
+     */
+    private void logAdjustmentAuditEvent(String eventTrigger, Long objectId) {
+        AuditEvent auditEvent = new AuditEvent();
+        Date now = new Date();
+        auditEvent.setEventDataTime(now);
+        auditEvent.setEventEndTime(now);
+        auditEvent.setEventStatus("Completed");
+        auditEvent.setEventTrigger(eventTrigger);
+        auditEvent.setEntityType("Bill");
+        if (objectId != null) {
+            auditEvent.setObjectId(objectId);
+        }
+        if (getSessionController().getDepartment() != null) {
+            auditEvent.setDepartmentId(getSessionController().getDepartment().getId());
+        }
+        if (getSessionController().getInstitution() != null) {
+            auditEvent.setInstitutionId(getSessionController().getInstitution().getId());
+        }
+        if (getSessionController().getLoggedUser() != null) {
+            auditEvent.setWebUserId(getSessionController().getLoggedUser().getId());
+        }
+        auditEventApplicationController.logAuditEvent(auditEvent);
+    }
+
+    /**
+     * Creates the PENDING {@link Request} that puts a submitted adjustment
+     * bill into the common approval queue
+     * ({@code common/request/view_request.xhtml}). Mirrors
+     * {@code RequestController.createRequestForPharmacyRetailSaleReturn()}.
+     */
+    private Request createPendingAdjustmentApprovalRequest(Bill requestBill, RequestType requestType) {
+        Request newlyRequest = new Request();
+        newlyRequest.setBill(requestBill);
+        newlyRequest.setRequester(getSessionController().getLoggedUser());
+        newlyRequest.setRequestAt(new Date());
+        newlyRequest.setRequestReason(comment);
+        newlyRequest.setRequestType(requestType);
+        newlyRequest.setStatus(RequestStatus.PENDING);
+        newlyRequest.setInstitution(getSessionController().getInstitution());
+        newlyRequest.setDepartment(getSessionController().getDepartment());
+        String reqNo = getBillNumberBean().departmentRequestNumberGeneratorYearly(getSessionController().getDepartment(), requestType);
+        newlyRequest.setRequestNo(reqNo);
+        requestService.save(newlyRequest, getSessionController().getLoggedUser());
+        requestBill.setCurrentRequest(newlyRequest);
+        getBillFacade().edit(requestBill);
+        return newlyRequest;
+    }
+
+    /**
+     * Step 7 of the approval workflow. Called at the very end of each of the
+     * 9 direct-apply adjustment methods, after the real bill has been
+     * created and the mutation applied. No-ops unless the caller arrived at
+     * that method via {@link #processApprovedAdjustment(Bill)} (i.e.
+     * {@link #fulfillingApprovedRequest} is set) - in which case it
+     * cross-links the real bill with the originating request bill and marks
+     * the originating {@link Request} COMPLETED.
+     */
+    private void linkFulfilledApprovedRequest(Bill realBill, String eventTrigger) {
+        if (fulfillingApprovedRequest == null) {
+            return;
+        }
+        if (realBill != null) {
+            realBill.setBackwardReferenceBill(fulfillingApprovedRequest);
+            getBillFacade().edit(realBill);
+        }
+        fulfillingApprovedRequest.setForwardReferenceBill(realBill);
+        getBillFacade().edit(fulfillingApprovedRequest);
+        Request originatingRequest = fulfillingApprovedRequest.getCurrentRequest();
+        if (originatingRequest != null) {
+            originatingRequest.setCompleted(true);
+            originatingRequest.setCompletedBy(getSessionController().getLoggedUser());
+            originatingRequest.setCompletedAt(new Date());
+            originatingRequest.setStatus(RequestStatus.COMPLETED);
+            requestService.save(originatingRequest, getSessionController().getLoggedUser());
+        }
+        logAdjustmentAuditEvent(eventTrigger, realBill != null ? realBill.getId() : null);
+        fulfillingApprovedRequest = null;
     }
 
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {

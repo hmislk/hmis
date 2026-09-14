@@ -669,6 +669,9 @@ public enum Privileges {
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
     PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
+    PharmacyStockAdjustmentApproval("Pharmacy Stock Adjustment Approval"),
+    PharmacyPriceAdjustmentApproval("Pharmacy Price Adjustment Approval"),
+    PharmacyExpiryDateAdjustmentApproval("Pharmacy Expiry Date Adjustment Approval"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     ArchiveOldStockHistory("Archive Old StockHistory Records"),
@@ -1528,6 +1531,9 @@ public enum Privileges {
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
             case PharmacyAdjustmentCreateBatch:
+            case PharmacyStockAdjustmentApproval:
+            case PharmacyPriceAdjustmentApproval:
+            case PharmacyExpiryDateAdjustmentApproval:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
             case ArchiveOldStockHistory:
