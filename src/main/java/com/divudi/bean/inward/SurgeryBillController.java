@@ -417,6 +417,10 @@ public class SurgeryBillController implements Serializable {
         // no screen still listed. No-ops for surgery-added services, whose
         // PatientItem carries no BillItem of its own.
         inwardTimedItemController.retireTimedServiceBill(patientItem);
+        // Reuses InwardTimedItemController's audit helper rather than
+        // duplicating it, same as retireTimedServiceBill above (#23722).
+        PatientEncounter pe = surgeryBill != null ? surgeryBill.getPatientEncounter() : patientItem.getPatientEncounter();
+        inwardTimedItemController.logTimedServiceRemovalAudit(patientItem, pe);
         refreshTimedEncounterComponents();
     }
 
