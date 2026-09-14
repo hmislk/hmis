@@ -36,6 +36,7 @@ GET /api/services/search
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | No | Name substring (case-insensitive) |
+| `code` | string | No | Item code substring. Use this to make a bulk load idempotent — item code is the natural key a spreadsheet of services carries |
 | `serviceType` | string | No | `OPD`, `Inward`, or omit for both |
 | `categoryId` | long | No | Filter by ServiceCategory ID |
 | `inactive` | boolean | No | `true` = inactive only, `false` = active only |
@@ -65,10 +66,18 @@ curl -H "Finance: <key>" \
       "inactive": false,
       "categoryId": 5,
       "categoryName": "Surgical",
+      "financialCategoryId": 88,
+      "financialCategoryName": "INCOME ACCOUNTS:Operation Theatre Charges",
       "inwardChargeType": "WardProcedures"
     }
   ]
 }
+```
+
+Look a service up by its code before creating it:
+
+```bash
+curl -H "Finance: <key>" "https://host/hmis/api/services/search?code=SM-RH-0122&limit=5"
 ```
 
 ---
@@ -117,7 +126,13 @@ curl -H "Finance: <key>" "https://host/hmis/api/services/101"
         "discountAllowed": false,
         "retired": false,
         "institutionId": 1,
-        "institutionName": "General Hospital"
+        "institutionName": "General Hospital",
+        "forInstitutionId": null,
+        "forInstitutionName": null,
+        "forDepartmentId": null,
+        "forDepartmentName": null,
+        "forCategoryId": null,
+        "forCategoryName": null
       }
     ],
     "message": "Service found successfully"
@@ -142,7 +157,8 @@ Content-Type: application/json
 | `code` | string | No | Auto-generated from name if omitted |
 | `printName` | string | No | Display name for printing |
 | `fullName` | string | No | Full descriptive name |
-| `categoryId` | long | No | ServiceCategory ID |
+| `categoryId` | long | No | Category ID (any Category subtype, not only `ServiceCategory`) |
+| `financialCategoryId` | long | No | Financial category / income account — a `Category` whose `categoryType` is `FINANCIAL_CATEGORY`. Look one up with [`/item-categories/search`](#search-any-category) |
 | `institutionId` | long | No | Institution ID |
 | `departmentId` | long | No | Department ID |
 | `inwardChargeType` | string | Req. for Inward | Enum value from [InwardChargeType reference](#inwardchargetype-reference) |
@@ -193,7 +209,8 @@ PUT /api/services/{id}
 Content-Type: application/json
 ```
 
-Only provided (non-null) fields are updated.
+Only provided (non-null) fields are updated. Accepts the same fields as create, including
+`financialCategoryId`.
 
 **Example:**
 ```bash
@@ -272,6 +289,13 @@ Content-Type: application/json
 
 After adding a fee, the service's `total` and `totalForForeigner` are automatically recalculated.
 
+Every fee in a response also carries `forInstitutionId`/`forInstitutionName`,
+`forDepartmentId`/`forDepartmentName` and `forCategoryId`/`forCategoryName`. These are the
+scoping keys: a **base** fee has all three null, a **site or collecting-centre** fee carries
+`forInstitution`, and a **category-specific** fee carries `forCategory`. Note that `institutionId`
+is a different field — it is who the fee is payable to, not what scopes it — so without the `for*`
+keys a base fee cannot be told apart from a scoped one.
+
 **Example:**
 ```bash
 curl -X POST \
@@ -311,7 +335,79 @@ Soft-deletes the fee (sets `retired=true`). Service totals are recalculated.
 
 ---
 
-### C. Service Category CRUD
+#### Recalculate Totals
+```
+POST /api/services/{id}/recalculate-totals
+```
+
+Recomputes the item's `total` and `totalForForeigner` by summing its current non-retired fees,
+and persists them.
+
+These two fields are denormalised. They go stale whenever fees are written outside this API
+(bulk fee uploads, direct edits), and several list screens and reports read them rather than
+summing fees — so a stale `0.00` reads as "this service has no charge" even though its fees are
+correct. Until this endpoint existed the recalculation only ran as a side effect of a fee
+create/update/delete, so the only way to repair a total was to pointlessly rewrite a fee.
+
+Works for any `Item` subtype, not only services.
+
+```bash
+curl -X POST -H "Finance: <key>"   "https://host/hmis/api/services/101/recalculate-totals"
+```
+
+**Response:** the full `ServiceResponseDTO` with the refreshed totals.
+
+> **Caution:** the recalculation sums *every* non-retired fee on the item, including
+> site-, department- and collecting-centre-specific ones. If an item carries duplicate fee rows
+> (the same charge recorded once as a base fee and once scoped to an institution), the recalculated
+> total will be the sum of both. Check `forInstitution`/`forDepartment`/`forCategory` on
+> `GET /api/services/{id}/fees` first.
+
+---
+
+### C. Category Lookup
+
+#### Search Any Category
+```
+GET /api/services/item-categories/search?query=theatre&categoryType=FINANCIAL_CATEGORY&limit=20
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | No | Name substring |
+| `categoryType` | string | No | A `CategoryType` name, e.g. `FINANCIAL_CATEGORY`, `SERVICE_CATEGORY` |
+| `limit` | int | No | Max results (default 30, max 100) |
+
+`/categories/search` (below) only sees rows whose DTYPE is `ServiceCategory`, yet a service's
+`categoryId` may point at any `Category` subtype and its `financialCategoryId` is a plain
+`Category` of type `FINANCIAL_CATEGORY`. Without this endpoint a caller can set a `categoryId`
+it has no way to look up.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 88,
+      "name": "INCOME ACCOUNTS:Operation Theatre Charges",
+      "code": "income_accounts_operation_theatre_charges",
+      "categoryType": "FINANCIAL_CATEGORY",
+      "retired": false
+    }
+  ]
+}
+```
+
+An invalid `categoryType` returns `400`. Rows created before the `categoryType` column was
+populated return `"categoryType": null` and are only reachable without the filter.
+
+---
+
+#### ServiceCategory CRUD
 
 #### Search Categories
 ```

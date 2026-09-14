@@ -27,10 +27,10 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
- * Controller for BHT Deposit Detail Report.
- * One row per individual deposit payment. CC settlements excluded.
- * Also covers Inpatient Payment and Post Discharge (post-final-bill) payment
- * rows via the {@code reportType} filter, not just deposits.
+ * Controller for BHT Deposit Detail Report. One row per individual deposit
+ * payment. CC settlements excluded. Also covers Inpatient Payment and Post
+ * Discharge (post-final-bill) payment rows via the {@code reportType} filter,
+ * not just deposits.
  */
 @Named
 @SessionScoped
@@ -42,7 +42,7 @@ public class BhtDepositDetailReportController implements Serializable {
     private PaymentFacade paymentFacade;
 
     private Date fromDate = startOfCurrentMonth();
-    private Date toDate = new Date();
+    private Date toDate = endOfCurrentMonth();
     private String dateBasis = "dischargeDate";
     private String reportType = "DEPOSIT";
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
@@ -189,7 +189,7 @@ public class BhtDepositDetailReportController implements Serializable {
 
     public void makeNull() {
         fromDate = startOfCurrentMonth();
-        toDate = new Date();
+        toDate = endOfCurrentMonth();
         dateBasis = "dischargeDate";
         reportType = "DEPOSIT";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
@@ -213,39 +213,110 @@ public class BhtDepositDetailReportController implements Serializable {
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
+    
+    private static Date endOfCurrentMonth() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
 
-    public Date getFromDate() { return fromDate; }
-    public void setFromDate(Date fromDate) { this.fromDate = fromDate; }
+    public Date getFromDate() {
+        return fromDate;
+    }
 
-    public Date getToDate() { return toDate; }
-    public void setToDate(Date toDate) { this.toDate = toDate; }
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
 
-    public String getDateBasis() { return dateBasis; }
-    public void setDateBasis(String dateBasis) { this.dateBasis = dateBasis; }
+    public Date getToDate() {
+        return toDate;
+    }
 
-    public String getReportType() { return reportType; }
-    public void setReportType(String reportType) { this.reportType = reportType; }
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
 
-    public AdmissionStatus getAdmissionStatus() { return admissionStatus; }
-    public void setAdmissionStatus(AdmissionStatus admissionStatus) { this.admissionStatus = admissionStatus; }
+    public String getDateBasis() {
+        return dateBasis;
+    }
 
-    public AdmissionType getAdmissionType() { return admissionType; }
-    public void setAdmissionType(AdmissionType admissionType) { this.admissionType = admissionType; }
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
 
-    public PaymentMethod getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getReportType() {
+        return reportType;
+    }
 
-    public Institution getInstitution() { return institution; }
-    public void setInstitution(Institution institution) { this.institution = institution; }
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
 
-    public Institution getSite() { return site; }
-    public void setSite(Institution site) { this.site = site; }
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
 
-    public Department getDepartment() { return department; }
-    public void setDepartment(Department department) { this.department = department; }
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
 
-    public List<BhtPaymentDetailDTO> getReportRows() { return reportRows; }
-    public double getGrandTotal() { return grandTotal; }
-    public List<PaymentMethod> getUsedPaymentMethods() { return usedPaymentMethods; }
-    public Map<PaymentMethod, Double> getTotalByMethod() { return totalByMethod; }
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public List<BhtPaymentDetailDTO> getReportRows() {
+        return reportRows;
+    }
+
+    public double getGrandTotal() {
+        return grandTotal;
+    }
+
+    public List<PaymentMethod> getUsedPaymentMethods() {
+        return usedPaymentMethods;
+    }
+
+    public Map<PaymentMethod, Double> getTotalByMethod() {
+        return totalByMethod;
+    }
 }

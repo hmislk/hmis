@@ -171,22 +171,162 @@
                             </f:facet>
 
                             <div class="d-flex justify-content-center">
-                                <h:panelGroup id="gpBillPreview" >
+                                <h:panelGroup id="gpBillPreview" layout="block" class="w-100">
 
-                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" >
-                                        <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" layout="block">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="originalA4DepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="originalA4DepositBillPreview">
+                                                        <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="false"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="duplicateA4DepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="duplicateA4DepositBillPreview">
+                                                        <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" >
-                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false)}" layout="block">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="originalFiveFiveDepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="originalFiveFiveDepositBillPreview">
+                                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="false" />
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="duplicateFiveFiveDepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="duplicateFiveFiveDepositBillPreview">
+                                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
-                                        <bill:posPaperPaymentBill bill="#{inwardSearch.bill}"/>
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" layout="block">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="originalPosDepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="originalPosDepositBillPreview" style="display:flex; justify-content:center;">
+                                                        <bill:posPaperPaymentBill bill="#{inwardSearch.bill}" duplicate="false"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="duplicatePosDepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="duplicatePosDepositBillPreview" style="display:flex; justify-content:center;">
+                                                        <bill:posPaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
-                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
-                                        <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" layout="block">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="originalCustom3DepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="originalCustom3DepositBillPreview">
+                                                        <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="false" />
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-print" value="Print" class="ui-button-info" ajax="false">
+                                                                    <p:printer target="duplicateCustom3DepositBillPreview" ></p:printer>
+                                                                </p:commandButton>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <h:panelGroup id="duplicateCustom3DepositBillPreview">
+                                                        <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
+                                                    </h:panelGroup>
+                                                </p:panel>
+                                            </div>
+                                        </div>
                                     </h:panelGroup>
 
                                 </h:panelGroup>

@@ -142,6 +142,8 @@ public class ItemController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    ConfigOptionController configOptionController;
+    @Inject
     InvestigationController investigationController;
     @Inject
     SpecialityController specialityController;
@@ -3342,30 +3344,96 @@ public class ItemController implements Serializable {
         JsfUtil.addSuccessMessage("All Servies and Investigations were made to allow discounts.");
     }
 
+    /**
+     * Config keys selecting which items the theatre surgery service bill
+     * (theater/inward_bill_surgery_service.xhtml) offers in its autocomplete.
+     *
+     * Three booleans rather than one enum, matching the established
+     * multi-boolean mode idiom elsewhere in the app (e.g. "Pharmacy Transfer is
+     * by Cost Rate" / "by Purchase Rate" / "by Retail Rate"). They are read in
+     * a fixed precedence, most restrictive first, so a hospital that ticks more
+     * than one still gets a defined result; the last is the default mode and is
+     * the {@code else} branch.
+     */
+    public static final String THEATRE_LIST_MAPPED_SERVICES
+            = "Theatre Surgery Bill - List Services Mapped to the Logged Department";
+    public static final String THEATRE_LIST_ALL_SERVICES
+            = "Theatre Surgery Bill - List All Services";
+    public static final String THEATRE_LIST_THEATRE_SERVICES_ONLY
+            = "Theatre Surgery Bill - List Theatre Services Only";
+
+    /**
+     * Items offered by the theatre surgery service bill's autocomplete.
+     *
+     * Which items qualify is configurable per department: a hospital that
+     * maintains a dedicated Theatre Service master keeps the default
+     * (theatre services only), while one that bills theatre consumables from
+     * its existing OPD/Inward service master turns on "List All Services", or
+     * maps the items it wants to the theatre department and turns on "List
+     * Services Mapped to the Logged Department".
+     *
+     * Read through {@link ConfigOptionController#getBooleanValueByKeyReadOnly}
+     * so the lookup is department-scoped-key first then application-wide, and
+     * so an autocomplete keystroke never persists a ConfigOption row.
+     */
     public List<Item> completeTheatreItems(String query) {
-        List<Item> suggestions;
-        HashMap m = new HashMap();
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        boolean listMapped = configOptionController.getBooleanValueByKeyReadOnly(
+                THEATRE_LIST_MAPPED_SERVICES, false);
+        boolean listAllServices = configOptionController.getBooleanValueByKeyReadOnly(
+                THEATRE_LIST_ALL_SERVICES, false);
+        boolean listTheatreServicesOnly = configOptionController.getBooleanValueByKeyReadOnly(
+                THEATRE_LIST_THEATRE_SERVICES_ONLY, true);
+
+        // THEATRE_LIST_THEATRE_SERVICES_ONLY is a declarative marker for the
+        // default mode rather than a live switch: it names the mode the final
+        // branch runs, but because that branch is the default, its value cannot
+        // change the outcome. Read here, with the all-disabled guard, so the
+        // intent is explicit and the key is not silently ignored. This mirrors
+        // TransferIssueController's three transfer-rate booleans, which have
+        // the same shape.
+        if (!listMapped && !listAllServices && !listTheatreServicesOnly) {
+            listTheatreServicesOnly = true;
+        }
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + query.trim().toUpperCase() + "%");
         String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
+
+        if (listMapped) {
+            sql = "select im.item from ItemMapping im "
+                    + " where im.retired=false "
+                    + " and im.item.retired=false "
+                    + " and (im.item.inactive=false or im.item.inactive is null) "
+                    + " and im.department=:dept "
+                    + " and UPPER(im.item.name) like :q"
+                    + " order by im.item.name";
+            m.put("dept", getSessionController().getDepartment());
+        } else if (listAllServices) {
+            // Service is the common superclass of InwardService and
+            // TheatreService, so this covers all three in one query.
+            sql = "select c from Service c "
+                    + " where c.retired=false "
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + " and UPPER(c.name) like :q"
+                    + " order by c.name";
         } else {
+            // listTheatreServicesOnly — the default mode: the dedicated
+            // Theatre Service master only.
             sql = "select c from Item c "
                     + " where c.retired=false "
+                    + " and (c.inactive=false or c.inactive is null) "
                     + " and type(c)=:the "
-                    //                    + " and type(c)!=:pac "
-                    //                    + " and (type(c)=:ser "
-                    //                    + " or type(c)=:inv "
-                    //                    + " or type(c)=:the)  "
-                    + " and (c.name) like :q"
+                    + " and UPPER(c.name) like :q"
                     + " order by c.name";
-//            m.put("pac", Packege.class);
-//            m.put("ser", Service.class);
-//            m.put("inv", Investigation.class);
             m.put("the", TheatreService.class);
-            m.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, m, 20);
         }
-        return suggestions;
+
+        List<Item> suggestions = getFacade().findByJpql(sql, m, 20);
+        return suggestions != null ? suggestions : new ArrayList<>();
     }
 
     Category category;

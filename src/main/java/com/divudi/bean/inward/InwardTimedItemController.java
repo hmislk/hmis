@@ -28,6 +28,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
@@ -37,13 +38,16 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -96,6 +100,8 @@ public class InwardTimedItemController implements Serializable {
     EncounterComponentFacade encounterComponentFacade;
     @EJB
     BillNumberGenerator billNumberBean;
+    @EJB
+    private AuditService auditService;
 
     Date frmDate;
     Date toDate;
@@ -416,11 +422,45 @@ public class InwardTimedItemController implements Serializable {
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
             retireTimedServiceBill(patientItem);
+            logTimedServiceRemovalAudit(patientItem, patientItem.getPatientEncounter());
 
             createPatientItems();
 
             JsfUtil.addSuccessMessage("Removed successfully.");
         }
+    }
+
+    /**
+     * Links the removal to the encounter's event-history timeline (#23722) —
+     * without this, a removed timed service's own Bill drops out of the
+     * timeline's {@code retired=false} billing query with nothing left behind
+     * to show it was ever there.
+     * <p>
+     * Public so {@code SurgeryBillController#removeTimeService} can call it
+     * rather than duplicate this, the same reuse pattern already used by
+     * {@link #retireTimedServiceBill(PatientItem)}.
+     */
+    public void logTimedServiceRemovalAudit(PatientItem patientItem, PatientEncounter pe) {
+        if (auditService == null || patientItem == null || pe == null) {
+            return;
+        }
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("item", patientItem.getItem() != null ? patientItem.getItem().getName() : null);
+        before.put("fromTime", patientItem.getFromTime());
+        before.put("toTime", patientItem.getToTime());
+        before.put("serviceValue", patientItem.getServiceValue());
+
+        WebUser loggedUser = getSessionController().getLoggedUser();
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("retired", true);
+        // WebUserPerson can be null (see SessionController#selectDepartment's
+        // own "No person" guard) - fall back to the WebUser's own name rather
+        // than NPE after the retirement above has already been persisted.
+        after.put("removedBy", loggedUser.getWebUserPerson() != null
+                ? loggedUser.getWebUserPerson().getName() : loggedUser.getName());
+
+        auditService.logEncounterAudit(pe, "Remove Timed Service",
+                before, after, loggedUser, "PatientItem", patientItem.getId());
     }
 
     /**

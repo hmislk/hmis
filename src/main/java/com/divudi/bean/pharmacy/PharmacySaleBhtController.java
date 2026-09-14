@@ -61,6 +61,7 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -484,7 +485,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (tmp.getReferanceBillItem() != null) {
-            double remaining = getRemainingQuantityForItem(tmp.getReferanceBillItem());
+            double remaining = getRemainingQuantityForItem(tmp.getReferanceBillItem(), tmp.getItem());
             if (tmp.getQty() > remaining) {
                 JsfUtil.addErrorMessage("Cannot issue " + tmp.getQty()
                         + " units of " + tmp.getItem().getName() + ". Only " + remaining + " units remaining to be issued.");
@@ -1792,7 +1793,7 @@ public class PharmacySaleBhtController implements Serializable {
                 continue;
             }
             BillItem freshRefItem = billItemFacade.findWithoutCache(refItem.getId());
-            freshRefItem.setRemainingQty(getRemainingQuantityForItem(freshRefItem));
+            freshRefItem.setRemainingQty(getRemainingQuantityForItem(freshRefItem, null));
             billItemFacade.editAndCommit(freshRefItem);
         }
 
@@ -2202,7 +2203,22 @@ public class PharmacySaleBhtController implements Serializable {
 //        getBillFacade().edit(bill);
     }
     
-    public double getRemainingQuantityForItem(BillItem referenceItem) {
+    /**
+     * Remaining quantity (in the *issuing* item's units) still owed against a BHT
+     * medicine request line, capped by what's already been issued/cancelled/returned
+     * against it.
+     *
+     * When the issuing item differs from the originally requested item (a
+     * pharmacist substitute — see {@link com.divudi.service.pharmacy.PharmacySubstituteService}),
+     * the requested-item unit count is scaled by the strength ratio between the two
+     * items so a weaker-strength substitute can be issued in a proportionally higher
+     * quantity for the same total dose (e.g. 10x500mg requested -> 20x250mg allowed).
+     * Falls back to the plain unit-count cap (no scaling) whenever either item is
+     * missing strength master data or the two don't share a strength unit — this
+     * cap must never block or allow unbounded issuing just because master data is
+     * incomplete. See issue #23718.
+     */
+    public double getRemainingQuantityForItem(BillItem referenceItem, Item issuingItem) {
         if (referenceItem == null || referenceItem.getId() == null) {
             return 0.0;
         }
@@ -2223,7 +2239,25 @@ public class PharmacySaleBhtController implements Serializable {
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
         double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
-        return Math.max(0.0, referenceItem.getQty() - alreadyIssued);
+        double remaining = Math.max(0.0, referenceItem.getQty() - alreadyIssued);
+        return scaleForStrengthSubstitution(referenceItem.getItem(), issuingItem, remaining);
+    }
+
+    private double scaleForStrengthSubstitution(Item requestedItem, Item issuingItem, double remaining) {
+        if (issuingItem == null || requestedItem == null || issuingItem.equals(requestedItem)) {
+            return remaining;
+        }
+        Double reqStrength = requestedItem.getStrengthOfAnIssueUnit();
+        Double issStrength = issuingItem.getStrengthOfAnIssueUnit();
+        MeasurementUnit reqUnit = requestedItem.getStrengthUnit();
+        MeasurementUnit issUnit = issuingItem.getStrengthUnit();
+        if (reqStrength == null || reqStrength <= 0.0
+                || issStrength == null || issStrength <= 0.0
+                || reqUnit == null || issUnit == null
+                || reqUnit.getId() == null || !reqUnit.getId().equals(issUnit.getId())) {
+            return remaining;
+        }
+        return remaining * (reqStrength / issStrength);
     }
 
     public boolean isFullyIssued(Bill requestBill) {
@@ -2235,7 +2269,7 @@ public class PharmacySaleBhtController implements Serializable {
             return false;
         }
         for (BillItem item : freshBill.getBillItems()) {
-            if (getRemainingQuantityForItem(item) > 0.001) {
+            if (getRemainingQuantityForItem(item, null) > 0.001) {
                 return false;
             }
         }

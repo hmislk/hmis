@@ -197,6 +197,15 @@ public class ConfigOptionApplicationController implements Serializable {
         // Replaces "Need to check inward bills before discharge", which was read
         // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
         getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
+        // Theatre surgery service bill item list. Three booleans selecting one
+        // mode, read in a fixed precedence by ItemController.completeTheatreItems
+        // (mapped, then all services, then the default of theatre services only).
+        // Seeded here so an admin can find and toggle them without first having
+        // to open a surgery bill. Overridable per department with the
+        // "<Department Name> - <key>" form.
+        getBooleanValueByKey(ItemController.THEATRE_LIST_MAPPED_SERVICES, false);
+        getBooleanValueByKey(ItemController.THEATRE_LIST_ALL_SERVICES, false);
+        getBooleanValueByKey(ItemController.THEATRE_LIST_THEATRE_SERVICES_ONLY, true);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {

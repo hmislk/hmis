@@ -10728,6 +10728,24 @@ public class PharmacyController implements Serializable {
         return amt != null ? amt : BigDecimal.ZERO;
     }
 
+    /**
+     * Display-only magnitude of {@link Bill#getNetTotal()} for the GRN Summary
+     * Report's "Amount" column — the signed value is intentional (negative for
+     * purchases/money-out, positive for cancellations/returns/money-back), but
+     * showing the sign to end users on a per-row report is confusing. See issue #23604.
+     */
+    public double getGrnDisplayAmount(Bill bill) {
+        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+    }
+
+    /**
+     * Display-only magnitude of {@link Bill#getDiscount()} for the GRN Summary
+     * Report — see {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
+     */
+    public double getGrnDisplayDiscount(Bill bill) {
+        return bill == null ? 0.0 : Math.abs(bill.getDiscount());
+    }
+
     public Double calculateTotalGrnAmount() {
         double total = 0.0;
 
@@ -11439,8 +11457,8 @@ public class PharmacyController implements Serializable {
                         ? (f.getToInstitution() != null ? f.getToInstitution().getName() : "-")
                         : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
                 table.addCell(textCell(f.getPaymentMethod() != null ? f.getPaymentMethod().getLabel() : "-", bodyFontSmall));
-                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
-                table.addCell(numCell(f.getDiscount(), bodyFontSmall));
+                table.addCell(numCell(getGrnDisplayAmount(f), bodyFontSmall));
+                table.addCell(numCell(getGrnDisplayDiscount(f), bodyFontSmall));
                 table.addCell(numCell(stockAmount.doubleValue(), bodyFontSmall));
                 table.addCell(textCell(grnSummaryStatusLabel(f), bodyFontSmall));
             }
@@ -11455,8 +11473,8 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(calculateTotalGrnAmount(), bodyFontSmall));
-            table.addCell(numCell(totalDiscount.doubleValue(), bodyFontSmall));
+            table.addCell(numCell(Math.abs(calculateTotalGrnAmount()), bodyFontSmall));
+            table.addCell(numCell(Math.abs(totalDiscount.doubleValue()), bodyFontSmall));
             table.addCell(numCell(totalStockAmount.doubleValue(), bodyFontSmall));
             com.itextpdf.text.pdf.PdfPCell blankStatusFooterCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(""));
             blankStatusFooterCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
