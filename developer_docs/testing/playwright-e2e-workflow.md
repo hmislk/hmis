@@ -2820,7 +2820,7 @@ unrelated full postback of that form.
 Most `p:commandButton`s submit fine with a normal Playwright click — including
 `ajax="false"` text-valued buttons such as `form:btnNursingDischarge` on
 `admission_profile.xhtml`, which navigate correctly on a plain
-`page.locator('#form\:btnNursingDischarge').click()`.
+`page.locator('#form\\:btnNursingDischarge').click()`.
 
 The exception is **icon-only row controls** inside a `p:dataTable` (e.g. the
 `ui-button-icon-only` action buttons on `inpatient_search.xhtml`, which render with
@@ -3843,9 +3843,14 @@ though it is visible. Drive it the way a user does:
 
 ```js
 // 1. open the dropdown, 2. type into the filter, 3. click the matching row
-await page.locator('#form\:dept_filter').pressSequentially('OPD Pharmacy');
-await page.locator('#form\:dept_table tr[data-label="OPD Pharmacy"]').click();
+await page.locator('#form\\:dept_filter').pressSequentially('OPD Pharmacy');
+await page.locator('#form\\:dept_table tr[data-label="OPD Pharmacy"]').click();
 ```
+
+Note the doubled backslash. A JavaScript single-quoted `'\\:'` produces the one
+literal backslash CSS needs in order to escape the colon in a JSF client id.
+Writing `'\:'` collapses to a bare `:`, which CSS parses as a pseudo-class, so
+the locator silently matches nothing.
 
 Check `offsetParent !== null` per row to confirm the filter actually narrowed
 the list before clicking — the non-matching rows stay in the DOM, just hidden.
