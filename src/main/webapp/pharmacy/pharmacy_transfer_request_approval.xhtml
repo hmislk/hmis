@@ -37,7 +37,16 @@
                                     icon="fas fa-check-double"
                                     styleClass="mx-1 ui-button-stage-approve"
                                     onclick="return confirm('Are you sure you want to approve this transfer request?');"
-                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}">
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval') or (transferRequestController.transferRequestBillPre ne null and transferRequestController.transferRequestBillPre.cancelled)}">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Reject"
+                                    type="button"
+                                    icon="fas fa-ban"
+                                    title="Reject this transfer request with a reason"
+                                    styleClass="mx-1 ui-button-danger"
+                                    onclick="PF('transferRequestRejectDialog').show();"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval') or (transferRequestController.transferRequestBillPre ne null and transferRequestController.transferRequestBillPre.cancelled)}">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -215,6 +224,42 @@
 
                 </h:panelGroup>
             </p:panel>
+
+            <!-- Reject Request Dialog -->
+            <p:dialog id="transferRequestRejectDialog"
+                      header="Reject Transfer Request"
+                      widgetVar="transferRequestRejectDialog"
+                      modal="true"
+                      width="600"
+                      resizable="false"
+                      closeOnEscape="true">
+                <p>
+                    <h:outputText value="Rejecting closes this request. It will not be sent on to the supplying department, and it cannot be approved afterwards." />
+                </p>
+                <p:outputLabel for="txtRejectionReason" value="Reason for rejection" />
+                <p:inputTextarea id="txtRejectionReason"
+                                 class="w-100 mt-1"
+                                 rows="3"
+                                 counter="rejectionReasonCounter"
+                                 maxlength="255"
+                                 counterTemplate="{0} characters remaining"
+                                 autoResize="false"
+                                 value="#{transferRequestController.rejectionReason}"
+                                 placeholder="Why is this request being rejected?" />
+                <h:outputText id="rejectionReasonCounter" styleClass="text-muted" />
+                <div class="d-flex justify-content-end mt-3">
+                    <p:commandButton value="Reject Request"
+                                     icon="fas fa-ban"
+                                     class="ui-button-danger mx-2"
+                                     ajax="false"
+                                     action="#{transferRequestController.rejectTransferRequestBill}"
+                                     onclick="PF('transferRequestRejectDialog').hide();" />
+                    <p:commandButton value="Cancel"
+                                     type="button"
+                                     class="ui-button-secondary"
+                                     onclick="PF('transferRequestRejectDialog').hide();" />
+                </div>
+            </p:dialog>
 
             <!-- Configuration Dialog -->
             <p:dialog id="transferRequestConfigDialog"

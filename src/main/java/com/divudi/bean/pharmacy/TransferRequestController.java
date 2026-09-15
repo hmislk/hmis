@@ -60,6 +60,7 @@ import java.util.WeakHashMap;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -128,6 +129,10 @@ public class TransferRequestController implements Serializable {
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
+    // Reason captured on the approval screen when the store rejects a request
+    // (issue #23809). Stored on the cancellation bill's comments, not on the
+    // pre-bill, so it survives alongside the existing requester-side cancel.
+    private String rejectionReason;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
     private Department toDepartment;
@@ -156,6 +161,7 @@ public class TransferRequestController implements Serializable {
         cachedToDeptTypesForDisplay = null;
         dealor = null;
         billItems = null;
+        rejectionReason = null;
         printPreview = false;
         transferRequestBillPre = null;
     }
@@ -410,6 +416,21 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("This transfer request is already approved");
             return;
         }
+        // Defence in depth: a rejected/cancelled request must not be approvable.
+        // In practice the Approve button's disabled="#{...cancelled}" binding
+        // already stops this, and does so server-side - JSF re-evaluates the
+        // attribute during decode and refuses to queue the action event for a
+        // disabled UICommand, so re-enabling the button client-side achieves
+        // nothing. This guard covers callers that are not that button.
+        // Re-read rather than trusting the session-scoped copy, which was loaded
+        // when the page was opened and cannot see a reject made since.
+        if (transferRequestBillPre != null && transferRequestBillPre.getId() != null) {
+            Bill freshPreBill = billFacade.find(transferRequestBillPre.getId());
+            if (freshPreBill != null && freshPreBill.isCancelled()) {
+                JsfUtil.addErrorMessage("This transfer request has been rejected and cannot be approved");
+                return;
+            }
+        }
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
@@ -421,6 +442,123 @@ public class TransferRequestController implements Serializable {
         bill.setFromDepartment(sessionController.getDepartment());
         bill = createNewApprovedTransferRequestBill(transferRequestBillPre, billItems, bill);
         printPreview = true;
+    }
+
+    /**
+     * Rejects a finalized transfer request from the approval screen, recording who
+     * rejected it, when, and why.
+     *
+     * <p>Note the department model, which is easy to get backwards: approval is
+     * maker-checker <b>within the requesting department</b> - a checker there
+     * authorises their own department's request before it is sent on. The
+     * to-approve list filters on {@code b.fromDepartment}, not
+     * {@code b.toDepartment}, and the supplying department only sees the request
+     * afterwards through its own Issue-for-Requests cycle. See the DO-NOT-FLIP
+     * comment above {@code SearchController.fillPharmacyTransferRequestsToApprove()}
+     * (#22944, #23039). So rejecting here means the requesting department declined
+     * to authorise its own request - it is not a supplier refusing to supply.</p>
+     *
+     * <p>Mirrors the requesting department's own cancel path
+     * ({@code PharmacyBillSearch.cancelPharmacyTransferRequestBill()}) so that
+     * there is exactly one encoding of "this transfer request was cancelled" for
+     * lists and reports to join against: {@code cancelled = true} plus a linked
+     * {@code PHARMACY_TRANSFER_REQUEST_CANCELLED} record carrying the reason in
+     * its comments.</p>
+     *
+     * <p>Deliberately does <b>not</b> set {@code completed} on the pre-bill.
+     * {@code SearchController.fillApprovedPharmacyTransferRequests()} selects
+     * pre-bills on {@code completed = true} with no cancelled filter to build the
+     * requesting department's "Approved Requests" page, so completing a rejected
+     * request would list it there as approved. Leaving it incomplete keeps it in
+     * the to-approve list, where it renders as "Cancelled at / Cancelled By" with
+     * Approve disabled - the same way a requester-side cancel already shows.</p>
+     *
+     * <p>synchronized: same re-entrancy guard as approveTransferRequestBill()
+     * above - a queued double-submit must not create a second cancellation bill.</p>
+     */
+    public synchronized String rejectTransferRequestBill() {
+        if (!isAuthorized("REJECT_REQUEST", "PharmacyDisbursementRequestApproval")) {
+            return "";
+        }
+        if (transferRequestBillPre == null || transferRequestBillPre.getId() == null) {
+            JsfUtil.addErrorMessage("No transfer request selected");
+            return "";
+        }
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please provide a reason to reject this transfer request");
+            return "";
+        }
+        // Re-read rather than trusting the session-scoped copy: the request may have
+        // been approved or cancelled elsewhere since this page was opened.
+        Bill preBill = billFacade.find(transferRequestBillPre.getId());
+        if (preBill == null) {
+            JsfUtil.addErrorMessage("This transfer request is no longer available");
+            return "";
+        }
+        if (preBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This transfer request is already rejected");
+            return "";
+        }
+        if (preBill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This transfer request is already approved and cannot be rejected");
+            return "";
+        }
+
+        CancelledBill cancellationBill = new CancelledBill();
+        cancellationBill.copy(preBill);
+        cancellationBill.invertAndAssignValuesFromOtherBill(preBill);
+        cancellationBill.setBillType(BillType.PharmacyTransferRequest);
+        cancellationBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
+        cancellationBill.setBillClassType(BillClassType.CancelledBill);
+        cancellationBill.setBilledBill(preBill);
+        cancellationBill.setReferenceBill(preBill);
+        // Deliberately NOT setBackwardReferenceBill(preBill): Bill.forwardReferenceBills
+        // is mappedBy = "backwardReferenceBill", so that would leave the rejection
+        // showing as a permanently active forward reference on the pre-bill - it has a
+        // creater, is never retired and is never itself cancelled, so
+        // Bill.checkActiveForwardReference() would return true forever. That is the
+        // exact trap documented in PharmacyBillSearch.isTransferRequestCancellable().
+        // The requester-side cancel does not set it either.
+        cancellationBill.setComments(rejectionReason.trim());
+        cancellationBill.setDepartment(sessionController.getDepartment());
+        cancellationBill.setInstitution(sessionController.getInstitution());
+        cancellationBill.setCreater(sessionController.getLoggedUser());
+        cancellationBill.setCreatedAt(new Date());
+        cancellationBill.setBillDate(new Date());
+        cancellationBill.setBillTime(new Date());
+        cancellationBill.setCompleted(true);
+        // Bill.copy() does not carry deptId/insId, so without this the cancellation
+        // bill would be saved with a null bill number (see issue #23809). Seed a
+        // suffix if none is configured - an empty one yields a doubled delimiter and
+        // a number indistinguishable from other bill types sharing the counter.
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey(
+                "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            configOptionApplicationController.setLongTextValueByKey(
+                    "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED, "C-TRQ");
+        }
+        String cancellationBillNumber = billNumberBean.departmentBillNumberGeneratorYearly(
+                sessionController.getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
+        cancellationBill.setDeptId(cancellationBillNumber);
+        cancellationBill.setInsId(cancellationBillNumber);
+        billFacade.create(cancellationBill);
+
+        preBill.setCancelled(true);
+        preBill.setCancelledBill(cancellationBill);
+        billFacade.edit(preBill);
+
+        transferRequestBillPre = preBill;
+        rejectionReason = null;
+        // navigateToApproveRequests() redirects, and JsfUtil.addSuccessMessage() is not
+        // flash-scoped, so without this the confirmation is dropped and the user lands
+        // back on the list with no feedback - which matters here because a rejected
+        // request deliberately stays in that list rather than disappearing from it.
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null) {
+            facesContext.getExternalContext().getFlash().setKeepMessages(true);
+        }
+        JsfUtil.addSuccessMessage("Transfer request rejected");
+        return searchController.navigateToApproveRequests();
     }
 
     // synchronized: same re-entrancy guard as approveTransferRequestBill()/
@@ -1114,6 +1252,14 @@ public class TransferRequestController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public boolean isPrintPreview() {

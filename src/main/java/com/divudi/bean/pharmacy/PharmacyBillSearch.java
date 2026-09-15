@@ -911,7 +911,39 @@ public class PharmacyBillSearch implements Serializable {
         }
         CancelledBill cb = pharmacyCreateCancelBill();
         cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
-        cb.setBillItems(getBill().getBillItems());
+        // pharmacyCreateCancelBill() builds the record with Bill.copy(), which does
+        // not carry deptId/insId, and nothing here generated one - so every
+        // cancellation bill for a transfer request used to be saved with a null bill
+        // number (issue #23809).
+        //
+        // Seed a suffix first if none is configured, same as pharmacyPoRequestCancel()
+        // does for PHARMACY_ORDER_CANCELLED: departmentBillNumberGeneratorYearly()
+        // falls back to an empty suffix, which yields a doubled delimiter and a number
+        // indistinguishable from other bill types on the same institution-wide counter.
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey(
+                "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            configOptionApplicationController.setLongTextValueByKey(
+                    "Bill Number Suffix for " + BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED, "C-TRQ");
+        }
+        String cancellationBillNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(
+                getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
+        cb.setDeptId(cancellationBillNumber);
+        cb.setInsId(cancellationBillNumber);
+        // Deliberately does NOT carry over the original bill's BillItems.
+        // Bill.billItems is @OneToMany(mappedBy = "bill", cascade = ALL,
+        // orphanRemoval = true): the owning side is BillItem.bill, which still
+        // points at the original bill, so assigning that same list here persisted
+        // nothing. Once the cancellation bill is persisted explicitly (below), the
+        // assignment stops being merely useless and becomes harmful - persist()
+        // would cascade onto BillItems that already exist in the database, and
+        // both bills would share one list under orphanRemoval.
+        //
+        // Persist explicitly: Bill.cancelledBill is a plain @ManyToOne with no
+        // cascade, so relying on edit(bill) to save a transient CancelledBill is
+        // provider-dependent - every other pharmacyCreateCancelBill() caller in
+        // this class calls create() first.
+        billFacade.create(cb);
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);

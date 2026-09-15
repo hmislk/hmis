@@ -3761,3 +3761,91 @@ Found while verifying issue #23723 on the local `coop` DB.
   Create New Version) reopens `inward_bill_final.xhtml` in edit mode on an
   already-settled admission. That's a quick way to get a fresh edit view without
   building another admission.
+
+## 126. JSF will not decode a `disabled` command button — you cannot reach the controller guard behind it by re-enabling the button in the DOM
+
+A common pattern in this codebase is a button that is both bound to
+`disabled="#{...someState}"` in the XHTML **and** guarded again inside the
+controller method. Testing the controller guard by stripping `disabled` in the
+browser does not work, and the result looks alarmingly like a silent failure:
+
+```js
+// looks like it should reach the server, but does not
+const b = document.getElementById('form:btnApprove');
+b.disabled = false;
+b.removeAttribute('disabled');
+b.classList.remove('ui-state-disabled');
+b.click();                       // POST happens, action never runs
+```
+
+The POST *is* sent, the page reloads, and **nothing happens** — no navigation,
+no message, no exception, an empty `div.ui-messages`, and nothing in
+`server.log`. That is not a bug in the page: JSF re-evaluates the component's
+`disabled` attribute server-side during *decode* and refuses to queue the action
+event for a disabled `UICommand`, no matter what the client submitted. The
+client-side attribute is irrelevant.
+
+Two consequences when verifying a fix:
+
+- **The `disabled` binding is itself a real server-side guard**, not just
+  cosmetics — worth stating in the PR rather than dismissing it as "`disabled`
+  is not a guard". It also survives browser **Back**: a JSF page re-renders from
+  the server on back-navigation, so a button disabled by current state comes
+  back disabled, not enabled from cache.
+- **A controller guard sitting behind such a binding is unreachable from the
+  UI** while the binding holds. It is still worth having as defence-in-depth
+  (non-UI callers, another page that doesn't bind `disabled`), but do not claim
+  you "verified the guard fires" — you verified the *outcome* (the action was
+  refused). Verify that outcome in the DB instead: assert the row the action
+  would have written does not exist.
+
+To exercise the controller guard for real you need a caller that isn't the
+disabled button — a second session whose page was rendered before the state
+changed *and* whose button is not `disabled`-bound, or a direct unit/integration
+call.
+
+## 127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom
+
+The local "Database Migration Pending — Missing fields or tables detected."
+banner is `position: fixed; z-index: 9999` at the bottom of the viewport
+(`div.nonPrintBlock`). Playwright reports:
+
+```
+<div class="nonPrintBlock">…</div> intercepts pointer events
+```
+
+…for any dialog button that lands in the bottom ~41px, and retrying or resizing
+the window does not help, because several HMIS dialogs position their **bottom
+edge at the window bottom** rather than centring (observed on
+`pharmacy_transfer_request_approval.xhtml` for both its config dialog and a
+newly added one — so it is page behaviour, not something a new dialog
+introduces).
+
+Hide the banner for the duration of the test — it only renders because the local
+DB has pending migrations, so hiding it reproduces what a migrated environment
+looks like rather than masking a defect:
+
+```js
+document.querySelectorAll('.nonPrintBlock').forEach(e => e.style.display = 'none');
+```
+
+Worth a second thought before dismissing it, though: if a dialog's buttons sit
+that low, they can also be clipped on a genuinely short laptop viewport. Check
+the dialog's `getBoundingClientRect()` against `innerHeight` before concluding
+it is purely a local-banner artifact.
+
+## 128. The department `p:selectOneMenu` is a *filterable, table-based* dropdown — there are no `<li>` items to click
+
+The login department selector renders its options as `<tr data-label="...">`
+rows inside `…_table`, not as `<li>` elements, and it has a filter box. A
+`.ui-selectonemenu-items li` query returns `[]` and the panel looks empty even
+though it is visible. Drive it the way a user does:
+
+```js
+// 1. open the dropdown, 2. type into the filter, 3. click the matching row
+await page.locator('#form\:dept_filter').pressSequentially('OPD Pharmacy');
+await page.locator('#form\:dept_table tr[data-label="OPD Pharmacy"]').click();
+```
+
+Check `offsetParent !== null` per row to confirm the filter actually narrowed
+the list before clicking — the non-matching rows stay in the DOM, just hidden.
