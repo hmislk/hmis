@@ -101,7 +101,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
+                <ui:repeat value="#{cc.attrs.bill.activeBillItems}" var="bip" varStatus="status">
                     <tr>
                         <td>
                             <h:outputText value="#{status.index + 1}" />
