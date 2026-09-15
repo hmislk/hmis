@@ -1,0 +1,6 @@
+{
+  "WatchFolder": "C:\\hims-print",
+  "PrinterPath": "DEPOSIT",
+  "FileGlob": "inward-*.prn",
+  "PollSeconds": 2
+}
