@@ -259,7 +259,7 @@
                                         <p:panelGrid columns="2" layout="tabular" class="w-100" >
                                             <h:outputText value="Active" >                                        
                                             </h:outputText>
-                                            <p:toggleSwitch class="form-control" value="#{collectingCentreController.current.inactive}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                                            <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
 
                                             <h:outputText value="Creator" ></h:outputText>
                                             <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
@@ -279,8 +279,7 @@
                                                 icon="fas fa-plus"
                                                 action="#{collectingCentreController.createDepartmentForCollectingCentre()}"
                                                 process="@this"
-                                                update="crtCCDeptBtn newCcDeptContent growl"
-                                                oncomplete="if (args &amp;&amp; args.departmentCreated) { PF('newCcDepartmentDialog').show(); }">
+                                                update="crtCCDeptBtn newCcDeptContent growl">
                                             </p:commandButton>
                                         </div>
 
