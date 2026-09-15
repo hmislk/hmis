@@ -947,7 +947,17 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
         }
-        if (getTransferRequestBillPre().getBillItems() == null || getTransferRequestBillPre().getBillItems().isEmpty()) {
+        // Retired items are lines removed while editing the request (#23817); they must
+        // not be approved or issued.
+        List<BillItem> activeRequestItems = new ArrayList<>();
+        if (getTransferRequestBillPre().getBillItems() != null) {
+            for (BillItem requestItem : getTransferRequestBillPre().getBillItems()) {
+                if (requestItem != null && !requestItem.isRetired()) {
+                    activeRequestItems.add(requestItem);
+                }
+            }
+        }
+        if (activeRequestItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Items in the request");
             return "";
         }
@@ -968,7 +978,7 @@ public class TransferRequestController implements Serializable {
             bill.setCreatedAt(new Date());
         }
         billItems = new ArrayList<>();
-        for (BillItem requestItemInPreBill : getTransferRequestBillPre().getBillItems()) {
+        for (BillItem requestItemInPreBill : activeRequestItems) {
             BillItem newBillItemInApprovedRequest = new BillItem();
             newBillItemInApprovedRequest.copy(requestItemInPreBill);
             newBillItemInApprovedRequest.setBill(bill);
@@ -1088,13 +1098,79 @@ public class TransferRequestController implements Serializable {
     }
 
     public void remove(BillItem billItem) {
-        getBillItems().remove(billItem.getSearialNo());
+        if (billItem == null) {
+            return;
+        }
+        // Remove by reference, not by index (#23817). searialNo is only a valid list
+        // index for items added in this session: items reloaded by fetchBillItems()
+        // carry their persisted serials, which can repeat, so remove(int) could drop a
+        // different row than the one clicked. BillItem.equals() also compares unsaved
+        // items by searialNo, so List.remove(Object) is not safe either.
+        if (billItem.getId() != null && isTransferRequestLockedForEditing()) {
+            return;
+        }
+        getBillItems().removeIf(bi -> bi == billItem);
+        if (billItem.getId() != null) {
+            // Already saved: the row must be retired, otherwise Save leaves it untouched
+            // and fetchBillItems() brings it back when the request is reopened.
+            billItem.setRetired(true);
+            billItem.setRetirer(getSessionController().getLoggedUser());
+            billItem.setRetiredAt(new Date());
+            getBillItemFacade().edit(billItem);
+            // The pre-bill's own collection may hold a separately loaded, still-active
+            // copy of this row; the next Save cascades a merge from it and would
+            // un-retire the row. Swap in the retired instance rather than removing the
+            // element: Bill.billItems has orphanRemoval = true, so removing it makes
+            // that merge DELETE the BillItem, which its PharmaceuticalBillItem's
+            // foreign key rejects and the whole Save rolls back.
+            if (transferRequestBillPre != null && transferRequestBillPre.getBillItems() != null) {
+                List<BillItem> preBillItems = transferRequestBillPre.getBillItems();
+                for (int i = 0; i < preBillItems.size(); i++) {
+                    BillItem preBillItem = preBillItems.get(i);
+                    if (preBillItem != null && billItem.getId().equals(preBillItem.getId())) {
+                        preBillItems.set(i, billItem);
+                    }
+                }
+            }
+        }
         int serialNo = 0;
         for (BillItem bi : getBillItems()) {
             bi.setSearialNo(serialNo++);
         }
         recalculateTransferRequestBillTotals();
 
+    }
+
+    /**
+     * Retiring a saved line writes to the database immediately, so re-read the
+     * request's current status first (#23817). The page is backed by a session-scoped
+     * bean holding the copy loaded when the screen was opened; without this, a request
+     * finalized, approved or rejected since then (in another tab or by a colleague)
+     * would still have lines silently retired. findWithoutCache for the same reason
+     * as approveTransferRequestBill(): find() can return a stale L2-cached status.
+     */
+    private boolean isTransferRequestLockedForEditing() {
+        if (transferRequestBillPre == null || transferRequestBillPre.getId() == null) {
+            return false;
+        }
+        Bill freshPreBill = billFacade.findWithoutCache(transferRequestBillPre.getId());
+        if (freshPreBill == null) {
+            JsfUtil.addErrorMessage("This transfer request is no longer available");
+            return true;
+        }
+        if (freshPreBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This transfer request has been rejected and can no longer be edited");
+            return true;
+        }
+        if (freshPreBill.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This transfer request is already approved and can no longer be edited");
+            return true;
+        }
+        if (freshPreBill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This transfer request is already finalized and can no longer be edited");
+            return true;
+        }
+        return false;
     }
 
     private List<BillItem> fetchBillItems(Bill bill) {
@@ -1105,10 +1181,17 @@ public class TransferRequestController implements Serializable {
         String jpql = "select bi from BillItem bi "
                 + "join fetch bi.item "
                 + "left join fetch bi.billItemFinanceDetails "
-                + "where bi.bill=:bill and bi.retired=false";
+                + "where bi.bill=:bill and bi.retired=false "
+                + "order by bi.searialNo, bi.id";
         Map m = new HashMap();
         m.put("bill", bill);
         items = billItemFacade.findByJpql(jpql, m);
+        // Persisted serials can have gaps or repeats (#23817); renumber so each row's
+        // serial matches its position again.
+        int serialNo = 0;
+        for (BillItem bi : items) {
+            bi.setSearialNo(serialNo++);
+        }
         return items;
     }
 
