@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Shared Purchase Order "Send SMS" dialog.
+     Included via <ui:include src="fragments/po_sms_dialog.xhtml"/> on PO
+     approving / reprint pages, placed OUTSIDE the page's own h:form (just
+     like the existing emailDialog), because this fragment carries its own
+     h:form (poSmsDialogForm) so it can submit independently.
+     Backed by the session-scoped purchaseOrderSmsController:
+       - prepareSmsDialog(Long billId) populates supplierName/smsNumber/smsMessage
+       - sendSms() sends the SMS and reports to poSmsMessages -->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <p:dialog widgetVar="poSmsDialog" modal="true" header="Send Purchase Order SMS" width="400px" height="auto" resizable="false">
+        <h:form id="poSmsDialogForm">
+            <div class="p-3">
+                <div class="mb-3">
+                    <p:outputLabel value="Supplier: " style="font-weight: bold;"/>
+                    <p:outputLabel value="#{purchaseOrderSmsController.supplierName}"/>
+                </div>
+
+                <div class="mb-3">
+                    <p:outputLabel for="smsNumber" value="Mobile Number:" class="form-label"/>
+                    <p:inputText
+                        id="smsNumber"
+                        value="#{purchaseOrderSmsController.smsNumber}"
+                        class="w-100"
+                        label="Mobile Number"
+                        placeholder="Enter mobile number"
+                        required="true"
+                        requiredMessage="Mobile number is required"/>
+                </div>
+
+                <div class="mb-3">
+                    <p:outputLabel for="smsMessage" value="Message:" class="form-label"/>
+                    <p:inputTextarea
+                        id="smsMessage"
+                        value="#{purchaseOrderSmsController.smsMessage}"
+                        class="w-100"
+                        rows="5"
+                        label="Message"/>
+                </div>
+
+                <p:messages id="poSmsMessages" showDetail="true" closable="true"/>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <p:commandButton
+                        value="Cancel"
+                        onclick="PF('poSmsDialog').hide();"
+                        class="ui-button-secondary"
+                        type="button"/>
+                    <p:commandButton
+                        value="Send SMS"
+                        action="#{purchaseOrderSmsController.sendSms}"
+                        class="ui-button-success"
+                        icon="fas fa-sms"
+                        update="poSmsMessages"/>
+                </div>
+            </div>
+        </h:form>
+    </p:dialog>
+</ui:composition>
