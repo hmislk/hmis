@@ -9,31 +9,32 @@
     <ui:define name="admin">
         <h:panelGroup >
             <h:form  >
+                <p:growl id="growl" showDetail="true" />
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
                 <p:panel header="Manage Collecting Centres">
                     <div class="row">
                         <div class="col-md-5">
-                            <p:commandButton 
-                                id="btnAdd" 
-                                value="Add New" 
-                                class="ui-button-success"  
+                            <p:commandButton
+                                id="btnAdd"
+                                value="Add New"
+                                class="ui-button-success"
                                 icon="fas fa-plus"
-                                action="#{collectingCentreController.prepareAdd()}" 
+                                action="#{collectingCentreController.prepareAdd()}"
                                 process="btnAdd"
-                                update="lstSelect gpDetail">
+                                update="lstSelect gpDetail growl">
                             </p:commandButton>
 
-                            <p:commandButton 
-                                id="btnDelete" 
+                            <p:commandButton
+                                id="btnDelete"
                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" 
-                                action="#{collectingCentreController.delete()}"  
-                                value="Delete" 
+                                            return false;"
+                                action="#{collectingCentreController.delete()}"
+                                value="Delete"
                                 icon="fas fa-trash"
                                 class=" m-1 ui-button-danger w-25"
                                 process="btnDelete"
-                                update="lstSelect gpDetail">
+                                update="lstSelect gpDetail growl">
                             </p:commandButton>
 
                             <p:selectOneListbox  
@@ -60,10 +61,10 @@
                                             id="btnSave" 
                                             value="Save"
                                             icon="fas fa-save"
-                                            action="#{collectingCentreController.saveSelected()}" 
-                                            class="ui-button-warning btn" 
-                                            process="gpDetail btnSave" 
-                                            update="lstSelect" > 
+                                            action="#{collectingCentreController.saveSelected()}"
+                                            class="ui-button-warning btn"
+                                            process="gpDetail btnSave"
+                                            update="lstSelect growl" >
                                         </p:commandButton>
                                     </div>
                                 </f:facet>
@@ -278,7 +279,7 @@
                                                 icon="fas fa-plus"
                                                 action="#{collectingCentreController.createDepartmentForCollectingCentre()}"
                                                 process="@this"
-                                                update="crtCCDeptBtn newCcDeptContent"
+                                                update="crtCCDeptBtn newCcDeptContent growl"
                                                 oncomplete="if (args &amp;&amp; args.departmentCreated) { PF('newCcDepartmentDialog').show(); }">
                                             </p:commandButton>
                                         </div>
