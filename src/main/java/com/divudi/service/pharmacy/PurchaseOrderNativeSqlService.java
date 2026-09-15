@@ -268,6 +268,18 @@ public class PurchaseOrderNativeSqlService {
         if (o == null) return null;
         if (o instanceof Timestamp) return new java.util.Date(((Timestamp) o).getTime());
         if (o instanceof java.util.Date) return (java.util.Date) o;
+        // Depending on the JDBC driver/connection settings a DATETIME column can come
+        // back as a java.time type, which silently rendered as a blank date on the
+        // print pages before this was handled (issue #23811).
+        if (o instanceof java.time.LocalDateTime) {
+            return java.util.Date.from(((java.time.LocalDateTime) o).atZone(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        if (o instanceof java.time.LocalDate) {
+            return java.util.Date.from(((java.time.LocalDate) o).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        if (o instanceof java.time.Instant) {
+            return java.util.Date.from((java.time.Instant) o);
+        }
         return null;
     }
 }

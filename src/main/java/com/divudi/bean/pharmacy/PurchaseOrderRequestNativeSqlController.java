@@ -40,6 +40,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
+import com.divudi.service.pharmacy.PurchaseOrderOpenItemService;
 import com.divudi.service.pharmacy.PurchaseOrderRequestNativeSqlService;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -109,6 +110,8 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    private PurchaseOrderOpenItemService purchaseOrderOpenItemService;
 
     private Bill currentBill;
     private BillItem currentBillItem;
@@ -329,11 +332,39 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             }
         }
 
+        Item addedItem = currentBillItem.getItem();
+
         currentBillItem.setSearialNo(billItems.size());
         applyLastRatesToBillItem(currentBillItem);
         billItems.add(currentBillItem);
         calculateBillTotals();
+        warnIfItemIsOnAnOpenPurchaseOrder(addedItem);
         currentBillItem = new BillItem();
+    }
+
+    /**
+     * Soft warning (item is still added either way) when the item just added
+     * is already on another open PO in the same institution. Related issue: #23811.
+     */
+    private void warnIfItemIsOnAnOpenPurchaseOrder(Item item) {
+        if (item == null) {
+            return;
+        }
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy PO - Warn When Item Is On An Open Purchase Order", true)) {
+            return;
+        }
+        Institution institution = sessionController.getInstitution();
+        if (institution == null) {
+            return;
+        }
+        Long excludeBillId = getCurrentBill() != null ? getCurrentBill().getId() : null;
+        List<String> poNumbers = purchaseOrderOpenItemService.findOpenPurchaseOrderNumbersForItem(item, institution, excludeBillId);
+        if (poNumbers == null || poNumbers.isEmpty()) {
+            return;
+        }
+        JsfUtil.addWarningMessage("Warning: " + item.getName() + " is already on open purchase order(s) "
+                + String.join(", ", poNumbers) + " that have not been fully received yet. It has still been added.");
     }
 
     public void removeItem(BillItem bi) {
