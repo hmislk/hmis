@@ -226,6 +226,11 @@
 
                                             <h:outputText value="Institution" />
                                             <h:panelGroup id="pnlInstitution" layout="block">
+                                                <p:inputText
+                                                    class="w-100"
+                                                    value="#{departmentController.current.institution.name}"
+                                                    rendered="#{departmentController.current.departmentType eq 'CollectingCentre'}"
+                                                    disabled="true" />
                                                 <p:autoComplete
                                                     id="acIns"
                                                     class="w-100"
@@ -236,6 +241,7 @@
                                                     itemValue="#{pta}"
                                                     forceSelection="true"
                                                     value="#{departmentController.current.institution}"
+                                                    rendered="#{departmentController.current.departmentType ne 'CollectingCentre'}"
                                                     disabled="#{!departmentController.editable}">
                                                     <p:ajax process="acIns" update="cmbSupDept pnlInstitution"/>
                                                 </p:autoComplete>
