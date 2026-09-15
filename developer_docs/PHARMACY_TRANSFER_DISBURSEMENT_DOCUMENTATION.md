@@ -97,6 +97,7 @@ Each stage creates specific bills with unique BillTypeAtomic values, maintains q
   - Initializes `remainingQty = qty` for each item (line 361)
   - Sets approval timestamps and user
   - Calculates bill totals via `pharmacyCostingService`
+- **🚨 APPROVAL IS BINARY, NOT EDITABLE**: On this (and any) Approve page of a Save/Request → Finalize → Approve workflow, all finalized line-item fields (Qty, Transfer Rate, and similar) MUST be rendered read-only (`h:outputText`/`p:outputLabel`, never `p:inputText`). The approver's only action is approve / not-approve — not changing what was finalized. A correction requires returning the request to the Request/Finalize stage. See issue hmislk/hmis#23798.
 
 #### **Stage 4: Item Issue**
 - **Page:** `pharmacy_transfer_issue.xhtml`

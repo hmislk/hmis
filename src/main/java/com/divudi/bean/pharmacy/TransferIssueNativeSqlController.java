@@ -78,6 +78,16 @@ public class TransferIssueNativeSqlController implements Serializable {
     private boolean draftMode;
 
     /**
+     * Set when {@link #finalizeDraftNativeIssue()} has already shown a stock-shortage
+     * warning for the current {@link #issueItems} and stopped short of finalizing, so
+     * the user could go back and adjust quantities. A second Finalize click with this
+     * still true (i.e. nothing was edited in between — see
+     * {@link #onQuantityChangeForTransferIssue} / {@link #remove}, which clear it)
+     * is treated as "finalize anyway" and proceeds despite the shortage.
+     */
+    private boolean stockWarningAcknowledged;
+
+    /**
      * Non-retired, unapproved PHARMACY_ISSUE_PRE drafts for the session department that are
      * currently blocking a new Fast Issue. Populated by {@link #navigateToIssueRequestNative()}
      * when the block fires, so pharmacy_transfer_request_list.xhtml can list them with a
@@ -218,6 +228,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         printDto = null;
         draftMode = false;
         issuedBill = new BilledBill();
+        stockWarningAcknowledged = false;
 
         boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
                 "Pharmacy Transfer is by Purchase Rate", false);
@@ -519,8 +530,12 @@ public class TransferIssueNativeSqlController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issue_native?faces-redirect=true";
     }
 
-    public void finalizeDraftNativeIssue() {
+    public synchronized void finalizeDraftNativeIssue() {
         if (!isAuthorized("FINALIZE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
+        if (issueItems == null || issueItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items to finalize. The draft has no items left — cancel it and start over.");
             return;
         }
         if (issuedBill == null || issuedBill.getId() == null) {
@@ -536,6 +551,31 @@ public class TransferIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Draft already finalized.");
             return;
         }
+        if (!validateNoOverIssue(issueItems)) {
+            return;
+        }
+        // Not a hard block — Finalize doesn't move stock, and the actual available
+        // quantity can legitimately shift before this draft reaches Approve (other
+        // drafts/issues competing for the same batch). Approve re-checks this for real
+        // (checkStockSufficiency, called with the state-mutating steps still ahead of
+        // it) right before moving stock, and that atomic check is what actually
+        // prevents stock going negative — this is purely to warn the finalizer early.
+        //
+        // First time a shortage is seen for the current issueItems: stop here without
+        // finalizing, so quantities stay editable and the user can go fix them. A
+        // second Finalize click with nothing edited since (stockWarningAcknowledged
+        // still true — see onQuantityChangeForTransferIssue/remove, which clear it on
+        // any edit) is treated as "finalize anyway" and proceeds.
+        List<String> stockWarnings = transferIssueNativeSqlService.checkStockSufficiency(issueItems);
+        if (!stockWarnings.isEmpty() && !stockWarningAcknowledged) {
+            for (String msg : stockWarnings) {
+                JsfUtil.addWarningMessage("Stock may be insufficient by approval time — " + msg);
+            }
+            JsfUtil.addWarningMessage("Adjust quantities, or click Finalize again to proceed anyway.");
+            stockWarningAcknowledged = true;
+            return;
+        }
+        stockWarningAcknowledged = false;
         fresh.setCompleted(true);
         fresh.setCompletedAt(new Date());
         fresh.setCompletedBy(sessionController.getLoggedUser());
@@ -568,6 +608,24 @@ public class TransferIssueNativeSqlController implements Serializable {
         if (fresh.isChecked()) {
             JsfUtil.addErrorMessage("This fast issue has already been approved.");
             makeNull();
+            return null;
+        }
+        if (!validateNoOverIssue(issueItems)) {
+            return null;
+        }
+        // Re-check stock right before approval starts: the draft may have sat waiting
+        // for approval for a while, during which another session could have consumed
+        // the same batch stock (e.g. via a different issue or a direct sale). The
+        // atomic deductStock() UPDATE inside the settle service already guarantees
+        // stock can never go negative, but without this upfront check that guard is
+        // only discovered after checked=true and a bill number have already been
+        // committed and then have to be rolled back — this mirrors the same
+        // checkStockSufficiency() call settle() already does before touching state.
+        List<String> stockErrors = transferIssueNativeSqlService.checkStockSufficiency(issueItems);
+        if (!stockErrors.isEmpty()) {
+            for (String msg : stockErrors) {
+                JsfUtil.addErrorMessage("Insufficient stock — " + msg);
+            }
             return null;
         }
         fresh.setChecked(true);
@@ -664,37 +722,9 @@ public class TransferIssueNativeSqlController implements Serializable {
             return;
         }
 
-        // Validate that the total issuing qty per request bill item does not exceed
-        // the remaining requested qty (requestedQty - alreadyIssuedQty).
-        // Negative quantities are explicitly excluded from the sum. If they were included,
-        // a user could enter qty=+100 on one batch row and qty=-60 on another row of the
-        // same item, keeping the sum at 40 (under the limit) while settlement still issues
-        // 100 units from the first row. Skipping negatives prevents that bypass.
-        // The service's itemsToProcess filter (issuingQty > 0) is a second safety layer.
-        Map<Long, Double> issuingByReqItem = new LinkedHashMap<>();
-        Map<Long, String> nameByReqItem    = new LinkedHashMap<>();
-        Map<Long, Double> maxByReqItem     = new LinkedHashMap<>();
-        for (TransferIssueItemRowDto item : issueItems) {
-            long reqId   = item.getRequestedBillItemId();
-            double qty   = item.getIssuingQty() != null ? item.getIssuingQty().doubleValue() : 0.0;
-            if (qty <= 0) continue; // negative/zero qty excluded — see comment above
-            double max   = item.getRequestedQty() - item.getAlreadyIssuedQty();
-            issuingByReqItem.merge(reqId, qty, Double::sum);
-            nameByReqItem.putIfAbsent(reqId, item.getItemName());
-            maxByReqItem.putIfAbsent(reqId, max);
+        if (!validateNoOverIssue(issueItems)) {
+            return;
         }
-        boolean overIssue = false;
-        for (Map.Entry<Long, Double> e : issuingByReqItem.entrySet()) {
-            double total = e.getValue();
-            double max   = maxByReqItem.getOrDefault(e.getKey(), 0.0);
-            if (total > max + 0.001) {
-                JsfUtil.addErrorMessage(nameByReqItem.get(e.getKey())
-                        + ": issue qty " + String.format("%.2f", total)
-                        + " exceeds remaining requested qty " + String.format("%.2f", max));
-                overIssue = true;
-            }
-        }
-        if (overIssue) return;
 
         List<String> stockErrors = transferIssueNativeSqlService.checkStockSufficiency(issueItems);
         if (!stockErrors.isEmpty()) {
@@ -738,6 +768,52 @@ public class TransferIssueNativeSqlController implements Serializable {
         printPreview = true;
     }
 
+    /**
+     * Validates that the total issuing qty per request bill item does not exceed
+     * the remaining requested qty (requestedQty - alreadyIssuedQty), summed across
+     * every batch-split row for that request item — a single requested item can be
+     * listed as several rows (one per batch) when availability forces a split, and
+     * each row repeats the same requestedQty, so capping a row in isolation would
+     * miss a user entering the full requested qty on two sibling batch rows.
+     * Negative quantities are explicitly excluded from the sum. If they were included,
+     * a user could enter qty=+100 on one batch row and qty=-60 on another row of the
+     * same item, keeping the sum at 40 (under the limit) while settlement still issues
+     * 100 units from the first row. Skipping negatives prevents that bypass.
+     * The service's itemsToProcess filter (issuingQty > 0) is a second safety layer.
+     * Shared by {@link #settle()} (single-step Issue), {@link #finalizeDraftNativeIssue()}
+     * and {@link #approveDraftNativeIssue()} (Save/Finalize/Approve workflow).
+     * Deliberately NOT called from {@link #saveDraftNativeIssue()} — a draft is a
+     * work-in-progress the user should be free to save with incomplete/over/under
+     * quantities and correct later; the gate belongs at Finalize (locking the draft
+     * for approval) and Approve (moving stock), not at the save step.
+     */
+    private boolean validateNoOverIssue(List<TransferIssueItemRowDto> items) {
+        Map<Long, Double> issuingByReqItem = new LinkedHashMap<>();
+        Map<Long, String> nameByReqItem    = new LinkedHashMap<>();
+        Map<Long, Double> maxByReqItem     = new LinkedHashMap<>();
+        for (TransferIssueItemRowDto item : items) {
+            long reqId   = item.getRequestedBillItemId();
+            double qty   = item.getIssuingQty() != null ? item.getIssuingQty().doubleValue() : 0.0;
+            if (qty <= 0) continue; // negative/zero qty excluded — see comment above
+            double max   = item.getRequestedQty() - item.getAlreadyIssuedQty();
+            issuingByReqItem.merge(reqId, qty, Double::sum);
+            nameByReqItem.putIfAbsent(reqId, item.getItemName());
+            maxByReqItem.putIfAbsent(reqId, max);
+        }
+        boolean overIssue = false;
+        for (Map.Entry<Long, Double> e : issuingByReqItem.entrySet()) {
+            double total = e.getValue();
+            double max   = maxByReqItem.getOrDefault(e.getKey(), 0.0);
+            if (total > max + 0.001) {
+                JsfUtil.addErrorMessage(nameByReqItem.get(e.getKey())
+                        + ": issue qty " + String.format("%.2f", total)
+                        + " exceeds remaining requested qty " + String.format("%.2f", max));
+                overIssue = true;
+            }
+        }
+        return !overIssue;
+    }
+
     // -----------------------------------------------------------------------
     // UI helpers
     // -----------------------------------------------------------------------
@@ -747,6 +823,7 @@ public class TransferIssueNativeSqlController implements Serializable {
      * Mirrors TransferIssueForRequestsController.onQuantityChangeForTransferIssue().
      */
     public void onQuantityChangeForTransferIssue(TransferIssueItemRowDto item) {
+        stockWarningAcknowledged = false;
         if (item == null || item.getIssuingQty() == null || item.getGrossRate() == null) {
             return;
         }
@@ -761,6 +838,7 @@ public class TransferIssueNativeSqlController implements Serializable {
      * Mirrors TransferIssueForRequestsController.remove().
      */
     public void remove(TransferIssueItemRowDto item) {
+        stockWarningAcknowledged = false;
         if (issueItems != null) {
             issueItems.remove(item);
         }
@@ -794,6 +872,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         printPreview = false;
         draftMode = false;
         blockingPendingDrafts = null;
+        stockWarningAcknowledged = false;
     }
 
     /**
@@ -1078,6 +1157,16 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     public void setDraftMode(boolean draftMode) {
         this.draftMode = draftMode;
+    }
+
+    /**
+     * True once a draft fast issue has been finalized and is awaiting approval.
+     * At this stage approval must be a pure boolean decision (Approve / Cancel Draft) —
+     * quantities, staff and item selection are locked in the UI so the approver cannot
+     * silently change what gets issued (#23802).
+     */
+    public boolean isAwaitingApprovalReadOnly() {
+        return draftMode && getIssuedBill().isCompleted();
     }
 
     public List<Bill> getBlockingPendingDrafts() {
