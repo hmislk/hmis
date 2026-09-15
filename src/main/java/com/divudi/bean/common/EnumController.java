@@ -646,6 +646,9 @@ public class EnumController implements Serializable {
         rt.add(RequestType.PETTYCASH_APROVEL);
         rt.add(RequestType.PETTYCASH_CANCELLATION);
         rt.add(RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
+        rt.add(RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+        rt.add(RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        rt.add(RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL);
         //rt.add(RequestType.EDIT_REQUEST);
         //rt.add(RequestType.INFORMATION_UPDATE);
         //rt.add(RequestType.QUANTITY_CHANGE);
