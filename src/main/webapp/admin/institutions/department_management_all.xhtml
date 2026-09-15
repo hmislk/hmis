@@ -224,7 +224,7 @@
                                             <h:outputText value="Department Type" />
                                             <p:selectOneMenu class="w-100" id="cmbDept" filter="true" filterMatchMode="contains"
                                                              value="#{departmentController.current.departmentType}"
-                                                             disabled="#{!departmentController.editable}">
+                                                             disabled="#{!departmentController.editable or departmentController.current.departmentType eq 'CollectingCentre'}">
                                                 <f:selectItem itemLabel="Select the Department Type" />
                                                 <f:selectItems value="#{departmentController.departmentType}"/>
                                             </p:selectOneMenu>
