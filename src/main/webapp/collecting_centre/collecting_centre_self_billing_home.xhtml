@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Collecting Centre Self Billing</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet>
+                    .cc-home-wrap {
+                    width: 100%;
+                    }
+                    .cc-hero {
+                    border-radius: 14px;
+                    background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+                    color: #fff;
+                    padding: 2rem 1.75rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1.25rem;
+                    box-shadow: 0 6px 18px rgba(21, 101, 192, 0.25);
+                    }
+                    .cc-hero-avatar {
+                    width: 64px;
+                    height: 64px;
+                    min-width: 64px;
+                    border-radius: 50%;
+                    background: rgba(255,255,255,0.18);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.75rem;
+                    }
+                    .cc-hero .cc-hero-title {
+                    font-size: 1.35rem;
+                    font-weight: 600;
+                    display: block;
+                    }
+                    .cc-hero .cc-hero-sub {
+                    opacity: 0.9;
+                    display: block;
+                    }
+                    .cc-info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 0.9rem;
+                    margin-top: 1.5rem;
+                    }
+                    @media (max-width: 992px) {
+                    .cc-info-grid { grid-template-columns: repeat(2, 1fr); }
+                    }
+                    @media (max-width: 576px) {
+                    .cc-info-grid { grid-template-columns: 1fr; }
+                    }
+                    .cc-info-card {
+                    background: var(--surface-b, #f8f9fa);
+                    border: 1px solid var(--surface-d, #e9ecef);
+                    border-radius: 10px;
+                    padding: 0.9rem 1.1rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    }
+                    .cc-info-card .cc-info-icon {
+                    width: 38px;
+                    height: 38px;
+                    min-width: 38px;
+                    border-radius: 8px;
+                    background: rgba(30, 136, 229, 0.12);
+                    color: #1E88E5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    }
+                    .cc-info-card .cc-info-label {
+                    font-size: 0.78rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    opacity: 0.65;
+                    display: block;
+                    }
+                    .cc-info-card .cc-info-value {
+                    font-weight: 600;
+                    display: block;
+                    }
+                    .cc-feature-grid {
+                    display: grid;
+                    grid-template-columns: repeat(6, 1fr);
+                    gap: 0.9rem;
+                    margin-top: 1.5rem;
+                    }
+                    @media (max-width: 992px) {
+                    .cc-feature-grid { grid-template-columns: repeat(3, 1fr); }
+                    }
+                    @media (max-width: 768px) {
+                    .cc-feature-grid { grid-template-columns: repeat(2, 1fr); }
+                    }
+                    @media (max-width: 480px) {
+                    .cc-feature-grid { grid-template-columns: 1fr; }
+                    }
+                    .cc-feature-card {
+                    position: relative;
+                    border: 1px dashed var(--surface-d, #dee2e6);
+                    border-radius: 10px;
+                    padding: 1.1rem 0.75rem;
+                    text-align: center;
+                    color: var(--text-color-secondary, #6c757d);
+                    }
+                    .cc-feature-card .cc-feature-icon {
+                    font-size: 1.4rem;
+                    margin-bottom: 0.5rem;
+                    display: block;
+                    }
+                    .cc-feature-card .cc-feature-label {
+                    font-weight: 500;
+                    display: block;
+                    }
+                    .cc-feature-badge {
+                    position: absolute;
+                    top: -0.55rem;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #ffc107;
+                    color: #212529;
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                    letter-spacing: 0.03em;
+                    padding: 0.15rem 0.5rem;
+                    border-radius: 999px;
+                    text-transform: uppercase;
+                    }
+                </h:outputStylesheet>
+
+                <div class="cc-home-wrap">
+                    <div class="cc-hero">
+                        <div class="cc-hero-avatar">
+                            <h:outputText styleClass="fas fa-hospital-user"/>
+                        </div>
+                        <div>
+                            <h:outputText styleClass="cc-hero-title"
+                                          value="Welcome, #{sessionController.loggedUser.webUserPerson.name}"
+                                          rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                            <h:outputText styleClass="cc-hero-sub"
+                                          value="#{sessionController.department.name} &#183; Collecting Centre Self Billing"
+                                          rendered="#{sessionController.department != null}"/>
+                        </div>
+                    </div>
+
+                    <div class="cc-info-grid" rendered="#{sessionController.loggedUser != null}">
+                        <div class="cc-info-card">
+                            <div class="cc-info-icon">
+                                <h:outputText styleClass="fas fa-city"/>
+                            </div>
+                            <div>
+                                <h:outputText styleClass="cc-info-label" value="Institution"/>
+                                <h:outputText styleClass="cc-info-value" value="#{sessionController.institution.name}"/>
+                            </div>
+                        </div>
+                        <div class="cc-info-card">
+                            <div class="cc-info-icon">
+                                <h:outputText styleClass="fas fa-sitemap"/>
+                            </div>
+                            <div>
+                                <h:outputText styleClass="cc-info-label" value="Department"/>
+                                <h:outputText styleClass="cc-info-value" value="#{sessionController.department.name}"/>
+                            </div>
+                        </div>
+                        <div class="cc-info-card">
+                            <div class="cc-info-icon">
+                                <h:outputText styleClass="fas fa-user"/>
+                            </div>
+                            <div>
+                                <h:outputText styleClass="cc-info-label" value="Logged User"/>
+                                <h:outputText styleClass="cc-info-value"
+                                              value="#{sessionController.loggedUser.webUserPerson.name}"
+                                              rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                            </div>
+                        </div>
+                        <div class="cc-info-card">
+                            <div class="cc-info-icon">
+                                <h:outputText styleClass="fas fa-id-badge"/>
+                            </div>
+                            <div>
+                                <h:outputText styleClass="cc-info-label" value="Username"/>
+                                <h:outputText styleClass="cc-info-value" value="#{sessionController.loggedUser.name}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cc-feature-grid">
+                        <div class="cc-feature-card">
+                            <span class="cc-feature-badge">Soon</span>
+                            <h:outputText styleClass="fas fa-file-invoice-dollar cc-feature-icon"/>
+                            <h:outputText styleClass="cc-feature-label" value="Create Bill"/>
+                        </div>
+                        <div class="cc-feature-card">
+                            <span class="cc-feature-badge">Soon</span>
+                            <h:outputText styleClass="fas fa-search cc-feature-icon"/>
+                            <h:outputText styleClass="cc-feature-label" value="Search Bills"/>
+                        </div>
+                        <div class="cc-feature-card">
+                            <span class="cc-feature-badge">Soon</span>
+                            <h:outputText styleClass="fas fa-chart-bar cc-feature-icon"/>
+                            <h:outputText styleClass="cc-feature-label" value="Reports"/>
+                        </div>
+                        <div class="cc-feature-card">
+                            <span class="cc-feature-badge">Soon</span>
+                            <h:outputText styleClass="fas fa-money-check-alt cc-feature-icon"/>
+                            <h:outputText styleClass="cc-feature-label" value="Payments"/>
+                        </div>
+                        <div class="cc-feature-card">
+                            <span class="cc-feature-badge">Soon</span>
+                            <h:outputText styleClass="fas fa-file-alt cc-feature-icon"/>
+                            <h:outputText styleClass="cc-feature-label" value="Statements"/>
+                        </div>
+                        <div class="cc-feature-card">
+                            <span class="cc-feature-badge">Soon</span>
+                            <h:outputText styleClass="fas fa-undo-alt cc-feature-icon"/>
+                            <h:outputText styleClass="cc-feature-label" value="Returns"/>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
