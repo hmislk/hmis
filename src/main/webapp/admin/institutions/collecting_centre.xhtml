@@ -279,7 +279,7 @@
                                                 action="#{collectingCentreController.createDepartmentForCollectingCentre()}"
                                                 process="@this"
                                                 update="crtCCDeptBtn newCcDeptContent"
-                                                oncomplete="if (#{not empty collectingCentreController.newCcDepartment}) { PF('newCcDepartmentDialog').show(); }">
+                                                oncomplete="if (args &amp;&amp; args.departmentCreated) { PF('newCcDepartmentDialog').show(); }">
                                             </p:commandButton>
                                         </div>
 

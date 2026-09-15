@@ -39,6 +39,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -504,8 +505,20 @@ public class CollectingCentreController implements Serializable {
     }
 
     public void createDepartmentForCollectingCentre() {
+        newCcDepartment = null;
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Please save the Collecting Centre first");
+            PrimeFaces.current().ajax().addCallbackParam("departmentCreated", false);
+            return;
+        }
+        if (current.isInactive()) {
+            JsfUtil.addErrorMessage("Cannot create a Department for an Inactive Collecting Centre");
+            PrimeFaces.current().ajax().addCallbackParam("departmentCreated", false);
+            return;
+        }
+        if (findDepartmentForCollectingCentre(current) != null) {
+            JsfUtil.addErrorMessage("A Department already exists for this Collecting Centre");
+            PrimeFaces.current().ajax().addCallbackParam("departmentCreated", false);
             return;
         }
 
@@ -524,6 +537,23 @@ public class CollectingCentreController implements Serializable {
 
         newCcDepartment = dep;
         JsfUtil.addSuccessMessage("Department Created Successfully");
+        PrimeFaces.current().ajax().addCallbackParam("departmentCreated", true);
+    }
+
+    private Department findDepartmentForCollectingCentre(Institution cc) {
+        if (cc == null || cc.getId() == null) {
+            return null;
+        }
+        String jpql = "select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " and d.departmentType=:t "
+                + " and d.institution=:ins";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", DepartmentType.CollectingCentre);
+        m.put("ins", cc);
+        return departmentFacade.findFirstByJpql(jpql, m);
     }
 
     public Department getNewCcDepartment() {
