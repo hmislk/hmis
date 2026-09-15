@@ -11,17 +11,20 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CollectingCentrePaymentMethod;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.dto.AgentHistoryDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.service.AgentHistoryService;
 import com.divudi.service.AuditService;
@@ -71,8 +74,11 @@ public class CollectingCentreController implements Serializable {
     AgentHistoryService agentHistoryService;
     @EJB
     AuditService auditService;
+    @EJB
+    DepartmentFacade departmentFacade;
 
     private int ccManagementIndex = 0;
+    private Department newCcDepartment;
 
     List<Institution> selectedItems;
     private Institution current;
@@ -495,6 +501,37 @@ public class CollectingCentreController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void createDepartmentForCollectingCentre() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save the Collecting Centre first");
+            return;
+        }
+
+        Department dep = new Department();
+        dep.setDepartmentType(DepartmentType.CollectingCentre);
+        dep.setInstitution(current);
+        dep.setName(current.getName());
+        dep.setCode(current.getCode());
+        dep.setAddress(current.getAddress());
+        dep.setTelephone1(current.getPhone());
+        dep.setEmail(current.getEmail());
+        dep.setCreatedAt(new Date());
+        dep.setCreater(getSessionController().getLoggedUser());
+
+        departmentFacade.create(dep);
+
+        newCcDepartment = dep;
+        JsfUtil.addSuccessMessage("Department Created Successfully");
+    }
+
+    public Department getNewCcDepartment() {
+        return newCcDepartment;
+    }
+
+    public void setNewCcDepartment(Department newCcDepartment) {
+        this.newCcDepartment = newCcDepartment;
     }
 
     public void save(Institution cc) {

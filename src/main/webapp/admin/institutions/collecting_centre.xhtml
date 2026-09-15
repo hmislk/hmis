@@ -259,7 +259,7 @@
                                             <h:outputText value="Active" >                                        
                                             </h:outputText>
                                             <p:toggleSwitch class="form-control" value="#{collectingCentreController.current.inactive}" onIcon="pi pi-check" offIcon="pi pi-times" />
-                              
+
                                             <h:outputText value="Creator" ></h:outputText>
                                             <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
 
@@ -268,6 +268,22 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                             </h:outputText>
                                         </p:panelGrid>
+
+                                        <div class="d-flex justify-content-end mt-3">
+                                            <p:commandButton
+                                                id="crtCCDeptBtn"
+                                                value="Create New Department for this Centre"
+                                                class="ui-button-emr"
+                                                rendered="#{collectingCentreController.current.id ne null}"
+                                                icon="fas fa-plus"
+                                                action="#{collectingCentreController.createDepartmentForCollectingCentre()}"
+                                                process="@this"
+                                                update="crtCCDeptBtn newCcDeptContent"
+                                                oncomplete="if (#{not empty collectingCentreController.newCcDepartment}) { PF('newCcDepartmentDialog').show(); }">
+                                            </p:commandButton>
+                                        </div>
+
+
                                     </p:tab>
                                 </p:tabView>
 
@@ -276,6 +292,42 @@
                         </div>
                     </div>
                 </p:panel>
+
+                <p:dialog
+                    header="Department Created"
+                    widgetVar="newCcDepartmentDialog"
+                    modal="true"
+                    responsive="true"
+                    style="min-width: 40%;">
+                    <h:panelGroup id="newCcDeptContent">
+                    <p:panelGrid
+                        columns="2"
+                        layout="tabular"
+                        class="w-100"
+                        rendered="#{not empty collectingCentreController.newCcDepartment}">
+                        <h:outputText value="Name" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.name}" />
+
+                        <h:outputText value="Code" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.code}" />
+
+                        <h:outputText value="Department Type" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.departmentType.label}" />
+
+                        <h:outputText value="Institution" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.institution.name}" />
+
+                        <h:outputText value="Address" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.address}" />
+
+                        <h:outputText value="Telephone" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.telephone1}" />
+
+                        <h:outputText value="Email" />
+                        <h:outputText value="#{collectingCentreController.newCcDepartment.email}" />
+                    </p:panelGrid>
+                    </h:panelGroup>
+                </p:dialog>
             </h:form>
 
         </h:panelGroup>
