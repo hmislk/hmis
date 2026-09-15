@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
+                    <na:not_authorize />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
+                    <h:form id="approvedAdjustmentRequestsForm">
+                        <p:panel class="w-100">
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-clipboard-check"/>
+                                <p:outputLabel value="Approved Pharmacy Stock &amp; Price Adjustment Requests - #{sessionController.department.name}" class="mx-4"/>
+                            </f:facet>
+
+                            <p:dataTable
+                                id="tblApprovedAdjustmentRequests"
+                                widgetVar="wTblApprovedAdjustmentRequests"
+                                value="#{pharmacyAdjustmentController.pendingApprovedAdjustmentRequests}"
+                                var="r"
+                                rowKey="#{r.id}"
+                                rows="10"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="5,10,15"
+                                emptyMessage="No approved adjustment requests awaiting processing."
+                                class="w-100">
+
+                                <p:column headerText="Request No">
+                                    <h:outputText value="#{r.requestNo}"/>
+                                </p:column>
+
+                                <p:column headerText="Kind">
+                                    <p:badge value="#{r.requestType.displayName}" severity="info"/>
+                                </p:column>
+
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{r.department.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Requested By">
+                                    <h:outputText value="#{r.requester.webUserPerson.nameWithTitle}"/>
+                                </p:column>
+
+                                <p:column headerText="Requested At">
+                                    <h:outputText value="#{r.requestAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Approved At">
+                                    <h:outputText value="#{r.approvedAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Approved By">
+                                    <h:outputText value="#{r.approvedBy.webUserPerson.nameWithTitle}"/>
+                                </p:column>
+
+                                <p:column headerText="Actions">
+                                    <p:commandButton
+                                        id="btnProcess"
+                                        title="Process Approved Adjustment #{r.requestNo}"
+                                        value="Process"
+                                        class="ui-button-success m-1"
+                                        ajax="false"
+                                        icon="fa fa-check-double"
+                                        action="#{pharmacyAdjustmentController.processApprovedAdjustment(r.bill)}"/>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

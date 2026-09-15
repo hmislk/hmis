@@ -403,6 +403,11 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
             return "";
         }
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
+            return "";
+        }
         return "/inward/inward_cancel_bill_service?faces-redirect=true";
     }
 
@@ -1668,20 +1673,20 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
+            if (!checkCancelBill(getBill())) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                return;
+            }
 
-                if (!checkCancelBill(getBill())) {
-                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                    return;
-                }
+            if (checkInvestigation()) {
+                JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
+                return;
+            }
 
-                if (checkInvestigation()) {
-                    JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
-                    return;
-                }
-            } else {
+            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
                 if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
                     JsfUtil.addErrorMessage("You have no privilege to cancel This Bill");
+                    return;
                 }
             }
 
@@ -2351,6 +2356,17 @@ public class InwardSearch implements Serializable {
             }
             if (getBill().getPatientEncounter() != null && getBill().getPatientEncounter().isDischarged()) {
                 JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+                return;
+            }
+
+            if (getBill().isCompleted()) {
+                JsfUtil.addErrorMessage("This surgery has been validated and is locked. Cannot cancel.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter() != null && getBill().getPatientEncounter().isNursingDischarged()
+                    && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+                JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
                 return;
             }
 

@@ -1,0 +1,274 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
+
+                    <h:panelGroup rendered="#{!((requestController.currentRequest.requestType eq 'PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL' and webUserController.hasPrivilege('PharmacyStockAdjustmentApproval')) or (requestController.currentRequest.requestType eq 'PHARMACY_PRICE_ADJUSTMENT_APPROVAL' and webUserController.hasPrivilege('PharmacyPriceAdjustmentApproval')) or (requestController.currentRequest.requestType eq 'PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL' and webUserController.hasPrivilege('PharmacyExpiryDateAdjustmentApproval')))}">
+                        <na:not_authorize />
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{(requestController.currentRequest.requestType eq 'PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL' and webUserController.hasPrivilege('PharmacyStockAdjustmentApproval')) or (requestController.currentRequest.requestType eq 'PHARMACY_PRICE_ADJUSTMENT_APPROVAL' and webUserController.hasPrivilege('PharmacyPriceAdjustmentApproval')) or (requestController.currentRequest.requestType eq 'PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL' and webUserController.hasPrivilege('PharmacyExpiryDateAdjustmentApproval'))}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputText value="Pharmacy Stock &amp; Price Adjustment Approval" class="mt-5"/>
+                                <p:commandButton
+                                    id="btnBackToSearch"
+                                    ajax="false"
+                                    value="Back to Search"
+                                    icon="fa fa-arrow-left"
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    action="#{requestController.navigateToBackSearchRequest()}">
+                                </p:commandButton>
+                            </f:facet>
+
+                            <div class="row mt-2 mb-3">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <p:inputText
+                                        id="commentsMenu"
+                                        value="#{requestController.comment}"
+                                        style="width: 550px;"
+                                        rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
+                                        readonly="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
+                                        placeholder="Add Reason for Reject" >
+                                    </p:inputText>
+
+                                    <p:commandButton
+                                        id="btnApproveQty"
+                                        ajax="false"
+                                        value="Approve"
+                                        icon="fa fa-check"
+                                        onclick="if (!confirm('Are you sure you want to approve this pharmacy stock quantity adjustment request?'))
+                                                    return false;"
+                                        rendered="#{requestController.currentRequest.requestType eq 'PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL' and !(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
+                                        class="ui-button-success"
+                                        action="#{requestController.approvePharmacyStockQtyAdjustmentRequest()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnApprovePrice"
+                                        ajax="false"
+                                        value="Approve"
+                                        icon="fa fa-check"
+                                        onclick="if (!confirm('Are you sure you want to approve this pharmacy price adjustment request?'))
+                                                    return false;"
+                                        rendered="#{requestController.currentRequest.requestType eq 'PHARMACY_PRICE_ADJUSTMENT_APPROVAL' and !(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
+                                        class="ui-button-success"
+                                        action="#{requestController.approvePharmacyPriceAdjustmentRequest()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnApproveExpiry"
+                                        ajax="false"
+                                        value="Approve"
+                                        icon="fa fa-check"
+                                        onclick="if (!confirm('Are you sure you want to approve this pharmacy expiry date adjustment request?'))
+                                                    return false;"
+                                        rendered="#{requestController.currentRequest.requestType eq 'PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL' and !(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
+                                        class="ui-button-success"
+                                        action="#{requestController.approvePharmacyExpiryDateAdjustmentRequest()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnReject"
+                                        ajax="false"
+                                        value="Reject"
+                                        icon="fa fa-times"
+                                        onclick="if (!confirm('Are you sure you want to reject this pharmacy adjustment request?'))
+                                                    return false;"
+                                        rendered="#{!(requestController.currentRequest.status eq 'APPROVED')}"
+                                        disabled="#{(requestController.currentRequest.status eq 'REJECTED' or requestController.currentRequest.status eq 'COMPLETED' or requestController.currentRequest.status eq 'CANCELLED')}"
+                                        class="ui-button-danger"
+                                        action="#{requestController.rejectRequest()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <!-- Adjustment, Bill and Request Details Panels -->
+                            <div class="row">
+                                <div class="col-4">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-sliders-h"></h:outputText>
+                                            <h:outputLabel value="Adjustment Details" class="mx-2"></h:outputLabel>
+                                        </f:facet>
+
+                                        <p:dataTable
+                                            id="tblAdjustmentItems"
+                                            value="#{requestController.currentRequest.bill.billItems}"
+                                            var="billItem"
+                                            emptyMessage="No adjustment lines found."
+                                            class="w-100">
+
+                                            <p:column headerText="Item">
+                                                <h:outputText value="#{billItem.item.name}" />
+                                            </p:column>
+
+                                            <p:column headerText="Before">
+                                                <h:panelGroup rendered="#{requestController.currentRequest.bill.billTypeAtomic ne 'PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST'}">
+                                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST'}">
+                                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.beforeAdjustmentExpiry}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </p:column>
+
+                                            <p:column headerText="After">
+                                                <h:panelGroup rendered="#{requestController.currentRequest.bill.billTypeAtomic ne 'PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST'}">
+                                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.afterAdjustmentValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST'}">
+                                                    <h:outputText value="#{billItem.pharmaceuticalBillItem.afterAdjustmentExpiry}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </h:panelGroup>
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
+                                <div class="col-4">
+                                    <p:panel id="billDetails">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa fa-file-invoice" />
+                                            <h:outputText value="Bill Details" class="mx-4"></h:outputText>
+                                        </f:facet>
+
+                                        <div style="line-height: 2.5">
+                                            <div class="row">
+                                                <div class="col-4"><h:outputLabel value="Bill No"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-7"><h:outputLabel value="#{requestController.currentRequest.bill.deptId}"></h:outputLabel></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-4"><h:outputLabel value="Department"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-7"><h:outputLabel value="#{requestController.currentRequest.bill.department.name}"></h:outputLabel></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-4"><h:outputLabel value="Adjustment Kind"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-7">
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_STOCK_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="info"></p:badge>
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_STAFF_STOCK_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="info"></p:badge>
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_PURCHASE_RATE_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="warning"></p:badge>
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_COST_RATE_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="warning"></p:badge>
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_RETAIL_RATE_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="warning"></p:badge>
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_WHOLESALE_RATE_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="warning"></p:badge>
+                                                    <p:badge rendered="#{requestController.currentRequest.bill.billTypeAtomic eq 'PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST'}" value="#{requestController.currentRequest.bill.billTypeAtomic.label}" severity="danger"></p:badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </div>
+                                <div class="col-4">
+                                    <p:panel id="requestDetails">
+                                        <f:facet name="header" >
+                                            <h:outputText styleClass="fa fa-info-circle" />
+                                            <h:outputText value="Request Details" class="mx-4"></h:outputText>
+                                        </f:facet>
+
+                                        <div style="line-height: 2.5">
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request No" ></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.requestNo}" ></h:outputLabel></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request Type"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8">
+                                                    <p:badge value="#{requestController.currentRequest.requestType.displayName}" severity="info"></p:badge>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request Status"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8"><p:badge value="#{requestController.currentRequest.status.label}"></p:badge></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Requested Bill"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.bill.deptId}"></h:outputLabel></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request By"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.requester.webUserPerson.nameWithTitle}"></h:outputLabel></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request From"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.department.name}"></h:outputLabel></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request At"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8">
+                                                    <h:outputLabel value="#{requestController.currentRequest.requestAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-3"><h:outputLabel value="Request Reason"></h:outputLabel></div>
+                                                <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.requestReason}"></h:outputLabel></div>
+                                            </div>
+
+                                            <h:panelGroup rendered="#{requestController.currentRequest.rejected}">
+
+                                                <hr/>
+
+                                                <div class="row">
+                                                    <div class="col-3"><h:outputLabel value="Rejected Reason"></h:outputLabel></div>
+                                                    <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                    <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.rejectionReason}"></h:outputLabel></div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-3"><h:outputLabel value="Rejected By"></h:outputLabel></div>
+                                                    <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                    <div class="col-8"><h:outputLabel value="#{requestController.currentRequest.rejectedBy.webUserPerson.nameWithTitle}"></h:outputLabel></div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-3"><h:outputLabel value="Rejected At"></h:outputLabel></div>
+                                                    <div class="col-1"><h:outputLabel value=":" class="d-flex justify-content-center"></h:outputLabel></div>
+                                                    <div class="col-8">
+                                                        <h:outputLabel value="#{requestController.currentRequest.rejectedAt}">
+                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                                                        </h:outputLabel>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

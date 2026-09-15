@@ -116,6 +116,7 @@ public enum BillType {
     PharmacySnapshotBill,
     PharmacyPhysicalCountBill,
     PharmacyStockAdjustmentBill,
+    PharmacyAdjustmentApprovalRequest,
     ChannelCash(ChannelCashFlow),
     ChannelPaid(ChannelCashFlow),
     ChannelAgent(ChannelCashFlow),
@@ -252,6 +253,8 @@ public enum BillType {
                 return "Physical Count Bill";
             case PharmacyStockAdjustmentBill:
                 return "Stock Adjustment Bill";
+            case PharmacyAdjustmentApprovalRequest:
+                return "Pharmacy Adjustment Approval Request";
             case GrnPayment:
                 return "Grn Payment";
             case GrnPaymentPre:
