@@ -2155,14 +2155,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 }
             }
         }
-        if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
-            if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
-                if (sampleHasBeenCollected(refundingBill)) {
-                    JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
-                    return "";
-                }
+        if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
+            if (sampleHasBeenCollected(refundingBill)) {
+                JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
+                return "";
             }
-
         }
 
         if (billFeeIsAlreadyRefunded(refundingBill)) {
@@ -2916,26 +2913,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                return;
-            }
+        if (!checkCancelBill(getBill())) {
+            JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+            return;
+        }
+
+        if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+            return;
         }
 
         // CRITICAL: Check if batch bill has been settled with credit company
