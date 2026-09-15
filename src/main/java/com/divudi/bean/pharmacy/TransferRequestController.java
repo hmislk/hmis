@@ -409,25 +409,30 @@ public class TransferRequestController implements Serializable {
         if (!isAuthorized("APPROVE_REQUEST", "PharmacyDisbursementRequestApproval")) {
             return;
         }
-        // Check if the pre-bill is already approved to prevent a queued double-submit
-        // (blocked on the synchronized lock above) from creating a second approved bill
-        // once the first call has finished.
-        if (transferRequestBillPre != null && transferRequestBillPre.getReferenceBill() != null) {
-            JsfUtil.addErrorMessage("This transfer request is already approved");
-            return;
-        }
-        // Defence in depth: a rejected/cancelled request must not be approvable.
-        // In practice the Approve button's disabled="#{...cancelled}" binding
-        // already stops this, and does so server-side - JSF re-evaluates the
-        // attribute during decode and refuses to queue the action event for a
-        // disabled UICommand, so re-enabling the button client-side achieves
-        // nothing. This guard covers callers that are not that button.
-        // Re-read rather than trusting the session-scoped copy, which was loaded
-        // when the page was opened and cannot see a reject made since.
+        // Check the request's CURRENT status immediately before acting, and say so
+        // plainly if the decision has already been made. The page is backed by a
+        // @SessionScoped bean, so the copy it holds was loaded when the screen was
+        // opened: without this re-read, a request approved or rejected since then
+        // (by this user in another tab, or by a colleague) still looks actionable.
+        // findWithoutCache, not find: find() can be served from the EclipseLink L2
+        // cache and report the stale status, defeating the check.
+        //
+        // This also covers the queued double-submit that the synchronized lock above
+        // serialises rather than prevents. Note it narrows the window but does not
+        // close it - two sessions can still both read "not yet decided" before either
+        // writes. Closing that needs a conditional claim in one transaction (#23816).
         if (transferRequestBillPre != null && transferRequestBillPre.getId() != null) {
-            Bill freshPreBill = billFacade.find(transferRequestBillPre.getId());
-            if (freshPreBill != null && freshPreBill.isCancelled()) {
-                JsfUtil.addErrorMessage("This transfer request has been rejected and cannot be approved");
+            Bill freshPreBill = billFacade.findWithoutCache(transferRequestBillPre.getId());
+            if (freshPreBill == null) {
+                JsfUtil.addErrorMessage("This transfer request is no longer available");
+                return;
+            }
+            if (freshPreBill.getReferenceBill() != null) {
+                JsfUtil.addErrorMessage("This transfer request is already approved");
+                return;
+            }
+            if (freshPreBill.isCancelled()) {
+                JsfUtil.addErrorMessage("This transfer request has already been rejected and cannot be approved");
                 return;
             }
         }
@@ -490,7 +495,10 @@ public class TransferRequestController implements Serializable {
         }
         // Re-read rather than trusting the session-scoped copy: the request may have
         // been approved or cancelled elsewhere since this page was opened.
-        Bill preBill = billFacade.find(transferRequestBillPre.getId());
+        // findWithoutCache, not find: find() can be served from the EclipseLink L2
+        // cache and report the status as it was when the page loaded, which would
+        // defeat the point of checking.
+        Bill preBill = billFacade.findWithoutCache(transferRequestBillPre.getId());
         if (preBill == null) {
             JsfUtil.addErrorMessage("This transfer request is no longer available");
             return "";

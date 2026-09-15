@@ -905,8 +905,25 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
+        // Re-read the request's CURRENT status immediately before cancelling. This is a
+        // @SessionScoped bean, so `bill` was loaded when the page was opened and
+        // isTransferRequestCancellable() would otherwise decide from that stale copy -
+        // a request cancelled since (another tab, a colleague, or simply leaving this
+        // page open) would still look cancellable and would get a second cancellation
+        // bill, orphaning the first. findWithoutCache, not find: find() can be served
+        // from the EclipseLink L2 cache and report the status as it was.
+        Bill freshBill = billFacade.findWithoutCache(bill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("This transfer request is no longer available");
+            return "";
+        }
+        bill = freshBill;
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("This transfer request has already been cancelled.");
+            return "";
+        }
         if (!isTransferRequestCancellable()) {
-            JsfUtil.addErrorMessage("This transfer request cannot be cancelled - it has already been issued or is already cancelled.");
+            JsfUtil.addErrorMessage("This transfer request cannot be cancelled - it has already been issued.");
             return "";
         }
         CancelledBill cb = pharmacyCreateCancelBill();
