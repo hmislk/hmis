@@ -279,7 +279,7 @@
                                                 icon="fas fa-plus"
                                                 action="#{collectingCentreController.createDepartmentForCollectingCentre()}"
                                                 process="@this"
-                                                update="crtCCDeptBtn newCcDeptContent growl">
+                                                update="crtCCDeptBtn growl">
                                             </p:commandButton>
                                         </div>
 
@@ -292,42 +292,6 @@
                         </div>
                     </div>
                 </p:panel>
-
-                <p:dialog
-                    header="Department Created"
-                    widgetVar="newCcDepartmentDialog"
-                    modal="true"
-                    responsive="true"
-                    style="min-width: 40%;">
-                    <h:panelGroup id="newCcDeptContent">
-                    <p:panelGrid
-                        columns="2"
-                        layout="tabular"
-                        class="w-100"
-                        rendered="#{not empty collectingCentreController.newCcDepartment}">
-                        <h:outputText value="Name" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.name}" />
-
-                        <h:outputText value="Code" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.code}" />
-
-                        <h:outputText value="Department Type" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.departmentType.label}" />
-
-                        <h:outputText value="Institution" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.institution.name}" />
-
-                        <h:outputText value="Address" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.address}" />
-
-                        <h:outputText value="Telephone" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.telephone1}" />
-
-                        <h:outputText value="Email" />
-                        <h:outputText value="#{collectingCentreController.newCcDepartment.email}" />
-                    </p:panelGrid>
-                    </h:panelGroup>
-                </p:dialog>
             </h:form>
 
         </h:panelGroup>

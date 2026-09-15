@@ -39,7 +39,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -79,7 +78,6 @@ public class CollectingCentreController implements Serializable {
     DepartmentFacade departmentFacade;
 
     private int ccManagementIndex = 0;
-    private Department newCcDepartment;
 
     List<Institution> selectedItems;
     private Institution current;
@@ -505,7 +503,6 @@ public class CollectingCentreController implements Serializable {
     }
 
     public void createDepartmentForCollectingCentre() {
-        newCcDepartment = null;
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Please save the Collecting Centre first");
             return;
@@ -529,9 +526,7 @@ public class CollectingCentreController implements Serializable {
 
         departmentFacade.create(dep);
 
-        newCcDepartment = dep;
         JsfUtil.addSuccessMessage("Department Created Successfully");
-        PrimeFaces.current().executeScript("PF('newCcDepartmentDialog').show();");
     }
 
     private Department findDepartmentForCollectingCentre(Institution cc) {
@@ -548,14 +543,6 @@ public class CollectingCentreController implements Serializable {
         m.put("t", DepartmentType.CollectingCentre);
         m.put("ins", cc);
         return departmentFacade.findFirstByJpql(jpql, m);
-    }
-
-    public Department getNewCcDepartment() {
-        return newCcDepartment;
-    }
-
-    public void setNewCcDepartment(Department newCcDepartment) {
-        this.newCcDepartment = newCcDepartment;
     }
 
     public void save(Institution cc) {
