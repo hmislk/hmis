@@ -108,12 +108,21 @@
             </h:panelGroup>
 
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
-                <p:menuitem 
+                <p:menuitem
                     id="home"
                     ajax="false"
-                    action="/home?faces-redirect=true" 
+                    action="/home?faces-redirect=true"
                     icon="pi pi-home"
                     title="Home">
+                </p:menuitem>
+
+                <p:menuitem
+                    id="ccSelfBillingHome"
+                    ajax="false"
+                    rendered="#{sessionController.department.departmentType eq 'CollectingCentre'}"
+                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                    icon="fas fa-hospital-user"
+                    title="Collecting Centre Self Billing Home">
                 </p:menuitem>
 
                 <!--            OPD Section-->
