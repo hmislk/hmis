@@ -1,24 +1,30 @@
 <#
   raw-text-print-agent.ps1
-  Watches a folder for .prn files and raw-copies each to a dot-matrix printer
-  (bypassing the Windows print driver / rasteriser), then deletes it.
-  Settings come from print-agent-config.json (same folder as this script) so
-  the printer path/target folder can be changed without editing this file.
+  Watches a folder for .prn files and raw-copies each to a dot-matrix printer,
+  then deletes it. Settings come from print-agent-config.json (same folder as
+  this script) so the printer name/target folder can be changed without
+  editing this file.
 
   Runs with no admin rights required: launched from the per-user Startup
   folder (start-agent-hidden.vbs), not Task Scheduler.
+
+  Printing method: raw bytes are sent by copying the file straight to the
+  printer's local share (\\<computername>\<sharename>) rather than via
+  Add-Type + P/Invoke. Add-Type -Language CSharp compiles code by spawning
+  csc.exe, and on this machine (and possibly other client PCs with similar
+  endpoint-security hardening) that spawn is blocked outright ("Access is
+  denied"), which silently prevented every print. A plain file copy to the
+  printer's UNC share needs no compilation and no child process, and Windows
+  routes it straight to the spooler in RAW mode - this is the same mechanism
+  as the classic "copy /b file.prn \\host\printershare" trick. This requires
+  the printer to be shared locally (Settings > Printers & scanners > printer
+  properties > Sharing) - $PrinterPath below must be its Windows printer
+  name, and the script resolves the matching share name itself.
 #>
 
 $ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ConfigPath = Join-Path $ScriptDir "print-agent-config.json"
 $LogPath    = Join-Path $ScriptDir "agent.log"
-
-# Sends raw bytes via the Print Spooler API (winspool.drv), using whatever
-# printer connection is already installed in Windows (Settings > Printers &
-# scanners). Needed because this account has no direct SMB file-share
-# permission on the print server, but printing through the installed
-# connection object works via the spooler's own session.
-. (Join-Path $ScriptDir "RawPrinterHelper.ps1")
 
 # ---- defaults, overridden by config file if present ------------------------
 $WatchFolder  = "C:\hims-print"
@@ -48,6 +54,25 @@ function Write-Log($msg) {
     $line = "{0}  {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $msg
     Write-Host $line
     Add-Content -LiteralPath $LogPath -Value $line
+}
+
+# ---- resolve the printer's UNC share target once at startup ----------------
+function Resolve-PrinterShareTarget($printerName) {
+    $p = Get-Printer -Name $printerName -ErrorAction SilentlyContinue
+    if (-not $p) {
+        throw "no printer named '$printerName' is installed on this PC (check Settings > Printers & scanners)"
+    }
+    if (-not $p.Shared -or [string]::IsNullOrWhiteSpace($p.ShareName)) {
+        throw "printer '$printerName' is not shared - enable Printer Properties > Sharing so raw bytes can be sent via its UNC path"
+    }
+    return "\\$env:COMPUTERNAME\$($p.ShareName)"
+}
+
+try {
+    $PrinterShareTarget = Resolve-PrinterShareTarget $PrinterPath
+} catch {
+    Write-Log ("FATAL: {0}" -f $_.Exception.Message)
+    exit 1
 }
 
 # ---- single-instance guard --------------------------------------------------
@@ -89,11 +114,9 @@ function Send-Raw($claimedFile, $originalName) {
     # the job to be sent to the printer again.
     for ($i = 0; $i -lt 3; $i++) {
         try {
-            $bytes = [System.IO.File]::ReadAllBytes($claimedFile)
-            $err = ""
-            $ok = [RawPrinterHelper]::SendBytesToPrinter($PrinterPath, $bytes, [ref]$err)
-            if ($ok) { $sent = $true; break }
-            $lastErr = $err
+            [System.IO.File]::Copy($claimedFile, $PrinterShareTarget, $true)
+            $sent = $true
+            break
         } catch {
             $lastErr = $_.Exception.Message
         }
@@ -139,12 +162,13 @@ function Send-Raw($claimedFile, $originalName) {
     }
 }
 
-Write-Log ("watching {0} for {1} -> {2} (polling every {3}s)" -f $WatchFolder, $FileGlob, $PrinterPath, $PollSeconds)
+Write-Log ("watching {0} for {1} -> {2} ({3}) (polling every {4}s)" -f $WatchFolder, $FileGlob, $PrinterPath, $PrinterShareTarget, $PollSeconds)
 
 # Simple poll loop instead of FileSystemWatcher: Register-ObjectEvent's -Action
 # scriptblock runs in a separate event-job runspace that does not inherit this
-# script's functions or variables, so Send-Raw/$PrinterPath would be undefined
-# there. A poll loop is simpler and reliable for a low-volume receipt printer.
+# script's functions or variables, so Send-Raw/$PrinterShareTarget would be
+# undefined there. A poll loop is simpler and reliable for a low-volume
+# receipt printer.
 while ($true) {
     Get-ChildItem -Path $WatchFolder -Filter $FileGlob -File -ErrorAction SilentlyContinue |
         ForEach-Object {

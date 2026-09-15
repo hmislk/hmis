@@ -9,9 +9,12 @@ button in the HIMS web UI.
 1. A page in the web app (e.g. `inward_reprint_bill_deposit.xhtml`) has a
    button that downloads a `.prn` file (raw printer bytes) into a watched
    folder on the client PC, instead of opening a normal browser print dialog.
-2. `raw-text-print-agent.ps1` polls that folder, sends each matching file's
-   raw bytes straight to a locally installed printer via the Windows Print
-   Spooler API (bypassing GDI rendering), then removes the file.
+2. `raw-text-print-agent.ps1` polls that folder, and for each matching file
+   copies its raw bytes straight to the printer's local UNC share
+   (`\\<computername>\<sharename>`), then removes the file. Windows routes a
+   plain file copy to a printer share directly into the spooler in RAW mode —
+   the same mechanism as the classic `copy /b file.prn \\host\printershare`
+   trick — so no print driver rendering or GDI is involved.
 3. `start-agent-hidden.vbs` launches the PowerShell agent with no visible
    window, and is placed in the current user's Startup folder so it runs
    automatically at logon.
@@ -19,8 +22,6 @@ button in the HIMS web UI.
 ## Files
 
 - `raw-text-print-agent.ps1` — the watcher/print loop.
-- `RawPrinterHelper.ps1` — P/Invoke wrapper around `winspool.drv`
-  (`OpenPrinter`/`StartDocPrinter`/`WritePrinter`) used to send raw bytes.
 - `start-agent-hidden.vbs` — hidden launcher for Startup.
 - `print-agent-config.example.json` — copy to `print-agent-config.json`
   next to the script and adjust for the site's printer name/folder.
@@ -29,18 +30,38 @@ button in the HIMS web UI.
 
 1. Copy this folder's contents to a folder on the client PC, e.g.
    `C:\hims-print\`.
-2. Copy `print-agent-config.example.json` to `print-agent-config.json` in
+2. **Share the target printer locally**: printer Properties → Sharing tab →
+   "Share this printer" (any share name; the script looks it up). This is
+   required — raw bytes are sent via the printer's UNC share, not a direct
+   spooler API call (see "Why not P/Invoke" below).
+3. Copy `print-agent-config.example.json` to `print-agent-config.json` in
    the same folder and set:
    - `WatchFolder` — where the browser downloads `.prn` files to.
    - `PrinterPath` — the exact name of the installed Windows printer to
-     print to (`Settings > Printers & scanners`).
+     print to (`Settings > Printers & scanners`), matching the printer you
+     just shared.
    - `FileGlob` — filename pattern to watch for.
    - `PollSeconds` — polling interval.
-3. Create a shortcut to `start-agent-hidden.vbs` in
+4. Create a shortcut to `start-agent-hidden.vbs` in
    `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` so it starts
    automatically at logon. No admin rights are required.
-4. Log off/on (or run the shortcut once) and confirm `agent.log` in the
-   watch folder shows a `watching ... -> <printer>` line.
+5. Log off/on (or run the shortcut once) and confirm `agent.log` in the
+   watch folder shows a `watching ... -> <printer> (\\...\...)` line — if it
+   instead logs a `FATAL` line, the named printer isn't installed or isn't
+   shared yet.
+
+## Why not P/Invoke via `Add-Type`?
+
+An earlier version of this script sent raw bytes with a small C# helper
+(`OpenPrinter`/`StartDocPrinter`/`WritePrinter` from `winspool.drv`) loaded
+via `Add-Type -Language CSharp`. On at least one client PC this failed
+outright with `Add-Type : Cannot execute a program ... Access is denied`,
+because `Add-Type -Language CSharp` compiles by spawning `csc.exe`, and
+endpoint security on that machine blocks child-process spawning of the C#
+compiler (a common hardening rule against in-memory PowerShell payloads).
+Every print silently failed as a result. The UNC-share file-copy approach
+needs no dynamic compilation and no child process at all, so it isn't
+affected by that class of endpoint-security policy.
 
 ## Design notes / known pitfalls this agent avoids
 
