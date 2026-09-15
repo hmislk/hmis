@@ -279,7 +279,8 @@
                                         <h:outputLabel value="Adjust" />
                                     </f:facet>
                                     <h:outputLabel value="New Quantity" />
-                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100">
+                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.qty}"  class="w-100"
+                                                 readonly="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}">
                                         <f:convertNumber pattern="#,###" />
                                     </p:inputText>
                                     <h:outputLabel value="Comment" />

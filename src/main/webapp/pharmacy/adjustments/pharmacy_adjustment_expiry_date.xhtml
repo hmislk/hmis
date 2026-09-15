@@ -303,6 +303,7 @@
                                         pattern="#{configOptionApplicationController.getShortTextValueByKey('Expiry Date Pattern', 'yyyy MMMM dd')}"
                                         locale="#{configOptionApplicationController.getShortTextValueByKey('Default Locale', 'en')}"
                                         navigator="true" inputStyleClass="form-control"
+                                        disabled="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
                                         class="w-100">
                                     </p:calendar>
                                     <h:outputLabel value="Comment" />

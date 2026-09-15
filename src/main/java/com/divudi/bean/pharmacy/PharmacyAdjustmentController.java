@@ -1738,6 +1738,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitStockQtyAdjustmentForApproval() {
         saveDeptStockAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
         saveDeptAdjustmentBillItems();
@@ -1763,9 +1764,13 @@ public class PharmacyAdjustmentController implements Serializable {
                 any = true;
                 stock = s;
                 saveDeptSingleStockAdjustmentBill();
+                getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
                 getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_REQUEST);
                 getBillFacade().edit(getDeptAdjustmentPreBill());
-                saveDeptAdjustmentBillItems(s);
+                PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems(s);
+                ph.setBeforeAdjustmentValue(s.getStock());
+                ph.setAfterAdjustmentValue(s.getCalculated());
+                getPharmaceuticalBillItemFacade().edit(ph);
             }
         }
         if (!any) {
@@ -1796,9 +1801,13 @@ public class PharmacyAdjustmentController implements Serializable {
                 deptAdjustmentPreBill = null;
                 stock = s;
                 saveDeptAdjustmentBill();
+                getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
                 getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_REQUEST);
                 getBillFacade().edit(getDeptAdjustmentPreBill());
-                saveDeptAdjustmentBillItems(s);
+                PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems(s);
+                ph.setBeforeAdjustmentValue(s.getStock());
+                ph.setAfterAdjustmentValue(s.getCalculated());
+                getPharmaceuticalBillItemFacade().edit(ph);
                 Bill requestBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
                 bills.add(requestBill);
                 createPendingAdjustmentApprovalRequest(requestBill, RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
@@ -1820,6 +1829,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitStaffStockAdjustmentForApproval() {
         saveStaffStockAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
         saveDeptAdjustmentBillItems();
@@ -1840,6 +1850,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitPurchaseRateAdjustmentForApproval() {
         savePurchaseRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
 
@@ -1887,6 +1898,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitCostRateAdjustmentForApproval() {
         saveCostRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
 
@@ -1934,6 +1946,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitRetailRateAdjustmentForApproval() {
         saveSaleRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
 
@@ -1981,6 +1994,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitWholesaleRateAdjustmentForApproval() {
         saveWholeSaleRateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
         saveWsrAdjustmentBillItems();
@@ -1998,6 +2012,7 @@ public class PharmacyAdjustmentController implements Serializable {
      */
     private void submitExpiryDateAdjustmentForApproval() {
         saveExpiryDateAdjustmentBill();
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentApprovalRequest);
         getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST);
         getBillFacade().edit(getDeptAdjustmentPreBill());
         saveExDateAdjustmentBillItems();
@@ -2058,6 +2073,26 @@ public class PharmacyAdjustmentController implements Serializable {
             JsfUtil.addErrorMessage("No approved request selected.");
             return "";
         }
+
+        // Re-fetch bypassing the L2 cache and re-check it hasn't already been
+        // claimed by another session between the list load and this click -
+        // narrows (does not eliminate) the race window for two users
+        // processing the same approved request concurrently.
+        approvedRequest = getBillFacade().findWithoutCache(approvedRequest.getId());
+        if (approvedRequest == null) {
+            JsfUtil.addErrorMessage("This request no longer exists.");
+            return "";
+        }
+        if (approvedRequest.getForwardReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This request has already been processed.");
+            return "";
+        }
+        Request originatingRequestCheck = approvedRequest.getCurrentRequest();
+        if (originatingRequestCheck == null || originatingRequestCheck.getStatus() != RequestStatus.APPROVED) {
+            JsfUtil.addErrorMessage("This request is no longer in an approved state.");
+            return "";
+        }
+
         if (approvedRequest.getDepartment() == null
                 || getSessionController().getDepartment() == null
                 || approvedRequest.getDepartment().getId() == null

@@ -120,7 +120,8 @@
                                     <div class="row mt-2">
                                         <div class="col-md-3"><h:outputLabel value="New Quantity" ></h:outputLabel></div>
                                         <div class="col-md-6">
-                                            <p:inputText class="w-100" autocomplete="off" value="#{pharmacyAdjustmentController.qty}" >
+                                            <p:inputText class="w-100" autocomplete="off" value="#{pharmacyAdjustmentController.qty}"
+                                                         readonly="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}" >
                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                             </p:inputText>
                                         </div>

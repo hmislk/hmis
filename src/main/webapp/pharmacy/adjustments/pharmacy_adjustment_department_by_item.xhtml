@@ -77,7 +77,8 @@
                                         <h:outputLabel value="Comment" />
                                         <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" class="w-100"/>
                                         <h:outputLabel value="Manual Adjustment" />
-                                        <p:selectBooleanCheckbox value="#{pharmacyAdjustmentController.manualAdjust}" >
+                                        <p:selectBooleanCheckbox value="#{pharmacyAdjustmentController.manualAdjust}"
+                                                                 disabled="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}" >
                                             <f:ajax event="change" execute="@this" render="det input" />
                                         </p:selectBooleanCheckbox>
                                     </h:panelGrid>
@@ -188,7 +189,7 @@
                                             </p:cellEditor>
                                         </p:column>
                                         <p:column>
-                                            <p:rowEditor rendered="#{pharmacyAdjustmentController.manualAdjust}" >
+                                            <p:rowEditor rendered="#{pharmacyAdjustmentController.manualAdjust and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}" >
                                             </p:rowEditor>
                                         </p:column>
                                     </p:dataTable>

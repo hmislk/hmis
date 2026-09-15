@@ -206,7 +206,8 @@
                             </p:column>
 
                             <p:column headerText="New Purchase Rate" styleClass="text-end">
-                                <p:inputText value="#{i.newPurchaseRate}" styleClass="purchase-rate-input w-100" placeholder="Enter new rate..."/>
+                                <p:inputText value="#{i.newPurchaseRate}" styleClass="purchase-rate-input w-100" placeholder="Enter new rate..."
+                                             readonly="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"/>
                             </p:column>
                             <p:column
                                 headerText="Cost Rate"
