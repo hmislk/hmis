@@ -115,16 +115,7 @@
                     icon="pi pi-home"
                     title="Home">
                 </p:menuitem>
-
-                <p:menuitem
-                    id="ccSelfBillingHome"
-                    ajax="false"
-                    rendered="#{sessionController.department.departmentType eq 'CollectingCentre'}"
-                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
-                    icon="fas fa-hospital-user"
-                    title="Collecting Centre Self Billing Home">
-                </p:menuitem>
-
+               
                 <!--            OPD Section-->
                 <p:submenu 
                     id="smOpd"
@@ -821,6 +812,14 @@
                     </p:menuitem>
 
                 </p:submenu>
+                
+                <p:menuitem
+                    id="ccSelfBillingHome"
+                    ajax="false"
+                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                    icon="fas fa-hospital-user"
+                    title="Collecting Centre Self Billing Home">
+                </p:menuitem>
 
                 <!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
