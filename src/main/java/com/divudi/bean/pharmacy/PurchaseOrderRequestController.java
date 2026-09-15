@@ -985,7 +985,36 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
         }
 
+        warnIfItemsAreOnOpenPurchaseOrders(itemsToAdd);
+
         calculateBillTotals();
+    }
+
+    /**
+     * Same warning as {@link #warnIfItemIsOnAnOpenPurchaseOrder(Item)}, for the
+     * bulk "Add All" / "Add Items Below ROL" actions. One query and one summary
+     * message for the whole batch, so adding a supplier's full item list cannot
+     * produce a wall of warnings. Related issue: #23811.
+     */
+    private void warnIfItemsAreOnOpenPurchaseOrders(List<Item> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy PO - Warn When Item Is On An Open Purchase Order", true)) {
+            return;
+        }
+        Institution institution = sessionController.getInstitution();
+        if (institution == null) {
+            return;
+        }
+        Long excludeBillId = getCurrentBill() != null ? getCurrentBill().getId() : null;
+        List<String> itemNames = purchaseOrderOpenItemService.findItemNamesOnOpenPurchaseOrders(items, institution, excludeBillId);
+        if (itemNames == null || itemNames.isEmpty()) {
+            return;
+        }
+        JsfUtil.addWarningMessage("Warning: some items added are already on open purchase orders that have not been fully received yet: "
+                + String.join(", ", itemNames) + ". They have still been added.");
     }
 
     public void saveBillComponent() {
@@ -1757,6 +1786,11 @@ public class PurchaseOrderRequestController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Prevent Duplicate Items in Purchase Orders",
                 "When enabled, prevents adding duplicate items to a purchase order",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy PO - Warn When Item Is On An Open Purchase Order",
+                "Warns (without blocking) when an item added is already on a purchase order awaiting goods",
                 OptionScope.APPLICATION
         ));
         metadata.addConfigOption(new ConfigOptionInfo(

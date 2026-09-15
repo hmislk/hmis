@@ -26,7 +26,7 @@ import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -35,8 +35,11 @@ import javax.inject.Named;
  * permanent, tamper-proof public link to the PO (viewable without login by
  * the supplier) and sends it via SMS. Related issue: #23811.
  */
+// ViewScoped, not SessionScoped: the dialog's bill/number/message belong to the
+// purchase order open in one tab. Session scope let a second tab overwrite them
+// and send the first tab's SMS against the wrong bill (issue #23811).
 @Named
-@SessionScoped
+@ViewScoped
 public class PurchaseOrderSmsController implements Serializable {
 
     private static final long serialVersionUID = 1L;
