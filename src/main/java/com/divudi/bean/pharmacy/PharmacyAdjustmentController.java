@@ -1859,11 +1859,11 @@ public class PharmacyAdjustmentController implements Serializable {
             if (dto.getNewPurchaseRate() == null) {
                 continue;
             }
-            any = true;
             Stock s = stockFacade.find(dto.getStockId());
             if (s == null) {
                 continue;
             }
+            any = true;
             stock = s;
 
             double oldPurchaseRate = dto.getPurchaseRate();
@@ -1907,11 +1907,11 @@ public class PharmacyAdjustmentController implements Serializable {
             if (dto.getNewCostRate() == null) {
                 continue;
             }
-            any = true;
             Stock s = stockFacade.find(dto.getStockId());
             if (s == null || s.getItemBatch() == null) {
                 continue;
             }
+            any = true;
             stock = s;
 
             double oldCostRate = s.getItemBatch().getCostRate() != null ? s.getItemBatch().getCostRate() : 0.0;
@@ -1955,11 +1955,11 @@ public class PharmacyAdjustmentController implements Serializable {
             if (dto.getNewRetailRate() == null) {
                 continue;
             }
-            any = true;
             Stock s = stockFacade.find(dto.getStockId());
             if (s == null) {
                 continue;
             }
+            any = true;
             stock = s;
 
             double oldRetailRate = dto.getRetailRate();
