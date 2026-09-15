@@ -258,8 +258,8 @@
                                         <p:panelGrid columns="2" layout="tabular" class="w-100" >
                                             <h:outputText value="Active" >                                        
                                             </h:outputText>
-                                            <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
-
+                                            <p:toggleSwitch class="form-control" value="#{collectingCentreController.current.inactive}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                              
                                             <h:outputText value="Creator" ></h:outputText>
                                             <h:outputText value="#{collectingCentreController.current.creater.webUserPerson.name}" ></h:outputText>
 
