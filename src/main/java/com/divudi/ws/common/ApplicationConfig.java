@@ -68,7 +68,6 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.investigation.InvestigationFullApi.class);
         resources.add(com.divudi.ws.investigation.InvestigationValidatorApi.class);
         resources.add(com.divudi.ws.investigation.ReportFormatApi.class);
-        resources.add(com.divudi.ws.service.ItemMappingApi.class);
         resources.add(com.divudi.ws.inward.AdmissionChargeApi.class);
         resources.add(com.divudi.ws.inward.AdmissionNumberApi.class);
         resources.add(com.divudi.ws.inward.AdmissionSearchApi.class);
@@ -103,6 +102,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.pricing.CollectingCentreFeesApi.class);
         resources.add(com.divudi.ws.sap.SapBillingApi.class);
         resources.add(com.divudi.ws.sap.SapInventoryApi.class);
+        resources.add(com.divudi.ws.service.ItemMappingApi.class);
         resources.add(com.divudi.ws.service.ServiceApi.class);
     }
     
