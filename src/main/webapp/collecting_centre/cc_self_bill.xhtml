@@ -18,14 +18,25 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}" styleClass="opdPanel">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <div class="cc-bill-page">
                     <h:form id="form">
                         <p:growl id="msg"/>
 
-                        <p:panel>
+                        <p:panel styleClass="cc-bill-hero-panel">
                             <f:facet name="header">
                                 <h:outputText class="fa-solid fa-warehouse mt-2"/>
                                 <h:outputLabel class="mx-2 mt-2" value="Collecting Centre Billing"/>
                                 <h:outputLabel class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"/>
+                                <p:commandButton
+                                    style="float: right;"
+                                    value="Back to Dashboard"
+                                    icon="fa fa-arrow-left"
+                                    immediate="true"
+                                    ajax="false"
+                                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome()}"
+                                    class="ui-button-secondary">
+                                </p:commandButton>
                             </f:facet>
                             <div class="row">
                                 <div class="col-6">
@@ -35,7 +46,7 @@
 
                                     <h:panelGroup id="panelIx">
 
-                                        <p:panel id='pIxAdd'>
+                                        <p:panel id='pIxAdd' styleClass="cc-bill-card cc-c-blue">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"/>
                                                 <h:outputText value="Add New Item" class="mx-4"></h:outputText>
@@ -109,7 +120,7 @@
                                             </div>
                                         </p:panel>
 
-                                        <p:panel class="mt-1">
+                                        <p:panel styleClass="cc-bill-card cc-c-green mt-1">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa fa-list"/>
                                                 <h:outputText value="Added Services / Items" class="mx-4"></h:outputText>
@@ -221,7 +232,7 @@
                                             </h:panelGroup>
                                         </p:panel>
 
-                                        <p:panel class="my-1">
+                                        <p:panel styleClass="cc-bill-card cc-c-purple my-1">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="pi pi-calendar-plus"/>
                                                 <h:outputText value="Appointments" class="mx-4"></h:outputText>
@@ -265,7 +276,7 @@
 
                                 <div class="col-6">
 
-                                    <p:panel class="my-1">
+                                    <p:panel styleClass="cc-bill-card cc-c-orange my-1">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-bullseye"/>
                                             <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
@@ -383,7 +394,7 @@
                                         </h:panelGroup>
                                     </p:panel>
 
-                                    <p:panel>
+                                    <p:panel styleClass="cc-bill-card cc-c-teal">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa fa-stethoscope"/>
                                             <h:outputText value="Referral Details" class="mx-4"></h:outputText>
@@ -495,7 +506,7 @@
                                     </p:panel>
 
                                     <div class="row m-1">
-                                        <p:panel>
+                                        <p:panel styleClass="cc-bill-card cc-c-red">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa fa-money-bill-wave"/>
                                                 <h:outputText value="Bill Details" class="mx-4"></h:outputText>
@@ -527,6 +538,7 @@
                             </div>
                         </p:panel>
                     </h:form>
+                    </div>
                 </h:panelGroup>
             </ui:define>
         </ui:composition>
