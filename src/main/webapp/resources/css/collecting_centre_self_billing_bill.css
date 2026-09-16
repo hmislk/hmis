@@ -328,7 +328,8 @@
 /* Reference No selector in the Collecting Centre Details header */
 .cc-ref-select .ui-selectonemenu {
     border-radius: 999px;
-    border-color: rgba(251, 140, 0, 0.35);
+    border-width: 2px;
+    border-color: rgba(251, 140, 0, 0.75);
 }
 .cc-ref-select .ui-selectonemenu-label {
     text-align: center;
