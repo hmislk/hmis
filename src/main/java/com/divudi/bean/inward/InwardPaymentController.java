@@ -114,6 +114,20 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private PaymentMethodData paymentMethodData;
     /** Net total of the inward final bill; populated by bhtListener for display on the co-payment page. */
     private double finalBillTotal;
+    /**
+     * Double-submit guard for pay(): set true the instant pay() is entered
+     * and cleared on every exit path (validation failure, error, or
+     * success). A DB-level pessimistic lock can't close this race because
+     * this is a plain @SessionScoped bean, not an EJB - each facade call
+     * inside pay() opens and commits its own short transaction, so a lock
+     * held during one facade call is already released before the next
+     * facade call runs, leaving a window for a second request to slip
+     * through. This in-memory latch works instead because concurrent
+     * requests against the same HTTP session are serialized by the
+     * servlet container, same as billSettlingStarted in
+     * RetailSaleNativeSqlController.
+     */
+    private boolean paymentInProgress;
 
     // </editor-fold>
 
@@ -690,8 +704,28 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
     
-    public void pay() {
+    public synchronized void pay() {
+        // Double-submit guard (double-click, or a retried request before the
+        // page re-renders): each facade call below runs in its own short
+        // EJB transaction since this is a plain @SessionScoped bean, not an
+        // EJB, so a DB-level pessimistic lock can't span the method and
+        // gives no protection - a second thread can slip through between
+        // two of those facade calls. `synchronized` closes that gap at the
+        // JVM level: this bean is one instance per HTTP session, so it
+        // serializes concurrent requests on the same session outright,
+        // rather than relying on servlet-container behavior that isn't
+        // guaranteed by spec. The paymentInProgress flag on top gives a
+        // fast, friendly rejection for a second thread that was merely
+        // queued waiting on the lock rather than genuinely racing.
+        // Mirrors billSettlingStarted in RetailSaleNativeSqlController: set
+        // true immediately, cleared on every exit path below.
+        if (paymentInProgress) {
+            return;
+        }
+        paymentInProgress = true;
+
         if (errorCheck()) {
+            paymentInProgress = false;
             return;
         }
 
@@ -700,6 +734,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
             if (comment == null || comment.trim().isEmpty()) { // Trim to handle whitespace-only cases
                 JsfUtil.addErrorMessage("Please Select a Payment Type");
+                paymentInProgress = false;
                 return;
             }
         }
@@ -709,9 +744,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         paymentService.createPayment(
                 current,
-                current.getPaymentMethod(), 
-                paymentMethodData, 
-                sessionController.getInstitution(), 
+                current.getPaymentMethod(),
+                paymentMethodData,
+                sessionController.getInstitution(),
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());
 
@@ -727,6 +762,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         JsfUtil.addSuccessMessage("Payment Bill Saved");
         paymentMethod = null;
         printPreview = true;
+        paymentInProgress = false;
     }
 
     public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value) {
@@ -868,6 +904,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         total = 0.0;
         finalBillTotal = 0.0;
         due = 0.0;
+        paymentInProgress = false;
     }
 
     private void saveBill() {
