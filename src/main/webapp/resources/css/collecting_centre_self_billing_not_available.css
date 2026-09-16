@@ -118,6 +118,22 @@
     gap: 0.75rem;
 }
 
+.cc-na-actions .ui-button.cc-na-btn-home {
+    background: var(--surface-b, #f8f9fa);
+    color: var(--text-color, #212529);
+    border: 1px solid var(--surface-d, #e9ecef);
+    border-radius: 10px;
+    padding: 0.65rem 1.6rem;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.cc-na-actions .ui-button.cc-na-btn-home:enabled:hover {
+    transform: translateY(-1px);
+    background: var(--surface-c, #e9ecef);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
 .cc-na-actions .ui-button.cc-na-btn-logout {
     background: linear-gradient(135deg, #E53935 0%, #EF5350 100%);
     border: none;
