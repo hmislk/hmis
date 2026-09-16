@@ -42,10 +42,16 @@
     justify-content: center;
     font-size: 1.15rem;
 }
+.cc-header-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+}
 .cc-header-title {
     font-size: 1.25rem;
     font-weight: 700;
-    display: block;
+    display: inline-block;
 }
 .cc-header-subtitle {
     opacity: 0.92;
@@ -137,9 +143,6 @@
         font-size: 1.05rem;
     }
     .cc-header-highlight {
-        display: inline-block;
-        margin-left: 0;
-        margin-top: 0.4rem;
         font-size: 0.9rem;
         padding: 0.3rem 0.8rem;
     }
