@@ -231,39 +231,12 @@
     align-items: center;
     gap: 0.4rem;
     flex-wrap: nowrap;
+    font-size: 1rem;
 }
 .ccpd-search-input.ui-inputtext {
     width: 200px;
     max-width: 200px;
 }
-.ccpd-btn.ui-button {
-    border-radius: 8px;
-    font-weight: 600;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-}
-/* PrimeFaces centers the icon with position:absolute + a fixed
-   top/margin offset tuned for its own icon font metrics; FontAwesome
-   glyphs sit lower with that math. Let the button's own flex layout
-   center the icon against the label text instead. */
-.ccpd-btn.ui-button .ui-button-icon-left,
-.ccpd-btn.ui-button .ui-icon {
-    position: static;
-    top: auto;
-    left: auto;
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-}
-.ccpd-btn.ui-button .ui-button-text {
-    padding: 0;
-    line-height: 1;
-}
-
 @media (max-width: 576px) {
     .ccpd-search-input.ui-inputtext {
         width: 140px;
