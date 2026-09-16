@@ -121,6 +121,8 @@ public class PharmacyAdjustmentController implements Serializable {
     private com.divudi.service.RequestService requestService;
     @EJB
     private com.divudi.core.facade.RequestFacade requestFacade;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionController configOptionController;
 
 /////////////////////////
 //    Item selectedAlternative;
@@ -159,7 +161,10 @@ public class PharmacyAdjustmentController implements Serializable {
     private Date fromDate;
     private Date toDate;
 
-    private int tabIndex = 0;
+    // 1, not 0: the "⭐ Favorites" tab was inserted as the new first tab
+    // (index 0) ahead of "Adjustments" - existing users still land on
+    // Adjustments by default, matching pre-Favorites behaviour.
+    private int tabIndex = 1;
 
     private YearMonthDay yearMonthDay;
 
@@ -2027,6 +2032,25 @@ public class PharmacyAdjustmentController implements Serializable {
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Approved Request Fulfilment (Stage 3 of the opt-in approval gate)">
+    private Date approvedRequestsFromDate;
+    private Date approvedRequestsToDate;
+
+    public Date getApprovedRequestsFromDate() {
+        return approvedRequestsFromDate;
+    }
+
+    public void setApprovedRequestsFromDate(Date approvedRequestsFromDate) {
+        this.approvedRequestsFromDate = approvedRequestsFromDate;
+    }
+
+    public Date getApprovedRequestsToDate() {
+        return approvedRequestsToDate;
+    }
+
+    public void setApprovedRequestsToDate(Date approvedRequestsToDate) {
+        this.approvedRequestsToDate = approvedRequestsToDate;
+    }
+
     /**
      * Backing list for the new "approved requests" page
      * ({@code pharmacy_adjustment_approved_requests.xhtml}): every
@@ -2037,6 +2061,14 @@ public class PharmacyAdjustmentController implements Serializable {
      * {@code Bill.forwardReferenceBill}/{@code backwardReferenceBill} link
      * {@code StockTakeApprovalService} already uses for its own approval
      * flow). Queried fresh on every page visit - no caching.
+     * <p>
+     * This is a work queue, not a report - so unlike a typical date-range
+     * search, the {@link #approvedRequestsFromDate}/{@link #approvedRequestsToDate}
+     * filters (bound to {@code r.approvedAt}) are optional narrowing filters
+     * only, left unset by default. Nothing here silently hides an
+     * unprocessed approval just because it wasn't approved "today" - an item
+     * approved last week and still unprocessed must keep showing up until
+     * someone deliberately narrows the range.
      */
     public List<Request> getPendingApprovedAdjustmentRequests() {
         if (getSessionController().getDepartment() == null) {
@@ -2048,13 +2080,21 @@ public class PharmacyAdjustmentController implements Serializable {
         m.put("t1", RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
         m.put("t2", RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
         m.put("t3", RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL);
-        String jpql = "select r from Request r "
+        StringBuilder jpql = new StringBuilder("select r from Request r "
                 + " where r.department = :dept "
                 + " and r.status = :st "
                 + " and r.requestType in (:t1, :t2, :t3) "
-                + " and r.bill.forwardReferenceBill is null "
-                + " order by r.approvedAt desc";
-        return requestFacade.findByJpql(jpql, m);
+                + " and r.bill.forwardReferenceBill is null ");
+        if (approvedRequestsFromDate != null) {
+            jpql.append(" and r.approvedAt >= :fromDate ");
+            m.put("fromDate", approvedRequestsFromDate);
+        }
+        if (approvedRequestsToDate != null) {
+            jpql.append(" and r.approvedAt <= :toDate ");
+            m.put("toDate", approvedRequestsToDate);
+        }
+        jpql.append(" order by r.approvedAt desc");
+        return requestFacade.findByJpql(jpql.toString(), m);
     }
 
     /**
@@ -3341,15 +3381,19 @@ public class PharmacyAdjustmentController implements Serializable {
      * Whether pharmacy stock-quantity, rate and expiry-date adjustments
      * should be routed through an approval request instead of applying
      * immediately. Resolved per-department-first via
-     * {@link ConfigOptionApplicationController#getBooleanValueByKeyForDepartment(String, Department, boolean)}.
-     * Defaults to {@code false} so existing behaviour is unchanged unless an
-     * admin explicitly opts in.
+     * {@link com.divudi.bean.common.ConfigOptionController#getBooleanValueByKey(String, boolean)},
+     * the same "&lt;Department Name&gt; - &lt;key&gt;"-prefixed-key-first
+     * convention the rest of the app uses (see
+     * {@code feedback_config_option_scope_resolution} - this is what the
+     * existing "Application Options" admin page and the {@code /api/config}
+     * REST endpoints can already read and write; the previous
+     * {@code getBooleanValueByKeyForDepartment} relational-scope approach was
+     * invisible to both). Defaults to {@code false} so existing behaviour is
+     * unchanged unless an admin explicitly opts in.
      */
     private boolean requiresApproval() {
-        return configOptionApplicationController.getBooleanValueByKeyForDepartment(
-                "Pharmacy Stock & Price Adjustments - Require Approval",
-                getSessionController().getDepartment(),
-                false);
+        return configOptionController.getBooleanValueByKey(
+                "Pharmacy Stock & Price Adjustments - Require Approval", false);
     }
 
     /**
