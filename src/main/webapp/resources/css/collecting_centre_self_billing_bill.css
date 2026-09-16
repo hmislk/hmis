@@ -161,7 +161,7 @@
     align-items: flex-start;
     justify-content: center;
     gap: 0.35rem;
-    padding: 1rem 1.25rem;
+    padding: 0.8rem 1.1rem;
     border-radius: 12px;
     font-size: 1.15rem;
 }
@@ -178,7 +178,7 @@
     background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
     color: #fff;
     border-radius: 12px;
-    padding: 1.25rem 1.5rem;
+    padding: 0.8rem 1.1rem;
 }
 .cc-bill-page .cc-bill-total-label {
     font-weight: 600;
@@ -197,6 +197,236 @@
     .cc-bill-page .cc-fee-line-lg .cc-fee-chip {
         font-size: 1rem;
     }
+}
+
+/* Collecting Centre Details: two-column layout (balance stats | book details) */
+.cc-details-row {
+    display: flex;
+    align-items: stretch;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+.cc-details-col {
+    flex: 1 1 320px;
+    min-width: 0;
+}
+
+/* Collecting Centre Details: balance/credit-limit stat grid */
+.cc-balance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+.cc-balance-grid.cc-balance-grid-compact {
+    grid-template-columns: 1fr;
+    height: 100%;
+    margin-bottom: 0;
+}
+.cc-balance-stat {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 14px;
+    background: var(--surface-a, #fff);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 6px rgba(16, 24, 40, 0.05);
+    border: 1px solid var(--surface-d, #eef0f2);
+    overflow: hidden;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.cc-balance-stat::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--cc-stat-accent, #90a4ae);
+}
+.cc-balance-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(16, 24, 40, 0.1);
+}
+.cc-balance-stat-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    background: var(--cc-stat-accent-bg, rgba(96, 125, 139, 0.16));
+    color: var(--cc-stat-accent, #607d8b);
+}
+.cc-balance-stat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+.cc-balance-stat-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-color-secondary, #6c757d);
+    white-space: nowrap;
+}
+.cc-balance-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-color, #212529);
+}
+.cc-balance-stat.cc-balance-stat-highlight {
+    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(21, 101, 192, 0.28);
+}
+.cc-balance-stat.cc-balance-stat-highlight::before {
+    display: none;
+}
+.cc-balance-stat.cc-balance-stat-highlight .cc-balance-stat-icon {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+.cc-balance-stat.cc-balance-stat-highlight .cc-balance-stat-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+.cc-balance-stat.cc-balance-stat-highlight .cc-balance-stat-value {
+    color: #fff;
+    font-size: 1.55rem;
+}
+.cc-balance-stat.cc-balance-stat-highlight:hover {
+    box-shadow: 0 12px 26px rgba(21, 101, 192, 0.35);
+}
+
+.cc-balance-stat.cc-c-blue { --cc-stat-accent: #1E88E5; --cc-stat-accent-bg: rgba(30, 136, 229, 0.14); }
+.cc-balance-stat.cc-c-green { --cc-stat-accent: #43A047; --cc-stat-accent-bg: rgba(67, 160, 71, 0.14); }
+.cc-balance-stat.cc-c-purple { --cc-stat-accent: #8E24AA; --cc-stat-accent-bg: rgba(142, 36, 170, 0.14); }
+.cc-balance-stat.cc-c-red { --cc-stat-accent: #E53935; --cc-stat-accent-bg: rgba(229, 57, 53, 0.14); }
+
+@media (max-width: 992px) {
+    .cc-balance-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 480px) {
+    .cc-balance-grid {
+        grid-template-columns: 1fr;
+    }
+    .cc-balance-grid.cc-balance-grid-compact {
+        grid-template-columns: 1fr;
+    }
+    .cc-balance-stat-value {
+        font-size: 1.2rem;
+    }
+}
+
+/* Reference No selector in the Collecting Centre Details header */
+.cc-ref-select .ui-selectonemenu {
+    border-radius: 999px;
+    border-color: rgba(251, 140, 0, 0.35);
+}
+
+/* Book Details card (right column) */
+.cc-book-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-a, #fff);
+    border: 1px solid var(--surface-d, #eef0f2);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 6px rgba(16, 24, 40, 0.05);
+}
+.cc-book-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+}
+.cc-book-panel-icon {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 137, 123, 0.14);
+    color: #00897B;
+    font-size: 0.9rem;
+}
+.cc-book-panel-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-color, #212529);
+}
+.cc-book-panel-count {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #00897B;
+    background: rgba(0, 137, 123, 0.12);
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* Book summary table */
+.cc-book-table-wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--surface-d, #eef0f2);
+    flex: 1 1 auto;
+}
+.cc-book-table.ui-datatable .ui-datatable-header {
+    display: none;
+}
+.cc-book-table.ui-datatable table {
+    margin: 0;
+}
+.cc-book-table.ui-datatable thead th {
+    background: var(--surface-b, #f8f9fa);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-color-secondary, #6c757d);
+    border: none;
+    border-bottom: 1px solid var(--surface-d, #eef0f2);
+}
+.cc-book-col-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.cc-book-col-header .fa,
+.cc-book-col-header .fas {
+    color: #00897B;
+    font-size: 0.78rem;
+}
+.cc-book-table.ui-datatable tbody td {
+    font-variant-numeric: tabular-nums;
+    border-color: var(--surface-d, #eef0f2);
+    padding: 0.85rem 1rem;
+}
+.cc-book-table.ui-datatable tbody tr:hover {
+    background: rgba(0, 137, 123, 0.06);
+}
+.cc-book-cell-badge .ui-outputlabel {
+    display: inline-block;
+    font-weight: 700;
+    color: #00897B;
+    background: rgba(0, 137, 123, 0.1);
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    font-variant-numeric: tabular-nums;
 }
 
 /* cc_self_billing_patient_details header row: plain CSS flex, not
