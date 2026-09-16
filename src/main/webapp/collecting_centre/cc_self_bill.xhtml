@@ -232,44 +232,6 @@
                                             </h:panelGroup>
                                         </p:panel>
 
-                                        <p:panel styleClass="cc-bill-card cc-c-purple my-1">
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="pi pi-calendar-plus"/>
-                                                <h:outputText value="Appointments" class="mx-4"></h:outputText>
-                                            </f:facet>
-                                            <div class="row mb-2">
-                                                <div class="col-5">
-                                                    <p:outputLabel class="mt-1" value="Date for appointment"></p:outputLabel>
-                                                </div>
-                                                <div class="col-7">
-                                                    <p:calendar id="calS" value="#{collectingCentreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" class="w-100" inputStyleClass="w-100">
-                                                        <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}"/>
-                                                    </p:calendar>
-                                                </div>
-                                            </div>
-
-                                            <div class="row my-1">
-
-                                                <p:dataTable id="tblSs" value="#{collectingCentreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
-                                                    <f:facet name="header">
-                                                        <h:outputLabel value="#{collectingCentreBillController.lastBillItem.item.name}"/>
-
-                                                        <h:outputLabel id="lblTemS" value="#{collectingCentreBillController.sessionDate}">
-                                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
-                                                        </h:outputLabel>
-
-                                                    </f:facet>
-                                                    <p:column headerText="No">
-                                                        <h:outputLabel value="#{bs.serialNo}"/>
-                                                    </p:column>
-                                                    <p:column headerText="Client">
-                                                        <h:outputLabel value="#{bs.billItem.bill.patient.person.nameWithTitle}"/>
-                                                    </p:column>
-                                                </p:dataTable>
-                                            </div>
-
-                                        </p:panel>
-
                                     </h:panelGroup>
 
                                 </div>
