@@ -55,15 +55,17 @@
 }
 .cc-header-highlight {
     display: inline-block;
-    margin-left: 0.6rem;
-    padding: 0.2rem 0.75rem;
+    margin-left: 0.75rem;
+    padding: 0.4rem 1.1rem;
     background: #FFC107;
     color: #212529;
+    border: 2px solid #fff;
     border-radius: 999px;
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 800;
+    font-size: 1.1rem;
     letter-spacing: 0.01em;
     vertical-align: middle;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
 }
 
 .cc-header-right {
@@ -138,5 +140,7 @@
         display: inline-block;
         margin-left: 0;
         margin-top: 0.4rem;
+        font-size: 0.9rem;
+        padding: 0.3rem 0.8rem;
     }
 }
