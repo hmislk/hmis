@@ -912,6 +912,10 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacyPhysicalCountApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPhysicalCountApprove, "Pharmacy Physical Count Approve"), PharmacyAdjustment);
         // Stock Take approval privilege for new stock take workflow
         TreeNode PharmacyStockTakeApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockTakeApprove, "Pharmacy Stock Take Approve"), PharmacyAdjustment);
+        // Approval privileges for the opt-in stock qty/price/expiry-date adjustment approval gate (issue #23800)
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyStockAdjustmentApproval, "Pharmacy Stock Adjustment Approval"), PharmacyAdjustment);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyPriceAdjustmentApproval, "Pharmacy Price Adjustment Approval"), PharmacyAdjustment);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyExpiryDateAdjustmentApproval, "Pharmacy Expiry Date Adjustment Approval"), PharmacyAdjustment);
         // Create New Batch privilege
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdjustmentCreateBatch, "Pharmacy Adjustment Create Batch"), PharmacyAdjustment);
         // Archive Old StockHistory Records (issue #20726)
