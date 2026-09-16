@@ -233,6 +233,12 @@
     text-align: center;
     transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
+a.cc-action-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
 .cc-action-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.09);

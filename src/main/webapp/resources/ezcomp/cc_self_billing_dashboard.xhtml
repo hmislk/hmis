@@ -108,13 +108,14 @@
                             <h:outputText value=" Quick Actions"/>
                         </h:panelGroup>
                         <div class="cc-action-grid">
-                            <div class="cc-action-card cc-c-blue">
-                                <span class="cc-action-badge">Soon</span>
+                            <h:commandLink 
+                                styleClass="cc-action-card cc-c-blue" ajax="false"
+                                           action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-file-invoice-dollar"/>
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Create Bill"/>
-                            </div>
+                            </h:commandLink>
                             <div class="cc-action-card cc-c-green">
                                 <span class="cc-action-badge">Soon</span>
                                 <div class="cc-action-icon">
