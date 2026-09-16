@@ -198,3 +198,51 @@
         font-size: 1rem;
     }
 }
+
+/* cc_self_billing_patient_details header row: plain CSS flex, not
+   dependent on Bootstrap utility classes, so left content and the
+   quick-search group reliably sit on opposite ends. */
+.ccpd-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0.75rem;
+}
+.ccpd-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.ccpd-header-right {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+.ccpd-search-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.ccpd-search-input.ui-inputtext {
+    max-width: 170px;
+}
+.ccpd-icon-btn.ui-button {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.ccpd-icon-btn.ui-button .ui-button-text {
+    display: none;
+}
+
+@media (max-width: 576px) {
+    .ccpd-header-right {
+        margin-left: 0;
+    }
+}

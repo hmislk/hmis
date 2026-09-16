@@ -6,7 +6,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
     <h:head>
         <title>Collecting Centre Self Billing - Create Bill</title>
@@ -33,7 +32,7 @@
 
                             <div class="row">
                                 <div class="col-7">
-                                    <common:patient_details
+                                    <ez:cc_self_billing_patient_details
                                         editable="#{webUserController.hasPrivilege('OpdEditPatientDetails')}"
                                         controller="#{collectingCentreBillController}"/>
 
