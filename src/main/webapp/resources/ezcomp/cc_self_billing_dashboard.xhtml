@@ -17,19 +17,21 @@
             <div class="cc-hero">
                 <div class="cc-hero-left">
                     <h:outputText styleClass="cc-hero-title" value="Collecting Centre Self Billing"/>
-                    <h:outputText styleClass="cc-hero-subtitle"
-                                  value="#{sessionController.institution.name} &#8250; #{sessionController.department.name}"
-                                  rendered="#{sessionController.department != null}"/>
+                    <h:outputText 
+                        styleClass="cc-hero-subtitle"
+                        value="#{sessionController.institution.name} &#8250; #{sessionController.department.name}"
+                        rendered="#{sessionController.department != null}"/>
                 </div>
                 <div class="cc-hero-right" rendered="#{sessionController.loggedUser != null}">
-                    <div class="cc-hero-chip">
+                    <div class="cc-hero-chip" style="min-width: 200px;">
                         <div class="cc-avatar">
                             <h:outputText styleClass="fas fa-user"/>
                         </div>
                         <div class="cc-hero-chip-text">
-                            <h:outputText styleClass="cc-user-name"
-                                          value="#{sessionController.loggedUser.webUserPerson.name}"
-                                          rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                            <h:outputText 
+                                styleClass="cc-user-name"
+                                value="#{sessionController.loggedUser.webUserPerson.name}"
+                                rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
                             <h:outputText styleClass="cc-user-role" value="#{sessionController.loggedUser.name}"/>
                         </div>
                     </div>
