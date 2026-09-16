@@ -19,6 +19,7 @@ public class BhtPaymentDetailDTO implements Serializable {
     private AdmissionType admissionType;
     private Date dateOfAdmission;
     private Date dateOfDischarge;
+    private Long billId;
     private String billNo;
     private Date createdAt;
     private PaymentMethod paymentMethod;
@@ -100,6 +101,9 @@ public class BhtPaymentDetailDTO implements Serializable {
 
     public Date getDateOfDischarge() { return dateOfDischarge; }
     public void setDateOfDischarge(Date dateOfDischarge) { this.dateOfDischarge = dateOfDischarge; }
+
+    public Long getBillId() { return billId; }
+    public void setBillId(Long billId) { this.billId = billId; }
 
     public String getBillNo() { return billNo; }
     public void setBillNo(String billNo) { this.billNo = billNo; }
