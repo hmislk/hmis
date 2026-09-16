@@ -27,7 +27,7 @@ $ConfigPath = Join-Path $ScriptDir "print-agent-config.json"
 $LogPath    = Join-Path $ScriptDir "agent.log"
 
 # ---- defaults, overridden by config file if present ------------------------
-$WatchFolder  = "C:\hims-print"
+$WatchFolder  = "C:\hmis-print"
 $PrinterPath  = "DEPOSIT"
 $FileGlob     = "inward-*.prn"
 $PollSeconds  = 2
@@ -86,6 +86,33 @@ if (-not $mutex.WaitOne(0)) {
     Write-Log "another instance of the print agent is already running in this folder - exiting"
     exit
 }
+
+# ---- recover jobs stranded by a previous run --------------------------------
+# A leftover .processing file means an earlier run claimed a job and then died
+# (reboot, logoff, crash) before finishing with it. Its name no longer matches
+# $FileGlob, so the watch loop below would never see it again and the receipt
+# would be lost silently. Move it to the failed folder so a human notices it.
+# It is deliberately NOT reprinted: the dead run may already have handed the
+# bytes to the spooler, and reprinting here would be exactly the duplicate
+# print this agent exists to prevent.
+Get-ChildItem -Path $WatchFolder -Filter "*.processing" -File -ErrorAction SilentlyContinue |
+    ForEach-Object {
+        # Capture these before the try: inside a catch block $_ is the error
+        # record, not the pipeline item.
+        $strandedPath = $_.FullName
+        $strandedName = $_.Name
+        try {
+            if (-not (Test-Path $FailedFolder)) { New-Item -ItemType Directory -Path $FailedFolder -ErrorAction Stop | Out-Null }
+            $dest = Join-Path $FailedFolder $strandedName
+            if (Test-Path $dest) {
+                $dest = Join-Path $FailedFolder ("{0}_{1}" -f (Get-Date -Format "yyyyMMdd_HHmmss"), $strandedName)
+            }
+            Move-Item -LiteralPath $strandedPath -Destination $dest -Force -ErrorAction Stop
+            Write-Log ("recovered stranded job {0} -> failed folder (NOT reprinted - check whether it already printed before re-dropping it)" -f $strandedName)
+        } catch {
+            Write-Log ("ERROR: could not move stranded job {0} to failed folder: {1}" -f $strandedName, $_.Exception.Message)
+        }
+    }
 
 # ---- claim a file before touching it ----------------------------------------
 # Renaming (not copying) is atomic at the filesystem level: if the file is
@@ -148,17 +175,20 @@ function Send-Raw($claimedFile, $originalName) {
         # retried every poll forever, and does not pile up invisibly in the
         # watched folder waiting to all fire off at once. It stays there for
         # manual inspection / re-drop once the printer issue is fixed.
+        # -ErrorAction Stop on both: these are non-terminating by default, so
+        # without it a failed move would skip the catch and still be reported
+        # below as "moved to failed folder" when nothing had moved at all.
         try {
-            if (-not (Test-Path $FailedFolder)) { New-Item -ItemType Directory -Path $FailedFolder | Out-Null }
+            if (-not (Test-Path $FailedFolder)) { New-Item -ItemType Directory -Path $FailedFolder -ErrorAction Stop | Out-Null }
             $dest = Join-Path $FailedFolder $originalName
             if (Test-Path $dest) {
                 $dest = Join-Path $FailedFolder ("{0}_{1}" -f (Get-Date -Format "yyyyMMdd_HHmmss"), $originalName)
             }
-            Move-Item -LiteralPath $claimedFile -Destination $dest -Force
+            Move-Item -LiteralPath $claimedFile -Destination $dest -Force -ErrorAction Stop
+            Write-Log ("WARNING: printer '{0}' unavailable, moved {1} to failed folder for manual retry ({2})" -f $PrinterPath, $originalName, $lastErr)
         } catch {
-            Write-Log ("ERROR: could not move failed job {0} to failed folder: {1}" -f $originalName, $_.Exception.Message)
+            Write-Log ("ERROR: printer '{0}' unavailable ({1}) AND {2} could not be moved to the failed folder: {3} - it stays as {4} and will NOT be retried automatically" -f $PrinterPath, $lastErr, $originalName, $_.Exception.Message, $claimedFile)
         }
-        Write-Log ("WARNING: printer '{0}' unavailable, moved {1} to failed folder for manual retry ({2})" -f $PrinterPath, $originalName, $lastErr)
     }
 }
 

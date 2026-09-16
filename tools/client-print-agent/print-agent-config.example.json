@@ -1,5 +1,5 @@
 {
-  "WatchFolder": "C:\\hims-print",
+  "WatchFolder": "C:\\hmis-print",
   "PrinterPath": "DEPOSIT",
   "FileGlob": "inward-*.prn",
   "PollSeconds": 2

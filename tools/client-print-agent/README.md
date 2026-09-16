@@ -29,7 +29,7 @@ button in the HIMS web UI.
 ## Setup on a client PC
 
 1. Copy this folder's contents to a folder on the client PC, e.g.
-   `C:\hims-print\`.
+   `C:\hmis-print\`.
 2. **Share the target printer locally**: printer Properties → Sharing tab →
    "Share this printer" (any share name; the script looks it up). This is
    required — raw bytes are sent via the printer's UNC share, not a direct
@@ -45,10 +45,10 @@ button in the HIMS web UI.
 4. Create a shortcut to `start-agent-hidden.vbs` in
    `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` so it starts
    automatically at logon. No admin rights are required.
-5. Log off/on (or run the shortcut once) and confirm `agent.log` in the
-   watch folder shows a `watching ... -> <printer> (\\...\...)` line — if it
-   instead logs a `FATAL` line, the named printer isn't installed or isn't
-   shared yet.
+5. Log off/on (or run the shortcut once) and confirm `agent.log` — written
+   next to `raw-text-print-agent.ps1`, not in the watch folder — shows a
+   `watching ... -> <printer> (\\...\...)` line. If it instead logs a
+   `FATAL` line, the named printer isn't installed or isn't shared yet.
 
 ## Why not P/Invoke via `Add-Type`?
 
@@ -79,3 +79,10 @@ affected by that class of endpoint-security policy.
   being retried forever every poll cycle — this is what previously caused
   large numbers of duplicate jobs to build up once a printer connection was
   restored.
+- **Stranded jobs are surfaced, not lost.** If the agent is killed between
+  claiming a file and printing it (reboot, logoff, crash), the leftover
+  `.processing` file no longer matches the watch pattern, so the loop would
+  never see it again. At startup the agent moves any such file to `failed/`
+  and logs it. It is deliberately **not** reprinted — the dead run may
+  already have handed the bytes to the spooler, so check whether it printed
+  before re-dropping it into the watch folder.
