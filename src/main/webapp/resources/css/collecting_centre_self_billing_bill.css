@@ -31,6 +31,14 @@
     padding: 1.1rem;
     background: var(--surface-a, #fff);
 }
+
+/* Patient section header (shared common:patient_details composite): its own
+   d-flex/justify-content-between row needs to fill the titlebar's flex row
+   for the quick-search box/buttons to actually push to the right. */
+.cc-bill-page .ui-panel .ui-panel-titlebar > .d-flex.justify-content-between {
+    flex: 1 1 100%;
+    width: 100%;
+}
 .cc-bill-page .ui-panel .ui-panel-titlebar > .fa,
 .cc-bill-page .ui-panel .ui-panel-titlebar > .fas,
 .cc-bill-page .ui-panel .ui-panel-titlebar > .fa-solid,
