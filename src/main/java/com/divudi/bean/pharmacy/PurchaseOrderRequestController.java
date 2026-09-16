@@ -47,6 +47,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PurchaseOrderOpenItemService;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -91,6 +92,8 @@ public class PurchaseOrderRequestController implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    private PurchaseOrderOpenItemService purchaseOrderOpenItemService;
 
     @Inject
     private SessionController sessionController;
@@ -264,6 +267,8 @@ public class PurchaseOrderRequestController implements Serializable {
             }
         }
 
+        Item addedItem = getCurrentBillItem().getItem();
+
         getCurrentBillItem().setSearialNo(getBillItems().size());
 
         applyLastRatesToBillItem(getCurrentBillItem());
@@ -272,7 +277,34 @@ public class PurchaseOrderRequestController implements Serializable {
 
         calculateBillTotals();
 
+        warnIfItemIsOnAnOpenPurchaseOrder(addedItem);
+
         currentBillItem = null;
+    }
+
+    /**
+     * Soft warning (item is still added either way) when the item just added
+     * is already on another open PO in the same institution. Related issue: #23811.
+     */
+    private void warnIfItemIsOnAnOpenPurchaseOrder(Item item) {
+        if (item == null) {
+            return;
+        }
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy PO - Warn When Item Is On An Open Purchase Order", true)) {
+            return;
+        }
+        Institution institution = sessionController.getInstitution();
+        if (institution == null) {
+            return;
+        }
+        List<String> poNumbers = purchaseOrderOpenItemService.findOpenPurchaseOrderNumbersForItem(
+                item, institution, currentRequestBillId(), currentApprovalBillId());
+        if (poNumbers == null || poNumbers.isEmpty()) {
+            return;
+        }
+        JsfUtil.addWarningMessage("Warning: " + item.getName() + " is already on open purchase order(s) "
+                + String.join(", ", poNumbers) + " that have not been fully received yet. It has still been added.");
     }
 
     public void removeItem(BillItem bi) {
@@ -953,7 +985,53 @@ public class PurchaseOrderRequestController implements Serializable {
             JsfUtil.addErrorMessage(skippedCount + " duplicate item(s) were skipped. Items already in the purchase order were not added again.");
         }
 
+        warnIfItemsAreOnOpenPurchaseOrders(itemsToAdd);
+
         calculateBillTotals();
+    }
+
+    /**
+     * Same warning as {@link #warnIfItemIsOnAnOpenPurchaseOrder(Item)}, for the
+     * bulk "Add All" / "Add Items Below ROL" actions. One query and one summary
+     * message for the whole batch, so adding a supplier's full item list cannot
+     * produce a wall of warnings. Related issue: #23811.
+     */
+    private void warnIfItemsAreOnOpenPurchaseOrders(List<Item> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy PO - Warn When Item Is On An Open Purchase Order", true)) {
+            return;
+        }
+        Institution institution = sessionController.getInstitution();
+        if (institution == null) {
+            return;
+        }
+        List<String> itemNames = purchaseOrderOpenItemService.findItemNamesOnOpenPurchaseOrders(
+                items, institution, currentRequestBillId(), currentApprovalBillId());
+        if (itemNames == null || itemNames.isEmpty()) {
+            return;
+        }
+        JsfUtil.addWarningMessage("Warning: some items added are already on open purchase orders that have not been fully received yet: "
+                + String.join(", ", itemNames) + ". They have still been added.");
+    }
+
+    /** The request being edited, so the warning never reports an order against itself. */
+    private Long currentRequestBillId() {
+        return getCurrentBill() != null ? getCurrentBill().getId() : null;
+    }
+
+    /**
+     * The approval raised from the request being edited, excluded for the same
+     * reason: an order must not be reported as competing with its own approved
+     * copy (issue #23811).
+     */
+    private Long currentApprovalBillId() {
+        if (getCurrentBill() == null || getCurrentBill().getReferenceBill() == null) {
+            return null;
+        }
+        return getCurrentBill().getReferenceBill().getId();
     }
 
     public void saveBillComponent() {
@@ -1725,6 +1803,11 @@ public class PurchaseOrderRequestController implements Serializable {
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Prevent Duplicate Items in Purchase Orders",
                 "When enabled, prevents adding duplicate items to a purchase order",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy PO - Warn When Item Is On An Open Purchase Order",
+                "Warns (without blocking) when an item added is already on a purchase order awaiting goods",
                 OptionScope.APPLICATION
         ));
         metadata.addConfigOption(new ConfigOptionInfo(
