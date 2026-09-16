@@ -1101,7 +1101,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     /**
      * Streams the current payment receipt as a raw byte file (.prn) for
      * dot-matrix printing that bypasses the browser rasteriser. See
-     * developer_docs/printing/raw-text-print-agent.ps1.
+     * tools/client-print-agent/.
      */
     public void streamCurrentPaymentReceiptAsRawText() {
         if (getCurrent() == null || getCurrent().getId() == null) {
