@@ -21,15 +21,15 @@
                 <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}" styleClass="opdPanel">
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
                     <div class="cc-bill-page">
-                    <h:form id="form">
-                        <ez:cc_self_billing_header
-                            pageTitle="Collecting Centre Billing"
-                            highlight="##{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
-                            pageIcon="fa-solid fa-file-invoice-dollar"
-                            backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
-                            backLabel="Back to Dashboard"/>
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Collecting Centre Billing"
+                                highlight="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
+                                pageIcon="fa-solid fa-file-invoice-dollar"
+                                backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                                backLabel="Back to Dashboard"/>
 
-                        <p:growl id="msg"/>
+                            <p:growl id="msg"/>
 
                             <div class="row">
                                 <div class="col-7">
@@ -39,7 +39,7 @@
 
                                     <h:panelGroup id="panelIx">
 
-                                        <p:panel id='pIxAdd' styleClass="cc-bill-card cc-c-blue">
+                                        <p:panel id='pIxAdd' styleClass="cc-bill-card cc-c-blue" class="mt-3">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"/>
                                                 <h:outputText value="Add New Item" class="mx-4"></h:outputText>
@@ -56,7 +56,7 @@
                                                         itemValue="#{ix}"
                                                         converter="itemLightConverter"
                                                         forceSelection="true"
-                                                        scrollHeight="250"
+                                                        scrollHeight="350"
                                                         multiple="false"
                                                         class="w-100">
 
@@ -66,7 +66,7 @@
                                                         <p:ajax event="keyup" process="@this"/>
 
                                                         <!-- Columns -->
-                                                        <p:column headerText="Name" style="padding: 8px;">
+                                                        <p:column headerText="Name" style="padding: 6px;">
                                                             <f:facet name="header">Name</f:facet>
                                                             <h:outputText value="#{ix.name}"/>
                                                             <h:panelGroup rendered="#{ix.name ne ix.fullName}">
@@ -74,17 +74,17 @@
                                                             </h:panelGroup>
                                                         </p:column>
 
-                                                        <p:column headerText="Dept" style="padding: 8px;">
+                                                        <p:column headerText="Dept" style="padding: 6px;">
                                                             <f:facet name="header">Dept</f:facet>
                                                             <h:outputText value="#{ix.departmentName}"/>
                                                         </p:column>
 
-                                                        <p:column headerText="Code" style="padding: 8px;">
+                                                        <p:column headerText="Code" style="padding: 6px;">
                                                             <f:facet name="header">Code</f:facet>
                                                             <h:outputText value="#{ix.code}"/>
                                                         </p:column>
 
-                                                        <p:column headerText="Value" style="padding: 8px; text-align: right;">
+                                                        <p:column headerText="Value" style="padding: 6px; text-align: right;">
                                                             <f:facet name="header">Value</f:facet>
                                                             <h:outputText value="#{ix.total}"/>
                                                         </p:column>
@@ -94,9 +94,10 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <h:panelGrid id="txtQty">
-                                                        <h:inputText autocomplete="off"
-                                                                     rendered="#{collectingCentreBillController.currentBillItem.item.requestForQuentity}"
-                                                                     value="#{collectingCentreBillController.currentBillItem.qty}">
+                                                        <h:inputText
+                                                            autocomplete="off"
+                                                            rendered="#{collectingCentreBillController.currentBillItem.item.requestForQuentity}"
+                                                            value="#{collectingCentreBillController.currentBillItem.qty}">
                                                         </h:inputText>
                                                     </h:panelGrid>
                                                     <p:commandButton
@@ -104,7 +105,7 @@
                                                         value="Add"
                                                         icon="fa fa-plus"
                                                         action="#{collectingCentreBillController.addToBill()}"
-                                                        class=" mx-1 ui-button-success"
+                                                        class="w-100 ui-button-success"
                                                         process="txtQty :#{p:resolveFirstComponentWithId('acIx',view).clientId} btnAddIx"
                                                         update="msg focusIx tblBillItem acIx :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
                                                     </p:commandButton>
@@ -124,7 +125,8 @@
                                                         <p:dataTable
                                                             id="tblRequests"
                                                             rowIndexVar="rowIndex"
-                                                            value="#{collectingCentreBillController.lstBillEntries}" var="bi">
+                                                            value="#{collectingCentreBillController.lstBillEntries}"
+                                                            var="bi">
                                                             <p:column width="12em">
                                                                 <f:facet name="header">Item</f:facet>
                                                                 <p:inputText class="w-100" value="#{bi.billItem.item.name}" readonly="true"></p:inputText>
@@ -169,11 +171,11 @@
                                                         <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillComponents}" var="bix">
                                                             <p:column>
                                                                 <f:facet name="header">No</f:facet>
-                                                                #{rowIndex+1}
+                                                                    #{rowIndex+1}
                                                             </p:column>
                                                             <p:column>
                                                                 <f:facet name="header">Name</f:facet>
-                                                                #{bix.item.name}
+                                                                    #{bix.item.name}
                                                             </p:column>
 
                                                         </p:dataTable>
@@ -231,34 +233,68 @@
 
                                 <div class="col-5">
 
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <p:commandButton
+                                            style="float: right;"
+                                            value="New Bill"
+                                            icon="fa fa-plus"
+                                            immediate="true"
+                                            ajax="false"
+                                            action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                            class="ui-button-warning mx-1">
+                                        </p:commandButton>
+
+                                        <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}"/>
+
+                                        <p:commandButton
+                                            value="Settle"
+                                            icon="fa fa-check"
+                                            action="#{collectingCentreBillController.settleCcBill()}"
+                                            ajax="false"
+                                            class="ui-button-success "
+                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;">
+                                        </p:commandButton>
+                                    </div>
+
+                                    <div class="row mt-3">
+                                        <p:panel styleClass="cc-bill-card cc-c-red">
+
+                                            <h:panelGroup id="pBillDetails" layout="block" styleClass="cc-bill-summary-block">
+                                                <div class="cc-fee-line cc-fee-line-lg">
+                                                    <span class="cc-fee-chip cc-c-green">
+                                                        <span class="cc-fee-chip-label">Collecting Center Value</span>
+                                                        <h:outputText value="#{collectingCentreBillController.totalCCFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                    <span class="cc-fee-chip cc-c-orange">
+                                                        <span class="cc-fee-chip-label">Hospital Fee Value</span>
+                                                        <h:outputText value="#{collectingCentreBillController.totalHosFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                    <span class="cc-fee-chip cc-c-purple">
+                                                        <span class="cc-fee-chip-label">Staff Fee</span>
+                                                        <h:outputText value="#{collectingCentreBillController.totalStaffFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                                <div class="cc-bill-total-bar">
+                                                    <span class="cc-bill-total-label">Total</span>
+                                                    <h:outputText styleClass="cc-bill-total-value" value="#{collectingCentreBillController.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </div>
+
                                     <p:panel styleClass="cc-bill-card cc-c-orange my-1">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-bullseye"/>
                                             <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
-
-                                            <p:commandButton
-                                                style="float: right;"
-                                                value="New Bill"
-                                                icon="fa fa-plus"
-                                                immediate="true"
-                                                ajax="false"
-                                                action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
-                                                class="ui-button-warning mx-1">
-                                            </p:commandButton>
-
-                                            <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}"/>
-
-                                            <p:commandButton
-                                                style="float: right;"
-                                                value="Settle"
-                                                icon="fa fa-check"
-                                                action="#{collectingCentreBillController.settleCcBill()}"
-                                                ajax="false"
-                                                class="ui-button-success "
-                                                onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                            return false;">
-                                            </p:commandButton>
-
                                         </f:facet>
 
                                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
@@ -459,48 +495,9 @@
                                             </div>
                                         </div>
                                     </p:panel>
-
-                                    <div class="row m-1">
-                                        <p:panel styleClass="cc-bill-card cc-c-red">
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fa fa-money-bill-wave"/>
-                                                <h:outputText value="Bill Details" class="mx-4"></h:outputText>
-                                            </f:facet>
-
-
-                                            <h:panelGroup id="pBillDetails" layout="block" styleClass="cc-bill-summary-block">
-                                                <div class="cc-fee-line cc-fee-line-lg">
-                                                    <span class="cc-fee-chip cc-c-green">
-                                                        <span class="cc-fee-chip-label">Collecting Center Value</span>
-                                                        <h:outputText value="#{collectingCentreBillController.totalCCFee}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </span>
-                                                    <span class="cc-fee-chip cc-c-orange">
-                                                        <span class="cc-fee-chip-label">Hospital Fee Value</span>
-                                                        <h:outputText value="#{collectingCentreBillController.totalHosFee}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </span>
-                                                    <span class="cc-fee-chip cc-c-purple">
-                                                        <span class="cc-fee-chip-label">Staff Fee</span>
-                                                        <h:outputText value="#{collectingCentreBillController.totalStaffFee}">
-                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                        </h:outputText>
-                                                    </span>
-                                                </div>
-                                                <div class="cc-bill-total-bar">
-                                                    <span class="cc-bill-total-label">Total</span>
-                                                    <h:outputText styleClass="cc-bill-total-value" value="#{collectingCentreBillController.netTotal}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                </div>
-                                            </h:panelGroup>
-                                        </p:panel>
-                                    </div>
                                 </div>
                             </div>
-                    </h:form>
+                        </h:form>
                     </div>
                 </h:panelGroup>
             </ui:define>
