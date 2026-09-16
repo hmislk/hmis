@@ -39,7 +39,7 @@
                                 </p:commandButton>
                             </f:facet>
                             <div class="row">
-                                <div class="col-8">
+                                <div class="col-7">
                                     <common:patient_details
                                         editable="#{webUserController.hasPrivilege('OpdEditPatientDetails')}"
                                         controller="#{collectingCentreBillController}"/>
@@ -140,34 +140,23 @@
                                                                 <f:facet name="header">Code</f:facet>
                                                                 <p:inputText class="w-100" value="#{bi.billItem.item.code}" readonly="true"></p:inputText>
                                                             </p:column>
-                                                            <p:column width="12em" styleClass="cc-fee-column">
-                                                                <f:facet name="header">Fees</f:facet>
-                                                                <div class="cc-fee-line">
-                                                                    <span class="cc-fee-chip cc-c-green">
-                                                                        <span class="cc-fee-chip-label">CC</span>
-                                                                        <h:outputText value="#{bi.billItem.collectingCentreFee}">
-                                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                                        </h:outputText>
-                                                                    </span>
-                                                                    <span class="cc-fee-chip cc-c-orange">
-                                                                        <span class="cc-fee-chip-label">Hos</span>
-                                                                        <h:outputText value="#{bi.billItem.hospitalFee}">
-                                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                                        </h:outputText>
-                                                                    </span>
-                                                                    <span class="cc-fee-chip cc-c-purple">
-                                                                        <span class="cc-fee-chip-label">Staff</span>
-                                                                        <h:outputText value="#{bi.billItem.staffFee}">
-                                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                                        </h:outputText>
-                                                                    </span>
-                                                                </div>
-                                                                <div class="cc-fee-total">
-                                                                    <span class="cc-fee-total-label">Total</span>
-                                                                    <h:outputText value="#{bi.billItem.collectingCentreFee + bi.billItem.hospitalFee + bi.billItem.staffFee}">
-                                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                                    </h:outputText>
-                                                                </div>
+                                                            <p:column width="4em">
+                                                                <f:facet name="header">CC Fee</f:facet>
+                                                                <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column width="4em">
+                                                                <f:facet name="header">Hos Fee</f:facet>
+                                                                <h:outputLabel value="#{bi.billItem.hospitalFee}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
+                                                            </p:column>
+                                                            <p:column width="4em">
+                                                                <f:facet name="header">Staff Fee</f:facet>
+                                                                <h:outputLabel value="#{bi.billItem.staffFee}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputLabel>
                                                             </p:column>
                                                             <p:column width="2em">
                                                                 <p:commandButton
@@ -247,7 +236,7 @@
 
                                 </div>
 
-                                <div class="col-4">
+                                <div class="col-5">
 
                                     <p:panel styleClass="cc-bill-card cc-c-orange my-1">
                                         <f:facet name="header">
@@ -486,25 +475,34 @@
                                             </f:facet>
 
 
-                                            <p:panelGrid columns="2" id="pBillDetails" layout="tabular" styleClass="w-100 cc-bill-summary">
-
-                                                <h:outputText value="Total"></h:outputText>
-                                                <h:outputText value="#{collectingCentreBillController.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                                <h:outputText value="Collecting Center Value"></h:outputText>
-                                                <h:outputText value="#{collectingCentreBillController.totalCCFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                                <h:outputText value="Hospital Fee Value"></h:outputText>
-                                                <h:outputText value="#{collectingCentreBillController.totalHosFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                                <h:outputText value="Staff Fee"></h:outputText>
-                                                <h:outputText value="#{collectingCentreBillController.totalStaffFee}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </p:panelGrid>
+                                            <h:panelGroup id="pBillDetails" layout="block" styleClass="cc-bill-summary-block">
+                                                <div class="cc-fee-line cc-fee-line-lg">
+                                                    <span class="cc-fee-chip cc-c-green">
+                                                        <span class="cc-fee-chip-label">Collecting Center Value</span>
+                                                        <h:outputText value="#{collectingCentreBillController.totalCCFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                    <span class="cc-fee-chip cc-c-orange">
+                                                        <span class="cc-fee-chip-label">Hospital Fee Value</span>
+                                                        <h:outputText value="#{collectingCentreBillController.totalHosFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                    <span class="cc-fee-chip cc-c-purple">
+                                                        <span class="cc-fee-chip-label">Staff Fee</span>
+                                                        <h:outputText value="#{collectingCentreBillController.totalStaffFee}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </span>
+                                                </div>
+                                                <div class="cc-bill-total-bar">
+                                                    <span class="cc-bill-total-label">Total</span>
+                                                    <h:outputText styleClass="cc-bill-total-value" value="#{collectingCentreBillController.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </h:panelGroup>
                                         </p:panel>
                                     </div>
                                 </div>
