@@ -1,0 +1,154 @@
+.cc-header-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
+    color: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 8px 22px rgba(21, 101, 192, 0.22);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+}
+.cc-header-bar:before {
+    content: "";
+    position: absolute;
+    right: -30px;
+    top: -50px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+}
+
+.cc-header-left {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+.cc-header-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+.cc-header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: block;
+}
+.cc-header-subtitle {
+    opacity: 0.92;
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 0.15rem;
+}
+
+.cc-header-right {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+.cc-header-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 999px;
+    padding: 0.3rem 0.9rem 0.3rem 0.3rem;
+}
+.cc-header-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    color: #1565C0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+.cc-header-chip-text {
+    text-align: left;
+    line-height: 1.15;
+}
+.cc-header-user-name {
+    font-weight: 700;
+    display: block;
+    font-size: 0.88rem;
+}
+.cc-header-user-role {
+    font-size: 0.72rem;
+    opacity: 0.85;
+    display: block;
+}
+
+.cc-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.cc-header-actions .ui-button.cc-header-icon-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.28);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.cc-header-actions .ui-button.cc-header-icon-btn:enabled:hover {
+    background: rgba(255,255,255,0.28);
+    color: #fff;
+}
+.cc-header-actions .ui-button .ui-button-icon-left,
+.cc-header-actions .ui-button .ui-icon {
+    margin: 0;
+    position: static;
+}
+.cc-header-actions .ui-button.cc-header-icon-btn .ui-button-text {
+    display: none;
+}
+.cc-header-actions .p-badge,
+.cc-header-actions .ui-badge {
+    background: #E53935;
+}
+
+.cc-header-actions .ui-button.cc-header-back-btn {
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.32);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.cc-header-actions .ui-button.cc-header-back-btn:enabled:hover {
+    background: rgba(255,255,255,0.28);
+}
+
+@media (max-width: 576px) {
+    .cc-header-bar {
+        padding: 0.9rem 1rem;
+    }
+    .cc-header-title {
+        font-size: 1.05rem;
+    }
+}
