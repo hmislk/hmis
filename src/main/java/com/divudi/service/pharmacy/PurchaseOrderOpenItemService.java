@@ -70,14 +70,20 @@ public class PurchaseOrderOpenItemService {
     /**
      * Purchase order numbers of open orders already carrying this item, for the
      * warning shown when a single item is added.
+     *
+     * @param excludeRequestBillId  the request being edited, so it never warns about itself
+     * @param excludeApprovalBillId the approval raised from that request, for the same
+     *                              reason: an order must not be reported as competing
+     *                              with its own approved copy
      */
-    public List<String> findOpenPurchaseOrderNumbersForItem(Item item, Institution institution, Long excludeBillId) {
+    public List<String> findOpenPurchaseOrderNumbersForItem(Item item, Institution institution,
+            Long excludeRequestBillId, Long excludeApprovalBillId) {
         List<String> result = new ArrayList<>();
         if (item == null || institution == null) {
             return result;
         }
-        addAll(result, findApprovedOpenPurchaseOrderNumbers(item, institution));
-        addAll(result, findFinalizedNotApprovedPurchaseOrderNumbers(item, institution, excludeBillId));
+        addAll(result, findApprovedOpenPurchaseOrderNumbers(item, institution, excludeApprovalBillId));
+        addAll(result, findFinalizedNotApprovedPurchaseOrderNumbers(item, institution, excludeRequestBillId));
         return result;
     }
 
@@ -86,13 +92,14 @@ public class PurchaseOrderOpenItemService {
      * Used by the bulk "Add All" / "Add Items Below ROL" actions, which would
      * otherwise need one query per item and would produce one message per item.
      */
-    public List<String> findItemNamesOnOpenPurchaseOrders(List<Item> items, Institution institution, Long excludeBillId) {
+    public List<String> findItemNamesOnOpenPurchaseOrders(List<Item> items, Institution institution,
+            Long excludeRequestBillId, Long excludeApprovalBillId) {
         List<String> result = new ArrayList<>();
         if (items == null || items.isEmpty() || institution == null) {
             return result;
         }
-        addAll(result, findApprovedOpenItemNames(items, institution));
-        addAll(result, findFinalizedNotApprovedItemNames(items, institution, excludeBillId));
+        addAll(result, findApprovedOpenItemNames(items, institution, excludeApprovalBillId));
+        addAll(result, findFinalizedNotApprovedItemNames(items, institution, excludeRequestBillId));
         if (result.size() > MAX_ITEM_NAMES) {
             return new ArrayList<>(result.subList(0, MAX_ITEM_NAMES));
         }
@@ -102,28 +109,37 @@ public class PurchaseOrderOpenItemService {
     // -------------------------------------------------------------------
     // a) Approved PO lines not yet fully received via a GRN
     // -------------------------------------------------------------------
-    private List<String> findApprovedOpenPurchaseOrderNumbers(Item item, Institution institution) {
-        String jpql = "select distinct coalesce(bi.bill.deptId, bi.bill.insId) "
+    private List<String> findApprovedOpenPurchaseOrderNumbers(Item item, Institution institution, Long excludeApprovalBillId) {
+        StringBuilder jpql = new StringBuilder("select distinct coalesce(bi.bill.deptId, bi.bill.insId) "
                 + " from BillItem bi "
                 + " where bi.bill.billTypeAtomic = :approvalType "
                 + approvedOpenConditions()
                 + " and bi.item = :item "
-                + NOT_FULLY_RECEIVED;
+                + NOT_FULLY_RECEIVED);
         Map<String, Object> params = approvedOpenParams(institution);
         params.put("item", item);
-        return capped(billItemFacade.findStringListByJpql(jpql, params), MAX_RESULTS_PER_QUERY);
+        appendExcludedApprovalBill(jpql, params, excludeApprovalBillId);
+        return capped(billItemFacade.findStringListByJpql(jpql.toString(), params), MAX_RESULTS_PER_QUERY);
     }
 
-    private List<String> findApprovedOpenItemNames(List<Item> items, Institution institution) {
-        String jpql = "select distinct bi.item.name "
+    private List<String> findApprovedOpenItemNames(List<Item> items, Institution institution, Long excludeApprovalBillId) {
+        StringBuilder jpql = new StringBuilder("select distinct bi.item.name "
                 + " from BillItem bi "
                 + " where bi.bill.billTypeAtomic = :approvalType "
                 + approvedOpenConditions()
                 + " and bi.item in :items "
-                + NOT_FULLY_RECEIVED;
+                + NOT_FULLY_RECEIVED);
         Map<String, Object> params = approvedOpenParams(institution);
         params.put("items", items);
-        return capped(billItemFacade.findStringListByJpql(jpql, params), MAX_ITEM_NAMES);
+        appendExcludedApprovalBill(jpql, params, excludeApprovalBillId);
+        return capped(billItemFacade.findStringListByJpql(jpql.toString(), params), MAX_ITEM_NAMES);
+    }
+
+    private void appendExcludedApprovalBill(StringBuilder jpql, Map<String, Object> params, Long excludeApprovalBillId) {
+        if (excludeApprovalBillId != null) {
+            jpql.append(" and bi.bill.id <> :excludeApprovalBillId ");
+            params.put("excludeApprovalBillId", excludeApprovalBillId);
+        }
     }
 
     private String approvedOpenConditions() {

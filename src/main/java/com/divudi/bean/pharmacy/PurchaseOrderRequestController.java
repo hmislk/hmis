@@ -298,8 +298,8 @@ public class PurchaseOrderRequestController implements Serializable {
         if (institution == null) {
             return;
         }
-        Long excludeBillId = getCurrentBill() != null ? getCurrentBill().getId() : null;
-        List<String> poNumbers = purchaseOrderOpenItemService.findOpenPurchaseOrderNumbersForItem(item, institution, excludeBillId);
+        List<String> poNumbers = purchaseOrderOpenItemService.findOpenPurchaseOrderNumbersForItem(
+                item, institution, currentRequestBillId(), currentApprovalBillId());
         if (poNumbers == null || poNumbers.isEmpty()) {
             return;
         }
@@ -1008,13 +1008,30 @@ public class PurchaseOrderRequestController implements Serializable {
         if (institution == null) {
             return;
         }
-        Long excludeBillId = getCurrentBill() != null ? getCurrentBill().getId() : null;
-        List<String> itemNames = purchaseOrderOpenItemService.findItemNamesOnOpenPurchaseOrders(items, institution, excludeBillId);
+        List<String> itemNames = purchaseOrderOpenItemService.findItemNamesOnOpenPurchaseOrders(
+                items, institution, currentRequestBillId(), currentApprovalBillId());
         if (itemNames == null || itemNames.isEmpty()) {
             return;
         }
         JsfUtil.addWarningMessage("Warning: some items added are already on open purchase orders that have not been fully received yet: "
                 + String.join(", ", itemNames) + ". They have still been added.");
+    }
+
+    /** The request being edited, so the warning never reports an order against itself. */
+    private Long currentRequestBillId() {
+        return getCurrentBill() != null ? getCurrentBill().getId() : null;
+    }
+
+    /**
+     * The approval raised from the request being edited, excluded for the same
+     * reason: an order must not be reported as competing with its own approved
+     * copy (issue #23811).
+     */
+    private Long currentApprovalBillId() {
+        if (getCurrentBill() == null || getCurrentBill().getReferenceBill() == null) {
+            return null;
+        }
+        return getCurrentBill().getReferenceBill().getId();
     }
 
     public void saveBillComponent() {
