@@ -137,3 +137,46 @@
         font-size: 0.9rem;
     }
 }
+
+/* Bill Details summary grid */
+.cc-bill-page .cc-bill-summary {
+    border-collapse: separate;
+    border-spacing: 0 0.6rem;
+}
+.cc-bill-page .cc-bill-summary td {
+    border: none;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.95rem;
+}
+.cc-bill-page .cc-bill-summary tr td:first-child {
+    border-radius: 10px 0 0 10px;
+    font-weight: 600;
+}
+.cc-bill-page .cc-bill-summary tr td:last-child {
+    border-radius: 0 10px 10px 0;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.cc-bill-page .cc-bill-summary tr:nth-child(1) td {
+    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
+    color: #fff;
+}
+.cc-bill-page .cc-bill-summary tr:nth-child(1) td:first-child,
+.cc-bill-page .cc-bill-summary tr:nth-child(1) td:last-child {
+    font-size: 1.1rem;
+}
+
+.cc-bill-page .cc-bill-summary tr:nth-child(2) td {
+    background: rgba(67, 160, 71, 0.12);
+    color: #2E7D32;
+}
+.cc-bill-page .cc-bill-summary tr:nth-child(3) td {
+    background: rgba(251, 140, 0, 0.12);
+    color: #E65100;
+}
+.cc-bill-page .cc-bill-summary tr:nth-child(4) td {
+    background: rgba(142, 36, 170, 0.12);
+    color: #6A1B9A;
+}
