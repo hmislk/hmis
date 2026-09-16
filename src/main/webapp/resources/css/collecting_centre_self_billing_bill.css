@@ -237,6 +237,7 @@
     max-width: 220px;
 }
 .ccpd-icon-btn.ui-button {
+    position: relative;
     width: 34px;
     height: 34px;
     min-width: 34px;
@@ -248,12 +249,19 @@
     flex: 0 0 auto;
     line-height: 1;
 }
+/* PrimeFaces centers the icon assuming visible button text (absolute
+   position + left offset); with the text hidden below, force it back
+   to the middle of the round button regardless of whatever base
+   position/margin the theme CSS applied. */
 .ccpd-icon-btn.ui-button .ui-button-icon-left,
 .ccpd-icon-btn.ui-button .ui-icon {
-    position: static;
-    margin: 0;
-    top: auto;
-    left: auto;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 0 !important;
+    transform: translate(-50%, -50%);
 }
 .ccpd-icon-btn.ui-button .ui-button-text {
     display: none;
