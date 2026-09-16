@@ -233,7 +233,8 @@
     flex-wrap: nowrap;
 }
 .ccpd-search-input.ui-inputtext {
-    max-width: 170px;
+    width: 220px;
+    max-width: 220px;
 }
 .ccpd-icon-btn.ui-button {
     width: 34px;
@@ -245,12 +246,23 @@
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
+    line-height: 1;
+}
+.ccpd-icon-btn.ui-button .ui-button-icon-left,
+.ccpd-icon-btn.ui-button .ui-icon {
+    position: static;
+    margin: 0;
+    top: auto;
+    left: auto;
 }
 .ccpd-icon-btn.ui-button .ui-button-text {
     display: none;
 }
 
 @media (max-width: 576px) {
+    .ccpd-search-input.ui-inputtext {
+        width: 160px;
+    }
     .ccpd-header-row {
         flex-wrap: wrap;
     }
