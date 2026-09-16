@@ -94,7 +94,7 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <h:panelGrid id="txtQty">
-                                                        <h:inputText
+                                                        <h:inputText 
                                                             autocomplete="off"
                                                             rendered="#{collectingCentreBillController.currentBillItem.item.requestForQuentity}"
                                                             value="#{collectingCentreBillController.currentBillItem.qty}">
@@ -125,35 +125,45 @@
                                                         <p:dataTable
                                                             id="tblRequests"
                                                             rowIndexVar="rowIndex"
-                                                            value="#{collectingCentreBillController.lstBillEntries}"
+                                                            value="#{collectingCentreBillController.lstBillEntries}" 
                                                             var="bi">
-                                                            <p:column width="12em">
+                                                            <p:column width="1em" style="padding: 7px;">
+                                                                <f:facet name="header">#</f:facet>
+                                                                <h:outputLabel class="w-100" value="#{rowIndex +1 }"></h:outputLabel>
+                                                            </p:column>
+                                                            
+                                                            <p:column style="padding: 7px; min-width: 12em;">
                                                                 <f:facet name="header">Item</f:facet>
-                                                                <p:inputText class="w-100" value="#{bi.billItem.item.name}" readonly="true"></p:inputText>
+                                                                <h:outputLabel class="w-100" value="#{bi.billItem.item.name}"></h:outputLabel>
                                                             </p:column>
-                                                            <p:column width="5em">
+                                                            
+                                                            <p:column width="10em" style="padding: 7px;">
                                                                 <f:facet name="header">Code</f:facet>
-                                                                <p:inputText class="w-100" value="#{bi.billItem.item.code}" readonly="true"></p:inputText>
+                                                                <h:outputLabel class="w-100" value="#{bi.billItem.item.code}"></h:outputLabel>
                                                             </p:column>
-                                                            <p:column width="4em">
+                                                            
+                                                            <p:column width="7em" class="text-end" style="padding: 7px;">
                                                                 <f:facet name="header">CC Fee</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:column width="4em">
+                                                            
+                                                            <p:column width="7em" class="text-end" style="padding: 7px;">
                                                                 <f:facet name="header">Hos Fee</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.hospitalFee}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:column width="4em">
+                                                            
+                                                            <p:column width="7em" class="text-end" style="padding: 7px;">
                                                                 <f:facet name="header">Staff Fee</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.staffFee}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <p:column width="2em">
+                                                            
+                                                            <p:column width="3em" class="text-center" style="padding: 7px;">
                                                                 <p:commandButton
                                                                     id="btnRemove"
                                                                     action="#{collectingCentreBillController.removeBillItem}"
@@ -256,7 +266,7 @@
                                                         return false;">
                                         </p:commandButton>
                                     </div>
-
+                                    
                                     <div class="row mt-3">
                                         <p:panel styleClass="cc-bill-card cc-c-red">
 
