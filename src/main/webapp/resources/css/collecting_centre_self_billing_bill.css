@@ -167,18 +167,23 @@
 .cc-bill-page .cc-fee-chip.cc-c-purple { background: rgba(142, 36, 170, 0.14); color: #6A1B9A; }
 
 .cc-bill-page .cc-fee-line-lg {
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
 }
 .cc-bill-page .cc-fee-line-lg .cc-fee-chip {
     flex: 1 1 auto;
-    justify-content: space-between;
-    padding: 0.6rem 0.9rem;
-    border-radius: 10px;
-    font-size: 0.85rem;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 1.15rem;
 }
 .cc-bill-page .cc-fee-line-lg .cc-fee-chip-label {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .cc-bill-page .cc-bill-total-bar {
@@ -187,21 +192,24 @@
     justify-content: space-between;
     background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
     color: #fff;
-    border-radius: 10px;
-    padding: 0.9rem 1.1rem;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
 }
 .cc-bill-page .cc-bill-total-label {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
 }
 .cc-bill-page .cc-bill-total-value {
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.7rem;
     font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 576px) {
     .cc-bill-page .cc-fee-line-lg {
         flex-direction: column;
+    }
+    .cc-bill-page .cc-fee-line-lg .cc-fee-chip {
+        font-size: 1rem;
     }
 }
