@@ -243,11 +243,11 @@
 
                                 <div class="col-5">
 
-                                    <div class="d-flex justify-content-end mb-2">
+                                    <div class="d-flex gap-2 justify-content-end mb-2">
                                         <p:commandButton
-                                            style="float: right;"
                                             value="New Bill"
                                             icon="fa fa-plus"
+                                            style="width: 150px;"
                                             immediate="true"
                                             ajax="false"
                                             action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
@@ -259,6 +259,7 @@
                                         <p:commandButton
                                             value="Settle"
                                             icon="fa fa-check"
+                                            style="width: 150px;"
                                             action="#{collectingCentreBillController.settleCcBill()}"
                                             ajax="false"
                                             class="ui-button-success "
@@ -267,7 +268,7 @@
                                         </p:commandButton>
                                     </div>
                                     
-                                    <div class="row mt-3">
+                                    <div class="row m-1 mt-1">
                                         <p:panel styleClass="cc-bill-card cc-c-red">
 
                                             <h:panelGroup id="pBillDetails" layout="block" styleClass="cc-bill-summary-block">
@@ -301,7 +302,7 @@
                                         </p:panel>
                                     </div>
 
-                                    <p:panel styleClass="cc-bill-card cc-c-orange my-1">
+                                    <p:panel styleClass="cc-bill-card cc-c-orange m-1">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-bullseye"/>
                                             <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
@@ -395,7 +396,7 @@
                                         </h:panelGroup>
                                     </p:panel>
 
-                                    <p:panel styleClass="cc-bill-card cc-c-teal">
+                                    <p:panel styleClass="cc-bill-card cc-c-teal" class="m-1">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa fa-stethoscope"/>
                                             <h:outputText value="Referral Details" class="mx-4"></h:outputText>
