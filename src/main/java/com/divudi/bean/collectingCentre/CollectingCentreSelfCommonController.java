@@ -24,7 +24,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private SessionController sessionController;
 
     public String navigateToCollectingCentreSelfBillingHome() {
-        return "/collecting_centre/cc_self_billing_index?faces-redirect=true";
+        return "/collecting_centre/cc_self_index?faces-redirect=true";
     }
 
     public boolean isCollectingCentreDepartment() {
