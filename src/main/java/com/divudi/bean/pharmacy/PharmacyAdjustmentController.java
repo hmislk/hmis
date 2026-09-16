@@ -2090,8 +2090,14 @@ public class PharmacyAdjustmentController implements Serializable {
             m.put("fromDate", approvedRequestsFromDate);
         }
         if (approvedRequestsToDate != null) {
-            jpql.append(" and r.approvedAt <= :toDate ");
-            m.put("toDate", approvedRequestsToDate);
+            // The p:calendar's yyyy-MM-dd pattern yields midnight of the
+            // selected day, so a plain "<=" would exclude every approval
+            // later that same day - use an exclusive start-of-next-day bound.
+            Calendar toDateExclusive = Calendar.getInstance();
+            toDateExclusive.setTime(approvedRequestsToDate);
+            toDateExclusive.add(Calendar.DATE, 1);
+            jpql.append(" and r.approvedAt < :toDateExclusive ");
+            m.put("toDateExclusive", toDateExclusive.getTime());
         }
         jpql.append(" order by r.approvedAt desc");
         return requestFacade.findByJpql(jpql.toString(), m);
