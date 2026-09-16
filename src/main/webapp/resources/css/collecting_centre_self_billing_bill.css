@@ -256,3 +256,62 @@
         margin-left: 0;
     }
 }
+
+/* Searched patient details display: modern label/value info grid */
+.ccpd-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+.ccpd-info-item {
+    background: var(--surface-b, #f8f9fa);
+    border: 1px solid var(--surface-d, #e9ecef);
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.ccpd-info-item-wide {
+    grid-column: span 3;
+}
+.ccpd-info-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-color-secondary, #6c757d);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.ccpd-info-label .fa,
+.ccpd-info-label .fas {
+    color: #1E88E5;
+    width: 14px;
+    text-align: center;
+}
+.ccpd-info-value {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--text-color, #212529);
+    word-break: break-word;
+}
+
+@media (max-width: 768px) {
+    .ccpd-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ccpd-info-item-wide {
+        grid-column: span 2;
+    }
+}
+@media (max-width: 480px) {
+    .ccpd-info-grid {
+        grid-template-columns: 1fr;
+    }
+    .ccpd-info-item-wide {
+        grid-column: span 1;
+    }
+}
