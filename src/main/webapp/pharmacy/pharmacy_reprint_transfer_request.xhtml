@@ -102,7 +102,7 @@
                                 <h:outputLabel styleClass="fas fa-list-alt" />
                                 <h:outputLabel value="Bill Item Details" class="mx-4"></h:outputLabel>
                             </f:facet>
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip" >
+                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.activeBillItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                         #{rowIndex+1}
