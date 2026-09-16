@@ -53,6 +53,18 @@
     display: block;
     margin-top: 0.15rem;
 }
+.cc-header-highlight {
+    display: inline-block;
+    margin-left: 0.6rem;
+    padding: 0.2rem 0.75rem;
+    background: #FFC107;
+    color: #212529;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+    vertical-align: middle;
+}
 
 .cc-header-right {
     position: relative;
@@ -121,5 +133,10 @@
     }
     .cc-header-title {
         font-size: 1.05rem;
+    }
+    .cc-header-highlight {
+        display: inline-block;
+        margin-left: 0;
+        margin-top: 0.4rem;
     }
 }

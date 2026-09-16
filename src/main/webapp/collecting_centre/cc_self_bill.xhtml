@@ -23,7 +23,8 @@
                     <div class="cc-bill-page">
                     <h:form id="form">
                         <ez:cc_self_billing_header
-                            pageTitle="Collecting Centre Billing - #{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
+                            pageTitle="Collecting Centre Billing"
+                            highlight="##{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
                             pageIcon="fa-solid fa-file-invoice-dollar"
                             backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                             backLabel="Back to Dashboard"/>

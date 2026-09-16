@@ -16,6 +16,7 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="pageTitle" type="java.lang.String" required="true"/>
+        <cc:attribute name="highlight" type="java.lang.String" required="false"/>
         <cc:attribute name="pageIcon" type="java.lang.String" default="fa-solid fa-hospital"/>
         <cc:attribute name="backAction" method-signature="java.lang.String action()" required="false"/>
         <cc:attribute name="backLabel" type="java.lang.String" default="Back"/>
@@ -32,14 +33,11 @@
                 </span>
                 <div>
                     <h:outputText styleClass="cc-header-title" value="#{cc.attrs.pageTitle}"/>
-                    <h:outputText
-                        styleClass="cc-header-subtitle"
-                        value="#{sessionController.institution.name} &#8250; #{sessionController.department.name}"
-                        rendered="#{sessionController.department != null}"/>
+                    <h:outputText styleClass="cc-header-highlight" value="#{cc.attrs.highlight}" rendered="#{cc.attrs.highlight != null}"/>
                 </div>
             </div>
             <div class="cc-header-right" rendered="#{sessionController.loggedUser != null}">
-                <div class="cc-header-chip">
+                <div class="cc-header-chip" style="min-width: 200px;">
                     <div class="cc-header-avatar">
                         <h:outputText styleClass="fas fa-user"/>
                     </div>
