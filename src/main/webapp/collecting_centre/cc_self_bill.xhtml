@@ -61,7 +61,7 @@
                                                         class="w-100">
 
                                                         <!-- Ajax Events -->
-                                                        <p:ajax event="itemSelect" process="@this"/>
+                                                        <p:ajax event="itemSelect" process="@this" oncomplete="setTimeout(function(){ var btn = document.getElementById('form:btnAddIx'); if (btn) { btn.focus(); } }, 50);"/>
                                                         <p:ajax event="blur" process="@this"/>
                                                         <p:ajax event="keyup" process="@this"/>
 
