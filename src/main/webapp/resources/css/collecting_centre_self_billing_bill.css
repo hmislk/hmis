@@ -83,32 +83,6 @@
 .cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar > .fa-solid,
 .cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar > .pi { background: rgba(229, 57, 53, 0.14); color: #E53935; }
 
-/* Outer wrapper panel styled as a hero banner */
-.cc-bill-page .cc-bill-hero-panel {
-    border: none;
-    border-radius: 14px;
-    box-shadow: 0 8px 22px rgba(21, 101, 192, 0.18);
-}
-.cc-bill-page .cc-bill-hero-panel > .ui-panel-titlebar {
-    background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
-    color: #fff;
-    border: none;
-    padding: 1.1rem 1.4rem;
-    font-size: 1.05rem;
-    border-radius: 14px 14px 0 0;
-}
-.cc-bill-page .cc-bill-hero-panel > .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-hero-panel > .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-hero-panel > .ui-panel-titlebar > .fa-solid {
-    background: rgba(255,255,255,0.18);
-    color: #fff;
-}
-.cc-bill-page .cc-bill-hero-panel > .ui-panel-content {
-    background: var(--surface-b, #f4f6f9);
-    padding: 1.25rem;
-    border-radius: 0 0 14px 14px;
-}
-
 /* Buttons */
 .cc-bill-page .ui-button {
     border-radius: 8px;

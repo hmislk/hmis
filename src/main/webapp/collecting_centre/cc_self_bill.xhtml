@@ -6,7 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
     <h:head>
         <title>Collecting Centre Self Billing - Create Bill</title>
     </h:head>
@@ -21,23 +22,14 @@
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
                     <div class="cc-bill-page">
                     <h:form id="form">
+                        <ez:cc_self_billing_header
+                            pageTitle="Collecting Centre Billing - #{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
+                            pageIcon="fa-solid fa-file-invoice-dollar"
+                            backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                            backLabel="Back to Dashboard"/>
+
                         <p:growl id="msg"/>
 
-                        <p:panel styleClass="cc-bill-hero-panel">
-                            <f:facet name="header">
-                                <h:outputText class="fa-solid fa-warehouse mt-2"/>
-                                <h:outputLabel class="mx-2 mt-2" value="Collecting Centre Billing"/>
-                                <h:outputLabel class="mx-5 mt-2" value="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"/>
-                                <p:commandButton
-                                    style="float: right;"
-                                    value="Back to Dashboard"
-                                    icon="fa fa-arrow-left"
-                                    immediate="true"
-                                    ajax="false"
-                                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome()}"
-                                    class="ui-button-secondary">
-                                </p:commandButton>
-                            </f:facet>
                             <div class="row">
                                 <div class="col-7">
                                     <common:patient_details
@@ -507,7 +499,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </p:panel>
                     </h:form>
                     </div>
                 </h:panelGroup>
