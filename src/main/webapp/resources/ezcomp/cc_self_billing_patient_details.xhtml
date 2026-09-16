@@ -407,20 +407,20 @@
                                 <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.phone}"/>
                             </div>
 
-                            <div class="ccpd-info-item">
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{not empty cc.attrs.controller.patient.person.email}">
                                 <span class="ccpd-info-label"><h:outputText styleClass="fas fa-envelope"/> Email</span>
-                                <h:outputText styleClass="ccpd-info-value" value="#{empty cc.attrs.controller.patient.person.email ? 'N/A' : cc.attrs.controller.patient.person.email}"/>
-                            </div>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.email}"/>
+                            </h:panelGroup>
 
-                            <div class="ccpd-info-item">
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{not empty cc.attrs.controller.patient.person.nic}">
                                 <span class="ccpd-info-label"><h:outputText styleClass="fas fa-address-card"/> National ID No.</span>
-                                <h:outputText styleClass="ccpd-info-value" value="#{empty cc.attrs.controller.patient.person.nic ? 'N/A' : cc.attrs.controller.patient.person.nic}"/>
-                            </div>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.nic}"/>
+                            </h:panelGroup>
 
-                            <div class="ccpd-info-item ccpd-info-item-wide">
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item ccpd-info-item-wide" rendered="#{not empty cc.attrs.controller.patient.person.address}">
                                 <span class="ccpd-info-label"><h:outputText styleClass="fas fa-location-dot"/> Address</span>
-                                <h:outputText styleClass="ccpd-info-value" value="#{empty cc.attrs.controller.patient.person.address ? 'N/A' : cc.attrs.controller.patient.person.address}"/>
-                            </div>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.address}"/>
+                            </h:panelGroup>
 
                             <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
                                 <span class="ccpd-info-label"><h:outputText styleClass="fas fa-flag"/> Patient Status</span>
@@ -440,10 +440,10 @@
                                 </h:outputText>
                             </h:panelGroup>
 
-                            <div class="ccpd-info-item">
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{cc.attrs.controller.patient.person.area ne null}">
                                 <span class="ccpd-info-label"><h:outputText styleClass="fas fa-map"/> Area</span>
                                 <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.area.name}"/>
-                            </div>
+                            </h:panelGroup>
 
                         </h:panelGroup>
                     </h:panelGroup>
