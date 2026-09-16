@@ -44,7 +44,7 @@
                     <div class="cc-header-chip-text">
                         <h:outputText
                             styleClass="cc-header-user-name"
-                            value="#{sessionController.loggedUser.webUserPerson.name}"
+                            value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"
                             rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
                         <h:outputText styleClass="cc-header-user-role" value="#{sessionController.loggedUser.name}"/>
                     </div>
