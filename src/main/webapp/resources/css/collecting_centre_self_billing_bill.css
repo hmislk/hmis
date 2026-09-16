@@ -206,7 +206,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     width: 100%;
     gap: 0.75rem;
 }
@@ -214,16 +214,23 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 .ccpd-header-right {
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
     margin-left: auto;
 }
 .ccpd-search-group {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    flex-wrap: nowrap;
 }
 .ccpd-search-input.ui-inputtext {
     max-width: 170px;
@@ -231,17 +238,25 @@
 .ccpd-icon-btn.ui-button {
     width: 34px;
     height: 34px;
+    min-width: 34px;
     padding: 0;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
 }
 .ccpd-icon-btn.ui-button .ui-button-text {
     display: none;
 }
 
 @media (max-width: 576px) {
+    .ccpd-header-row {
+        flex-wrap: wrap;
+    }
+    .ccpd-header-left {
+        white-space: normal;
+    }
     .ccpd-header-right {
         margin-left: 0;
     }
