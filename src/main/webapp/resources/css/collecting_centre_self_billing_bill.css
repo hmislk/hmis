@@ -180,3 +180,38 @@
     background: rgba(142, 36, 170, 0.12);
     color: #6A1B9A;
 }
+
+/* Bill items table - combined fee column */
+.cc-bill-page .cc-fee-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
+}
+.cc-bill-page .cc-fee-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.cc-bill-page .cc-fee-chip-label {
+    opacity: 0.75;
+    font-weight: 500;
+}
+.cc-bill-page .cc-fee-chip.cc-c-green { background: rgba(67, 160, 71, 0.14); color: #2E7D32; }
+.cc-bill-page .cc-fee-chip.cc-c-orange { background: rgba(251, 140, 0, 0.14); color: #E65100; }
+.cc-bill-page .cc-fee-chip.cc-c-purple { background: rgba(142, 36, 170, 0.14); color: #6A1B9A; }
+.cc-bill-page .cc-fee-total {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1E88E5;
+}
+.cc-bill-page .cc-fee-total-label {
+    font-weight: 500;
+    color: var(--text-color-secondary, #6c757d);
+    margin-right: 0.3rem;
+}

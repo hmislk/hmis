@@ -39,7 +39,7 @@
                                 </p:commandButton>
                             </f:facet>
                             <div class="row">
-                                <div class="col-6">
+                                <div class="col-8">
                                     <common:patient_details
                                         editable="#{webUserController.hasPrivilege('OpdEditPatientDetails')}"
                                         controller="#{collectingCentreBillController}"/>
@@ -140,23 +140,34 @@
                                                                 <f:facet name="header">Code</f:facet>
                                                                 <p:inputText class="w-100" value="#{bi.billItem.item.code}" readonly="true"></p:inputText>
                                                             </p:column>
-                                                            <p:column width="4em">
-                                                                <f:facet name="header">CC Fee</f:facet>
-                                                                <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
-                                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                                </h:outputLabel>
-                                                            </p:column>
-                                                            <p:column width="4em">
-                                                                <f:facet name="header">Hos Fee</f:facet>
-                                                                <h:outputLabel value="#{bi.billItem.hospitalFee}">
-                                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                                </h:outputLabel>
-                                                            </p:column>
-                                                            <p:column width="4em">
-                                                                <f:facet name="header">Staff Fee</f:facet>
-                                                                <h:outputLabel value="#{bi.billItem.staffFee}">
-                                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                                </h:outputLabel>
+                                                            <p:column width="12em" styleClass="cc-fee-column">
+                                                                <f:facet name="header">Fees</f:facet>
+                                                                <div class="cc-fee-line">
+                                                                    <span class="cc-fee-chip cc-c-green">
+                                                                        <span class="cc-fee-chip-label">CC</span>
+                                                                        <h:outputText value="#{bi.billItem.collectingCentreFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </span>
+                                                                    <span class="cc-fee-chip cc-c-orange">
+                                                                        <span class="cc-fee-chip-label">Hos</span>
+                                                                        <h:outputText value="#{bi.billItem.hospitalFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </span>
+                                                                    <span class="cc-fee-chip cc-c-purple">
+                                                                        <span class="cc-fee-chip-label">Staff</span>
+                                                                        <h:outputText value="#{bi.billItem.staffFee}">
+                                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                                        </h:outputText>
+                                                                    </span>
+                                                                </div>
+                                                                <div class="cc-fee-total">
+                                                                    <span class="cc-fee-total-label">Total</span>
+                                                                    <h:outputText value="#{bi.billItem.collectingCentreFee + bi.billItem.hospitalFee + bi.billItem.staffFee}">
+                                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                                    </h:outputText>
+                                                                </div>
                                                             </p:column>
                                                             <p:column width="2em">
                                                                 <p:commandButton
@@ -236,7 +247,7 @@
 
                                 </div>
 
-                                <div class="col-6">
+                                <div class="col-4">
 
                                     <p:panel styleClass="cc-bill-card cc-c-orange my-1">
                                         <f:facet name="header">
