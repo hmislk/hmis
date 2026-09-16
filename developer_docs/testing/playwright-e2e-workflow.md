@@ -367,9 +367,11 @@ browser_wait_for text "Paracetamol 500Mg Tablet"
 browser_press_key Enter                         ← selects first match, no snapshot needed
 ```
 
-⚠️ **Only on a page that declares no `p:defaultCommand`.** Where one exists, that
-same Enter also fires the default command, so the action runs before you click
-its button — see [§129](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button).
+⚠️ **Only when the autocomplete's own form declares no `p:defaultCommand`.**
+`p:defaultCommand` is a form-level Enter target, so what matters is the form the
+autocomplete sits in, not the page. Where that form declares one, the same Enter
+also fires it, and the action runs before you click its button — see
+[§129](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button).
 Use Pattern 2 there.
 
 **Pattern 2 — generic query, click from snapshot (2 snapshots):**
@@ -3866,13 +3868,17 @@ the list before clicking — the non-matching rows stay in the DOM, just hidden.
 
 ## 129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button
 
-§3's Pattern 1 ("type slowly, press Enter to select") is safe only on a page
-that declares no `p:defaultCommand`. `pharmacy/pharmacy_purhcase_order_request_native.xhtml`
-declares `<p:defaultCommand target="btnSave">`, and there the Enter that accepts
-the suggestion keeps travelling: the item is selected **and** the form's default
-command runs, adding the line. Clicking the real "Add" button afterwards adds it
-a *second* time, which trips the `Prevent Duplicate Items in Purchase Orders`
-guard:
+§3's Pattern 1 ("type slowly, press Enter to select") is safe only when the form
+containing the autocomplete declares no `p:defaultCommand`. It is a form-level
+Enter target, so an unrelated form elsewhere on the page is harmless — what
+matters is the autocomplete's own form.
+`pharmacy/pharmacy_purhcase_order_request_native.xhtml` puts both in one form
+(`<p:defaultCommand target="btnSave">`), and there the Enter that accepts the
+suggestion keeps travelling: the item is selected **and** that form's default
+command runs, adding the line. Clicking the real "Add" button afterwards attempts
+a second add, which the `Prevent Duplicate Items in Purchase Orders` guard
+rejects before anything is added — with that option turned off, the second click
+would instead add a duplicate line:
 
 > This item has already been added to the purchase order. Please update the
 > quantity of the existing item instead of adding it again.
@@ -3887,9 +3893,11 @@ list has loaded and falling through to the first submit button. Here the list is
 loaded and the selection itself works correctly; the extra action is the page's
 own default command.
 
-**How to spot it**: grep the page for `p:defaultCommand`, and count the item-table
-rows straight after the Enter, before clicking anything — if a row already
-appeared, the action has run.
+**How to spot it**: grep the **XHTML source** for `p:defaultCommand` — it is a
+markup-less component, so the rendered DOM will not show it (§84); in the browser
+you would have to look for its generated Enter handler instead. Then count the
+item-table rows straight after the Enter, before clicking anything — if a row
+already appeared, the action has run.
 
 **What to do instead**: click the suggestion row rather than pressing Enter
 (`tr.ui-autocomplete-item` / `tr[id^="<clientId>_item_"]` — see §77), let the
