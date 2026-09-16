@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-124 sections. **The workflow is §0-§8; everything from §9 on is an independent
+129 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -153,6 +153,10 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab](#123-reportsindexxhtmls-report-category-accordion-needs-the-primefaces-widget-api-not-a-plain-click-to-reliably-expand-a-tab)
 - [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
+- [126. JSF will not decode a `disabled` command button — you cannot reach the controller guard behind it by re-enabling the button in the DOM](#126-jsf-will-not-decode-a-disabled-command-button--you-cannot-reach-the-controller-guard-behind-it-by-re-enabling-the-button-in-the-dom)
+- [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
+- [128. The department `p:selectOneMenu` is a *filterable, table-based* dropdown — there are no `<li>` items to click](#128-the-department-pselectonemenu-is-a-filterable-table-based-dropdown--there-are-no-li-items-to-click)
+- [129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -362,6 +366,13 @@ browser_type "Paracetamol 500" slowly:true     ← character by character
 browser_wait_for text "Paracetamol 500Mg Tablet"
 browser_press_key Enter                         ← selects first match, no snapshot needed
 ```
+
+⚠️ **Only when the autocomplete's own form declares no `p:defaultCommand`.**
+`p:defaultCommand` is a form-level Enter target, so what matters is the form the
+autocomplete sits in, not the page. Where that form declares one, the same Enter
+also fires it, and the action runs before you click its button — see
+[§129](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button).
+Use Pattern 2 there.
 
 **Pattern 2 — generic query, click from snapshot (2 snapshots):**
 Use when the desired item is not the first suggestion and you need to pick:
@@ -3854,3 +3865,42 @@ the locator silently matches nothing.
 
 Check `offsetParent !== null` per row to confirm the filter actually narrowed
 the list before clicking — the non-matching rows stay in the DOM, just hidden.
+
+## 129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button
+
+§3's Pattern 1 ("type slowly, press Enter to select") is safe only when the form
+containing the autocomplete declares no `p:defaultCommand`. It is a form-level
+Enter target, so an unrelated form elsewhere on the page is harmless — what
+matters is the autocomplete's own form.
+`pharmacy/pharmacy_purhcase_order_request_native.xhtml` puts both in one form
+(`<p:defaultCommand target="btnSave">`), and there the Enter that accepts the
+suggestion keeps travelling: the item is selected **and** that form's default
+command runs, adding the line. Clicking the real "Add" button afterwards attempts
+a second add, which the `Prevent Duplicate Items in Purchase Orders` guard
+rejects before anything is added — with that option turned off, the second click
+would instead add a duplicate line:
+
+> This item has already been added to the purchase order. Please update the
+> quantity of the existing item instead of adding it again.
+
+Read in a scripted run, that message looks like the feature under test is
+broken — the new warning "didn't fire" — when in fact the first Enter already
+performed the add and the guard is doing its job. This cost several
+redeploy/retest cycles while verifying issue #23811.
+
+This is distinct from §90, which is about Enter arriving *before* the suggestion
+list has loaded and falling through to the first submit button. Here the list is
+loaded and the selection itself works correctly; the extra action is the page's
+own default command.
+
+**How to spot it**: grep the **XHTML source** for `p:defaultCommand` — it is a
+markup-less component, so the rendered DOM will not show it (§84); in the browser
+you would have to look for its generated Enter handler instead. Then count the
+item-table rows straight after the Enter, before clicking anything — if a row
+already appeared, the action has run.
+
+**What to do instead**: click the suggestion row rather than pressing Enter
+(`tr.ui-autocomplete-item` / `tr[id^="<clientId>_item_"]` — see §77), let the
+`itemSelect` AJAX settle, then click the real action button. On a page with
+`p:defaultCommand`, prefer this over Pattern 1 even when your query narrows to a
+single match.
