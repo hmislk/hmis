@@ -48,6 +48,15 @@
                                         value="Print Original" ajax="false">
                                         <p:printer target="gpOriginalBillPreview"/>
                                     </p:commandButton>
+                                    <p:commandButton
+                                        value="Send SMS"
+                                        icon="fas fa-sms"
+                                        styleClass="ui-button-secondary m-1"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Send SMS Button', true)}"
+                                        disabled="#{purchaseOrderNativeSqlController.printDto.cancelled}"
+                                        action="#{purchaseOrderSmsController.prepareSmsDialog(purchaseOrderNativeSqlController.currentBillId)}"
+                                        update=":poSmsDialogForm"
+                                        oncomplete="PF('poSmsDialog').show();"/>
                                     <!-- Small non-prominent fallback to legacy entity-based page -->
                                     <p:commandButton
                                         ajax="false"
@@ -916,6 +925,8 @@
 
                     </p:panel>
                 </h:form>
+
+                <ui:include src="fragments/po_sms_dialog.xhtml"/>
 
                 <!-- Print config dialog -->
                 <p:dialog id="poNativeConfigDialog"

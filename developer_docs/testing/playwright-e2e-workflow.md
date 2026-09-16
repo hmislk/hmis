@@ -14,7 +14,7 @@ waste a session.
 
 ## Contents
 
-124 sections. **The workflow is §0-§8; everything from §9 on is an independent
+129 sections. **The workflow is §0-§8; everything from §9 on is an independent
 gotcha** — jump straight to the one you need rather than reading the file.
 
 **Workflow**
@@ -153,6 +153,10 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [123. `reports/index.xhtml`'s report-category accordion needs the PrimeFaces widget API, not a plain click, to reliably expand a tab](#123-reportsindexxhtmls-report-category-accordion-needs-the-primefaces-widget-api-not-a-plain-click-to-reliably-expand-a-tab)
 - [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
+- [126. JSF will not decode a `disabled` command button — you cannot reach the controller guard behind it by re-enabling the button in the DOM](#126-jsf-will-not-decode-a-disabled-command-button--you-cannot-reach-the-controller-guard-behind-it-by-re-enabling-the-button-in-the-dom)
+- [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
+- [128. The department `p:selectOneMenu` is a *filterable, table-based* dropdown — there are no `<li>` items to click](#128-the-department-pselectonemenu-is-a-filterable-table-based-dropdown--there-are-no-li-items-to-click)
+- [129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -362,6 +366,13 @@ browser_type "Paracetamol 500" slowly:true     ← character by character
 browser_wait_for text "Paracetamol 500Mg Tablet"
 browser_press_key Enter                         ← selects first match, no snapshot needed
 ```
+
+⚠️ **Only when the autocomplete's own form declares no `p:defaultCommand`.**
+`p:defaultCommand` is a form-level Enter target, so what matters is the form the
+autocomplete sits in, not the page. Where that form declares one, the same Enter
+also fires it, and the action runs before you click its button — see
+[§129](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button).
+Use Pattern 2 there.
 
 **Pattern 2 — generic query, click from snapshot (2 snapshots):**
 Use when the desired item is not the first suggestion and you need to pick:
@@ -2820,7 +2831,7 @@ unrelated full postback of that form.
 Most `p:commandButton`s submit fine with a normal Playwright click — including
 `ajax="false"` text-valued buttons such as `form:btnNursingDischarge` on
 `admission_profile.xhtml`, which navigate correctly on a plain
-`page.locator('#form\:btnNursingDischarge').click()`.
+`page.locator('#form\\:btnNursingDischarge').click()`.
 
 The exception is **icon-only row controls** inside a `p:dataTable` (e.g. the
 `ui-button-icon-only` action buttons on `inpatient_search.xhtml`, which render with
@@ -3761,3 +3772,135 @@ Found while verifying issue #23723 on the local `coop` DB.
   Create New Version) reopens `inward_bill_final.xhtml` in edit mode on an
   already-settled admission. That's a quick way to get a fresh edit view without
   building another admission.
+
+## 126. JSF will not decode a `disabled` command button — you cannot reach the controller guard behind it by re-enabling the button in the DOM
+
+A common pattern in this codebase is a button that is both bound to
+`disabled="#{...someState}"` in the XHTML **and** guarded again inside the
+controller method. Testing the controller guard by stripping `disabled` in the
+browser does not work, and the result looks alarmingly like a silent failure:
+
+```js
+// looks like it should reach the server, but does not
+const b = document.getElementById('form:btnApprove');
+b.disabled = false;
+b.removeAttribute('disabled');
+b.classList.remove('ui-state-disabled');
+b.click();                       // POST happens, action never runs
+```
+
+The POST *is* sent, the page reloads, and **nothing happens** — no navigation,
+no message, no exception, an empty `div.ui-messages`, and nothing in
+`server.log`. That is not a bug in the page: JSF re-evaluates the component's
+`disabled` attribute server-side during *decode* and refuses to queue the action
+event for a disabled `UICommand`, no matter what the client submitted. The
+client-side attribute is irrelevant.
+
+Two consequences when verifying a fix:
+
+- **The `disabled` binding is itself a real server-side guard**, not just
+  cosmetics — worth stating in the PR rather than dismissing it as "`disabled`
+  is not a guard". It also survives browser **Back**: a JSF page re-renders from
+  the server on back-navigation, so a button disabled by current state comes
+  back disabled, not enabled from cache.
+- **A controller guard sitting behind such a binding is unreachable from the
+  UI** while the binding holds. It is still worth having as defence-in-depth
+  (non-UI callers, another page that doesn't bind `disabled`), but do not claim
+  you "verified the guard fires" — you verified the *outcome* (the action was
+  refused). Verify that outcome in the DB instead: assert the row the action
+  would have written does not exist.
+
+To exercise the controller guard for real you need a caller that isn't the
+disabled button — a second session whose page was rendered before the state
+changed *and* whose button is not `disabled`-bound, or a direct unit/integration
+call.
+
+## 127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom
+
+The local "Database Migration Pending — Missing fields or tables detected."
+banner is `position: fixed; z-index: 9999` at the bottom of the viewport
+(`div.nonPrintBlock`). Playwright reports:
+
+```
+<div class="nonPrintBlock">…</div> intercepts pointer events
+```
+
+…for any dialog button that lands in the bottom ~41px, and retrying or resizing
+the window does not help, because several HMIS dialogs position their **bottom
+edge at the window bottom** rather than centring (observed on
+`pharmacy_transfer_request_approval.xhtml` for both its config dialog and a
+newly added one — so it is page behaviour, not something a new dialog
+introduces).
+
+Hide the banner for the duration of the test — it only renders because the local
+DB has pending migrations, so hiding it reproduces what a migrated environment
+looks like rather than masking a defect:
+
+```js
+document.querySelectorAll('.nonPrintBlock').forEach(e => e.style.display = 'none');
+```
+
+Worth a second thought before dismissing it, though: if a dialog's buttons sit
+that low, they can also be clipped on a genuinely short laptop viewport. Check
+the dialog's `getBoundingClientRect()` against `innerHeight` before concluding
+it is purely a local-banner artifact.
+
+## 128. The department `p:selectOneMenu` is a *filterable, table-based* dropdown — there are no `<li>` items to click
+
+The login department selector renders its options as `<tr data-label="...">`
+rows inside `…_table`, not as `<li>` elements, and it has a filter box. A
+`.ui-selectonemenu-items li` query returns `[]` and the panel looks empty even
+though it is visible. Drive it the way a user does:
+
+```js
+// 1. open the dropdown, 2. type into the filter, 3. click the matching row
+await page.locator('#form\\:dept_filter').pressSequentially('OPD Pharmacy');
+await page.locator('#form\\:dept_table tr[data-label="OPD Pharmacy"]').click();
+```
+
+Note the doubled backslash. A JavaScript single-quoted `'\\:'` produces the one
+literal backslash CSS needs in order to escape the colon in a JSF client id.
+Writing `'\:'` collapses to a bare `:`, which CSS parses as a pseudo-class, so
+the locator silently matches nothing.
+
+Check `offsetParent !== null` per row to confirm the filter actually narrowed
+the list before clicking — the non-matching rows stay in the DOM, just hidden.
+
+## 129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button
+
+§3's Pattern 1 ("type slowly, press Enter to select") is safe only when the form
+containing the autocomplete declares no `p:defaultCommand`. It is a form-level
+Enter target, so an unrelated form elsewhere on the page is harmless — what
+matters is the autocomplete's own form.
+`pharmacy/pharmacy_purhcase_order_request_native.xhtml` puts both in one form
+(`<p:defaultCommand target="btnSave">`), and there the Enter that accepts the
+suggestion keeps travelling: the item is selected **and** that form's default
+command runs, adding the line. Clicking the real "Add" button afterwards attempts
+a second add, which the `Prevent Duplicate Items in Purchase Orders` guard
+rejects before anything is added — with that option turned off, the second click
+would instead add a duplicate line:
+
+> This item has already been added to the purchase order. Please update the
+> quantity of the existing item instead of adding it again.
+
+Read in a scripted run, that message looks like the feature under test is
+broken — the new warning "didn't fire" — when in fact the first Enter already
+performed the add and the guard is doing its job. This cost several
+redeploy/retest cycles while verifying issue #23811.
+
+This is distinct from §90, which is about Enter arriving *before* the suggestion
+list has loaded and falling through to the first submit button. Here the list is
+loaded and the selection itself works correctly; the extra action is the page's
+own default command.
+
+**How to spot it**: grep the **XHTML source** for `p:defaultCommand` — it is a
+markup-less component, so the rendered DOM will not show it (§84); in the browser
+you would have to look for its generated Enter handler instead. Then count the
+item-table rows straight after the Enter, before clicking anything — if a row
+already appeared, the action has run.
+
+**What to do instead**: click the suggestion row rather than pressing Enter
+(`tr.ui-autocomplete-item` / `tr[id^="<clientId>_item_"]` — see §77), let the
+`itemSelect` AJAX settle, then click the real action button. On a page with
+`p:defaultCommand`, prefer this over Pattern 1 even when your query narrows to a
+single match.

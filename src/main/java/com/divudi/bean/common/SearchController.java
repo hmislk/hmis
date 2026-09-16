@@ -1099,12 +1099,30 @@ public class SearchController implements Serializable {
                 + "LEFT JOIN canCreator.webUserPerson canCreatorPerson "
                 + "WHERE b.retired = false "
                 + "AND b.billType = :billType "
+                + "AND b.billTypeAtomic <> :excludedBillTypeAtomic "
                 + "AND b.institution = :institution "
                 + "AND b.fromDepartment = :fromDepartment "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "ORDER BY b.createdAt DESC";
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.PharmacyTransferRequest);
+        // Filtering on billType alone also matched the PHARMACY_TRANSFER_REQUEST_CANCELLED
+        // records, which Bill.copy() gives the same billType/fromDepartment/institution as
+        // the request they cancel. They appeared here as extra rows with a negative total
+        // and - because a cancellation record carries no checkedBy and is not itself
+        // flagged cancelled - with the Edit button ENABLED. Editing and saving one called
+        // saveTransferRequestPreBillAndBillItems(), which flipped its billTypeAtomic to
+        // PHARMACY_TRANSFER_REQUEST_PRE: a cancellation record became a live request, and
+        // the original pre-bill's cancelledBill then pointed at something that was no
+        // longer a cancellation (issue #23809).
+        //
+        // Excludes only the cancellation records, deliberately. Restricting this to
+        // PHARMACY_TRANSFER_REQUEST_PRE would also drop the approved copies, which is a
+        // larger semantic change to a query whose department/type semantics have already
+        // caused regressions (#22944, #23039) - the approved copies are merely duplicate
+        // rows here (they carry checkedBy, so their Edit button is already disabled),
+        // not a data-integrity risk. That duplication is left for a separate change.
+        params.put("excludedBillTypeAtomic", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_CANCELLED);
         params.put("institution", sessionController.getInstitution());
         params.put("fromDepartment", sessionController.getDepartment());
         params.put("fromDate", getFromDate());
@@ -6985,7 +7003,8 @@ public class SearchController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
                 + "b.id, b.deptId, b.createdAt, COALESCE(toDept.name, ''), "
                 + "COALESCE(creatorPerson.name, ''), b.cancelled, "
-                + "canBill.createdAt, COALESCE(canCreatorPerson.name, ''), b.netTotal) "
+                + "canBill.createdAt, COALESCE(canCreatorPerson.name, ''), b.netTotal, "
+                + "COALESCE(canBill.comments, '')) "
                 + "FROM Bill b "
                 + "LEFT JOIN b.toDepartment toDept "
                 + "LEFT JOIN b.creater creator "
