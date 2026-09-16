@@ -55,15 +55,17 @@
                             <h:panelGroup rendered="#{cc.attrs.editable}" id="edit">
                                 <p:selectBooleanButton
                                     value="#{cc.attrs.controller.patientDetailsEditable}"
+                                    offLabel="Edit"
+                                    onLabel="View"
                                     offIcon="pi pi-pencil"
                                     onIcon="pi pi-eye"
-                                    class="mx-2"
+                                    styleClass="ccpd-btn mx-2"
                                     >
                                     <p:ajax
                                         process="@this"
                                         update="viewPatient editPatient btnDone edit"/>
                                 </p:selectBooleanButton>
-                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} "/>
+                                <p:commandButton id="btnDone" value="Save" alt="Save Patient Details" styleClass="ccpd-btn ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} "/>
                             </h:panelGroup>
 
                         </h:panelGroup>
