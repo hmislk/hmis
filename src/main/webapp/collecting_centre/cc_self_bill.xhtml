@@ -499,7 +499,8 @@
                                             </div>
                                             <div class="col-md-9">
                                                 <p:autoComplete
-                                                    forceSelection="true" id="cmbDoc"
+                                                    forceSelection="true" 
+                                                    id="cmbDoc"
                                                     minQueryLength="4"
                                                     class="w-100 mb-1"
                                                     inputStyleClass="w-100"
@@ -507,8 +508,12 @@
                                                     value="#{collectingCentreBillController.referredBy}"
                                                     completeMethod="#{doctorController.completeDoctor}"
                                                     var="ix"
+                                                    maxResults="20"
                                                     itemLabel="#{ix.person.name}"
                                                     itemValue="#{ix}">
+                                                    <p:column headerText="Name" style="padding: 6px;">
+                                                        #{ix.person.name}
+                                                    </p:column>
                                                 </p:autoComplete>
                                             </div>
                                             <div class="col-md-3">
@@ -524,14 +529,15 @@
                                                     itemLabel="#{refi.name}"
                                                     itemValue="#{refi}"
                                                     class="mb-1 w-100"
+                                                    maxResults="20"
                                                     inputStyleClass="w-100">
-                                                    <p:column headerText="Name">
+                                                    <p:column headerText="Name" style="padding: 6px;">
                                                         #{refi.name}
                                                     </p:column>
-                                                    <p:column headerText="Code">
+                                                    <p:column headerText="Code" style="padding: 6px;">
                                                         #{refi.institutionCode}
                                                     </p:column>
-                                                    <p:column headerText="Institution Type">
+                                                    <p:column headerText="Institution Type" style="padding: 6px;">
                                                         #{refi.institutionType}
                                                     </p:column>
                                                 </p:autoComplete>
