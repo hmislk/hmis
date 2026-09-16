@@ -32,17 +32,20 @@
     background: var(--surface-a, #fff);
 }
 
-/* Patient section header (shared common:patient_details composite): its own
-   d-flex/justify-content-between row needs to fill the titlebar's flex row
-   for the quick-search box/buttons to actually push to the right. */
-.cc-bill-page .ui-panel .ui-panel-titlebar > .d-flex.justify-content-between {
-    flex: 1 1 100%;
+/* PrimeFaces wraps every header facet's content in <span class="ui-panel-title">,
+   which is a flex-item of ui-panel-titlebar but doesn't itself stretch to fill
+   it. Without this, the shared common:patient_details composite's own
+   d-flex/justify-content-between row (inside that span) has no room to push
+   its quick-search box/buttons to the right. */
+.cc-bill-page .ui-panel .ui-panel-titlebar .ui-panel-title {
+    flex: 1 1 auto;
     width: 100%;
+    display: block;
 }
-.cc-bill-page .ui-panel .ui-panel-titlebar > .fa,
-.cc-bill-page .ui-panel .ui-panel-titlebar > .fas,
-.cc-bill-page .ui-panel .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .ui-panel .ui-panel-titlebar > .pi {
+.cc-bill-page .ui-panel .ui-panel-titlebar .fa,
+.cc-bill-page .ui-panel .ui-panel-titlebar .fas,
+.cc-bill-page .ui-panel .ui-panel-titlebar .fa-solid,
+.cc-bill-page .ui-panel .ui-panel-titlebar .pi {
     width: 30px;
     height: 30px;
     min-width: 30px;
@@ -56,40 +59,40 @@
 }
 
 .cc-bill-page .cc-bill-card.cc-c-blue { border-top-color: #1E88E5; }
-.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar > .pi { background: rgba(30, 136, 229, 0.14); color: #1E88E5; }
+.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar .fa,
+.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar .fas,
+.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar .fa-solid,
+.cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar .pi { background: rgba(30, 136, 229, 0.14); color: #1E88E5; }
 
 .cc-bill-page .cc-bill-card.cc-c-green { border-top-color: #43A047; }
-.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar > .pi { background: rgba(67, 160, 71, 0.14); color: #43A047; }
+.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar .fa,
+.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar .fas,
+.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar .fa-solid,
+.cc-bill-page .cc-bill-card.cc-c-green .ui-panel-titlebar .pi { background: rgba(67, 160, 71, 0.14); color: #43A047; }
 
 .cc-bill-page .cc-bill-card.cc-c-purple { border-top-color: #8E24AA; }
-.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar > .pi { background: rgba(142, 36, 170, 0.14); color: #8E24AA; }
+.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar .fa,
+.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar .fas,
+.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar .fa-solid,
+.cc-bill-page .cc-bill-card.cc-c-purple .ui-panel-titlebar .pi { background: rgba(142, 36, 170, 0.14); color: #8E24AA; }
 
 .cc-bill-page .cc-bill-card.cc-c-orange { border-top-color: #FB8C00; }
-.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar > .pi { background: rgba(251, 140, 0, 0.14); color: #FB8C00; }
+.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar .fa,
+.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar .fas,
+.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar .fa-solid,
+.cc-bill-page .cc-bill-card.cc-c-orange .ui-panel-titlebar .pi { background: rgba(251, 140, 0, 0.14); color: #FB8C00; }
 
 .cc-bill-page .cc-bill-card.cc-c-teal { border-top-color: #00897B; }
-.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar > .pi { background: rgba(0, 137, 123, 0.14); color: #00897B; }
+.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar .fa,
+.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar .fas,
+.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar .fa-solid,
+.cc-bill-page .cc-bill-card.cc-c-teal .ui-panel-titlebar .pi { background: rgba(0, 137, 123, 0.14); color: #00897B; }
 
 .cc-bill-page .cc-bill-card.cc-c-red { border-top-color: #E53935; }
-.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar > .fa,
-.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar > .fas,
-.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar > .fa-solid,
-.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar > .pi { background: rgba(229, 57, 53, 0.14); color: #E53935; }
+.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar .fa,
+.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar .fas,
+.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar .fa-solid,
+.cc-bill-page .cc-bill-card.cc-c-red .ui-panel-titlebar .pi { background: rgba(229, 57, 53, 0.14); color: #E53935; }
 
 /* Buttons */
 .cc-bill-page .ui-button {
