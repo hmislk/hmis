@@ -233,43 +233,18 @@
     flex-wrap: nowrap;
 }
 .ccpd-search-input.ui-inputtext {
-    width: 220px;
-    max-width: 220px;
+    width: 200px;
+    max-width: 200px;
 }
-.ccpd-icon-btn.ui-button {
-    position: relative;
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-    padding: 0;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    line-height: 1;
-}
-/* PrimeFaces centers the icon assuming visible button text (absolute
-   position + left offset); with the text hidden below, force it back
-   to the middle of the round button regardless of whatever base
-   position/margin the theme CSS applied. */
-.ccpd-icon-btn.ui-button .ui-button-icon-left,
-.ccpd-icon-btn.ui-button .ui-icon {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    right: auto !important;
-    bottom: auto !important;
-    margin: 0 !important;
-    transform: translate(-50%, -50%);
-}
-.ccpd-icon-btn.ui-button .ui-button-text {
-    display: none;
+.ccpd-btn.ui-button {
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 @media (max-width: 576px) {
     .ccpd-search-input.ui-inputtext {
-        width: 160px;
+        width: 140px;
     }
     .ccpd-header-row {
         flex-wrap: wrap;

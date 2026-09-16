@@ -88,22 +88,24 @@
                                 />
                             <p:commandButton
                                 id="btnSearchbyPhoneNo"
+                                value="Search"
                                 icon="fa fa-search"
                                 title="Quick Search from Phone Number"
                                 action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}"
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
                                 update="ptImp selectPatient editPatient viewPatient #{cc.attrs.additionalUpdateTargets}"
-                                styleClass="ccpd-icon-btn">
+                                styleClass="ccpd-btn ui-button-info">
                             </p:commandButton>
                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
                             <p:commandButton
                                 id="btnAddNewPatient"
+                                value="Add Patient"
                                 icon="fa fa-plus-circle"
                                 title="Add New Patient"
                                 action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}"
                                 process="btnAddNewPatient"
                                 update="ptImp selectPatient editPatient viewPatient"
-                                styleClass="ccpd-icon-btn"/>
+                                styleClass="ccpd-btn ui-button-success"/>
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:panelGroup>
