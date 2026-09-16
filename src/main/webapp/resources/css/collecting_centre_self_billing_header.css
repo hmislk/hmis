@@ -103,35 +103,6 @@
     align-items: center;
     gap: 0.5rem;
 }
-.cc-header-actions .ui-button.cc-header-icon-btn {
-    width: 38px;
-    height: 38px;
-    padding: 0;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.16);
-    border: 1px solid rgba(255,255,255,0.28);
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-}
-.cc-header-actions .ui-button.cc-header-icon-btn:enabled:hover {
-    background: rgba(255,255,255,0.28);
-    color: #fff;
-}
-.cc-header-actions .ui-button .ui-button-icon-left,
-.cc-header-actions .ui-button .ui-icon {
-    margin: 0;
-    position: static;
-}
-.cc-header-actions .ui-button.cc-header-icon-btn .ui-button-text {
-    display: none;
-}
-.cc-header-actions .p-badge,
-.cc-header-actions .ui-badge {
-    background: #E53935;
-}
 
 .cc-header-actions .ui-button.cc-header-back-btn {
     background: rgba(255,255,255,0.16);

@@ -8,10 +8,9 @@
     <!--
         Shared top header for Collecting Centre self-service pages. Shows the
         page title/icon, institution/department context and the logged-in
-        user's chip with notifications/logout, plus an optional "back"
-        button. Meant to be dropped at the top of every self-service page
-        (inside its h:form) so the section always looks and behaves the
-        same way.
+        user's chip, plus an optional "back" button. Meant to be dropped at
+        the top of every self-service page (inside its h:form) so the
+        section always looks and behaves the same way.
     -->
 
     <!-- INTERFACE -->
@@ -61,27 +60,6 @@
                         immediate="true"
                         ajax="false"
                         action="#{cc.attrs.backAction}"/>
-                    <p:badge value="#{userNotificationController.unseenCount}" severity="danger" rendered="#{userNotificationController.unseenCount > 0}">
-                        <p:commandButton
-                            ajax="false"
-                            icon="pi pi-bell"
-                            styleClass="cc-header-icon-btn"
-                            title="Notifications"
-                            action="#{userNotificationController.navigateToRecivedNotification()}"/>
-                    </p:badge>
-                    <p:commandButton
-                        ajax="false"
-                        icon="pi pi-bell"
-                        styleClass="cc-header-icon-btn"
-                        title="Notifications"
-                        rendered="#{userNotificationController.unseenCount le 0}"
-                        action="#{userNotificationController.navigateToRecivedNotification()}"/>
-                    <p:commandButton
-                        ajax="false"
-                        icon="pi pi-sign-out"
-                        styleClass="cc-header-icon-btn"
-                        title="Logout"
-                        action="#{sessionController.logout}"/>
                 </div>
             </div>
         </div>
