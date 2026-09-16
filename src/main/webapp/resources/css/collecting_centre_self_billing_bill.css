@@ -275,24 +275,24 @@
     grid-column: span 2;
 }
 .ccpd-info-label {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-color-secondary, #6c757d);
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.35rem;
 }
 .ccpd-info-label .fa,
 .ccpd-info-label .fas {
     color: #1E88E5;
-    font-size: 0.78rem;
-    width: 14px;
+    font-size: 0.88rem;
+    width: 16px;
     text-align: center;
 }
 .ccpd-info-value {
     font-weight: 600;
-    font-size: 0.92rem;
+    font-size: 1.02rem;
     color: var(--text-color, #212529);
     word-break: break-word;
 }
