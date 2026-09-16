@@ -1,6 +1,10 @@
 package com.divudi.bean.collectingCentre;
 
+import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.DepartmentType;
+
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 
@@ -16,7 +20,15 @@ public class CollectingCentreSelfCommonController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Inject
+    private SessionController sessionController;
+
     public String navigateToCollectingCentreSelfBillingHome() {
-        return "/collecting_centre/collecting_centre_self_billing_home?faces-redirect=true";
+        return "/collecting_centre/cc_self_billing_index?faces-redirect=true";
+    }
+
+    public boolean isCollectingCentreDepartment() {
+        return sessionController.getDepartment() != null
+                && sessionController.getDepartment().getDepartmentType() == DepartmentType.CollectingCentre;
     }
 }
