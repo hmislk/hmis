@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -44,8 +45,8 @@ public class BhtDepositDetailReportController implements Serializable {
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = endOfCurrentMonth();
     private String dateBasis = "dischargeDate";
-    private String reportType = "DEPOSIT";
-    private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+    private String reportType = "ALL";
+    private AdmissionStatus admissionStatus = AdmissionStatus.ANY_STATUS;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private Institution institution;
@@ -80,6 +81,7 @@ public class BhtDepositDetailReportController implements Serializable {
                 row.setAdmissionType(enc.getAdmissionType());
                 row.setDateOfAdmission(enc.getDateOfAdmission());
                 row.setDateOfDischarge(enc.getDateOfDischarge());
+                row.setBillId(p.getBill() != null ? p.getBill().getId() : null);
                 row.setBillNo(p.getBill() != null ? p.getBill().getDeptId() : "");
                 row.setCreatedAt(p.getCreatedAt());
                 row.setPaymentMethod(p.getPaymentMethod());
@@ -96,6 +98,8 @@ public class BhtDepositDetailReportController implements Serializable {
         }
 
         usedPaymentMethods = new ArrayList<>(totalByMethod.keySet());
+        reportRows.sort(Comparator.comparing(BhtPaymentDetailDTO::getBillId,
+                Comparator.nullsLast(Comparator.naturalOrder())));
     }
 
     private List<PatientEncounter> fetchEncounters() {
@@ -106,6 +110,17 @@ public class BhtDepositDetailReportController implements Serializable {
         if (fromDate != null && toDate != null) {
             if ("admissionDate".equals(dateBasis)) {
                 jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
+            } else if ("paymentDate".equals(dateBasis)) {
+                jpql.append(" and exists (select 1 from Payment p where p.retired = false"
+                        + " and p.bill.retired = false and p.bill.cancelled = false"
+                        + " and p.bill.billTypeAtomic in :btas and p.bill.patientEncounter = c"
+                        + " and p.createdAt between :fromDate and :toDate");
+                if (paymentMethod != null) {
+                    jpql.append(" and p.paymentMethod = :pm");
+                    params.put("pm", paymentMethod);
+                }
+                jpql.append(")");
+                params.put("btas", reportTypeBillTypeAtomics());
             } else {
                 jpql.append(" and c.dateOfDischarge between :fromDate and :toDate");
             }
@@ -154,6 +169,18 @@ public class BhtDepositDetailReportController implements Serializable {
         return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
+    private List<BillTypeAtomic> reportTypeBillTypeAtomics() {
+        if ("DEPOSIT".equals(reportType)) {
+            return Collections.singletonList(BillTypeAtomic.INWARD_DEPOSIT);
+        } else if ("PAYMENT".equals(reportType)) {
+            return Collections.singletonList(BillTypeAtomic.INWARD_PAYMENT);
+        } else if ("POST_FINAL".equals(reportType)) {
+            return Collections.singletonList(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+        }
+        return Arrays.asList(BillTypeAtomic.INWARD_DEPOSIT, BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+    }
+
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " where p.retired = false"
@@ -162,37 +189,43 @@ public class BhtDepositDetailReportController implements Serializable {
                 + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
-        List<BillTypeAtomic> btas;
-        if ("DEPOSIT".equals(reportType)) {
-            btas = Collections.singletonList(BillTypeAtomic.INWARD_DEPOSIT);
-        } else if ("PAYMENT".equals(reportType)) {
-            btas = Collections.singletonList(BillTypeAtomic.INWARD_PAYMENT);
-        } else if ("POST_FINAL".equals(reportType)) {
-            btas = Collections.singletonList(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
-        } else {
-            btas = Arrays.asList(BillTypeAtomic.INWARD_DEPOSIT, BillTypeAtomic.INWARD_PAYMENT,
-                    BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
-        }
-        params.put("btas", btas);
+        params.put("btas", reportTypeBillTypeAtomics());
         params.put("enc", enc);
         if (paymentMethod != null) {
             jpql.append(" and p.paymentMethod = :pm");
             params.put("pm", paymentMethod);
         }
+        if ("paymentDate".equals(dateBasis) && fromDate != null && toDate != null) {
+            jpql.append(" and p.createdAt between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        }
         jpql.append(" order by p.createdAt");
-        return paymentFacade.findByJpql(jpql.toString(), params);
+        return paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public double getTotalForMethod(PaymentMethod pm) {
         return totalByMethod.getOrDefault(pm, 0.0);
     }
 
+    /**
+     * Amount to show in this row's column for the given payment method - the
+     * row's own amount if it was paid by that method, null otherwise (so the
+     * per-method columns show one value per row, not the row repeated).
+     */
+    public Double getRowAmountForMethod(BhtPaymentDetailDTO row, PaymentMethod pm) {
+        if (row == null || pm == null || !pm.equals(row.getPaymentMethod())) {
+            return null;
+        }
+        return row.getAmount();
+    }
+
     public void makeNull() {
         fromDate = startOfCurrentMonth();
         toDate = endOfCurrentMonth();
         dateBasis = "dischargeDate";
-        reportType = "DEPOSIT";
-        admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+        reportType = "ALL";
+        admissionStatus = AdmissionStatus.ANY_STATUS;
         admissionType = null;
         paymentMethod = null;
         institution = null;

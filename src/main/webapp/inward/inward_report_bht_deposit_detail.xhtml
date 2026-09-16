@@ -45,6 +45,7 @@
                                              value="#{bhtDepositDetailReportController.dateBasis}">
                                 <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
                                 <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                                <f:selectItem itemValue="paymentDate" itemLabel="Payment Date" />
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -206,6 +207,9 @@
                                     </span>
                                 </f:facet>
                                 <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailBillNoVisible}" itemLabel="Bill No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailBhtNoVisible}" itemLabel="BHT No">
                                         <p:ajax update="tblReport panelColumnToggler" />
                                     </p:selectBooleanCheckbox>
@@ -219,9 +223,6 @@
                                         <p:ajax update="tblReport panelColumnToggler" />
                                     </p:selectBooleanCheckbox>
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailDischargedVisible}" itemLabel="Discharged">
-                                        <p:ajax update="tblReport panelColumnToggler" />
-                                    </p:selectBooleanCheckbox>
-                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailBillNoVisible}" itemLabel="Bill No">
                                         <p:ajax update="tblReport panelColumnToggler" />
                                     </p:selectBooleanCheckbox>
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailDateTimeVisible}" itemLabel="Date / Time">
@@ -250,6 +251,11 @@
                                      currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                      rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                      styleClass="w-100">
+
+                            <p:column headerText="Bill No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailBillNoVisible}">
+                                <h:outputText value="#{row.billNo}" />
+                            </p:column>
 
                             <p:column headerText="BHT No" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailBhtNoVisible}">
@@ -280,11 +286,6 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Bill No" style="white-space:nowrap;"
-                                      rendered="#{userSettingsController.inwardBhtDepositDetailBillNoVisible}">
-                                <h:outputText value="#{row.billNo}" />
-                            </p:column>
-
                             <p:column headerText="Date / Time" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailDateTimeVisible}">
                                 <h:outputText value="#{row.createdAt}">
@@ -303,6 +304,13 @@
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                             </p:column>
+
+                            <p:columns value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm"
+                                       headerText="#{pm.label}" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{bhtDepositDetailReportController.getRowAmountForMethod(row, pm)}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                            </p:columns>
 
                             <p:column headerText="Reference No" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailReferenceNoVisible}">
