@@ -260,39 +260,39 @@
 /* Searched patient details display: compact label/value grid */
 .ccpd-info-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.1rem 1rem;
-    margin-top: 0.15rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem 1.5rem;
+    margin-top: 0.35rem;
 }
 .ccpd-info-item {
     display: flex;
     align-items: baseline;
-    gap: 0.35rem;
-    padding: 0.2rem 0;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
     border-bottom: 1px dashed var(--surface-d, #eef0f2);
 }
 .ccpd-info-item-wide {
     grid-column: span 2;
 }
 .ccpd-info-label {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-color-secondary, #6c757d);
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.3rem;
 }
 .ccpd-info-label .fa,
 .ccpd-info-label .fas {
     color: #1E88E5;
-    font-size: 0.7rem;
-    width: 12px;
+    font-size: 0.78rem;
+    width: 14px;
     text-align: center;
 }
 .ccpd-info-value {
     font-weight: 600;
-    font-size: 0.82rem;
+    font-size: 0.92rem;
     color: var(--text-color, #212529);
     word-break: break-word;
 }
