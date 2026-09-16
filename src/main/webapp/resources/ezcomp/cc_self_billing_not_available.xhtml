@@ -13,6 +13,7 @@
     <cc:implementation>
 
         <div class="cc-na-wrap">
+            <div class="cc-na-blob-mid"/>
             <div class="cc-na-card">
                 <div class="cc-na-icon-ring">
                     <div class="cc-na-icon">
@@ -30,15 +31,15 @@
                               value="This page is only available to users logged in to a Collecting Centre department. No department is currently selected for your session."/>
 
                 <div class="cc-na-context" rendered="#{sessionController.department != null}">
-                    <div class="cc-na-chip">
+                    <div class="cc-na-chip cc-na-chip-blue">
                         <h:outputText styleClass="fas fa-city"/>
                         <h:outputText value="#{sessionController.institution.name}" styleClass="cc-na-chip-value"/>
                     </div>
-                    <div class="cc-na-chip">
+                    <div class="cc-na-chip cc-na-chip-green">
                         <h:outputText styleClass="fas fa-sitemap"/>
                         <h:outputText value="#{sessionController.department.name}" styleClass="cc-na-chip-value"/>
                     </div>
-                    <div class="cc-na-chip">
+                    <div class="cc-na-chip cc-na-chip-orange">
                         <h:outputText styleClass="fas fa-tag"/>
                         <h:outputText value="#{sessionController.department.departmentType.label}" styleClass="cc-na-chip-value"/>
                     </div>
