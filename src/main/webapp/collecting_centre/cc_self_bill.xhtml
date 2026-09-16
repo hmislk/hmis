@@ -130,38 +130,38 @@
                                                                 <f:facet name="header">#</f:facet>
                                                                 <h:outputLabel class="w-100" value="#{rowIndex +1 }"></h:outputLabel>
                                                             </p:column>
-                                                            
+
                                                             <p:column style="padding: 7px; min-width: 12em;">
                                                                 <f:facet name="header">Item</f:facet>
                                                                 <h:outputLabel class="w-100" value="#{bi.billItem.item.name}"></h:outputLabel>
                                                             </p:column>
-                                                            
+
                                                             <p:column width="10em" style="padding: 7px;">
                                                                 <f:facet name="header">Code</f:facet>
                                                                 <h:outputLabel class="w-100" value="#{bi.billItem.item.code}"></h:outputLabel>
                                                             </p:column>
-                                                            
+
                                                             <p:column width="7em" class="text-end" style="padding: 7px;">
                                                                 <f:facet name="header">CC Fee</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.collectingCentreFee}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            
+
                                                             <p:column width="7em" class="text-end" style="padding: 7px;">
                                                                 <f:facet name="header">Hos Fee</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.hospitalFee}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            
+
                                                             <p:column width="7em" class="text-end" style="padding: 7px;">
                                                                 <f:facet name="header">Staff Fee</f:facet>
                                                                 <h:outputLabel value="#{bi.billItem.staffFee}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            
+
                                                             <p:column width="3em" class="text-center" style="padding: 7px;">
                                                                 <p:commandButton
                                                                     id="btnRemove"
@@ -266,7 +266,7 @@
                                                         return false;">
                                         </p:commandButton>
                                     </div>
-                                    
+
                                     <div class="row m-1 mt-1">
                                         <p:panel styleClass="cc-bill-card cc-c-red">
 
@@ -303,29 +303,32 @@
 
                                     <p:panel styleClass="cc-bill-card cc-c-orange m-1">
                                         <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-bullseye"/>
-                                            <h:outputText value="Collecting Centre Details" class="mx-4"></h:outputText>
-                                        </f:facet>
-
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <p:outputLabel value="Reference No" class="mr-4"></p:outputLabel>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex gap-2 mt-2">
+                                                    <h:outputText styleClass="fas fa-bullseye"/>
+                                                    <h:outputText value="Collecting Centre Details"></h:outputText>
                                                 </div>
-                                                <div class="col-md-9">
-                                                    <p:selectOneMenu
-                                                        filter="true"
-                                                        filterMatchMode="contains"
-                                                        value="#{collectingCentreBillController.referralId}"
-                                                        class="w-100 mb-1">
-                                                        <f:selectItem itemLabel="Select" itemValue=""/> <!-- Default empty selection -->
-                                                        <f:selectItems value="#{collectingCentreBillController.referralIds}" var="refId"
-                                                                       itemLabel="#{refId}" itemValue="#{refId}"/>
-                                                    </p:selectOneMenu>
-                                                </div>
+                                                
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
+                                                    <div class="d-flex gap-2" style="width: 300px;">
+                                                        <p:selectOneMenu
+                                                            filter="true"
+                                                            
+                                                            filterMatchMode="contains"
+                                                            value="#{collectingCentreBillController.referralId}"
+                                                            class="w-100 mb-1">
+                                                            <f:selectItem itemLabel="Select Reference No" itemValue=""/> <!-- Default empty selection -->
+                                                            <f:selectItems 
+                                                                value="#{collectingCentreBillController.referralIds}" 
+                                                                var="refId"
+                                                                itemLabel="#{refId}" 
+                                                                itemValue="#{refId}"/>
+                                                        </p:selectOneMenu>
+                                                    </div>
+                                                </h:panelGroup>
                                             </div>
-                                        </h:panelGroup>
 
+                                        </f:facet>
 
                                         <div class="row">
                                             <div class="col-md-3">
