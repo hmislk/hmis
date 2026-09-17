@@ -1783,6 +1783,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String navigateToCollectingCentreSelfBillingKeepingCollectingCentre() {
+        loadCCFinancialData(collectingCentre);
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
