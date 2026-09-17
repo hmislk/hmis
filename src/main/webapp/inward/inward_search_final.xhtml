@@ -108,8 +108,7 @@
                                             ajax="false"
                                             value="#{bb.deptId}"
                                             action="inward_reprint_bill_final?faces-redirect=true"
-                                            actionListener="#{inwardSearch.prepareFinalBillReprintFromSearch}">
-                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                            actionListener="#{inwardSearch.prepareFinalBillReprintFromSearch(bb)}">
                                             <f:setPropertyActionListener value="#{bb.patientEncounter.patient}" target="#{admissionController.patient}"/>
                                             <f:setPropertyActionListener value="#{bb.patientEncounter}" target="#{admissionController.current}"/>
                                         </p:commandLink>

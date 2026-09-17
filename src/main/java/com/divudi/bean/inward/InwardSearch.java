@@ -683,22 +683,35 @@ public class InwardSearch implements Serializable {
 
     /**
      * ActionListener chokepoint for the two remaining entry routes into
-     * {@code inward_reprint_bill_final.xhtml} that select {@link #bill} via a
-     * raw {@code f:setPropertyActionListener} rather than a dedicated
-     * navigation method: {@code inward_search_final.xhtml} and
+     * {@code inward_reprint_bill_final.xhtml} that select a bill from a row
+     * in a search results table rather than through a dedicated navigation
+     * method: {@code inward_search_final.xhtml} and
      * {@code inward_search_final_check.xhtml} (see the routes listed in that
-     * page's header comment). Both rows already fire
-     * {@code f:setPropertyActionListener} to set {@link #bill} before this
-     * actionListener runs (JSF invokes registered FacesListeners, which
-     * includes {@code f:setPropertyActionListener}, before the
-     * {@code actionListener} attribute's method), so {@link #bill} is
-     * guaranteed current here. Deliberately not merged into
+     * page's header comment). Takes the selected bill directly as a
+     * parameter instead of relying on a sibling
+     * {@code f:setPropertyActionListener} (target={@link #bill}) on the same
+     * command component to have already run first: that ordering is NOT
+     * guaranteed — observed live, {@link #bill} was still null here when
+     * invoked from {@code inward_search_final.xhtml}'s non-ajax
+     * {@code p:commandLink}, so the caller must pass the bill explicitly.
+     * Deliberately not merged into
      * {@link #refreshFinalBillBackwordReferenceBills()}, which is also used
      * by {@code inward_search_provisional.xhtml} to navigate to an unrelated
      * page ({@code inward_provisional_bill_edit}) where snapshot generation
      * would be pointless.
      */
-    public void prepareFinalBillReprintFromSearch() {
+    public void prepareFinalBillReprintFromSearch(Bill selectedBill) {
+        // Takes the bill directly rather than relying on a sibling
+        // f:setPropertyActionListener (target=#{inwardSearch.bill}) on the
+        // same command component to have already run first: PrimeFaces does
+        // not reliably fire this actionListener attribute after nested
+        // f:setPropertyActionListener children for every command/ajax
+        // combination (observed live: bill was still null here on
+        // inward_search_final.xhtml's non-ajax p:commandLink, contradicting
+        // the plain-JSF UICommand.broadcast() bytecode order). Setting it
+        // here first makes this method self-contained regardless of
+        // listener ordering.
+        this.bill = selectedBill;
         refreshFinalBillBackwordReferenceBills();
         refreshFinalBillPdfSnapshot();
     }
