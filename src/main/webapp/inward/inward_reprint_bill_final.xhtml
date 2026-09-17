@@ -946,8 +946,12 @@
                                 </p:tab>
                             </p:tabView>
 
-                            <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" header="Final Bill (Approved - Frozen Copy)">
-                                <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" style="width:100%;height:900px;" />
+                            <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream ne null}" header="Final Bill (Approved - Frozen Copy)">
+                                <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;" />
+                            </p:panel>
+
+                            <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream eq null}" header="Final Bill (Approved - Frozen Copy)">
+                                <h:outputText value="The approved PDF could not be loaded. Please try reprinting from the Final Bill list." styleClass="text-danger" />
                             </p:panel>
 
                         </p:panel>
