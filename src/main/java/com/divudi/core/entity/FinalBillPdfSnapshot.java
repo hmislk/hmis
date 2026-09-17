@@ -36,6 +36,15 @@ public class FinalBillPdfSnapshot implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    /**
+     * Marks a snapshot as invalid (e.g. generated with wrong/incomplete
+     * content) so it is treated as if it doesn't exist and the system
+     * regenerates on next request. Defaults to {@code false}. Set/cleared by
+     * a future admin UI; no such UI exists yet — see
+     * {@link com.divudi.core.facade.FinalBillPdfSnapshotFacade#findByBillId(Long)}.
+     */
+    private boolean retired;
+
     public FinalBillPdfSnapshot() {
     }
 
@@ -69,5 +78,13 @@ public class FinalBillPdfSnapshot implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isRetired() {
+        return retired;
+    }
+
+    public void setRetired(boolean retired) {
+        this.retired = retired;
     }
 }
