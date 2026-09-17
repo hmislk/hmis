@@ -336,7 +336,7 @@
                                 </div>
                             </div>
 
-                            <p:tabView rendered="true">
+                            <p:tabView rendered="#{inwardSearch.bill.approveAt eq null}">
                                 <p:tab title="Final Bill"  >
 
                                     <div class="row">
@@ -945,6 +945,10 @@
                                     </p:dialog>
                                 </p:tab>
                             </p:tabView>
+
+                            <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" header="Final Bill (Approved - Frozen Copy)">
+                                <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" style="width:100%;height:900px;" />
+                            </p:panel>
 
                         </p:panel>
 
