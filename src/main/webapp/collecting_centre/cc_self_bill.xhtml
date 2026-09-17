@@ -178,14 +178,17 @@
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillIx" title="Tests">
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillComponents}" var="bix">
-                                                            <p:column>
+                                                        <p:dataTable 
+                                                            rowIndexVar="rowIndex" 
+                                                            value="#{collectingCentreBillController.lstBillComponents}" 
+                                                            var="bix">
+                                                            <p:column width="2em;" style="padding: 7px;">
                                                                 <f:facet name="header">No</f:facet>
-                                                                    #{rowIndex+1}
+                                                                <h:outputLabel value="#{rowIndex+1}"/>
                                                             </p:column>
-                                                            <p:column>
+                                                            <p:column style="padding: 7px;">
                                                                 <f:facet name="header">Name</f:facet>
-                                                                    #{bix.item.name}
+                                                                <h:outputLabel value="#{bix.item.name}"/>
                                                             </p:column>
 
                                                         </p:dataTable>
