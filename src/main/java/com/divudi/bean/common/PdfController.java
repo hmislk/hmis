@@ -120,15 +120,24 @@ public class PdfController {
         Document document = new Document(pdf);
 
         document.add(new Paragraph("Final Bill - " + bill.getDeptId()).setBold().setFontSize(16));
-        document.add(new Paragraph("Patient: " + bill.getPatientEncounter().getPatient().getPerson().getName()));
+
+        // Null-safe traversal of patient chain with "Unknown" fallback
+        String patientName = "Unknown";
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getPatient() != null &&
+            bill.getPatientEncounter().getPatient().getPerson() != null) {
+            patientName = bill.getPatientEncounter().getPatient().getPerson().getName();
+        }
+        document.add(new Paragraph("Patient: " + patientName));
         document.add(new Paragraph("Approved At: " + bill.getApproveAt()));
 
         Table categoryTable = new Table(UnitValue.createPercentArray(new float[]{3, 1})).useAllAvailableWidth();
         categoryTable.addHeaderCell("Charge Category");
         categoryTable.addHeaderCell("Amount");
-        for (Map.Entry<String, Double> entry : categoryTotals) {
-            categoryTable.addCell(entry.getKey());
-            categoryTable.addCell(String.format("%.2f", entry.getValue()));
+        if (categoryTotals != null) {
+            for (Map.Entry<String, Double> entry : categoryTotals) {
+                categoryTable.addCell(entry.getKey());
+                categoryTable.addCell(String.format("%.2f", entry.getValue()));
+            }
         }
         document.add(categoryTable);
 
@@ -136,10 +145,12 @@ public class PdfController {
         paymentsTable.addHeaderCell("Date");
         paymentsTable.addHeaderCell("Type");
         paymentsTable.addHeaderCell("Amount");
-        for (Bill paymentBill : paymentBills) {
-            paymentsTable.addCell(String.valueOf(paymentBill.getCreatedAt()));
-            paymentsTable.addCell(String.valueOf(paymentBill.getBillTypeAtomic()));
-            paymentsTable.addCell(String.format("%.2f", paymentBill.getNetTotal()));
+        if (paymentBills != null) {
+            for (Bill paymentBill : paymentBills) {
+                paymentsTable.addCell(String.valueOf(paymentBill.getCreatedAt()));
+                paymentsTable.addCell(String.valueOf(paymentBill.getBillTypeAtomic()));
+                paymentsTable.addCell(String.format("%.2f", paymentBill.getNetTotal()));
+            }
         }
         document.add(paymentsTable);
 

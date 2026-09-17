@@ -55,4 +55,24 @@ public class PdfControllerFinalBillSnapshotTest {
         assertEquals('D', (char) pdfBytes[2]);
         assertEquals('F', (char) pdfBytes[3]);
     }
+
+    @Test
+    public void createFinalBillSnapshotPdfHandlesNullPatientEncounterAndNullLists() throws Exception {
+        Bill bill = new BilledBill();
+        bill.setDeptId("TEST/002");
+        bill.setNetTotal(1000.0);
+        bill.setPaidAmount(600.0);
+        bill.setApproveAt(new Date());
+        bill.setPatientEncounter(null);  // Null patient encounter
+
+        PdfController pdfController = new PdfController();
+        byte[] pdfBytes = pdfController.createFinalBillSnapshotPdf(bill, null, null);  // Null lists
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+        assertEquals('%', (char) pdfBytes[0]);
+        assertEquals('P', (char) pdfBytes[1]);
+        assertEquals('D', (char) pdfBytes[2]);
+        assertEquals('F', (char) pdfBytes[3]);
+    }
 }
