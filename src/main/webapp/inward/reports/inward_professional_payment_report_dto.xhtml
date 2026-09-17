@@ -21,6 +21,21 @@
                             @media print {
                                 body {
                                     margin: 0px 5px;
+                                    counter-reset: page;
+                                }
+
+                                @page {
+                                    size: A4 landscape;
+                                    margin: 8mm;
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                }
+
+                                [id$="summaryTbl"] table {
+                                    font-size: 11px !important;
                                 }
                             }
                         </style>
@@ -102,13 +117,18 @@
                                 </h:panelGroup>
 
                                 <h:outputLabel value="Admission Type" for="admissionType" class="mt-2 d-block"/>
-                                <p:selectOneMenu id="admissionType" value="#{inwardReportControllerBht.professionalPaymentAdmissionType}" class="w-100">
+                                <p:selectOneMenu 
+                                    id="admissionType" 
+                                    value="#{inwardReportControllerBht.professionalPaymentAdmissionType}" 
+                                    class="w-100">
                                     <f:selectItem itemLabel="All" itemValue="#{null}"/>
                                     <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
                                 </p:selectOneMenu>
 
                                 <h:panelGroup layout="block" styleClass="mt-2">
-                                    <p:selectBooleanCheckbox id="onlyWithoutFees" value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>
+                                    <p:selectBooleanCheckbox 
+                                        id="onlyWithoutFees" 
+                                        value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>
                                     <h:outputLabel value=" List admissions without any professional fees" for="onlyWithoutFees" class="mx-1"/>
                                 </h:panelGroup>
 
@@ -198,6 +218,48 @@
                                         </div>
 
                                         <h:panelGroup id="summaryTbl" layout="block" style="overflow-x: auto;">
+                                            <div class="header">
+                                                <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 22px;">
+                                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                                </div>
+
+                                                <div class="d-flex justify-content-center" style="font-weight: 700; font-size: 18px;">
+                                                    <h:outputText value="Inpatient Professional Payment Report - Summary"/>
+                                                </div>
+
+                                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'dateRange'}" layout="block" styleClass="d-flex justify-content-center mt-2 mb-3" style="font-size: 12px;">
+                                                    <div class="d-flex gap-3">
+                                                        <h:outputText value="From:" style="font-weight: 600;"/>
+                                                        <h:outputText value="#{inwardReportControllerBht.fromDate}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                        </h:outputText>
+                                                    </div>
+
+                                                    <h:outputText value="" style="width: 15mm;"/>
+
+                                                    <div class="d-flex gap-3">
+                                                        <h:outputText value="To:" style="font-weight: 600;"/>
+                                                        <h:outputText value="#{inwardReportControllerBht.toDate}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                                        </h:outputText>
+                                                    </div>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{inwardReportControllerBht.professionalPaymentSearchMode eq 'bhtRange'}" layout="block" styleClass="d-flex justify-content-center mt-2 mb-3" style="font-size: 12px;">
+                                                    <div class="d-flex gap-3">
+                                                        <h:outputText value="From BHT:" style="font-weight: 600;"/>
+                                                        <h:outputText value="#{inwardReportControllerBht.admissionFromForProfessionalPaymentReport.bhtNo}"/>
+                                                    </div>
+
+                                                    <h:outputText value="" style="width: 15mm;"/>
+
+                                                    <div class="d-flex gap-3">
+                                                        <h:outputText value="To BHT:" style="font-weight: 600;"/>
+                                                        <h:outputText value="#{inwardReportControllerBht.admissionToForProfessionalPaymentReport.bhtNo}"/>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+
                                             <table class="table table-bordered table-sm">
                                                 <thead>
                                                     <tr>
