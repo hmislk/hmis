@@ -713,6 +713,7 @@ public class InwardSearch implements Serializable {
         bills = null;
         tempbillItems = null;
         sentEmailsForBill = null;
+        finalBillPdfSnapshotBytes = null;
     }
 
     public WebUser getUser() {
@@ -3188,6 +3189,7 @@ public class InwardSearch implements Serializable {
 
     public void setBill(Bill bill) {
         recreateModel();
+        finalBillPdfSnapshotBytes = null;
         if (bill == null) {
             return;
         }
