@@ -375,9 +375,9 @@ public class DepartmentController implements Serializable {
         // Exclude departments without names or with blank names
         jpql.append(" AND d.name IS NOT NULL AND TRIM(d.name) <> ''");
 
-        // Exclude departments with institution type of CollectingCentre
-        jpql.append(" AND d.institution.institutionType <> :cc ");
-        parameters.put("cc", InstitutionType.CollectingCentre);
+//        // Exclude departments with institution type of CollectingCentre
+//        jpql.append(" AND d.institution.institutionType <> :cc ");
+//        parameters.put("cc", InstitutionType.CollectingCentre);
 
         if (ins != null) {
             jpql.append(" AND d.institution = :ins");

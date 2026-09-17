@@ -2488,6 +2488,36 @@ public class BillBeanController implements Serializable {
         return bill;
     }
 
+    /**
+     * Counts the still-running ({@code toTime IS NULL}) timed services billed
+     * on a surgery's TimedService bill.
+     * <p>
+     * Joined through {@code EncounterComponent} rather than
+     * {@code PatientItem.billItem} - the surgery Add flow
+     * ({@code InwardTimedItemController.saveTimeServiceBill()}) links a timed
+     * service's BillItem onto its {@code EncounterComponent}, never onto the
+     * {@code PatientItem} itself, so {@code PatientItem.billItem} is always
+     * null here.
+     * <p>
+     * Filters on {@code patientItem.retired} in addition to {@code ec.retired}
+     * - {@code SurgeryBillController.removeTimeService(PatientItem)} only
+     * retires the {@code PatientItem}, not its {@code EncounterComponent}, so a
+     * removed-but-never-stopped service would otherwise still count as running.
+     */
+    public long countRunningTimedServices(Bill timedServiceBill) {
+        if (timedServiceBill == null || timedServiceBill.getId() == null) {
+            return 0;
+        }
+        String jpql = "SELECT COUNT(ec) FROM EncounterComponent ec"
+                + " WHERE ec.retired = false"
+                + " AND ec.billItem.bill = :bill"
+                + " AND ec.billFee.patientItem.retired = false"
+                + " AND ec.billFee.patientItem.toTime IS NULL";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", timedServiceBill);
+        return getEncounterComponentFacade().findLongByJpql(jpql, hm);
+    }
+
     public Bill fetchBill(String billId) {
         // Assuming that the String billId needs to be converted to Long
         // This conversion may need additional validation or error handling if the String is not a valid Long

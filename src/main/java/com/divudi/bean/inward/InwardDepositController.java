@@ -1105,7 +1105,7 @@ public class InwardDepositController implements Serializable, ControllerWithMult
      * Streams the current deposit receipt as a raw byte file (.prn) for
      * dot-matrix printing that bypasses the browser rasteriser. A watched-folder
      * agent on the cashier PC raw-copies the file to the LQ-310. See
-     * developer_docs/printing/raw-text-print-agent.ps1 and the wiki page
+     * tools/client-print-agent/ and the wiki page
      * "Dot-Matrix-Printing-for-Inward-Deposit-and-Payment-Receipts".
      */
     public void streamCurrentDepositReceiptAsRawText() {

@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <div class="cc-dash">
+
+            <div class="cc-hero">
+                <div class="cc-hero-left">
+                    <h:outputText styleClass="cc-hero-title" value="Collecting Centre Self Billing"/>
+                    <h:outputText 
+                        styleClass="cc-hero-subtitle"
+                        value="#{sessionController.institution.name} &#8250; #{sessionController.department.name}"
+                        rendered="#{sessionController.department != null}"/>
+                </div>
+                <div class="cc-hero-right" rendered="#{sessionController.loggedUser != null}">
+                    <div class="cc-hero-chip" style="min-width: 200px;">
+                        <div class="cc-avatar">
+                            <h:outputText styleClass="fas fa-user"/>
+                        </div>
+                        <div class="cc-hero-chip-text">
+                            <h:outputText 
+                                styleClass="cc-user-name"
+                                value="#{sessionController.loggedUser.webUserPerson.name}"
+                                rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                            <h:outputText styleClass="cc-user-role" value="#{sessionController.loggedUser.name}"/>
+                        </div>
+                    </div>
+                    <div class="cc-hero-actions">
+                        <p:badge value="#{userNotificationController.unseenCount}" severity="danger" rendered="#{userNotificationController.unseenCount > 0}">
+                            <p:commandButton id="btnCcNotifications"
+                                             ajax="false"
+                                             icon="pi pi-bell"
+                                             styleClass="cc-hero-icon-btn"
+                                             title="Notifications"
+                                             action="#{userNotificationController.navigateToRecivedNotification()}"/>
+                        </p:badge>
+                        <p:commandButton id="btnCcNotificationsNoBadge"
+                                         ajax="false"
+                                         icon="pi pi-bell"
+                                         styleClass="cc-hero-icon-btn"
+                                         title="Notifications"
+                                         rendered="#{userNotificationController.unseenCount le 0}"
+                                         action="#{userNotificationController.navigateToRecivedNotification()}"/>
+                        <p:commandButton id="btnCcLogout"
+                                         ajax="false"
+                                         icon="pi pi-sign-out"
+                                         styleClass="cc-hero-icon-btn"
+                                         title="Logout"
+                                         action="#{sessionController.logout}"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cc-stat-grid" rendered="#{sessionController.loggedUser != null}">
+                <div class="cc-stat-card">
+                    <div class="cc-stat-icon">
+                        <h:outputText styleClass="fas fa-city"/>
+                    </div>
+                    <div>
+                        <h:outputText styleClass="cc-stat-label" value="Institution"/>
+                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.institution.name}"/>
+                    </div>
+                </div>
+                <div class="cc-stat-card">
+                    <div class="cc-stat-icon">
+                        <h:outputText styleClass="fas fa-sitemap"/>
+                    </div>
+                    <div>
+                        <h:outputText styleClass="cc-stat-label" value="Department"/>
+                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.name}"/>
+                    </div>
+                </div>
+                <div class="cc-stat-card">
+                    <div class="cc-stat-icon">
+                        <h:outputText styleClass="fas fa-tag"/>
+                    </div>
+                    <div>
+                        <h:outputText styleClass="cc-stat-label" value="Department Type"/>
+                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.departmentType.label}"/>
+                    </div>
+                </div>
+                <div class="cc-stat-card">
+                    <div class="cc-stat-icon">
+                        <h:outputText styleClass="fas fa-id-badge"/>
+                    </div>
+                    <div>
+                        <h:outputText styleClass="cc-stat-label" value="Username"/>
+                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.loggedUser.name}"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cc-body-grid">
+                <div>
+                    <div class="cc-card">
+                        <h:panelGroup layout="block" styleClass="cc-section-title">
+                            <h:outputText styleClass="fas fa-bolt"/>
+                            <h:outputText value=" Quick Actions"/>
+                        </h:panelGroup>
+                        <div class="cc-action-grid">
+                            <h:commandLink 
+                                styleClass="cc-action-card cc-c-blue" ajax="false"
+                                           action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
+                                <div class="cc-action-icon">
+                                    <h:outputText styleClass="fas fa-file-invoice-dollar"/>
+                                </div>
+                                <h:outputText styleClass="cc-action-label" value="Create Bill"/>
+                            </h:commandLink>
+                            <div class="cc-action-card cc-c-green">
+                                <span class="cc-action-badge">Soon</span>
+                                <div class="cc-action-icon">
+                                    <h:outputText styleClass="fas fa-search"/>
+                                </div>
+                                <h:outputText styleClass="cc-action-label" value="Search Bills"/>
+                            </div>
+                            <div class="cc-action-card cc-c-orange">
+                                <span class="cc-action-badge">Soon</span>
+                                <div class="cc-action-icon">
+                                    <h:outputText styleClass="fas fa-chart-bar"/>
+                                </div>
+                                <h:outputText styleClass="cc-action-label" value="Reports"/>
+                            </div>
+                            <div class="cc-action-card cc-c-purple">
+                                <span class="cc-action-badge">Soon</span>
+                                <div class="cc-action-icon">
+                                    <h:outputText styleClass="fas fa-money-check-alt"/>
+                                </div>
+                                <h:outputText styleClass="cc-action-label" value="Payments"/>
+                            </div>
+                            <div class="cc-action-card cc-c-teal">
+                                <span class="cc-action-badge">Soon</span>
+                                <div class="cc-action-icon">
+                                    <h:outputText styleClass="fas fa-file-alt"/>
+                                </div>
+                                <h:outputText styleClass="cc-action-label" value="Statements"/>
+                            </div>
+                            <div class="cc-action-card cc-c-red">
+                                <span class="cc-action-badge">Soon</span>
+                                <div class="cc-action-icon">
+                                    <h:outputText styleClass="fas fa-undo-alt"/>
+                                </div>
+                                <h:outputText styleClass="cc-action-label" value="Returns"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cc-notice">
+                        <h:outputText styleClass="fas fa-info-circle"/>
+                        <h:outputText value="Self-billing tools for this Collecting Centre are being rolled out. The actions above will become available here soon."/>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="cc-card cc-side-card">
+                        <h:panelGroup layout="block" styleClass="cc-section-title">
+                            <h:outputText styleClass="fas fa-address-card"/>
+                            <h:outputText value=" Account Details"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" rendered="#{sessionController.loggedUser != null}">
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">
+                                    <span class="cc-detail-icon cc-c-blue">
+                                        <h:outputText styleClass="fas fa-user"/>
+                                    </span>
+                                    <h:outputText value=" Logged User"/>
+                                </span>
+                                <h:outputText styleClass="cc-detail-value"
+                                              value="#{sessionController.loggedUser.webUserPerson.name}"
+                                              rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">
+                                    <span class="cc-detail-icon cc-c-purple">
+                                        <h:outputText styleClass="fas fa-id-badge"/>
+                                    </span>
+                                    <h:outputText value=" Username"/>
+                                </span>
+                                <h:outputText styleClass="cc-detail-value" value="#{sessionController.loggedUser.name}"/>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">
+                                    <span class="cc-detail-icon cc-c-orange">
+                                        <h:outputText styleClass="fas fa-city"/>
+                                    </span>
+                                    <h:outputText value=" Institution"/>
+                                </span>
+                                <h:outputText styleClass="cc-detail-value" value="#{sessionController.institution.name}"/>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">
+                                    <span class="cc-detail-icon cc-c-green">
+                                        <h:outputText styleClass="fas fa-sitemap"/>
+                                    </span>
+                                    <h:outputText value=" Department"/>
+                                </span>
+                                <h:outputText styleClass="cc-detail-value" value="#{sessionController.department.name}"/>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="cc-card cc-side-card">
+                        <h:panelGroup layout="block" styleClass="cc-section-title">
+                            <h:outputText styleClass="fas fa-road"/>
+                            <h:outputText value=" What's Coming"/>
+                        </h:panelGroup>
+                        <ul class="cc-timeline">
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Self-billing home page"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="You are here"/>
+                            </li>
+                            <li class="cc-c-blue">
+                                <h:outputText styleClass="cc-timeline-title" value="Create &amp; search own bills"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Raise and look up your centre's bills"/>
+                            </li>
+                            <li class="cc-c-purple">
+                                <h:outputText styleClass="cc-timeline-title" value="Payments &amp; statements"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Track deposits and account statements"/>
+                            </li>
+                            <li class="cc-c-orange">
+                                <h:outputText styleClass="cc-timeline-title" value="Reports"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Summaries for your collecting centre"/>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>

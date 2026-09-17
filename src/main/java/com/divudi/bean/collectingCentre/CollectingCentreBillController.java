@@ -1750,6 +1750,36 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
+    /**
+     * Entry point for a Collecting Centre self-service user creating a bill
+     * for their own institution. Unlike the staff-facing flow, the
+     * collecting centre is not picked from a list - it is always the
+     * institution the user is logged in as.
+     */
+    public String navigateToCollectingCentreSelfBilling() {
+        prepareNewBill();
+        collectingCentre = sessionController.getInstitution();
+        loadCCFinancialData(collectingCentre);
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
+        itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
+        setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
+        return "/collecting_centre/cc_self_bill?faces-redirect=true";
+    }
+
+    public String navigateToCollectingCentreSelfBillingKeepingCollectingCentre() {
+        prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
+        return "/collecting_centre/cc_self_bill?faces-redirect=true";
+    }
+
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);

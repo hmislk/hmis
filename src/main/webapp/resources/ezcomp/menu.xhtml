@@ -108,14 +108,14 @@
             </h:panelGroup>
 
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
-                <p:menuitem 
+                <p:menuitem
                     id="home"
                     ajax="false"
-                    action="/home?faces-redirect=true" 
+                    action="/home?faces-redirect=true"
                     icon="pi pi-home"
                     title="Home">
                 </p:menuitem>
-
+               
                 <!--            OPD Section-->
                 <p:submenu 
                     id="smOpd"
@@ -812,6 +812,14 @@
                     </p:menuitem>
 
                 </p:submenu>
+                
+                <p:menuitem
+                    id="ccSelfBillingHome"
+                    ajax="false"
+                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                    icon="fas fa-hospital-user"
+                    title="Collecting Centre Self Billing Home">
+                </p:menuitem>
 
                 <!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
