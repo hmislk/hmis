@@ -18,7 +18,8 @@ public class ExpiryItemStockListDto implements Serializable {
     private String itemName;
     private String uom;                   // Unit of Measure
     private String itemType;
-    private Long batchNumber;
+    private Long batchNumber;             // ItemBatch id - internal reference, not the batch number users see
+    private String batchNo;               // ItemBatch.batchNo - the batch number shown on the report
     private Date expiryDate;
     private Double costRate;
     private Double retailRate;
@@ -69,6 +70,18 @@ public class ExpiryItemStockListDto implements Serializable {
              uom, itemType, batchNumber, expiryDate, costRate, retailRate, stockQuantity);
         this.dosageFormName = dosageFormName;
          System.out.println("Creating ExpiryItemStockListDto with dosage form: " + stockId);
+    }
+
+    // Constructor with dosage form name and the user-facing batch number (ItemBatch.batchNo)
+    public ExpiryItemStockListDto(Long stockId, String departmentName, String categoryCode,
+                                String categoryName, String itemCode, String itemName,
+                                String uom, String itemType, Long batchNumber,
+                                Date expiryDate, Double costRate, Double retailRate,
+                                Double stockQuantity, String dosageFormName, String batchNo) {
+        this(stockId, departmentName, categoryCode, categoryName, itemCode, itemName,
+             uom, itemType, batchNumber, expiryDate, costRate, retailRate, stockQuantity);
+        this.dosageFormName = dosageFormName;
+        this.batchNo = batchNo;
     }
 
     // Getters and Setters
@@ -134,6 +147,14 @@ public class ExpiryItemStockListDto implements Serializable {
 
     public void setItemType(String itemType) {
         this.itemType = itemType;
+    }
+
+    public String getBatchNo() {
+        return batchNo;
+    }
+
+    public void setBatchNo(String batchNo) {
+        this.batchNo = batchNo;
     }
 
     public Long getBatchNumber() {
