@@ -57,6 +57,23 @@
     color: #1E88E5;
     font-size: 0.9rem;
 }
+/* The badge rule above targets any .fa/.fas/.pi inside a panel header
+   facet, which also catches action buttons placed in that facet (e.g.
+   Print/Print Patient) - forcing their icon into a 30x30 circular
+   badge instead of the plain glyph the button layout expects. Undo it
+   for icons that are actually inside a button. */
+.cc-bill-page .ui-panel-titlebar .ui-button .fa,
+.cc-bill-page .ui-panel-titlebar .ui-button .fas,
+.cc-bill-page .ui-panel-titlebar .ui-button .fa-solid,
+.cc-bill-page .ui-panel-titlebar .ui-button .pi {
+    width: auto;
+    height: auto;
+    min-width: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+}
 
 .cc-bill-page .cc-bill-card.cc-c-blue { border-top-color: #1E88E5; }
 .cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar .fa,
@@ -98,6 +115,28 @@
 .cc-bill-page .ui-button {
     border-radius: 8px;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+/* PrimeFaces positions the icon with position:absolute and a fixed
+   top/margin-top offset tuned for its own icon font's metrics, which
+   doesn't match FontAwesome's, so the icon sits lower than the label
+   text. Let the button's own flex layout center it instead. */
+.cc-bill-page .ui-button .ui-button-icon-left,
+.cc-bill-page .ui-button .ui-icon {
+    position: static;
+    top: auto;
+    left: auto;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+.cc-bill-page .ui-button .ui-button-text {
+    padding: 0;
+    line-height: 1;
 }
 
 /* Inputs */
