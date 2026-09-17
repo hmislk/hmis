@@ -661,7 +661,7 @@
                             <phi:saleBill_Header_Inward
                                 bill="#{pharmacySaleBhtController.printBill}"
                                 showRate="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Sent to Ward - Show Rate and Value', true) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
-                                showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                showDiscount="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Sent to Ward - Show Rate and Value', true) and webUserController.hasPrivilege('IPBillingViewDiscount')}">
                             </phi:saleBill_Header_Inward>
                         </h:panelGroup>
 
