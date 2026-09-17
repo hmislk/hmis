@@ -15466,6 +15466,16 @@ public class PharmacyReportController implements Serializable {
             m.put("cat", category);
         }
 
+        if (dosageForm != null) {
+            jpql += " and s.itemBatch.item.dosageForm=:df ";
+            m.put("df", dosageForm);
+        }
+
+        if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+            jpql += " and s.itemBatch.item.departmentType IN :departmentTypes ";
+            m.put("departmentTypes", selectedDepartmentTypes);
+        }
+
         // Process different report types
         switch (expiryReportType) {
             case EXPIRY_REPORT_TYPE_STOCK_LIST:
