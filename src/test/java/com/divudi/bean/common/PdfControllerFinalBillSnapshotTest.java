@@ -2,11 +2,16 @@ package com.divudi.bean.common;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Person;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +38,12 @@ public class PdfControllerFinalBillSnapshotTest {
         patient.setPerson(person);
         PatientEncounter pe = new PatientEncounter();
         pe.setPatient(patient);
+        pe.setBhtNo("BHT12345");
         bill.setPatientEncounter(pe);
+
+        Institution institution = new Institution();
+        institution.setName("Test Snapshot Hospital");
+        bill.setInstitution(institution);
 
         List<Map.Entry<String, Double>> categoryTotals = new ArrayList<>();
         categoryTotals.add(new AbstractMap.SimpleEntry<>("Room Charges", 500.0));
@@ -54,6 +64,21 @@ public class PdfControllerFinalBillSnapshotTest {
         assertEquals('P', (char) pdfBytes[1]);
         assertEquals('D', (char) pdfBytes[2]);
         assertEquals('F', (char) pdfBytes[3]);
+
+        String text = extractText(pdfBytes);
+        assertTrue(text.contains("Test Snapshot Hospital"), "Expected institution name in snapshot PDF text");
+        assertTrue(text.contains("BHT12345"), "Expected BHT number in snapshot PDF text");
+        assertTrue(text.contains("TEST/001"), "Expected bill number in snapshot PDF text");
+    }
+
+    private String extractText(byte[] pdfBytes) throws Exception {
+        try (PdfDocument pdfDoc = new PdfDocument(new PdfReader(new ByteArrayInputStream(pdfBytes)))) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
+                sb.append(PdfTextExtractor.getTextFromPage(pdfDoc.getPage(i))).append('\n');
+            }
+            return sb.toString();
+        }
     }
 
     @Test
