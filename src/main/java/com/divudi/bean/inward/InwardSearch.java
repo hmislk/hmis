@@ -50,7 +50,11 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -111,6 +115,8 @@ public class InwardSearch implements Serializable {
     private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
     @EJB
     private com.divudi.service.BillService billService;
+    @Inject
+    private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
 
     /**
      * JSF Controllers
@@ -846,12 +852,37 @@ public class InwardSearch implements Serializable {
         b.setApproveAt(new Date());
         getBillFacade().edit(b);
 
+        try {
+            finalBillPdfSnapshotService.getOrCreateSnapshot(b);
+        } catch (IOException ex) {
+            JsfUtil.addErrorMessage("Final bill approved, but the PDF snapshot could not be generated: " + ex.getMessage());
+        }
+
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
                 null, b.getId(), sessionController.getLoggedUser(),
                 "Bill", b.getId());
 
         JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
+    }
+
+    public StreamedContent getFinalBillPdfSnapshotStream() {
+        if (bill == null || bill.getApproveAt() == null) {
+            return null;
+        }
+        try {
+            byte[] pdfBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(bill);
+            if (pdfBytes == null) {
+                return null;
+            }
+            return DefaultStreamedContent.builder()
+                    .name(bill.getDeptId() + ".pdf")
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(pdfBytes))
+                    .build();
+        } catch (IOException ex) {
+            return null;
+        }
     }
 
     /**
