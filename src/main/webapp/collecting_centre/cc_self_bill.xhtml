@@ -309,11 +309,22 @@
                                             style="width: 150px;"
                                             action="#{collectingCentreBillController.settleCcBill()}"
                                             ajax="false"
-                                            class="ui-button-success "
-                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;">
+                                            class="ui-button-success ">
+                                            <p:confirm header="Confirm Settle" message="Are you sure you want to Settle This Bill?" icon="pi pi-exclamation-triangle"/>
                                         </p:commandButton>
                                     </div>
+
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-success" icon="pi pi-check" onclick="PF('ccSettlingDlg').show();"/>
+                                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                                    </p:confirmDialog>
+
+                                    <p:dialog widgetVar="ccSettlingDlg" modal="true" closable="false" resizable="false" draggable="false" header="Settling Bill" styleClass="cc-settling-dialog">
+                                        <div class="d-flex align-items-center gap-2 p-2">
+                                            <h:outputText styleClass="fa fa-spinner fa-spin fa-2x"/>
+                                            <h:outputLabel value="Settling bill, please wait..."/>
+                                        </div>
+                                    </p:dialog>
 
                                     <p:panel styleClass="cc-bill-card cc-c-orange m-1">
                                         <f:facet name="header">
