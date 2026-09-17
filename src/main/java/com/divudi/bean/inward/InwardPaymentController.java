@@ -742,6 +742,15 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         saveBill();
         saveBillItem();
 
+        // Once createPayment() below succeeds, the Payment exists in the
+        // database - paymentInProgress must stay true if anything after
+        // this point throws, so a retry can't reach createPayment() again
+        // and create a duplicate. So this deliberately does NOT reset the
+        // flag in a finally/catch around the post-payment bookkeeping: a
+        // failure there leaves the page latched (Pay keeps returning early)
+        // rather than reopening the door to a second Payment. That trades
+        // a stuck page - recoverable via makeNull()/re-navigating - for
+        // ruling out the duplicate.
         paymentService.createPayment(
                 current,
                 current.getPaymentMethod(),
@@ -896,7 +905,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         this.comment = comment;
     }
 
-    public void makeNull() {
+    // synchronized on the same monitor as pay(): both read/write current,
+    // paymentMethod, comment, and paymentMethodData, so an unsynchronized
+    // makeNull() (e.g. from the "New" button) could clear that state out
+    // from under a pay() call still in flight on the same session.
+    public synchronized void makeNull() {
         current = null;
         printPreview = false;
         comment = null;
