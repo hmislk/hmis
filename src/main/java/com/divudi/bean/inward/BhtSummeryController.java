@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
@@ -172,6 +173,8 @@ public class BhtSummeryController implements Serializable {
     InwardPaymentController inwardPaymentController;
     @Inject
     InwardRefundController inwardRefundController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
@@ -2815,6 +2818,13 @@ public class BhtSummeryController implements Serializable {
         inwardPaymentController.bhtListener();
         if (patientEncounter.getPaymentMethod() == PaymentMethod.Credit) {
             return "/credit/inward_patient_copay_payment?faces-redirect=true";
+        }
+        if (sessionController.getPaymentManagementAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                return "/cashier/index?faces-redirect=true";
+            }
         }
         return "/inward/inward_bill_payment?faces-redirect=true";
     }
