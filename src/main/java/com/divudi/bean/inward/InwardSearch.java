@@ -852,6 +852,16 @@ public class InwardSearch implements Serializable {
      * Navigates to the approval page for the given final bill version,
      * mirroring {@link #prepareEmailFinalBillVersion(Bill)}'s use of the
      * shared {@link #bill} session field for the target page.
+     *
+     * Also refreshes the frozen PDF snapshot cache ({@link #refreshFinalBillPdfSnapshot()})
+     * so that when this route lands on an already-approved bill (the row is
+     * still reachable from inward_final_bill_list.xhtml after approval, and
+     * inward_final_bill_approve.xhtml shows a "This bill has already been
+     * approved" panel in that case), the page can render the same frozen
+     * snapshot PDF instead of the live, recomputable {@code bi:finalBill}
+     * composite (issue #23848 I4). refreshFinalBillPdfSnapshot() itself is a
+     * no-op for an unapproved bill, so this is safe to call unconditionally
+     * here, same as every other navigation route into the reprint page.
      */
     public String navigateToApproveFinalBill(Bill b) {
         if (b == null) {
@@ -859,6 +869,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        refreshFinalBillPdfSnapshot();
         return "/inward/inward_final_bill_approve?faces-redirect=true";
     }
 
