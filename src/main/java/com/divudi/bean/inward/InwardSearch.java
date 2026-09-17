@@ -854,7 +854,17 @@ public class InwardSearch implements Serializable {
 
         try {
             finalBillPdfSnapshotService.getOrCreateSnapshot(b);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
+            // Widened from IOException: the snapshot call can also throw an
+            // unchecked PersistenceException/EJBException (e.g. the
+            // FINALBILLPDFSNAPSHOT table not yet existing if the WAR is
+            // deployed before DDL is applied). The bill approval above has
+            // already been committed via getBillFacade().edit(b), so any
+            // snapshot failure here must degrade gracefully rather than
+            // propagate and give the user a scary error page for an
+            // approval that actually succeeded.
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill PDF snapshot generation failed on approval", ex);
             JsfUtil.addErrorMessage("Final bill approved, but the PDF snapshot could not be generated: " + ex.getMessage());
         }
 
