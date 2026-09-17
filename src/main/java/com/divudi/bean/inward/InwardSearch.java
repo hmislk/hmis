@@ -949,17 +949,44 @@ public class InwardSearch implements Serializable {
      * yet" and both try to create one.
      */
     public StreamedContent getFinalBillPdfSnapshotStream() {
-        if (finalBillPdfSnapshotBytes == null) {
+        // Capture both cache fields as locals in a single pair, right at
+        // entry, before doing the guard check against them. This closes the
+        // narrow window where a concurrent request for a DIFFERENT bill
+        // (e.g. a second browser tab loading bill B in this same
+        // @SessionScoped bean) could mutate finalBillPdfSnapshotBytes /
+        // finalBillPdfSnapshotBytesForBillId between an earlier null-check
+        // and a later re-read of the same fields: everything below this
+        // point - the guard AND the lambda passed to the builder - reads
+        // only these locals, never the instance fields again.
+        //
+        // IMPORTANT / residual risk (see the PR #23848 review, finding #1):
+        // this does NOT by itself close the cross-tab leak. p:media is
+        // wired with cache="false" (see inward_reprint_bill_final.xhtml /
+        // inward_final_bill_approve.xhtml), which makes PrimeFaces
+        // re-evaluate the whole #{inwardSearch.finalBillPdfSnapshotStream}
+        // EL expression - i.e. call this getter completely fresh, guard
+        // included - on the actual async dynamic-resource fetch, not just
+        // once at initial render. If a second tab has since loaded a
+        // different bill into this same session, THIS invocation (however
+        // carefully it captures its own locals) will legitimately see that
+        // other bill's bytes as "current" and serve them. Closing that
+        // fully would require binding the resource request to the
+        // specific bill id that was current when the p:media component was
+        // rendered (e.g. via a request parameter / per-render token
+        // resolved independently of session state), not just this getter.
+        byte[] bytes = this.finalBillPdfSnapshotBytes;
+        Long forBillId = this.finalBillPdfSnapshotBytesForBillId;
+        if (bytes == null) {
             return null;
         }
-        if (bill == null || bill.getId() == null || !bill.getId().equals(finalBillPdfSnapshotBytesForBillId)) {
+        if (bill == null || bill.getId() == null || !bill.getId().equals(forBillId)) {
             return null;
         }
-        byte[] pdfBytes = finalBillPdfSnapshotBytes;
+        String fileName = bill.getDeptId() + ".pdf";
         return DefaultStreamedContent.builder()
-                .name(bill.getDeptId() + ".pdf")
+                .name(fileName)
                 .contentType("application/pdf")
-                .stream(() -> new ByteArrayInputStream(pdfBytes))
+                .stream(() -> new ByteArrayInputStream(bytes))
                 .build();
     }
 
