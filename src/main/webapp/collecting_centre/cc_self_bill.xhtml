@@ -243,31 +243,6 @@
 
                                 <div class="col-5">
 
-                                    <div class="d-flex gap-2 justify-content-end mb-2 mx-2">
-                                        <p:commandButton
-                                            value="New Bill"
-                                            icon="fa fa-plus"
-                                            style="width: 150px;"
-                                            immediate="true"
-                                            ajax="false"
-                                            action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
-                                            class="ui-button-warning mx-1">
-                                        </p:commandButton>
-
-                                        <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}"/>
-
-                                        <p:commandButton
-                                            value="Settle"
-                                            icon="fa fa-check"
-                                            style="width: 150px;"
-                                            action="#{collectingCentreBillController.settleCcBill()}"
-                                            ajax="false"
-                                            class="ui-button-success "
-                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;">
-                                        </p:commandButton>
-                                    </div>
-
                                     <div class="row m-1 mt-1">
                                         <p:panel styleClass="cc-bill-card cc-c-red">
 
@@ -302,6 +277,31 @@
                                         </p:panel>
                                     </div>
 
+                                    <div class="d-flex gap-2 justify-content-end mb-4 mx-2">
+                                        <p:commandButton
+                                            value="New Bill"
+                                            icon="fa fa-plus"
+                                            style="width: 150px;"
+                                            immediate="true"
+                                            ajax="false"
+                                            action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                            class="ui-button-warning mx-1">
+                                        </p:commandButton>
+
+                                        <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}"/>
+
+                                        <p:commandButton
+                                            value="Settle"
+                                            icon="fa fa-check"
+                                            style="width: 150px;"
+                                            action="#{collectingCentreBillController.settleCcBill()}"
+                                            ajax="false"
+                                            class="ui-button-success "
+                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                        return false;">
+                                        </p:commandButton>
+                                    </div>
+
                                     <p:panel styleClass="cc-bill-card cc-c-orange m-1">
                                         <f:facet name="header">
                                             <div class="d-flex justify-content-between">
@@ -309,7 +309,7 @@
                                                     <h:outputText styleClass="fas fa-bullseye"/>
                                                     <h:outputText value="Collecting Centre Details"></h:outputText>
                                                 </div>
-                                                
+
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
                                                     <div class="cc-ref-select" style="width: 250px;">
                                                         <p:selectOneMenu
@@ -381,7 +381,7 @@
                                             </div>
 
                                             <h:panelGroup layout="block" styleClass="cc-details-col"
-                                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
 
                                                 <div class="cc-book-panel">
                                                     <div class="cc-book-panel-header">
