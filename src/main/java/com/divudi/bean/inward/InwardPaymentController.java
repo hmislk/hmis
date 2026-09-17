@@ -115,17 +115,22 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     /** Net total of the inward final bill; populated by bhtListener for display on the co-payment page. */
     private double finalBillTotal;
     /**
-     * Double-submit guard for pay(): set true the instant pay() is entered
-     * and cleared on every exit path (validation failure, error, or
-     * success). A DB-level pessimistic lock can't close this race because
-     * this is a plain @SessionScoped bean, not an EJB - each facade call
-     * inside pay() opens and commits its own short transaction, so a lock
-     * held during one facade call is already released before the next
-     * facade call runs, leaving a window for a second request to slip
-     * through. This in-memory latch works instead because concurrent
-     * requests against the same HTTP session are serialized by the
-     * servlet container, same as billSettlingStarted in
-     * RetailSaleNativeSqlController.
+     * Double-submit guard for pay(): set true the instant pay() is entered.
+     * Cleared on a pre-payment validation failure (no Payment was created,
+     * safe to retry) or by makeNull() when navigating to pay a different
+     * BHT - but deliberately NEVER cleared once createPayment() has
+     * succeeded for the current bill, success path included. A DB-level
+     * pessimistic lock can't close this race because this is a plain
+     * @SessionScoped bean, not an EJB - each facade call inside pay() opens
+     * and commits its own short transaction, so a lock held during one
+     * facade call is already released before the next facade call runs.
+     * `synchronized` on pay() closes the execution-order race but not this
+     * one: a second request queued on the monitor is released the instant
+     * pay() returns, so if this flag were reset to false on success, that
+     * queued request would see a clear flag and create a second Payment
+     * for the same bill. Mirrors billSettlingStarted in
+     * RetailSaleNativeSqlController, adapted for the extra queued-request
+     * case that a plain "reset on success" latch does not cover.
      */
     private boolean paymentInProgress;
 
@@ -710,15 +715,18 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         // EJB transaction since this is a plain @SessionScoped bean, not an
         // EJB, so a DB-level pessimistic lock can't span the method and
         // gives no protection - a second thread can slip through between
-        // two of those facade calls. `synchronized` closes that gap at the
-        // JVM level: this bean is one instance per HTTP session, so it
-        // serializes concurrent requests on the same session outright,
-        // rather than relying on servlet-container behavior that isn't
-        // guaranteed by spec. The paymentInProgress flag on top gives a
-        // fast, friendly rejection for a second thread that was merely
-        // queued waiting on the lock rather than genuinely racing.
-        // Mirrors billSettlingStarted in RetailSaleNativeSqlController: set
-        // true immediately, cleared on every exit path below.
+        // two of those facade calls. `synchronized` alone is not enough
+        // either: a second request queued on the monitor is released the
+        // instant this method returns, and if paymentInProgress was already
+        // reset to false by then, the queued request sees a clear flag and
+        // calls createPayment() again for the same `current` bill. So
+        // paymentInProgress is intentionally NOT reset back to false on the
+        // success path below - once a payment is made for `current`, pay()
+        // stays latched for the rest of that bill's lifetime. The flag only
+        // clears via makeNull(), which is always called first when
+        // navigating to pay a *different* BHT (navigateToInwardDepositPayment/
+        // navigateToInwardPatientCopayment), so this never blocks a
+        // legitimate new payment - only a retry against the same `current`.
         if (paymentInProgress) {
             return;
         }
@@ -743,14 +751,12 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         saveBillItem();
 
         // Once createPayment() below succeeds, the Payment exists in the
-        // database - paymentInProgress must stay true if anything after
-        // this point throws, so a retry can't reach createPayment() again
-        // and create a duplicate. So this deliberately does NOT reset the
-        // flag in a finally/catch around the post-payment bookkeeping: a
-        // failure there leaves the page latched (Pay keeps returning early)
-        // rather than reopening the door to a second Payment. That trades
-        // a stuck page - recoverable via makeNull()/re-navigating - for
-        // ruling out the duplicate.
+        // database - paymentInProgress must stay true for the rest of this
+        // method and is never reset back to false afterwards (see the
+        // class-level latch comment above), whether the post-payment
+        // bookkeeping below succeeds or throws. Resetting it here would let
+        // either a queued duplicate request or a retry after a later
+        // failure reach createPayment() again and create a second Payment.
         paymentService.createPayment(
                 current,
                 current.getPaymentMethod(),
@@ -771,7 +777,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         JsfUtil.addSuccessMessage("Payment Bill Saved");
         paymentMethod = null;
         printPreview = true;
-        paymentInProgress = false;
     }
 
     public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value) {
