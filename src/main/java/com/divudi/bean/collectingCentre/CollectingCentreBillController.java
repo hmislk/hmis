@@ -265,6 +265,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
 
+    private boolean ccSelfServiceBilling;
+
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
     }
@@ -904,8 +906,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
 
         ccBillSettlingStarted.set(false);
-        return "/collecting_centre/bill_print?faces-redirect=true";
-
+        if (ccSelfServiceBilling) {
+            return "/collecting_centre/cc_self_bill_print?faces-redirect=true";
+        }else{
+            return "/collecting_centre/bill_print?faces-redirect=true";
+        }
+        
     }
 
     public BillItem saveCcBillItem(Bill b, BillEntry e, WebUser wu) {
@@ -1709,6 +1715,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBill();
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1717,6 +1724,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1747,6 +1755,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1769,6 +1778,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = true;
         return "/collecting_centre/cc_self_bill?faces-redirect=true";
     }
 
@@ -1777,6 +1787,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = true;
         return "/collecting_centre/cc_self_bill?faces-redirect=true";
     }
 
