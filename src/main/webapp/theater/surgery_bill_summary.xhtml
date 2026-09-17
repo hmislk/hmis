@@ -35,6 +35,9 @@
                         <h:outputLabel value=" — #{surgeryBillController.uncheckedSurgeryBillCount} bill(s) not yet checked"
                                        rendered="#{not surgeryBillController.surgeryBill.completed and surgeryBillController.uncheckedSurgeryBillCount gt 0}"
                                        style="color:#b45309; margin-left:0.5rem;"/>
+                        <h:outputLabel value=" — #{surgeryBillController.runningTimedServiceCount} timed service(s) still running (enter an End Time)"
+                                       rendered="#{not surgeryBillController.surgeryBill.completed and surgeryBillController.runningTimedServiceCount gt 0}"
+                                       style="color:#b45309; margin-left:0.5rem;"/>
                     </div>
                     <div class="col-6 text-end">
                         <p:commandButton
@@ -44,7 +47,7 @@
                             class="ui-button-success"
                             action="#{surgeryBillController.validateSurgery()}"
                             rendered="#{webUserController.hasPrivilege('InwardSurgeryValidate') and not surgeryBillController.surgeryBill.completed}"
-                            disabled="#{not surgeryBillController.allSurgeryBillsChecked}"
+                            disabled="#{not surgeryBillController.allSurgeryBillsChecked or surgeryBillController.runningTimedServiceCount gt 0}"
                             onclick="if (!confirm('Validate this surgery? Further additions will be locked.')) return false;"/>
 
                         <p:commandButton
