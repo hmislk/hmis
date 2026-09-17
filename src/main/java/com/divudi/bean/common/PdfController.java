@@ -113,6 +113,44 @@ public class PdfController {
      */
     public PdfController() {
     }
+    public byte[] createFinalBillSnapshotPdf(Bill bill, List<Map.Entry<String, Double>> categoryTotals, List<Bill> paymentBills) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        document.add(new Paragraph("Final Bill - " + bill.getDeptId()).setBold().setFontSize(16));
+        document.add(new Paragraph("Patient: " + bill.getPatientEncounter().getPatient().getPerson().getName()));
+        document.add(new Paragraph("Approved At: " + bill.getApproveAt()));
+
+        Table categoryTable = new Table(UnitValue.createPercentArray(new float[]{3, 1})).useAllAvailableWidth();
+        categoryTable.addHeaderCell("Charge Category");
+        categoryTable.addHeaderCell("Amount");
+        for (Map.Entry<String, Double> entry : categoryTotals) {
+            categoryTable.addCell(entry.getKey());
+            categoryTable.addCell(String.format("%.2f", entry.getValue()));
+        }
+        document.add(categoryTable);
+
+        Table paymentsTable = new Table(UnitValue.createPercentArray(new float[]{2, 2, 1})).useAllAvailableWidth();
+        paymentsTable.addHeaderCell("Date");
+        paymentsTable.addHeaderCell("Type");
+        paymentsTable.addHeaderCell("Amount");
+        for (Bill paymentBill : paymentBills) {
+            paymentsTable.addCell(String.valueOf(paymentBill.getCreatedAt()));
+            paymentsTable.addCell(String.valueOf(paymentBill.getBillTypeAtomic()));
+            paymentsTable.addCell(String.format("%.2f", paymentBill.getNetTotal()));
+        }
+        document.add(paymentsTable);
+
+        document.add(new Paragraph(String.format("Net Total: %.2f", bill.getNetTotal())));
+        document.add(new Paragraph(String.format("Paid Amount: %.2f", bill.getPaidAmount())));
+        document.add(new Paragraph(String.format("Due: %.2f", bill.getNetTotal() - bill.getPaidAmount())));
+
+        document.close();
+        return outputStream.toByteArray();
+    }
+
     public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
         return createPdfForBundle(rootBundle, null);
     }
