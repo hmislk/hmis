@@ -21,11 +21,17 @@
                             @media print {
                                 body {
                                     margin: 0px 5px;
+                                    counter-reset: page;
                                 }
 
                                 @page {
                                     size: A4 landscape;
                                     margin: 8mm;
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
                                 }
 
                                 [id$="summaryTbl"] table {
