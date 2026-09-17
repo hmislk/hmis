@@ -25,7 +25,7 @@ public class FinalBillPdfSnapshot implements Serializable {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "BILL_ID", unique = true, nullable = false)
+    @JoinColumn(name = "BILL_ID", nullable = false)
     private Bill bill;
 
     @Lob

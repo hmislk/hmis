@@ -42,7 +42,7 @@ public class FinalBillPdfSnapshotService {
         snapshot.setPdfBytes(pdfBytes);
         snapshot.setCreatedAt(new Date());
         try {
-            finalBillPdfSnapshotFacade.create(snapshot);
+            finalBillPdfSnapshotFacade.createAndFlush(snapshot);
         } catch (RuntimeException e) {
             // Another concurrent call (eager generation at approval vs. lazy
             // generation on first view) may have already persisted a snapshot

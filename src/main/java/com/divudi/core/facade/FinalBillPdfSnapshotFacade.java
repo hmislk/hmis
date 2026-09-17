@@ -27,7 +27,7 @@ public class FinalBillPdfSnapshotFacade extends AbstractFacade<FinalBillPdfSnaps
             return null;
         }
         TypedQuery<FinalBillPdfSnapshot> q = em.createQuery(
-                "select s from FinalBillPdfSnapshot s where s.bill.id = :billId and s.retired = false",
+                "select s from FinalBillPdfSnapshot s where s.bill.id = :billId and s.retired = false order by s.id desc",
                 FinalBillPdfSnapshot.class);
         q.setParameter("billId", billId);
         List<FinalBillPdfSnapshot> results = q.getResultList();
