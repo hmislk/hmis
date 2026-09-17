@@ -41,7 +41,19 @@ public class FinalBillPdfSnapshotService {
         snapshot.setBill(bill);
         snapshot.setPdfBytes(pdfBytes);
         snapshot.setCreatedAt(new Date());
-        finalBillPdfSnapshotFacade.create(snapshot);
+        try {
+            finalBillPdfSnapshotFacade.create(snapshot);
+        } catch (RuntimeException e) {
+            // Another concurrent call (eager generation at approval vs. lazy
+            // generation on first view) may have already persisted a snapshot
+            // for this bill, tripping the BILL_ID unique constraint. Re-check
+            // for that snapshot before giving up on this one.
+            FinalBillPdfSnapshot raceWinner = finalBillPdfSnapshotFacade.findByBillId(bill.getId());
+            if (raceWinner != null) {
+                return raceWinner.getPdfBytes();
+            }
+            throw e;
+        }
 
         return pdfBytes;
     }
