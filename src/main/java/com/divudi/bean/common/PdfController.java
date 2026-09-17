@@ -174,7 +174,7 @@ public class PdfController {
         appendFinalBillSnapshotPatientInfo(sb, bill, dtf);
         appendFinalBillSnapshotFinancialSummary(sb, bill, df);
         appendFinalBillSnapshotCategoryTotals(sb, categoryTotals, df);
-        appendFinalBillSnapshotPayments(sb, paymentBills, df);
+        appendFinalBillSnapshotPayments(sb, paymentBills, df, dtf);
         appendFinalBillSnapshotProfessionalFees(sb, bill, df);
         appendFinalBillSnapshotCreditCompanyLetter(sb, bill, df);
 
@@ -297,7 +297,7 @@ public class PdfController {
         sb.append("</table></div>");
     }
 
-    private void appendFinalBillSnapshotPayments(StringBuilder sb, List<Bill> paymentBills, DecimalFormat df) {
+    private void appendFinalBillSnapshotPayments(StringBuilder sb, List<Bill> paymentBills, DecimalFormat df, SimpleDateFormat dtf) {
         sb.append("<div class='section'><h3>Payments / Deposits / Refunds</h3><table>");
         sb.append("<tr><th>Date</th><th>Type</th><th>Amount</th></tr>");
         if (paymentBills != null) {
@@ -305,7 +305,7 @@ public class PdfController {
                 if (paymentBill == null) {
                     continue;
                 }
-                String date = paymentBill.getCreatedAt() != null ? String.valueOf(paymentBill.getCreatedAt()) : "N/A";
+                String date = paymentBill.getCreatedAt() != null ? dtf.format(paymentBill.getCreatedAt()) : "N/A";
                 String type = paymentBill.getBillTypeAtomic() != null ? String.valueOf(paymentBill.getBillTypeAtomic()) : "N/A";
                 sb.append("<tr><td>").append(escapeHtml(date)).append("</td><td>").append(escapeHtml(type))
                         .append("</td><td class='txt-right'>").append(df.format(paymentBill.getNetTotal())).append("</td></tr>");

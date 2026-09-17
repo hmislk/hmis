@@ -53,7 +53,6 @@ import com.divudi.service.RequestService;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -191,6 +190,18 @@ public class InwardSearch implements Serializable {
      * value here would leak a previously-viewed bill's PDF into a later view.
      */
     private byte[] finalBillPdfSnapshotBytes;
+
+    /**
+     * The id of the {@link Bill} that {@link #finalBillPdfSnapshotBytes} was
+     * generated for. Several places in this class assign {@link #bill}
+     * directly rather than through {@link #setBill(Bill)} (which clears the
+     * cache), so the cache cannot be trusted to have been invalidated on
+     * every possible {@code bill} reassignment. Checking this id against
+     * {@code bill.getId()} in {@link #getFinalBillPdfSnapshotStream()} makes
+     * the cache self-correcting for any current or future direct {@code bill
+     * = ...} assignment site, without needing to find and patch each one.
+     */
+    private Long finalBillPdfSnapshotBytesForBillId;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -692,12 +703,6 @@ public class InwardSearch implements Serializable {
         refreshFinalBillPdfSnapshot();
     }
 
-    public String fromBhtFinalBillSearchToBillReprint() {
-        refreshFinalBillBackwordReferenceBills();
-        bhtSummeryFinalizedController.setPatientEncounter(bill.getPatientEncounter());
-        return "/inward/inward_reprint_bill_final";
-    }
-
     public void makeNull() {
         bill = null;
         printPreview = false;
@@ -714,6 +719,7 @@ public class InwardSearch implements Serializable {
         tempbillItems = null;
         sentEmailsForBill = null;
         finalBillPdfSnapshotBytes = null;
+        finalBillPdfSnapshotBytesForBillId = null;
     }
 
     public WebUser getUser() {
@@ -907,6 +913,7 @@ public class InwardSearch implements Serializable {
             // cross-contaminate the cache with a snapshot for a different bill.
             if (b == bill) {
                 finalBillPdfSnapshotBytes = snapshotBytes;
+                finalBillPdfSnapshotBytesForBillId = b.getId();
             }
         } catch (Exception ex) {
             // Widened from IOException: the snapshot call can also throw an
@@ -945,6 +952,9 @@ public class InwardSearch implements Serializable {
         if (finalBillPdfSnapshotBytes == null) {
             return null;
         }
+        if (bill == null || bill.getId() == null || !bill.getId().equals(finalBillPdfSnapshotBytesForBillId)) {
+            return null;
+        }
         byte[] pdfBytes = finalBillPdfSnapshotBytes;
         return DefaultStreamedContent.builder()
                 .name(bill.getDeptId() + ".pdf")
@@ -966,11 +976,13 @@ public class InwardSearch implements Serializable {
      */
     private void refreshFinalBillPdfSnapshot() {
         finalBillPdfSnapshotBytes = null;
+        finalBillPdfSnapshotBytesForBillId = null;
         if (bill == null || bill.getApproveAt() == null) {
             return;
         }
         try {
             finalBillPdfSnapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(bill);
+            finalBillPdfSnapshotBytesForBillId = bill.getId();
         } catch (Exception ex) {
             // Degrade gracefully (widened from IOException, same rationale
             // as approveFinalBillVersion): a snapshot failure must not block
@@ -1457,11 +1469,6 @@ public class InwardSearch implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public String inwardReprintBillFinal() {
-
-        return "inward/inward_reprint_bill_final";
     }
 
     public List<BillItem> getRefundingItems() {
@@ -3168,6 +3175,7 @@ public class InwardSearch implements Serializable {
     public void setBill(Bill bill) {
         recreateModel();
         finalBillPdfSnapshotBytes = null;
+        finalBillPdfSnapshotBytesForBillId = null;
         if (bill == null) {
             return;
         }
