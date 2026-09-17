@@ -947,33 +947,39 @@ public class InwardSearch implements Serializable {
      * "getters are pure reads" rule and caused a documented concurrency race
      * where two near-simultaneous evaluations could both see "no snapshot
      * yet" and both try to create one.
+     *
+     * <p>Resolved the PR #23848 review finding #1 cross-tab/cross-session
+     * leak: {@code p:media} is wired with {@code cache="false"}, which makes
+     * PrimeFaces re-invoke this whole getter completely fresh - guard
+     * included - on the actual async dynamic-resource fetch request, which
+     * is a genuinely separate, later HTTP request from the page's initial
+     * render. If this session's {@link #bill} / cache fields had since moved
+     * on to a different bill (a second tab, or a fast subsequent
+     * navigation), reading only session state here would legitimately (and
+     * wrongly) serve that other bill's bytes. The XHTML pages now nest
+     * {@code <f:param name="finalBillId" value="#{inwardSearch.bill.id}" />}
+     * inside the {@code p:media}, which PrimeFaces appends to the generated
+     * resource URL, making the fetch self-describing: this getter reads that
+     * id from the request parameter map first and, when present, resolves
+     * the response for THAT id independently of whatever the session's
+     * mutable fields currently hold (see
+     * {@link #buildFinalBillPdfSnapshotStreamForBillId(Long)}). Only when no
+     * such parameter is present (e.g. a direct getter invocation from some
+     * other code path) does it fall back to the previous session-cache-based
+     * behavior below, as a safety net.
      */
     public StreamedContent getFinalBillPdfSnapshotStream() {
+        Long requestedBillId = readFinalBillIdRequestParam();
+        if (requestedBillId != null) {
+            return buildFinalBillPdfSnapshotStreamForBillId(requestedBillId);
+        }
+
+        // Fallback: no request-scoped bill id was supplied (e.g. a direct
+        // getter invocation outside the p:media dynamic-resource fetch).
         // Capture both cache fields as locals in a single pair, right at
-        // entry, before doing the guard check against them. This closes the
-        // narrow window where a concurrent request for a DIFFERENT bill
-        // (e.g. a second browser tab loading bill B in this same
-        // @SessionScoped bean) could mutate finalBillPdfSnapshotBytes /
-        // finalBillPdfSnapshotBytesForBillId between an earlier null-check
-        // and a later re-read of the same fields: everything below this
-        // point - the guard AND the lambda passed to the builder - reads
+        // entry, before doing the guard check against them, so everything
+        // below - the guard AND the lambda passed to the builder - reads
         // only these locals, never the instance fields again.
-        //
-        // IMPORTANT / residual risk (see the PR #23848 review, finding #1):
-        // this does NOT by itself close the cross-tab leak. p:media is
-        // wired with cache="false" (see inward_reprint_bill_final.xhtml /
-        // inward_final_bill_approve.xhtml), which makes PrimeFaces
-        // re-evaluate the whole #{inwardSearch.finalBillPdfSnapshotStream}
-        // EL expression - i.e. call this getter completely fresh, guard
-        // included - on the actual async dynamic-resource fetch, not just
-        // once at initial render. If a second tab has since loaded a
-        // different bill into this same session, THIS invocation (however
-        // carefully it captures its own locals) will legitimately see that
-        // other bill's bytes as "current" and serve them. Closing that
-        // fully would require binding the resource request to the
-        // specific bill id that was current when the p:media component was
-        // rendered (e.g. via a request parameter / per-render token
-        // resolved independently of session state), not just this getter.
         byte[] bytes = this.finalBillPdfSnapshotBytes;
         Long forBillId = this.finalBillPdfSnapshotBytesForBillId;
         if (bytes == null) {
@@ -988,6 +994,80 @@ public class InwardSearch implements Serializable {
                 .contentType("application/pdf")
                 .stream(() -> new ByteArrayInputStream(bytes))
                 .build();
+    }
+
+    /**
+     * Reads the {@code finalBillId} request parameter that {@code p:media}
+     * appends to its dynamic-resource fetch URL (via the nested
+     * {@code f:param} in the XHTML), if present and parseable. Returns
+     * {@code null} when absent or malformed so callers can fall back to the
+     * legacy session-cache-based behavior.
+     */
+    private Long readFinalBillIdRequestParam() {
+        try {
+            String param = javax.faces.context.FacesContext.getCurrentInstance()
+                    .getExternalContext().getRequestParameterMap().get("finalBillId");
+            if (param == null || param.isEmpty()) {
+                return null;
+            }
+            return Long.valueOf(param);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves the PDF stream for a specific, explicitly-requested bill id,
+     * independent of this session's mutable {@link #bill} /
+     * {@link #finalBillPdfSnapshotBytes} fields. Serves the session cache
+     * only when it happens to already match the requested id (the common,
+     * non-racing case); otherwise looks the bill up directly and generates/
+     * fetches its snapshot via {@link #finalBillPdfSnapshotService}, bypassing
+     * the (possibly stale, for a different bill) session cache entirely.
+     * This is what actually closes the cross-tab/cross-session race: the
+     * response no longer depends on what the session's fields point to by
+     * the time this async request reaches the server.
+     */
+    private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
+        byte[] cachedBytes = this.finalBillPdfSnapshotBytes;
+        Long cachedForBillId = this.finalBillPdfSnapshotBytesForBillId;
+        if (cachedBytes != null && requestedBillId.equals(cachedForBillId)) {
+            String fileName = (bill != null && requestedBillId.equals(bill.getId()))
+                    ? bill.getDeptId() + ".pdf"
+                    : requestedBillId + ".pdf";
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(cachedBytes))
+                    .build();
+        }
+
+        // Session cache is absent or belongs to a different bill than the
+        // one this resource request was generated for - exactly the race
+        // this request parameter exists to close. Resolve the correct bill
+        // independently and serve its own PDF.
+        try {
+            Bill requestedBill = getBillFacade().find(requestedBillId);
+            if (requestedBill == null || requestedBill.getApproveAt() == null) {
+                return null;
+            }
+            byte[] requestedBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(requestedBill);
+            if (requestedBytes == null) {
+                return null;
+            }
+            String fileName = requestedBill.getDeptId() + ".pdf";
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(requestedBytes))
+                    .build();
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE,
+                            "Final bill PDF snapshot fetch/generation failed for requested bill id " + requestedBillId,
+                            ex);
+            return null;
+        }
     }
 
     /**

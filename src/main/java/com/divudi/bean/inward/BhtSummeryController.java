@@ -6108,12 +6108,27 @@ public class BhtSummeryController implements Serializable {
      * navigation method routed into inward_bill_final.xhtml's print-preview
      * mode (see {@link #refreshFinalBillPdfSnapshot()}). Mirrors
      * {@code InwardSearch.getFinalBillPdfSnapshotStream()} exactly, including
-     * capturing both cache fields as locals before the guard check so
-     * everything below - guard and lambda alike - reads only those locals,
-     * never the instance fields again (see that method's Javadoc for the
-     * residual cross-tab-race caveat, which applies here identically).
+     * resolving the PR #23848 review finding #1 cross-tab/cross-session leak
+     * the same way: {@code p:media} is wired with {@code cache="false"},
+     * which makes PrimeFaces re-invoke this getter completely fresh on the
+     * async dynamic-resource fetch - a genuinely separate, later request
+     * from the page's initial render, by which point this session's
+     * {@link #current} / cache fields may have moved on to a different bill.
+     * {@code inward_bill_final.xhtml} nests
+     * {@code <f:param name="finalBillId" value="#{bhtSummeryController.current.id}" />}
+     * inside the {@code p:media}, so PrimeFaces appends that id to the
+     * resource URL and this getter can resolve the response for THAT id
+     * independently of session state (see
+     * {@link #buildFinalBillPdfSnapshotStreamForBillId(Long)}). Falls back to
+     * the previous session-cache-based behavior only when no such parameter
+     * is present.
      */
     public StreamedContent getFinalBillPdfSnapshotStream() {
+        Long requestedBillId = readFinalBillIdRequestParam();
+        if (requestedBillId != null) {
+            return buildFinalBillPdfSnapshotStreamForBillId(requestedBillId);
+        }
+
         byte[] bytes = this.finalBillPdfSnapshotBytes;
         Long forBillId = this.finalBillPdfSnapshotBytesForBillId;
         if (bytes == null) {
@@ -6128,6 +6143,75 @@ public class BhtSummeryController implements Serializable {
                 .contentType("application/pdf")
                 .stream(() -> new ByteArrayInputStream(bytes))
                 .build();
+    }
+
+    /**
+     * Reads the {@code finalBillId} request parameter that {@code p:media}
+     * appends to its dynamic-resource fetch URL (via the nested
+     * {@code f:param} in {@code inward_bill_final.xhtml}), if present and
+     * parseable. Returns {@code null} when absent or malformed so callers
+     * can fall back to the legacy session-cache-based behavior. Mirrors
+     * {@code InwardSearch.readFinalBillIdRequestParam()}.
+     */
+    private Long readFinalBillIdRequestParam() {
+        try {
+            String param = FacesContext.getCurrentInstance()
+                    .getExternalContext().getRequestParameterMap().get("finalBillId");
+            if (param == null || param.isEmpty()) {
+                return null;
+            }
+            return Long.valueOf(param);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves the PDF stream for a specific, explicitly-requested bill id,
+     * independent of this session's mutable {@link #current} /
+     * {@link #finalBillPdfSnapshotBytes} fields. Serves the session cache
+     * only when it happens to already match the requested id; otherwise
+     * looks the bill up directly and generates/fetches its snapshot via
+     * {@link #finalBillPdfSnapshotService}, bypassing the (possibly stale,
+     * for a different bill) session cache entirely. Mirrors
+     * {@code InwardSearch.buildFinalBillPdfSnapshotStreamForBillId(Long)}.
+     */
+    private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
+        byte[] cachedBytes = this.finalBillPdfSnapshotBytes;
+        Long cachedForBillId = this.finalBillPdfSnapshotBytesForBillId;
+        if (cachedBytes != null && requestedBillId.equals(cachedForBillId)) {
+            String fileName = (current != null && requestedBillId.equals(current.getId()))
+                    ? current.getDeptId() + ".pdf"
+                    : requestedBillId + ".pdf";
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(cachedBytes))
+                    .build();
+        }
+
+        try {
+            Bill requestedBill = getBillFacade().find(requestedBillId);
+            if (requestedBill == null || requestedBill.getApproveAt() == null) {
+                return null;
+            }
+            byte[] requestedBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(requestedBill);
+            if (requestedBytes == null) {
+                return null;
+            }
+            String fileName = requestedBill.getDeptId() + ".pdf";
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(requestedBytes))
+                    .build();
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
+                    .log(java.util.logging.Level.SEVERE,
+                            "Final bill PDF snapshot fetch/generation failed for requested bill id " + requestedBillId,
+                            ex);
+            return null;
+        }
     }
 
     /**

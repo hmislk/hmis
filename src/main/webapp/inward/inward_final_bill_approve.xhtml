@@ -72,7 +72,9 @@
                             where there is no snapshot yet to show.
                         -->
                         <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream ne null}" class="mt-3" header="Final Bill (Approved - Frozen Copy)">
-                            <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;" />
+                            <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;">
+                                <f:param name="finalBillId" value="#{inwardSearch.bill.id}" />
+                            </p:media>
                         </p:panel>
 
                         <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream eq null}" class="mt-3" header="Final Bill (Approved - Frozen Copy)">

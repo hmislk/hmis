@@ -989,7 +989,9 @@
                         print-preview state being reset (finding I8 from the PR review).
                     -->
                     <p:panel rendered="#{bhtSummeryController.current.approveAt ne null and bhtSummeryController.finalBillPdfSnapshotStream ne null}" header="Final Bill (Approved - Frozen Copy)">
-                        <p:media value="#{bhtSummeryController.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;" />
+                        <p:media value="#{bhtSummeryController.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;">
+                            <f:param name="finalBillId" value="#{bhtSummeryController.current.id}" />
+                        </p:media>
                     </p:panel>
 
                     <p:panel rendered="#{bhtSummeryController.current.approveAt ne null and bhtSummeryController.finalBillPdfSnapshotStream eq null}" header="Final Bill (Approved - Frozen Copy)">
