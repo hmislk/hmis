@@ -1254,7 +1254,11 @@ public class InwardSearch implements Serializable {
 
         boolean success = false;
         try {
-            byte[] pdfBytes = buildFinalBillPdf(b);
+            // Use the same frozen snapshot bytes served on the reprint page
+            // (issue #23848 I5) instead of a second, divergent PDF generator -
+            // b is already confirmed approved above, which is exactly
+            // getOrCreateSnapshot's contract.
+            byte[] pdfBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);
             EmailAttachment attachment = new EmailAttachment(
                     "FinalBill_" + b.getFinalBillVersionSerial() + ".pdf",
                     "application/pdf",
@@ -1295,51 +1299,6 @@ public class InwardSearch implements Serializable {
 
         sentEmailsForBill = null;
         return success;
-    }
-
-    private byte[] buildFinalBillPdf(Bill b) throws Exception {
-        String html = buildFinalBillHtml(b);
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter(out);
-            com.itextpdf.kernel.pdf.PdfDocument pdfDoc = new com.itextpdf.kernel.pdf.PdfDocument(writer);
-            pdfDoc.setDefaultPageSize(com.itextpdf.kernel.geom.PageSize.A4);
-            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(html, pdfDoc, new com.itextpdf.html2pdf.ConverterProperties());
-            return out.toByteArray();
-        }
-    }
-
-    private String buildFinalBillHtml(Bill b) {
-        PatientEncounter pe = b.getPatientEncounter();
-        String patientName = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
-                ? pe.getPatient().getPerson().getNameWithTitle() : "";
-        String bhtNo = pe != null ? pe.getBhtNo() : "";
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><body style='font-family:sans-serif;font-size:12px;'>");
-        sb.append("<h2>Final Bill</h2>");
-        sb.append("<table style='width:100%;margin-bottom:10px;'>");
-        sb.append("<tr><td><b>Bill Number</b></td><td>").append(escapeHtml(b.getDeptId())).append("</td></tr>");
-        sb.append("<tr><td><b>Version</b></td><td>").append(b.getFinalBillVersionSerial()).append("</td></tr>");
-        sb.append("<tr><td><b>Patient</b></td><td>").append(escapeHtml(patientName)).append("</td></tr>");
-        sb.append("<tr><td><b>BHT No</b></td><td>").append(escapeHtml(bhtNo)).append("</td></tr>");
-        sb.append("</table>");
-        sb.append("<table style='width:100%;border-collapse:collapse;' border='1' cellpadding='4'>");
-        sb.append("<tr><th style='text-align:left;'>Description</th><th style='text-align:right;'>Amount</th></tr>");
-        sb.append("<tr><td>Gross Total</td><td style='text-align:right;'>").append(df.format(b.getGrantTotal())).append("</td></tr>");
-        sb.append("<tr><td>Discount</td><td style='text-align:right;'>").append(df.format(b.getDiscount())).append("</td></tr>");
-        sb.append("<tr><td>Net Total</td><td style='text-align:right;'>").append(df.format(b.getNetTotal())).append("</td></tr>");
-        sb.append("<tr><td>Claimable Total</td><td style='text-align:right;'>").append(df.format(b.getClaimableTotal())).append("</td></tr>");
-        sb.append("</table>");
-        sb.append("</body></html>");
-        return sb.toString();
-    }
-
-    private String escapeHtml(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     public List<AppEmail> getSentEmailsForBill() {
