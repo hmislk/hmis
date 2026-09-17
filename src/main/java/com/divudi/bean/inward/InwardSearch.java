@@ -19,6 +19,7 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.dto.InwardBillReceiptDTO;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.EmailAttachment;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -3034,6 +3035,18 @@ public class InwardSearch implements Serializable {
 
         if (b.getPatientEncounter().isPaymentFinalized()) {
             return;
+        }
+
+        // A running timed service has no final amount yet, so checking its
+        // bill would verify a figure that is still growing - the same rule
+        // BhtSummeryController.markTimedServiceAsChecked applies per service.
+        if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
+            long runningTimedServices = getBillBean().countRunningTimedServices(b);
+            if (runningTimedServices > 0) {
+                JsfUtil.addErrorMessage("Cannot check: " + runningTimedServices
+                        + " timed service(s) on this bill are still running. Enter an End Time and press Update first.");
+                return;
+            }
         }
 
         b.setCheckeAt(new Date());

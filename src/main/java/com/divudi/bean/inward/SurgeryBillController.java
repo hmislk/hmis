@@ -1118,37 +1118,16 @@ public class SurgeryBillController implements Serializable {
      * for a surgery is billed on the single TimedService Bill found via
      * {@code fetchByForwardBill}, the same lookup
      * {@code InwardTimedItemController.selectSurgeryBillListener()} uses.
-     * <p>
-     * Joined through {@code EncounterComponent} rather than
-     * {@code PatientItem.billItem} - the surgery Add flow
-     * ({@code InwardTimedItemController.saveTimeServiceBill()}) links a
-     * timed service's BillItem onto its {@code EncounterComponent}, never
-     * onto the {@code PatientItem} itself, so {@code PatientItem.billItem}
-     * is always null here.
-     * <p>
-     * Filters on {@code patientItem.retired} in addition to
-     * {@code ec.retired} - {@link #removeTimeService(PatientItem)} (the
-     * Remove action on the Surgery Dashboard's Timed Services tab) only
-     * retires the {@code PatientItem}, not its {@code EncounterComponent},
-     * so a removed-but-never-stopped service would otherwise still count as
-     * running here and permanently block validation.
+     * The count itself is {@link BillBeanController#countRunningTimedServices(Bill)},
+     * shared with {@code InwardSearch.markAsChecked()} so a running timed
+     * service bill can neither be checked nor validated.
      */
     public long getRunningTimedServiceCount() {
         if (getSurgeryBill().getId() == null) {
             return 0;
         }
         Bill timedServiceBill = getBillBean().fetchByForwardBill(getSurgeryBill(), SurgeryBillType.TimedService);
-        if (timedServiceBill == null) {
-            return 0;
-        }
-        String jpql = "SELECT COUNT(ec) FROM EncounterComponent ec"
-                + " WHERE ec.retired = false"
-                + " AND ec.billItem.bill = :bill"
-                + " AND ec.billFee.patientItem.retired = false"
-                + " AND ec.billFee.patientItem.toTime IS NULL";
-        HashMap<String, Object> hm = new HashMap<>();
-        hm.put("bill", timedServiceBill);
-        return getEncounterComponentFacade().findLongByJpql(jpql, hm);
+        return getBillBean().countRunningTimedServices(timedServiceBill);
     }
 
     public void validateSurgery() {
