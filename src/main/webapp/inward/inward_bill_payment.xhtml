@@ -378,13 +378,14 @@
                                 </h:panelGroup>
 
                                 <div class="d-flex justify-content-end gap-3">
-                                    <p:commandButton 
-                                        class="ui-button-success" 
-                                        icon="fas fa-money-bill" 
-                                        id="btnPay" 
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        icon="fas fa-money-bill"
+                                        id="btnPay"
                                         value="Pay"
                                         style="width:250px;"
-                                        ajax="false" 
+                                        ajax="false"
+                                        onclick="if (!confirm('Are you sure?')) return false"
                                         action="#{inwardPaymentController.pay()}" >
                                     </p:commandButton>
 
