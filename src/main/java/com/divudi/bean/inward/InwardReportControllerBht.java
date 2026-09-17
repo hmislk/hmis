@@ -3841,7 +3841,7 @@ public class InwardReportControllerBht implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
