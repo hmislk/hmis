@@ -660,7 +660,7 @@
                         <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Request Issue Bill is PosHeaderPaper',true)}">
                             <phi:saleBill_Header_Inward
                                 bill="#{pharmacySaleBhtController.printBill}"
-                                showRate="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                showRate="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Sent to Ward - Show Rate and Value', true)}"
                                 showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
                             </phi:saleBill_Header_Inward>
                         </h:panelGroup>
