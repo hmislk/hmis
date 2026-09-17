@@ -207,11 +207,14 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey(ItemController.THEATRE_LIST_ALL_SERVICES, false);
         getBooleanValueByKey(ItemController.THEATRE_LIST_THEATRE_SERVICES_ONLY, true);
         // Controls whether the printed pharmacy bill handed to the ward on BHT
-        // issue shows item rate/value columns and totals, independent of the
-        // on-screen 'Nursing IP Billing - Show Rate and Value' + privilege gate
-        // (which governs what authorized Pharmacy staff see on screen, not what
-        // gets printed). Default true = print rate/value (issue #23834; Coop
-        // wants them, Ruhunu does not - toggle off per-hospital as needed).
+        // issue shows item rate/value columns and totals. Still requires the
+        // NursingIPBillingViewRates privilege (same as the on-screen 'Nursing
+        // IP Billing - Show Rate and Value' table) - a user without that
+        // privilege never sees rate/value, on screen or on the printout. This
+        // key only controls the separate institution-level choice of whether
+        // a *privileged* user's printout includes rate/value. Default true =
+        // print rate/value (issue #23834; Coop wants them, Ruhunu does not -
+        // toggle off per-hospital as needed).
         getBooleanValueByKey("Pharmacy Bill Sent to Ward - Show Rate and Value", true);
     }
 
