@@ -108,9 +108,12 @@ public class InwardProfessionalPaymentDetailRowDTO implements Serializable {
 
     // Issue #22803 - rowspan for this consultant block's own columns
     // (Consultant/Speciality) and for the admission columns it contributes
-    // to: its data rows, plus the Total row and the Balance-to-Pay row.
+    // to: its data rows, plus the Total row. (The Balance-to-Pay row is
+    // temporarily commented out on the xhtml - see the TODO there - so it
+    // must not be counted here either, or the rowspan overruns into the
+    // next block's first row and misaligns every column after it.)
     public int getBlockRowSpan() {
-        return Math.max(rowCount(), 1) + 2;
+        return Math.max(rowCount(), 1) + 1;
     }
 
     // So the xhtml can ui:repeat over a plain index list without EL arithmetic.
