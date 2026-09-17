@@ -102,13 +102,18 @@
                                 </h:panelGroup>
 
                                 <h:outputLabel value="Admission Type" for="admissionType" class="mt-2 d-block"/>
-                                <p:selectOneMenu id="admissionType" value="#{inwardReportControllerBht.professionalPaymentAdmissionType}" class="w-100">
+                                <p:selectOneMenu 
+                                    id="admissionType" 
+                                    value="#{inwardReportControllerBht.professionalPaymentAdmissionType}" 
+                                    class="w-100">
                                     <f:selectItem itemLabel="All" itemValue="#{null}"/>
                                     <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
                                 </p:selectOneMenu>
 
                                 <h:panelGroup layout="block" styleClass="mt-2">
-                                    <p:selectBooleanCheckbox id="onlyWithoutFees" value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>
+                                    <p:selectBooleanCheckbox 
+                                        id="onlyWithoutFees" 
+                                        value="#{inwardReportControllerBht.onlyAdmissionsWithoutProfessionalFees}"/>
                                     <h:outputLabel value=" List admissions without any professional fees" for="onlyWithoutFees" class="mx-1"/>
                                 </h:panelGroup>
 
