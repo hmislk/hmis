@@ -104,9 +104,15 @@ documented here, and warrants stopping and asking rather than guessing.
   while proving nothing — but locally that is a judgement call, not a hard
   limit, and direct SQL is fine when it is simply the faster route. See
   step 4.
-- Never put institution names, patient/doctor names, or credentials in any
-  GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
-  too since there's no human proofreading before it posts).
+- Never put a specific hospital's data in any GitHub issue, PR, or comment:
+  patient/doctor/staff names, production record identifiers (bill/BHT/PHN
+  numbers, entity IDs), affected-record counts, production schema names,
+  cutover dates, per-staff statistics, data-fix logs, or credentials. Describe
+  the defect, not the deployment — see
+  [What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+  Naming which hospital *reported* the bug is allowed; publishing its data is
+  not. Non-negotiable here especially, since there's no human proofreading
+  before it posts.
 - Never resolve genuinely ambiguous behavior — where the codebase, git
   history, and related issues give no clear signal either way — by picking an
   option silently. That is exactly the "stop and flag" case in steps 3 and 14.

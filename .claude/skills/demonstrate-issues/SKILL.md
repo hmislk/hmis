@@ -329,6 +329,14 @@ following a standard template:
   in the issue body — see
   [playwright-e2e-workflow §8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence).
 
+Before filing, re-read the assembled body against
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md)
+— the repo is public, so the body must carry no patient/doctor/staff names,
+production record identifiers (bill/BHT/PHN numbers, entity IDs),
+affected-record counts, production schema names, cutover dates or per-staff
+statistics. A demo session collects exactly those things, so this pass is not
+a formality.
+
 File with `gh issue create --repo hmislk/hmis --title "<title>" --body-file
 <file>` (use `--body-file` for the multiline body assembled above). Verify
 the created issue — including that its embedded images render — before
