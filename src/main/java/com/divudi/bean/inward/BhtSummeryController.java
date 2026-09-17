@@ -575,7 +575,7 @@ public class BhtSummeryController implements Serializable {
      * missing rows triggers at most one synchronized cache reload, after the
      * loop, instead of one per lazily created row.
      */
-    private List<Map.Entry<String, Double>> foldInwardCategoryTotals(Bill bill) {
+    public List<Map.Entry<String, Double>> foldInwardCategoryTotals(Bill bill) {
         Map<String, Double> totals = new TreeMap<>();
         if (bill == null || bill.getBillItems() == null) {
             return new ArrayList<>(totals.entrySet());
