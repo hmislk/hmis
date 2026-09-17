@@ -6171,10 +6171,23 @@ public class BhtSummeryController implements Serializable {
      * independent of this session's mutable {@link #current} /
      * {@link #finalBillPdfSnapshotBytes} fields. Serves the session cache
      * only when it happens to already match the requested id; otherwise
-     * looks the bill up directly and generates/fetches its snapshot via
-     * {@link #finalBillPdfSnapshotService}, bypassing the (possibly stale,
-     * for a different bill) session cache entirely. Mirrors
-     * {@code InwardSearch.buildFinalBillPdfSnapshotStreamForBillId(Long)}.
+     * returns {@code null} rather than looking the requested id up
+     * independently. Mirrors
+     * {@code InwardSearch.buildFinalBillPdfSnapshotStreamForBillId(Long)},
+     * including why: {@code finalBillId} is a plain, client-editable URL
+     * query parameter (PrimeFaces' {@code DynamicContentSrcBuilder} just
+     * string-concatenates it onto the generated resource URL; {@code pfdrid}
+     * is a hash of the fixed EL expression string, constant across all
+     * sessions/bills, not a per-render secret). An earlier version of this
+     * method treated a mismatch as "resolve the requested id directly" -
+     * {@code getBillFacade().find(requestedBillId)} followed by serving that
+     * bill's PDF once approved - which let any authenticated user download
+     * any other patient's approved final bill by hand-editing the id in the
+     * URL. Returning {@code null} on mismatch still closes the original
+     * cross-tab/cross-session race (a mismatched request never gets served
+     * the WRONG bill's data - it just gets nothing, which the page already
+     * renders as its existing "could not be loaded" fallback panel) without
+     * that unauthorized lookup-and-serve path.
      */
     private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
         byte[] cachedBytes = this.finalBillPdfSnapshotBytes;
@@ -6190,28 +6203,11 @@ public class BhtSummeryController implements Serializable {
                     .build();
         }
 
-        try {
-            Bill requestedBill = getBillFacade().find(requestedBillId);
-            if (requestedBill == null || requestedBill.getApproveAt() == null) {
-                return null;
-            }
-            byte[] requestedBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(requestedBill);
-            if (requestedBytes == null) {
-                return null;
-            }
-            String fileName = requestedBill.getDeptId() + ".pdf";
-            return DefaultStreamedContent.builder()
-                    .name(fileName)
-                    .contentType("application/pdf")
-                    .stream(() -> new ByteArrayInputStream(requestedBytes))
-                    .build();
-        } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
-                    .log(java.util.logging.Level.SEVERE,
-                            "Final bill PDF snapshot fetch/generation failed for requested bill id " + requestedBillId,
-                            ex);
-            return null;
-        }
+        // Session cache is absent or belongs to a different bill than the
+        // one this resource request was generated for. Do NOT perform an
+        // independent, unauthorized lookup of the requested id - that would
+        // let a client-edited finalBillId serve any other patient's PDF.
+        return null;
     }
 
     /**
