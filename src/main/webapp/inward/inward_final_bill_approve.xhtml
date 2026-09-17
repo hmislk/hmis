@@ -71,8 +71,12 @@
                             state. The live composite remains for the pre-approval review case,
                             where there is no snapshot yet to show.
                         -->
-                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null}" class="mt-3" header="Final Bill (Approved - Frozen Copy)">
+                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream ne null}" class="mt-3" header="Final Bill (Approved - Frozen Copy)">
                             <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" style="width:100%;height:900px;" />
+                        </p:panel>
+
+                        <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream eq null}" class="mt-3" header="Final Bill (Approved - Frozen Copy)">
+                            <h:outputText value="The approved PDF could not be loaded. Please try reprinting from the Final Bill list." styleClass="text-danger" />
                         </p:panel>
 
                         <h:panelGroup class="mt-3" rendered="#{inwardSearch.bill.approveAt eq null}">

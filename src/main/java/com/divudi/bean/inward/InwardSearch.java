@@ -899,7 +899,15 @@ public class InwardSearch implements Serializable {
         getBillFacade().edit(b);
 
         try {
-            finalBillPdfSnapshotService.getOrCreateSnapshot(b);
+            byte[] snapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);
+            // Only cache into the session-scoped field if b is the same bill
+            // instance currently loaded into the session; approveFinalBillVersion
+            // could theoretically be called with a different Bill than whatever
+            // this session's `bill` field currently holds, and we must not
+            // cross-contaminate the cache with a snapshot for a different bill.
+            if (b == bill) {
+                finalBillPdfSnapshotBytes = snapshotBytes;
+            }
         } catch (Exception ex) {
             // Widened from IOException: the snapshot call can also throw an
             // unchecked PersistenceException/EJBException (e.g. the
