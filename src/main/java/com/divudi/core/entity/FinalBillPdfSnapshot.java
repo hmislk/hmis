@@ -24,8 +24,15 @@ public class FinalBillPdfSnapshot implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // unique = true gives real DB-level race safety for getOrCreateSnapshot's
+    // createAndFlush()/catch (see FinalBillPdfSnapshotService): two concurrent
+    // generations for the same never-yet-snapshotted bill can only leave one
+    // row. A future retire/regenerate feature (see `retired` below) MUST
+    // delete the retired row in the SAME transaction as inserting the
+    // replacement, not just flip retired=true and insert a new row, or the
+    // insert will violate this constraint.
     @OneToOne
-    @JoinColumn(name = "BILL_ID", nullable = false)
+    @JoinColumn(name = "BILL_ID", nullable = false, unique = true)
     private Bill bill;
 
     @Lob
