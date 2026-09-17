@@ -1009,6 +1009,9 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public List<PatientItem> getItems() {
+        if (items == null && getCurrent().getPatientEncounter() != null) {
+            createPatientItems();
+        }
         return items;
     }
 
