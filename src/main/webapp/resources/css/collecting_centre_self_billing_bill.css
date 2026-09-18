@@ -57,6 +57,23 @@
     color: #1E88E5;
     font-size: 0.9rem;
 }
+/* The badge rule above targets any .fa/.fas/.pi inside a panel header
+   facet, which also catches action buttons placed in that facet (e.g.
+   Print/Print Patient) - forcing their icon into a 30x30 circular
+   badge instead of the plain glyph the button layout expects. Undo it
+   for icons that are actually inside a button. */
+.cc-bill-page .ui-panel-titlebar .ui-button .fa,
+.cc-bill-page .ui-panel-titlebar .ui-button .fas,
+.cc-bill-page .ui-panel-titlebar .ui-button .fa-solid,
+.cc-bill-page .ui-panel-titlebar .ui-button .pi {
+    width: auto;
+    height: auto;
+    min-width: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+}
 
 .cc-bill-page .cc-bill-card.cc-c-blue { border-top-color: #1E88E5; }
 .cc-bill-page .cc-bill-card.cc-c-blue .ui-panel-titlebar .fa,
@@ -98,6 +115,28 @@
 .cc-bill-page .ui-button {
     border-radius: 8px;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+/* PrimeFaces positions the icon with position:absolute and a fixed
+   top/margin-top offset tuned for its own icon font's metrics, which
+   doesn't match FontAwesome's, so the icon sits lower than the label
+   text. Let the button's own flex layout center it instead. */
+.cc-bill-page .ui-button .ui-button-icon-left,
+.cc-bill-page .ui-button .ui-icon {
+    position: static;
+    top: auto;
+    left: auto;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+.cc-bill-page .ui-button .ui-button-text {
+    padding: 0;
+    line-height: 1;
 }
 
 /* Inputs */
@@ -541,4 +580,115 @@
     .ccpd-info-item-wide {
         grid-column: span 1;
     }
+}
+
+/* Settle confirmation dialog */
+.cc-confirm-dialog.ui-dialog {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 420px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+.cc-confirm-dialog .ui-dialog-titlebar {
+    background: linear-gradient(135deg, #FB8C00 0%, #F57C00 100%);
+    color: #fff;
+    border: none;
+    padding: 1rem 1.25rem;
+}
+.cc-confirm-dialog .ui-dialog-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+.cc-confirm-dialog .ui-dialog-titlebar-icon {
+    color: rgba(255, 255, 255, 0.85);
+}
+.cc-confirm-dialog .ui-dialog-titlebar-icon:hover {
+    color: #fff;
+}
+.cc-confirm-dialog .ui-dialog-content {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center !important;
+    gap: 0.85rem;
+    text-align: center;
+    padding: 1.75rem 1.75rem 1.25rem !important;
+    background: #fff;
+}
+.cc-confirm-dialog .ui-dialog-content > span.ui-icon {
+    width: 90px;
+    height: 90px;
+    margin: 0 !important;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(251, 140, 0, 0.14);
+    color: #FB8C00;
+    font-size: 2.9rem !important;
+}
+.cc-confirm-dialog .ui-dialog-content > span:not(.ui-icon) {
+    margin: 0 !important;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: #333;
+}
+.cc-confirm-dialog .ui-dialog-footer {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0 1.75rem 1.75rem !important;
+    background: #fff;
+    border: none;
+}
+.cc-confirm-dialog .ui-dialog-footer button {
+    margin: 0 !important;
+    min-width: 100px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.4rem 0.85rem;
+}
+
+/* Settling-in-progress popup */
+.cc-settling-dialog.ui-dialog {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+.cc-settling-dialog .ui-dialog-content {
+    padding: 1.75rem 2rem !important;
+}
+.cc-settling-body {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.cc-settling-spinner {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(30, 136, 229, 0.14);
+    color: #1E88E5;
+    font-size: 1.4rem;
+}
+.cc-settling-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.cc-settling-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #212529;
+}
+.cc-settling-subtitle {
+    font-size: 0.85rem;
+    color: #6c757d;
 }
