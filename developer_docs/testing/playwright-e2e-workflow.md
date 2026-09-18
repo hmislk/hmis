@@ -3904,3 +3904,23 @@ already appeared, the action has run.
 `itemSelect` AJAX settle, then click the real action button. On a page with
 `p:defaultCommand`, prefer this over Pattern 1 even when your query narrows to a
 single match.
+
+## 30. A failed `errorCheck()` can look exactly like a dead Settle button
+
+On `opd/opd_pre_bill.xhtml` (*Menu → OPD → Billing → Billing for Cashier*),
+clicking **Settle** accepted the `confirm()`, left the page unchanged, wrote no
+row, and showed **no message** — the classic shape of a broken button. Nothing
+was broken: `OpdPreBillController.errorCheck()` had returned `true` on
+`patient.getPerson().getArea() == null` ("Please Add Patient Area"), and the
+growl carrying that message was gone (or never rendered into the region being
+scraped) by the time the snapshot ran.
+
+Before concluding a control is dead, read the controller's `errorCheck()` /
+validation method and satisfy **every** field it tests — on this page
+`Area` is required even though it carries no `*` marker in the UI. A cheap tell:
+the form still holds the values just typed and the URL hasn't changed, which
+means the action ran and bailed, not that the click was lost.
+
+Corollary for scraping messages: `.ui-growl-item` is transient. Capture messages
+immediately after the click (or screenshot right away) rather than after the
+several-second settle wait, or a real validation error reads as silence.
