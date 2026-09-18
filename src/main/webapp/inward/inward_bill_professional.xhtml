@@ -441,7 +441,7 @@
                                                 <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"/>
                                             </p:column>
                                             <p:column headerText="Fee Category">
-                                                <h:outputLabel value="#{bif.professionalFeeCategory.label}" rendered="#{bif.professionalFeeCategory!=null}"/>
+                                                <h:outputLabel value="#{bif.professionalFeeCategory ne null ? bif.professionalFeeCategory.label : 'Consultant Fee'}"/>
                                             </p:column>
                                             <p:column headerText="Fee at">
                                                 <h:outputLabel value="#{bif.feeAt}" >

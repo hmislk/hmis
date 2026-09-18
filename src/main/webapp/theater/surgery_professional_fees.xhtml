@@ -221,7 +221,7 @@
                                 <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Fee Category">
-                                <h:outputLabel value="#{c.billFee.professionalFeeCategory.label}" rendered="#{c.billFee.professionalFeeCategory!=null}"/>
+                                <h:outputLabel value="#{c.billFee.professionalFeeCategory ne null ? c.billFee.professionalFeeCategory.label : 'Consultant Fee'}"/>
                             </p:column>
                             <p:column headerText="Fee">
                                 <p:inputText autocomplete="off" style="width: 130px"
