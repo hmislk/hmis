@@ -322,7 +322,25 @@
                                                 </p:autoComplete>
                                             </div>
                                         </div>
-                                        
+
+                                        <div class="row mb-3 align-items-center">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Fee Category" styleClass="fw-bold" for="feeCategory"/>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <p:selectOneMenu
+                                                    styleClass="w-100"
+                                                    id="feeCategory"
+                                                    value="#{inwardProfessionalBillController.currentBillFee.professionalFeeCategory}">
+                                                    <f:selectItems
+                                                        value="#{inwardProfessionalBillController.professionalFeeCategoryOptions}"
+                                                        var="cat"
+                                                        itemLabel="#{cat}"
+                                                        itemValue="#{cat}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
                                         <div class="row mb-3 align-items-center">
                                             <div class="col-md-4">
                                                 <h:outputLabel value="Fee Amount" styleClass="fw-bold"/>
@@ -421,6 +439,9 @@
                                             </p:column>
                                             <p:column headerText="Doctor">
                                                 <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"/>
+                                            </p:column>
+                                            <p:column headerText="Fee Category">
+                                                <h:outputLabel value="#{bif.professionalFeeCategory.label}" rendered="#{bif.professionalFeeCategory!=null}"/>
                                             </p:column>
                                             <p:column headerText="Fee at">
                                                 <h:outputLabel value="#{bif.feeAt}" >
