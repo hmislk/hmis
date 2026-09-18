@@ -177,6 +177,13 @@ public class PharmacySaleBhtController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Sent to Ward - Show Rate and Value",
+            "Controls whether the printed pharmacy bill handed to the ward shows any monetary field - item rate/value columns and totals (for users holding NursingIPBillingViewRates) and the discount line (for users holding IPBillingViewDiscount). A user without the relevant privilege never sees that field, on screen or on the printout. Default true (print for privileged users); institutions that don't want this on the ward printout can switch it off (issue #23834)",
+            "Bill Preview print composite (phi:saleBill_Header_Inward): showRate attribute combined with NursingIPBillingViewRates, showDiscount attribute combined with IPBillingViewDiscount",
+            OptionScope.APPLICATION
+        ));
+
         // Register privileges used on this page
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",

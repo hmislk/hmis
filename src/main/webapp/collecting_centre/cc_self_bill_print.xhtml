@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill">
+    <h:head>
+        <title>Collecting Centre Self Billing - Bill Printview</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                <div class="cc-bill-page">
+                    <h:form id="form">
+                        <ez:cc_self_billing_header
+                            pageTitle="Bill Print View"
+                            highlight="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
+                            pageIcon="fa-solid fa-print"
+                            backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                            backLabel="Back to Dashboard">
+                        </ez:cc_self_billing_header>
+
+                        <div class="d-flex justify-content-end mb-3 mx-2">
+                            <p:commandButton
+                                value="New Bill"
+                                icon="fa fa-plus"
+                                ajax="false"
+                                immediate="true"
+                                style="width: 200px;"
+                                action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                class="ui-button-warning mx-1">
+                            </p:commandButton>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Collecting Center" class="mt-2"/>
+                                        <p:commandButton
+                                            value="Print"
+                                            process="@this"
+                                            update="@all"
+                                            type="button"
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            style="float: right;"
+                                            ajax="false">
+                                            <p:printer target="centerBillPriview"></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <h:panelGroup id="centerBillPriview">
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Collecting Center(CC) size is POS paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFive paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom1 paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom3 paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:cc_five_five_custom_3 bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Bill for Patient" class="mt-2"/>
+                                        <p:commandButton
+                                            value="Print Patient"
+                                            class="ui-button-info"
+                                            icon="fa fa-print"
+                                            process="@this"
+                                            update="@all"
+                                            style="float: right;"
+                                            type="button"
+                                            ajax="false">
+                                            <p:printer target="parinetBillPriview"></p:printer>
+                                        </p:commandButton>
+                                    </f:facet>
+
+                                    <h:panelGroup id="parinetBillPriview">
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is POS paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFive paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom1 paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom3 paper')}">
+                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                <bi:cc_five_five_custom_3_patient bill="#{pp}" duplicate="false"/>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <p:dataTable
+                            value="#{collectingCentreBillController.bills}"
+                            var="b"
+                            resizeMode="expand"
+                            reflow="true"
+                            class="w-100"
+                            rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                            <f:facet name="header">
+                                <h:outputLabel value="Individual Bills" style="font-size: 18px; font-weight: 800;"/>
+                            </f:facet>
+                            <p:column headerText="Bill No" width="230px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                <h:outputText value="#{b.deptId}" class="w-100 m-1"/>
+                            </p:column>
+                            <p:column headerText="Hos Fee" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}" class="text-end">
+                                <h:outputText value="#{b.totalHospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="CC Fee" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}" class="text-end">
+                                <h:outputText value="#{b.totalCenterFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Total" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}" class="text-end">
+                                <h:outputText value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

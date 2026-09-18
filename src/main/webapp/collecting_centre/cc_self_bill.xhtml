@@ -178,14 +178,17 @@
                                                         </p:dataTable>
                                                     </p:tab>
                                                     <p:tab id="tabBillIx" title="Tests">
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillComponents}" var="bix">
-                                                            <p:column>
+                                                        <p:dataTable 
+                                                            rowIndexVar="rowIndex" 
+                                                            value="#{collectingCentreBillController.lstBillComponents}" 
+                                                            var="bix">
+                                                            <p:column width="2em;" style="padding: 7px;">
                                                                 <f:facet name="header">No</f:facet>
-                                                                    #{rowIndex+1}
+                                                                <h:outputLabel value="#{rowIndex+1}"/>
                                                             </p:column>
-                                                            <p:column>
+                                                            <p:column style="padding: 7px;">
                                                                 <f:facet name="header">Name</f:facet>
-                                                                    #{bix.item.name}
+                                                                <h:outputLabel value="#{bix.item.name}"/>
                                                             </p:column>
 
                                                         </p:dataTable>
@@ -193,43 +196,53 @@
 
                                                     <p:tab id="tabBillFee" title="Fees">
                                                         <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillFees}" var="bif">
-                                                            <p:column>
+                                                            <p:column  style="padding: 7px;">
                                                                 <f:facet name="header">Item Name</f:facet>
                                                                 <h:outputLabel value="#{bif.billItem.item.name}"/>
                                                             </p:column>
-                                                            <p:column>
-                                                                <f:facet name="header">Fee</f:facet>
-                                                                <h:inputText autocomplete="off"
-                                                                             id="txtFeeVal"
-                                                                             class="form-control"
-                                                                             value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}">
-                                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                                    <f:ajax event="keyup" execute="@this"
-                                                                            render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                            listener="#{collectingCentreBillController.feeChangeListener(bif)}"/>
-                                                                </h:inputText>
-                                                            </p:column>
-                                                            <p:column>
-                                                                <f:facet name="header">Fee</f:facet>
-                                                                <p:commandButton ajax="false" value="Update" action="#{collectingCentreBillController.feeChangeListener(bif)}" disabled="#{!bif.billItem.item.userChangable}"/>
-                                                            </p:column>
-                                                            <p:column>
+                                                            
+                                                            <p:column style="padding: 7px;">
                                                                 <f:facet name="header">Fee Name</f:facet>
                                                                 <h:outputLabel value="#{bif.fee.name}" rendered="#{bif.fee !=null}"></h:outputLabel>
                                                             </p:column>
-
-                                                            <p:column>
+                                                            
+                                                            <p:column style="padding: 7px;" width="8em;" class="text-end">
+                                                                <f:facet name="header">Fee</f:facet>
+                                                                <h:inputText 
+                                                                    autocomplete="off"
+                                                                    id="txtFeeVal"
+                                                                    class="form-control text-end"
+                                                                    value="#{bif.feeGrossValue}" 
+                                                                    disabled="#{!bif.billItem.item.userChangable}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                    <f:ajax 
+                                                                        event="keyup" execute="@this"
+                                                                        render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                        listener="#{collectingCentreBillController.feeChangeListener(bif)}"/>
+                                                                </h:inputText>
+                                                            </p:column>
+                                                            
+                                                            <p:column style="padding: 7px;">
                                                                 <f:facet name="header">Speciality</f:facet>
                                                                 <h:outputLabel value="#{bif.fee.speciality.name}" rendered="#{bif.fee !=null and bif.fee.speciality!=null}"></h:outputLabel>
                                                             </p:column>
 
-                                                            <p:column>
+                                                            <p:column style="padding: 7px;">
                                                                 <f:facet name="header">Payee</f:facet>
                                                                 <p:selectOneMenu value="#{bif.staff}" rendered="#{bif.fee.speciality!=null}">
                                                                     <f:selectItem itemLabel="Select Staff"/>
                                                                     <f:selectItems value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}"/>
                                                                 </p:selectOneMenu>
-
+                                                            </p:column>
+                                                            
+                                                            <p:column style="padding: 7px;" width="8em;" class="text-center">
+                                                                <f:facet name="header">Update</f:facet>
+                                                                <p:commandButton 
+                                                                    ajax="false" 
+                                                                    value="Update" 
+                                                                    action="#{collectingCentreBillController.feeChangeListener(bif)}" 
+                                                                    disabled="#{!bif.billItem.item.userChangable}">
+                                                                </p:commandButton>
                                                             </p:column>
                                                         </p:dataTable>
                                                     </p:tab>
@@ -242,31 +255,6 @@
                                 </div>
 
                                 <div class="col-5">
-
-                                    <div class="d-flex gap-2 justify-content-end mb-2 mx-2">
-                                        <p:commandButton
-                                            value="New Bill"
-                                            icon="fa fa-plus"
-                                            style="width: 150px;"
-                                            immediate="true"
-                                            ajax="false"
-                                            action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
-                                            class="ui-button-warning mx-1">
-                                        </p:commandButton>
-
-                                        <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}"/>
-
-                                        <p:commandButton
-                                            value="Settle"
-                                            icon="fa fa-check"
-                                            style="width: 150px;"
-                                            action="#{collectingCentreBillController.settleCcBill()}"
-                                            ajax="false"
-                                            class="ui-button-success "
-                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;">
-                                        </p:commandButton>
-                                    </div>
 
                                     <div class="row m-1 mt-1">
                                         <p:panel styleClass="cc-bill-card cc-c-red">
@@ -302,6 +290,47 @@
                                         </p:panel>
                                     </div>
 
+                                    <div class="d-flex gap-2 justify-content-end mb-4 mx-2">
+                                        <p:commandButton
+                                            value="New Bill"
+                                            icon="fa fa-plus"
+                                            style="width: 150px;"
+                                            immediate="true"
+                                            ajax="false"
+                                            action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                            class="ui-button-warning mx-1">
+                                        </p:commandButton>
+
+                                        <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}"/>
+
+                                        <p:commandButton
+                                            value="Settle"
+                                            icon="fa fa-check "
+                                            style="width: 150px;"
+                                            action="#{collectingCentreBillController.settleCcBill()}"
+                                            ajax="false"
+                                            class="ui-button-success ">
+                                            <p:confirm header="Confirm Settle" message="Are you sure you want to settle this bill? This cannot be undone." icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>
+                                    </div>
+
+                                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="cc-confirm-dialog" closeOnEscape="true">
+                                        <p:commandButton value="Settle Bill" type="button" styleClass="ui-confirmdialog-yes ui-button-success" icon="pi pi-check" onclick="PF('ccSettlingDlg').show();"/>
+                                        <p:commandButton value="Cancel" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                                    </p:confirmDialog>
+
+                                    <p:dialog widgetVar="ccSettlingDlg" modal="true" closable="false" resizable="false" draggable="false" showHeader="false" styleClass="cc-settling-dialog">
+                                        <div class="cc-settling-body">
+                                            <span class="cc-settling-spinner">
+                                                <h:outputText styleClass="fa fa-spinner fa-spin"/>
+                                            </span>
+                                            <div class="cc-settling-text">
+                                                <span class="cc-settling-title">Settling Bill</span>
+                                                <span class="cc-settling-subtitle">Please wait, this will only take a moment...</span>
+                                            </div>
+                                        </div>
+                                    </p:dialog>
+
                                     <p:panel styleClass="cc-bill-card cc-c-orange m-1">
                                         <f:facet name="header">
                                             <div class="d-flex justify-content-between">
@@ -309,7 +338,7 @@
                                                     <h:outputText styleClass="fas fa-bullseye"/>
                                                     <h:outputText value="Collecting Centre Details"></h:outputText>
                                                 </div>
-                                                
+
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
                                                     <div class="cc-ref-select" style="width: 250px;">
                                                         <p:selectOneMenu
@@ -381,7 +410,7 @@
                                             </div>
 
                                             <h:panelGroup layout="block" styleClass="cc-details-col"
-                                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
+                                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
 
                                                 <div class="cc-book-panel">
                                                     <div class="cc-book-panel-header">

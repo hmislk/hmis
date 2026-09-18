@@ -2143,9 +2143,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
-            
-            getPatient().getPerson().setForeigner(true);
-            
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
