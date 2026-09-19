@@ -5400,17 +5400,22 @@ public class BhtSummeryController implements Serializable {
         this.due = due;
     }
 
+    /**
+     * Sums the Bill Total column shown for a Medicine issue/return list.
+     * The lists passed in (built by {@code InwardBeanController.fetchIssueTable()})
+     * are already scoped to exactly the {@code BillTypeAtomic} set that
+     * feeds the Medicine charge total, so every row here belongs in the
+     * total - no further row-type filtering needed (issue #23871; this
+     * used to only sum {@code PreBill}/linked-{@code RefundBill} rows,
+     * silently excluding the porter-flow return's {@code BilledBill} rows).
+     */
     public double getVisibleIssueTotal(List<Bill> issues) {
         if (issues == null) {
             return 0.0;
         }
         double total = 0.0;
         for (Bill iss : issues) {
-            boolean visible = (iss instanceof PreBill)
-                    || (iss instanceof RefundBill && iss.getBilledBill() != null);
-            if (visible) {
-                total += iss.getNetTotal();
-            }
+            total += iss.getNetTotal();
         }
         return total;
     }
@@ -5904,27 +5909,9 @@ public class BhtSummeryController implements Serializable {
         // Fetch all 7 PatientRoom charge sums in a single query
         Map<InwardChargeType, Double> roomSums = getInwardBean().getPatientRoomChargeSumsBulk(getPatientEncounter(), childPatientEncouters);
 
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-        // Porter-based ward return flow (#21466/#21470): value now negated in
-        // WardPharmacyReturnToPharmacyController.doSettle() - without these, the
-        // returned amount was silently never deducted from the Medicine total
-        // (issue #22990).
-        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
-        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+        // Shared with the Medicine issue/return list (InwardBeanController.fetchIssueTable())
+        // so the total and the list can no longer drift apart (issue #23871).
+        List<BillTypeAtomic> btas = getInwardBean().getInwardMedicineBillTypes();
 
         List<BillTypeAtomic> medicineCancellationBtas = new ArrayList<>();
         medicineCancellationBtas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
