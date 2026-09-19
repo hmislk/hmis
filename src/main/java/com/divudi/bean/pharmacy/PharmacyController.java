@@ -8968,13 +8968,15 @@ public class PharmacyController implements Serializable {
         boolean listOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey(
                 "Pharmacy History Lists Only Department Transactions for Sales", true);
 
-        // abs() because pharmaceuticalBillItem.qty is stored negative for
-        // stock-out movements; the panel shows quantities unsigned. Safe to
-        // apply to the sum here because the grouping is by bill type, so every
-        // row inside a group carries the same sign.
+        // pharmaceuticalBillItem.qty is stored negative for stock-out
+        // movements, so negating makes a sale read positive. Cancellations and
+        // returns are stored with the opposite sign and therefore come out
+        // negative, which makes them subtract from the total rather than
+        // inflate it. Do NOT use abs() here - that sums magnitudes and makes a
+        // cancelled sale increase the figure.
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
-                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9007,7 +9009,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
-                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9049,7 +9051,7 @@ public class PharmacyController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDepartmentWiseSaleDTO("
                 + "i.bill.department, "
                 + "i.bill.billTypeAtomic, "
-                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9099,7 +9101,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO("
                 + "i.bill.toDepartment, "
-                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9127,7 +9129,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO("
                 + "i.bill.fromDepartment, "
-                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "sum(i.pharmaceuticalBillItem.qty)) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9156,7 +9158,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO("
                 + "i.bill.toDepartment, "
-                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "

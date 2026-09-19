@@ -9,8 +9,9 @@ import java.io.Serializable;
  * Used in the Department Wise Sale block of the pharmacy history item details
  * panel, where rows are grouped by department and then by bill type.
  *
- * The quantity is already unsigned - the query wraps the stored (negative)
- * stock-out quantity in ABS().
+ * The quantity is the stored stock movement negated, so a sale reads positive
+ * and a cancellation or return reads negative - letting reversals subtract
+ * when the rows are totalled.
  *
  * @author Claude Code
  */
