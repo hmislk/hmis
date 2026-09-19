@@ -90,6 +90,17 @@ public class BhtPaymentDetailReportController implements Serializable {
     private Department department;
 
     private List<BhtPaymentDetailDTO> reportRows;
+    /**
+     * Snapshot of the filter description (period/status/type/etc., excluding
+     * the "Generated" timestamp) at the moment {@link #generateReport()}
+     * populated {@link #reportRows}. Used by the PDF export instead of
+     * re-reading the live filter fields, which may have been changed on the
+     * page (and pushed into these fields by the non-AJAX form submit) after
+     * Generate was clicked but before PDF was clicked - without this
+     * snapshot the exported PDF's header could describe different filters
+     * than the rows it actually contains.
+     */
+    private String reportFilterDescription;
     private double grandTotal;
     private double grandTotalCcSettlement;
     private double grandTotalPayments;
@@ -261,6 +272,11 @@ public class BhtPaymentDetailReportController implements Serializable {
         usedDepositMethods = new ArrayList<>(depositTotalByMethod.keySet());
         usedPaymentMethods = new ArrayList<>(paymentTotalByMethod.keySet());
         usedPostPaymentMethods = new ArrayList<>(postPaymentTotalByMethod.keySet());
+
+        // Snapshot the filters that produced reportRows - see the field
+        // javadoc on reportFilterDescription for why this must not be
+        // recomputed from the (possibly since-changed) live filter fields.
+        reportFilterDescription = buildFilterDescription(new SimpleDateFormat("dd/MM/yyyy hh:mm a"));
     }
 
     public double getTotalForDepositMethod(PaymentMethod pm) {
@@ -680,9 +696,28 @@ public class BhtPaymentDetailReportController implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Builds the PDF header's meta line from the snapshot taken by
+     * {@link #generateReport()}, plus a "Generated" timestamp for the
+     * current export - never re-reads the live filter fields (see
+     * {@link #reportFilterDescription}'s javadoc).
+     */
     private String buildFilterSummary(SimpleDateFormat headerDateFmt) {
+        return reportFilterDescription + "\nGenerated: " + headerDateFmt.format(new Date());
+    }
+
+    /**
+     * Describes the filters used for the just-executed query (period, status,
+     * type, etc.) - called once from {@link #generateReport()} and cached in
+     * {@link #reportFilterDescription}.
+     */
+    private String buildFilterDescription(SimpleDateFormat headerDateFmt) {
         StringBuilder sb = new StringBuilder();
-        sb.append("dischargeDate".equals(dateBasis) ? "Discharge Period: " : "Admission Period: ")
+        // Mirrors fetchEncounters()'s useAdmissionDate condition so the label
+        // always names the date field the query actually filtered on.
+        boolean useAdmissionDate = "admissionDate".equals(dateBasis)
+                || admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+        sb.append(useAdmissionDate ? "Admission Period: " : "Discharge Period: ")
                 .append(fromDate != null ? headerDateFmt.format(fromDate) : "N/A")
                 .append(" - ")
                 .append(toDate != null ? headerDateFmt.format(toDate) : "N/A");
@@ -708,7 +743,6 @@ public class BhtPaymentDetailReportController implements Serializable {
         if (department != null) {
             sb.append("  |  Department: ").append(department.getName());
         }
-        sb.append("\nGenerated: ").append(headerDateFmt.format(new Date()));
         return sb.toString();
     }
 
@@ -724,6 +758,7 @@ public class BhtPaymentDetailReportController implements Serializable {
         site = null;
         department = null;
         reportRows = null;
+        reportFilterDescription = null;
         grandTotal = 0;
         grandTotalCcSettlement = 0;
         grandTotalPayments = 0;
