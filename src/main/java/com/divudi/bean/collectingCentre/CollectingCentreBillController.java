@@ -1302,6 +1302,30 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return true;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Referral details are required for CC billing.", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("External Doctor is required for CC billing.", false)) {
+                if(externalDoctor == null || externalDoctor.trim().equalsIgnoreCase("")){
+                    JsfUtil.addErrorMessage("External Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required for CC billing.", false)) {
+                if(referredBy == null){
+                    JsfUtil.addErrorMessage("Referring Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Institution is required for CC billing.", false)) {
+                if(referredByInstitution == null){
+                    JsfUtil.addErrorMessage("Referring Institution is required for CC billing.");
+                    return true;
+                }
+            }
+            
+        }
+
         return false;
     }
 
