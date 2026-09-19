@@ -3924,3 +3924,18 @@ means the action ran and bailed, not that the click was lost.
 Corollary for scraping messages: `.ui-growl-item` is transient. Capture messages
 immediately after the click (or screenshot right away) rather than after the
 several-second settle wait, or a real validation error reads as silence.
+
+## 131. `p:autoComplete` gives no suggestions to `fill`/`pressSequentially` — drive the widget's `search()`, and pick the right widget id
+
+Playwright typing into a PrimeFaces `p:autoComplete` (e.g. the lab *Sent Sample → Sample Transporter* dialog) fires no
+`_query` request, so the panel stays empty. Call the widget instead, then click the option:
+
+```js
+const w = PrimeFaces.widgets['widget_<formId>_<inputId>'];   // NOT the first autocomplete on the page
+w.search('Pavan');
+```
+
+Find the correct id from the typed text: the widget whose `<id>_input` received your text is the one to search
+(a neighbouring filter autocomplete answers "No results found" and looks like a broken query). The same dialog also
+requires *Sending to Department* (`selectOneMenu` — `widget.selectValue('<deptId>')`) or the send silently
+re-closes the dialog with only a transient growl error.
