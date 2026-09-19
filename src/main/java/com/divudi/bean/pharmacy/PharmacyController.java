@@ -8954,7 +8954,6 @@ public class PharmacyController implements Serializable {
     private List<BillTypeAtomic> wholeSaleBillTypeAtomics() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_WHOLESALE);
-        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
         btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
         btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
         return btas;
@@ -9007,6 +9006,12 @@ public class PharmacyController implements Serializable {
     public void createWholeSaleByBillTypeDto() {
         List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
 
+        // An empty list would bind to "i.item in :ris" and yield invalid SQL.
+        if (relatedAmpAndAmpps == null || relatedAmpAndAmpps.isEmpty()) {
+            wholeSaleByBillType = new ArrayList<>();
+            return;
+        }
+
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
                 + "sum(i.pharmaceuticalBillItem.qty) * -1) "
@@ -9047,6 +9052,11 @@ public class PharmacyController implements Serializable {
         departmentWiseSaleGroups = new ArrayList<>();
 
         List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        // An empty list would bind to "i.item in :ris" and yield invalid SQL.
+        if (relatedAmpAndAmpps == null || relatedAmpAndAmpps.isEmpty()) {
+            return;
+        }
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDepartmentWiseSaleDTO("
                 + "i.bill.department, "

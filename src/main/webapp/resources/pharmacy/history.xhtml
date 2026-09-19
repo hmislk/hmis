@@ -106,6 +106,9 @@
                                                             <h:outputText value="#{batchDto.dateOfExpire}">
                                                                 <f:convertDateTime pattern="dd/MM/yyyy" />
                                                             </h:outputText>
+                                                            <span class="sr-only">
+                                                                <h:outputText value="#{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire ? 'Expired' : (commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) ge batchDto.dateOfExpire ? 'Expiring Soon' : 'Valid')}" />
+                                                            </span>
                                                         </td>
                                                         <td style="text-align: right;">
                                                             <h:outputText value="#{batchDto.quantity}">
@@ -1439,7 +1442,7 @@
                         </p:tab>
 
                         <p:tab
-                            title="Purchase Return"
+                            title="GRN Return"
                             id="itemDetailsTabGrnReturn"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Tab', true)}">
                             <div class="table-responsive">
@@ -1798,6 +1801,9 @@
                                                         <h:outputText value="#{batchDto.dateOfExpire}">
                                                             <f:convertDateTime pattern="dd/MM/yyyy" />
                                                         </h:outputText>
+                                                        <span class="sr-only">
+                                                            <h:outputText value="#{commonFunctionsProxy.currentDateTime > batchDto.dateOfExpire ? 'Expired' : (commonFunctionsProxy.addDaysToDate(commonFunctionsProxy.currentDateTime, 30) ge batchDto.dateOfExpire ? 'Expiring Soon' : 'Valid')}" />
+                                                        </span>
                                                     </td>
                                                     <td style="text-align: left;">
                                                         <h:outputText value="#{batchDto.institution.name}" />
