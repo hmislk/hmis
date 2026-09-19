@@ -466,9 +466,9 @@
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}"><th>Paid Date</th></ui:fragment>
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}"><th>Paid Bill Number</th></ui:fragment>
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}">
-                                                            <th class="print-only-col">Comment 1</th>
-                                                            <th class="print-only-col">Comment 2</th>
-                                                            <th class="print-only-col">Comment 3</th>
+                                                            <th class="print-only-col">Comment</th>
+                                                            <th class="print-only-col">Comment</th>
+                                                            <th class="print-only-col">Comment</th>
                                                         </ui:fragment>
                                                         <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}"><th class="text-end">Paid Fee Value</th></ui:fragment>
                                                     </tr>
@@ -569,30 +569,6 @@
                                                                     </ui:fragment>
                                                                 </tr>
                                                             </ui:repeat>
-                                                            <tr style="background-color: #f8f9fa; font-weight: bold;">
-                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeDateVisible}"><td>Total</td></ui:fragment>
-                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedAddedFeeValueVisible}">
-                                                                    <td class="text-end">
-                                                                        <h:outputText value="#{detail.sumAddedFee}">
-                                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                                        </h:outputText>
-                                                                    </td>
-                                                                </ui:fragment>
-                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidDateVisible}"><td></td></ui:fragment>
-                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidBillNumberVisible}"><td></td></ui:fragment>
-                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedCommentsVisible}">
-                                                                    <td class="print-only-col"></td>
-                                                                    <td class="print-only-col"></td>
-                                                                    <td class="print-only-col"></td>
-                                                                </ui:fragment>
-                                                                <ui:fragment rendered="#{userSettingsController.inwardProfessionalPaymentDetailedPaidFeeValueVisible}">
-                                                                    <td class="text-end">
-                                                                        <h:outputText value="#{detail.sumPaidFee}">
-                                                                            <f:convertNumber pattern="#,##0.00"/>
-                                                                        </h:outputText>
-                                                                    </td>
-                                                                </ui:fragment>
-                                                            </tr>
                                                             <!-- Balance to Pay row temporarily commented out - broke the report layout. TODO: restore.
                                                                  tr is not a JSF component, so rendered on it directly is inert
                                                                  (no xmlns:jsf pass-through namespace in this file) - wrap in ui:fragment.
