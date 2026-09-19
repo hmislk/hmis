@@ -459,10 +459,6 @@ public class BhtPaymentDetailReportController implements Serializable {
         return billItemFacade.findByJpql(jpql, params);
     }
 
-    private static final SimpleDateFormat HEADER_DATE_FMT = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
-    private static final SimpleDateFormat PDF_SHORT_DATE_FMT = new SimpleDateFormat("dd/MM/yyyy");
-    private static final SimpleDateFormat PDF_DATE_TIME_FMT = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
-
     /**
      * Hand-built PDF export (issue #23445), mirroring
      * InwardReportControllerBht.downloadProfessionalPaymentSummaryPdf(): the
@@ -559,13 +555,17 @@ public class BhtPaymentDetailReportController implements Serializable {
             Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
             Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
             DecimalFormat df = new DecimalFormat("#,##0.00");
+            // SimpleDateFormat is not thread-safe - instantiate per export
+            // rather than sharing static instances across concurrent requests.
+            SimpleDateFormat shortDateFmt = new SimpleDateFormat("dd/MM/yyyy");
+            SimpleDateFormat dateTimeFmt = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
 
             Paragraph titlePara = new Paragraph("BHT Deposit and Credit Settlement Summary", titleFont);
             titlePara.setAlignment(Element.ALIGN_CENTER);
             titlePara.setSpacingAfter(4f);
             document.add(titlePara);
 
-            Paragraph metaPara = new Paragraph(buildFilterSummary(), metaFont);
+            Paragraph metaPara = new Paragraph(buildFilterSummary(dateTimeFmt), metaFont);
             metaPara.setAlignment(Element.ALIGN_CENTER);
             metaPara.setSpacingAfter(10f);
             document.add(metaPara);
@@ -599,10 +599,10 @@ public class BhtPaymentDetailReportController implements Serializable {
                             table.addCell(new Phrase(row.getAdmissionType() != null ? row.getAdmissionType().getName() : "", normalFont));
                             break;
                         case "admitted":
-                            table.addCell(new Phrase(row.getDateOfAdmission() != null ? PDF_SHORT_DATE_FMT.format(row.getDateOfAdmission()) : "", normalFont));
+                            table.addCell(new Phrase(row.getDateOfAdmission() != null ? shortDateFmt.format(row.getDateOfAdmission()) : "", normalFont));
                             break;
                         case "discharged":
-                            table.addCell(new Phrase(row.getDateOfDischarge() != null ? PDF_SHORT_DATE_FMT.format(row.getDateOfDischarge()) : "", normalFont));
+                            table.addCell(new Phrase(row.getDateOfDischarge() != null ? shortDateFmt.format(row.getDateOfDischarge()) : "", normalFont));
                             break;
                         case "type":
                             table.addCell(new Phrase(row.getPaymentCategory() != null ? row.getPaymentCategory() : "", normalFont));
@@ -611,7 +611,7 @@ public class BhtPaymentDetailReportController implements Serializable {
                             table.addCell(new Phrase(row.getBillNo() != null ? row.getBillNo() : "", normalFont));
                             break;
                         case "dateTime":
-                            table.addCell(new Phrase(row.getCreatedAt() != null ? PDF_DATE_TIME_FMT.format(row.getCreatedAt()) : "", normalFont));
+                            table.addCell(new Phrase(row.getCreatedAt() != null ? dateTimeFmt.format(row.getCreatedAt()) : "", normalFont));
                             break;
                         case "paymentMethod":
                             table.addCell(new Phrase(row.getPaymentMethod() != null ? row.getPaymentMethod().getLabel() : "CC Settlement", normalFont));
@@ -680,12 +680,12 @@ public class BhtPaymentDetailReportController implements Serializable {
         return sb.toString();
     }
 
-    private String buildFilterSummary() {
+    private String buildFilterSummary(SimpleDateFormat headerDateFmt) {
         StringBuilder sb = new StringBuilder();
         sb.append("dischargeDate".equals(dateBasis) ? "Discharge Period: " : "Admission Period: ")
-                .append(fromDate != null ? HEADER_DATE_FMT.format(fromDate) : "N/A")
+                .append(fromDate != null ? headerDateFmt.format(fromDate) : "N/A")
                 .append(" - ")
-                .append(toDate != null ? HEADER_DATE_FMT.format(toDate) : "N/A");
+                .append(toDate != null ? headerDateFmt.format(toDate) : "N/A");
 
         if (admissionStatus != null) {
             sb.append("  |  Status: ").append(admissionStatus.getLabel());
@@ -708,7 +708,7 @@ public class BhtPaymentDetailReportController implements Serializable {
         if (department != null) {
             sb.append("  |  Department: ").append(department.getName());
         }
-        sb.append("\nGenerated: ").append(HEADER_DATE_FMT.format(new Date()));
+        sb.append("\nGenerated: ").append(headerDateFmt.format(new Date()));
         return sb.toString();
     }
 
