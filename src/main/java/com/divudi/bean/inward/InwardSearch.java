@@ -40,6 +40,7 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
@@ -180,28 +181,31 @@ public class InwardSearch implements Serializable {
     private List<BillItem> tempbillItems;
     private List<Bill> finalBillVersions;
     /**
-     * Cached PDF bytes for the currently loaded final bill ({@link #bill}),
-     * populated by {@code refreshFinalBillPdfSnapshot()} in whichever
-     * navigation method routed into {@code inward_reprint_bill_final.xhtml}.
-     * Served as-is (pure read, no DB writes) by
-     * {@link #getFinalBillPdfSnapshotStream()}. Must be refreshed (to a
-     * freshly-fetched value, or explicitly to null) on every such
-     * navigation, since this bean is {@code @SessionScoped} and a stale
-     * value here would leak a previously-viewed bill's PDF into a later view.
+     * Cached PDF snapshot (bill id + bytes, as one atomic pair - see
+     * {@link FinalBillPdfSnapshotCacheEntry}) for the currently loaded final
+     * bill ({@link #bill}), populated by
+     * {@code refreshFinalBillPdfSnapshot()} in whichever navigation method
+     * routed into {@code inward_reprint_bill_final.xhtml}. Served as-is
+     * (pure read, no DB writes) by {@link #getFinalBillPdfSnapshotStream()}.
+     * Must be refreshed (to a freshly-fetched entry, or explicitly to null)
+     * on every such navigation, since this bean is {@code @SessionScoped}
+     * and a stale value here would leak a previously-viewed bill's PDF into
+     * a later view. Several places in this class also assign {@link #bill}
+     * directly rather than through {@link #setBill(Bill)} (which clears
+     * this field), so the cache cannot be trusted to have been invalidated
+     * on every possible {@code bill} reassignment; checking this entry's
+     * {@code billId} against {@code bill.getId()} in
+     * {@link #getFinalBillPdfSnapshotStream()} makes the cache
+     * self-correcting for any current or future direct {@code bill = ...}
+     * assignment site, without needing to find and patch each one. Always
+     * assigned in a single statement from a single freshly-constructed
+     * {@link FinalBillPdfSnapshotCacheEntry} - never updated by mutating an
+     * existing entry or by separately assigning a bytes field and an id
+     * field - so a concurrent request refreshing this same session-scoped
+     * field for a different bill can only ever leave either the old or the
+     * new (billId, bytes) pair here, never a mix of the two.
      */
-    private byte[] finalBillPdfSnapshotBytes;
-
-    /**
-     * The id of the {@link Bill} that {@link #finalBillPdfSnapshotBytes} was
-     * generated for. Several places in this class assign {@link #bill}
-     * directly rather than through {@link #setBill(Bill)} (which clears the
-     * cache), so the cache cannot be trusted to have been invalidated on
-     * every possible {@code bill} reassignment. Checking this id against
-     * {@code bill.getId()} in {@link #getFinalBillPdfSnapshotStream()} makes
-     * the cache self-correcting for any current or future direct {@code bill
-     * = ...} assignment site, without needing to find and patch each one.
-     */
-    private Long finalBillPdfSnapshotBytesForBillId;
+    private FinalBillPdfSnapshotCacheEntry finalBillPdfSnapshotCacheEntry;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -731,8 +735,7 @@ public class InwardSearch implements Serializable {
         bills = null;
         tempbillItems = null;
         sentEmailsForBill = null;
-        finalBillPdfSnapshotBytes = null;
-        finalBillPdfSnapshotBytesForBillId = null;
+        finalBillPdfSnapshotCacheEntry = null;
     }
 
     public WebUser getUser() {
@@ -925,8 +928,7 @@ public class InwardSearch implements Serializable {
             // this session's `bill` field currently holds, and we must not
             // cross-contaminate the cache with a snapshot for a different bill.
             if (b == bill) {
-                finalBillPdfSnapshotBytes = snapshotBytes;
-                finalBillPdfSnapshotBytesForBillId = b.getId();
+                finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(b.getId(), snapshotBytes);
             }
         } catch (Exception ex) {
             // Widened from IOException: the snapshot call can also throw an
@@ -989,24 +991,36 @@ public class InwardSearch implements Serializable {
 
         // Fallback: no request-scoped bill id was supplied (e.g. a direct
         // getter invocation outside the p:media dynamic-resource fetch).
-        // Capture both cache fields as locals in a single pair, right at
-        // entry, before doing the guard check against them, so everything
-        // below - the guard AND the lambda passed to the builder - reads
-        // only these locals, never the instance fields again.
-        byte[] bytes = this.finalBillPdfSnapshotBytes;
-        Long forBillId = this.finalBillPdfSnapshotBytesForBillId;
-        if (bytes == null) {
+        // Capture the single cache entry as a local, right at entry, before
+        // doing the guard check against it, so everything below - the guard
+        // AND the lambda passed to the builder - reads only this local,
+        // never the instance field again.
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry == null || entry.getBytes() == null) {
             return null;
         }
-        if (bill == null || bill.getId() == null || !bill.getId().equals(forBillId)) {
+        if (bill == null || bill.getId() == null || !bill.getId().equals(entry.getBillId())) {
             return null;
         }
-        String fileName = bill.getDeptId() + ".pdf";
+        byte[] bytes = entry.getBytes();
+        String fileName = sanitizedFinalBillPdfFileName(bill.getDeptId(), bill.getId());
         return DefaultStreamedContent.builder()
                 .name(fileName)
                 .contentType("application/pdf")
                 .stream(() -> new ByteArrayInputStream(bytes))
                 .build();
+    }
+
+    /**
+     * Same sanitization {@code streamReprintReceiptAsRawText()} already
+     * applies to {@code deptId} before using it in a downloaded file name:
+     * a raw {@code deptId} like {@code "Inward/INWFINAL/192/1"} contains
+     * {@code /}, which is not valid inside a file name and would otherwise
+     * truncate or corrupt the browser's saved/displayed name.
+     */
+    private String sanitizedFinalBillPdfFileName(String deptId, Long billId) {
+        String safeName = deptId == null ? String.valueOf(billId) : deptId.replaceAll("[^A-Za-z0-9._-]", "_");
+        return safeName + ".pdf";
     }
 
     /**
@@ -1032,7 +1046,7 @@ public class InwardSearch implements Serializable {
     /**
      * Resolves the PDF stream for a specific, explicitly-requested bill id,
      * independent of this session's mutable {@link #bill} /
-     * {@link #finalBillPdfSnapshotBytes} fields. Serves the session cache
+     * {@link #finalBillPdfSnapshotCacheEntry} fields. Serves the session cache
      * only when it happens to already match the requested id (the common,
      * non-racing case); otherwise returns {@code null} rather than looking
      * the requested id up independently.
@@ -1054,12 +1068,12 @@ public class InwardSearch implements Serializable {
      * fallback panel) without that unauthorized lookup-and-serve path.
      */
     private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
-        byte[] cachedBytes = this.finalBillPdfSnapshotBytes;
-        Long cachedForBillId = this.finalBillPdfSnapshotBytesForBillId;
-        if (cachedBytes != null && requestedBillId.equals(cachedForBillId)) {
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry != null && entry.getBytes() != null && requestedBillId.equals(entry.getBillId())) {
+            byte[] cachedBytes = entry.getBytes();
             String fileName = (bill != null && requestedBillId.equals(bill.getId()))
-                    ? bill.getDeptId() + ".pdf"
-                    : requestedBillId + ".pdf";
+                    ? sanitizedFinalBillPdfFileName(bill.getDeptId(), bill.getId())
+                    : sanitizedFinalBillPdfFileName(null, requestedBillId);
             return DefaultStreamedContent.builder()
                     .name(fileName)
                     .contentType("application/pdf")
@@ -1076,7 +1090,7 @@ public class InwardSearch implements Serializable {
 
     /**
      * Generates/fetches the final bill PDF snapshot for the currently loaded
-     * {@link #bill} and caches the bytes in {@link #finalBillPdfSnapshotBytes}
+     * {@link #bill} and caches it in {@link #finalBillPdfSnapshotCacheEntry}
      * for {@link #getFinalBillPdfSnapshotStream()} to serve as a pure read.
      * Must be called by every navigation method that routes into
      * {@code inward_reprint_bill_final.xhtml} right after {@code bill} is
@@ -1086,14 +1100,13 @@ public class InwardSearch implements Serializable {
      * previously-viewed bill into a later view.
      */
     private void refreshFinalBillPdfSnapshot() {
-        finalBillPdfSnapshotBytes = null;
-        finalBillPdfSnapshotBytesForBillId = null;
+        finalBillPdfSnapshotCacheEntry = null;
         if (bill == null || bill.getApproveAt() == null) {
             return;
         }
         try {
-            finalBillPdfSnapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(bill);
-            finalBillPdfSnapshotBytesForBillId = bill.getId();
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(bill);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(bill.getId(), bytes);
         } catch (Exception ex) {
             // Degrade gracefully (widened from IOException, same rationale
             // as approveFinalBillVersion): a snapshot failure must not block
@@ -3285,8 +3298,7 @@ public class InwardSearch implements Serializable {
 
     public void setBill(Bill bill) {
         recreateModel();
-        finalBillPdfSnapshotBytes = null;
-        finalBillPdfSnapshotBytesForBillId = null;
+        finalBillPdfSnapshotCacheEntry = null;
         if (bill == null) {
             return;
         }

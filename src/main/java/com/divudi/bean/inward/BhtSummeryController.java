@@ -72,6 +72,7 @@ import com.divudi.core.facade.PatientRoomTimedItemChargeFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
+import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
@@ -231,23 +232,25 @@ public class BhtSummeryController implements Serializable {
     private Date date;
     private boolean printPreview;
     /**
-     * Frozen final-bill PDF snapshot cache for {@link #current}, mirroring
-     * {@code InwardSearch.finalBillPdfSnapshotBytes} / the getter/refresh
-     * pattern there (issue #23848 finding I8: inward_bill_final.xhtml was the
-     * one route into a live, recomputable {@code bi:finalBill} composite for
-     * an approved bill that the rest of the PR's approval-gating missed).
-     * Populated only by {@link #refreshFinalBillPdfSnapshot()}; must never be
-     * populated from inside {@link #getFinalBillPdfSnapshotStream()} itself,
-     * same "getters are pure reads" rule as InwardSearch.
+     * Frozen final-bill PDF snapshot cache (bill id + bytes, as one atomic
+     * pair - see {@link FinalBillPdfSnapshotCacheEntry}) for {@link #current},
+     * mirroring {@code InwardSearch.finalBillPdfSnapshotCacheEntry} / the
+     * getter/refresh pattern there (issue #23848 finding I8:
+     * inward_bill_final.xhtml was the one route into a live, recomputable
+     * {@code bi:finalBill} composite for an approved bill that the rest of
+     * the PR's approval-gating missed). Populated only by
+     * {@link #refreshFinalBillPdfSnapshot()}; must never be populated from
+     * inside {@link #getFinalBillPdfSnapshotStream()} itself, same "getters
+     * are pure reads" rule as InwardSearch. Always assigned in a single
+     * statement from a single freshly-constructed
+     * {@link FinalBillPdfSnapshotCacheEntry} - never by separately assigning
+     * a bytes field and an id field - so a concurrent request refreshing
+     * this same session-scoped field for a different bill can only ever
+     * leave either the old or the new (billId, bytes) pair here, never a
+     * mix of the two (a real, if narrow, cross-patient leak the
+     * two-separate-field version allowed).
      */
-    private byte[] finalBillPdfSnapshotBytes;
-    /**
-     * The id of the {@link Bill} that {@link #finalBillPdfSnapshotBytes} was
-     * generated for - checked against {@code current.getId()} in
-     * {@link #getFinalBillPdfSnapshotStream()} so a stale cache entry from a
-     * previously-viewed bill can never be served for a different one.
-     */
-    private Long finalBillPdfSnapshotBytesForBillId;
+    private FinalBillPdfSnapshotCacheEntry finalBillPdfSnapshotCacheEntry;
     //////////////////////////
     // Custom2 (Custom Bills tab) print-format settings
     private boolean custom2ShowAddress;
@@ -4517,8 +4520,7 @@ public class BhtSummeryController implements Serializable {
         latestCheckedBillItemsByItem = null;
         printPreview = false;
         current = null;
-        finalBillPdfSnapshotBytes = null;
-        finalBillPdfSnapshotBytesForBillId = null;
+        finalBillPdfSnapshotCacheEntry = null;
         tmpPI = null;
         currentTime = null;
         toTime = null;
@@ -6129,20 +6131,32 @@ public class BhtSummeryController implements Serializable {
             return buildFinalBillPdfSnapshotStreamForBillId(requestedBillId);
         }
 
-        byte[] bytes = this.finalBillPdfSnapshotBytes;
-        Long forBillId = this.finalBillPdfSnapshotBytesForBillId;
-        if (bytes == null) {
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry == null || entry.getBytes() == null) {
             return null;
         }
-        if (current == null || current.getId() == null || !current.getId().equals(forBillId)) {
+        if (current == null || current.getId() == null || !current.getId().equals(entry.getBillId())) {
             return null;
         }
-        String fileName = current.getDeptId() + ".pdf";
+        byte[] bytes = entry.getBytes();
+        String fileName = sanitizedFinalBillPdfFileName(current.getDeptId(), current.getId());
         return DefaultStreamedContent.builder()
                 .name(fileName)
                 .contentType("application/pdf")
                 .stream(() -> new ByteArrayInputStream(bytes))
                 .build();
+    }
+
+    /**
+     * Same sanitization {@code InwardSearch} applies before using
+     * {@code deptId} in a downloaded file name: a raw {@code deptId} like
+     * {@code "Inward/INWFINAL/192/1"} contains {@code /}, which is not valid
+     * inside a file name and would otherwise truncate or corrupt the
+     * browser's saved/displayed name.
+     */
+    private String sanitizedFinalBillPdfFileName(String deptId, Long billId) {
+        String safeName = deptId == null ? String.valueOf(billId) : deptId.replaceAll("[^A-Za-z0-9._-]", "_");
+        return safeName + ".pdf";
     }
 
     /**
@@ -6169,7 +6183,7 @@ public class BhtSummeryController implements Serializable {
     /**
      * Resolves the PDF stream for a specific, explicitly-requested bill id,
      * independent of this session's mutable {@link #current} /
-     * {@link #finalBillPdfSnapshotBytes} fields. Serves the session cache
+     * {@link #finalBillPdfSnapshotCacheEntry} fields. Serves the session cache
      * only when it happens to already match the requested id; otherwise
      * returns {@code null} rather than looking the requested id up
      * independently. Mirrors
@@ -6190,12 +6204,12 @@ public class BhtSummeryController implements Serializable {
      * that unauthorized lookup-and-serve path.
      */
     private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
-        byte[] cachedBytes = this.finalBillPdfSnapshotBytes;
-        Long cachedForBillId = this.finalBillPdfSnapshotBytesForBillId;
-        if (cachedBytes != null && requestedBillId.equals(cachedForBillId)) {
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry != null && entry.getBytes() != null && requestedBillId.equals(entry.getBillId())) {
+            byte[] cachedBytes = entry.getBytes();
             String fileName = (current != null && requestedBillId.equals(current.getId()))
-                    ? current.getDeptId() + ".pdf"
-                    : requestedBillId + ".pdf";
+                    ? sanitizedFinalBillPdfFileName(current.getDeptId(), current.getId())
+                    : sanitizedFinalBillPdfFileName(null, requestedBillId);
             return DefaultStreamedContent.builder()
                     .name(fileName)
                     .contentType("application/pdf")
@@ -6226,14 +6240,13 @@ public class BhtSummeryController implements Serializable {
      * {@code InwardSearch.refreshFinalBillPdfSnapshot()}.
      */
     private void refreshFinalBillPdfSnapshot() {
-        finalBillPdfSnapshotBytes = null;
-        finalBillPdfSnapshotBytesForBillId = null;
+        finalBillPdfSnapshotCacheEntry = null;
         if (current == null || current.getApproveAt() == null) {
             return;
         }
         try {
-            finalBillPdfSnapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(current);
-            finalBillPdfSnapshotBytesForBillId = current.getId();
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(current);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(current.getId(), bytes);
         } catch (Exception ex) {
             // Degrade gracefully, same rationale as InwardSearch: a snapshot
             // failure must not block navigation into this page - the

@@ -148,8 +148,40 @@ public class PdfController {
     public byte[] createFinalBillSnapshotPdf(Bill bill, List<Map.Entry<String, Double>> categoryTotals, List<Bill> paymentBills) throws IOException {
         String html = buildFinalBillSnapshotHtml(bill, categoryTotals, paymentBills);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        HtmlConverter.convertToPdf(html, outputStream);
+        com.itextpdf.html2pdf.ConverterProperties converterProperties = new com.itextpdf.html2pdf.ConverterProperties();
+        converterProperties.setFontProvider(buildFinalBillSnapshotFontProvider());
+        HtmlConverter.convertToPdf(html, outputStream, converterProperties);
         return outputStream.toByteArray();
+    }
+
+    /**
+     * A plain {@code HtmlConverter.convertToPdf(html, outputStream)} call
+     * (no {@link com.itextpdf.html2pdf.ConverterProperties}) only has
+     * iText's built-in standard PDF fonts available, none of which cover
+     * non-Latin scripts (Sinhala, Tamil, etc.) - a patient, doctor, or
+     * institution name in one of those scripts would silently render blank
+     * or as missing-glyph boxes in the frozen, permanently-archived
+     * snapshot. This repo does not bundle a dedicated Unicode font (no
+     * Noto Sans Sinhala/Tamil or similar under
+     * {@code src/main/webapp/resources/fonts}), so the best available fix
+     * without adding new binary font assets is to also register whatever
+     * Unicode-capable fonts are installed on the deployment host's OS
+     * (e.g. a {@code fonts-noto}-family package on Linux) via
+     * {@link com.itextpdf.layout.font.FontProvider#addSystemFonts()},
+     * alongside iText's own standard fonts as a fallback. This is a real
+     * improvement over the previous unconfigured default, but is only as
+     * good as the fonts actually installed on the server - deployments
+     * expecting non-Latin patient/doctor/institution names should verify a
+     * suitable Unicode font package is installed on the host, or a
+     * dedicated font should be bundled with the app and registered here via
+     * {@link com.itextpdf.layout.font.FontProvider#addDirectory(String)}
+     * instead.
+     */
+    private com.itextpdf.layout.font.FontProvider buildFinalBillSnapshotFontProvider() {
+        com.itextpdf.layout.font.FontProvider fontProvider = new com.itextpdf.layout.font.FontProvider();
+        fontProvider.addStandardPdfFonts();
+        fontProvider.addSystemFonts();
+        return fontProvider;
     }
 
     private String buildFinalBillSnapshotHtml(Bill bill, List<Map.Entry<String, Double>> categoryTotals, List<Bill> paymentBills) {
