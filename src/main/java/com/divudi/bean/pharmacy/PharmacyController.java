@@ -34,6 +34,8 @@ import com.divudi.core.data.dto.ConsumptionBillDto;
 import com.divudi.core.data.dto.ConsumptionBillItemDto;
 import com.divudi.core.data.dto.ConsumptionCategoryItemDto;
 import com.divudi.core.data.dto.DepartmentSaleIssueDTO;
+import com.divudi.core.data.dto.PharmacyDepartmentWiseSaleDTO;
+import com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.BeforeStockTakingDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
@@ -1185,6 +1187,8 @@ public class PharmacyController implements Serializable {
     public void fillDetails() {
         createStocksDto();
         createDepartmentSaleDto();
+        createWholeSaleByBillTypeDto();
+        createDepartmentWiseSaleDtos();
         createBatchDetailsDto();  // Add batch details with expiry information
         createInstitutionBhtIssue(); // TODO: Fix this
         createDepartmentSaleIssueDto();
@@ -2137,6 +2141,8 @@ public class PharmacyController implements Serializable {
         institutionStocks = null;
         institutionSales = null;
         salesByBillType = null;
+        wholeSaleByBillType = null;
+        departmentWiseSaleGroups = null;
         transferIssuesByDepartment = null;
         transferReceivesByDepartment = null;
         disposeIssuesByDepartment = null;
@@ -8025,6 +8031,8 @@ public class PharmacyController implements Serializable {
         pendingGrns = null;
         institutionSales = null;
         salesByBillType = null;
+        wholeSaleByBillType = null;
+        departmentWiseSaleGroups = null;
         transferIssuesByDepartment = null;
         transferReceivesByDepartment = null;
         disposeIssuesByDepartment = null;
@@ -8924,9 +8932,11 @@ public class PharmacyController implements Serializable {
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
-    public void createDepartmentSaleDto() {
-        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
-
+    /**
+     * Retail sale bill types shown in the Sale and Department Wise Sale blocks
+     * of the item history panel.
+     */
+    private List<BillTypeAtomic> retailSaleBillTypeAtomics() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -8934,13 +8944,37 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        return btas;
+    }
+
+    /**
+     * Wholesale bill types shown in the Whole Sale block of the item history
+     * panel.
+     */
+    private List<BillTypeAtomic> wholeSaleBillTypeAtomics() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+        return btas;
+    }
+
+    public void createDepartmentSaleDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        List<BillTypeAtomic> btas = retailSaleBillTypeAtomics();
 
         boolean listOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey(
                 "Pharmacy History Lists Only Department Transactions for Sales", true);
 
+        // abs() because pharmaceuticalBillItem.qty is stored negative for
+        // stock-out movements; the panel shows quantities unsigned. Safe to
+        // apply to the sum here because the grouping is by bill type, so every
+        // row inside a group carries the same sign.
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -8963,6 +8997,96 @@ public class PharmacyController implements Serializable {
         salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * Builds the Whole Sale block's data. Previously the block reused
+     * {@code salesByBillType} and filtered it in the view, which could never
+     * match because that list only holds retail bill types.
+     */
+    public void createWholeSaleByBillTypeDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
+                + "i.bill.billTypeAtomic, "
+                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", wholeSaleBillTypeAtomics());
+
+        // Same department scoping rule as the retail Sale block.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy History Lists Only Department Transactions for Sales", true)) {
+            jpql += "AND i.bill.department=:dep ";
+            m.put("dep", sessionController.getDepartment());
+        }
+
+        jpql += "GROUP BY i.bill.billTypeAtomic";
+
+        wholeSaleByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Builds the Department Wise Sale block: retail sale quantities grouped by
+     * department and then by bill type, with a subtotal per department.
+     *
+     * Always spans every department regardless of the
+     * "Pharmacy History Lists Only Department Transactions for Sales" option -
+     * a per-department breakdown restricted to a single department would be
+     * pointless.
+     */
+    public void createDepartmentWiseSaleDtos() {
+        departmentWiseSaleGroups = new ArrayList<>();
+
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDepartmentWiseSaleDTO("
+                + "i.bill.department, "
+                + "i.bill.billTypeAtomic, "
+                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to "
+                + "GROUP BY i.bill.department, i.bill.billTypeAtomic "
+                + "ORDER BY i.bill.department, i.bill.billTypeAtomic";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", retailSaleBillTypeAtomics());
+
+        List<PharmacyDepartmentWiseSaleDTO> rows
+                = (List<PharmacyDepartmentWiseSaleDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        // The query orders by department, so rows for one department arrive
+        // together; a LinkedHashMap keeps that order in the rendered table.
+        Map<Long, PharmacyDepartmentWiseSaleGroupDTO> groupsByDepartmentId = new LinkedHashMap<>();
+        for (PharmacyDepartmentWiseSaleDTO row : rows) {
+            Long departmentId = row.getDepartment() == null ? null : row.getDepartment().getId();
+            PharmacyDepartmentWiseSaleGroupDTO group = groupsByDepartmentId.get(departmentId);
+            if (group == null) {
+                group = new PharmacyDepartmentWiseSaleGroupDTO(row.getDepartment());
+                groupsByDepartmentId.put(departmentId, group);
+            }
+            group.addRow(row);
+        }
+
+        departmentWiseSaleGroups = new ArrayList<>(groupsByDepartmentId.values());
+    }
+
     public void createDepartmentTransferIssueDto() {
         List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
 
@@ -8975,7 +9099,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO("
                 + "i.bill.toDepartment, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9003,7 +9127,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO("
                 + "i.bill.fromDepartment, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9032,7 +9156,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO("
                 + "i.bill.toDepartment, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "abs(sum(i.pharmaceuticalBillItem.qty))) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9838,6 +9962,8 @@ public class PharmacyController implements Serializable {
     private List<InstitutionSale> institutionWholeSales;
     private List<InstitutionSale> institutionBhtIssue;
     private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType;
+    private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> wholeSaleByBillType;
+    private List<com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO> departmentWiseSaleGroups;
     private List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> transferIssuesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO> transferReceivesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment;
@@ -11956,6 +12082,48 @@ public class PharmacyController implements Serializable {
         for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : salesByBillType) {
             if (dto.getQuantity() != null) {
                 total += dto.getQuantity();
+            }
+        }
+        return total;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> getWholeSaleByBillType() {
+        return wholeSaleByBillType;
+    }
+
+    public void setWholeSaleByBillType(List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> wholeSaleByBillType) {
+        this.wholeSaleByBillType = wholeSaleByBillType;
+    }
+
+    public Double getTotalWholeSaleByBillTypeQuantity() {
+        if (wholeSaleByBillType == null || wholeSaleByBillType.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : wholeSaleByBillType) {
+            if (dto.getQuantity() != null) {
+                total += dto.getQuantity();
+            }
+        }
+        return total;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO> getDepartmentWiseSaleGroups() {
+        return departmentWiseSaleGroups;
+    }
+
+    public void setDepartmentWiseSaleGroups(List<com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO> departmentWiseSaleGroups) {
+        this.departmentWiseSaleGroups = departmentWiseSaleGroups;
+    }
+
+    public Double getTotalDepartmentWiseSaleQuantity() {
+        if (departmentWiseSaleGroups == null || departmentWiseSaleGroups.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO group : departmentWiseSaleGroups) {
+            if (group.getDepartmentTotal() != null) {
+                total += group.getDepartmentTotal();
             }
         }
         return total;
