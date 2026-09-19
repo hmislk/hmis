@@ -163,7 +163,7 @@
                         </td>
 
                     </tr>
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
