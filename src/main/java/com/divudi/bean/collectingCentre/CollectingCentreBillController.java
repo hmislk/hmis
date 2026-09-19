@@ -1509,6 +1509,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
+        setExternalDoctor(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);
