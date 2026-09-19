@@ -6238,15 +6238,24 @@ public class BhtSummeryController implements Serializable {
      * (re-)entered. Must be called by every navigation method that puts this
      * page into print-preview mode, same convention as
      * {@code InwardSearch.refreshFinalBillPdfSnapshot()}.
+     *
+     * <p>Captures {@link #current} into a local at entry and uses only that
+     * local for every check, the service call, and the cache entry's id -
+     * never re-reading the {@link #current} field partway through, for the
+     * same reason as {@code InwardSearch.refreshFinalBillPdfSnapshot()}: a
+     * concurrent request reassigning {@link #current} between the service
+     * call and the cache-entry construction could otherwise still produce
+     * a mismatched (billId, bytes) pair.
      */
     private void refreshFinalBillPdfSnapshot() {
+        Bill snapshotBill = current;
         finalBillPdfSnapshotCacheEntry = null;
-        if (current == null || current.getApproveAt() == null) {
+        if (snapshotBill == null || snapshotBill.getApproveAt() == null) {
             return;
         }
         try {
-            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(current);
-            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(current.getId(), bytes);
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(snapshotBill);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(snapshotBill.getId(), bytes);
         } catch (Exception ex) {
             // Degrade gracefully, same rationale as InwardSearch: a snapshot
             // failure must not block navigation into this page - the

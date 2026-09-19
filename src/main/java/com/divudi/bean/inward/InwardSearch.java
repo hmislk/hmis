@@ -1098,15 +1098,26 @@ public class InwardSearch implements Serializable {
      * loaded — this bean is {@code @SessionScoped}, so failing to refresh
      * this field on every such navigation could leak a stale PDF from a
      * previously-viewed bill into a later view.
+     *
+     * <p>Captures {@link #bill} into a local at entry and uses only that
+     * local for every check, the service call, and the cache entry's id -
+     * never re-reading the {@link #bill} field partway through. Without
+     * this, a concurrent request in the same {@code @SessionScoped} bean
+     * reassigning {@link #bill} to a different bill between the service
+     * call and the cache-entry construction could still produce a
+     * mismatched (billId, bytes) pair even with
+     * {@link FinalBillPdfSnapshotCacheEntry} making each individual
+     * assignment atomic.
      */
     private void refreshFinalBillPdfSnapshot() {
+        Bill snapshotBill = bill;
         finalBillPdfSnapshotCacheEntry = null;
-        if (bill == null || bill.getApproveAt() == null) {
+        if (snapshotBill == null || snapshotBill.getApproveAt() == null) {
             return;
         }
         try {
-            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(bill);
-            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(bill.getId(), bytes);
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(snapshotBill);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(snapshotBill.getId(), bytes);
         } catch (Exception ex) {
             // Degrade gracefully (widened from IOException, same rationale
             // as approveFinalBillVersion): a snapshot failure must not block
