@@ -15,7 +15,23 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -24,8 +40,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -437,6 +457,259 @@ public class BhtPaymentDetailReportController implements Serializable {
                 BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION));
         params.put("enc", enc);
         return billItemFacade.findByJpql(jpql, params);
+    }
+
+    private static final SimpleDateFormat HEADER_DATE_FMT = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+    private static final SimpleDateFormat PDF_SHORT_DATE_FMT = new SimpleDateFormat("dd/MM/yyyy");
+    private static final SimpleDateFormat PDF_DATE_TIME_FMT = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+
+    /**
+     * Hand-built PDF export (issue #23445), mirroring
+     * InwardReportControllerBht.downloadProfessionalPaymentSummaryPdf(): the
+     * default {@code p:dataExporter type="pdf"} divides a PrimeFaces
+     * DataTable's columns into EQUAL widths regardless of content (confirmed
+     * by decompiling DataTablePDFExporter - it never calls
+     * PdfPTable.setWidths()), so this report's long values (patient names,
+     * "WARD/INWCAN/44"-style bill numbers) wrapped into an unreadable mess of
+     * single/few characters per line. Building the PdfPTable directly lets us
+     * set weighted column widths that actually fit the content, and only for
+     * the columns currently toggled visible via "Configure Columns".
+     */
+    public void downloadBhtPaymentSummaryPdf() {
+        if (reportRows == null || reportRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please generate the report first.");
+            return;
+        }
+
+        List<String> columnKeys = new ArrayList<>();
+        columnKeys.add("bhtNo");
+        columnKeys.add("patientName");
+        if (userSettingsController.isInwardBhtPaymentSummaryAdmissionTypeVisible()) {
+            columnKeys.add("admissionType");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryAdmittedVisible()) {
+            columnKeys.add("admitted");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryDischargedVisible()) {
+            columnKeys.add("discharged");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryTypeVisible()) {
+            columnKeys.add("type");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryBillNoVisible()) {
+            columnKeys.add("billNo");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryDateTimeVisible()) {
+            columnKeys.add("dateTime");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryPaymentMethodVisible()) {
+            columnKeys.add("paymentMethod");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryAmountVisible()) {
+            columnKeys.add("amount");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryReferenceNoVisible()) {
+            columnKeys.add("referenceNo");
+        }
+        if (userSettingsController.isInwardBhtPaymentSummaryCreditCompanyVisible()) {
+            columnKeys.add("creditCompany");
+        }
+
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put("bhtNo", "BHT No");
+        headers.put("patientName", "Patient Name");
+        headers.put("admissionType", "Admission Type");
+        headers.put("admitted", "Admitted");
+        headers.put("discharged", "Discharged");
+        headers.put("type", "Type");
+        headers.put("billNo", "Bill No");
+        headers.put("dateTime", "Date / Time");
+        headers.put("paymentMethod", "Payment Method");
+        headers.put("amount", "Amount");
+        headers.put("referenceNo", "Reference No");
+        headers.put("creditCompany", "Credit Company");
+
+        Map<String, Float> widths = new HashMap<>();
+        widths.put("bhtNo", 3f);
+        widths.put("patientName", 6f);
+        widths.put("admissionType", 3f);
+        widths.put("admitted", 2.5f);
+        widths.put("discharged", 2.5f);
+        widths.put("type", 2.5f);
+        widths.put("billNo", 4f);
+        widths.put("dateTime", 3.5f);
+        widths.put("paymentMethod", 3f);
+        widths.put("amount", 3f);
+        widths.put("referenceNo", 3f);
+        widths.put("creditCompany", 4f);
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+
+            String fileName = "BHT_Payment_Summary_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+
+            Document document = new Document(PageSize.A4.rotate(), 20f, 20f, 30f, 20f);
+            PdfWriter.getInstance(document, baos);
+            document.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, Color.DARK_GRAY);
+            Font metaFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            Paragraph titlePara = new Paragraph("BHT Deposit and Credit Settlement Summary", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(4f);
+            document.add(titlePara);
+
+            Paragraph metaPara = new Paragraph(buildFilterSummary(), metaFont);
+            metaPara.setAlignment(Element.ALIGN_CENTER);
+            metaPara.setSpacingAfter(10f);
+            document.add(metaPara);
+
+            PdfPTable table = new PdfPTable(columnKeys.size());
+            table.setWidthPercentage(100);
+            float[] widthArr = new float[columnKeys.size()];
+            for (int c = 0; c < columnKeys.size(); c++) {
+                widthArr[c] = widths.get(columnKeys.get(c));
+            }
+            table.setWidths(widthArr);
+            table.setHeaderRows(1);
+
+            for (String key : columnKeys) {
+                PdfPCell cell = new PdfPCell(new Phrase(headers.get(key), headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setBackgroundColor(new Color(230, 230, 230));
+                table.addCell(cell);
+            }
+
+            for (BhtPaymentDetailDTO row : reportRows) {
+                for (String key : columnKeys) {
+                    switch (key) {
+                        case "bhtNo":
+                            table.addCell(new Phrase(row.getBhtNo() != null ? row.getBhtNo() : "", normalFont));
+                            break;
+                        case "patientName":
+                            table.addCell(new Phrase(row.getPatientName() != null ? row.getPatientName() : "", normalFont));
+                            break;
+                        case "admissionType":
+                            table.addCell(new Phrase(row.getAdmissionType() != null ? row.getAdmissionType().getName() : "", normalFont));
+                            break;
+                        case "admitted":
+                            table.addCell(new Phrase(row.getDateOfAdmission() != null ? PDF_SHORT_DATE_FMT.format(row.getDateOfAdmission()) : "", normalFont));
+                            break;
+                        case "discharged":
+                            table.addCell(new Phrase(row.getDateOfDischarge() != null ? PDF_SHORT_DATE_FMT.format(row.getDateOfDischarge()) : "", normalFont));
+                            break;
+                        case "type":
+                            table.addCell(new Phrase(row.getPaymentCategory() != null ? row.getPaymentCategory() : "", normalFont));
+                            break;
+                        case "billNo":
+                            table.addCell(new Phrase(row.getBillNo() != null ? row.getBillNo() : "", normalFont));
+                            break;
+                        case "dateTime":
+                            table.addCell(new Phrase(row.getCreatedAt() != null ? PDF_DATE_TIME_FMT.format(row.getCreatedAt()) : "", normalFont));
+                            break;
+                        case "paymentMethod":
+                            table.addCell(new Phrase(row.getPaymentMethod() != null ? row.getPaymentMethod().getLabel() : "CC Settlement", normalFont));
+                            break;
+                        case "amount": {
+                            PdfPCell amountCell = new PdfPCell(new Phrase(df.format(row.getAmount()), normalFont));
+                            amountCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                            table.addCell(amountCell);
+                            break;
+                        }
+                        case "referenceNo":
+                            table.addCell(new Phrase(row.getReferenceNo() != null ? row.getReferenceNo() : "", normalFont));
+                            break;
+                        case "creditCompany":
+                            table.addCell(new Phrase(row.getCreditCompanyName() != null ? row.getCreditCompanyName() : "", normalFont));
+                            break;
+                        default:
+                            table.addCell(new Phrase("", normalFont));
+                            break;
+                    }
+                }
+            }
+
+            document.add(table);
+
+            Paragraph footerPara = new Paragraph(buildTotalsFooter(df), FontFactory.getFont(FontFactory.HELVETICA, 8, Color.DARK_GRAY));
+            footerPara.setSpacingBefore(10f);
+            document.add(footerPara);
+
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(BhtPaymentDetailReportController.class.getName()).log(Level.SEVERE, "Error exporting BHT payment summary to PDF", e);
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    private String buildTotalsFooter(DecimalFormat df) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Deposits - ");
+        for (PaymentMethod pm : usedDepositMethods) {
+            sb.append(pm.getLabel()).append(": ").append(df.format(getTotalForDepositMethod(pm))).append("   ");
+        }
+        sb.append("   Payments - ");
+        for (PaymentMethod pm : usedPaymentMethods) {
+            sb.append(pm.getLabel()).append(": ").append(df.format(getTotalForPaymentMethod(pm))).append("   ");
+        }
+        sb.append("Total Payments: ").append(df.format(grandTotalPayments));
+        sb.append("   Post Payments - ");
+        for (PaymentMethod pm : usedPostPaymentMethods) {
+            sb.append(pm.getLabel()).append(": ").append(df.format(getTotalForPostPaymentMethod(pm))).append("   ");
+        }
+        sb.append("Total Post Payments: ").append(df.format(grandTotalPostPayments));
+        sb.append("   CC Settlement: ").append(df.format(grandTotalCcSettlement));
+        sb.append("   Grand Total: ").append(df.format(grandTotal));
+        return sb.toString();
+    }
+
+    private String buildFilterSummary() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("dischargeDate".equals(dateBasis) ? "Discharge Period: " : "Admission Period: ")
+                .append(fromDate != null ? HEADER_DATE_FMT.format(fromDate) : "N/A")
+                .append(" - ")
+                .append(toDate != null ? HEADER_DATE_FMT.format(toDate) : "N/A");
+
+        if (admissionStatus != null) {
+            sb.append("  |  Status: ").append(admissionStatus.getLabel());
+        }
+        if (admissionType != null) {
+            sb.append("  |  Admission Type: ").append(admissionType.getName());
+        }
+        if (transactionType != null) {
+            sb.append("  |  Transaction Type: ").append(transactionType);
+        }
+        if (paymentMethod != null) {
+            sb.append("  |  Payment Method: ").append(paymentMethod.getLabel());
+        }
+        if (institution != null) {
+            sb.append("  |  Institution: ").append(institution.getName());
+        }
+        if (site != null) {
+            sb.append("  |  Site: ").append(site.getName());
+        }
+        if (department != null) {
+            sb.append("  |  Department: ").append(department.getName());
+        }
+        sb.append("\nGenerated: ").append(HEADER_DATE_FMT.format(new Date()));
+        return sb.toString();
     }
 
     public void makeNull() {
