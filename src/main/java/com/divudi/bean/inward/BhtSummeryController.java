@@ -2983,9 +2983,14 @@ public class BhtSummeryController implements Serializable {
 
     public List<EncounterCreditCompany> fillCreditCompaniesByPatient(PatientEncounter patientEncounter) {
         List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
+        // Ordered by id so callers see the companies in registration order rather
+        // than whatever order the database happens to return. id is used instead
+        // of createdAt because it is monotonic and never null - ordering on a
+        // nullable createdAt would sort legacy rows with no timestamp to the front.
         String sql = "select ecc from EncounterCreditCompany ecc"
                 + "  where ecc.retired=false "
-                + " and ecc.patientEncounter=:pEnc ";
+                + " and ecc.patientEncounter=:pEnc "
+                + " order by ecc.id ";
         HashMap hm = new HashMap();
         hm.put("pEnc", patientEncounter);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
