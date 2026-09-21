@@ -975,7 +975,30 @@
 
 
                 <p:panel rendered="#{bhtSummeryController.printPreview}">
-                    <p:panel>
+                    <!--
+                        Once approved, a final bill's content is frozen at approval time
+                        (issue #23848) - show that same frozen PDF snapshot here instead of
+                        re-rendering the bi:finalBill/finalBillCustom4/finalBillGreenSheet
+                        composites live against current/recomputable state, exactly like
+                        inward_reprint_bill_final.xhtml and inward_final_bill_approve.xhtml
+                        already do. current is always freshly created/just-settled (thus
+                        unapproved) on every normal path into this page, so this is
+                        defensive for the one path those two pages exist to guard against:
+                        this session's `current` still pointing at a bill that has since
+                        been approved (e.g. from another tab) without this bean's
+                        print-preview state being reset (finding I8 from the PR review).
+                    -->
+                    <p:panel rendered="#{bhtSummeryController.current.approveAt ne null and bhtSummeryController.finalBillPdfSnapshotStream ne null}" header="Final Bill (Approved - Frozen Copy)">
+                        <p:media value="#{bhtSummeryController.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;">
+                            <f:param name="finalBillId" value="#{bhtSummeryController.current.id}" />
+                        </p:media>
+                    </p:panel>
+
+                    <p:panel rendered="#{bhtSummeryController.current.approveAt ne null and bhtSummeryController.finalBillPdfSnapshotStream eq null}" header="Final Bill (Approved - Frozen Copy)">
+                        <h:outputText value="The approved PDF could not be loaded. Please try reprinting from Manage Final Bills." styleClass="text-danger" />
+                    </p:panel>
+
+                    <p:panel rendered="#{bhtSummeryController.current.approveAt eq null}">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center w-100">
 

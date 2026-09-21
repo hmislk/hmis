@@ -660,7 +660,9 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
             getPatient().setCreatedAt(new Date());
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
             getPatient().getPerson().setCreatedAt(new Date());
-            getPersonFacade().create(getPatient().getPerson());
+            // Person is persisted by the cascade from Patient.person (cascade = ALL) in the
+            // create below. Persisting it separately here leaves an unreferenced duplicate
+            // PERSON row (#23887).
             getPatientFacade().create(getPatient());
         } else {
             getPatientFacade().edit(getPatient());
@@ -726,7 +728,14 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreater(sessionController.getLoggedUser());
             p.getPerson().setCreatedAt(new Date());
-            personFacade.create(p.getPerson());
+            if (p.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                personFacade.create(p.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from patientFacade.create(p)
+            // below. Persisting it here too leaves an unreferenced duplicate PERSON row
+            // (#23887).
         } else {
             personFacade.edit(p.getPerson());
         }

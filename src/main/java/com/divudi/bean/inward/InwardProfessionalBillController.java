@@ -16,6 +16,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -41,8 +42,10 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.inward.InwardProfessionalFeeClassificationService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,6 +83,8 @@ public class InwardProfessionalBillController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -430,6 +435,11 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
 
+        if (getProEncounterComponent().getBillFee().getProfessionalFeeCategory() == null) {
+            getProEncounterComponent().getBillFee().setProfessionalFeeCategory(
+                    professionalFeeClassificationService.defaultCategoryFor(getProEncounterComponent().getBillFee().getStaff()));
+        }
+
         if (getProEncounterComponent().getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By) {
             getBatchBill().setStaff(getProEncounterComponent().getBillFee().getStaff());
         }
@@ -441,6 +451,14 @@ public class InwardProfessionalBillController implements Serializable {
 
         proEncounterComponent = null;
         JsfUtil.addSuccessMessage("Fee added. Click 'Save Bill' to confirm.");
+    }
+
+    public void onSurgeryProfessionalFeeStaffSelect(AjaxBehaviorEvent event) {
+        if (proEncounterComponent != null && proEncounterComponent.getBillFee() != null
+                && proEncounterComponent.getBillFee().getStaff() != null) {
+            proEncounterComponent.getBillFee().setProfessionalFeeCategory(
+                    professionalFeeClassificationService.defaultCategoryFor(proEncounterComponent.getBillFee().getStaff()));
+        }
     }
 
     public void saveProfessionalFeeBill() {
@@ -558,6 +576,17 @@ public class InwardProfessionalBillController implements Serializable {
         if (currentBillFee != null && currentBillFee.getStaff() != null && currentBillFee.getStaff().getSpeciality() != null) {
             currentBillFee.setSpeciality(currentBillFee.getStaff().getSpeciality());
         }
+        if (currentBillFee != null && currentBillFee.getStaff() != null) {
+            currentBillFee.setProfessionalFeeCategory(professionalFeeClassificationService.defaultCategoryFor(currentBillFee.getStaff()));
+        }
+    }
+
+    /** The 3 Fee Category choices offered on the professional-fee entry forms, in display order. */
+    public List<InwardChargeType> getProfessionalFeeCategoryOptions() {
+        return Arrays.asList(
+                InwardChargeType.ProfessionalCharge,
+                InwardChargeType.DoctorAndNurses,
+                InwardChargeType.TechnicianAndParamedicalCharge);
     }
 
     public boolean isToClearBill() {
@@ -788,6 +817,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
         double lockedFee = billFee.getOverriddenRate() != null ? billFee.getOverriddenRate() : billFee.getFeeValue();
         billFee.setStaff(staff);
+        billFee.setProfessionalFeeCategory(professionalFeeClassificationService.defaultCategoryFor(staff));
         billFee.setFeeValue(lockedFee);
         billFee.setFeeGrossValue(lockedFee);
         getBillFeeFacade().edit(billFee);

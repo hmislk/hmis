@@ -999,16 +999,17 @@
                                         </p:commandButton>
                                     </div>
                                     <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false)}">
+                                        <!-- No rowStyleClass row-hiding here (issue #23871): pharmacyIssues is now fetched by
+                                             InwardBeanController.fetchIssueTable() scoped to exactly the BillTypeAtomic set
+                                             that feeds the Medicine charge total, so every row returned belongs on screen -
+                                             including the porter-based ward return, which is a BilledBill rather than the
+                                             PreBill/RefundBill pair this table used to require. -->
                                         <p:dataTable
                                             id="medIssueFlat"
                                             value="#{bhtSummeryController.pharmacyIssues}"
                                             var="iss"
                                             scrollable="true"
-                                            scrollHeight="300"
-                                            rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
-                                                             or
-                                                             (iss.billedBill ne null
-                                                             and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                            scrollHeight="300">
                                             <p:column headerText="Bill No">
                                                 <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                             </p:column>
@@ -1081,10 +1082,19 @@
                                                     value="View Issue"  >
                                                     <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    ajax="false" 
+                                                <p:commandButton
+                                                    ajax="false"
                                                     action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
                                                     rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
+                                                    value="View Return"  >
+                                                    <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                                                </p:commandButton>
+                                                <!-- Porter-based ward return (issue #23871): a BilledBill, not a RefundBill,
+                                                     but the same generic reprint page works off Bill base fields. -->
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
+                                                    rendered="#{iss.billClass eq 'class com.divudi.core.entity.BilledBill'}"
                                                     value="View Return"  >
                                                     <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                                                 </p:commandButton>

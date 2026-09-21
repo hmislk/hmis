@@ -41,6 +41,7 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
@@ -51,7 +52,10 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
-import java.io.ByteArrayOutputStream;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -112,6 +116,8 @@ public class InwardSearch implements Serializable {
     private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
     @EJB
     private com.divudi.service.BillService billService;
+    @Inject
+    private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
 
     /**
      * JSF Controllers
@@ -175,6 +181,32 @@ public class InwardSearch implements Serializable {
     private List<Bill> bills;
     private List<BillItem> tempbillItems;
     private List<Bill> finalBillVersions;
+    /**
+     * Cached PDF snapshot (bill id + bytes, as one atomic pair - see
+     * {@link FinalBillPdfSnapshotCacheEntry}) for the currently loaded final
+     * bill ({@link #bill}), populated by
+     * {@code refreshFinalBillPdfSnapshot()} in whichever navigation method
+     * routed into {@code inward_reprint_bill_final.xhtml}. Served as-is
+     * (pure read, no DB writes) by {@link #getFinalBillPdfSnapshotStream()}.
+     * Must be refreshed (to a freshly-fetched entry, or explicitly to null)
+     * on every such navigation, since this bean is {@code @SessionScoped}
+     * and a stale value here would leak a previously-viewed bill's PDF into
+     * a later view. Several places in this class also assign {@link #bill}
+     * directly rather than through {@link #setBill(Bill)} (which clears
+     * this field), so the cache cannot be trusted to have been invalidated
+     * on every possible {@code bill} reassignment; checking this entry's
+     * {@code billId} against {@code bill.getId()} in
+     * {@link #getFinalBillPdfSnapshotStream()} makes the cache
+     * self-correcting for any current or future direct {@code bill = ...}
+     * assignment site, without needing to find and patch each one. Always
+     * assigned in a single statement from a single freshly-constructed
+     * {@link FinalBillPdfSnapshotCacheEntry} - never updated by mutating an
+     * existing entry or by separately assigning a bytes field and an id
+     * field - so a concurrent request refreshing this same session-scoped
+     * field for a different bill can only ever leave either the old or the
+     * new (billId, bytes) pair here, never a mix of the two.
+     */
+    private FinalBillPdfSnapshotCacheEntry finalBillPdfSnapshotCacheEntry;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -654,10 +686,39 @@ public class InwardSearch implements Serializable {
         }
     }
 
-    public String fromBhtFinalBillSearchToBillReprint() {
+    /**
+     * ActionListener chokepoint for the two remaining entry routes into
+     * {@code inward_reprint_bill_final.xhtml} that select a bill from a row
+     * in a search results table rather than through a dedicated navigation
+     * method: {@code inward_search_final.xhtml} and
+     * {@code inward_search_final_check.xhtml} (see the routes listed in that
+     * page's header comment). Takes the selected bill directly as a
+     * parameter instead of relying on a sibling
+     * {@code f:setPropertyActionListener} (target={@link #bill}) on the same
+     * command component to have already run first: that ordering is NOT
+     * guaranteed — observed live, {@link #bill} was still null here when
+     * invoked from {@code inward_search_final.xhtml}'s non-ajax
+     * {@code p:commandLink}, so the caller must pass the bill explicitly.
+     * Deliberately not merged into
+     * {@link #refreshFinalBillBackwordReferenceBills()}, which is also used
+     * by {@code inward_search_provisional.xhtml} to navigate to an unrelated
+     * page ({@code inward_provisional_bill_edit}) where snapshot generation
+     * would be pointless.
+     */
+    public void prepareFinalBillReprintFromSearch(Bill selectedBill) {
+        // Takes the bill directly rather than relying on a sibling
+        // f:setPropertyActionListener (target=#{inwardSearch.bill}) on the
+        // same command component to have already run first: PrimeFaces does
+        // not reliably fire this actionListener attribute after nested
+        // f:setPropertyActionListener children for every command/ajax
+        // combination (observed live: bill was still null here on
+        // inward_search_final.xhtml's non-ajax p:commandLink, contradicting
+        // the plain-JSF UICommand.broadcast() bytecode order). Setting it
+        // here first makes this method self-contained regardless of
+        // listener ordering.
+        this.bill = selectedBill;
         refreshFinalBillBackwordReferenceBills();
-        bhtSummeryFinalizedController.setPatientEncounter(bill.getPatientEncounter());
-        return "/inward/inward_reprint_bill_final";
+        refreshFinalBillPdfSnapshot();
     }
 
     public void makeNull() {
@@ -675,6 +736,7 @@ public class InwardSearch implements Serializable {
         bills = null;
         tempbillItems = null;
         sentEmailsForBill = null;
+        finalBillPdfSnapshotCacheEntry = null;
     }
 
     public WebUser getUser() {
@@ -749,6 +811,7 @@ public class InwardSearch implements Serializable {
         }
         setBill(b);
         withProfessionalFee = true;
+        refreshFinalBillPdfSnapshot();
         return "/inward/inward_reprint_bill_final?faces-redirect=true";
     }
 
@@ -812,6 +875,16 @@ public class InwardSearch implements Serializable {
      * Navigates to the approval page for the given final bill version,
      * mirroring {@link #prepareEmailFinalBillVersion(Bill)}'s use of the
      * shared {@link #bill} session field for the target page.
+     *
+     * Also refreshes the frozen PDF snapshot cache ({@link #refreshFinalBillPdfSnapshot()})
+     * so that when this route lands on an already-approved bill (the row is
+     * still reachable from inward_final_bill_list.xhtml after approval, and
+     * inward_final_bill_approve.xhtml shows a "This bill has already been
+     * approved" panel in that case), the page can render the same frozen
+     * snapshot PDF instead of the live, recomputable {@code bi:finalBill}
+     * composite (issue #23848 I4). refreshFinalBillPdfSnapshot() itself is a
+     * no-op for an unapproved bill, so this is safe to call unconditionally
+     * here, same as every other navigation route into the reprint page.
      */
     public String navigateToApproveFinalBill(Bill b) {
         if (b == null) {
@@ -819,6 +892,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        refreshFinalBillPdfSnapshot();
         return "/inward/inward_final_bill_approve?faces-redirect=true";
     }
 
@@ -847,12 +921,211 @@ public class InwardSearch implements Serializable {
         b.setApproveAt(new Date());
         getBillFacade().edit(b);
 
+        try {
+            byte[] snapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);
+            // Only cache into the session-scoped field if b is the same bill
+            // instance currently loaded into the session; approveFinalBillVersion
+            // could theoretically be called with a different Bill than whatever
+            // this session's `bill` field currently holds, and we must not
+            // cross-contaminate the cache with a snapshot for a different bill.
+            if (b == bill) {
+                finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(b.getId(), snapshotBytes);
+            }
+        } catch (Exception ex) {
+            // Widened from IOException: the snapshot call can also throw an
+            // unchecked PersistenceException/EJBException (e.g. the
+            // FINALBILLPDFSNAPSHOT table not yet existing if the WAR is
+            // deployed before DDL is applied). The bill approval above has
+            // already been committed via getBillFacade().edit(b), so any
+            // snapshot failure here must degrade gracefully rather than
+            // propagate and give the user a scary error page for an
+            // approval that actually succeeded.
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill PDF snapshot generation failed on approval", ex);
+            JsfUtil.addErrorMessage("Final bill approved, but the PDF snapshot could not be generated: " + ex.getMessage());
+        }
+
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
                 null, b.getId(), sessionController.getLoggedUser(),
                 "Bill", b.getId());
 
         JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
+    }
+
+    /**
+     * Pure read: serves the PDF bytes already fetched/generated by whichever
+     * navigation method routed into this reprint page (see
+     * {@link #refreshFinalBillPdfSnapshot()}). A JSF getter is evaluated
+     * multiple times per render (and again separately by PrimeFaces' dynamic
+     * content resource request), so it must never itself call a service
+     * method that can PERSIST a new snapshot row — that both violates the
+     * "getters are pure reads" rule and caused a documented concurrency race
+     * where two near-simultaneous evaluations could both see "no snapshot
+     * yet" and both try to create one.
+     *
+     * <p>Resolved the PR #23848 review finding #1 cross-tab/cross-session
+     * leak: {@code p:media} is wired with {@code cache="false"}, which makes
+     * PrimeFaces re-invoke this whole getter completely fresh - guard
+     * included - on the actual async dynamic-resource fetch request, which
+     * is a genuinely separate, later HTTP request from the page's initial
+     * render. If this session's {@link #bill} / cache fields had since moved
+     * on to a different bill (a second tab, or a fast subsequent
+     * navigation), reading only session state here would legitimately (and
+     * wrongly) serve that other bill's bytes. The XHTML pages now nest
+     * {@code <f:param name="finalBillId" value="#{inwardSearch.bill.id}" />}
+     * inside the {@code p:media}, which PrimeFaces appends to the generated
+     * resource URL, making the fetch self-describing: this getter reads that
+     * id from the request parameter map first and, when present, resolves
+     * the response for THAT id independently of whatever the session's
+     * mutable fields currently hold (see
+     * {@link #buildFinalBillPdfSnapshotStreamForBillId(Long)}). Only when no
+     * such parameter is present (e.g. a direct getter invocation from some
+     * other code path) does it fall back to the previous session-cache-based
+     * behavior below, as a safety net.
+     */
+    public StreamedContent getFinalBillPdfSnapshotStream() {
+        Long requestedBillId = readFinalBillIdRequestParam();
+        if (requestedBillId != null) {
+            return buildFinalBillPdfSnapshotStreamForBillId(requestedBillId);
+        }
+
+        // Fallback: no request-scoped bill id was supplied (e.g. a direct
+        // getter invocation outside the p:media dynamic-resource fetch).
+        // Capture the single cache entry as a local, right at entry, before
+        // doing the guard check against it, so everything below - the guard
+        // AND the lambda passed to the builder - reads only this local,
+        // never the instance field again.
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry == null || entry.getBytes() == null) {
+            return null;
+        }
+        if (bill == null || bill.getId() == null || !bill.getId().equals(entry.getBillId())) {
+            return null;
+        }
+        byte[] bytes = entry.getBytes();
+        String fileName = sanitizedFinalBillPdfFileName(bill.getDeptId(), bill.getId());
+        return DefaultStreamedContent.builder()
+                .name(fileName)
+                .contentType("application/pdf")
+                .stream(() -> new ByteArrayInputStream(bytes))
+                .build();
+    }
+
+    /**
+     * Same sanitization {@code streamReprintReceiptAsRawText()} already
+     * applies to {@code deptId} before using it in a downloaded file name:
+     * a raw {@code deptId} like {@code "Inward/INWFINAL/192/1"} contains
+     * {@code /}, which is not valid inside a file name and would otherwise
+     * truncate or corrupt the browser's saved/displayed name.
+     */
+    private String sanitizedFinalBillPdfFileName(String deptId, Long billId) {
+        String safeName = deptId == null ? String.valueOf(billId) : deptId.replaceAll("[^A-Za-z0-9._-]", "_");
+        return safeName + ".pdf";
+    }
+
+    /**
+     * Reads the {@code finalBillId} request parameter that {@code p:media}
+     * appends to its dynamic-resource fetch URL (via the nested
+     * {@code f:param} in the XHTML), if present and parseable. Returns
+     * {@code null} when absent or malformed so callers can fall back to the
+     * legacy session-cache-based behavior.
+     */
+    private Long readFinalBillIdRequestParam() {
+        try {
+            String param = javax.faces.context.FacesContext.getCurrentInstance()
+                    .getExternalContext().getRequestParameterMap().get("finalBillId");
+            if (param == null || param.isEmpty()) {
+                return null;
+            }
+            return Long.valueOf(param);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves the PDF stream for a specific, explicitly-requested bill id,
+     * independent of this session's mutable {@link #bill} /
+     * {@link #finalBillPdfSnapshotCacheEntry} fields. Serves the session cache
+     * only when it happens to already match the requested id (the common,
+     * non-racing case); otherwise returns {@code null} rather than looking
+     * the requested id up independently.
+     *
+     * <p>{@code finalBillId} is a plain, client-editable URL query parameter
+     * (PrimeFaces' {@code DynamicContentSrcBuilder} just string-concatenates
+     * it onto the generated resource URL; the URL's other component,
+     * {@code pfdrid}, is a hash of the fixed EL expression string and is
+     * constant across all sessions/bills, not a per-render secret). An
+     * earlier version of this method treated a mismatch as "resolve the
+     * requested id directly" - {@code getBillFacade().find(requestedBillId)}
+     * followed by serving that bill's PDF once approved - which let any
+     * authenticated user download any other patient's approved final bill by
+     * hand-editing the id in the URL (no ownership/authorization check
+     * beyond "is it approved"). Returning {@code null} on mismatch still
+     * closes the original cross-tab/cross-session race (a mismatched request
+     * never gets served the WRONG bill's data - it just gets nothing, which
+     * the page already renders as its existing "could not be loaded"
+     * fallback panel) without that unauthorized lookup-and-serve path.
+     */
+    private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry != null && entry.getBytes() != null && requestedBillId.equals(entry.getBillId())) {
+            byte[] cachedBytes = entry.getBytes();
+            String fileName = (bill != null && requestedBillId.equals(bill.getId()))
+                    ? sanitizedFinalBillPdfFileName(bill.getDeptId(), bill.getId())
+                    : sanitizedFinalBillPdfFileName(null, requestedBillId);
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(cachedBytes))
+                    .build();
+        }
+
+        // Session cache is absent or belongs to a different bill than the
+        // one this resource request was generated for. Do NOT perform an
+        // independent, unauthorized lookup of the requested id - that would
+        // let a client-edited finalBillId serve any other patient's PDF.
+        return null;
+    }
+
+    /**
+     * Generates/fetches the final bill PDF snapshot for the currently loaded
+     * {@link #bill} and caches it in {@link #finalBillPdfSnapshotCacheEntry}
+     * for {@link #getFinalBillPdfSnapshotStream()} to serve as a pure read.
+     * Must be called by every navigation method that routes into
+     * {@code inward_reprint_bill_final.xhtml} right after {@code bill} is
+     * set, so the cached bytes always reflect whichever bill is currently
+     * loaded — this bean is {@code @SessionScoped}, so failing to refresh
+     * this field on every such navigation could leak a stale PDF from a
+     * previously-viewed bill into a later view.
+     *
+     * <p>Captures {@link #bill} into a local at entry and uses only that
+     * local for every check, the service call, and the cache entry's id -
+     * never re-reading the {@link #bill} field partway through. Without
+     * this, a concurrent request in the same {@code @SessionScoped} bean
+     * reassigning {@link #bill} to a different bill between the service
+     * call and the cache-entry construction could still produce a
+     * mismatched (billId, bytes) pair even with
+     * {@link FinalBillPdfSnapshotCacheEntry} making each individual
+     * assignment atomic.
+     */
+    private void refreshFinalBillPdfSnapshot() {
+        Bill snapshotBill = bill;
+        finalBillPdfSnapshotCacheEntry = null;
+        if (snapshotBill == null || snapshotBill.getApproveAt() == null) {
+            return;
+        }
+        try {
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(snapshotBill);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(snapshotBill.getId(), bytes);
+        } catch (Exception ex) {
+            // Degrade gracefully (widened from IOException, same rationale
+            // as approveFinalBillVersion): a snapshot failure must not block
+            // navigation to the reprint page.
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill PDF snapshot fetch/generation failed", ex);
+        }
     }
 
     /**
@@ -1148,7 +1421,11 @@ public class InwardSearch implements Serializable {
 
         boolean success = false;
         try {
-            byte[] pdfBytes = buildFinalBillPdf(b);
+            // Use the same frozen snapshot bytes served on the reprint page
+            // (issue #23848 I5) instead of a second, divergent PDF generator -
+            // b is already confirmed approved above, which is exactly
+            // getOrCreateSnapshot's contract.
+            byte[] pdfBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);
             EmailAttachment attachment = new EmailAttachment(
                     "FinalBill_" + b.getFinalBillVersionSerial() + ".pdf",
                     "application/pdf",
@@ -1189,51 +1466,6 @@ public class InwardSearch implements Serializable {
 
         sentEmailsForBill = null;
         return success;
-    }
-
-    private byte[] buildFinalBillPdf(Bill b) throws Exception {
-        String html = buildFinalBillHtml(b);
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter(out);
-            com.itextpdf.kernel.pdf.PdfDocument pdfDoc = new com.itextpdf.kernel.pdf.PdfDocument(writer);
-            pdfDoc.setDefaultPageSize(com.itextpdf.kernel.geom.PageSize.A4);
-            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(html, pdfDoc, new com.itextpdf.html2pdf.ConverterProperties());
-            return out.toByteArray();
-        }
-    }
-
-    private String buildFinalBillHtml(Bill b) {
-        PatientEncounter pe = b.getPatientEncounter();
-        String patientName = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
-                ? pe.getPatient().getPerson().getNameWithTitle() : "";
-        String bhtNo = pe != null ? pe.getBhtNo() : "";
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><body style='font-family:sans-serif;font-size:12px;'>");
-        sb.append("<h2>Final Bill</h2>");
-        sb.append("<table style='width:100%;margin-bottom:10px;'>");
-        sb.append("<tr><td><b>Bill Number</b></td><td>").append(escapeHtml(b.getDeptId())).append("</td></tr>");
-        sb.append("<tr><td><b>Version</b></td><td>").append(b.getFinalBillVersionSerial()).append("</td></tr>");
-        sb.append("<tr><td><b>Patient</b></td><td>").append(escapeHtml(patientName)).append("</td></tr>");
-        sb.append("<tr><td><b>BHT No</b></td><td>").append(escapeHtml(bhtNo)).append("</td></tr>");
-        sb.append("</table>");
-        sb.append("<table style='width:100%;border-collapse:collapse;' border='1' cellpadding='4'>");
-        sb.append("<tr><th style='text-align:left;'>Description</th><th style='text-align:right;'>Amount</th></tr>");
-        sb.append("<tr><td>Gross Total</td><td style='text-align:right;'>").append(df.format(b.getGrantTotal())).append("</td></tr>");
-        sb.append("<tr><td>Discount</td><td style='text-align:right;'>").append(df.format(b.getDiscount())).append("</td></tr>");
-        sb.append("<tr><td>Net Total</td><td style='text-align:right;'>").append(df.format(b.getNetTotal())).append("</td></tr>");
-        sb.append("<tr><td>Claimable Total</td><td style='text-align:right;'>").append(df.format(b.getClaimableTotal())).append("</td></tr>");
-        sb.append("</table>");
-        sb.append("</body></html>");
-        return sb.toString();
-    }
-
-    private String escapeHtml(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     public List<AppEmail> getSentEmailsForBill() {
@@ -1373,11 +1605,6 @@ public class InwardSearch implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public String inwardReprintBillFinal() {
-
-        return "inward/inward_reprint_bill_final";
     }
 
     public List<BillItem> getRefundingItems() {
@@ -3095,6 +3322,7 @@ public class InwardSearch implements Serializable {
 
     public void setBill(Bill bill) {
         recreateModel();
+        finalBillPdfSnapshotCacheEntry = null;
         if (bill == null) {
             return;
         }
