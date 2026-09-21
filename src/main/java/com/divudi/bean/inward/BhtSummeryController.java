@@ -94,6 +94,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2989,6 +2990,47 @@ public class BhtSummeryController implements Serializable {
         hm.put("pEnc", patientEncounter);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
         return encounterCreditCompanys;
+    }
+
+    /**
+     * Comma-separated names of every credit company registered against the
+     * bill's admission, for printing on a final bill.
+     *
+     * An admission can carry several sponsors - they live in the
+     * EncounterCreditCompany collection, not in the single
+     * Bill.creditCompany / PatientEncounter.creditCompany field, which only
+     * ever holds one of them. Print templates that read the scalar therefore
+     * show one sponsor and silently drop the rest.
+     *
+     * Duplicate registrations for the same institution are possible through
+     * older data paths (see rebuildAllocationsFromSourceBill), so names are
+     * de-duplicated here rather than printed twice.
+     *
+     * Falls back to the bill's own credit company when the admission has no
+     * EncounterCreditCompany rows at all, so older admissions keep printing
+     * the sponsor they always did. Returns an empty string when there is no
+     * sponsor, which the template uses to hide the whole line.
+     */
+    public String creditCompanyNamesForPrint(Bill bill) {
+        if (bill == null) {
+            return "";
+        }
+        LinkedHashSet<String> names = new LinkedHashSet<>();
+        if (bill.getPatientEncounter() != null) {
+            List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(bill.getPatientEncounter());
+            if (eccs != null) {
+                for (EncounterCreditCompany ecc : eccs) {
+                    if (ecc.getInstitution() != null && ecc.getInstitution().getName() != null
+                            && !ecc.getInstitution().getName().trim().isEmpty()) {
+                        names.add(ecc.getInstitution().getName().trim());
+                    }
+                }
+            }
+        }
+        if (names.isEmpty() && bill.getCreditCompany() != null && bill.getCreditCompany().getName() != null) {
+            names.add(bill.getCreditCompany().getName().trim());
+        }
+        return String.join(", ", names);
     }
 
     public void saveCreditBillForCreditCompany(PatientEncounter pe, EncounterCreditCompany ecc, Double value) {

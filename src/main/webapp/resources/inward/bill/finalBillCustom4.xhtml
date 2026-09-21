@@ -168,13 +168,17 @@
                                 </span>
                             </div>
 
-                            <!-- Credit Company (Corporate Sponsor) -->
+                            <!-- Credit Company (Corporate Sponsor). An admission can have several
+                                 sponsors; they live in the EncounterCreditCompany collection, not in
+                                 the single Bill.creditCompany field, so all of them are listed here.
+                                 Rendered whenever the admission has a sponsor - the bill's own
+                                 payment method does not decide whether a sponsor exists. -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
+                                          rendered="#{not empty bhtSummeryController.creditCompanyNamesForPrint(cc.attrs.bill)}">
                                 <span style="width: 130px;">Credit Company</span>
                                 <span style="width: 12px; text-align: center;">:</span>
-                                <span class="flex-fill ps-2">
-                                    <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                <span class="flex-fill ps-2" style="min-width: 0; white-space: normal; word-break: break-word;">
+                                    <h:outputLabel value="#{bhtSummeryController.creditCompanyNamesForPrint(cc.attrs.bill)}" />
                                 </span>
                             </h:panelGroup>
 
@@ -1096,6 +1100,7 @@
                                                                               and b.refundedBill eq null
                                                                               and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
+                                                            <h:outputLabel value="#{b.creditCompany.name}" rendered="#{b.creditCompany ne null}"/>
                                                             <h:outputLabel  value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00" />
