@@ -90,8 +90,7 @@
                             </div>
 
                             <!-- Address -->
-                            <h:panelGroup layout="block" styleClass="col-12 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowAddress}">
+                            <h:panelGroup layout="block" styleClass="col-12 d-flex mb-1">
                                 <span style="width: 130px;">Address</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2" style="min-width: 0; white-space: normal; word-break: break-word;">
@@ -110,8 +109,7 @@
                             </h:panelGroup>
 
                             <!-- NIC No -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowNic}">
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1">
                                 <span style="width: 130px;">NIC No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -120,8 +118,7 @@
                             </h:panelGroup>
 
                             <!-- Phone No -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowPhone}">
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1">
                                 <span style="width: 130px;">Phone No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -130,8 +127,7 @@
                             </h:panelGroup>
 
                             <!-- Guardian -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowGuardian}">
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1">
                                 <span style="width: 130px;">Guardian</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -174,7 +170,7 @@
 
                             <!-- Credit Company (Corporate Sponsor) -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowCorporateSponsor and cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
+                                          rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
                                 <span style="width: 130px;">Credit Company</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
