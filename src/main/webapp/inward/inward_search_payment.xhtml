@@ -43,6 +43,18 @@
                                     icon="fas fa-search">
                                 </p:commandButton>
 
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fa-solid fa-file-excel"
+                                    class="ui-button-success w-100 my-1"
+                                    value="Download as Excel">
+                                    <p:dataExporter
+                                        target="tblBills"
+                                        type="xlsx"
+                                        fileName="Inward Payment Bills" >
+                                    </p:dataExporter>
+                                </p:commandButton>
+
                                 <hr/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -62,6 +74,14 @@
                             </div>
 
                             <div class="col-10">
+
+                                <h:panelGroup
+                                    layout="block"
+                                    styleClass="alert alert-warning py-2 mb-2"
+                                    rendered="#{searchController.inwardBillSearchTruncated}">
+                                    <h:outputText
+                                        value="Showing the first #{searchController.inwardBillSearchMaxResults} bills only. There may be more in this date range - narrow the dates or add a filter to see the rest." />
+                                </h:panelGroup>
 
                                 <p:dataTable 
                                     id="tblBills" 
