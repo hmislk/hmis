@@ -83,7 +83,8 @@
                                                              and not inwardCombinedPaymentReportController.summaryView}">
                                     <p:dataExporter type="xlsx"
                                                     target="tblRows"
-                                                    fileName="Combined Inward Payments" />
+                                                    fileName="Combined Inward Payments"
+                                                    postProcessor="#{inwardCombinedPaymentReportController.postProcessRowsExport}" />
                                 </p:commandButton>
 
                             </div>

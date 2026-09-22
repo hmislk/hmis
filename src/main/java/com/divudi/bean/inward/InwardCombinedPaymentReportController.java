@@ -21,6 +21,12 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  * Combined Inward Payments report: inward deposits, inward payments and
@@ -207,6 +213,73 @@ public class InwardCombinedPaymentReportController implements Serializable {
      */
     public String getGroupColumnHeader() {
         return VIEW_GROUPED_BHT.equals(viewMode) ? "BHT No" : "Bill Type";
+    }
+
+    /**
+     * postProcessor for the rows export. In a grouped view the screen shows a
+     * subtotals table above the rows, but p:dataExporter only writes the one
+     * table it targets - so the group totals are added here as a second
+     * "Totals" sheet, with a grand total line, keeping the workbook in step
+     * with what is displayed. The Details view has no subtotals and is left
+     * as exported.
+     */
+    public void postProcessRowsExport(Object document) {
+        if (!(document instanceof Workbook) || !isGroupedView() || groups == null) {
+            return;
+        }
+        Workbook workbook = (Workbook) document;
+        Sheet sheet = workbook.createSheet("Totals");
+
+        Font bold = workbook.createFont();
+        bold.setBold(true);
+        CellStyle boldStyle = workbook.createCellStyle();
+        boldStyle.setFont(bold);
+        CellStyle money = workbook.createCellStyle();
+        money.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+        CellStyle boldMoney = workbook.createCellStyle();
+        boldMoney.setFont(bold);
+        boldMoney.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        String[] headers = {getGroupColumnHeader(), "Bills", "Received", "Refunded", "Net"};
+        Row header = sheet.createRow(0);
+        for (int c = 0; c < headers.length; c++) {
+            Cell cell = header.createCell(c);
+            cell.setCellValue(headers[c]);
+            cell.setCellStyle(boldStyle);
+        }
+
+        int r = 1;
+        int totalBills = 0;
+        for (InwardCombinedPaymentGroupDto g : groups) {
+            Row row = sheet.createRow(r++);
+            row.createCell(0).setCellValue(g.getGroupLabel());
+            row.createCell(1).setCellValue(g.getCount());
+            writeMoney(row, 2, g.getCashIn(), money);
+            writeMoney(row, 3, g.getCashOut(), money);
+            writeMoney(row, 4, g.getTotal(), money);
+            totalBills += g.getCount();
+        }
+
+        Row total = sheet.createRow(r);
+        Cell label = total.createCell(0);
+        label.setCellValue("Total");
+        label.setCellStyle(boldStyle);
+        Cell bills = total.createCell(1);
+        bills.setCellValue(totalBills);
+        bills.setCellStyle(boldStyle);
+        writeMoney(total, 2, totalCashIn, boldMoney);
+        writeMoney(total, 3, totalCashOut, boldMoney);
+        writeMoney(total, 4, grandTotal, boldMoney);
+
+        for (int c = 0; c < headers.length; c++) {
+            sheet.autoSizeColumn(c);
+        }
+    }
+
+    private void writeMoney(Row row, int column, double value, CellStyle style) {
+        Cell cell = row.createCell(column);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
     }
 
     public boolean isSummaryView() {
