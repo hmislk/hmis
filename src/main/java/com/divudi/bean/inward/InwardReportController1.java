@@ -38,6 +38,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -60,6 +61,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -99,6 +102,22 @@ public class InwardReportController1 implements Serializable {
     private double debtorBillTotal;
     private double debtorPaidTotal;
     private double debtorOutstandingTotal;
+    // Snapshot of the filter values that actually produced `bills`/the debtor
+    // totals above, captured at the end of inwardCreditCompanyDebtors(). The
+    // PDF export's filter-summary block reads these instead of the live
+    // filter fields, so it stays consistent even if the form's filter inputs
+    // are edited (and re-submitted with the PDF button) without the user
+    // clicking "Process" again (issue #23481 review).
+    private Date appliedFromDate;
+    private Date appliedToDate;
+    private String appliedDateBasis;
+    private Institution appliedCreditCompany;
+    private Institution appliedAdmittingInstitution;
+    private Institution appliedSite;
+    private Department appliedDepartment;
+    private AdmissionType appliedAdmissionType;
+    private PaymentMethod appliedPaymentMethod;
+    private boolean appliedOutstandingOnly;
     PatientEncounter patientEncounter;
     private List<OpdService> opdServices;
     List<String1Value2> timedServices;
@@ -2557,6 +2576,7 @@ public class InwardReportController1 implements Serializable {
         SimpleDateFormat dtf = new SimpleDateFormat("dd MMM yyyy HH:mm");
 
         final int COL_COUNT = 12;
+        boolean responseStarted = false;
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Document document = new Document(PageSize.A4.rotate(), 18, 18, 24, 18);
@@ -2600,8 +2620,13 @@ public class InwardReportController1 implements Serializable {
             document.add(new Paragraph(" "));
 
             // --- Filter details ---
+            // Read from the appliedXxx snapshot (captured by
+            // inwardCreditCompanyDebtors() when it built `bills`), not the
+            // live filter fields, so this summary can't drift out of sync
+            // with the exported rows/totals if the form's filter inputs were
+            // changed after "Process" but before "PDF" was clicked.
             String dateBasisLabel;
-            switch (dateBasis) {
+            switch (appliedDateBasis) {
                 case "dischargeDate": dateBasisLabel = "Discharge Date"; break;
                 case "admissionDate": dateBasisLabel = "Admission Date"; break;
                 default:              dateBasisLabel = "Payment / Bill Date"; break;
@@ -2615,22 +2640,22 @@ public class InwardReportController1 implements Serializable {
             filterTable.setWidths(new float[]{1f, 2f});
 
             addPdfInfoRow(filterTable, "Date Basis", dateBasisLabel, labelFont, valueFont);
-            addPdfInfoRow(filterTable, "From", getFromDate() != null ? dtf.format(getFromDate()) : "-", labelFont, valueFont);
-            addPdfInfoRow(filterTable, "To", getToDate() != null ? dtf.format(getToDate()) : "-", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "From", appliedFromDate != null ? dtf.format(appliedFromDate) : "-", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "To", appliedToDate != null ? dtf.format(appliedToDate) : "-", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Credit Company",
-                    institution != null ? institution.getName() : "All", labelFont, valueFont);
+                    appliedCreditCompany != null ? appliedCreditCompany.getName() : "All", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Institution",
-                    admittingInstitution != null ? admittingInstitution.getName() : "All", labelFont, valueFont);
+                    appliedAdmittingInstitution != null ? appliedAdmittingInstitution.getName() : "All", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Site",
-                    site != null ? site.getName() : "All", labelFont, valueFont);
+                    appliedSite != null ? appliedSite.getName() : "All", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Department",
-                    department != null ? department.getName() : "All", labelFont, valueFont);
+                    appliedDepartment != null ? appliedDepartment.getName() : "All", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Admission Type",
-                    admissionType != null ? admissionType.getName() : "All", labelFont, valueFont);
+                    appliedAdmissionType != null ? appliedAdmissionType.getName() : "All", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Payment Method",
-                    paymentMethod != null ? paymentMethod.getLabel() : "All", labelFont, valueFont);
+                    appliedPaymentMethod != null ? appliedPaymentMethod.getLabel() : "All", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Outstanding Only",
-                    outstandingOnly ? "Yes" : "No", labelFont, valueFont);
+                    appliedOutstandingOnly ? "Yes" : "No", labelFont, valueFont);
 
             document.add(filterTable);
 
@@ -2706,6 +2731,7 @@ public class InwardReportController1 implements Serializable {
             // --- Write response atomically ---
             String filename = "Inward_Credit_Company_Debtors_"
                     + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            responseStarted = true;
             response.reset();
             response.setContentType("application/pdf");
             response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
@@ -2717,7 +2743,15 @@ public class InwardReportController1 implements Serializable {
             facesContext.responseComplete();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(InwardReportController1.class.getName())
+                    .log(Level.SEVERE, "Failed to generate Inward Credit Company Debtor Report PDF", e);
+            // response.reset()/getOutputStream() had not run yet, so the JSF
+            // response is still intact and a FacesMessage will render normally.
+            // Once we start writing to the response the JSF view is bypassed,
+            // so a message added after that point would never be shown.
+            if (!responseStarted) {
+                JsfUtil.addErrorMessage("Failed to generate PDF. Please try again.");
+            }
         }
     }
 
@@ -3173,6 +3207,17 @@ public class InwardReportController1 implements Serializable {
         hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
+
+        appliedFromDate = getFromDate();
+        appliedToDate = getToDate();
+        appliedDateBasis = dateBasis;
+        appliedCreditCompany = institution;
+        appliedAdmittingInstitution = admittingInstitution;
+        appliedSite = site;
+        appliedDepartment = department;
+        appliedAdmissionType = admissionType;
+        appliedPaymentMethod = paymentMethod;
+        appliedOutstandingOnly = outstandingOnly;
 
         List<Bill> allBills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
