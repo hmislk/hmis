@@ -563,26 +563,35 @@ public class BhtDepositDetailReportController implements Serializable {
             }
 
             // --- Totals row ---
-            int nonMoneyCount = 0;
+            // Only the LEADING run of non-money columns (e.g. Bill No..Payment
+            // Method) goes into the label cell's colspan. Reference No is a
+            // non-money column that comes after Amount/the PM* columns in
+            // pdfColumnDefs(), so counting every non-money column here would
+            // over-span the label cell and shift each money total one column
+            // to the left (issue #23480 review).
+            int leadingNonMoneyCount = 0;
             for (String[] col : columns) {
-                if (!isMoneyColumn(col[1])) {
-                    nonMoneyCount++;
+                if (isMoneyColumn(col[1])) {
+                    break;
                 }
+                leadingNonMoneyCount++;
             }
-            if (nonMoneyCount > 0) {
+            if (leadingNonMoneyCount > 0) {
                 PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", totalFont));
-                totalLabelCell.setColspan(nonMoneyCount);
+                totalLabelCell.setColspan(leadingNonMoneyCount);
                 totalLabelCell.setBackgroundColor(totalBg);
                 totalLabelCell.setPadding(4f);
                 table.addCell(totalLabelCell);
             }
-            for (String[] col : columns) {
-                String kind = col[1];
+            for (int i = leadingNonMoneyCount; i < columns.size(); i++) {
+                String kind = columns.get(i)[1];
                 if ("AMOUNT".equals(kind)) {
                     addPdfCell(table, String.format("%,.2f", grandTotal), totalFont, Element.ALIGN_RIGHT, totalBg);
                 } else if (kind.startsWith("PM")) {
                     PaymentMethod pm = usedPaymentMethods.get(Integer.parseInt(kind.substring(2)));
                     addPdfCell(table, String.format("%,.2f", getTotalForMethod(pm)), totalFont, Element.ALIGN_RIGHT, totalBg);
+                } else {
+                    addPdfCell(table, "", totalFont, Element.ALIGN_RIGHT, totalBg);
                 }
             }
 
