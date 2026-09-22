@@ -46,10 +46,8 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
-import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
 import org.primefaces.model.DefaultStreamedContent;
@@ -106,8 +104,6 @@ public class InwardSearch implements Serializable {
     private PaymentFacade paymentFacade;
     @EJB
     PaymentService paymentService;
-    @EJB
-    DrawerService drawerService;
     @EJB
     private com.divudi.service.AuditService auditService;
     @EJB
@@ -3091,21 +3087,12 @@ public class InwardSearch implements Serializable {
             if (errorCheck()) {
                 return;
             }
-            if (paymentMethod == PaymentMethod.Cash) {
-                Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-                if (userDrawer == null) {
-                    JsfUtil.addErrorMessage("Your drawer could not be found. Please contact your administrator.");
-                    return;
-                }
-                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
-                double paymentAmount = getBill().getNetTotal();
-                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-                    if (drawerBalance < paymentAmount) {
-                        JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                        return;
-                    }
-                }
-            }
+            // No drawer balance check here on purpose. Cancelling a staff payment
+            // reverses an outgoing payment, so cash moves *into* the drawer - see the
+            // saveBillCashInTransaction() call below. Requiring the drawer to already
+            // hold the bill value is the precondition for paying money out, and it
+            // blocked cancellations whenever the cashier had since handed cash over.
+            // (Issue #23926)
             CancelledBill cb = createCancelBill();
             //Copy & paste
 
