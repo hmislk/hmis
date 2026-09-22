@@ -2033,7 +2033,16 @@ public class PharmacySaleBhtController implements Serializable {
             financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
         }
 
-        calculateBillTotalsForTransferIssue(getPreBill());
+        // Recalculate only the swapped row and the on-screen running totals.
+        // calculateBillTotalsForTransferIssue() must NOT be used here: it is written for
+        // transfer issues, where stock leaving the store is recorded as a negative qty,
+        // and it rewrites EVERY row on the bill as bi.setQty(-absQty) while leaving the
+        // value positive. On a BHT issue that is a patient-charged bill, so a single
+        // substitution turned the whole bill's quantities negative with positive amounts,
+        // which then printed on the inpatient pharmacy item list as if the medicines had
+        // been returned and charged anyway.
+        calculateRates(itemForSubstitution);
+        calCurrentBillItemTotal(getBillItems());
 
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
