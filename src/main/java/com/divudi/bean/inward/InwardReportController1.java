@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CountedServiceType;
@@ -37,7 +38,22 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -45,12 +61,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -82,6 +102,22 @@ public class InwardReportController1 implements Serializable {
     private double debtorBillTotal;
     private double debtorPaidTotal;
     private double debtorOutstandingTotal;
+    // Snapshot of the filter values that actually produced `bills`/the debtor
+    // totals above, captured at the end of inwardCreditCompanyDebtors(). The
+    // PDF export's filter-summary block reads these instead of the live
+    // filter fields, so it stays consistent even if the form's filter inputs
+    // are edited (and re-submitted with the PDF button) without the user
+    // clicking "Process" again (issue #23481 review).
+    private Date appliedFromDate;
+    private Date appliedToDate;
+    private String appliedDateBasis;
+    private Institution appliedCreditCompany;
+    private Institution appliedAdmittingInstitution;
+    private Institution appliedSite;
+    private Department appliedDepartment;
+    private AdmissionType appliedAdmissionType;
+    private PaymentMethod appliedPaymentMethod;
+    private boolean appliedOutstandingOnly;
     PatientEncounter patientEncounter;
     private List<OpdService> opdServices;
     List<String1Value2> timedServices;
@@ -144,6 +180,8 @@ public class InwardReportController1 implements Serializable {
 
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    SessionController sessionController;
 
     public void processForItemsWithInwardMatrix() {
         items = new ArrayList<>();
@@ -2517,6 +2555,228 @@ public class InwardReportController1 implements Serializable {
         return debtorOutstandingTotal;
     }
 
+    /**
+     * Builds a professionally formatted, landscape PDF for the Inpatient
+     * Credit Company Debtor Report and writes it directly to the response,
+     * replacing PrimeFaces' generic dataExporter (which produced a cramped,
+     * misaligned portrait table for this report's 12 columns). Mirrors the
+     * PDF layout used by {@code CreditCompanyDebtorGroupedReportController}
+     * (Issue #23481).
+     */
+    public void downloadPdf() {
+        if (bills == null || bills.isEmpty()) {
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response =
+                (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat dtf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+        final int COL_COUNT = 12;
+        boolean responseStarted = false;
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate(), 18, 18, 24, 18);
+            PdfWriter.getInstance(document, baos);
+            document.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+            Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE);
+            Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE);
+
+            Color headerBg = new Color(89, 89, 89);
+            Color totalBg = new Color(0, 77, 64);
+
+            // --- Title / subtitle / printed-by ---
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName() : "Institution";
+
+            Paragraph p1 = new Paragraph(institutionName, titleFont);
+            p1.setAlignment(Element.ALIGN_CENTER);
+            document.add(p1);
+
+            Paragraph p2 = new Paragraph("Inpatient Credit Company Debtor Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12));
+            p2.setAlignment(Element.ALIGN_CENTER);
+            document.add(p2);
+
+            Paragraph p3 = new Paragraph(
+                    "Printed By: "
+                    + (sessionController.getLoggedUser() != null
+                       && sessionController.getLoggedUser().getWebUserPerson() != null
+                            ? sessionController.getLoggedUser().getWebUserPerson().getName() : "-")
+                    + "   at " + dtf.format(new Date()),
+                    subtitleFont);
+            p3.setAlignment(Element.ALIGN_CENTER);
+            document.add(p3);
+
+            document.add(new Paragraph(" "));
+
+            // --- Filter details ---
+            // Read from the appliedXxx snapshot (captured by
+            // inwardCreditCompanyDebtors() when it built `bills`), not the
+            // live filter fields, so this summary can't drift out of sync
+            // with the exported rows/totals if the form's filter inputs were
+            // changed after "Process" but before "PDF" was clicked.
+            String dateBasisLabel;
+            switch (appliedDateBasis) {
+                case "dischargeDate": dateBasisLabel = "Discharge Date"; break;
+                case "admissionDate": dateBasisLabel = "Admission Date"; break;
+                default:              dateBasisLabel = "Payment / Bill Date"; break;
+            }
+
+            PdfPTable filterTable = new PdfPTable(2);
+            filterTable.setWidthPercentage(65);
+            filterTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            filterTable.setSpacingBefore(4);
+            filterTable.setSpacingAfter(10);
+            filterTable.setWidths(new float[]{1f, 2f});
+
+            addPdfInfoRow(filterTable, "Date Basis", dateBasisLabel, labelFont, valueFont);
+            addPdfInfoRow(filterTable, "From", appliedFromDate != null ? dtf.format(appliedFromDate) : "-", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "To", appliedToDate != null ? dtf.format(appliedToDate) : "-", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Credit Company",
+                    appliedCreditCompany != null ? appliedCreditCompany.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Institution",
+                    appliedAdmittingInstitution != null ? appliedAdmittingInstitution.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Site",
+                    appliedSite != null ? appliedSite.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Department",
+                    appliedDepartment != null ? appliedDepartment.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Admission Type",
+                    appliedAdmissionType != null ? appliedAdmissionType.getName() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Payment Method",
+                    appliedPaymentMethod != null ? appliedPaymentMethod.getLabel() : "All", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Outstanding Only",
+                    appliedOutstandingOnly ? "Yes" : "No", labelFont, valueFont);
+
+            document.add(filterTable);
+
+            // --- Main data table ---
+            PdfPTable table = new PdfPTable(COL_COUNT);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(6);
+            table.setWidths(new float[]{1f, 0.8f, 1.5f, 1.3f, 0.9f, 0.9f, 0.9f, 1f, 1.1f, 1.1f, 1f, 1.1f});
+
+            String[] headers = {
+                "Bill No", "BHT No", "Patient Name", "Credit Company", "Bill Date",
+                "Admitted", "Discharged",
+                "Bill Total", "Settled by Company", "Settled by Patient",
+                "Total Paid", "Outstanding"
+            };
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                cell.setBackgroundColor(headerBg);
+                cell.setPadding(4f);
+                table.addCell(cell);
+            }
+
+            // --- Data rows ---
+            for (Bill b : bills) {
+                addPdfCell(table, b.getDeptId(), cellFont, Element.ALIGN_LEFT, null);
+                addPdfCell(table,
+                        b.getPatientEncounter() != null ? b.getPatientEncounter().getBhtNo() : "",
+                        cellFont, Element.ALIGN_LEFT, null);
+                addPdfCell(table,
+                        b.getPatient() != null && b.getPatient().getPerson() != null
+                                ? b.getPatient().getPerson().getName() : "",
+                        cellFont, Element.ALIGN_LEFT, null);
+                addPdfCell(table,
+                        b.getCreditCompany() != null ? b.getCreditCompany().getName() : "",
+                        cellFont, Element.ALIGN_LEFT, null);
+                addPdfCell(table,
+                        b.getBillDate() != null ? sdf.format(b.getBillDate()) : "",
+                        cellFont, Element.ALIGN_CENTER, null);
+                addPdfCell(table,
+                        b.getPatientEncounter() != null && b.getPatientEncounter().getDateOfAdmission() != null
+                                ? sdf.format(b.getPatientEncounter().getDateOfAdmission()) : "",
+                        cellFont, Element.ALIGN_CENTER, null);
+                addPdfCell(table,
+                        b.getPatientEncounter() != null && b.getPatientEncounter().getDateOfDischarge() != null
+                                ? sdf.format(b.getPatientEncounter().getDateOfDischarge()) : "",
+                        cellFont, Element.ALIGN_CENTER, null);
+                addPdfCell(table, String.format("%,.2f", b.getNetTotal()), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(table, String.format("%,.2f", b.getSettledAmountBySponsor()), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(table, String.format("%,.2f", b.getSettledAmountByPatient()), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(table, String.format("%,.2f", b.getPaidAmount()), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(table, String.format("%,.2f", b.getNetTotal() - b.getPaidAmount()), cellFont, Element.ALIGN_RIGHT, null);
+            }
+
+            // --- Grand total row ---
+            PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", totalFont));
+            totalLabelCell.setColspan(7);
+            totalLabelCell.setBackgroundColor(totalBg);
+            totalLabelCell.setPadding(4f);
+            table.addCell(totalLabelCell);
+            addPdfCell(table, String.format("%,.2f", debtorBillTotal), totalFont, Element.ALIGN_RIGHT, totalBg);
+            addPdfCell(table, "", totalFont, Element.ALIGN_RIGHT, totalBg);
+            addPdfCell(table, "", totalFont, Element.ALIGN_RIGHT, totalBg);
+            addPdfCell(table, String.format("%,.2f", debtorPaidTotal), totalFont, Element.ALIGN_RIGHT, totalBg);
+            addPdfCell(table, String.format("%,.2f", debtorOutstandingTotal), totalFont, Element.ALIGN_RIGHT, totalBg);
+
+            document.add(table);
+            document.close();
+
+            byte[] fileBytes = baos.toByteArray();
+
+            // --- Write response atomically ---
+            String filename = "Inward_Credit_Company_Debtors_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            responseStarted = true;
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            response.setContentLength(fileBytes.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(fileBytes);
+                out.flush();
+            }
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportController1.class.getName())
+                    .log(Level.SEVERE, "Failed to generate Inward Credit Company Debtor Report PDF", e);
+            // response.reset()/getOutputStream() had not run yet, so the JSF
+            // response is still intact and a FacesMessage will render normally.
+            // Once we start writing to the response the JSF view is bypassed,
+            // so a message added after that point would never be shown.
+            if (!responseStarted) {
+                JsfUtil.addErrorMessage("Failed to generate PDF. Please try again.");
+            }
+        }
+    }
+
+    private void addPdfCell(PdfPTable table, String text, Font font, int alignment, Color backgroundColor) {
+        PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(4f);
+        if (backgroundColor != null) {
+            cell.setBackgroundColor(backgroundColor);
+        }
+        table.addCell(cell);
+    }
+
+    private void addPdfInfoRow(PdfPTable table, String label, String value, Font labelFont, Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(PdfPCell.NO_BORDER);
+        labelCell.setPadding(3f);
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "", valueFont));
+        valueCell.setBorder(PdfPCell.NO_BORDER);
+        valueCell.setPadding(3f);
+        table.addCell(labelCell);
+        table.addCell(valueCell);
+    }
+
     public List<OpdService> getOpdServices() {
         return opdServices;
     }
@@ -2947,6 +3207,17 @@ public class InwardReportController1 implements Serializable {
         hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
+
+        appliedFromDate = getFromDate();
+        appliedToDate = getToDate();
+        appliedDateBasis = dateBasis;
+        appliedCreditCompany = institution;
+        appliedAdmittingInstitution = admittingInstitution;
+        appliedSite = site;
+        appliedDepartment = department;
+        appliedAdmissionType = admissionType;
+        appliedPaymentMethod = paymentMethod;
+        appliedOutstandingOnly = outstandingOnly;
 
         List<Bill> allBills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
