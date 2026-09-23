@@ -733,11 +733,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getPatient().setCreatedAt(new Date());
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
             getPatient().getPerson().setCreatedAt(new Date());
-            try {
-                getPersonFacade().create(getPatient().getPerson());
-            } catch (Exception e) {
-                getPersonFacade().edit(getPatient().getPerson());
-            }
+            // Person is persisted by the cascade from Patient.person (cascade = ALL) in the
+            // patient create below. Persisting it separately here leaves an unreferenced
+            // duplicate PERSON row (#23887).
             try {
                 getPatientFacade().create(getPatient());
             } catch (Exception e) {
@@ -1304,6 +1302,30 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return true;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Referral details are required for CC billing.", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("External Doctor is required for CC billing.", false)) {
+                if(externalDoctor == null || externalDoctor.trim().equalsIgnoreCase("")){
+                    JsfUtil.addErrorMessage("External Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required for CC billing.", false)) {
+                if(referredBy == null){
+                    JsfUtil.addErrorMessage("Referring Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Institution is required for CC billing.", false)) {
+                if(referredByInstitution == null){
+                    JsfUtil.addErrorMessage("Referring Institution is required for CC billing.");
+                    return true;
+                }
+            }
+            
+        }
+
         return false;
     }
 
@@ -1487,6 +1509,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
+        setExternalDoctor(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);

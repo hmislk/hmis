@@ -13,7 +13,9 @@
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
             <ui:define name="content">
+
                 <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+
                 <div class="cc-bill-page">
                     <h:form id="form">
                         <ez:cc_self_billing_header
@@ -55,29 +57,13 @@
                                     </f:facet>
 
                                     <h:panelGroup id="centerBillPriview">
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Collecting Center(CC) size is POS paper')}">
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Center(CC) : Size is FiveFiveCustom1 paper',true)}">
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:posCCBill_CC bill="#{pp}" duplicate="false"/>
+                                                <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFive paper')}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_CC bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom1 paper')}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill For Collecting Center(CC) size is FiveFiveCustom3 paper')}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:cc_five_five_custom_3 bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </p:panel>
                             </div>
@@ -100,63 +86,18 @@
                                     </f:facet>
 
                                     <h:panelGroup id="parinetBillPriview">
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is POS paper')}">
+
+                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Patient : Size is FiveFiveCustom1 paper',true)}">
                                             <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:posCCBill_Patient bill="#{pp}" duplicate="false"/>
+                                                <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>
                                             </ui:repeat>
                                         </h:panelGroup>
 
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFive paper')}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_Patient bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom1 paper')}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Bill for Patient by CC is FiveFiveCustom3 paper')}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:cc_five_five_custom_3_patient bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </p:panel>
                             </div>
                         </div>
 
-                        <p:dataTable
-                            value="#{collectingCentreBillController.bills}"
-                            var="b"
-                            resizeMode="expand"
-                            reflow="true"
-                            class="w-100"
-                            rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                            <f:facet name="header">
-                                <h:outputLabel value="Individual Bills" style="font-size: 18px; font-weight: 800;"/>
-                            </f:facet>
-                            <p:column headerText="Bill No" width="230px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                <h:outputText value="#{b.deptId}" class="w-100 m-1"/>
-                            </p:column>
-                            <p:column headerText="Hos Fee" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}" class="text-end">
-                                <h:outputText value="#{b.totalHospitalFee}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="CC Fee" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}" class="text-end">
-                                <h:outputText value="#{b.totalCenterFee}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Net Total" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}" class="text-end">
-                                <h:outputText value="#{b.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                            </p:column>
-                        </p:dataTable>
                     </h:form>
                 </div>
             </ui:define>

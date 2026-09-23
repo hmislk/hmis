@@ -16741,61 +16741,46 @@ public class SearchController implements Serializable {
 
     }
 
+    /**
+     * Maximum rows returned by the inward payment/deposit bill searches.
+     *
+     * These searches used to cap at 50 with nothing in the UI to say so, which
+     * silently dropped rows over any reasonably wide date range and read to the
+     * user as missing bill numbers - while the paginator still reported
+     * "(1 of 1)". The cap is kept, because an unbounded query over a busy
+     * hospital's history is not safe to hand a session-scoped list, but it is
+     * raised and the pages now warn when it is reached.
+     */
+    private static final int INWARD_BILL_SEARCH_MAX_RESULTS = 1000;
+
+    /**
+     * True when the last inward payment/deposit search filled
+     * {@link #INWARD_BILL_SEARCH_MAX_RESULTS} and results may therefore have
+     * been cut off. Bound by both search pages to show a warning.
+     */
+    private boolean inwardBillSearchTruncated;
+
     public void createInwardPaymentBills() {
-        Date startTime = new Date();
-
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BilledBill b where"
-                + " b.billType = :billType "
-                + " and b.billTypeAtomic = :bta "
-                + " and b.createdAt between :fromDate and :toDate "
-                + " and b.retired=false  ";
-
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
-            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
-            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
-        }
-
-        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
-            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
-            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
-        sql += " order by b.deptId desc  ";
-
-        temMap.put("billType", BillType.InwardPaymentBill);
-        temMap.put("bta", BillTypeAtomic.INWARD_PAYMENT);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
-
+        bills = fetchInwardPaymentBillsByAtomicType(BillTypeAtomic.INWARD_PAYMENT);
     }
 
     public void createInwardDepositBills() {
-        Date startTime = new Date();
+        bills = fetchInwardPaymentBillsByAtomicType(BillTypeAtomic.INWARD_DEPOSIT);
+    }
 
+    /**
+     * Shared query behind the inward payment and deposit bill searches, which
+     * differ only by billTypeAtomic. They were near-identical copies, so a fix
+     * to one had to be remembered for the other.
+     *
+     * Ordered by id rather than deptId. deptId is a String, so ordering on it
+     * is lexicographic, not numeric - it only coincidentally matched bill-number
+     * order because the serial is zero-padded behind a constant prefix, and it
+     * falls apart as soon as the padding width changes or a per-type prefix is
+     * configured. The serial is generated in id order, so id descending is the
+     * bill-number order the user expects and survives any prefix change.
+     */
+    private List<Bill> fetchInwardPaymentBillsByAtomicType(BillTypeAtomic billTypeAtomic) {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where"
@@ -16834,15 +16819,24 @@ public class SearchController implements Serializable {
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.deptId desc  ";
+        sql += " order by b.id desc  ";
 
         temMap.put("billType", BillType.InwardPaymentBill);
-        temMap.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        temMap.put("bta", billTypeAtomic);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
+        List<Bill> fetchedBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, INWARD_BILL_SEARCH_MAX_RESULTS);
+        inwardBillSearchTruncated = fetchedBills != null && fetchedBills.size() >= INWARD_BILL_SEARCH_MAX_RESULTS;
+        return fetchedBills;
+    }
 
+    public boolean isInwardBillSearchTruncated() {
+        return inwardBillSearchTruncated;
+    }
+
+    public int getInwardBillSearchMaxResults() {
+        return INWARD_BILL_SEARCH_MAX_RESULTS;
     }
 
     public void createInwardRefundBills() {

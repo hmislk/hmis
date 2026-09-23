@@ -1170,12 +1170,14 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Department first.");
             return null;
         }
-        boolean canIssueToSameDept = configOptionApplicationController
-                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
-        if (!canIssueToSameDept
-                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
-            return null;
+        if (Objects.equals(toDepartment, sessionController.getDepartment())) {
+            // Check if department preference allows same-department issues
+            boolean allowSameDept = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Pharmacy - Allow Issue to Same Department", sessionController.getDepartment(), false);
+            if (!allowSameDept) {
+                JsfUtil.addErrorMessage("Your department does not allow pharmacy disposal issues to the same department. Contact your department administrator to enable this feature.");
+                return null;
+            }
         }
         if (getActiveBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add at least one item before finalizing.");

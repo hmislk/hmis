@@ -2150,13 +2150,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getPatient().setHasAnAccount(false);
             getPatient().setCreditLimit(0.0);
 
-            // Save Person first (no flush yet)
             if (getPatient().getPerson().getId() != null) {
                 getPersonFacade().edit(getPatient().getPerson());
             } else {
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
-                getPersonFacade().create(getPatient().getPerson());
+                // Do NOT persist the Person here. Patient.person is cascade = ALL, so the
+                // createAndFlush below saves it in the same transaction. Persisting it here
+                // runs in its own transaction and detaches it, and the cascade then inserts
+                // a second, unreferenced PERSON row (#23887).
             }
 
             // Save Patient with immediate flush (flushes both Person and Patient)

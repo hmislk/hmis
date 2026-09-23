@@ -39,6 +39,19 @@ Handoff question, if that chain gets invoked anywhere in this flow (e.g.
 during step 5): auto-select **option 1, Subagent-Driven** without asking —
 do not stop for it as an additional discussion gate.
 
+## 0. Anything you write to GitHub is public
+
+`hmislk/hmis` is a public repo. Before every `gh issue create`,
+`gh issue comment`, `gh pr create` or `gh pr comment` in the steps below,
+apply
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md):
+no patient/doctor/staff names, production record identifiers (bill/BHT/PHN
+numbers, entity IDs), affected-record counts, production schema names, cutover
+dates, per-staff statistics, data-fix logs or credentials. Describe the defect
+and the local test evidence; keep hospital-specific numbers in `tmp/`. This
+applies to the issue body as much as to the PR — including an issue *you* file
+mid-run for a bug you found yourself.
+
 ## 1. Setup
 
 Run the `start-issue` skill for `$0`: creates the branch from

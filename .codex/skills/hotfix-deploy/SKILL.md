@@ -92,6 +92,11 @@ gh pr create \
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
 
+The body is public: state the defect, the fix and the deploy note, and keep the
+affected hospital's record counts, production bill numbers, schema names and
+data-fix steps out of it. See
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+
 ## Step 8 — Restore Stashed Work
 
 ```bash
