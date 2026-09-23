@@ -7,6 +7,7 @@ import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.WebUserPrivilege;
 import com.divudi.core.facade.BillFacade;
@@ -188,7 +189,21 @@ public class PharmacyPurchaseOrdersApi {
                 return errorResponse("Not a valid key", 401);
             }
 
-            if (!hasPrivilege(apiUser, "PharmacyOrderCancellation")) {
+            // Loaded (and its department used for the privilege check) before
+            // validating the request body - the department-scoped privilege check
+            // needs the target bill either way, and UI-parity requires it (see below).
+            Bill approval = billFacade.find(approvalBillId);
+            if (approval == null) {
+                return errorResponse("No Bill to cancel", 404);
+            }
+
+            // Scoped to the approval's own department, matching the UI: WebUserController
+            // .hasPrivilege() there is implicitly department-scoped because it reads
+            // getSessionController().getUserPrivileges(), which is filtered to the
+            // logged-in user's currently-selected department. An unscoped check here
+            // would let a user with PharmacyOrderCancellation in ANY department cancel
+            // an approval in a completely different one via the API (#23988 review).
+            if (!hasPrivilege(apiUser, "PharmacyOrderCancellation", approval.getDepartment())) {
                 return errorResponse("API user does not have the PharmacyOrderCancellation privilege", 403);
             }
 
@@ -209,14 +224,19 @@ public class PharmacyPurchaseOrdersApi {
                 return errorResponse("approvedBy is required", 400);
             }
 
-            Bill approval = billFacade.find(approvalBillId);
-            Long requestBillId = approval != null && approval.getReferenceBill() != null
+            Long requestBillId = approval.getReferenceBill() != null
                     ? approval.getReferenceBill().getId() : null;
+
+            // approvedBy has no dedicated column on the cancellation bill (unlike
+            // BillDataCorrectionService, which keeps it in a separate audit log) -
+            // folded into the stored comment so who authorized the cancellation isn't
+            // silently discarded despite being a mandatory field (#23988 review).
+            String comment = request.getAuditComment().trim()
+                    + " (approved by: " + request.getApprovedBy().trim() + ")";
 
             CancelledBill cancelledBill;
             try {
-                cancelledBill = cancellationService.cancelApproval(
-                        approvalBillId, request.getAuditComment().trim(), apiUser);
+                cancelledBill = cancellationService.cancelApproval(approvalBillId, comment, apiUser);
             } catch (PharmacyPoCancellationException ex) {
                 return errorResponse(ex.getMessage(), statusForReason(ex.getReason()));
             }
@@ -264,30 +284,38 @@ public class PharmacyPurchaseOrdersApi {
      */
     private Bill resolveRequestBill(String number, Long billId) {
         if (billId != null) {
-            return billFacade.find(billId);
+            Bill b = billFacade.find(billId);
+            // Reject anything that isn't actually a PO request - otherwise passing
+            // e.g. an approval's id here silently succeeds and reports it as the
+            // "request", with an empty approvals list (#23988 review).
+            return b != null && b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_ORDER ? b : null;
         }
         if (number == null || number.trim().isEmpty()) {
             return null;
         }
-        String jpql = "SELECT b FROM Bill b WHERE b.deptId = :deptId ORDER BY b.id DESC";
+        String jpql = "SELECT b FROM Bill b WHERE b.deptId = :deptId AND b.billTypeAtomic = :bta ORDER BY b.id DESC";
         Map<String, Object> params = new HashMap<>();
         params.put("deptId", number.trim());
+        params.put("bta", BillTypeAtomic.PHARMACY_ORDER);
         List<Bill> bills = billFacade.findByJpql(jpql, params, 1);
         return bills == null || bills.isEmpty() ? null : bills.get(0);
     }
 
     /**
      * Checks whether the given (already API-key-resolved) WebUser has the
-     * named privilege. Mirrors the query
-     * {@code WebUserController.checkPrivilege()} runs under the hood, but
-     * without a department filter: {@code WebUserController} itself is
-     * {@code @SessionScoped} and cannot be injected into this
-     * {@code @RequestScoped} REST resource, and a REST caller acting via an
-     * API key has no "currently selected department" the way a logged-in
-     * browser session does.
+     * named privilege **in the given department**. Mirrors
+     * {@code WebUserController.checkPrivilege(WebUser, String, Department)} -
+     * scoped to a department, like the UI's own check effectively is (its
+     * {@code hasPrivilege(String)} reads {@code getSessionController()
+     * .getUserPrivileges()}, which is filtered to the logged-in user's
+     * currently-selected department). An unscoped check would let a user
+     * with the privilege in one department cancel an approval in a totally
+     * different one via the API (#23988 review). {@code WebUserController}
+     * itself is {@code @SessionScoped} and cannot be injected into this
+     * {@code @RequestScoped} REST resource, so the query is run directly.
      */
-    private boolean hasPrivilege(WebUser user, String privilegeName) {
-        if (user == null) {
+    private boolean hasPrivilege(WebUser user, String privilegeName, Department department) {
+        if (user == null || department == null) {
             return false;
         }
         Privileges privilege;
@@ -297,9 +325,10 @@ public class PharmacyPurchaseOrdersApi {
             return false;
         }
         String jpql = "SELECT w FROM WebUserPrivilege w WHERE w.webUser = :user "
-                + "AND w.privilege = :privilege AND w.retired = false";
+                + "AND w.department = :department AND w.privilege = :privilege AND w.retired = false";
         Map<String, Object> params = new HashMap<>();
         params.put("user", user);
+        params.put("department", department);
         params.put("privilege", privilege);
         WebUserPrivilege wup = webUserPrivilegeFacade.findFirstByJpql(jpql, params);
         return wup != null;

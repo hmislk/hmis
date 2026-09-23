@@ -475,9 +475,15 @@ public class BillDataCorrectionService {
             entity.setDiscount(value);
             newValues.put("discount", entity.getDiscount());
         }
+        if (fields.containsKey("retireComments") && !fields.containsKey("retired")) {
+            throw new IllegalArgumentException("'retireComments' requires 'retired: true' in the same request");
+        }
         if (fields.containsKey("retired")) {
             boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");
             if (requestedRetire) {
+                if (entity.isRetired()) {
+                    throw new IllegalStateException("BillItem " + id + " is already retired - resubmitting would overwrite the original retirement attribution");
+                }
                 previousValues.put("retired", entity.isRetired());
                 previousValues.put("retiredAt", entity.getRetiredAt());
                 previousValues.put("retireComments", entity.getRetireComments());

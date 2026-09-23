@@ -179,6 +179,7 @@ public class PurchaseOrderNativeSqlService {
         int col = 0;
 
         PurchaseOrderPrintDto dto = new PurchaseOrderPrintDto();
+        dto.setApprovalBillId(approvalBillId);
         col++; // ab.ID — skip, just used for routing
         dto.setPoNumber(str(r[col++]));
         dto.setPaymentMethod(str(r[col++]));

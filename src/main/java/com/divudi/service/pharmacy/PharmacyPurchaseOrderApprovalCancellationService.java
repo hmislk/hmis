@@ -90,6 +90,22 @@ public class PharmacyPurchaseOrderApprovalCancellationService {
             throw new PharmacyPoCancellationException(Reason.GRN_EXISTS, "Grn already head been Come u can't bill ");
         }
 
+        // Atomically claim the cancellation with a conditional UPDATE before doing
+        // any of the write work below - the isCancelled() check above can read from
+        // the L2 cache and is not itself safe against a double-click or a concurrent
+        // UI+API request for the same approval, which would otherwise each pass the
+        // check and create their own CancelledBill/contra lines (#23988 review).
+        // Mirrors the established claimReturnCancellationOrReportError() pattern in
+        // PharmacyBillSearch.
+        Map<String, Object> claim = new HashMap<>();
+        claim.put("id", bill.getId());
+        int claimed = billFacade.updateByJpql(
+                "UPDATE Bill b SET b.cancelled = true WHERE b.id = :id AND b.cancelled = false", claim);
+        if (claimed != 1) {
+            throw new PharmacyPoCancellationException(Reason.ALREADY_CANCELLED, "Already Cancelled. Can not cancel again");
+        }
+        bill.setCancelled(true);
+
         CancelledBill cb = new CancelledBill();
         cb.setBilledBill(bill);
         cb.copy(bill);

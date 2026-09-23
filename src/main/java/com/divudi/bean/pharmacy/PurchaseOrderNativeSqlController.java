@@ -75,18 +75,29 @@ public class PurchaseOrderNativeSqlController implements Serializable {
      * uses), populates it into {@code pharmacyBillSearch}, then navigates
      * straight to the existing comment-entry/confirm page, which already
      * re-checks the privilege and calls {@code pharmacyPoCancel()}.
+     *
+     * <p>Uses {@code printDto.getApprovalBillId()}, not {@code currentBillId}:
+     * {@code viewByBillId(Long)} accepts either a PHARMACY_ORDER *request* or
+     * a PHARMACY_ORDER_APPROVAL id and always displays the approval's data, so
+     * {@code currentBillId} can be the request's id. Cancelling must always
+     * target the actual approval bill regardless of which id was used to view
+     * this page (#23988 review).</p>
      */
     public String navigateToCancelPo() {
-        if (currentBillId == null) {
+        if (printDto == null || printDto.getApprovalBillId() == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
-        Bill foundBill = billService.reloadBill(currentBillId);
+        Bill foundBill = billService.reloadBill(printDto.getApprovalBillId());
         if (foundBill == null) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
         pharmacyBillSearch.setBill(foundBill);
+        // Clear any stale reason left over from a previous cancellation in
+        // this session - pharmacy_cancel_po.xhtml's comment field is
+        // session-scoped and not reset by setBill() (#23988 review).
+        pharmacyBillSearch.setComment(null);
         return "/pharmacy/pharmacy_cancel_po?faces-redirect=true";
     }
 
