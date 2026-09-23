@@ -114,6 +114,10 @@ public class CapabilityStatementResource {
                         "Cost accounting data",
                         "API Key",
                         "GET"))
+                .add(resource("Pharmacy Purchase Orders", "/api/pharmacy_purchase_orders",
+                        "Pharmacy PO approval status and cancellation",
+                        "API Key",
+                        "GET", "POST"))
                 .add(resource("QuickBooks", "/api/qb",
                         "QuickBooks integration",
                         "API Key",

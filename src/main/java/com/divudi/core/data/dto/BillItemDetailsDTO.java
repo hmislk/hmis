@@ -17,6 +17,12 @@ public class BillItemDetailsDTO implements Serializable {
     private Double netValue;
     private Boolean retired;
 
+    // Field added for pharmacy purchase order approval status/cancellation (#23944).
+    // Spelled to match the entity's own intentionally-misspelled field/getter
+    // (BillItem.referanceBillItem / getReferanceBillItem()) - do not "fix" the spelling.
+    // Not to be confused with the separately, correctly-spelled BillItem.referenceBill.
+    private Long referanceBillItemId;
+
     // Bill Item Finance Details
     private BillItemFinanceDetailsDTO billItemFinanceDetails;
 
@@ -129,5 +135,13 @@ public class BillItemDetailsDTO implements Serializable {
 
     public void setPharmaceuticalBillItem(PharmaceuticalBillItemDTO pharmaceuticalBillItem) {
         this.pharmaceuticalBillItem = pharmaceuticalBillItem;
+    }
+
+    public Long getReferanceBillItemId() {
+        return referanceBillItemId;
+    }
+
+    public void setReferanceBillItemId(Long referanceBillItemId) {
+        this.referanceBillItemId = referanceBillItemId;
     }
 }

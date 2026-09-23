@@ -244,6 +244,18 @@ Returns a single bill object with the same structure as the Get Last Bill endpoi
 | billFinanceDetails | Object | Bill finance details object |
 | billItems | Array | Array of bill items |
 | payments | Array | Array of payment details (optional, may be empty) |
+| referenceBillId | Long | ID of the bill this bill references (e.g. an approval's request bill), or `null` |
+| referenceBillDeptId | String | Bill number (deptId) of `referenceBillId`, or `null` |
+| billedBillId | Long | ID of the original bill this bill is a contra/cancellation for, or `null` |
+| forwardReferenceBillId | Long | ID of the bill that succeeded this one in a workflow chain, or `null` |
+| cancelled | Boolean | Whether this bill has been cancelled |
+| checkedAt | DateTime | When the bill was checked/finalized, or `null` |
+| checkedById | Long | WebUser ID who checked/finalized the bill, or `null` |
+| approveAt | DateTime | When the bill was approved, or `null` |
+| approveUserId | Long | WebUser ID who approved the bill, or `null` |
+| comments | String | Bill-level comments, or `null` |
+
+*Added 2026-09 (#23944), all additive/nullable - existing callers are unaffected.*
 
 ### Bill Finance Details (BillFinanceDetailsDTO)
 | Field | Type | Description |
@@ -271,6 +283,9 @@ Returns a single bill object with the same structure as the Get Last Bill endpoi
 | retired | Boolean | Retirement status |
 | billItemFinanceDetails | Object | Bill item finance details |
 | pharmaceuticalBillItem | Object | Pharmaceutical item details |
+| referanceBillItemId | Long | ID of the original line item this line is a contra for, or `null`. Spelled to match the entity's own field name - not a typo. |
+
+*`referanceBillItemId` added 2026-09 (#23944), additive/nullable.*
 
 ### Bill Item Finance Details (BillItemFinanceDetailsDTO)
 | Field | Type | Description |
