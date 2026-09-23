@@ -201,7 +201,8 @@
 
                                 <p:dataExporter type="xlsx"
                                                 target="summaryTable"
-                                                fileName="Surgery_Survey_Summary_Report.xlsx"/>
+                                                fileName="Surgery_Survey_Summary_Report.xlsx"
+                                                postProcessor="#{inwardReportController.postProcessSurgerySurveySummaryExcel}"/>
                             </p:commandButton>
 
                             <p:commandButton
@@ -213,7 +214,8 @@
 
                                 <p:dataExporter type="xlsx"
                                                 target="detailWise"
-                                                fileName="Surgery_Survey_Detail_Report.xlsx"/>
+                                                fileName="Surgery_Survey_Detail_Report.xlsx"
+                                                postProcessor="#{inwardReportController.postProcessSurgerySurveyDetailExcel}"/>
                             </p:commandButton>
 
                             <p:commandButton

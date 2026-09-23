@@ -3071,6 +3071,102 @@ public class InwardReportController implements Serializable {
         info.addCell(v);
     }
 
+    // PostProcessor for the Surgery Survey Summary Excel export - the xlsx
+    // dataExporter had no preProcessor/postProcessor at all, so the applied
+    // filters (visible in the PDF export via addInfoRow above) never made it
+    // into the downloaded Excel file.
+    public void postProcessSurgerySurveySummaryExcel(Object document) {
+        insertSurgerySurveyExcelFilterSummary(document, "Surgery Survey Summary Report");
+    }
+
+    public void postProcessSurgerySurveyDetailExcel(Object document) {
+        insertSurgerySurveyExcelFilterSummary(document, "Surgery Survey Detail Report");
+    }
+
+    private void insertSurgerySurveyExcelFilterSummary(Object document, String title) {
+        if (!(document instanceof XSSFWorkbook)) {
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        Map<String, Object> filters = new LinkedHashMap<>();
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "All");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "All");
+        filters.put("Surgery Type", surgeryType != null ? surgeryType.getName() : "All");
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+
+        String institutionName = sessionController != null && sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName() : null;
+
+        int filterRows = Math.max(1, (int) Math.ceil(filters.size() / 3.0));
+        int rowsNeeded = (institutionName != null ? 1 : 0) + 1 + filterRows + 1;
+
+        int lastRowNum = sheet.getLastRowNum();
+        if (sheet.getPhysicalNumberOfRows() > 0) {
+            sheet.shiftRows(0, lastRowNum, rowsNeeded);
+        }
+
+        Font instFont = workbook.createFont();
+        instFont.setBold(true);
+        instFont.setFontHeightInPoints((short) 14);
+        CellStyle instStyle = workbook.createCellStyle();
+        instStyle.setFont(instFont);
+        instStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 12);
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setFont(titleFont);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Font labelFont = workbook.createFont();
+        labelFont.setBold(true);
+        CellStyle labelStyle = workbook.createCellStyle();
+        labelStyle.setFont(labelFont);
+
+        int lastCol = 7;
+        int rowIndex = 0;
+
+        if (institutionName != null) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institutionName);
+            instCell.setCellStyle(instStyle);
+        }
+
+        sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(title);
+        titleCell.setCellStyle(titleStyle);
+
+        int pairCounter = 0;
+        Row row = sheet.createRow(rowIndex++);
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            Cell labelCell = row.createCell(pairCounter * 3);
+            labelCell.setCellValue(entry.getKey() + ":");
+            labelCell.setCellStyle(labelStyle);
+
+            Cell valueCell = row.createCell(pairCounter * 3 + 1);
+            valueCell.setCellValue(String.valueOf(entry.getValue()));
+
+            pairCounter++;
+            if (pairCounter == 3) {
+                pairCounter = 0;
+                row = sheet.createRow(rowIndex++);
+            }
+        }
+    }
+
     public void processIpUnsettledInvoicesReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
