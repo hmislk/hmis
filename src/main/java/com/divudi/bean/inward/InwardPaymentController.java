@@ -216,7 +216,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         return "inward_cancel_bill_refund?faces-redirect=true";
     }
 
-    private double getFinalBillDue() {
+    /** Latest confirmed final bill of the current admission, or null before the final bill is settled. */
+    private Bill fetchConfirmedFinalBill() {
         String sql = "Select b From BilledBill b where"
                 + " b.retired=false "
                 + " and b.cancelled=false "
@@ -227,17 +228,77 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
         hm.put("pe", getCurrent().getPatientEncounter());
+        return getBilledBillFacade().findFirstByJpql(sql, hm);
+    }
 
-        Bill b = getBilledBillFacade().findFirstByJpql(sql, hm);
-
+    private double getFinalBillDue() {
+        Bill b = fetchConfirmedFinalBill();
         if (b == null) {
             return 0;
         }
+        return calculateFinalBillDue(b);
+    }
+
+    /**
+     * Patient's outstanding due against the confirmed final bill, computed
+     * fresh from the database on every call (never trusted from the value
+     * cached when the page opened):
+     *
+     * due = (finalBill.netTotal - CC committed amount)
+     *       - SUM(netTotal of InwardPaymentBill rows: payments, deposits,
+     *             and their negative cancellation/refund rows)
+     *       - SUM(netTotal of PostFinalBillInwardPayment rows)
+     *
+     * Post final bill payments are included so a payment taken on the Post
+     * Final Payment page is not collected a second time here.
+     */
+    private double calculateFinalBillDue(Bill finalBill) {
         // Patient portion = bill total minus the CC committed amount (not paid yet).
         // This correctly shows patient due before the company has actually remitted.
-        PatientEncounter pe = getCurrent().getPatientEncounter();
-        double patientPortion = Math.max(0.0, b.getNetTotal() - pe.getCreditUsedAmount());
-        return Math.max(0.0, patientPortion - b.getPaidAmount());
+        // The encounter is taken from the freshly fetched final bill rather than
+        // the session copy, so a re-settled CC commitment is picked up.
+        PatientEncounter pe = finalBill.getPatientEncounter() != null
+                ? finalBill.getPatientEncounter() : getCurrent().getPatientEncounter();
+        double patientPortion = Math.max(0.0, finalBill.getNetTotal() - pe.getCreditUsedAmount());
+        double paidByPatient = getInwardBean().getPaidValue(pe) + getPostFinalPaymentTotal(pe);
+        return Math.max(0.0, patientPortion - paidByPatient);
+    }
+
+    /**
+     * Same unfiltered sum as
+     * {@link PostFinalBillInwardPaymentController}'s post final payment
+     * total: cancellations and refunds are separate rows with a negated
+     * netTotal, so no cancelled=false filter is applied.
+     */
+    private double getPostFinalPaymentTotal(PatientEncounter pe) {
+        String sql = "Select sum(b.netTotal) From Bill b where"
+                + " b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.PostFinalBillInwardPayment);
+        hm.put("pe", pe);
+        return getBilledBillFacade().findDoubleByJpql(sql, hm);
+    }
+
+    /**
+     * Rejects a paying amount above the live due once a confirmed final bill
+     * exists. Before the final bill there is no cap: advance money is taken
+     * as a Deposit, and any excess is refunded at finalization.
+     */
+    private boolean payingAmountExceedsDue() {
+        Bill finalBill = fetchConfirmedFinalBill();
+        if (finalBill == null) {
+            return false;
+        }
+        due = calculateFinalBillDue(finalBill);
+        double payingAmount = getCurrent().getTotal();
+        if (payingAmount > due + 0.01) {
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+            JsfUtil.addErrorMessage("Paying amount (" + df.format(payingAmount) + ") cannot exceed the due amount (" + df.format(due) + ").");
+            return true;
+        }
+        return false;
     }
 
     private boolean errorCheck() {
@@ -254,7 +315,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (checkErrorsInPaymentMethod(paymentMethod, paymentMethodData)) {
             return true;
         }
-        
+
+        // checkErrorsInPaymentMethod has set current.total to the amount of
+        // the selected method (or the sum of all components for Multiple).
+        if (payingAmountExceedsDue()) {
+            return true;
+        }
+
         return false;
 
     }
