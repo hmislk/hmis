@@ -2,7 +2,9 @@ package com.divudi.service.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Staff;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,33 +17,36 @@ import javax.inject.Inject;
 
 /**
  * The single definition of how an inpatient professional fee is classified as a
- * professional charge or an assisting charge.
+ * consultant charge, an assistant charge, or a technician/paramedical charge.
  *
- * <p>By default the classification follows the staff record: a {@link Consultant}
- * is a {@link InwardChargeType#ProfessionalCharge}, anyone else (MO, nurse,
- * assistant) is a {@link InwardChargeType#DoctorAndNurses} — "Assisting Charge".
- * Hospitals that bill both as one professional charge enable
- * {@link ConfigOptionApplicationController#PROFESSIONAL_AND_ASSISTING_FEES_MERGED},
- * and then {@code DoctorAndNurses} must not appear anywhere: not as a final-bill
- * row, not as a report column, not as a selectable charge type.
+ * <p>The category is persisted per fee on {@link BillFee#getProfessionalFeeCategory()}
+ * rather than derived purely from the staff record, so a user can override it on the
+ * entry form. When a fee has no category saved (legacy data, or a fee created before
+ * this field existed), it falls back to {@link InwardChargeType#ProfessionalCharge}.
+ *
+ * <p>{@link #defaultCategoryFor(Staff)} gives the entry form the category to preselect
+ * when a staff member is picked: a {@link Consultant} defaults to
+ * {@link InwardChargeType#ProfessionalCharge} ("Consultant Fee"), a {@link Doctor}
+ * (non-consultant) defaults to {@link InwardChargeType#DoctorAndNurses} ("Assistant
+ * Fee"), and anyone else (nurse, technician, other paramedical staff) defaults to
+ * {@link InwardChargeType#TechnicianAndParamedicalCharge} ("Technician Fee"). The user
+ * may still change the preselected category before saving.
+ *
+ * <p>Hospitals that bill consultant and assistant fees as one professional charge
+ * enable {@link ConfigOptionApplicationController#PROFESSIONAL_AND_ASSISTING_FEES_MERGED},
+ * and then {@code DoctorAndNurses} must not appear anywhere: not as a final-bill row,
+ * not as a report column, not as a selectable charge type. The technician/paramedical
+ * category is unaffected by this toggle — it is always its own bucket.
  *
  * <p>This rule used to be re-derived inline as {@code type(staff) = Consultant} in
  * about a dozen queries, with the ConfigOption honoured in only one of them, so a
  * merged hospital saw a bundled final bill and a split view everywhere else
  * (issue #23543). Every consumer now goes through this service instead.
- *
- * <p>Nothing is persisted: the classification is a rule, not data. It cannot be
- * stored on the BillFee's BillItem either — one professional BillItem legitimately
- * carries several fees, and in production those routinely mix a consultant with an
- * assistant, so a per-item charge type could not represent them.
  */
 @Stateless
 public class InwardProfessionalFeeClassificationService implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    /** Query parameter name used by {@link #staffCondition}. */
-    private static final String STAFF_CLASS_PARAM = "professionalFeeStaffClass";
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -54,18 +59,21 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
         return configOptionApplicationController.isProfessionalAndAssistingFeesMerged();
     }
 
-    /**
-     * The charge type a professional fee belongs to, given the staff member it
-     * was raised for. Returns {@code ProfessionalCharge} for everyone when the
-     * merge option is on.
-     */
-    public InwardChargeType chargeTypeOf(Staff staff) {
-        if (isMerged()) {
+    /** The charge type an already-saved fee belongs to. */
+    public InwardChargeType chargeTypeOf(BillFee fee) {
+        InwardChargeType category = fee.getProfessionalFeeCategory();
+        return category != null ? category : InwardChargeType.ProfessionalCharge;
+    }
+
+    /** The default category to preselect when this staff member is picked on the entry form. */
+    public InwardChargeType defaultCategoryFor(Staff staff) {
+        if (staff instanceof Consultant) {
             return InwardChargeType.ProfessionalCharge;
         }
-        return (staff instanceof Consultant)
-                ? InwardChargeType.ProfessionalCharge
-                : InwardChargeType.DoctorAndNurses;
+        if (staff instanceof Doctor) {
+            return InwardChargeType.DoctorAndNurses;
+        }
+        return InwardChargeType.TechnicianAndParamedicalCharge;
     }
 
     /**
@@ -77,16 +85,30 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
     }
 
     /**
-     * A JPQL fragment restricting a BillFee alias to the fees of one charge type,
-     * registering its own query parameter in {@code params} when it needs one.
+     * A JPQL fragment restricting a BillFee alias to the fees of one charge type.
      *
-     * <p>When merged, every professional fee is a professional charge, so the only
-     * restriction left is {@code staff is not null} — which keeps the result
-     * identical to the sum of the two unmerged buckets. Without it, staff-less fee
-     * rows (11 of them on one production database) would be pulled into the
-     * professional total for the first time, because they are excluded from both
-     * buckets today: {@code type(bf.staff)} forces an implicit inner join that
-     * drops them before the WHERE clause is evaluated.
+     * <p>The category is read from the persisted {@code professionalFeeCategory}
+     * field, falling back to {@link InwardChargeType#ProfessionalCharge} for fees
+     * saved before this field existed (or otherwise left null), via a
+     * {@code coalesce(...)} in the JPQL fragment itself — matching how
+     * {@link #chargeTypeOf(BillFee)} resolves the same fee in Java.
+     *
+     * <p>{@link InwardChargeType#TechnicianAndParamedicalCharge} is never affected
+     * by the merge toggle — it is always its own bucket, matched directly. For the
+     * other two categories: when merged, every non-technician professional fee is
+     * a professional charge, so the condition matches anything that is not the
+     * technician/paramedical category (this is only reachable via
+     * {@code ProfessionalCharge} — {@code DoctorAndNurses} is suppressed above when
+     * merged). When not merged, the condition matches the target category exactly.
+     *
+     * <p>Every branch also requires {@code feeAlias.staff is not null}. Under the
+     * old {@code type(bf.staff)} rule this exclusion was implicit — {@code type()}
+     * forces an inner join that drops staff-less rows before the WHERE clause runs
+     * — and merged mode restated it explicitly for the same reason (issue #23543:
+     * staff-less fee rows, 11 of them on one production database, must not be
+     * pulled into a total for the first time just because the query changed). The
+     * persisted-field query has no such implicit join, so this stays explicit in
+     * every branch here to preserve that guarantee.
      *
      * <p>Callers must not ask for {@code DoctorAndNurses} while merged — check
      * {@link #isSuppressed} and skip the query, which is cheaper than running one
@@ -96,12 +118,15 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
      *
      * @param feeAlias the BillFee alias used in the query, e.g. {@code "bf"}
      * @param target   the charge type being queried
-     * @param params   the query's parameter map, added to when required
+     * @param params   the query's parameter map; unused by this implementation but
+     *                 kept in the signature for compatibility with existing callers
      * @throws IllegalArgumentException if {@code target} is not a professional fee
      *         charge type, or is one this hospital does not use
      */
     public String staffCondition(String feeAlias, InwardChargeType target, Map<String, Object> params) {
-        if (target != InwardChargeType.ProfessionalCharge && target != InwardChargeType.DoctorAndNurses) {
+        if (target != InwardChargeType.ProfessionalCharge
+                && target != InwardChargeType.DoctorAndNurses
+                && target != InwardChargeType.TechnicianAndParamedicalCharge) {
             throw new IllegalArgumentException(
                     "Not a professional fee charge type: " + target);
         }
@@ -109,13 +134,35 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
             throw new IllegalArgumentException(
                     target + " does not exist for this hospital - check isSuppressed() and skip the query");
         }
-        if (isMerged()) {
-            return " and " + feeAlias + ".staff is not null ";
+
+        String staffNotNull = " and " + feeAlias + ".staff is not null ";
+        String categoryField = feeAlias + ".professionalFeeCategory";
+        String technician = "com.divudi.core.data.inward.InwardChargeType.TechnicianAndParamedicalCharge";
+
+        if (target == InwardChargeType.TechnicianAndParamedicalCharge) {
+            // Never affected by the merge toggle — always its own bucket. A null
+            // category defaults to ProfessionalCharge, never Technician, so no
+            // null-check is needed here.
+            return staffNotNull + " and " + categoryField + " = " + technician + " ";
         }
-        params.put(STAFF_CLASS_PARAM, Consultant.class);
-        return (target == InwardChargeType.ProfessionalCharge)
-                ? " and type(" + feeAlias + ".staff) = :" + STAFF_CLASS_PARAM + " "
-                : " and type(" + feeAlias + ".staff) != :" + STAFF_CLASS_PARAM + " ";
+        if (isMerged()) {
+            // Consultant + Assistant collapse into one bucket (reachable only via
+            // ProfessionalCharge — DoctorAndNurses is suppressed above when merged).
+            // A null category defaults to ProfessionalCharge, i.e. not Technician,
+            // so it must match here too — spelled out explicitly rather than via
+            // coalesce(), which this EclipseLink version does not evaluate
+            // correctly combined with a fully-qualified enum literal comparison
+            // (confirmed by hand: the equivalent raw SQL filters correctly, the
+            // JPQL coalesce(...) != <literal> form does not).
+            return staffNotNull + " and (" + categoryField + " is null or " + categoryField + " != " + technician + ") ";
+        }
+        if (target == InwardChargeType.ProfessionalCharge) {
+            // A null category defaults to ProfessionalCharge.
+            return staffNotNull + " and (" + categoryField + " is null or " + categoryField
+                    + " = com.divudi.core.data.inward.InwardChargeType.ProfessionalCharge) ";
+        }
+        // DoctorAndNurses: null never defaults here, so no null-check needed.
+        return staffNotNull + " and " + categoryField + " = com.divudi.core.data.inward.InwardChargeType." + target.name() + " ";
     }
 
     /**

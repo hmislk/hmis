@@ -92,6 +92,13 @@ gh pr create \
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
 
+A hotfix PR is where hospital-specific detail leaks most easily, because the
+whole point is that one hospital is affected. The body is public: state the
+defect, the fix and the deploy note, and keep the affected-record counts,
+production bill numbers, schema names and data-fix steps out of it — those go
+to the developer directly or in `tmp/`. See
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+
 ## Step 8 — Restore Stashed Work
 
 ```bash

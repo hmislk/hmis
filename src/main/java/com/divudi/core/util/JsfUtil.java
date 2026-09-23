@@ -44,6 +44,31 @@ public class JsfUtil {
         FacesContext.getCurrentInstance().addMessage(null, facesMsg);
     }
 
+    /**
+     * Message shown when a user without a started shift is redirected to the
+     * cashier index page.
+     */
+    public static final String START_SHIFT_FIRST_MESSAGE
+            = "Please start your shift before making payments or billing. Use Start Shift on this page.";
+
+    /**
+     * Adds an error message that survives a faces-redirect. Without
+     * {@code Flash.setKeepMessages(true)} the message is dropped when the
+     * browser follows the redirect.
+     */
+    public static void addErrorMessageForRedirect(String msg) {
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+        addErrorMessage(msg);
+    }
+
+    /**
+     * Adds the "start your shift" message so that it is shown on the cashier
+     * index page after the redirect.
+     */
+    public static void addStartShiftFirstMessageForRedirect() {
+        addErrorMessageForRedirect(START_SHIFT_FIRST_MESSAGE);
+    }
+
     public static void addSuccessMessage(String msg) {
         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null);
         FacesContext.getCurrentInstance().addMessage(null, facesMsg);

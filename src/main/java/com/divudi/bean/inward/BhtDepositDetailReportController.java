@@ -24,8 +24,18 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import com.divudi.bean.common.UserSettingsController;
 
 /**
  * Controller for BHT Deposit Detail Report. One row per individual deposit
@@ -41,12 +51,14 @@ public class BhtDepositDetailReportController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @Inject
+    private UserSettingsController userSettingsController;
 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = endOfCurrentMonth();
     private String dateBasis = "dischargeDate";
     private String reportType = "ALL";
-    private AdmissionStatus admissionStatus = AdmissionStatus.ANY_STATUS;
+    private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private Institution institution;
@@ -220,12 +232,149 @@ public class BhtDepositDetailReportController implements Serializable {
         return row.getAmount();
     }
 
+    /**
+     * postProcessor for the Excel export (p:dataExporter). p:dataExporter only
+     * serializes the exported h:outputText values as text (via the column's
+     * f:convertNumber), so monetary columns land as plain strings. This
+     * converts those cells back to real numeric cells formatted as
+     * "#,##0.00" and appends a totals row (per used payment method plus the
+     * grand total), matching the on-screen footer which p:dataExporter does
+     * not otherwise export.
+     */
+    public void postProcessXLSBhtDepositDetail(Object document) {
+        if (!(document instanceof Workbook)) {
+            return;
+        }
+        Workbook workbook = (Workbook) document;
+        Sheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        List<String> columnKinds = exportedColumnKinds();
+
+        DataFormat dataFormat = workbook.createDataFormat();
+        short moneyFormat = dataFormat.getFormat("#,##0.00");
+
+        CellStyle numberStyle = workbook.createCellStyle();
+        numberStyle.setDataFormat(moneyFormat);
+
+        int lastDataRow = sheet.getLastRowNum();
+        for (int r = 1; r <= lastDataRow; r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) {
+                continue;
+            }
+            for (int c = 0; c < columnKinds.size(); c++) {
+                if (isMoneyColumn(columnKinds.get(c))) {
+                    applyMoneyFormat(row.getCell(c), numberStyle);
+                }
+            }
+        }
+
+        Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        CellStyle totalLabelStyle = workbook.createCellStyle();
+        totalLabelStyle.setFont(boldFont);
+        CellStyle totalValueStyle = workbook.createCellStyle();
+        totalValueStyle.setFont(boldFont);
+        totalValueStyle.setDataFormat(moneyFormat);
+
+        Row totalRow = sheet.createRow(lastDataRow + 1);
+        boolean labelWritten = false;
+        for (int c = 0; c < columnKinds.size(); c++) {
+            String kind = columnKinds.get(c);
+            if ("AMOUNT".equals(kind)) {
+                Cell cell = totalRow.createCell(c);
+                cell.setCellValue(grandTotal);
+                cell.setCellStyle(totalValueStyle);
+            } else if (kind.startsWith("PM")) {
+                PaymentMethod pm = usedPaymentMethods.get(Integer.parseInt(kind.substring(2)));
+                Cell cell = totalRow.createCell(c);
+                cell.setCellValue(getTotalForMethod(pm));
+                cell.setCellStyle(totalValueStyle);
+            } else if (!labelWritten) {
+                Cell cell = totalRow.createCell(c);
+                cell.setCellValue("Total");
+                cell.setCellStyle(totalLabelStyle);
+                labelWritten = true;
+            }
+        }
+    }
+
+    /**
+     * The kind of each exported column, in the same left-to-right order as
+     * the rendered columns on {@code inward_report_bht_deposit_detail.xhtml}
+     * (only columns currently visible per {@code userSettingsController} are
+     * included, matching what p:dataExporter actually exports).
+     */
+    private List<String> exportedColumnKinds() {
+        List<String> kinds = new ArrayList<>();
+        if (userSettingsController.isInwardBhtDepositDetailBillNoVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailBhtNoVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailPatientNameVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailAdmissionTypeVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailAdmittedVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailDischargedVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailDateTimeVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailPaymentMethodVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailAmountVisible()) {
+            kinds.add("AMOUNT");
+        }
+        for (int i = 0; i < usedPaymentMethods.size(); i++) {
+            kinds.add("PM" + i);
+        }
+        if (userSettingsController.isInwardBhtDepositDetailReferenceNoVisible()) {
+            kinds.add("TEXT");
+        }
+        return kinds;
+    }
+
+    private boolean isMoneyColumn(String kind) {
+        return "AMOUNT".equals(kind) || kind.startsWith("PM");
+    }
+
+    private void applyMoneyFormat(Cell cell, CellStyle numberStyle) {
+        if (cell == null) {
+            return;
+        }
+        if (cell.getCellType() == CellType.STRING) {
+            String text = cell.getStringCellValue();
+            if (text == null || text.trim().isEmpty()) {
+                return;
+            }
+            try {
+                double value = Double.parseDouble(text.replace(",", "").trim());
+                cell.setCellValue(value);
+            } catch (NumberFormatException e) {
+                return;
+            }
+        }
+        cell.setCellStyle(numberStyle);
+    }
+
     public void makeNull() {
         fromDate = startOfCurrentMonth();
         toDate = endOfCurrentMonth();
         dateBasis = "dischargeDate";
         reportType = "ALL";
-        admissionStatus = AdmissionStatus.ANY_STATUS;
+        admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
         paymentMethod = null;
         institution = null;

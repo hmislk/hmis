@@ -2143,9 +2143,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
-            
-            getPatient().getPerson().setForeigner(true);
-            
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -2153,13 +2150,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getPatient().setHasAnAccount(false);
             getPatient().setCreditLimit(0.0);
 
-            // Save Person first (no flush yet)
             if (getPatient().getPerson().getId() != null) {
                 getPersonFacade().edit(getPatient().getPerson());
             } else {
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
-                getPersonFacade().create(getPatient().getPerson());
+                // Do NOT persist the Person here. Patient.person is cascade = ALL, so the
+                // createAndFlush below saves it in the same transaction. Persisting it here
+                // runs in its own transaction and detaches it, and the cascade then inserts
+                // a second, unreferenced PERSON row (#23887).
             }
 
             // Save Patient with immediate flush (flushes both Person and Patient)
@@ -4216,7 +4215,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     return "/opd/opd_bill?faces-redirect=true";
                 }
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -4259,7 +4258,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     return "/inward/inward_service_bill?faces-redirect=true";
                 }
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -4290,7 +4289,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 collectingCentreBillController.setCollectingCentre(null);
                 return "/opd/opd_bill_ac?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -4372,7 +4371,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     return "/opd/opd_bill?faces-redirect=true";
                 }
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
