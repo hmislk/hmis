@@ -3229,45 +3229,54 @@ public class GrnCostingController implements Serializable {
             return "";
         }
 
+        boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
+
+        // Root cause of the recurring "GRN amount exceeds PO amount" defect
+        // (RH General Stores, PO/RH/GSK/26/01621 vs GRN/RH/GSK/26/01634): this
+        // used to check each GRN line individually against the PO's ordered
+        // qty, so two lines referencing the same PO item (e.g. one added via
+        // the "Duplicate" button) could each pass on their own even though
+        // their combined total exceeded the PO. Group by the referenced PO
+        // line first and validate the combined total for that PO item.
+        java.util.Map<BillItem, java.util.List<BillItem>> linesByPoItem = new java.util.LinkedHashMap<>();
         for (BillItem grnItem : billItems) {
             if (grnItem.getReferanceBillItem() == null || grnItem.getPharmaceuticalBillItem() == null) {
                 continue;
             }
+            linesByPoItem.computeIfAbsent(grnItem.getReferanceBillItem(), k -> new java.util.ArrayList<>()).add(grnItem);
+        }
 
-            BillItem purchaseOrderItem = grnItem.getReferanceBillItem();
+        for (java.util.Map.Entry<BillItem, java.util.List<BillItem>> entry : linesByPoItem.entrySet()) {
+            BillItem purchaseOrderItem = entry.getKey();
+            List<BillItem> grnLinesForThisPoItem = entry.getValue();
+
             PharmaceuticalBillItem poItem = purchaseOrderItem.getPharmaceuticalBillItem();
-
             if (poItem == null) {
                 continue;
             }
 
-            PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
-
             double orderedQty = poItem.getQty();
             double orderedFreeQty = poItem.getFreeQty();
-            double currentGrnQty = currentGrnPbi.getQty();
-            double currentGrnFreeQty = currentGrnPbi.getFreeQty();
 
-            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered: " + orderedQty + ", Current GRN: " + currentGrnQty);
-            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered Free: " + orderedFreeQty + ", Current GRN Free: " + currentGrnFreeQty);
+            double currentGrnQty = 0.0;
+            double currentGrnFreeQty = 0.0;
+            String itemName = grnLinesForThisPoItem.get(0).getItem().getName();
+            for (BillItem grnItem : grnLinesForThisPoItem) {
+                currentGrnQty += grnItem.getPharmaceuticalBillItem().getQty();
+                currentGrnFreeQty += grnItem.getPharmaceuticalBillItem().getFreeQty();
+            }
 
-            double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
-            double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
-
-            double previouslyReceivedQty = totalReceivedFromAllGrns;
-            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns;
-
+            double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
+            double previouslyReceivedFreeQty = calculateRemainingFreeQtyFromOrder(poItem);
 
             if (orderedQty < previouslyReceivedQty + currentGrnQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty
+                return "Item " + itemName + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-            // Feature flag controlled free quantity validation
-            boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
             if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
+                return "Item " + itemName + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
                         + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
@@ -4479,15 +4488,34 @@ public class GrnCostingController implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    // Root cause of the recurring "GRN amount exceeds PO amount" defect
+    // (RH General Stores, PO/RH/GSK/26/01621 vs GRN/RH/GSK/26/01634): this
+    // used calculateRemainingFreeQtyFromOrder() - the FREE-quantity-received
+    // function - to cap the ORDINARY quantity field, so it always returned
+    // the full ordered qty regardless of what had already been received.
+    // It also never accounted for sibling rows already added to the GRN
+    // currently being edited (e.g. via the "Duplicate" button), so two rows
+    // referencing the same PO item could each independently be set to the
+    // full ordered qty. Fixed to subtract both the qty already received in
+    // other, previously-saved GRNs (calculateRemainigQtyFromOrder) and the
+    // qty already committed to sibling in-memory rows of this GRN.
     public double getRemainingQty(PharmaceuticalBillItem ph) {
-        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + ph.getBillItem().getReferanceBillItem().getId();
+        BillItem poBillItem = ph.getBillItem().getReferanceBillItem();
+        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + poBillItem.getId();
         PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 
-        double poQty, remainsFree;
-        poQty = po.getQtyInUnit();
-        remainsFree = poQty - calculateRemainingFreeQtyFromOrder(po);
+        double poQty = po.getQtyInUnit();
+        double alreadyReceivedInOtherGrns = calculateRemainigQtyFromOrder(po);
 
-        return remainsFree;
+        double committedInSiblingRowsOfThisGrn = 0.0;
+        for (BillItem sibling : findAllBillItemsRefernceToOriginalItem(poBillItem)) {
+            if (sibling.getPharmaceuticalBillItem() == ph) {
+                continue;
+            }
+            committedInSiblingRowsOfThisGrn += sibling.getPharmaceuticalBillItem().getQty();
+        }
+
+        return poQty - alreadyReceivedInOtherGrns - committedInSiblingRowsOfThisGrn;
     }
 
     public ItemBatch saveItemBatch(BillItem tmp) {
