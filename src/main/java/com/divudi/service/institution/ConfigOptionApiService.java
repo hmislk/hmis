@@ -5,6 +5,8 @@
  */
 package com.divudi.service.institution;
 
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
 import com.divudi.core.data.dto.config.DepartmentConfigDTO;
 import com.divudi.core.data.dto.config.DepartmentConfigUpdateDTO;
 import com.divudi.core.entity.ConfigOption;
@@ -23,8 +25,11 @@ import java.util.Map;
 
 /**
  * Service for ConfigOption API operations
- * Provides business logic for department configuration management
- * Only allows updating existing config options (predefined keys only)
+ * Provides business logic for department configuration management.
+ * Updates an existing department-scoped config option, or creates one
+ * (OptionScope.DEPARTMENT) if it doesn't exist yet — matching the lazy-create
+ * behavior of ConfigOptionApplicationController.getBooleanValueByKeyForDepartment
+ * and the app-scoped setX endpoints in ConfigResource.
  * Follows patterns from PharmacySearchApiService and PharmacyAdjustmentApiService
  *
  * @author Buddhika
@@ -69,9 +74,17 @@ public class ConfigOptionApiService implements Serializable {
     }
 
     /**
-     * Update department configuration option value
-     * Only updates existing config options (predefined keys only)
-     * Does not create new config options
+     * Update department configuration option value. Creates the option
+     * (OptionScope.DEPARTMENT) if it doesn't exist yet for this department —
+     * many department-scoped keys (e.g. "Pharmacy - Allow Issue to Same
+     * Department") are only ever lazily created by the JSF page that reads
+     * them, so a department nobody has opened that page for has no row at
+     * all; this endpoint previously required that row to pre-exist, making
+     * it impossible to set such a key purely via API (issue #23945 follow-up).
+     * The value type for a newly-created key comes from
+     * {@code configValueType} if given, otherwise is inferred (BOOLEAN for
+     * "true"/"false", SHORT_TEXT otherwise). Ignored when updating an
+     * existing option — its stored type is left as-is.
      */
     public DepartmentConfigDTO updateDepartmentConfig(DepartmentConfigUpdateDTO request, WebUser user) throws Exception {
         validateUpdateRequest(request);
@@ -83,12 +96,13 @@ public class ConfigOptionApiService implements Serializable {
         // Validate department exists
         Department department = loadAndValidateDepartment(request.getDepartmentId());
 
-        // Find existing config option for this department and key
+        // Find existing config option for this department and key, creating it if absent
         ConfigOption configOption = findConfigOption(request.getDepartmentId(), request.getConfigKey());
-
-        if (configOption == null) {
-            throw new Exception("Configuration option '" + request.getConfigKey() +
-                              "' not found for department. Only predefined config keys can be updated.");
+        boolean created = configOption == null;
+        if (created) {
+            OptionValueType valueType = resolveValueType(request);
+            configOption = configOptionFacade.createOptionIfNotExists(request.getConfigKey(), OptionScope.DEPARTMENT,
+                    null, department, null, valueType, request.getConfigValue());
         }
 
         // Update config value
@@ -105,9 +119,33 @@ public class ConfigOptionApiService implements Serializable {
         response.setDepartmentName(department.getName());
         response.setConfigKey(configOption.getOptionKey());
         response.setConfigValue(configOption.getOptionValue());
-        response.setConfigDescription("Updated from '" + oldValue + "' to '" + request.getConfigValue() + "'");
+        response.setConfigDescription(created
+                ? "Created with value '" + request.getConfigValue() + "'"
+                : "Updated from '" + oldValue + "' to '" + request.getConfigValue() + "'");
 
         return response;
+    }
+
+    /**
+     * Determine the OptionValueType for a newly-created department config
+     * option: explicit {@code configValueType} if given, else inferred from
+     * the value (BOOLEAN for "true"/"false", SHORT_TEXT otherwise).
+     */
+    private OptionValueType resolveValueType(DepartmentConfigUpdateDTO request) throws Exception {
+        String explicit = request.getConfigValueType();
+        if (explicit != null && !explicit.trim().isEmpty()) {
+            try {
+                return OptionValueType.valueOf(explicit.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid configValueType '" + explicit
+                        + "'. Valid values: " + java.util.Arrays.toString(OptionValueType.values()));
+            }
+        }
+        String value = request.getConfigValue();
+        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+            return OptionValueType.BOOLEAN;
+        }
+        return OptionValueType.SHORT_TEXT;
     }
 
     // Private helper methods

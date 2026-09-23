@@ -123,7 +123,13 @@ public class CapabilityStatementResource {
                         + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
                         + "Dedicated sub-resource: GET/PUT /api/departments/{id}/svg "
                         + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
-                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board. "
+                        + "GET/PUT /api/departments/{id}/config manages department-scoped ConfigOption "
+                        + "key/value pairs (body { configKey, configValue, configValueType? } — "
+                        + "creates the key if it doesn't exist yet for that department, inferring "
+                        + "BOOLEAN from a \"true\"/\"false\" value or defaulting to SHORT_TEXT when "
+                        + "configValueType is omitted). GET/PUT /api/departments/{id}/preferences "
+                        + "manages the department-scoped UserPreference record.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Institutions", "/api/institutions",
