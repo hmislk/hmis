@@ -1915,10 +1915,17 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
-        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-        // Calculation Margin
+        // Calculation Margin — must run BEFORE the finance details are built.
+        // updateMargin() is the only code that sets Bill.total/netTotal on this path
+        // (savePreBillFinallyRequest() does not), and it also finalises each item's
+        // netValue. createBillFinancialDetailsForInpatientDirectIssueBill() copies
+        // those values straight into BillFinanceDetails/BillItemFinanceDetails and
+        // nothing refreshes them afterwards, so building them first stored a net and
+        // gross total of zero on every bill. Issue #23952.
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+
+        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -2249,11 +2256,13 @@ public class PharmacySaleBhtController implements Serializable {
         savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
         transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
-        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-        // Calculation Margin
+        // Calculation Margin — must run BEFORE the finance details are built,
+        // for the reason recorded at the other call site. Issue #23952.
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
+
+        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
