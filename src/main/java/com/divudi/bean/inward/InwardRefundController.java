@@ -12,6 +12,7 @@ import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -65,6 +66,8 @@ public class InwardRefundController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     private BhtSummeryController bhtSummeryController;
+    @Inject
+    private WebUserController webUserController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -653,6 +656,19 @@ public class InwardRefundController implements Serializable {
         }
 
         preselectedBillLoaded = true;
+
+        // refundBillId comes straight from the URL, so apply the same gates
+        // as the menu/reprint entry points before touching the bill: the
+        // Refund privilege and an open cashier shift.
+        if (!webUserController.hasPrivilege("InwardBilling")) {
+            JsfUtil.addErrorMessage("You are not authorized to process inward refunds.");
+            return;
+        }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return;
+        }
 
         Bill billToRefund = getBillFacade().find(preselectedBillId);
 
