@@ -12,7 +12,7 @@
 
 
             <h:panelGrid columns="1">
-                <p:panel header="Channel Session Report (Doctor Card)" style="margin: 15px 100px; border-radius: 6px;">
+                <p:panel header="Channel Session Report (Doctor Card)" style="margin: 15px clamp(0.5rem, 5vw, 75px); border-radius: 6px;">
                     <div class="container-fluid px-0">
                         <div class="row">
                             
@@ -25,10 +25,17 @@
                                         <p:outputLabel value="From Date" for="fromDate"/>
                                     </div>
                                     <div class="col-12 col-sm-9">
-                                        <p:calendar id="fromDate"
-                                                    value="#{channelReportController.fromDate}"
-                                                    styleClass="d-block w-75"
-                                                    inputStyleClass="form-control"/>
+                                        <p:datePicker id="fromDate"
+                                                      value="#{channelReportController.fromDate}"
+                                                      styleClass="d-block w-75"
+                                                      inputStyleClass="form-control"
+                                                      showTime="true" 
+                                                      monthNavigator="true"           
+                                                      yearNavigator="true"                              
+                                                      timeInput="true" 
+                                                      title="Filter by from date"
+                                                      hideOnDateTimeSelect="true"
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </div>
                                 </div>
                             </div>
@@ -43,12 +50,18 @@
                                         <p:outputLabel value="To Date" for="toDate"/>
                                     </div>
                                     <div class="col-12 col-sm-9">
-                                        <p:calendar id="toDate"
-                                                    value="#{channelReportController.toDate}"
-                                                    locale="de"
-                                                    pattern="dd.MM.yyyy HH:mm"
-                                                    styleClass="d-block w-75"
-                                                    inputStyleClass="form-control"/>
+                                        <p:datePicker id="toDate"
+                                                      value="#{channelReportController.toDate}"
+                                                      locale="de"
+                                                      styleClass="d-block w-75"
+                                                      inputStyleClass="form-control"
+                                                      showTime="true" 
+                                                      monthNavigator="true"           
+                                                      yearNavigator="true"                              
+                                                      timeInput="true" 
+                                                      title="Filter by to date"
+                                                      hideOnDateTimeSelect="true"
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +130,7 @@
                         </div>
                     </div>
 
-                    <h:panelGrid columns="3" class="mt-1 mb-0">
+                    <div class="d-flex flex-wrap align-items-center my-2">
                         <p:commandButton id="btnFill"
                             value="Fill"
                             icon="fas fa-sync-alt"
@@ -148,9 +161,9 @@
                                             fileName="DoctorCard"/>
                         </p:commandButton>
 
-                    </h:panelGrid>
+                    </div>
                     </p:panel>
-                    <p:panel id="reportPrint" header="Channel Session Report (Doctor Card)" style="margin: 15px 100px; border-radius: 6px;">
+                    <p:panel id="reportPrint" header="Channel Session Report (Doctor Card)" style="margin: 15px clamp(0.5rem, 5vw, 75px); border-radius: 6px;">
                         <p:dataTable value="#{channelReportController.sessioninstances}" var="i" sortMode="single" id="tbl" styleClass="table table-sm">
 
                             <p:column style="padding: 6px">
