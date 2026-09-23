@@ -28,6 +28,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFacade;
@@ -515,9 +516,9 @@ public class InwardServiceRefundController implements Serializable {
      * item may be returned:
      *  - before the lab has received the sample (status still in
      *    EnumController#getAvailableStatusforCancel - Ordered / Barcode
-     *    Generated / Sample Collected / Sample Sent / Sample Rejected): OK.
-     *  - once the sample has been received/accepted and is being processed:
-     *    blocked.
+     *    Generated / Sample Collected / Sample Rejected): OK.
+     *  - once the sample has been sent to the lab, or received/accepted and
+     *    is being processed: blocked.
      *  - once a result has been entered (dataEntered): blocked, even if the
      *    status itself would otherwise allow it.
      *
@@ -536,6 +537,9 @@ public class InwardServiceRefundController implements Serializable {
             return "Cannot return \"" + original.getItem().getName() + "\" - the laboratory report has already been entered for this test.";
         }
         if (!enumController.getAvailableStatusforCancel().contains(investigation.getStatus())) {
+            if (investigation.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+                return "Cannot return \"" + original.getItem().getName() + "\" - this test has already been sent to the Laboratory.";
+            }
             return "Cannot return \"" + original.getItem().getName() + "\" - this test has already been received by the Laboratory.";
         }
         return null;

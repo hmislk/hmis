@@ -20,6 +20,7 @@ public class DepartmentConfigUpdateDTO implements Serializable {
     private Long departmentId; // Required
     private String configKey; // Required
     private String configValue; // Required - new value to set
+    private String configValueType; // Optional - OptionValueType name, only used when creating a new key
 
     public DepartmentConfigUpdateDTO() {
     }
@@ -28,6 +29,11 @@ public class DepartmentConfigUpdateDTO implements Serializable {
         this.departmentId = departmentId;
         this.configKey = configKey;
         this.configValue = configValue;
+    }
+
+    public DepartmentConfigUpdateDTO(Long departmentId, String configKey, String configValue, String configValueType) {
+        this(departmentId, configKey, configValue);
+        this.configValueType = configValueType;
     }
 
     /**
@@ -65,12 +71,21 @@ public class DepartmentConfigUpdateDTO implements Serializable {
         this.configValue = configValue;
     }
 
+    public String getConfigValueType() {
+        return configValueType;
+    }
+
+    public void setConfigValueType(String configValueType) {
+        this.configValueType = configValueType;
+    }
+
     @Override
     public String toString() {
         return "DepartmentConfigUpdateDTO{" +
                 "departmentId=" + departmentId +
                 ", configKey='" + configKey + '\'' +
                 ", configValue='" + configValue + '\'' +
+                ", configValueType='" + configValueType + '\'' +
                 '}';
     }
 }

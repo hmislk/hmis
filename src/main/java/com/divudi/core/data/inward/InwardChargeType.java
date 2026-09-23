@@ -26,12 +26,13 @@ public enum InwardChargeType {
     MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies", true),//For Surgery Bill Medicines
     MOCharges("MO Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
-    DoctorAndNurses("Assisting Charge", CalculationMethod.BILL_FEE, true),//Set Doctor && Nurse Fees
+    DoctorAndNurses("Assistant Fee", CalculationMethod.BILL_FEE, true),//Set Doctor && Nurse Fees
     NursingCharges("Nursing Care", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     OxygenCharges("Oxygen Charges", true),
     OtherCharges("Other Charges", true),
     OperationTheatreCharges("Operation Theatre Charges", true),
-    ProfessionalCharge("Professional Charge", CalculationMethod.BILL_FEE, true),//Only for Consultant Fees
+    ProfessionalCharge("Consultant Fee", CalculationMethod.BILL_FEE, true),//Only for Consultant Fees
+    TechnicianAndParamedicalCharge("Technician Fee", CalculationMethod.BILL_FEE, true),//Nurses, technicians, other paramedical staff — never suppressed, independent of the merge toggle
     ReimbursementCharges("Reimbursement Charges", true),
     RoomCharges("Room Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     physiotherapy("Physiotherapy Charges", true),

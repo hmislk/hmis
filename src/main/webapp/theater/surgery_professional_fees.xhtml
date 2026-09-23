@@ -169,7 +169,19 @@
                                                     completeMethod="#{inwardProfessionalBillController.completeItems}" var="st"
                                                     itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="70"
                                                     style="width: 400px;" class="mx-4 my-1">
+                                        <p:ajax event="itemSelect" listener="#{inwardProfessionalBillController.onSurgeryProfessionalFeeStaffSelect}" update="profPanel"/>
                                     </p:autoComplete>
+
+                                    <h:outputText value="Fee Category"/>
+                                    <p:selectOneMenu class="mx-4 my-1" style="width: 400px;"
+                                                     id="cmbFeeCategory"
+                                                     value="#{inwardProfessionalBillController.proEncounterComponent.billFee.professionalFeeCategory}">
+                                        <f:selectItems
+                                            value="#{inwardProfessionalBillController.professionalFeeCategoryOptions}"
+                                            var="cat"
+                                            itemLabel="#{cat}"
+                                            itemValue="#{cat}" />
+                                    </p:selectOneMenu>
 
                                     <h:outputLabel value="Description"/>
                                     <p:inputText class="mx-4 my-1" size="70" autocomplete="off" id="txtDes"
@@ -207,6 +219,9 @@
                             </p:column>
                             <p:column headerText="Doctor/Staff">
                                 <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Fee Category">
+                                <h:outputLabel value="#{c.billFee.professionalFeeCategory ne null ? c.billFee.professionalFeeCategory.label : 'Consultant Fee'}"/>
                             </p:column>
                             <p:column headerText="Fee">
                                 <p:inputText autocomplete="off" style="width: 130px"

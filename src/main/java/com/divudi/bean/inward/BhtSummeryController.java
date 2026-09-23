@@ -72,6 +72,7 @@ import com.divudi.core.facade.PatientRoomTimedItemChargeFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
+import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
@@ -80,6 +81,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.util.CommonFunctions;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -92,6 +94,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -105,6 +108,8 @@ import javax.persistence.TemporalType;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -172,6 +177,8 @@ public class BhtSummeryController implements Serializable {
     InwardPaymentController inwardPaymentController;
     @Inject
     InwardRefundController inwardRefundController;
+    @EJB
+    private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
@@ -225,6 +232,26 @@ public class BhtSummeryController implements Serializable {
     Date toDate;
     private Date date;
     private boolean printPreview;
+    /**
+     * Frozen final-bill PDF snapshot cache (bill id + bytes, as one atomic
+     * pair - see {@link FinalBillPdfSnapshotCacheEntry}) for {@link #current},
+     * mirroring {@code InwardSearch.finalBillPdfSnapshotCacheEntry} / the
+     * getter/refresh pattern there (issue #23848 finding I8:
+     * inward_bill_final.xhtml was the one route into a live, recomputable
+     * {@code bi:finalBill} composite for an approved bill that the rest of
+     * the PR's approval-gating missed). Populated only by
+     * {@link #refreshFinalBillPdfSnapshot()}; must never be populated from
+     * inside {@link #getFinalBillPdfSnapshotStream()} itself, same "getters
+     * are pure reads" rule as InwardSearch. Always assigned in a single
+     * statement from a single freshly-constructed
+     * {@link FinalBillPdfSnapshotCacheEntry} - never by separately assigning
+     * a bytes field and an id field - so a concurrent request refreshing
+     * this same session-scoped field for a different bill can only ever
+     * leave either the old or the new (billId, bytes) pair here, never a
+     * mix of the two (a real, if narrow, cross-patient leak the
+     * two-separate-field version allowed).
+     */
+    private FinalBillPdfSnapshotCacheEntry finalBillPdfSnapshotCacheEntry;
     //////////////////////////
     // Custom2 (Custom Bills tab) print-format settings
     private boolean custom2ShowAddress;
@@ -233,11 +260,6 @@ public class BhtSummeryController implements Serializable {
     private boolean custom2ShowGuardian;
     private boolean custom2ShowCorporateSponsor;
     // Custom4 (Custom Bills tab - letterhead) print-format settings
-    private boolean custom4ShowAddress;
-    private boolean custom4ShowNic;
-    private boolean custom4ShowPhone;
-    private boolean custom4ShowGuardian;
-    private boolean custom4ShowCorporateSponsor;
     // Custom Bills tab - which custom format(s) are shown to end users.
     // An admin flips these via the Settings dialog; end users never pick a
     // format at print time (department-wide choice, not a per-print option).
@@ -507,8 +529,6 @@ public class BhtSummeryController implements Serializable {
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
         custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
         custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
-        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
-        loadCustom4Config();
     }
 
     public void saveCustom2Config() {
@@ -523,8 +543,6 @@ public class BhtSummeryController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
-            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
-            persistCustom4Config();
             JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
             loadCustom2Config();
         } catch (Exception e) {
@@ -575,7 +593,7 @@ public class BhtSummeryController implements Serializable {
      * missing rows triggers at most one synchronized cache reload, after the
      * loop, instead of one per lazily created row.
      */
-    private List<Map.Entry<String, Double>> foldInwardCategoryTotals(Bill bill) {
+    public List<Map.Entry<String, Double>> foldInwardCategoryTotals(Bill bill) {
         Map<String, Double> totals = new TreeMap<>();
         if (bill == null || bill.getBillItems() == null) {
             return new ArrayList<>(totals.entrySet());
@@ -710,77 +728,6 @@ public class BhtSummeryController implements Serializable {
     }
     // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (letterhead)">
-    public void loadCustom4Config() {
-        custom4ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", false);
-        custom4ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", false);
-        custom4ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", false);
-        custom4ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", true);
-        custom4ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", true);
-    }
-
-    public void saveCustom4Config() {
-        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
-            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
-            return;
-        }
-        try {
-            persistCustom4Config();
-            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
-            loadCustom4Config();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
-        }
-    }
-
-    private void persistCustom4Config() {
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", custom4ShowAddress);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", custom4ShowNic);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", custom4ShowPhone);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", custom4ShowGuardian);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", custom4ShowCorporateSponsor);
-    }
-
-    public boolean isCustom4ShowAddress() {
-        return custom4ShowAddress;
-    }
-
-    public void setCustom4ShowAddress(boolean custom4ShowAddress) {
-        this.custom4ShowAddress = custom4ShowAddress;
-    }
-
-    public boolean isCustom4ShowNic() {
-        return custom4ShowNic;
-    }
-
-    public void setCustom4ShowNic(boolean custom4ShowNic) {
-        this.custom4ShowNic = custom4ShowNic;
-    }
-
-    public boolean isCustom4ShowPhone() {
-        return custom4ShowPhone;
-    }
-
-    public void setCustom4ShowPhone(boolean custom4ShowPhone) {
-        this.custom4ShowPhone = custom4ShowPhone;
-    }
-
-    public boolean isCustom4ShowGuardian() {
-        return custom4ShowGuardian;
-    }
-
-    public void setCustom4ShowGuardian(boolean custom4ShowGuardian) {
-        this.custom4ShowGuardian = custom4ShowGuardian;
-    }
-
-    public boolean isCustom4ShowCorporateSponsor() {
-        return custom4ShowCorporateSponsor;
-    }
-
-    public void setCustom4ShowCorporateSponsor(boolean custom4ShowCorporateSponsor) {
-        this.custom4ShowCorporateSponsor = custom4ShowCorporateSponsor;
-    }
-    // </editor-fold>
 
     public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
         if (surgeryBills == null) {
@@ -2797,6 +2744,13 @@ public class BhtSummeryController implements Serializable {
         printPreview = true;
         originalBill = null;
         creatingNewVersion = false;
+        // No-op here (current is a bill just settled by this call, so it is
+        // never approved yet), but called unconditionally for the same
+        // reason InwardSearch's navigation methods call its equivalent
+        // unconditionally: it is the chokepoint that puts inward_bill_final
+        // into print-preview mode, so it must keep the cache correct for
+        // every future caller of this method too (issue #23848 finding I8).
+        refreshFinalBillPdfSnapshot();
     }
 
     /**
@@ -2898,6 +2852,7 @@ public class BhtSummeryController implements Serializable {
         printPreview = true;
         originalBill = null;
 
+        refreshFinalBillPdfSnapshot();
         return "inward_bill_final?faces-redirect=true";
     }
 
@@ -2935,6 +2890,7 @@ public class BhtSummeryController implements Serializable {
 
         getCurrent().setPreviousVersion(sourceBill);
 
+        refreshFinalBillPdfSnapshot();
         return "inward_bill_final?faces-redirect=true";
     }
 
@@ -3027,13 +2983,59 @@ public class BhtSummeryController implements Serializable {
 
     public List<EncounterCreditCompany> fillCreditCompaniesByPatient(PatientEncounter patientEncounter) {
         List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
+        // Ordered by id so callers see the companies in registration order rather
+        // than whatever order the database happens to return. id is used instead
+        // of createdAt because it is monotonic and never null - ordering on a
+        // nullable createdAt would sort legacy rows with no timestamp to the front.
         String sql = "select ecc from EncounterCreditCompany ecc"
                 + "  where ecc.retired=false "
-                + " and ecc.patientEncounter=:pEnc ";
+                + " and ecc.patientEncounter=:pEnc "
+                + " order by ecc.id ";
         HashMap hm = new HashMap();
         hm.put("pEnc", patientEncounter);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
         return encounterCreditCompanys;
+    }
+
+    /**
+     * Comma-separated names of every credit company registered against the
+     * bill's admission, for printing on a final bill.
+     *
+     * An admission can carry several sponsors - they live in the
+     * EncounterCreditCompany collection, not in the single
+     * Bill.creditCompany / PatientEncounter.creditCompany field, which only
+     * ever holds one of them. Print templates that read the scalar therefore
+     * show one sponsor and silently drop the rest.
+     *
+     * Duplicate registrations for the same institution are possible through
+     * older data paths (see rebuildAllocationsFromSourceBill), so names are
+     * de-duplicated here rather than printed twice.
+     *
+     * Falls back to the bill's own credit company when the admission has no
+     * EncounterCreditCompany rows at all, so older admissions keep printing
+     * the sponsor they always did. Returns an empty string when there is no
+     * sponsor, which the template uses to hide the whole line.
+     */
+    public String creditCompanyNamesForPrint(Bill bill) {
+        if (bill == null) {
+            return "";
+        }
+        LinkedHashSet<String> names = new LinkedHashSet<>();
+        if (bill.getPatientEncounter() != null) {
+            List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(bill.getPatientEncounter());
+            if (eccs != null) {
+                for (EncounterCreditCompany ecc : eccs) {
+                    if (ecc.getInstitution() != null && ecc.getInstitution().getName() != null
+                            && !ecc.getInstitution().getName().trim().isEmpty()) {
+                        names.add(ecc.getInstitution().getName().trim());
+                    }
+                }
+            }
+        }
+        if (names.isEmpty() && bill.getCreditCompany() != null && bill.getCreditCompany().getName() != null) {
+            names.add(bill.getCreditCompany().getName().trim());
+        }
+        return String.join(", ", names);
     }
 
     public void saveCreditBillForCreditCompany(PatientEncounter pe, EncounterCreditCompany ecc, Double value) {
@@ -3806,6 +3808,7 @@ public class BhtSummeryController implements Serializable {
         calculateDiscount();
         updateTotal();
         settleOriginalBill();
+        refreshFinalBillPdfSnapshot();
         return "inward_bill_final?faces-redirect=true";
 
     }
@@ -4484,6 +4487,7 @@ public class BhtSummeryController implements Serializable {
         latestCheckedBillItemsByItem = null;
         printPreview = false;
         current = null;
+        finalBillPdfSnapshotCacheEntry = null;
         tmpPI = null;
         currentTime = null;
         toTime = null;
@@ -5363,17 +5367,22 @@ public class BhtSummeryController implements Serializable {
         this.due = due;
     }
 
+    /**
+     * Sums the Bill Total column shown for a Medicine issue/return list.
+     * The lists passed in (built by {@code InwardBeanController.fetchIssueTable()})
+     * are already scoped to exactly the {@code BillTypeAtomic} set that
+     * feeds the Medicine charge total, so every row here belongs in the
+     * total - no further row-type filtering needed (issue #23871; this
+     * used to only sum {@code PreBill}/linked-{@code RefundBill} rows,
+     * silently excluding the porter-flow return's {@code BilledBill} rows).
+     */
     public double getVisibleIssueTotal(List<Bill> issues) {
         if (issues == null) {
             return 0.0;
         }
         double total = 0.0;
         for (Bill iss : issues) {
-            boolean visible = (iss instanceof PreBill)
-                    || (iss instanceof RefundBill && iss.getBilledBill() != null);
-            if (visible) {
-                total += iss.getNetTotal();
-            }
+            total += iss.getNetTotal();
         }
         return total;
     }
@@ -5867,27 +5876,9 @@ public class BhtSummeryController implements Serializable {
         // Fetch all 7 PatientRoom charge sums in a single query
         Map<InwardChargeType, Double> roomSums = getInwardBean().getPatientRoomChargeSumsBulk(getPatientEncounter(), childPatientEncouters);
 
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-        // Porter-based ward return flow (#21466/#21470): value now negated in
-        // WardPharmacyReturnToPharmacyController.doSettle() - without these, the
-        // returned amount was silently never deducted from the Medicine total
-        // (issue #22990).
-        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
-        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+        // Shared with the Medicine issue/return list (InwardBeanController.fetchIssueTable())
+        // so the total and the list can no longer drift apart (issue #23871).
+        List<BillTypeAtomic> btas = getInwardBean().getInwardMedicineBillTypes();
 
         List<BillTypeAtomic> medicineCancellationBtas = new ArrayList<>();
         medicineCancellationBtas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
@@ -6066,6 +6057,167 @@ public class BhtSummeryController implements Serializable {
 
     public void setCurrent(Bill current) {
         this.current = current;
+    }
+
+    /**
+     * Pure read: serves the PDF bytes already fetched/generated by whichever
+     * navigation method routed into inward_bill_final.xhtml's print-preview
+     * mode (see {@link #refreshFinalBillPdfSnapshot()}). Mirrors
+     * {@code InwardSearch.getFinalBillPdfSnapshotStream()} exactly, including
+     * resolving the PR #23848 review finding #1 cross-tab/cross-session leak
+     * the same way: {@code p:media} is wired with {@code cache="false"},
+     * which makes PrimeFaces re-invoke this getter completely fresh on the
+     * async dynamic-resource fetch - a genuinely separate, later request
+     * from the page's initial render, by which point this session's
+     * {@link #current} / cache fields may have moved on to a different bill.
+     * {@code inward_bill_final.xhtml} nests
+     * {@code <f:param name="finalBillId" value="#{bhtSummeryController.current.id}" />}
+     * inside the {@code p:media}, so PrimeFaces appends that id to the
+     * resource URL and this getter can resolve the response for THAT id
+     * independently of session state (see
+     * {@link #buildFinalBillPdfSnapshotStreamForBillId(Long)}). Falls back to
+     * the previous session-cache-based behavior only when no such parameter
+     * is present.
+     */
+    public StreamedContent getFinalBillPdfSnapshotStream() {
+        Long requestedBillId = readFinalBillIdRequestParam();
+        if (requestedBillId != null) {
+            return buildFinalBillPdfSnapshotStreamForBillId(requestedBillId);
+        }
+
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry == null || entry.getBytes() == null) {
+            return null;
+        }
+        if (current == null || current.getId() == null || !current.getId().equals(entry.getBillId())) {
+            return null;
+        }
+        byte[] bytes = entry.getBytes();
+        String fileName = sanitizedFinalBillPdfFileName(current.getDeptId(), current.getId());
+        return DefaultStreamedContent.builder()
+                .name(fileName)
+                .contentType("application/pdf")
+                .stream(() -> new ByteArrayInputStream(bytes))
+                .build();
+    }
+
+    /**
+     * Same sanitization {@code InwardSearch} applies before using
+     * {@code deptId} in a downloaded file name: a raw {@code deptId} like
+     * {@code "Inward/INWFINAL/192/1"} contains {@code /}, which is not valid
+     * inside a file name and would otherwise truncate or corrupt the
+     * browser's saved/displayed name.
+     */
+    private String sanitizedFinalBillPdfFileName(String deptId, Long billId) {
+        String safeName = deptId == null ? String.valueOf(billId) : deptId.replaceAll("[^A-Za-z0-9._-]", "_");
+        return safeName + ".pdf";
+    }
+
+    /**
+     * Reads the {@code finalBillId} request parameter that {@code p:media}
+     * appends to its dynamic-resource fetch URL (via the nested
+     * {@code f:param} in {@code inward_bill_final.xhtml}), if present and
+     * parseable. Returns {@code null} when absent or malformed so callers
+     * can fall back to the legacy session-cache-based behavior. Mirrors
+     * {@code InwardSearch.readFinalBillIdRequestParam()}.
+     */
+    private Long readFinalBillIdRequestParam() {
+        try {
+            String param = FacesContext.getCurrentInstance()
+                    .getExternalContext().getRequestParameterMap().get("finalBillId");
+            if (param == null || param.isEmpty()) {
+                return null;
+            }
+            return Long.valueOf(param);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves the PDF stream for a specific, explicitly-requested bill id,
+     * independent of this session's mutable {@link #current} /
+     * {@link #finalBillPdfSnapshotCacheEntry} fields. Serves the session cache
+     * only when it happens to already match the requested id; otherwise
+     * returns {@code null} rather than looking the requested id up
+     * independently. Mirrors
+     * {@code InwardSearch.buildFinalBillPdfSnapshotStreamForBillId(Long)},
+     * including why: {@code finalBillId} is a plain, client-editable URL
+     * query parameter (PrimeFaces' {@code DynamicContentSrcBuilder} just
+     * string-concatenates it onto the generated resource URL; {@code pfdrid}
+     * is a hash of the fixed EL expression string, constant across all
+     * sessions/bills, not a per-render secret). An earlier version of this
+     * method treated a mismatch as "resolve the requested id directly" -
+     * {@code getBillFacade().find(requestedBillId)} followed by serving that
+     * bill's PDF once approved - which let any authenticated user download
+     * any other patient's approved final bill by hand-editing the id in the
+     * URL. Returning {@code null} on mismatch still closes the original
+     * cross-tab/cross-session race (a mismatched request never gets served
+     * the WRONG bill's data - it just gets nothing, which the page already
+     * renders as its existing "could not be loaded" fallback panel) without
+     * that unauthorized lookup-and-serve path.
+     */
+    private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry != null && entry.getBytes() != null && requestedBillId.equals(entry.getBillId())) {
+            byte[] cachedBytes = entry.getBytes();
+            String fileName = (current != null && requestedBillId.equals(current.getId()))
+                    ? sanitizedFinalBillPdfFileName(current.getDeptId(), current.getId())
+                    : sanitizedFinalBillPdfFileName(null, requestedBillId);
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(cachedBytes))
+                    .build();
+        }
+
+        // Session cache is absent or belongs to a different bill than the
+        // one this resource request was generated for. Do NOT perform an
+        // independent, unauthorized lookup of the requested id - that would
+        // let a client-edited finalBillId serve any other patient's PDF.
+        return null;
+    }
+
+    /**
+     * Generates/fetches the final bill PDF snapshot for {@link #current} and
+     * caches the bytes for {@link #getFinalBillPdfSnapshotStream()} to serve
+     * as a pure read. A no-op (clears the cache and returns) whenever
+     * {@link #current} is null or not yet approved - which is the case on
+     * every normal path into this page's print-preview mode, since
+     * {@link #current} is always a freshly created or just-settled,
+     * unapproved bill there. It only actually populates the cache on the one
+     * path this exists to guard against: this session's {@link #current}
+     * happening to already be approved (e.g. approved from another tab/page
+     * without this bean's state being reset) when print-preview mode is
+     * (re-)entered. Must be called by every navigation method that puts this
+     * page into print-preview mode, same convention as
+     * {@code InwardSearch.refreshFinalBillPdfSnapshot()}.
+     *
+     * <p>Captures {@link #current} into a local at entry and uses only that
+     * local for every check, the service call, and the cache entry's id -
+     * never re-reading the {@link #current} field partway through, for the
+     * same reason as {@code InwardSearch.refreshFinalBillPdfSnapshot()}: a
+     * concurrent request reassigning {@link #current} between the service
+     * call and the cache-entry construction could otherwise still produce
+     * a mismatched (billId, bytes) pair.
+     */
+    private void refreshFinalBillPdfSnapshot() {
+        Bill snapshotBill = current;
+        finalBillPdfSnapshotCacheEntry = null;
+        if (snapshotBill == null || snapshotBill.getApproveAt() == null) {
+            return;
+        }
+        try {
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(snapshotBill);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(snapshotBill.getId(), bytes);
+        } catch (Exception ex) {
+            // Degrade gracefully, same rationale as InwardSearch: a snapshot
+            // failure must not block navigation into this page - the
+            // rendered="...finalBillPdfSnapshotStream eq null" fallback panel
+            // in inward_bill_final.xhtml covers this case.
+            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill PDF snapshot fetch/generation failed", ex);
+        }
     }
 
     public Bill getOriginalBill() {

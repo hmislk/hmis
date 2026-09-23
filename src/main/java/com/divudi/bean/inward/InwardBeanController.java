@@ -528,15 +528,36 @@ public class InwardBeanController implements Serializable {
         return -getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    /**
+     * Sums {@code Bill.netTotal} for the given {@code btas} restricted to one issuing
+     * department. Resolves "issuing department" the same way as
+     * {@link #fetchMedicineIssueTable(PatientEncounter, List, DepartmentType)} - a return's
+     * own {@code department} is often the department that processed the return, not the one
+     * that issued the medicine, so a {@code RefundBill}/{@code BilledBill} return is attributed
+     * back to its linked issue/receive bill's department instead (issue #23871). This keeps the
+     * department-split Medicine totals (via {@code BhtSummeryController.setKnownChargeTot()})
+     * consistent with the department-split Medicine list built by
+     * {@code fetchMedicineIssueTable}.
+     */
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
         String sql;
         HashMap hm;
         sql = "SELECT  sum(b.netTotal)"
                 + " FROM Bill b "
+                + " LEFT JOIN b.billedBill bb "
+                + " LEFT JOIN b.referenceBill rb "
+                + " LEFT JOIN rb.fromDepartment rbFromDept "
+                + " LEFT JOIN rb.department rbDept "
+                + " LEFT JOIN bb.department bbDept "
                 + " WHERE b.retired=false "
-                + " and b.billTypeAtomic IN :btp "
-                + " and  b.patientEncounter IN :pe"
-                + " and  b.department.departmentType = :type";
+                + " AND b.billTypeAtomic IN :btp "
+                + " AND b.patientEncounter IN :pe "
+                + " AND ("
+                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
+                + "     )";
         hm = new HashMap();
         hm.put("btp", btas);
         hm.put("type", billingDepartmentType);
@@ -1010,7 +1031,105 @@ public class InwardBeanController implements Serializable {
         getPatientItemFacade().updateByJpql(sql, hm);
     }
 
+    /**
+     * Fetches the bills shown in the Interim Bill's issue/return list for a
+     * given {@code billType}. For {@link BillType#PharmacyBhtPre} (the
+     * Medicine list) this now queries by the same
+     * {@link #INWARD_MEDICINE_BILL_TYPES} set the Medicine total uses
+     * (issue #23871), so every bill flow that feeds the total - including
+     * the porter-based ward return, which is a {@code BilledBill} with no
+     * {@code billedBill} link rather than a {@code PreBill}/{@code RefundBill}
+     * pair - is guaranteed to have a row here too. Any other
+     * {@code billType} (e.g. {@link BillType#StoreBhtPre} for General
+     * Issuing) keeps the original {@code PreBill}/{@code RefundBill}
+     * query, unaffected by this change.
+     */
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
+        if (billType == BillType.PharmacyBhtPre) {
+            return fetchMedicineIssueTable(patientEncounter, cpts);
+        }
+        return fetchIssueTableLegacy(patientEncounter, billType, cpts);
+    }
+
+    /**
+     * @see #fetchIssueTable(PatientEncounter, BillType, List)
+     */
+    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        if (billType == BillType.PharmacyBhtPre) {
+            return fetchMedicineIssueTable(patientEncounter, cpts, billingDepartmentType);
+        }
+        return fetchIssueTableLegacy(patientEncounter, billType, cpts, billingDepartmentType);
+    }
+
+    private List<PatientEncounter> patientEncountersWithChildren(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        return pts;
+    }
+
+    private List<Bill> fetchMedicineIssueTable(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " AND b.billTypeAtomic IN :btas "
+                + " AND b.patientEncounter IN :pe "
+                + " ORDER BY b.createdAt";
+        HashMap hm = new HashMap();
+        hm.put("btas", INWARD_MEDICINE_BILL_TYPES);
+        hm.put("pe", patientEncountersWithChildren(patientEncounter, cpts));
+
+        return getBillFacade().findByJpql(sql, hm);
+    }
+
+    /**
+     * Same as {@link #fetchMedicineIssueTable(PatientEncounter, List)} but
+     * restricted to the bills whose <em>issuing</em> department matches
+     * {@code billingDepartmentType} - used by the department-split Medicine
+     * tabs. "Issuing department" is resolved per bill shape (issue #23871):
+     * <ul>
+     * <li>A {@code RefundBill} return linked via {@code billedBill} (direct
+     * issue / issue-on-request returns): the linked issue bill's
+     * {@code department}.</li>
+     * <li>A {@code BilledBill} return linked via {@code referenceBill}
+     * (porter-based ward return): the referenced receive bill's
+     * {@code fromDepartment} (the department that originally issued the
+     * medicine to the ward), falling back to its own {@code department} if
+     * {@code fromDepartment} was never set.</li>
+     * <li>Everything else (issues, cancellations, and any other bill shape) -
+     * including a {@code PreBill}/{@code BilledBill} issue that itself carries
+     * a {@code referenceBill} back to its originating request bill, which is
+     * a different relationship from the porter-return case above and must
+     * NOT be resolved the same way: its own {@code department}.</li>
+     * </ul>
+     */
+    private List<Bill> fetchMedicineIssueTable(PatientEncounter patientEncounter, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        String sql = "SELECT b FROM Bill b "
+                + " LEFT JOIN b.billedBill bb "
+                + " LEFT JOIN b.referenceBill rb "
+                + " LEFT JOIN rb.fromDepartment rbFromDept "
+                + " LEFT JOIN rb.department rbDept "
+                + " LEFT JOIN bb.department bbDept "
+                + " WHERE b.retired=false "
+                + " AND b.billTypeAtomic IN :btas "
+                + " AND b.patientEncounter IN :pe "
+                + " AND ("
+                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
+                + "     )"
+                + " ORDER BY b.createdAt";
+        HashMap hm = new HashMap();
+        hm.put("btas", INWARD_MEDICINE_BILL_TYPES);
+        hm.put("pe", patientEncountersWithChildren(patientEncounter, cpts));
+        hm.put("type", billingDepartmentType);
+
+        return getBillFacade().findByJpql(sql, hm);
+    }
+
+    private List<Bill> fetchIssueTableLegacy(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
         List<Bill> list = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -1064,8 +1183,8 @@ public class InwardBeanController implements Serializable {
 
         return sortedList;
     }
-    
-    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+
+    private List<Bill> fetchIssueTableLegacy(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
         List<Bill> list = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -3540,6 +3659,19 @@ public class InwardBeanController implements Serializable {
         return count;
     }
     
+    /**
+     * The complete set of {@link BillTypeAtomic} values that make up the
+     * Inward Medicine charge category, across every issue/return flow
+     * (Direct Issue, Direct Issue Discharge, Issue on Request, the
+     * porter-based ward return, and Theatre medicine) plus their
+     * cancellations. This is the single source of truth shared by the
+     * Medicine total ({@link #calculateInwardTotal}, and
+     * {@code BhtSummeryController.setKnownChargeTot()} via
+     * {@link #getInwardMedicineBillTypes()}) and the Medicine issue list
+     * ({@link #fetchIssueTable}) so the two can no longer drift apart the
+     * way they did in issue #23871 (a porter-flow return counted in the
+     * total but missing from the list).
+     */
     private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
         BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
         BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
@@ -3554,8 +3686,23 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
         // Porter-based ward return flow (#21466/#21470) - see issue #22990.
         BillTypeAtomic.RETURN_MEDICINE_INWARD,
-        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION
+        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
+        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
     );
+
+    /**
+     * Exposes {@link #INWARD_MEDICINE_BILL_TYPES} so callers such as
+     * {@code BhtSummeryController.setKnownChargeTot()} can share the exact
+     * same bill-type universe as {@link #fetchIssueTable} and
+     * {@link #calculateInwardTotal} instead of keeping their own
+     * independently-maintained copy (issue #23871).
+     */
+    public List<BillTypeAtomic> getInwardMedicineBillTypes() {
+        return INWARD_MEDICINE_BILL_TYPES;
+    }
+
     public double calculateInwardTotal(PatientEncounter patientEncounter) {
         if (patientEncounter == null) {
             return 0.0;
