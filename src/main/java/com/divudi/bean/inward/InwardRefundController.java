@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
+import javax.faces.view.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -44,7 +44,7 @@ import javax.inject.Named;
  * Acting Consultant (Health Informatics)
  */
 @Named
-@SessionScoped
+@ViewScoped
 public class InwardRefundController implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -78,7 +78,46 @@ public class InwardRefundController implements Serializable {
     private List<Bill> eligiblePaymentBills;
     private Bill originalBillToRefund;
     private Map<Long, Double> remainingRefundableAmountCache;
+    
+    private Long preselectedBillId;
+    private boolean preselectedBillLoaded;
+    
+    public Long getPreselectedBillId() {
+    return preselectedBillId;
+    }
 
+    public void setPreselectedBillId(Long preselectedBillId) {
+        this.preselectedBillId = preselectedBillId;
+    }
+    
+    public void loadPreselectedRefundBill() {
+        if (preselectedBillLoaded || preselectedBillId == null) {
+            return;
+        }
+
+        preselectedBillLoaded = true;
+
+        Bill selectedBill = getBillFacade().find(preselectedBillId);
+
+        if (selectedBill == null || selectedBill.getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("The selected bill was not found.");
+            return;
+        }
+
+        getCurrent().setPatientEncounter(selectedBill.getPatientEncounter());
+        loadEligiblePaymentBills();
+
+        if (!getEligiblePaymentBills().contains(selectedBill)) {
+            JsfUtil.addErrorMessage(
+                "This bill is not eligible for refund."
+            );
+            return;
+        }
+
+        setOriginalBillToRefund(selectedBill);
+        selectBillToRefundListener();
+    }
+    
     public void makeNull() {
         current = null;
         paidAmount = 0.0;
@@ -130,7 +169,8 @@ public class InwardRefundController implements Serializable {
         }
         originalBillToRefund = originPaymentBill;
         selectBillToRefundListener();
-        return "/inward/inward_bill_refund?faces-redirect=true";
+        return "/inward/inward_bill_refund?faces-redirect=true&refundBillId="
+        + originPaymentBill.getId();
     }
 
     /**
@@ -159,7 +199,8 @@ public class InwardRefundController implements Serializable {
         }
         originalBillToRefund = originDepositBill;
         selectBillToRefundListener();
-        return "/inward/inward_bill_refund?faces-redirect=true";
+        return "/inward/inward_bill_refund?faces-redirect=true&refundBillId="
+        + originDepositBill.getId();
     }
 
     public PaymentMethod[] getPaymentMethods() {
@@ -187,9 +228,19 @@ public class InwardRefundController implements Serializable {
             JsfUtil.addErrorMessage("Select BHT");
             return true;
         }
+        
 
         if (getOriginalBillToRefund() == null) {
             JsfUtil.addErrorMessage("Select a Payment Bill to Refund");
+            return true;
+        }
+        
+        if (!getCurrent().getPatientEncounter().equals(
+                getOriginalBillToRefund().getPatientEncounter())) {
+
+            JsfUtil.addErrorMessage(
+                "The selected refund bill does not belong to the selected BHT."
+            );
             return true;
         }
 
