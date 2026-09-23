@@ -227,15 +227,17 @@ public class TabularReportExporter {
                 }
             }
 
+            // Size columns before writing the notes: they sit unmerged in column 0
+            // and would otherwise stretch it to the width of the longest note.
+            for (int c = 0; c < colCount; c++) {
+                sheet.autoSizeColumn(c);
+            }
+
             if (!notes.isEmpty()) {
                 r++;
                 for (String n : notes) {
                     sheet.createRow(r++).createCell(0).setCellValue(n);
                 }
-            }
-
-            for (int c = 0; c < colCount; c++) {
-                sheet.autoSizeColumn(c);
             }
 
             response.reset();
