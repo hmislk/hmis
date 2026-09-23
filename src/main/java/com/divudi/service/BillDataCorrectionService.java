@@ -475,7 +475,11 @@ public class BillDataCorrectionService {
             entity.setDiscount(value);
             newValues.put("discount", entity.getDiscount());
         }
-        if (fields.containsKey("retireComments") && !fields.containsKey("retired")) {
+        if (fields.containsKey("retireComments")
+                && (!fields.containsKey("retired") || !toBooleanValue(fields.get("retired"), "retired"))) {
+            // Covers both 'retired' absent and 'retired: false' explicitly - either
+            // way retireComments would otherwise be silently dropped with no error
+            // (#23988 review).
             throw new IllegalArgumentException("'retireComments' requires 'retired: true' in the same request");
         }
         if (fields.containsKey("retired")) {
