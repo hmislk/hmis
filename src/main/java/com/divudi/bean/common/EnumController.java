@@ -1339,7 +1339,6 @@ public class EnumController implements Serializable {
         availableStatusforCancel.add(PatientInvestigationStatus.ORDERED);
         availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_GENERATED);
         availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
-        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_SENT);
         availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_REJECTED);
         return availableStatusforCancel;
     }

@@ -250,19 +250,15 @@
                                     <p:commandButton value="Excel"
                                                      icon="fas fa-file-excel"
                                                      class="ui-button-success"
-                                                     ajax="false">
-                                        <p:dataExporter type="xlsx"
-                                                        target="tblReport"
-                                                        fileName="inward_credit_company_debtors" />
-                                    </p:commandButton>
+                                                     action="#{inwardReportController1.downloadCreditCompanyDebtorsExcel()}"
+                                                     immediate="true"
+                                                     ajax="false" />
                                     <p:commandButton value="PDF"
                                                      icon="fas fa-file-pdf"
                                                      class="ui-button-danger mx-1"
-                                                     ajax="false">
-                                        <p:dataExporter type="pdf"
-                                                        target="tblReport"
-                                                        fileName="inward_credit_company_debtors" />
-                                    </p:commandButton>
+                                                     action="#{inwardReportController1.downloadCreditCompanyDebtorsPdf()}"
+                                                     immediate="true"
+                                                     ajax="false" />
                                 </div>
                             </div>
                         </f:facet>
@@ -282,8 +278,23 @@
                             rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                             styleClass="w-100">
 
-                            <p:column headerText="Bill No" style="white-space:nowrap;">
+                            <f:facet name="header">
+                                <h:outputText value="Inpatient Credit Company Debtor Report - " />
+                                <h:outputText value="#{inwardReportController1.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                                <h:outputText value=" to " />
+                                <h:outputText value="#{inwardReportController1.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </f:facet>
+
+                            <p:column headerText="Commitment Bill No" style="white-space:nowrap;">
                                 <h:outputText value="#{b.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Final Bill No" style="white-space:nowrap;">
+                                <h:outputText value="#{b.referenceBill.deptId}" rendered="#{b.referenceBill ne null}" />
                             </p:column>
 
                             <p:column headerText="BHT No" style="white-space:nowrap;">
@@ -328,7 +339,17 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Bill Total" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Final Bill Value" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{b.referenceBill.netTotal}" rendered="#{b.referenceBill ne null}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column style="text-align:right; white-space:nowrap;">
+                                <f:facet name="header">
+                                    <h:outputText value="Company Commitment"
+                                                  title="The credit company's share of the final bill. For (Active) rows (still admitted, no final bill yet) this is the running charges." />
+                                </f:facet>
                                 <h:outputText value="#{b.netTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -434,6 +455,11 @@
                             </p:column>
 
                         </p:dataTable>
+
+                        <div class="text-muted small mt-2" style="#{inwardReportController1.reportType eq 'individual' ? 'display:none;' : ''}">
+                            Rows are sorted by final bill. Final Bill Value is not totalled, because a final bill shared by two or more credit companies appears once per company.
+                            (Active) rows are currently admitted patients with no final bill yet; their Company Commitment is the running charges.
+                        </div>
 
                     </p:panel>
 

@@ -337,6 +337,20 @@
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
+
+                                            <h:panelGroup
+                                                layout="block"
+                                                styleClass="row mt-1"
+                                                rendered="#{inwardPaymentController.current.patientEncounter.paymentFinalized and inwardPaymentController.paymentMethod ne null}">
+                                                <div class="col-md-3"></div>
+                                                <div class="col-md-9 small text-muted">
+                                                    <i class="fa fa-circle-info me-1"/>
+                                                    Paying amount must not exceed the due of
+                                                    <h:outputText value="#{inwardPaymentController.due}" styleClass="fw-bold">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </h:panelGroup>
                                         </h:panelGroup>
                                     </div>
                                 </div>
@@ -378,13 +392,14 @@
                                 </h:panelGroup>
 
                                 <div class="d-flex justify-content-end gap-3">
-                                    <p:commandButton 
-                                        class="ui-button-success" 
-                                        icon="fas fa-money-bill" 
-                                        id="btnPay" 
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        icon="fas fa-money-bill"
+                                        id="btnPay"
                                         value="Pay"
                                         style="width:250px;"
-                                        ajax="false" 
+                                        ajax="false"
+                                        onclick="if (!confirm('Are you sure?')) return false"
                                         action="#{inwardPaymentController.pay()}" >
                                     </p:commandButton>
 

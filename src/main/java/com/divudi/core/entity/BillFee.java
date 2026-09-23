@@ -5,6 +5,7 @@
 package com.divudi.core.entity;
 
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.inward.PatientRoom;
 import java.io.Serializable;
@@ -12,6 +13,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -66,6 +69,8 @@ public class BillFee implements Serializable, RetirableEntity {
     Department department;
     @ManyToOne
     Speciality speciality;
+    @Enumerated(EnumType.STRING)
+    private InwardChargeType professionalFeeCategory;
     //FeeDate, FeeTime
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date FeeAt;
@@ -253,6 +258,7 @@ public class BillFee implements Serializable, RetirableEntity {
         overriddenRate = billFee.getOverriddenRate();
         fromPackage = billFee.isFromPackage();
         sourcePackageItem = billFee.getSourcePackageItem();
+        professionalFeeCategory = billFee.getProfessionalFeeCategory();
     }
 
     public void copyWithoutFinancialData(BillFee billFee) {
@@ -267,6 +273,7 @@ public class BillFee implements Serializable, RetirableEntity {
         FeeAt = billFee.getFeeAt();
         fromPackage = billFee.isFromPackage();
         sourcePackageItem = billFee.getSourcePackageItem();
+        professionalFeeCategory = billFee.getProfessionalFeeCategory();
     }
 
     public double getFeeVatPlusValue() {
@@ -712,6 +719,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setSpeciality(Speciality speciality) {
         this.speciality = speciality;
+    }
+
+    public InwardChargeType getProfessionalFeeCategory() {
+        return professionalFeeCategory;
+    }
+
+    public void setProfessionalFeeCategory(InwardChargeType professionalFeeCategory) {
+        this.professionalFeeCategory = professionalFeeCategory;
     }
 
     public double getPaidValue() {

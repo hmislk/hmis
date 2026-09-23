@@ -157,6 +157,8 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
 - [128. The department `p:selectOneMenu` is a *filterable, table-based* dropdown — there are no `<li>` items to click](#128-the-department-pselectonemenu-is-a-filterable-table-based-dropdown--there-are-no-li-items-to-click)
 - [129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button)
+- [131. `p:autoComplete` gives no suggestions to `fill`/`pressSequentially` — drive the widget's `search()`, and pick the right widget id](#131-pautocomplete-gives-no-suggestions-to-fillpresssequentially--drive-the-widgets-search-and-pick-the-right-widget-id)
+- [132. `Bill.referenceBill` means different things on different flows — don't branch on "is it set", branch on the bill's own type](#132-billreferencebill-means-different-things-on-different-flows--dont-branch-on-is-it-set-branch-on-the-bills-own-type)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -3904,3 +3906,69 @@ already appeared, the action has run.
 `itemSelect` AJAX settle, then click the real action button. On a page with
 `p:defaultCommand`, prefer this over Pattern 1 even when your query narrows to a
 single match.
+
+## 30. A failed `errorCheck()` can look exactly like a dead Settle button
+
+On `opd/opd_pre_bill.xhtml` (*Menu → OPD → Billing → Billing for Cashier*),
+clicking **Settle** accepted the `confirm()`, left the page unchanged, wrote no
+row, and showed **no message** — the classic shape of a broken button. Nothing
+was broken: `OpdPreBillController.errorCheck()` had returned `true` on
+`patient.getPerson().getArea() == null` ("Please Add Patient Area"), and the
+growl carrying that message was gone (or never rendered into the region being
+scraped) by the time the snapshot ran.
+
+Before concluding a control is dead, read the controller's `errorCheck()` /
+validation method and satisfy **every** field it tests — on this page
+`Area` is required even though it carries no `*` marker in the UI. A cheap tell:
+the form still holds the values just typed and the URL hasn't changed, which
+means the action ran and bailed, not that the click was lost.
+
+Corollary for scraping messages: `.ui-growl-item` is transient. Capture messages
+immediately after the click (or screenshot right away) rather than after the
+several-second settle wait, or a real validation error reads as silence.
+
+## 131. `p:autoComplete` gives no suggestions to `fill`/`pressSequentially` — drive the widget's `search()`, and pick the right widget id
+
+Playwright typing into a PrimeFaces `p:autoComplete` (e.g. the lab *Sent Sample → Sample Transporter* dialog) fires no
+`_query` request, so the panel stays empty. Call the widget instead, then click the option:
+
+```js
+const w = PrimeFaces.widgets['widget_<formId>_<inputId>'];   // NOT the first autocomplete on the page
+w.search('Pavan');
+```
+
+Find the correct id from the typed text: the widget whose `<id>_input` received your text is the one to search
+(a neighbouring filter autocomplete answers "No results found" and looks like a broken query). The same dialog also
+requires *Sending to Department* (`selectOneMenu` — `widget.selectValue('<deptId>')`) or the send silently
+re-closes the dialog with only a transient growl error.
+
+## 132. `Bill.referenceBill` means different things on different flows — don't branch on "is it set", branch on the bill's own type
+
+While fixing issue #23871 (Interim Bill Medicine list/total missing the
+porter-flow ward return), a first JPQL attempt resolved a Medicine bill's
+"issuing department" by checking `bb IS NULL AND rb IS NULL` → use the bill's
+own department, else (when `referenceBill` was set) walk back through
+`referenceBill.fromDepartment`. That looked safe until DB verification showed
+a plain `ISSUE_MEDICINE_ON_REQUEST_INWARD` issue bill get silently
+misclassified under the *requesting ward's* department instead of the issuing
+pharmacy's — because `PharmacySaleBhtController`/`PharmacyRequestForBhtController`
+also set `referenceBill` on the **issue** bill, pointing back to the
+`REQUEST_MEDICINE_INWARD` request bill that spawned it. That's a completely
+different relationship from `WardPharmacyReturnToPharmacyController`'s
+porter-return bill, which sets `referenceBill` to point at the
+`ACCEPT_ISSUED_MEDICINE_INWARD` *receive* bill it's returning against.
+
+Both relationships exist on the *same entity field* (`Bill.referenceBill`),
+so `rb IS NOT NULL` alone cannot tell them apart. The fix: also gate on
+`type(b) = BilledBill` (the porter return's own entity subclass) before
+trusting `referenceBill` for department resolution — everything else
+(including an issue bill that happens to carry a `referenceBill`) falls
+through to the bill's own `department`. Caught only by comparing a JPQL
+query's actual output against a hand-computed expectation per bill
+(`SELECT ID, BILLTYPEATOMIC, NETTOTAL, BILLEDBILL_ID, REFERENCEBILL_ID FROM
+bill WHERE ...` cross-checked against the resolved department for each row) —
+the UI total looked plausible (off by the exact value of one issue bill
+landing in the wrong bucket, easy to miss without doing the arithmetic).
+General lesson: when a link field is reused across unrelated flows, key the
+branch off the row's own concrete type, not off whether the field is
+populated.

@@ -687,7 +687,8 @@
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
                                 <phi:saleBill_Header_Inward_native
                                     bill="#{inpatientDirectIssueNativeSqlController.printBill}"
-                                    items="#{inpatientDirectIssueNativeSqlController.printBillItems}"/>
+                                    items="#{inpatientDirectIssueNativeSqlController.printBillItems}"
+                                    showRate="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Sent to Ward - Show Rate and Value', true) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"/>
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>

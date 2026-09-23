@@ -177,6 +177,13 @@ public class PharmacySaleBhtController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Bill Sent to Ward - Show Rate and Value",
+            "Controls whether the printed pharmacy bill handed to the ward shows any monetary field - item rate/value columns and totals (for users holding NursingIPBillingViewRates) and the discount line (for users holding IPBillingViewDiscount). A user without the relevant privilege never sees that field, on screen or on the printout. Default true (print for privileged users); institutions that don't want this on the ward printout can switch it off (issue #23834)",
+            "Bill Preview print composite (phi:saleBill_Header_Inward): showRate attribute combined with NursingIPBillingViewRates, showDiscount attribute combined with IPBillingViewDiscount",
+            OptionScope.APPLICATION
+        ));
+
         // Register privileges used on this page
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -1996,10 +2003,17 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
-        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-        // Calculation Margin
+        // Calculation Margin — must run BEFORE the finance details are built.
+        // updateMargin() is the only code that sets Bill.total/netTotal on this path
+        // (savePreBillFinallyRequest() does not), and it also finalises each item's
+        // netValue. createBillFinancialDetailsForInpatientDirectIssueBill() copies
+        // those values straight into BillFinanceDetails/BillItemFinanceDetails and
+        // nothing refreshes them afterwards, so building them first stored a net and
+        // gross total of zero on every bill. Issue #23952.
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+
+        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -2322,11 +2336,13 @@ public class PharmacySaleBhtController implements Serializable {
             savePreBillFinally(pt, matrixDepartment, btp, bta);
             savePreBillItemsFinally(tmpBillItems);
             transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
-            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-            // Calculation Margin
+            // Calculation Margin — must run BEFORE the finance details are built,
+            // for the reason recorded at the other call site. Issue #23952.
             updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
             //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
+
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
             setPrintBill(getBillFacade().find(getPreBill().getId()));
 
