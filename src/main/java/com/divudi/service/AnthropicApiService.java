@@ -6998,7 +6998,9 @@ public class AnthropicApiService implements Serializable {
                     {"PUT",    "/departments/{id}",   "Update a department"},
                     {"DELETE", "/departments/{id}",   "Retire a department"},
                     {"GET",    "/departments/{id}/preferences", "Get department UserPreference settings (item-listing strategies)"},
-                    {"PUT",    "/departments/{id}/preferences", "Update department UserPreference settings (partial; creates if absent)"}
+                    {"PUT",    "/departments/{id}/preferences", "Update department UserPreference settings (partial; creates if absent)"},
+                    {"GET",    "/departments/{id}/config", "List department-scoped ConfigOption key/value pairs"},
+                    {"PUT",    "/departments/{id}/config", "Set a department-scoped ConfigOption. Body: {configKey, configValue, configValueType?}; creates the key if it doesn't exist yet for this department (configValueType, an OptionValueType name like BOOLEAN, is only used on create — inferred from configValue when omitted)"}
                 });
 
         appendModule(sb, "Sites", "/sites",
