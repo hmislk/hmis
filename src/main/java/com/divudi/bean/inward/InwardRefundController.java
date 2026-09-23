@@ -265,6 +265,7 @@ public class InwardRefundController implements Serializable {
 
     private void saveBill() {
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
         getCurrent().setBillType(BillType.InwardPaymentBill);
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
