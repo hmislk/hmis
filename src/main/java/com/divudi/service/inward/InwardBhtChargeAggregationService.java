@@ -168,6 +168,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
         mergeChargeMaps(result, fetchPatientRoomServiceItemCharges(encounters));
         mergeChargeMaps(result, fetchProfessionalFeeCharges(encounters));
         mergeChargeMaps(result, fetchAssistingFeeCharges(encounters));
+        mergeChargeMaps(result, fetchTechnicianFeeCharges(encounters));
         mergeChargeMaps(result, fetchPharmacyBillCharges(encounters));
         mergeChargeMaps(result, fetchStoreBillCharges(encounters));
 
@@ -335,6 +336,11 @@ public class InwardBhtChargeAggregationService implements Serializable {
             return new HashMap<>();
         }
         return fetchBillFeeCharges(encounters, InwardChargeType.DoctorAndNurses);
+    }
+
+    /** BILL_FEE — technician/paramedical fees. Their own bucket whether or not the hospital merges (issue #23982). */
+    private Map<Long, Map<InwardChargeType, Double>> fetchTechnicianFeeCharges(List<PatientEncounter> encounters) {
+        return fetchBillFeeCharges(encounters, InwardChargeType.TechnicianAndParamedicalCharge);
     }
 
     private Map<Long, Map<InwardChargeType, Double>> fetchBillFeeCharges(

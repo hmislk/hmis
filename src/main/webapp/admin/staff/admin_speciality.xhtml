@@ -61,6 +61,11 @@
                                         <p:inputText autocomplete="off" id="txtName" value="#{specialityController.current.name}"  class="w-100"></p:inputText>
                                         <h:outputText id="lblDescription" value="Income Name" ></h:outputText>
                                         <p:inputTextarea id="txtDescription" value="#{specialityController.current.description}" class="w-100" styleClass="w-100"/>
+                                        <h:outputText id="lblDefaultFeeCategory" value="Default Professional Fee Category" ></h:outputText>
+                                        <p:selectOneMenu id="cmbDefaultFeeCategory" value="#{specialityController.current.defaultProfessionalFeeCategory}" class="w-100">
+                                            <f:selectItem itemLabel="Not set (decide by staff type)" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItems value="#{enumController.professionalFeeCategories}" var="cat" itemLabel="#{cat}" itemValue="#{cat}"/>
+                                        </p:selectOneMenu>
                                     </h:panelGrid>
                                     
                                 </h:panelGrid>

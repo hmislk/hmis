@@ -182,11 +182,14 @@ public class BhtSummeryController implements Serializable {
     InwardRefundController inwardRefundController;
     @EJB
     private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
+    @EJB
+    private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
+    private List<BillFee> technicianFee;
     // Holds the doctor whose fee breakdown is shown in the "how the total is calculated" popup.
     private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
@@ -771,6 +774,44 @@ public class BhtSummeryController implements Serializable {
 
     public void setDoctorAndNurseFee(List<BillFee> doctorAndNurseFee) {
         this.doctorAndNurseFee = doctorAndNurseFee;
+    }
+
+    /**
+     * Technician/paramedical fees (issue #23982) — their own bucket whether or
+     * not professional and assisting fees are merged, so they are in neither
+     * {@link #getProfesionallFee()} nor {@link #getDoctorAndNurseFee()}.
+     */
+    public List<BillFee> getTechnicianFee() {
+        if (technicianFee == null) {
+            List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+            technicianFee = getInwardBean().createTechnicianFee(getPatientEncounter(), cpts, estimatedBillView);
+        }
+        return technicianFee;
+    }
+
+    public void setTechnicianFee(List<BillFee> technicianFee) {
+        this.technicianFee = technicianFee;
+    }
+
+    /**
+     * Every staff fee on the admission — consultant, assistant and technician —
+     * for the Professional Fees tab, which shows each fee's category per row.
+     * The per-category lists stay separate because the bill totals are built
+     * from them bucket by bucket.
+     */
+    public List<BillFee> getAllStaffFees() {
+        List<BillFee> all = new ArrayList<>(getProfesionallFee());
+        all.addAll(getDoctorAndNurseFee());
+        all.addAll(getTechnicianFee());
+        return all;
+    }
+
+    /** The label of the category a saved fee is billed under, for the Professional Fees tab. */
+    public String getFeeCategoryLabel(BillFee billFee) {
+        if (billFee == null) {
+            return "";
+        }
+        return getChargeTypeLabel(professionalFeeClassificationService.chargeTypeOf(billFee));
     }
 
     public PriceMatrixController getPriceMatrixController() {
@@ -1559,7 +1600,8 @@ public class BhtSummeryController implements Serializable {
     public double discountSet(ChargeItemTotal cit, double discountPercent) {
         if (discountPercent == 0 || cit.getTotal() == 0
                 || cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
-                || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses
+                || cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
 
             cit.setDiscount(0);
             cit.setAdjustedTotal(cit.getTotal());
@@ -1584,7 +1626,8 @@ public class BhtSummeryController implements Serializable {
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), getPatientEncounter().getAdmissionType());
         if (pm == null || pm.getDiscountPercent() == 0 || cit.getTotal() == 0
                 || cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
-                || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses
+                || cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
 
             updateServiceBillFeesWithOutMatrix(cit.getInwardChargeType());
             updatePatientItemsWithOutMatrix(cit.getInwardChargeType());
@@ -4035,6 +4078,10 @@ public class BhtSummeryController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProBillFeeForDocAndNeurses(temBi);
+                    } else if (cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
+                        // Technicians were part of the assistant bucket before
+                        // #23874 split them out, so this option covers them too.
+                        addMergedDoctorFeesToProFees(getTechnicianFee(), temBi, true);
                     }
                 }
                 temHosFee += cit.getTotal();
@@ -4078,6 +4125,8 @@ public class BhtSummeryController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                         updateProTempBillFeeForDocAndNeurses(temBi);
+                    } else if (cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
+                        addMergedDoctorFeesToProFees(getTechnicianFee(), temBi, false);
                     }
                 }
                 temHosFee += cit.getTotal();
@@ -4366,8 +4415,10 @@ public class BhtSummeryController implements Serializable {
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        getInwardBean().setTechnicianFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
+        technicianFee = getInwardBean().createTechnicianFee(getPatientEncounter(), childPatientEncouters, estimatedBillView);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
         createChargeItemTotals();
@@ -4413,8 +4464,10 @@ public class BhtSummeryController implements Serializable {
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        getInwardBean().setTechnicianFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFeeEstimated(getPatientEncounter());
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
+        technicianFee = getInwardBean().createTechnicianFee(getPatientEncounter(), childPatientEncouters, estimatedBillView);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
 
         createChargeItemTotals();
@@ -4488,6 +4541,7 @@ public class BhtSummeryController implements Serializable {
         paid = 0.0;
         profesionallFee = null;
         doctorAndNurseFee = null;
+        technicianFee = null;
         patientItems = null;
         paymentBill = null;
         postFinalPaymentBill = null;
@@ -5238,6 +5292,8 @@ public class BhtSummeryController implements Serializable {
      */
     public void refreshProfesionallFee() {
         profesionallFee = null;
+        doctorAndNurseFee = null;
+        technicianFee = null;
     }
 
     public List<Bill> getPaymentBill() {
@@ -5677,9 +5733,19 @@ public class BhtSummeryController implements Serializable {
             docVat += bf.getFeeVat();
         }
 
+        double techGross = 0.0;
+        double techMargin = 0.0;
+        double techVat = 0.0;
+        for (BillFee bf : getTechnicianFee()) {
+            techGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
+            techMargin += bf.getFeeMargin();
+            techVat += bf.getFeeVat();
+        }
+
         // No merge special case: for a merged hospital getProfesionallFee() already
-        // holds every fee and getDoctorAndNurseFee() is empty, and the assisting
-        // ChargeItemTotal does not exist at all (issue #23543).
+        // holds every consultant and assistant fee and getDoctorAndNurseFee() is
+        // empty, and the assisting ChargeItemTotal does not exist at all (issue
+        // #23543). Technician fees are always in getTechnicianFee() (#23982).
         for (ChargeItemTotal cit : chargeItemTotals) {
             if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
                 // ProfessionalCharge combines two sources (issue #23723): the
@@ -5700,6 +5766,18 @@ public class BhtSummeryController implements Serializable {
                 cit.setGross(docGross);
                 cit.setMargin(docMargin);
                 cit.setVat(docVat);
+            } else if (cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
+                // Same two-source shape as ProfessionalCharge above: the staff
+                // fees plus any service/timed items filed under this type, so
+                // gross never drops a part that Total already contains.
+                double[] serviceValues = serviceBreakdown.get(InwardChargeType.TechnicianAndParamedicalCharge);
+                Double timedTotal = timedItemTotals.get(InwardChargeType.TechnicianAndParamedicalCharge);
+                double serviceGross = serviceValues != null ? serviceValues[0] : 0.0;
+                double serviceMargin = serviceValues != null ? serviceValues[1] : 0.0;
+                double serviceVat = serviceValues != null ? serviceValues[2] : 0.0;
+                cit.setGross(serviceGross + (timedTotal != null ? timedTotal : 0.0) + techGross);
+                cit.setMargin(serviceMargin + techMargin);
+                cit.setVat(serviceVat + techVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
                 cit.setGross(cit.getTotal());
                 cit.setMargin(0.0);
@@ -5927,6 +6005,10 @@ public class BhtSummeryController implements Serializable {
                     break;
                 case DoctorAndNurses:
                     i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
+                    break;
+                case TechnicianAndParamedicalCharge:
+                    // Its own bucket in merged and unmerged mode alike (issue #23982).
+                    i.setTotal(getInwardBean().calculateTechnicianCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
                     break;
             }
         }
