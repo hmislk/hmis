@@ -37,6 +37,18 @@ public class BillDetailsDTO implements Serializable {
     private String creditCompanyName;
     private String deptId;
 
+    // Fields added for pharmacy purchase order approval status/cancellation (#23944)
+    private Long referenceBillId;
+    private String referenceBillDeptId;
+    private Long billedBillId;
+    private Long forwardReferenceBillId;
+    private Boolean cancelled;
+    private Date checkedAt;
+    private Long checkedById;
+    private Date approveAt;
+    private Long approveUserId;
+    private String comments;
+
     // Bill Finance Details
     private BillFinanceDetailsDTO billFinanceDetails;
 
@@ -291,5 +303,85 @@ public class BillDetailsDTO implements Serializable {
 
     public void setPayments(List<PaymentDTO> payments) {
         this.payments = payments;
+    }
+
+    public Long getReferenceBillId() {
+        return referenceBillId;
+    }
+
+    public void setReferenceBillId(Long referenceBillId) {
+        this.referenceBillId = referenceBillId;
+    }
+
+    public String getReferenceBillDeptId() {
+        return referenceBillDeptId;
+    }
+
+    public void setReferenceBillDeptId(String referenceBillDeptId) {
+        this.referenceBillDeptId = referenceBillDeptId;
+    }
+
+    public Long getBilledBillId() {
+        return billedBillId;
+    }
+
+    public void setBilledBillId(Long billedBillId) {
+        this.billedBillId = billedBillId;
+    }
+
+    public Long getForwardReferenceBillId() {
+        return forwardReferenceBillId;
+    }
+
+    public void setForwardReferenceBillId(Long forwardReferenceBillId) {
+        this.forwardReferenceBillId = forwardReferenceBillId;
+    }
+
+    public Boolean getCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(Boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    public Date getCheckedAt() {
+        return checkedAt;
+    }
+
+    public void setCheckedAt(Date checkedAt) {
+        this.checkedAt = checkedAt;
+    }
+
+    public Long getCheckedById() {
+        return checkedById;
+    }
+
+    public void setCheckedById(Long checkedById) {
+        this.checkedById = checkedById;
+    }
+
+    public Date getApproveAt() {
+        return approveAt;
+    }
+
+    public void setApproveAt(Date approveAt) {
+        this.approveAt = approveAt;
+    }
+
+    public Long getApproveUserId() {
+        return approveUserId;
+    }
+
+    public void setApproveUserId(Long approveUserId) {
+        this.approveUserId = approveUserId;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }
