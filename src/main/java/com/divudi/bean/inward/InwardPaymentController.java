@@ -708,7 +708,53 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient() == null
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
-    
+
+    /**
+     * Heading for an inpatient payment / deposit receipt. The same print
+     * components render payments, deposits and their cancellations and
+     * refunds, so the heading is derived from the bill's type rather than
+     * hardcoded in the component (issue #23985).
+     *
+     * @param bill the bill being printed
+     * @param fallback heading used when the bill has no, or an unmapped,
+     * bill type atomic (e.g. legacy bills)
+     */
+    public String receiptHeading(Bill bill, String fallback) {
+        return receiptHeadingFor(bill == null ? null : bill.getBillTypeAtomic(), fallback);
+    }
+
+    static String receiptHeadingFor(BillTypeAtomic billTypeAtomic, String fallback) {
+        if (billTypeAtomic == null) {
+            return fallback;
+        }
+        switch (billTypeAtomic) {
+            case INWARD_DEPOSIT:
+                return "Inward Deposit Receipt";
+            case INWARD_DEPOSIT_CANCELLATION:
+                return "Inward Deposit Cancellation Receipt";
+            case INWARD_DEPOSIT_REFUND:
+                return "Inward Deposit Refund Receipt";
+            case INWARD_DEPOSIT_REFUND_CANCELLATION:
+                return "Inward Deposit Refund Cancellation Receipt";
+            case INWARD_PAYMENT:
+                return "Inward Payment Receipt";
+            case INWARD_PAYMENT_CANCELLATION:
+                return "Inward Payment Cancellation Receipt";
+            case INWARD_PAYMENT_REFUND:
+                return "Inward Payment Refund Receipt";
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                return "Inward Payment Refund Cancellation Receipt";
+            case POST_FINAL_BILL_INWARD_PAYMENT:
+                return "Post Final Bill Payment Receipt";
+            case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
+                return "Post Final Bill Payment Cancellation Receipt";
+            case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
+                return "Post Final Bill Payment Refund Receipt";
+            default:
+                return fallback;
+        }
+    }
+
     public synchronized void pay() {
         // Double-submit guard (double-click, or a retried request before the
         // page re-renders): each facade call below runs in its own short
