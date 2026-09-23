@@ -101,6 +101,10 @@ public class ConfigOptionApiService implements Serializable {
         boolean created = configOption == null;
         if (created) {
             OptionValueType valueType = resolveValueType(request);
+            String typeError = validateValueForType(valueType, request.getConfigValue());
+            if (typeError != null) {
+                throw new Exception(typeError);
+            }
             configOption = configOptionFacade.createOptionIfNotExists(request.getConfigKey(), OptionScope.DEPARTMENT,
                     null, department, null, valueType, request.getConfigValue());
         }
@@ -146,6 +150,54 @@ public class ConfigOptionApiService implements Serializable {
             return OptionValueType.BOOLEAN;
         }
         return OptionValueType.SHORT_TEXT;
+    }
+
+    /**
+     * Validate that {@code value} actually parses as {@code valueType} before
+     * it is persisted on create. Without this, a caller-supplied
+     * configValueType (e.g. INTEGER) with an unparseable configValue would
+     * still get stored, and the typed department readers
+     * (e.g. getLongValueByKeyForDepartment) silently fall back to their
+     * default on every subsequent read instead of surfacing the bad data.
+     * Mirrors AnthropicApiService.validateTypedValue's parsing rules and
+     * scope (BOOLEAN/INTEGER/LONG/DOUBLE only), but returns an "Invalid "
+     * prefixed message so DepartmentApi maps it to HTTP 400.
+     */
+    private String validateValueForType(OptionValueType valueType, String value) {
+        if (valueType == null) {
+            return null;
+        }
+        switch (valueType) {
+            case BOOLEAN:
+                if (!"true".equalsIgnoreCase(value.trim()) && !"false".equalsIgnoreCase(value.trim())) {
+                    return "Invalid configValue '" + value + "' for configValueType BOOLEAN (must be true or false)";
+                }
+                break;
+            case INTEGER:
+                try {
+                    Integer.parseInt(value.trim());
+                } catch (NumberFormatException e) {
+                    return "Invalid configValue '" + value + "' for configValueType INTEGER";
+                }
+                break;
+            case LONG:
+                try {
+                    Long.parseLong(value.trim());
+                } catch (NumberFormatException e) {
+                    return "Invalid configValue '" + value + "' for configValueType LONG";
+                }
+                break;
+            case DOUBLE:
+                try {
+                    Double.parseDouble(value.trim());
+                } catch (NumberFormatException e) {
+                    return "Invalid configValue '" + value + "' for configValueType DOUBLE";
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
     }
 
     // Private helper methods
