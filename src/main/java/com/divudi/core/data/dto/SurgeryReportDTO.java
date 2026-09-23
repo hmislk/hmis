@@ -47,6 +47,21 @@ public class SurgeryReportDTO implements Serializable {
         this.procedureId = procedureId;
     }
 
+    // Adds the surgeon's own title (b.staff's title), so the "Surgeon" column
+    // still shows "Dr <name>" when no Performed_By/Assisted_by EncounterComponent
+    // exists for this procedure and surgeonName is left at its raw bill-staff
+    // fallback (the enrichment path in SurgeryReportController already bakes the
+    // title into surgeonName itself when it finds EncounterComponent rows).
+    public SurgeryReportDTO(Long billId, String mrn, String patientName, Date admissionDate,
+                            String procedureName, String otRoomName, String wardName,
+                            String surgeonName, Title title, String consultantName, Long patientEncounterId, Long procedureId,
+                            Title surgeonTitle) {
+        this(billId, mrn, patientName, admissionDate, procedureName, otRoomName, wardName, surgeonName, title, consultantName, patientEncounterId, procedureId);
+        if (surgeonTitle != null && surgeonName != null && !surgeonName.trim().isEmpty()) {
+            this.surgeonName = surgeonTitle.toString() + " " + surgeonName.trim();
+        }
+    }
+
     // getters/setters for all fields, including otStatus
     public Long getBillId() { return billId; }
     public String getMrn() { return mrn; }

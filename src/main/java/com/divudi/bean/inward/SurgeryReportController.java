@@ -160,7 +160,7 @@ public class SurgeryReportController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select new com.divudi.core.data.dto.SurgeryReportDTO( ")
                 .append("   b.id, pat.phn, pp.name, pe.dateOfAdmission, i.name, ")
-                .append("   rfc.department.name, rfc.name, stp.name, rcp.title, rcp.name, pe.id, p.id ")
+                .append("   rfc.department.name, rfc.name, stp.name, rcp.title, rcp.name, pe.id, p.id, stp.title ")
                 .append(" ) ")
                 .append(queryBody)
                 .append(" order by i.name ");
@@ -177,6 +177,7 @@ public class SurgeryReportController implements Serializable {
 
         Set<Long> billIds = new HashSet<>();
         Set<Long> encounterIds = new HashSet<>();
+        Set<Long> procedureIds = new HashSet<>();
         for (SurgeryReportDTO r : reportList) {
             if (r.getBillId() != null) {
                 billIds.add(r.getBillId());
@@ -184,14 +185,25 @@ public class SurgeryReportController implements Serializable {
             if (r.getPatientEncounterId() != null) {
                 encounterIds.add(r.getPatientEncounterId());
             }
+            if (r.getProcedureId() != null) {
+                procedureIds.add(r.getProcedureId());
+            }
         }
 
         attachOtStatuses(reportList, billIds, encounterIds);
-        attachSurgeons(reportList, encounterIds);
+        attachSurgeons(reportList, procedureIds);
     }
 
-    private void attachSurgeons(List<SurgeryReportDTO> rows, Set<Long> encounterIds) {
-        if (rows.isEmpty() || encounterIds.isEmpty()) {
+    // Scoped by procedureId (b.procedure.id - the PatientEncounter representing
+    // this specific surgery), NOT patientEncounterId (the overall admission).
+    // An admission can have several surgeries/procedures; keying by the admission
+    // id instead of the procedure id (a prior "optimization") merged every
+    // procedure's performed/assisted doctors together and applied the combined
+    // list to every surgery under that admission - e.g. a doctor added to a
+    // Cardiac Surgery showing up under a different Shoulder Arthroscopy for the
+    // same patient (issue #22096 / #23327).
+    private void attachSurgeons(List<SurgeryReportDTO> rows, Set<Long> procedureIds) {
+        if (rows.isEmpty() || procedureIds.isEmpty()) {
             return;
         }
 
@@ -205,20 +217,20 @@ public class SurgeryReportController implements Serializable {
                 + " LEFT JOIN ec.billFee bf "
                 + " LEFT JOIN bf.staff bfst "
                 + " LEFT JOIN bfst.person bfstp "
-                + " WHERE (pe.id IN :encIds OR ce.id IN :encIds) "
+                + " WHERE (pe.id IN :procIds OR ce.id IN :procIds) "
                 + " AND ec.retired = false "
                 + " AND ec.patientEncounterComponentType IN :types "
                 + " ORDER BY ec.orderNo ";
 
         Map<String, Object> p = new HashMap<>();
-        p.put("encIds", encounterIds);
+        p.put("procIds", procedureIds);
         p.put("types", java.util.Arrays.asList(
                 com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By,
                 com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by));
 
         List<Object[]> docRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
-        Map<Long, List<String>> doctorsByEncounter = new HashMap<>();
+        Map<Long, List<String>> doctorsByProcedure = new HashMap<>();
 
         for (Object[] row : docRows) {
             Long peId = (Long) row[0];
@@ -252,15 +264,15 @@ public class SurgeryReportController implements Serializable {
             String finalName = fullName.toString().trim();
 
             if (peId != null) {
-                doctorsByEncounter.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
+                doctorsByProcedure.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
             }
             if (ceId != null && !ceId.equals(peId)) {
-                doctorsByEncounter.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
+                doctorsByProcedure.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
             }
         }
 
         for (SurgeryReportDTO r : rows) {
-            List<String> docs = doctorsByEncounter.get(r.getPatientEncounterId());
+            List<String> docs = doctorsByProcedure.get(r.getProcedureId());
             if (docs != null && !docs.isEmpty()) {
                 r.setSurgeonName(docs.stream().distinct().collect(Collectors.joining(", ")));
             }
@@ -357,6 +369,12 @@ public class SurgeryReportController implements Serializable {
             short dateFmt = workbook.getCreationHelper().createDataFormat().getFormat("dd/MM/yyyy HH:mm");
             dateStyle.setDataFormat(dateFmt);
 
+            // Bold applied filters so they can't be missed/mistaken for blank rows.
+            CellStyle filterStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font filterFont = workbook.createFont();
+            filterFont.setBold(true);
+            filterStyle.setFont(filterFont);
+
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             int rowIdx = 0;
 
@@ -367,16 +385,22 @@ public class SurgeryReportController implements Serializable {
             rowIdx++; // blank row
 
             Row dateRow = sheet.createRow(rowIdx++);
-            dateRow.createCell(0).setCellValue("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate));
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate));
+            dateCell.setCellStyle(filterStyle);
 
             if (operationTheatreRoom != null) {
                 Row otRow = sheet.createRow(rowIdx++);
-                otRow.createCell(0).setCellValue("OT Room: " + operationTheatreRoom.getName());
+                Cell otCell = otRow.createCell(0);
+                otCell.setCellValue("OT Room: " + operationTheatreRoom.getName());
+                otCell.setCellStyle(filterStyle);
             }
 
             if (procedure != null) {
                 Row procRow = sheet.createRow(rowIdx++);
-                procRow.createCell(0).setCellValue("Proposed Surgery: " + procedure.getName());
+                Cell procCell = procRow.createCell(0);
+                procCell.setCellValue("Proposed Surgery: " + procedure.getName());
+                procCell.setCellStyle(filterStyle);
             }
             rowIdx++; // blank row
 
@@ -405,7 +429,7 @@ public class SurgeryReportController implements Serializable {
                 row.createCell(6).setCellValue(nullSafe(dto.getWardName()));
                 row.createCell(7).setCellValue(nullSafe(dto.getSurgeonName()));
                 row.createCell(8).setCellValue(nullSafe(dto.getOtStatus()));
-                row.createCell(9).setCellValue(nullSafe(dto.getConsultantName()));
+                row.createCell(9).setCellValue(titledName(dto.getTitle(), dto.getConsultantName()));
             }
 
             for (int c = 0; c < REPORT_HEADERS.length; c++) {
@@ -444,7 +468,7 @@ public class SurgeryReportController implements Serializable {
             title.setSpacingAfter(5);
             document.add(title);
 
-            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
             Paragraph filters = new Paragraph();
             filters.add(new Phrase("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate) + "\n", filterFont));
             if (operationTheatreRoom != null) {
@@ -479,7 +503,7 @@ public class SurgeryReportController implements Serializable {
                 addCell(table, nullSafe(dto.getWardName()), cellFont);
                 addCell(table, nullSafe(dto.getSurgeonName()), cellFont);
                 addCell(table, nullSafe(dto.getOtStatus()), cellFont);
-                addCell(table, nullSafe(dto.getConsultantName()), cellFont);
+                addCell(table, titledName(dto.getTitle(), dto.getConsultantName()), cellFont);
             }
 
             document.add(table);
@@ -500,6 +524,17 @@ public class SurgeryReportController implements Serializable {
 
     private String nullSafe(String s) {
         return s == null ? "" : s;
+    }
+
+    // The on-screen table prepends the title itself (#{c.title} #{c.consultantName}
+    // in surgery_status.xhtml); the Excel/PDF exports build their own rows from the
+    // DTO directly and were using consultantName alone, so the "Dr" title never made
+    // it into the downloaded files.
+    private String titledName(com.divudi.core.data.Title title, String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        return title != null ? title.toString() + " " + name.trim() : name.trim();
     }
 
     private void streamToResponse(byte[] data, String fileName, String contentType) throws java.io.IOException {
