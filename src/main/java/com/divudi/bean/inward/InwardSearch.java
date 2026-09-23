@@ -1517,17 +1517,13 @@ public class InwardSearch implements Serializable {
         
         inwardPaymentController.paymentListener();
         
-        if (sessionController.getPaymentManagementAfterShiftStart()) {
-            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
-                return "/inward/inward_bill_payment?faces-redirect=true";
-            } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/cashier/index?faces-redirect=true";
-            }
-        } else {
-            return "/inward/inward_bill_payment?faces-redirect=true";
+        // Same unconditional shift check as Make a Deposit / Post Final Payment
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addStartShiftFirstMessageForRedirect();
+            return "/cashier/index?faces-redirect=true";
         }
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     public String navigateMakeDeposit() {

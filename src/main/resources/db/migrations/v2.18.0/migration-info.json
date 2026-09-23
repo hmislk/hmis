@@ -1,0 +1,14 @@
+{
+  "version": "v2.18.0",
+  "description": "Backfill Item.consumptionAllowed default for pre-existing items",
+  "issue": "#23995 — Consumption/Disposal Issue item search hides ~92% of pharmacy stock",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-09-24",
+  "type": "data",
+  "tables_affected": ["item"],
+  "data_changes": true,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "Item.consumptionAllowed (added commit edcde8f9, Nov 2025) is a Java primitive defaulting to true, but that initializer has no effect on the SQL column default. When the column was added via generate-ddl to a table with existing rows, MySQL backfilled them to 0 (false) instead of true, and none are NULL, so the query's 'OR consumptionAllowed IS NULL' legacy fallback never fires. This silently hides almost all pre-existing pharmacy stock from Consumption/Disposal Issue item search. This migration backfills CONSUMPTIONALLOWED=1 for items currently at 0, restoring the intended default. No application code change needed. Affected item IDs are recorded into migration_v2180_consumption_allowed_item_ids so rollback.sql can revert exactly those rows without touching items deliberately restricted later via the AMP toggle.",
+  "rollback": "rollback.sql"
+}
