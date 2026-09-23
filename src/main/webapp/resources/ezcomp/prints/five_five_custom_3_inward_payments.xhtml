@@ -119,7 +119,7 @@
                 </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="Inward Deposit Recipt"/>
+                    <h:outputLabel value="#{inwardPaymentController.receiptHeading(cc.attrs.bill, 'Inward Payment Receipt')}"/>
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
