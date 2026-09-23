@@ -20,7 +20,7 @@
 
 
                     <p:panel rendered="#{!pharmacyIssueController.billPreview}">
-                        <h:panelGroup class="row" rendered="#{pharmacyIssueController.toDepartment eq null or pharmacyIssueController.toDepartment eq sessionController.loggedUser.department}">
+                        <h:panelGroup class="row" rendered="#{pharmacyIssueController.preBill.toDepartment eq null}">
                             <p:panel>
                                 <f:facet name="header">
                                     <h:outputLabel styleClass="fas fa-building" />
@@ -74,7 +74,7 @@
                             </p:panel>
                         </h:panelGroup>
 
-                        <p:panel styleClass="sticky-panel-header" rendered="#{pharmacyIssueController.toDepartment ne null and pharmacyIssueController.toDepartment ne sessionController.loggedUser.department}">
+                        <p:panel styleClass="sticky-panel-header" rendered="#{pharmacyIssueController.preBill.toDepartment ne null}">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center w-100">
 
