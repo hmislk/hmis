@@ -437,7 +437,7 @@ public class OpdTokenController implements Serializable, ControllerWithPatient {
                 resetClassVariables();
                 return "/opd/token/opd_token?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
