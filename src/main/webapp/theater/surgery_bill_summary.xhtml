@@ -241,6 +241,29 @@
                             </p:column>
                         </p:dataTable>
                     </p:tab>
+
+                    <p:tab title="Technician Fees">
+                        <p:dataTable value="#{surgeryBillController.surgeryTechnicianFees}" var="pf"
+                                     emptyMessage="No technician fees recorded.">
+                            <p:column headerText="Name">#{pf.staff.person.nameWithTitle}</p:column>
+                            <p:column headerText="Fee Value">
+                                <h:outputLabel value="#{pf.feeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Checked By">
+                                <h:outputLabel value="#{pf.bill.checkedBy.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Checked At">
+                                <h:outputLabel value="#{pf.bill.checkeAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Action">
+                                <p:commandButton ajax="false" action="/inward/inward_reprint_bill_professional?faces-redirect=true" value="View Bill">
+                                    <f:setPropertyActionListener value="#{pf.bill}" target="#{inwardSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
                 </p:tabView>
 
                 <p:commandButton value="Back to Surgery Dashboard" ajax="false"

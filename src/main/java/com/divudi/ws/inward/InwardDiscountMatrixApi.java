@@ -140,17 +140,24 @@ public class InwardDiscountMatrixApi {
                     + " where a.retired = false");
             Map<String, Object> params = new HashMap<>();
 
+            // The wildcard case (a.category is null) is intentionally its own
+            // top-level OR branch, not folded into the type(a.category) = :x
+            // disjuncts. EclipseLink's type() discriminator check does not
+            // reliably participate in an OR once the joined entity is null --
+            // in practice it can suppress the whole OR group rather than just
+            // evaluate to false -- so a null category must be excluded from that
+            // chain and matched purely via the persisted a.scope marker instead.
             if ("service".equals(scope)) {
-                jpql.append(" and (type(a.category) = :svc"
+                jpql.append(" and ((a.category is not null and (type(a.category) = :svc"
                         + " or type(a.category) = :sub"
-                        + " or type(a.category) = :inv"
+                        + " or type(a.category) = :inv))"
                         + " or (a.category is null and a.scope = :scopeVal))");
                 params.put("svc", ServiceCategory.class);
                 params.put("sub", ServiceSubCategory.class);
                 params.put("inv", InvestigationCategory.class);
                 params.put("scopeVal", scope);
             } else if ("pharmacy".equals(scope)) {
-                jpql.append(" and (type(a.category) = :pharm"
+                jpql.append(" and ((a.category is not null and type(a.category) = :pharm)"
                         + " or (a.category is null and a.scope = :scopeVal))");
                 params.put("pharm", PharmaceuticalItemCategory.class);
                 params.put("scopeVal", scope);

@@ -438,10 +438,12 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
                     med += bi.getNetValue();
                 }
-                if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge || bi.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge || bi.getInwardChargeType() == InwardChargeType.DoctorAndNurses
+                        || bi.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
                     doc += bi.getNetValue();
                 }
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
+                        && bi.getInwardChargeType() != InwardChargeType.TechnicianAndParamedicalCharge
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
                         && bi.getInwardChargeType() != InwardChargeType.RoomCharges
                         && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
