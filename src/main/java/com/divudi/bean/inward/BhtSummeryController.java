@@ -5505,9 +5505,9 @@ public class BhtSummeryController implements Serializable {
 
             setTimedServiceTotCategoryWise();
 
-            setChargeValueFromAdditional();
+            Map<InwardChargeType, Double> additionalChargeTotals = setChargeValueFromAdditional();
 
-            setGrossMarginVatBreakdown();
+            setGrossMarginVatBreakdown(additionalChargeTotals);
 
             addRunningTimedServiceLiveTopUp();
 
@@ -5642,7 +5642,12 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
-    private void setChargeValueFromAdditional() {
+    /**
+     * Adds each charge type's Outside Charge total to its row total.
+     *
+     * @return those Outside Charge totals by charge type, for the gross breakdown
+     */
+    private Map<InwardChargeType, Double> setChargeValueFromAdditional() {
         // OPTIMIZED: Fetch all totals in ONE bulk query
         Map<InwardChargeType, Double> bulkTotals = getInwardBean().caltValueFromAdditionalChargeBulk(getPatientEncounter(), childPatientEncouters);
         // The individual Outside Charge items (name + amount) behind those
@@ -5659,6 +5664,7 @@ public class BhtSummeryController implements Serializable {
                 cit.setAdditionalChargeItems(items);
             }
         }
+        return bulkTotals;
     }
 
     /**
@@ -5674,8 +5680,11 @@ public class BhtSummeryController implements Serializable {
      * fields are {@code @Transient} — display-only, recomputed on every
      * calculation, never persisted — so a JPQL sum over them is not possible
      * (issue #22975).
+     *
+     * @param additionalChargeTotals Outside Charge totals by charge type, as
+     *                               already added to each row total
      */
-    private void setGrossMarginVatBreakdown() {
+    private void setGrossMarginVatBreakdown(Map<InwardChargeType, Double> additionalChargeTotals) {
         Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
         // Timed services that predate the bill-at-add change still carry their
         // charge on the PatientItem alone. They are part of the gross for their
@@ -5767,15 +5776,18 @@ public class BhtSummeryController implements Serializable {
                 cit.setMargin(docMargin);
                 cit.setVat(docVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
-                // Same two-source shape as ProfessionalCharge above: the staff
-                // fees plus any service/timed items filed under this type, so
-                // gross never drops a part that Total already contains.
+                // Every source Total holds for this type: the staff fees, any
+                // service/timed items filed under it, and its Outside Charges
+                // (which carry no margin or VAT), so gross never drops a part
+                // that Total already contains.
                 double[] serviceValues = serviceBreakdown.get(InwardChargeType.TechnicianAndParamedicalCharge);
                 Double timedTotal = timedItemTotals.get(InwardChargeType.TechnicianAndParamedicalCharge);
                 double serviceGross = serviceValues != null ? serviceValues[0] : 0.0;
                 double serviceMargin = serviceValues != null ? serviceValues[1] : 0.0;
                 double serviceVat = serviceValues != null ? serviceValues[2] : 0.0;
-                cit.setGross(serviceGross + (timedTotal != null ? timedTotal : 0.0) + techGross);
+                double outsideCharges = additionalChargeTotals != null
+                        ? additionalChargeTotals.getOrDefault(InwardChargeType.TechnicianAndParamedicalCharge, 0.0) : 0.0;
+                cit.setGross(serviceGross + (timedTotal != null ? timedTotal : 0.0) + techGross + outsideCharges);
                 cit.setMargin(serviceMargin + techMargin);
                 cit.setVat(serviceVat + techVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {

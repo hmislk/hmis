@@ -213,6 +213,27 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
     }
 
     /**
+     * The category half of {@link #staffCondition} for
+     * {@link InwardChargeType#ProfessionalCharge}, negated: true for a fee whose
+     * saved category puts it outside the consultant bucket (technician fees, and
+     * assistant fees when not merged). It has no leading {@code and} and no
+     * staff test, so a caller can OR it with its own null-staff/null-fee tests
+     * to build the exact complement of the professional bucket — e.g. the
+     * "other" side of a professional/other split (issue #23982).
+     *
+     * <p>A null category counts as Consultant Fee, so it never matches here.
+     */
+    public String notProfessionalChargeCategory(String feeAlias) {
+        String categoryField = feeAlias + ".professionalFeeCategory";
+        if (isMerged()) {
+            return " " + categoryField
+                    + " = com.divudi.core.data.inward.InwardChargeType.TechnicianAndParamedicalCharge ";
+        }
+        return " (" + categoryField + " is not null and " + categoryField
+                + " != com.divudi.core.data.inward.InwardChargeType.ProfessionalCharge) ";
+    }
+
+    /**
      * The given charge types with any suppressed one removed — use wherever a
      * charge-type universe is built (bill rows, report columns, dropdowns).
      */
