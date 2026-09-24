@@ -66,7 +66,7 @@ public class BhtDepositDetailWithCreditCompaniesReportController implements Seri
 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
-    private String dateBasis = "dischargeDate";
+    private String dateBasis = "paymentDate";
     private String reportType = "DEPOSIT";
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
@@ -186,6 +186,17 @@ public class BhtDepositDetailWithCreditCompaniesReportController implements Seri
         if (fromDate != null && toDate != null) {
             if ("admissionDate".equals(dateBasis)) {
                 jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
+            } else if ("paymentDate".equals(dateBasis)) {
+                jpql.append(" and exists (select 1 from Payment p where p.retired = false"
+                        + " and p.bill.retired = false"
+                        + " and p.bill.billTypeAtomic in :btas and p.bill.patientEncounter = c"
+                        + " and p.createdAt between :fromDate and :toDate");
+                if (paymentMethod != null) {
+                    jpql.append(" and p.paymentMethod = :pm");
+                    params.put("pm", paymentMethod);
+                }
+                jpql.append(")");
+                params.put("btas", reportTypeBillTypeAtomics());
             } else {
                 jpql.append(" and c.dateOfDischarge between :fromDate and :toDate");
             }
@@ -325,8 +336,13 @@ public class BhtDepositDetailWithCreditCompaniesReportController implements Seri
             jpql.append(" and p.paymentMethod = :pm");
             params.put("pm", paymentMethod);
         }
+        if ("paymentDate".equals(dateBasis) && fromDate != null && toDate != null) {
+            jpql.append(" and p.createdAt between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        }
         jpql.append(" order by p.createdAt");
-        return paymentFacade.findByJpql(jpql.toString(), params);
+        return paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public double getTotalForMethod(PaymentMethod pm) {
@@ -366,7 +382,7 @@ public class BhtDepositDetailWithCreditCompaniesReportController implements Seri
     public void makeNull() {
         fromDate = startOfCurrentMonth();
         toDate = new Date();
-        dateBasis = "dischargeDate";
+        dateBasis = "paymentDate";
         reportType = "DEPOSIT";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
