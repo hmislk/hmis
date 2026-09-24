@@ -386,6 +386,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Patient NIC Required for Credit Admissions",
+                "Refuse a Credit admission when the patient's National ID Number is blank; any value, even '-', is accepted. Baby and Rapid / Temp A&E admissions are exempt. Independent of 'Patient Details Required in Patient Admission' (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Restirct Inward Admission Search to Logged Department of the User",
                 "Restrict admission search results to the user's logged department (default false)",
                 "inward/inward_admission",
@@ -2281,6 +2288,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
                     return true;
                 }
+            }
+        }
+
+        // Credit admissions need a patient NIC on record. Deliberately kept outside
+        // the "Patient Details Required" block above, and on its own inward-only
+        // option, so enabling it neither drags in the other patient-detail checks
+        // nor affects OPD/channelling. Any non-blank value (even "-") is accepted.
+        // Baby and Rapid / Temp A&E admissions are exempt, matching the existing
+        // NIC check. (Issue #23978)
+        if (!isRapidTempAe() && !isBabyAdmission()
+                && getCurrent().getPaymentMethod() == PaymentMethod.Credit
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Patient NIC Required for Credit Admissions", false)) {
+            Person person = getCurrent().getPatient().getPerson();
+            if (person == null || person.getNic() == null || person.getNic().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("National ID Number is required for credit admissions. Enter the NIC, or '-' if not available.");
+                return true;
             }
         }
 

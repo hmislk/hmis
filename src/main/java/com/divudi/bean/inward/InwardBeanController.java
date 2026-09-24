@@ -701,11 +701,11 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Total of the Technician Fee category (nurses, technicians, other
-     * paramedical staff). This category is its own bucket in both merge modes,
-     * so neither {@link #calculateProfessionalCharges} nor
-     * {@link #calculateDoctorAndNurseCharges} counts it (issue #23982).
-     * Covers the same bill types as {@link #createTechnicianFee}.
+     * Total of the technician/paramedical fees on an admission (issue #23982).
+     * This category is its own bucket whatever the merge toggle says, so
+     * neither {@link #calculateProfessionalCharges} nor
+     * {@link #calculateDoctorAndNurseCharges} includes these fees. Without this
+     * they were left out of the interim and final bill altogether.
      */
     public double calculateTechnicianCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
@@ -714,18 +714,18 @@ public class InwardBeanController implements Serializable {
                 + " WHERE bt.retired=false"
                 + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
                 + " and bt.fee.feeType=:ftp  "
-                + " and bt.bill.billType in :bts"
+                + " and bt.bill.billType in :bt"
                 + " and bt.bill.patientEncounter IN :pe";
         hm.put("ftp", FeeType.Staff);
-        hm.put("bts", technicianFeeBillTypes(isEstimatedBill));
+        hm.put("bt", technicianFeeBillTypes(isEstimatedBill));
         hm.put("pe", encounterWithChildren(patientEncounter, cpts));
 
         return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIME);
     }
 
     /**
-     * Technician Fee category fees behind {@link #calculateTechnicianCharges},
-     * listed so the bill can show them and take their gross/margin/VAT.
+     * The technician/paramedical fees behind {@link #calculateTechnicianCharges},
+     * over the same bill types so the listed fees always add up to that total.
      */
     public List<BillFee> createTechnicianFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
@@ -733,32 +733,13 @@ public class InwardBeanController implements Serializable {
                 + " bt.retired=false "
                 + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
                 + " and bt.fee.feeType=:ftp "
-                + " and bt.bill.billType in :bts"
-                + " and bt.bill.patientEncounter IN :pe "
-                + " order by bt.feeAdjusted desc ";
+                + " and bt.bill.billType in :bt"
+                + " and bt.bill.patientEncounter IN :pe ";
         hm.put("ftp", FeeType.Staff);
-        hm.put("bts", technicianFeeBillTypes(isEstimatedBill));
+        hm.put("bt", technicianFeeBillTypes(isEstimatedBill));
         hm.put("pe", encounterWithChildren(patientEncounter, cpts));
 
         return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
-    }
-
-    /**
-     * Mirror of {@link #setProfesionallFeeAdjusted} for Technician Fee
-     * category fees, so their Adjusted Fee always matches the fee value.
-     */
-    public void setTechnicianFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        HashMap hm = new HashMap();
-        String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
-                + " WHERE bt.retired=false"
-                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
-                + " AND bt.fee.feeType=:ftp"
-                + " AND bt.bill.billType=:btp"
-                + " AND bt.bill.patientEncounter IN :pe";
-        hm.put("ftp", FeeType.Staff);
-        hm.put("btp", BillType.InwardProfessional);
-        hm.put("pe", encounterWithChildren(patientEncounter, cpts));
-        getBillFeeFacade().updateByJpql(sql, hm);
     }
 
     private List<BillType> technicianFeeBillTypes(boolean isEstimatedBill) {
@@ -1065,6 +1046,24 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
+        getBillFeeFacade().updateByJpql(sql, hm);
+    }
+
+    /**
+     * Mirror of {@link #setAssistingFeeAdjusted} for technician/paramedical
+     * fees, which are their own bucket in both merged and unmerged mode.
+     */
+    public void setTechnicianFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        HashMap hm = new HashMap();
+        String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
+                + " WHERE bt.retired=false"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
+                + " AND bt.fee.feeType=:ftp"
+                + " AND bt.bill.billType=:btp"
+                + " AND bt.bill.patientEncounter IN :pe";
+        hm.put("ftp", FeeType.Staff);
+        hm.put("btp", BillType.InwardProfessional);
+        hm.put("pe", encounterWithChildren(patientEncounter, cpts));
         getBillFeeFacade().updateByJpql(sql, hm);
     }
 

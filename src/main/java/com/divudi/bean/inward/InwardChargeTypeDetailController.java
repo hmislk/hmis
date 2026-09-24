@@ -365,7 +365,7 @@ public class InwardChargeTypeDetailController implements Serializable {
 
     /**
      * Fetches BillFee rows from InwardProfessional bills for BILL_FEE charge
-     * types (ProfessionalCharge, DoctorAndNurses). Returns empty list for all
+     * types (ProfessionalCharge, DoctorAndNurses, TechnicianAndParamedicalCharge). Returns empty list for all
      * other charge types.
      */
     private List<InwardChargeTypeDetailRowDto> fetchProfessionalFeeRows() {

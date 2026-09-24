@@ -22,7 +22,7 @@
                 #{pf.staff.person.nameWithTitle}
             </p:column>
             <p:column headerText="Category">
-                #{bhtSummeryController.professionalFeeCategoryLabel(pf)}
+                #{bhtSummeryController.getFeeCategoryLabel(pf)}
             </p:column>
             <p:column style="text-align: right;"  headerText="Fee Value">
                 <h:outputLabel value="#{pf.feeValue}">

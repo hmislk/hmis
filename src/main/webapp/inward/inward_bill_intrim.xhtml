@@ -1422,7 +1422,7 @@
                                         </p:column>
 
                                         <p:column headerText="Category">
-                                            <h:outputText value="#{bhtSummeryController.professionalFeeCategoryLabel(pf)}"/>
+                                            <h:outputText value="#{bhtSummeryController.getFeeCategoryLabel(pf)}"/>
                                         </p:column>
 
                                         <p:column headerText="Gross" class="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">

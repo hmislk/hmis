@@ -285,8 +285,8 @@ public class SurgeryBillController implements Serializable {
     }
 
     /**
-     * Technician Fee category fees for this surgery. Its own bucket whatever the
-     * merge setting, so neither list above includes it (issue #23982).
+     * Technician/paramedical fees for this surgery — their own bucket in merged
+     * and unmerged mode alike, so neither list above contains them (issue #23982).
      */
     public List<BillFee> getSurgeryTechnicianFees() {
         if (surgeryTechnicianFees == null && getSurgeryBill().getId() != null) {
