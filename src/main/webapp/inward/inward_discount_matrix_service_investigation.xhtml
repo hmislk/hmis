@@ -9,6 +9,14 @@
     <h:body>
         <ui:composition template="/inward/inward_administration.xhtml">
             <ui:define name="subcontent">
+                <style>
+                    /* Keep the multi-category label on one line; with many categories selected it would otherwise push the form down. */
+                    .single-line-label .ui-selectcheckboxmenu-label {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                </style>
                 <h:form>
                     <p:panel header="Inward Discount Matrix - Services and Investigations" id="reportPrint" class="row w-100">
 
@@ -76,16 +84,23 @@
                                         <h:outputLabel value="Category" class="mt-2"/>
                                     </div>
                                     <div class="col-10">
-                                        <p:autoComplete
-                                            value="#{inwardDiscountMatrixController.category}"
-                                            forceSelection="true"
-                                            completeMethod="#{categoryController.completeServiceInvestigationCategory}"
-                                            var="cat"
-                                            inputStyleClass="form-control"
-                                            class="w-100"
-                                            itemLabel="#{cat.name}"
-                                            itemValue="#{cat}">
-                                        </p:autoComplete>
+                                        <p:selectCheckboxMenu
+                                            id="categories"
+                                            styleClass="w-100 single-line-label"
+                                            value="#{inwardDiscountMatrixController.categories}"
+                                            converter="#{inwardDiscountMatrixController.categoryConverter}"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            emptyLabel="Select Categories"
+                                            updateLabel="true"
+                                            scrollHeight="300">
+                                            <f:selectItems
+                                                value="#{inwardDiscountMatrixController.serviceInvestigationCategories}"
+                                                var="c"
+                                                itemLabel="#{c.name} (#{inwardDiscountMatrixController.categoryTypeLabel(c)})"
+                                                itemValue="#{c}"/>
+                                        </p:selectCheckboxMenu>
                                     </div>
                                 </div>
 
@@ -198,11 +213,13 @@
                                 value="#{inwardDiscountMatrixController.items}"
                                 filteredValue="#{inwardDiscountMatrixController.filterItems}"
                                 var="a"
+                                rowKey="#{a.id}"
+                                paginator="true"
+                                rows="25"
+                                rowsPerPageTemplate="25,50,100,200"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{totalRecords} rows"
                                 scrollable="true">
-
-                                <p:column headerText="ID" style="width: 3em;">
-                                    #{a.id}
-                                </p:column>
 
                                 <p:column
                                     headerText="Discount Scheme"
@@ -215,22 +232,26 @@
                                     headerText="Department"
                                     filterBy="#{a.department.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{a.department.name}"/>
+                                    <h:outputText value="#{empty a.department ? 'All Departments' : a.department.name}"/>
                                 </p:column>
 
                                 <p:column
                                     headerText="Category"
                                     filterBy="#{a.category.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{a.category.name}"/>
+                                    <h:outputText value="#{empty a.category ? 'All (no category)' : a.category.name}"/>
+                                </p:column>
+
+                                <p:column headerText="Category Type">
+                                    <h:outputText value="#{inwardDiscountMatrixController.categoryTypeLabel(a.category)}"/>
                                 </p:column>
 
                                 <p:column headerText="Admission Type">
-                                    <h:outputText value="#{a.admissionType.name}"/>
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
 
                                 <p:column headerText="BHT Type">
-                                    <h:outputText value="#{a.paymentMethod}"/>
+                                    <h:outputText value="#{empty a.paymentMethod ? 'All BHT Types' : a.paymentMethod}"/>
                                 </p:column>
 
                                 <p:column
@@ -271,6 +292,56 @@
                                 </p:column>
 
                             </p:dataTable>
+                        </p:panel>
+
+                        <!-- Things that stop category discounts from applying (issue #24038) -->
+                        <p:panel id="setupChecks" header="Discount setup checks" toggleable="true" collapsed="#{inwardDiscountMatrixController.legacyCategoryCount eq null}" class="mt-2">
+                            <p class="text-muted small mb-2">
+                                A category discount reaches a service or investigation only if the item has a Category
+                                and both the item and its fee allow discounts. Check first; nothing changes until you apply.
+                            </p>
+                            <div class="row mb-2">
+                                <div class="col-3"><h:outputLabel value="Item types" class="mt-1"/></div>
+                                <div class="col-9">
+                                    <p:selectManyCheckbox value="#{inwardDiscountMatrixController.setupScopeNames}" layout="lineDirection">
+                                        <f:selectItems value="#{inwardDiscountMatrixController.allSetupScopes}" var="sc"
+                                                       itemValue="#{sc.name()}" itemLabel="#{sc.name().replace('_', ' ')}"/>
+                                    </p:selectManyCheckbox>
+                                </div>
+                            </div>
+                            <p:commandButton id="btnCheckSetup" value="Check" icon="fa fa-search" class="ui-button-info"
+                                             ajax="false" action="#{inwardDiscountMatrixController.checkDiscountSetup}"/>
+
+                            <h:panelGroup layout="block" styleClass="mt-3"
+                                          rendered="#{inwardDiscountMatrixController.legacyCategoryCount ne null}">
+                                <div class="row mb-2">
+                                    <div class="col-8">
+                                        <h:outputText value="Investigations with only a legacy Investigation Category (Category blank): "/>
+                                        <strong><h:outputText value="#{inwardDiscountMatrixController.legacyCategoryCount}"/></strong>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:commandButton id="btnCopyLegacy" value="Store as Category" icon="fa fa-copy" class="ui-button-warning w-100"
+                                                         ajax="false" disabled="#{inwardDiscountMatrixController.legacyCategoryCount eq 0}"
+                                                         onclick="return confirm('Copy the legacy Investigation Category into Category for these investigations?');"
+                                                         action="#{inwardDiscountMatrixController.copyLegacyInvestigationCategories}"/>
+                                    </div>
+                                </div>
+                                <h:panelGroup layout="block" styleClass="row"
+                                              rendered="#{inwardDiscountMatrixController.discountNotAllowedCounts ne null}">
+                                    <div class="col-8">
+                                        <h:outputText value="Items not allowing discounts: "/>
+                                        <strong><h:outputText value="#{inwardDiscountMatrixController.discountNotAllowedCounts['itemsNotAllowed']}"/></strong>
+                                        <h:outputText value=" · Fees not allowing discounts: "/>
+                                        <strong><h:outputText value="#{inwardDiscountMatrixController.discountNotAllowedCounts['feesNotAllowed']}"/></strong>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:commandButton id="btnAllowDiscounts" value="Allow Discounts" icon="fa fa-check" class="ui-button-warning w-100"
+                                                         ajax="false"
+                                                         onclick="return confirm('Turn on Discount Allowed for these items and all their fees?');"
+                                                         action="#{inwardDiscountMatrixController.allowDiscountsForSetupScopes}"/>
+                                    </div>
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </p:panel>
 
                     </p:panel>
