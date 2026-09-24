@@ -1146,7 +1146,25 @@
                                     </tr>
                                 </h:panelGroup>
 
-                                <h:panelGroup >
+                                <h:panelGroup rendered="#{not empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
+                                    <ui:repeat value="#{bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}" var="due">
+                                        <tr>
+                                            <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                                <h:outputLabel value="Due from #{due.companyName}" />
+                                            </td>
+                                            <td>
+                                                &nbsp;
+                                            </td>
+                                            <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                                <h:outputLabel value="#{due.allocatedAmount}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel   value="Due Amount" />
@@ -1161,7 +1179,7 @@
                                         </td>
                                     </tr>
                                 </h:panelGroup>
-                                
+
                             </h:panelGroup>
 
                         </table>
