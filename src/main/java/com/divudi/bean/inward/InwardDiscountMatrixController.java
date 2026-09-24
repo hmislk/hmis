@@ -6,6 +6,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.core.util.JsfUtil;
@@ -22,7 +23,10 @@ import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.service.inward.DiscountSetupService;
+import com.divudi.service.inward.DiscountSetupService.ItemScope;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +58,10 @@ public class InwardDiscountMatrixController implements Serializable {
 
     @EJB
     private PriceMatrixFacade ejbFacade;
+    @EJB
+    private CategoryFacade categoryFacade;
+    @EJB
+    private DiscountSetupService discountSetupService;
 
     private PriceMatrix current;
     private List<PriceMatrix> items;
@@ -62,6 +70,10 @@ public class InwardDiscountMatrixController implements Serializable {
     private Department department;
     private Category category;
     private List<Category> categories;
+    private List<Category> serviceInvestigationCategories;
+    private List<String> setupScopeNames;
+    private Long legacyCategoryCount;
+    private Map<String, Long> discountNotAllowedCounts;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
@@ -94,6 +106,9 @@ public class InwardDiscountMatrixController implements Serializable {
         department = null;
         category = null;
         categories = null;
+        serviceInvestigationCategories = null;
+        legacyCategoryCount = null;
+        discountNotAllowedCounts = null;
         admissionType = null;
         paymentMethod = null;
         paymentScheme = null;
@@ -107,26 +122,32 @@ public class InwardDiscountMatrixController implements Serializable {
     // -------------------------------------------------------------------------
     // Save
     // -------------------------------------------------------------------------
+    /**
+     * Adds one service/investigation discount row per selected category
+     * (issue #24038). Same behaviour as {@link #saveForPharmacy()}.
+     */
     public void saveForServiceInvestigation() {
-        if (paymentScheme == null) {
-            JsfUtil.addErrorMessage("Please select a Discount Scheme");
-            return;
-        }
-        InwardDiscountMatrix entry = buildEntry();
-        ejbFacade.create(entry);
-        JsfUtil.addSuccessMessage("Saved Successfully");
-        loadServiceInvestigation();
-        clearInputFields();
+        saveCategoryRows(this::loadServiceInvestigation);
     }
 
     /**
      * Adds one pharmacy discount row per selected category (issue #24029).
-     * Active rows with an identical combination are skipped rather than
-     * duplicated. The scheme, department, admission type, BHT type, credit
-     * company and percentage stay filled in so further categories can be
-     * added without re-entering them; only the category selection is cleared.
+     * Same behaviour as {@link #saveForServiceInvestigation()}.
      */
     public void saveForPharmacy() {
+        saveCategoryRows(this::loadPharmacy);
+    }
+
+    /**
+     * Creates one row per selected category. Active rows with an identical
+     * combination are skipped rather than duplicated. The scheme, department,
+     * admission type, BHT type, credit company and percentage stay filled in so
+     * further categories can be added without re-entering them; only the
+     * category selection is cleared. A blank category is not allowed here: a
+     * scheme row with no category is the catch-all fallback for both pharmacy
+     * and services, so it would leak across the two matrices.
+     */
+    private void saveCategoryRows(Runnable reload) {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Please select a Discount Scheme");
             return;
@@ -165,7 +186,7 @@ public class InwardDiscountMatrixController implements Serializable {
         }
 
         categories = null;
-        loadPharmacy();
+        reload.run();
     }
 
     /**
@@ -246,10 +267,14 @@ public class InwardDiscountMatrixController implements Serializable {
     // -------------------------------------------------------------------------
     // Load / Fill
     // -------------------------------------------------------------------------
+    /**
+     * Lists service/investigation discount rows, narrowed by the selections
+     * in the entry form (same rules as {@link #loadPharmacy()}).
+     */
     public void loadServiceInvestigation() {
         filterItems = null;
-        HashMap<String, Object> hm = new HashMap<>();
-        String sql = "select a from InwardDiscountMatrix a"
+        Map<String, Object> hm = new HashMap<>();
+        StringBuilder sql = new StringBuilder("select a from InwardDiscountMatrix a"
                 + " left join a.paymentScheme ps"
                 + " left join a.department dept"
                 + " left join a.category cat"
@@ -258,12 +283,13 @@ public class InwardDiscountMatrixController implements Serializable {
                 + " and (type(a.category) = :svc"
                 + "   or type(a.category) = :sub"
                 + "   or type(a.category) = :inv"
-                + "   or a.category is null)"
-                + " order by ps.name, dept.name, cat.name";
+                + "   or a.category is null)");
         hm.put("svc", ServiceCategory.class);
         hm.put("sub", ServiceSubCategory.class);
         hm.put("inv", InvestigationCategory.class);
-        items = ejbFacade.findByJpql(sql, hm);
+        appendSelectionFilters(sql, hm);
+        sql.append(" order by ps.name, dept.name, cat.name");
+        items = ejbFacade.findByJpql(sql.toString(), hm);
     }
 
     /**
@@ -283,6 +309,16 @@ public class InwardDiscountMatrixController implements Serializable {
                 + " and (type(a.category) = :pharm"
                 + "   or a.category is null)");
         hm.put("pharm", PharmaceuticalItemCategory.class);
+        appendSelectionFilters(sql, hm);
+        sql.append(" order by ps.name, dept.name, cat.name");
+        items = ejbFacade.findByJpql(sql.toString(), hm);
+    }
+
+    /**
+     * Narrows a matrix listing by each field selected in the entry form;
+     * fields left blank do not filter.
+     */
+    private void appendSelectionFilters(StringBuilder sql, Map<String, Object> hm) {
         if (paymentScheme != null) {
             sql.append(" and a.paymentScheme = :ps");
             hm.put("ps", paymentScheme);
@@ -307,8 +343,6 @@ public class InwardDiscountMatrixController implements Serializable {
             sql.append(" and a.creditCompany = :cc");
             hm.put("cc", creditCompany);
         }
-        sql.append(" order by ps.name, dept.name, cat.name");
-        items = ejbFacade.findByJpql(sql.toString(), hm);
     }
 
     public void loadRoomCharges() {
@@ -318,6 +352,82 @@ public class InwardDiscountMatrixController implements Serializable {
                 + " and a.inwardChargeType is not null"
                 + " order by a.inwardChargeType";
         items = ejbFacade.findByJpql(sql);
+    }
+
+    // -------------------------------------------------------------------------
+    // Discount setup checks (issue #24038)
+    // -------------------------------------------------------------------------
+    /**
+     * Counts what would stop category discounts from applying: investigations
+     * whose category is only in the legacy field, and items / fees in the
+     * selected scopes that do not allow discounts. Read only.
+     */
+    public void checkDiscountSetup() {
+        legacyCategoryCount = discountSetupService.countInvestigationsUsingLegacyCategory();
+        discountNotAllowedCounts = getSetupScopes().isEmpty() ? null
+                : discountSetupService.countDiscountNotAllowed(getSetupScopes());
+    }
+
+    public void copyLegacyInvestigationCategories() {
+        int n = discountSetupService.copyLegacyInvestigationCategories(sessionController.getLoggedUser());
+        JsfUtil.addSuccessMessage(n + " investigation(s) now have their legacy category stored as Category");
+        checkDiscountSetup();
+        serviceInvestigationCategories = null;
+    }
+
+    public void allowDiscountsForSetupScopes() {
+        if (getSetupScopes().isEmpty()) {
+            JsfUtil.addErrorMessage("Select at least one item type");
+            return;
+        }
+        Map<String, Integer> r;
+        try {
+            r = discountSetupService.allowDiscounts(getSetupScopes(), sessionController.getLoggedUser());
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Could not update Discount Allowed: " + e.getMessage());
+            return;
+        }
+        JsfUtil.addSuccessMessage("Discount Allowed turned on for " + r.get("itemsUpdated") + " item(s) and "
+                + r.get("feesUpdated") + " fee(s)");
+        checkDiscountSetup();
+    }
+
+    public ItemScope[] getAllSetupScopes() {
+        return ItemScope.values();
+    }
+
+    /**
+     * Selected scopes. The page binds the names ({@link #getSetupScopeNames()})
+     * because a List of enums cannot be converted by JSF (type erasure).
+     */
+    public List<ItemScope> getSetupScopes() {
+        List<ItemScope> r = new ArrayList<>();
+        for (String n : getSetupScopeNames()) {
+            r.add(ItemScope.valueOf(n));
+        }
+        return r;
+    }
+
+    public List<String> getSetupScopeNames() {
+        if (setupScopeNames == null) {
+            setupScopeNames = new ArrayList<>();
+            setupScopeNames.add(ItemScope.INVESTIGATION.name());
+            setupScopeNames.add(ItemScope.SERVICE.name());
+            setupScopeNames.add(ItemScope.INWARD_SERVICE.name());
+        }
+        return setupScopeNames;
+    }
+
+    public void setSetupScopeNames(List<String> setupScopeNames) {
+        this.setupScopeNames = setupScopeNames;
+    }
+
+    public Long getLegacyCategoryCount() {
+        return legacyCategoryCount;
+    }
+
+    public Map<String, Long> getDiscountNotAllowedCounts() {
+        return discountNotAllowedCounts;
     }
 
     // -------------------------------------------------------------------------
@@ -392,6 +502,56 @@ public class InwardDiscountMatrixController implements Serializable {
      */
     public Converter getPharmaceuticalCategoryConverter() {
         return new PharmaceuticalItemCategoryController.PharmaceuticalItemCategoryControllerConverter();
+    }
+
+    /**
+     * Converter for the service/investigation multi-select. The generic
+     * Category converter resolves any subtype (service, sub-category,
+     * investigation category).
+     */
+    public Converter getCategoryConverter() {
+        return new CategoryController.CategoryControllerConverter();
+    }
+
+    /**
+     * Active categories offered on the Services and Investigations matrix:
+     * service categories, service sub-categories and investigation
+     * categories, grouped by type then name.
+     */
+    public List<Category> getServiceInvestigationCategories() {
+        if (serviceInvestigationCategories == null) {
+            serviceInvestigationCategories = new ArrayList<>();
+            serviceInvestigationCategories.addAll(activeCategoriesOfType(ServiceCategory.class));
+            serviceInvestigationCategories.addAll(activeCategoriesOfType(ServiceSubCategory.class));
+            serviceInvestigationCategories.addAll(activeCategoriesOfType(InvestigationCategory.class));
+        }
+        return serviceInvestigationCategories;
+    }
+
+    private List<Category> activeCategoriesOfType(Class<? extends Category> type) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("t", type);
+        return categoryFacade.findByJpql("select c from Category c where c.retired = false and type(c) = :t order by c.name", m);
+    }
+
+    /**
+     * Short label for a category's kind, shown next to its name so mixed
+     * service/investigation lists stay readable.
+     */
+    public String categoryTypeLabel(Category c) {
+        if (c instanceof InvestigationCategory) {
+            return "Investigation";
+        }
+        if (c instanceof ServiceSubCategory) {
+            return "Service Sub-category";
+        }
+        if (c instanceof ServiceCategory) {
+            return "Service";
+        }
+        if (c instanceof PharmaceuticalItemCategory) {
+            return "Pharmaceutical";
+        }
+        return "";
     }
 
     public List<Category> getCategories() {
