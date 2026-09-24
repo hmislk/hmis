@@ -446,7 +446,8 @@ public class AdmissionCategoryWiseAdmissionReportController implements Serializa
 
             InwardChargeType chargeType = (InwardChargeType) row[5];
             double net = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
-            if (chargeType == InwardChargeType.ProfessionalCharge || chargeType == InwardChargeType.DoctorAndNurses) {
+            if (chargeType == InwardChargeType.ProfessionalCharge || chargeType == InwardChargeType.DoctorAndNurses
+                    || chargeType == InwardChargeType.TechnicianAndParamedicalCharge) {
                 summary.professionalFee += net;
             } else if (chargeType != null) {
                 summary.hospitalFee += net;
