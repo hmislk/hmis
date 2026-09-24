@@ -645,10 +645,13 @@
 
                             <p:tab id="tabPro" title="Professional Fee"  >
                                 <p:dataTable  scrollable="true" scrollHeight="300"
-                                              value="#{bhtSummeryController.profesionallFee}" var="pf"
+                                              value="#{bhtSummeryController.allStaffFees}" var="pf"
                                               rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
                                     <p:column headerText="Name">
                                         #{pf.staff.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column headerText="Category">
+                                        <h:outputText value="#{bhtSummeryController.professionalFeeCategoryLabel(pf)}"/>
                                     </p:column>
                                     <p:column headerText="Fee Value" style="text-align: right;">
                                         <h:outputLabel value="#{pf.feeValue}">

@@ -1413,12 +1413,16 @@
                                         id="professionalFees"
                                         scrollable="true"
                                         scrollHeight="300"
-                                        value="#{bhtSummeryController.profesionallFee}"
+                                        value="#{bhtSummeryController.allStaffFees}"
                                         var="pf"
                                         rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
 
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
+                                        </p:column>
+
+                                        <p:column headerText="Category">
+                                            <h:outputText value="#{bhtSummeryController.professionalFeeCategoryLabel(pf)}"/>
                                         </p:column>
 
                                         <p:column headerText="Gross" class="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">

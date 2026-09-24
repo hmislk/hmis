@@ -187,6 +187,7 @@ public class SurgeryBillController implements Serializable {
     private List<Bill> blockingBillsForDelete;
     private List<BillFee> surgeryProfessionalFees;
     private List<BillFee> surgeryAssistingFees;
+    private List<BillFee> surgeryTechnicianFees;
     private List<DepartmentBillItems> surgeryServiceDepartmentItems;
     private List<Bill> surgeryMedicineIssues;
     private List<Bill> surgeryStoreIssues;
@@ -281,6 +282,27 @@ public class SurgeryBillController implements Serializable {
             surgeryAssistingFees = getBillFeeFacade().findByJpql(jpql, hm);
         }
         return surgeryAssistingFees;
+    }
+
+    /**
+     * Technician Fee category fees for this surgery. Its own bucket whatever the
+     * merge setting, so neither list above includes it (issue #23982).
+     */
+    public List<BillFee> getSurgeryTechnicianFees() {
+        if (surgeryTechnicianFees == null && getSurgeryBill().getId() != null) {
+            HashMap<String, Object> hm = new HashMap<>();
+            String jpql = "SELECT bt FROM BillFee bt WHERE bt.retired=false "
+                    + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
+                    + " and bt.fee.feeType=:ftp "
+                    + " and bt.bill.billType=:btp "
+                    + " and bt.bill.cancelled=false "
+                    + " and bt.bill.forwardReferenceBill=:surg";
+            hm.put("ftp", FeeType.Staff);
+            hm.put("btp", BillType.InwardProfessional);
+            hm.put("surg", getSurgeryBill());
+            surgeryTechnicianFees = getBillFeeFacade().findByJpql(jpql, hm);
+        }
+        return surgeryTechnicianFees;
     }
 
     public List<DepartmentBillItems> getSurgeryServiceDepartmentItems() {
@@ -567,6 +589,7 @@ public class SurgeryBillController implements Serializable {
         clinicalSpeciality = null;
         surgeryProfessionalFees = null;
         surgeryAssistingFees = null;
+        surgeryTechnicianFees = null;
         surgeryServiceDepartmentItems = null;
         surgeryMedicineIssues = null;
         surgeryStoreIssues = null;

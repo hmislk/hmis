@@ -579,13 +579,19 @@
                                                />
                             </p:commandButton>
                             <p:dataTable id="pro"  scrollable="true" scrollHeight="300"  
-                                         value="#{bhtSummeryFinalizedController.proBillFee}" var="pf"
+                                         value="#{bhtSummeryFinalizedController.allStaffBillFees}" var="pf"
                                          filteredValue="#{bhtSummeryFinalizedController.fillteredFees}">
                                 <p:column headerText="Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Name"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>                                    
+                                </p:column>
+                                <p:column headerText="Category">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bhtSummeryController.professionalFeeCategoryLabel(pf)}"/>
                                 </p:column>
                                 <p:column headerText="Speciality" filterBy="#{pf.staff.speciality.name}" filterMatchMode="contains" >
                                     <f:facet name="header">

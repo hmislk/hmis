@@ -70,6 +70,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<BillItem> storeItems;
     List<BillFee> proBillFee;
     List<BillFee> assistBillFee;
+    List<BillFee> technicianBillFee;
     List<Bill> outSideBills;
     List<Bill> paymentBills;
     List<Bill> paidbyPatientBillList;
@@ -438,10 +439,12 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
                     med += bi.getNetValue();
                 }
-                if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge || bi.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge || bi.getInwardChargeType() == InwardChargeType.DoctorAndNurses
+                        || bi.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
                     doc += bi.getNetValue();
                 }
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
+                        && bi.getInwardChargeType() != InwardChargeType.TechnicianAndParamedicalCharge
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
                         && bi.getInwardChargeType() != InwardChargeType.RoomCharges
                         && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
@@ -640,6 +643,34 @@ public class BhtSummeryFinalizedController implements Serializable {
         this.assistBillFee = assistBillFee;
     }
 
+    public List<BillFee> getTechnicianBillFee() {
+        return technicianBillFee;
+    }
+
+    public void setTechnicianBillFee(List<BillFee> technicianBillFee) {
+        this.technicianBillFee = technicianBillFee;
+    }
+
+    /**
+     * Every staff fee on the admission — Consultant, Assistant and Technician
+     * categories — for the Professional Fee tab (issue #23982). For a merged
+     * hospital the assistant list is empty and {@link #getProBillFee()}
+     * already holds those fees, so nothing is listed twice.
+     */
+    public List<BillFee> getAllStaffBillFees() {
+        List<BillFee> all = new ArrayList<>();
+        if (proBillFee != null) {
+            all.addAll(proBillFee);
+        }
+        if (assistBillFee != null) {
+            all.addAll(assistBillFee);
+        }
+        if (technicianBillFee != null) {
+            all.addAll(technicianBillFee);
+        }
+        return all;
+    }
+
     public List<Bill> getPaymentBills() {
         return paymentBills;
     }
@@ -711,6 +742,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         billItems = null;
         proBillFee = null;
         assistBillFee = null;
+        technicianBillFee = null;
         outSideBills = null;
         paymentBills = null;
         pharmacyItems = null;
@@ -744,6 +776,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         outSideBills = getInwardBean().fetchOutSideBill2(getPatientEncounter());
         proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter(),cpts);
         assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(),cpts);
+        technicianBillFee = getInwardBean().createTechnicianFee(getPatientEncounter(), cpts, false);
         paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter(),cpts);
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
         pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.PharmacyBhtPre);

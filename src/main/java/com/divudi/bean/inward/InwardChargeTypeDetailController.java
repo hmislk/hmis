@@ -135,7 +135,7 @@ public class InwardChargeTypeDetailController implements Serializable {
         // --- PatientItems (TimedItems — timed services only) ---
         rows.addAll(fetchTimedItemRows());
 
-        // --- BillFee rows (InwardProfessional — ProfessionalCharge, DoctorAndNurses) ---
+        // --- BillFee rows (InwardProfessional — ProfessionalCharge, DoctorAndNurses, TechnicianAndParamedicalCharge) ---
         rows.addAll(fetchProfessionalFeeRows());
 
         // --- Admission Fee rows (derived from PatientEncounter.admissionType.admissionFee) ---
