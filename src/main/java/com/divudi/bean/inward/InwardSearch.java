@@ -3683,22 +3683,22 @@ public class InwardSearch implements Serializable {
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
 
-        String heading = "Receipt";
-        if (getBill().getBillTypeAtomic() != null) {
-            String n = getBill().getBillTypeAtomic().name();
-            if (n.contains("DEPOSIT")) {
-                heading = "Deposit Receipt";
-            } else if (n.contains("PAYMENT")) {
-                heading = "Payment Receipt";
-            }
-        }
+        String heading = com.divudi.core.util.InwardReceiptTextRenderer
+                .headingFor(getBill().getBillTypeAtomic());
 
         java.util.List<com.divudi.core.entity.Payment> multiplePayments =
                 getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP, multiplePayments);
+                true, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone);
 
         String fileName = "inward-reprint-"
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
