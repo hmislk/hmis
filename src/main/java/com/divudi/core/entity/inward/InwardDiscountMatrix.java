@@ -6,9 +6,12 @@
  */
 package com.divudi.core.entity.inward;
 
+import com.divudi.core.data.inward.InwardDiscountMatrixScope;
 import com.divudi.core.entity.PriceMatrix;
 import java.io.Serializable;
+import javax.persistence.EnumType;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 
 /**
  * Inward Discount Matrix entry.
@@ -21,13 +24,16 @@ import javax.persistence.Entity;
  * concrete entity type, which keeps these records separate from
  * InwardPriceAdjustment (margin) records.
  *
- * {@link #scope} records which InwardDiscountMatrixApi scope ('service' or
- * 'pharmacy') an entry belongs to. It is normally inferable from the
- * runtime type of {@code category} (ServiceCategory/ServiceSubCategory/
- * InvestigationCategory vs PharmaceuticalItemCategory), but a wildcard row
- * (categoryId omitted, applies to every category in that scope) has a null
- * category and so cannot be classified that way. This field disambiguates
- * that case; it is set on create and never changes.
+ * {@link #scope} records which InwardDiscountMatrixApi scope
+ * (pharmacy or service/investigation) an entry belongs to. It is set on
+ * EVERY row at create time -- for a row with a real category it mirrors
+ * that category's type, and for a wildcard row (categoryId omitted,
+ * applies to every category in the scope, where the category's type is
+ * unavailable) it is the only signal of scope. Filtering on this enum
+ * directly (rather than inferring scope from the category's Java type via
+ * a JPQL type() discriminator check) avoids a JPQL/EclipseLink quirk where
+ * type() does not reliably participate in an OR once the joined category
+ * is null.
  *
  * @author Dr M H B Ariyaratne
  */
@@ -36,13 +42,14 @@ public class InwardDiscountMatrix extends PriceMatrix implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String scope;
+    @Enumerated(EnumType.STRING)
+    private InwardDiscountMatrixScope scope;
 
-    public String getScope() {
+    public InwardDiscountMatrixScope getScope() {
         return scope;
     }
 
-    public void setScope(String scope) {
+    public void setScope(InwardDiscountMatrixScope scope) {
         this.scope = scope;
     }
 
