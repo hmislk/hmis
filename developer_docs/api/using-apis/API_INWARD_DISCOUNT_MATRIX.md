@@ -81,5 +81,11 @@ Pass `categoryIds` (array) **instead of** `categoryId`. All the other fields app
 
 Sending both `categoryId` and `categoryIds` returns `400`.
 
-To get every pharmaceutical category id, use
-`GET /api/inward-discount-matrix/pharmaceutical-item-categories/search?limit=200`.
+If a row fails to save partway through, the call returns `500` with the rows already `created`
+(each row commits on its own). Re-sending the same request is safe: those rows are skipped.
+
+To list pharmaceutical category ids, use
+`GET /api/inward-discount-matrix/pharmaceutical-item-categories/search?limit=200`. **`limit` is
+capped at 200**, so if `data` comes back with exactly 200 entries there may be more. Narrow the
+search with `query=` (e.g. by first letter) and combine the results before bulk-creating. After
+creating, check the count with `GET /api/inward-discount-matrix?scope=pharmacy&paymentSchemeId=…&limit=…`.
