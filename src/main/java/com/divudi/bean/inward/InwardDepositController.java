@@ -1113,12 +1113,20 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
 
         java.util.List<com.divudi.core.entity.Payment> multiplePayments =
                 getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getCurrent()) : null;
-        String text = InwardReceiptTextRenderer.render(getCurrent(), "Deposit Receipt",
-                false, preprinted, topMargin, emitEscP, multiplePayments);
+        String text = InwardReceiptTextRenderer.render(getCurrent(),
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_DEPOSIT),
+                false, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone);
 
         String fileName = "inward-deposit-"
                 + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())
