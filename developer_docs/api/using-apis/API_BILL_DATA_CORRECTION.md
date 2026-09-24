@@ -165,11 +165,31 @@ As with `PATCH`, the correction is appended to the bill's `comments` for audit.
 | targetType | Entity | Editable fields |
 |---|---|---|
 | `BILL` | Bill | `netTotal`, `grossTotal`, `comments` |
-| `BILL_ITEM` | BillItem | `qty`, `rate`, `grossValue`, `netValue`, `discount` |
+| `BILL_ITEM` | BillItem | `qty`, `rate`, `grossValue`, `netValue`, `discount`, `retired`, `retireComments` |
 | `BILL_FINANCE_DETAILS` | BillFinanceDetails | `totalRetailSaleValue`, `totalCostValue`, `totalPurchaseValue`, `netTotal`, `grossTotal`, `billExpensesConsideredForCosting`, `billExpensesNotConsideredForCosting`, `totalBillValue` |
 | `BILL_FEES` | BillFee | `feeValue`, `grossValue` |
 | `BILL_ITEM_FINANCE_DETAILS` | BillItemFinanceDetails | `valueAtRetailRate`, `valueAtCostRate`, `costRate`, `retailSaleRate` |
 | `PHARMACEUTICAL_BILL_ITEM` | PharmaceuticalBillItem | `qty`, `retailRate`, `costRate`, `retailValue`, `costValue` |
+
+## BILL_ITEM Retiring a Line (added 2026-09, #23944)
+
+Setting `retired: true` on a `BILL_ITEM` target retires that single line item
+(sets `retired`, `retiredAt`, `retirer`), mirroring the existing `BILL`
+`retired` correction pattern - useful for cleaning up a duplicate line
+without touching the whole bill. `retireComments` is optional and, if
+given, is stored on the line's own `retireComments` field. There is no
+emptiness guard (unlike retiring a whole `BILL`) since retiring a single
+line is much lower-blast-radius.
+
+```json
+{
+  "targetType": "BILL_ITEM",
+  "targetId": 14261091,
+  "fields": { "retired": true, "retireComments": "Duplicate line" },
+  "auditComment": "Retiring duplicate line from pre-fix cancellation bug",
+  "approvedBy": "Jane Doe"
+}
+```
 
 ## BILL_FINANCE_DETAILS Field Reference
 

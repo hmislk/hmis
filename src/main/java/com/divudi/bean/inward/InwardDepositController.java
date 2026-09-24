@@ -882,16 +882,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
                 ? getCurrent().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic()));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic()));
-        }
+        getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+        getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
