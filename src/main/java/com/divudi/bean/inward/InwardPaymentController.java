@@ -271,7 +271,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      * Post final bill payments are included so a payment taken on the Post
      * Final Payment page is not collected a second time here.
      */
-    private double calculateFinalBillDue(Bill finalBill) {
+    double calculateFinalBillDue(Bill finalBill) {
         // Patient portion = bill total minus the CC committed amount (not paid yet).
         // This correctly shows patient due before the company has actually remitted.
         // The encounter is taken from the freshly fetched final bill rather than
@@ -289,7 +289,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      * total: cancellations and refunds are separate rows with a negated
      * netTotal, so no cancelled=false filter is applied.
      */
-    private double getPostFinalPaymentTotal(PatientEncounter pe) {
+    double getPostFinalPaymentTotal(PatientEncounter pe) {
         String sql = "Select sum(b.netTotal) From Bill b where"
                 + " b.retired=false "
                 + " and b.billType=:btp "
