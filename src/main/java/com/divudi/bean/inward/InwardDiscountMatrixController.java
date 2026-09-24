@@ -7,6 +7,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -23,13 +24,16 @@ import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
 import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.faces.convert.Converter;
 
 /**
  * Controller for the Inward Discount Matrix configuration pages.
@@ -57,6 +61,7 @@ public class InwardDiscountMatrixController implements Serializable {
 
     private Department department;
     private Category category;
+    private List<Category> categories;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
@@ -88,6 +93,7 @@ public class InwardDiscountMatrixController implements Serializable {
     public void prepareAdd() {
         department = null;
         category = null;
+        categories = null;
         admissionType = null;
         paymentMethod = null;
         paymentScheme = null;
@@ -113,23 +119,82 @@ public class InwardDiscountMatrixController implements Serializable {
         clearInputFields();
     }
 
+    /**
+     * Adds one pharmacy discount row per selected category (issue #24029).
+     * Active rows with an identical combination are skipped rather than
+     * duplicated. The scheme, department, admission type, BHT type, credit
+     * company and percentage stay filled in so further categories can be
+     * added without re-entering them; only the category selection is cleared.
+     */
     public void saveForPharmacy() {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Please select a Discount Scheme");
             return;
         }
 
-        if (category == null) {
-            JsfUtil.addErrorMessage("Please select a category");
+        if (categories == null || categories.isEmpty()) {
+            JsfUtil.addErrorMessage("Please select at least one category");
             return;
         }
 
-        InwardDiscountMatrix entry = buildEntry();
-        ejbFacade.create(entry);
-        JsfUtil.addSuccessMessage("Saved Successfully");
+        if (discountPercent < 0.0 || discountPercent > 100.0) {
+            JsfUtil.addErrorMessage("Discount % must be between 0 and 100");
+            return;
+        }
 
+        int added = 0;
+        int skipped = 0;
+        for (Category c : categories) {
+            if (c == null) {
+                continue;
+            }
+            if (findActiveDuplicate(department, c, admissionType, paymentMethod, paymentScheme, creditCompany) != null) {
+                skipped++;
+                continue;
+            }
+            InwardDiscountMatrix entry = buildEntry();
+            entry.setCategory(c);
+            ejbFacade.create(entry);
+            added++;
+        }
+
+        if (added > 0) {
+            JsfUtil.addSuccessMessage(added + " added" + (skipped > 0 ? ", " + skipped + " skipped (already exist)" : ""));
+        } else {
+            JsfUtil.addErrorMessage("Nothing added - all " + skipped + " selected categories already have this discount");
+        }
+
+        categories = null;
         loadPharmacy();
-        clearInputFields();
+    }
+
+    /**
+     * Finds an active category-level discount row with exactly this
+     * combination. Null arguments match only null columns, so a wildcard row
+     * and a specific row are not duplicates of each other. Same criteria as
+     * {@code InwardDiscountMatrixApi.findDuplicate}.
+     */
+    private InwardDiscountMatrix findActiveDuplicate(Department dep, Category cat, AdmissionType at,
+            PaymentMethod pm, PaymentScheme ps, Institution cc) {
+        StringBuilder jpql = new StringBuilder("select a from InwardDiscountMatrix a"
+                + " where a.retired = false and a.inwardChargeType is null");
+        Map<String, Object> params = new HashMap<>();
+        appendNullSafe(jpql, params, "a.department", "dep", dep);
+        appendNullSafe(jpql, params, "a.category", "cat", cat);
+        appendNullSafe(jpql, params, "a.admissionType", "at", at);
+        appendNullSafe(jpql, params, "a.paymentMethod", "pm", pm);
+        appendNullSafe(jpql, params, "a.paymentScheme", "ps", ps);
+        appendNullSafe(jpql, params, "a.creditCompany", "cc", cc);
+        return (InwardDiscountMatrix) ejbFacade.findFirstByJpql(jpql.toString(), params);
+    }
+
+    private void appendNullSafe(StringBuilder jpql, Map<String, Object> params, String path, String name, Object value) {
+        if (value == null) {
+            jpql.append(" and ").append(path).append(" is null");
+        } else {
+            jpql.append(" and ").append(path).append(" = :").append(name);
+            params.put(name, value);
+        }
     }
 
     public void saveForRoomCharges() {
@@ -201,20 +266,49 @@ public class InwardDiscountMatrixController implements Serializable {
         items = ejbFacade.findByJpql(sql, hm);
     }
 
+    /**
+     * Lists pharmacy discount rows. Any selection made in the entry form
+     * (scheme, department, categories, admission type, BHT type, credit
+     * company) narrows the list; unselected fields do not filter.
+     */
     public void loadPharmacy() {
         filterItems = null;
-        HashMap<String, Object> hm = new HashMap<>();
-        String sql = "select a from InwardDiscountMatrix a"
+        Map<String, Object> hm = new HashMap<>();
+        StringBuilder sql = new StringBuilder("select a from InwardDiscountMatrix a"
                 + " left join a.paymentScheme ps"
                 + " left join a.department dept"
                 + " left join a.category cat"
                 + " where a.retired = false"
                 + " and a.inwardChargeType is null"
                 + " and (type(a.category) = :pharm"
-                + "   or a.category is null)"
-                + " order by ps.name, dept.name, cat.name";
+                + "   or a.category is null)");
         hm.put("pharm", PharmaceuticalItemCategory.class);
-        items = ejbFacade.findByJpql(sql, hm);
+        if (paymentScheme != null) {
+            sql.append(" and a.paymentScheme = :ps");
+            hm.put("ps", paymentScheme);
+        }
+        if (department != null) {
+            sql.append(" and a.department = :dep");
+            hm.put("dep", department);
+        }
+        if (categories != null && !categories.isEmpty()) {
+            sql.append(" and a.category in :cats");
+            hm.put("cats", new ArrayList<>(categories));
+        }
+        if (admissionType != null) {
+            sql.append(" and a.admissionType = :at");
+            hm.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            sql.append(" and a.paymentMethod = :pm");
+            hm.put("pm", paymentMethod);
+        }
+        if (creditCompany != null) {
+            sql.append(" and a.creditCompany = :cc");
+            hm.put("cc", creditCompany);
+        }
+        sql.append(" order by ps.name, dept.name, cat.name");
+        items = ejbFacade.findByJpql(sql.toString(), hm);
     }
 
     public void loadRoomCharges() {
@@ -289,6 +383,23 @@ public class InwardDiscountMatrixController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    /**
+     * Converter for the multi-select category list. JSF cannot infer one for a
+     * {@code List<Category>} value (generic type is erased), so the page names
+     * it explicitly.
+     */
+    public Converter getPharmaceuticalCategoryConverter() {
+        return new PharmaceuticalItemCategoryController.PharmaceuticalItemCategoryControllerConverter();
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 
     public AdmissionType getAdmissionType() {

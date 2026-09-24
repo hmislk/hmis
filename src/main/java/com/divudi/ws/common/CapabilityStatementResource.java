@@ -197,7 +197,9 @@ public class CapabilityStatementResource {
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
                         + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
-                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "Bulk POST: pass categoryIds (array) instead of categoryId to create one row per category; "
+                        + "identical existing rows are skipped and returned under 'skipped'.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",

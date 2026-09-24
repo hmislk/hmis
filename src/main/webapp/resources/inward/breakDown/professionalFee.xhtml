@@ -14,12 +14,15 @@
     <!-- IMPLEMENTATION -->
 
     <cc:implementation>
-        <p:dataTable value="#{bhtSummeryFinalizedController.proBillFee}" var="pf">
+        <p:dataTable value="#{bhtSummeryFinalizedController.allStaffBillFees}" var="pf">
             <f:facet name="header">
                 <h:outputLabel value="Professional Fee"/>
             </f:facet>
             <p:column headerText="Name">
                 #{pf.staff.person.nameWithTitle}
+            </p:column>
+            <p:column headerText="Category">
+                #{bhtSummeryController.getFeeCategoryLabel(pf)}
             </p:column>
             <p:column style="text-align: right;"  headerText="Fee Value">
                 <h:outputLabel value="#{pf.feeValue}">

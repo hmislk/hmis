@@ -223,6 +223,9 @@ public class InwardDiscountMatrixApi {
 
     /**
      * Create a new entry. Rejects duplicates with 409 + existing id.
+     * Pass {@code categoryIds} (array) instead of {@code categoryId} to create
+     * one row per category in a single call; duplicates are then skipped and
+     * reported rather than rejected.
      * POST /api/inward-discount-matrix
      */
     @POST
@@ -321,6 +324,93 @@ public class InwardDiscountMatrixApi {
                 if (creditCompany == null || creditCompany.isRetired()) {
                     return errorResponse("Credit company not found: " + creditCompanyId, 400);
                 }
+            }
+
+            // Bulk create across many categories (issue #24029). All ids are
+            // validated before anything is written; active exact duplicates
+            // are skipped (reported back) instead of failing the whole call.
+            Object categoryIdsRaw = body.get("categoryIds");
+            if (body.containsKey("categoryIds") && categoryIdsRaw == null) {
+                // An explicit null must not fall through to the single-row path,
+                // which would create a blank-category (scheme-wide) row.
+                return errorResponse("categoryIds must be a non-empty array of category ids", 400);
+            }
+            if (categoryIdsRaw != null) {
+                if (categoryId != null) {
+                    return errorResponse("Use either categoryId or categoryIds, not both", 400);
+                }
+                if (!(categoryIdsRaw instanceof List) || ((List<?>) categoryIdsRaw).isEmpty()) {
+                    return errorResponse("categoryIds must be a non-empty array of category ids", 400);
+                }
+                List<Category> bulkCategories = new ArrayList<>();
+                for (Object raw : (List<?>) categoryIdsRaw) {
+                    Long cid = asLong(raw);
+                    if (cid == null) {
+                        return errorResponse("categoryIds must not contain empty values", 400);
+                    }
+                    Category c = categoryFacade.find(cid);
+                    if (c == null || c.isRetired()) {
+                        return errorResponse("Category not found: " + cid, 400);
+                    }
+                    String mismatch = validateCategoryForScope(c, scope);
+                    if (mismatch != null) {
+                        return errorResponse(mismatch, 400);
+                    }
+                    if (!bulkCategories.contains(c)) {
+                        bulkCategories.add(c);
+                    }
+                }
+
+                List<Map<String, Object>> created = new ArrayList<>();
+                List<Map<String, Object>> skipped = new ArrayList<>();
+                try {
+                    for (Category c : bulkCategories) {
+                        InwardDiscountMatrix dup = findDuplicate(
+                                department, c, admissionType, paymentMethod, paymentScheme, creditCompany);
+                        if (dup != null) {
+                            Map<String, Object> s = new LinkedHashMap<>();
+                            s.put("categoryId", c.getId());
+                            s.put("existingId", dup.getId());
+                            skipped.add(s);
+                            continue;
+                        }
+                        InwardDiscountMatrix entry = new InwardDiscountMatrix();
+                        entry.setDepartment(department);
+                        entry.setCategory(c);
+                        entry.setAdmissionType(admissionType);
+                        entry.setPaymentMethod(paymentMethod);
+                        entry.setPaymentScheme(paymentScheme);
+                        entry.setDiscountPercent(discountPercent);
+                        entry.setCreditCompany(creditCompany);
+                        if (department != null) {
+                            entry.setInstitution(department.getInstitution());
+                        }
+                        entry.setCreatedAt(new Date());
+                        entry.setCreater(user);
+                        priceMatrixFacade.create(entry);
+                        created.add(toDto(entry));
+                    }
+                } catch (Exception e) {
+                    // Each row commits on its own, so report what was already
+                    // written. Re-sending the same request is safe: existing
+                    // rows are skipped as duplicates.
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put("status", "error");
+                    payload.put("code", 500);
+                    payload.put("message", "Bulk create stopped after " + created.size()
+                            + " row(s): " + e.getMessage() + ". Re-send the request to add the rest; existing rows are skipped.");
+                    payload.put("created", created);
+                    payload.put("skipped", skipped);
+                    return Response.status(500).entity(gson.toJson(payload)).build();
+                }
+
+                Map<String, Object> data = new LinkedHashMap<>();
+                data.put("createdCount", created.size());
+                data.put("skippedCount", skipped.size());
+                data.put("created", created);
+                data.put("skipped", skipped);
+                return Response.status(created.isEmpty() ? 200 : 201)
+                        .entity(gson.toJson(successData(data))).build();
             }
 
             InwardDiscountMatrix existing = findDuplicate(
@@ -896,7 +986,13 @@ public class InwardDiscountMatrixApi {
 
     private Long asLong(Object o) {
         if (o == null) return null;
-        if (o instanceof Number) return ((Number) o).longValue();
+        if (o instanceof Number) {
+            double d = ((Number) o).doubleValue();
+            if (Double.isNaN(d) || Double.isInfinite(d) || d != Math.rint(d)) {
+                throw new IllegalArgumentException("Invalid numeric id: '" + o + "'");
+            }
+            return ((Number) o).longValue();
+        }
         String s = o.toString().trim();
         if (s.isEmpty()) return null;
         try {
