@@ -3418,7 +3418,7 @@ public class UserSettingsController implements Serializable {
     // column stays visible" below.
     private static final java.util.List<String> INWARD_BHT_DEPOSIT_DETAIL_COLUMN_KEYS = java.util.Arrays.asList(
             "bhtNo", "patientName", "admissionType", "admitted", "discharged",
-            "billNo", "dateTime", "paymentMethod", "amount", "referenceNo");
+            "billNo", "billType", "dateTime", "paymentMethod", "amount", "referenceNo");
 
     /**
      * Shared setter for every inward_bht_deposit_detail column checkbox.
@@ -3489,6 +3489,14 @@ public class UserSettingsController implements Serializable {
         setBhtDepositDetailColumnVisible("billNo", visible);
     }
 
+    public boolean isInwardBhtDepositDetailBillTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "billType");
+    }
+
+    public void setInwardBhtDepositDetailBillTypeVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("billType", visible);
+    }
+
     public boolean isInwardBhtDepositDetailDateTimeVisible() {
         return isColumnVisible("inward_bht_deposit_detail", "dateTime");
     }
@@ -3529,7 +3537,7 @@ public class UserSettingsController implements Serializable {
     // report's stored preferences must stay untouched.
     private static final java.util.List<String> INWARD_BHT_DEPOSIT_DETAIL_WITH_CC_COLUMN_KEYS = java.util.Arrays.asList(
             "bhtNo", "patientName", "admissionType", "admitted", "discharged",
-            "billNo", "dateTime", "paymentMethod", "amount", "referenceNo", "creditCompanies");
+            "billNo", "billType", "dateTime", "paymentMethod", "amount", "referenceNo", "creditCompanies");
 
     /**
      * Shared setter for every inward_bht_deposit_detail_with_credit_companies
@@ -3597,6 +3605,14 @@ public class UserSettingsController implements Serializable {
 
     public void setInwardBhtDepositDetailWithCcBillNoVisible(boolean visible) {
         setBhtDepositDetailWithCcColumnVisible("billNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcBillTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "billType");
+    }
+
+    public void setInwardBhtDepositDetailWithCcBillTypeVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("billType", visible);
     }
 
     public boolean isInwardBhtDepositDetailWithCcDateTimeVisible() {
