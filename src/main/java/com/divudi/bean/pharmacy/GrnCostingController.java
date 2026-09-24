@@ -1725,17 +1725,38 @@ public class GrnCostingController implements Serializable {
         onEdit(bi);
     }
 
+    // Shared by onEdit() and qtyChangedListner() - the two places a user can
+    // change a GRN line's Receiving Qty. getRemainingQty() returns a
+    // unit-based quantity, but f.getQuantity() is in packs for Ampp lines
+    // (BillItem quantities for Ampp are always packs - see
+    // generateBillComponent()); convert before comparing. An already
+    // overcommitted PO (prior GRNs + sibling rows already at or past the
+    // ordered qty) can also make the unit-based remainder negative - floor at
+    // zero instead of writing a negative quantity onto the line (CodeRabbit
+    // #24005, ported here).
+    private void clampQuantityToRemaining(BillItem tmp, BillItemFinanceDetails f) {
+        double remainsInUnits = getRemainingQty(tmp.getPharmaceuticalBillItem());
+        double unitsPerPack = 1.0;
+        if (tmp.getItem() instanceof Ampp) {
+            double dblVal = tmp.getItem().getDblValue();
+            unitsPerPack = dblVal > 0.0 ? dblVal : 1.0;
+        }
+        double remains = Math.max(remainsInUnits / unitsPerPack, 0.0);
+        if (f.getQuantity() != null && remains < f.getQuantity().doubleValue()) {
+            f.setQuantity(java.math.BigDecimal.valueOf(remains));
+            tmp.setTmpQty(remains);
+            JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
+        }
+    }
+
     public void onEdit(BillItem tmp) {
         setBatch(tmp);
         BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
         if (f == null) {
             return;
         }
-        double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
-        if (remains < f.getQuantity().doubleValue()) {
-            f.setQuantity(java.math.BigDecimal.valueOf(remains));
-            tmp.setTmpQty(remains);
-            JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
+        if (tmp.getReferanceBillItem() != null && tmp.getPharmaceuticalBillItem() != null) {
+            clampQuantityToRemaining(tmp, f);
         }
 
         if (f.getLineGrossRate().compareTo(f.getRetailSaleRatePerUnit()) > 0) {
@@ -1840,12 +1861,7 @@ public class GrnCostingController implements Serializable {
         // set back to the full ordered qty a second time, taking the GRN
         // over the PO amount (RH General Stores recurring defect).
         if (tmp.getReferanceBillItem() != null && tmp.getPharmaceuticalBillItem() != null) {
-            double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
-            if (f.getQuantity() != null && remains < f.getQuantity().doubleValue()) {
-                f.setQuantity(java.math.BigDecimal.valueOf(Math.max(remains, 0.0)));
-                tmp.setTmpQty(Math.max(remains, 0.0));
-                JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
-            }
+            clampQuantityToRemaining(tmp, f);
         }
 
         recalculateFinancialsBeforeAddingBillItem(f);
@@ -2915,9 +2931,30 @@ public class GrnCostingController implements Serializable {
             double currentGrnQty = 0.0;
             double currentGrnFreeQty = 0.0;
             String itemName = grnLinesForThisPoItem.get(0).getItem().getName();
+            String negativeLineWarning = null;
             for (BillItem grnItem : grnLinesForThisPoItem) {
-                currentGrnQty += grnItem.getPharmaceuticalBillItem().getQty();
-                currentGrnFreeQty += grnItem.getPharmaceuticalBillItem().getFreeQty();
+                double lineQty = grnItem.getPharmaceuticalBillItem().getQty();
+                double lineFreeQty = grnItem.getPharmaceuticalBillItem().getFreeQty();
+                // A negative line quantity could otherwise offset a positive
+                // over-limit line in the sum below (e.g. +20 and -10 summing to
+                // 10 for a 10-unit PO), passing this check while GRN approval
+                // still credits Math.abs() of each line to stock independently
+                // (CodeRabbit #24005, ported here). Flag the specific offending
+                // line/value rather than a blanket rejection, then keep summing
+                // the rest of the (valid, positive) lines so the real total for
+                // this PO item is still visible in the error message.
+                if (lineQty < 0 || lineFreeQty < 0) {
+                    negativeLineWarning = "Item " + grnItem.getItem().getName()
+                            + ": a line has a negative Receiving Qty (" + lineQty
+                            + ") or Free Qty (" + lineFreeQty + "). Remove or correct that line - "
+                            + "GRN receiving quantities cannot be negative; use a Return if stock needs to go back.";
+                    continue;
+                }
+                currentGrnQty += lineQty;
+                currentGrnFreeQty += lineFreeQty;
+            }
+            if (negativeLineWarning != null) {
+                return negativeLineWarning;
             }
 
             double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
