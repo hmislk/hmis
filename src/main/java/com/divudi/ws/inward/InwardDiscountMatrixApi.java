@@ -140,27 +140,17 @@ public class InwardDiscountMatrixApi {
                     + " where a.retired = false");
             Map<String, Object> params = new HashMap<>();
 
-            // The wildcard case (a.category is null) is intentionally its own
-            // top-level OR branch, not folded into the type(a.category) = :x
-            // disjuncts. EclipseLink's type() discriminator check does not
-            // reliably participate in an OR once the joined entity is null --
-            // in practice it can suppress the whole OR group rather than just
-            // evaluate to false -- so a null category must be excluded from that
-            // chain and matched purely via the persisted a.scope marker instead.
             if ("service".equals(scope)) {
-                jpql.append(" and ((a.category is not null and (type(a.category) = :svc"
+                jpql.append(" and (type(a.category) = :svc"
                         + " or type(a.category) = :sub"
-                        + " or type(a.category) = :inv))"
-                        + " or (a.category is null and a.scope = :scopeVal))");
+                        + " or type(a.category) = :inv"
+                        + " or a.category is null)");
                 params.put("svc", ServiceCategory.class);
                 params.put("sub", ServiceSubCategory.class);
                 params.put("inv", InvestigationCategory.class);
-                params.put("scopeVal", scope);
             } else if ("pharmacy".equals(scope)) {
-                jpql.append(" and ((a.category is not null and type(a.category) = :pharm)"
-                        + " or (a.category is null and a.scope = :scopeVal))");
+                jpql.append(" and (type(a.category) = :pharm or a.category is null)");
                 params.put("pharm", PharmaceuticalItemCategory.class);
-                params.put("scopeVal", scope);
             } else if (scope != null && !scope.isEmpty()) {
                 return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
             }
@@ -333,14 +323,8 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
-            // Scope only needs to disambiguate duplicates/listing when the row is a
-            // wildcard (category == null); once a real category is set its type
-            // already pins it to one scope, so store scope only for the wildcard case.
-            String storedScope = (category == null) ? scope : null;
-
             InwardDiscountMatrix existing = findDuplicate(
-                    department, category, admissionType, paymentMethod, paymentScheme, creditCompany,
-                    storedScope);
+                    department, category, admissionType, paymentMethod, paymentScheme, creditCompany);
             if (existing != null) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -359,7 +343,6 @@ public class InwardDiscountMatrixApi {
             entry.setPaymentScheme(paymentScheme);
             entry.setDiscountPercent(discountPercent);
             entry.setCreditCompany(creditCompany);
-            entry.setScope(storedScope);
             if (department != null) {
                 entry.setInstitution(department.getInstitution());
             }
@@ -425,18 +408,7 @@ public class InwardDiscountMatrixApi {
             if (body.containsKey("categoryId")) {
                 Long categoryId = asLong(body.get("categoryId"));
                 if (categoryId == null) {
-                    // Clearing to a wildcard row still needs a scope to disambiguate
-                    // it from a wildcard row in the other scope.
-                    String scope = asString(body.get("scope"));
-                    if (scope == null || scope.trim().isEmpty()) {
-                        return errorResponse("scope is required when clearing categoryId to null", 400);
-                    }
-                    scope = scope.trim().toLowerCase();
-                    if (!"service".equals(scope) && !"pharmacy".equals(scope)) {
-                        return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
-                    }
                     entry.setCategory(null);
-                    entry.setScope(scope);
                 } else {
                     Category c = categoryFacade.find(categoryId);
                     if (c == null || c.isRetired()) {
@@ -455,9 +427,6 @@ public class InwardDiscountMatrixApi {
                         return errorResponse(mismatch, 400);
                     }
                     entry.setCategory(c);
-                    // A real category already pins the scope via its type; clear the
-                    // wildcard-only scope marker so it doesn't linger stale.
-                    entry.setScope(null);
                 }
             }
 
@@ -526,8 +495,7 @@ public class InwardDiscountMatrixApi {
 
             InwardDiscountMatrix dup = findDuplicate(
                     entry.getDepartment(), entry.getCategory(), entry.getAdmissionType(),
-                    entry.getPaymentMethod(), entry.getPaymentScheme(), entry.getCreditCompany(),
-                    entry.getScope());
+                    entry.getPaymentMethod(), entry.getPaymentScheme(), entry.getCreditCompany());
             if (dup != null && !dup.getId().equals(entry.getId())) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -725,7 +693,7 @@ public class InwardDiscountMatrixApi {
 
     private InwardDiscountMatrix findDuplicate(Department department, Category category,
             AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme,
-            Institution creditCompany, String scope) {
+            Institution creditCompany) {
 
         StringBuilder jpql = new StringBuilder(
                 "select a from InwardDiscountMatrix a where a.retired = false");
@@ -738,11 +706,7 @@ public class InwardDiscountMatrixApi {
             params.put("dep", department);
         }
         if (category == null) {
-            // Wildcard row: only collides with another wildcard row of the SAME
-            // declared scope. Two wildcard rows in different scopes (e.g. pharmacy
-            // 2.5% and service 5%, both otherwise unfiltered) are not duplicates.
-            jpql.append(" and a.category is null and a.scope = :scopeVal");
-            params.put("scopeVal", scope);
+            jpql.append(" and a.category is null");
         } else {
             jpql.append(" and a.category = :cat");
             params.put("cat", category);
@@ -895,9 +859,6 @@ public class InwardDiscountMatrixApi {
             row.put("creditCompany", null);
         }
         row.put("retired", pm.isRetired());
-        if (pm instanceof InwardDiscountMatrix) {
-            row.put("scope", ((InwardDiscountMatrix) pm).getScope());
-        }
         return row;
     }
 
