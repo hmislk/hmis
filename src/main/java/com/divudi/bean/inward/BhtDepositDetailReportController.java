@@ -60,7 +60,7 @@ public class BhtDepositDetailReportController implements Serializable {
 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = endOfCurrentMonth();
-    private String dateBasis = "dischargeDate";
+    private String dateBasis = "paymentDate";
     private String reportType = "ALL";
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
@@ -117,8 +117,17 @@ public class BhtDepositDetailReportController implements Serializable {
         }
 
         usedPaymentMethods = new ArrayList<>(totalByMethod.keySet());
-        reportRows.sort(Comparator.comparing(BhtPaymentDetailDTO::getBillId,
-                Comparator.nullsLast(Comparator.naturalOrder())));
+        // By bill number (blank last), bill id as tie-break. The Excel/PDF
+        // export follows this list order (issue #23979).
+        reportRows.sort(Comparator.comparing(BhtDepositDetailReportController::billNoSortKey,
+                Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(BhtPaymentDetailDTO::getBillId,
+                        Comparator.nullsLast(Comparator.naturalOrder())));
+    }
+
+    private static String billNoSortKey(BhtPaymentDetailDTO row) {
+        String billNo = row.getBillNo();
+        return billNo == null || billNo.trim().isEmpty() ? null : billNo.trim();
     }
 
     private List<PatientEncounter> fetchEncounters() {
@@ -447,7 +456,7 @@ public class BhtDepositDetailReportController implements Serializable {
     public void makeNull() {
         fromDate = startOfCurrentMonth();
         toDate = endOfCurrentMonth();
-        dateBasis = "dischargeDate";
+        dateBasis = "paymentDate";
         reportType = "ALL";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
