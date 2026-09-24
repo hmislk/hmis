@@ -15,7 +15,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +41,11 @@ import com.divudi.bean.common.UserSettingsController;
  * payment. CC settlements excluded. Also covers Inpatient Payment and Post
  * Discharge (post-final-bill) payment rows via the {@code reportType} filter,
  * not just deposits.
+ *
+ * <p>Refunds and cancellations are listed as their own rows with their signed
+ * (negative) amount and counted in the totals, and an original bill stays
+ * listed after it is cancelled or refunded, so the totals are the net cash
+ * handled in the period (issue #23980).</p>
  */
 @Named
 @SessionScoped
@@ -95,13 +99,16 @@ public class BhtDepositDetailReportController implements Serializable {
                 row.setDateOfDischarge(enc.getDateOfDischarge());
                 row.setBillId(p.getBill() != null ? p.getBill().getId() : null);
                 row.setBillNo(p.getBill() != null ? p.getBill().getDeptId() : "");
+                row.setBillType(p.getBill() != null ? billTypeLabel(p.getBill().getBillTypeAtomic()) : "");
                 row.setCreatedAt(p.getCreatedAt());
                 row.setPaymentMethod(p.getPaymentMethod());
-                row.setAmount(Math.abs(p.getPaidValue()));
+                // Signed, not abs(): cancellation and refund Payments are stored
+                // negative and must reduce the totals (issue #23980).
+                double amt = p.getPaidValue();
+                row.setAmount(amt);
                 row.setReferenceNo(p.getReferenceNo());
                 reportRows.add(row);
 
-                double amt = Math.abs(p.getPaidValue());
                 grandTotal += amt;
                 if (p.getPaymentMethod() != null) {
                     totalByMethod.merge(p.getPaymentMethod(), amt, Double::sum);
@@ -124,7 +131,7 @@ public class BhtDepositDetailReportController implements Serializable {
                 jpql.append(" and c.dateOfAdmission between :fromDate and :toDate");
             } else if ("paymentDate".equals(dateBasis)) {
                 jpql.append(" and exists (select 1 from Payment p where p.retired = false"
-                        + " and p.bill.retired = false and p.bill.cancelled = false"
+                        + " and p.bill.retired = false"
                         + " and p.bill.billTypeAtomic in :btas and p.bill.patientEncounter = c"
                         + " and p.createdAt between :fromDate and :toDate");
                 if (paymentMethod != null) {
@@ -181,23 +188,88 @@ public class BhtDepositDetailReportController implements Serializable {
         return patientEncounterFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
+    private static final List<BillTypeAtomic> DEPOSIT_BILL_TYPE_ATOMICS = Arrays.asList(
+            BillTypeAtomic.INWARD_DEPOSIT,
+            BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+            BillTypeAtomic.INWARD_DEPOSIT_REFUND,
+            BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
+
+    private static final List<BillTypeAtomic> PAYMENT_BILL_TYPE_ATOMICS = Arrays.asList(
+            BillTypeAtomic.INWARD_PAYMENT,
+            BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+            BillTypeAtomic.INWARD_PAYMENT_REFUND,
+            BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
+
+    private static final List<BillTypeAtomic> POST_FINAL_BILL_TYPE_ATOMICS = Arrays.asList(
+            BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT,
+            BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION,
+            BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
+
+    /**
+     * The original bill type of the selected report type plus its contra
+     * (cancellation, refund, refund cancellation) bill types, so contra bills
+     * are listed as their own signed rows (issue #23980).
+     */
     private List<BillTypeAtomic> reportTypeBillTypeAtomics() {
         if ("DEPOSIT".equals(reportType)) {
-            return Collections.singletonList(BillTypeAtomic.INWARD_DEPOSIT);
+            return DEPOSIT_BILL_TYPE_ATOMICS;
         } else if ("PAYMENT".equals(reportType)) {
-            return Collections.singletonList(BillTypeAtomic.INWARD_PAYMENT);
+            return PAYMENT_BILL_TYPE_ATOMICS;
         } else if ("POST_FINAL".equals(reportType)) {
-            return Collections.singletonList(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+            return POST_FINAL_BILL_TYPE_ATOMICS;
         }
-        return Arrays.asList(BillTypeAtomic.INWARD_DEPOSIT, BillTypeAtomic.INWARD_PAYMENT,
-                BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT);
+        List<BillTypeAtomic> all = new ArrayList<>(DEPOSIT_BILL_TYPE_ATOMICS);
+        all.addAll(PAYMENT_BILL_TYPE_ATOMICS);
+        all.addAll(POST_FINAL_BILL_TYPE_ATOMICS);
+        return all;
     }
 
+    /**
+     * Short label for the Bill Type column, so a negative contra row reads as
+     * e.g. "Deposit Refund" or "Payment Cancellation".
+     */
+    private String billTypeLabel(BillTypeAtomic bta) {
+        if (bta == null) {
+            return "";
+        }
+        switch (bta) {
+            case INWARD_DEPOSIT:
+                return "Deposit";
+            case INWARD_DEPOSIT_CANCELLATION:
+                return "Deposit Cancellation";
+            case INWARD_DEPOSIT_REFUND:
+                return "Deposit Refund";
+            case INWARD_DEPOSIT_REFUND_CANCELLATION:
+                return "Deposit Refund Cancellation";
+            case INWARD_PAYMENT:
+                return "Payment";
+            case INWARD_PAYMENT_CANCELLATION:
+                return "Payment Cancellation";
+            case INWARD_PAYMENT_REFUND:
+                return "Payment Refund";
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                return "Payment Refund Cancellation";
+            case POST_FINAL_BILL_INWARD_PAYMENT:
+                return "Post Discharge Payment";
+            case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
+                return "Post Discharge Payment Cancellation";
+            case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
+                return "Post Discharge Payment Refund";
+            default:
+                return bta.getLabel();
+        }
+    }
+
+    /**
+     * Deliberately does NOT filter on {@code p.bill.cancelled}: cancelling a
+     * bill sets {@code cancelled=true} on the original and records the
+     * reversal as a separate negative contra bill, so filtering would drop the
+     * original and leave the cancellation unbalanced (issue #23980).
+     */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
-                + " and p.bill.cancelled = false"
                 + " and p.bill.billTypeAtomic in :btas"
                 + " and p.bill.patientEncounter = :enc");
         Map<String, Object> params = new HashMap<>();
@@ -311,6 +383,9 @@ public class BhtDepositDetailReportController implements Serializable {
     private List<String> exportedColumnKinds() {
         List<String> kinds = new ArrayList<>();
         if (userSettingsController.isInwardBhtDepositDetailBillNoVisible()) {
+            kinds.add("TEXT");
+        }
+        if (userSettingsController.isInwardBhtDepositDetailBillTypeVisible()) {
             kinds.add("TEXT");
         }
         if (userSettingsController.isInwardBhtDepositDetailBhtNoVisible()) {

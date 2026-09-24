@@ -224,6 +224,9 @@
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcBillNoVisible}" itemLabel="Bill No">
                                         <p:ajax update="tblReport panelColumnToggler" />
                                     </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcBillTypeVisible}" itemLabel="Bill Type">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailWithCcDateTimeVisible}" itemLabel="Date / Time">
                                         <p:ajax update="tblReport panelColumnToggler" />
                                     </p:selectBooleanCheckbox>
@@ -288,6 +291,11 @@
                                 <h:outputText value="#{row.billNo}" />
                             </p:column>
 
+                            <p:column headerText="Bill Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailWithCcBillTypeVisible}">
+                                <h:outputText value="#{row.billType}" styleClass="#{row.amount lt 0 ? 'text-danger' : ''}" />
+                            </p:column>
+
                             <p:column headerText="Date / Time" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailWithCcDateTimeVisible}">
                                 <h:outputText value="#{row.createdAt}">
@@ -302,7 +310,7 @@
 
                             <p:column headerText="Amount" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailWithCcAmountVisible}">
-                                <h:outputText value="#{row.amount}">
+                                <h:outputText value="#{row.amount}" styleClass="#{row.amount lt 0 ? 'text-danger' : ''}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                             </p:column>
@@ -343,13 +351,15 @@
                                         <strong>
                                             <h:outputText value="#{pm.label}" />:
                                         </strong>
-                                        <h:outputText value="#{bhtDepositDetailWithCreditCompaniesReportController.getTotalForMethod(pm)}">
+                                        <h:outputText value="#{bhtDepositDetailWithCreditCompaniesReportController.getTotalForMethod(pm)}"
+                                                      styleClass="#{bhtDepositDetailWithCreditCompaniesReportController.getTotalForMethod(pm) lt 0 ? 'text-danger' : ''}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
                                     </ui:repeat>
                                     <strong>Grand Total: </strong>
-                                    <h:outputText value="#{bhtDepositDetailWithCreditCompaniesReportController.grandTotal}">
+                                    <h:outputText value="#{bhtDepositDetailWithCreditCompaniesReportController.grandTotal}"
+                                                  styleClass="#{bhtDepositDetailWithCreditCompaniesReportController.grandTotal lt 0 ? 'text-danger' : ''}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </div>
