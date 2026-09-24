@@ -139,7 +139,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         makeNull();
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
 
@@ -805,7 +805,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         remainingRefundableAmountCache = null;
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/inward/inward_bill_post_final_payment_refund?faces-redirect=true";
@@ -829,7 +829,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         }
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         getRefundCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());

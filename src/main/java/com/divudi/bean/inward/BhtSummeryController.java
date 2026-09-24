@@ -14,6 +14,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.WebUserController;
@@ -21,6 +22,7 @@ import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.ChargeItemTotal;
@@ -164,6 +166,8 @@ public class BhtSummeryController implements Serializable {
     RoomChangeController roomChangeController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
     @Inject
     ConfigOptionController configOptionController;
     @Inject
@@ -2816,6 +2820,11 @@ public class BhtSummeryController implements Serializable {
         if (patientEncounter.getPaymentMethod() == PaymentMethod.Credit) {
             return "/credit/inward_patient_copay_payment?faces-redirect=true";
         }
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addStartShiftFirstMessageForRedirect();
+            return "/cashier/index?faces-redirect=true";
+        }
         return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
@@ -3034,6 +3043,65 @@ public class BhtSummeryController implements Serializable {
         hm.put("pEnc", patientEncounter);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
         return encounterCreditCompanys;
+    }
+
+    /**
+     * Per-credit-company + patient due breakdown for Custom Bill 3. Only rows
+     * with a due greater than zero are included.
+     *
+     * Each company's due reuses the same settlement-aware calculation as the
+     * Inward Credit Company Debtor Report (committed amount minus actual
+     * settlement BillItems, not the possibly-stale paidAmount field).
+     *
+     * The patient's due is deliberately NOT taken from
+     * {@link InwardPaymentController#calculateFinalBillDue}, which bases the
+     * patient's portion on PatientEncounter.creditUsedAmount - an aggregate
+     * cap capped at the encounter's own overall credit limit. That limit can
+     * be lower than the sum of what was actually committed to individual
+     * companies at settlement (each company has its own separate limit), in
+     * which case using it here would make the printed company + patient due
+     * lines add up to more than the bill's own net total. Instead the
+     * patient's portion is computed as whatever of the net total was not
+     * committed to any company bill - guaranteeing the breakdown always
+     * reconciles with the bill total.
+     */
+    public List<CreditCompanyAllocation> creditCompanyDueBreakdownForPrint(Bill bill) {
+        List<CreditCompanyAllocation> breakdown = new ArrayList<>();
+        if (bill == null) {
+            return breakdown;
+        }
+        String sql = "Select b from Bill b where b.retired=false "
+                + "and (b.cancelled=false or b.cancelled is null) "
+                + "and b.billTypeAtomic=:bta and b.referenceBill=:ref";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        hm.put("ref", bill);
+        List<Bill> commitmentBills = getBillFacade().findByJpql(sql, hm);
+        List<BillTypeAtomic> settlementTypes =
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+        double totalCommitted = 0.0;
+        for (Bill cb : commitmentBills) {
+            totalCommitted += cb.getNetTotal();
+            String settledSql = "Select sum(bi.netValue) from BillItem bi where bi.retired=false "
+                    + "and bi.referenceBill=:bill and bi.bill.billTypeAtomic in :types";
+            HashMap<String, Object> sp = new HashMap<>();
+            sp.put("bill", cb);
+            sp.put("types", settlementTypes);
+            double settled = getBillItemFacade().findDoubleByJpql(settledSql, sp);
+            double due = cb.getNetTotal() - settled;
+            if (due > 0.01) {
+                breakdown.add(new CreditCompanyAllocation(cb.getCreditCompany(), due));
+            }
+        }
+        PatientEncounter pe = bill.getPatientEncounter();
+        double patientPortion = Math.max(0.0, bill.getNetTotal() - totalCommitted);
+        double paidByPatient = pe == null ? 0.0
+                : getInwardBean().getPaidValue(pe) + inwardPaymentController.getPostFinalPaymentTotal(pe);
+        double patientDue = Math.max(0.0, patientPortion - paidByPatient);
+        if (patientDue > 0.01) {
+            breakdown.add(new CreditCompanyAllocation(patientDue, true));
+        }
+        return breakdown;
     }
 
     public void saveCreditBillForCreditCompany(PatientEncounter pe, EncounterCreditCompany ecc, Double value) {

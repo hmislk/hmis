@@ -11,7 +11,7 @@
             <ui:define name="subcontent">
                 <h:form id="frm">
 
-                    <p:panel header="Inpatient Credit Company Debtor Report" class="m-1">
+                    <p:panel header="Inpatient Credit Company Commitment Report" class="m-1">
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
 
@@ -57,42 +57,23 @@
                                 itemValue="#{ccIns}"
                                 forceSelection="true" />
 
-                            <!-- Row 2: Date Basis | Admission Status | Report Type -->
+                            <!-- Row 2: Date Basis -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf017;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="dateBasisMenu" styleClass="w-100 form-control"
                                              value="#{inwardReportController1.dateBasis}">
-                                <f:selectItem itemValue="createdAt"        itemLabel="Payment/Bill Date" />
-                                <f:selectItem itemValue="dischargeDate"    itemLabel="Discharge Date" />
-                                <f:selectItem itemValue="admissionDate"    itemLabel="Admission Date" />
-                                <f:selectItem itemValue="finalBillCreatedAt" itemLabel="Final Bill Created Date" />
+                                <f:selectItem itemValue="createdAt"     itemLabel="Payment/Bill Date" />
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
                             </p:selectOneMenu>
-
                             <p:spacer width="50" />
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf05a;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Admission Status" for="admStatusMenu" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="admStatusMenu" styleClass="w-100 form-control"
-                                             value="#{inwardReportController1.admissionStatus}">
-                                <f:selectItems value="#{enumController.admissionStatuses}"
-                                               var="s" itemValue="#{s}" itemLabel="#{s.label}" />
-                            </p:selectOneMenu>
-
                             <p:spacer width="50" />
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0ce;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Report Type" for="reportTypeMenu" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="reportTypeMenu" styleClass="w-100 form-control"
-                                             value="#{inwardReportController1.reportType}">
-                                <f:selectItem itemValue="aggregate" itemLabel="Aggregate (one row per bill)" />
-                                <f:selectItem itemValue="individual" itemLabel="Individual (one row per settlement)" />
-                            </p:selectOneMenu>
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
+                            <p:spacer width="50" />
 
                             <!-- Row 3: Institution | Site | Department -->
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -183,7 +164,7 @@
 
                             </h:panelGroup>
 
-                            <!-- Row 3: Admission Type | Outstanding Only -->
+                            <!-- Row 4: Admission Type | Payment Method -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
@@ -203,21 +184,10 @@
                             <p:spacer width="50" />
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0d1;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Outstanding Only" for="chkOutstanding" class="mx-3"/>
-                            </h:panelGroup>
-                            <h:selectBooleanCheckbox
-                                id="chkOutstanding"
-                                value="#{inwardReportController1.outstandingOnly}"
-                                styleClass="form-check-input mt-2" />
-
-                            <p:spacer width="50" />
-
-                            <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Payment Method" for="pmMenuDebtor" class="mx-3"/>
+                                <h:outputLabel value="Payment Method" for="pmMenuCommitment" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="pmMenuDebtor" styleClass="w-100 form-control"
+                            <p:selectOneMenu id="pmMenuCommitment" styleClass="w-100 form-control"
                                              value="#{inwardReportController1.paymentMethod}">
                                 <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
@@ -228,18 +198,18 @@
                         <p:commandButton
                             value="Process"
                             icon="fas fa-cogs"
-                            action="#{inwardReportController1.inwardCreditCompanyDebtors()}"
+                            action="#{inwardReportController1.inwardCreditCompanyCommitments()}"
                             ajax="false"
                             class="ui-button-warning m-1" />
 
                     </p:panel>
 
                     <p:panel id="pnlResults"
-                             rendered="#{inwardReportController1.bills != null or inwardReportController1.debtorSettlementItems != null}">
+                             rendered="#{inwardReportController1.commitmentBills != null}">
 
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h:outputText value="Inpatient Credit Company Debtors" />
+                                <h:outputText value="Inpatient Credit Company Commitments" />
                                 <div>
                                     <p:commandButton value="Print"
                                                      icon="fas fa-print"
@@ -250,13 +220,13 @@
                                     <p:commandButton value="Excel"
                                                      icon="fas fa-file-excel"
                                                      class="ui-button-success"
-                                                     action="#{inwardReportController1.downloadCreditCompanyDebtorsExcel()}"
+                                                     action="#{inwardReportController1.downloadCreditCompanyCommitmentsExcel()}"
                                                      immediate="true"
                                                      ajax="false" />
                                     <p:commandButton value="PDF"
                                                      icon="fas fa-file-pdf"
                                                      class="ui-button-danger mx-1"
-                                                     action="#{inwardReportController1.downloadCreditCompanyDebtorsPdf()}"
+                                                     action="#{inwardReportController1.downloadCreditCompanyCommitmentsPdf()}"
                                                      immediate="true"
                                                      ajax="false" />
                                 </div>
@@ -265,9 +235,9 @@
 
                         <p:dataTable
                             id="tblReport"
-                            rendered="#{inwardReportController1.reportType eq 'aggregate'}"
-                            value="#{inwardReportController1.bills}"
+                            value="#{inwardReportController1.commitmentBills}"
                             var="b"
+                            rowIndexVar="i"
                             emptyMessage="No records found"
                             paginator="true"
                             rows="20"
@@ -279,7 +249,7 @@
                             styleClass="w-100">
 
                             <f:facet name="header">
-                                <h:outputText value="Inpatient Credit Company Debtor Report - " />
+                                <h:outputText value="Inpatient Credit Company Commitment Report - " />
                                 <h:outputText value="#{inwardReportController1.fromDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
@@ -289,8 +259,8 @@
                                 </h:outputText>
                             </f:facet>
 
-                            <p:column headerText="Commitment Bill No" style="white-space:nowrap;">
-                                <h:outputText value="#{b.deptId}" />
+                            <p:column headerText="No." style="width:4em; text-align:center;">
+                                <h:outputText value="#{i + 1}" />
                             </p:column>
 
                             <p:column headerText="Final Bill No" style="white-space:nowrap;">
@@ -305,161 +275,28 @@
                                 <h:outputText value="#{b.patient.person.name}" />
                             </p:column>
 
-                            <p:column headerText="Credit Company">
-                                <h:outputText value="#{b.creditCompany.name}" />
-                            </p:column>
-
-                            <p:column headerText="CC Commitment Bill Date" style="white-space:nowrap;">
-                                <h:outputText value="#{b.billDate}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Final Bill Created Date" style="white-space:nowrap;">
-                                <h:outputText value="#{b.referenceBill.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Admitted" style="white-space:nowrap;">
-                                <h:outputText value="#{b.patientEncounter.dateOfAdmission}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Discharged" style="white-space:nowrap;">
+                            <p:column headerText="Date of Discharge" style="white-space:nowrap;">
                                 <h:outputText value="#{b.patientEncounter.dateOfDischarge}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Last Settlement Date" style="white-space:nowrap;">
-                                <h:outputText value="#{b.transLastSettlementDate}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
+                            <p:column headerText="Credit Company">
+                                <h:outputText value="#{b.creditCompany.name}" />
                             </p:column>
 
-                            <p:column headerText="Final Bill Value" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{b.referenceBill.netTotal}" rendered="#{b.referenceBill ne null}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column style="text-align:right; white-space:nowrap;">
-                                <f:facet name="header">
-                                    <h:outputText value="Company Commitment"
-                                                  title="The credit company's share of the final bill. For (Active) rows (still admitted, no final bill yet) this is the running charges." />
-                                </f:facet>
+                            <p:column headerText="Credit Company Commitment Value" style="text-align:right; white-space:nowrap;">
                                 <h:outputText value="#{b.netTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardReportController1.debtorBillTotal}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Settled by Company" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{b.settledAmountBySponsor}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Settled by Patient" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{b.settledAmountByPatient}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Total Paid" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{b.paidAmount}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardReportController1.debtorPaidTotal}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Outstanding" style="text-align:right; white-space:nowrap; font-weight:bold;">
-                                <h:outputText value="#{b.netTotal - b.paidAmount}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardReportController1.debtorOutstandingTotal}">
+                                    <h:outputText value="#{inwardReportController1.commitmentTotal}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
                         </p:dataTable>
-
-                        <p:dataTable
-                            id="tblReportIndividual"
-                            rendered="#{inwardReportController1.reportType eq 'individual'}"
-                            value="#{inwardReportController1.debtorSettlementItems}"
-                            var="i"
-                            emptyMessage="No settlement transactions found"
-                            paginator="true"
-                            rows="20"
-                            paginatorAlwaysVisible="false"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
-                            styleClass="w-100">
-
-                            <p:column headerText="CC Commitment Bill No" style="white-space:nowrap;">
-                                <h:outputText value="#{i.referenceBill.deptId}" />
-                            </p:column>
-
-                            <p:column headerText="BHT No" style="white-space:nowrap;">
-                                <h:outputText value="#{i.patientEncounter.bhtNo}" />
-                            </p:column>
-
-                            <p:column headerText="Patient Name">
-                                <h:outputText value="#{i.patientEncounter.patient.person.name}" />
-                            </p:column>
-
-                            <p:column headerText="Credit Company">
-                                <h:outputText value="#{i.referenceBill.creditCompany.name}" />
-                            </p:column>
-
-                            <p:column headerText="Final Bill Created Date" style="white-space:nowrap;">
-                                <h:outputText value="#{i.referenceBill.referenceBill.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Settlement Bill No" style="white-space:nowrap;">
-                                <h:outputText value="#{i.bill.deptId}" />
-                            </p:column>
-
-                            <p:column headerText="Debtor Settlement Date" style="white-space:nowrap;">
-                                <h:outputText value="#{i.bill.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Amount" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{i.netValue}">
-                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                </h:outputText>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{inwardReportController1.debtorPaidTotal}">
-                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                        </p:dataTable>
-
-                        <div class="text-muted small mt-2" style="#{inwardReportController1.reportType eq 'individual' ? 'display:none;' : ''}">
-                            Rows are sorted by final bill. Final Bill Value is not totalled, because a final bill shared by two or more credit companies appears once per company.
-                            (Active) rows are currently admitted patients with no final bill yet; their Company Commitment is the running charges.
-                        </div>
 
                     </p:panel>
 
