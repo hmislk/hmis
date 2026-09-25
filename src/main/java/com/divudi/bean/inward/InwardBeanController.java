@@ -597,6 +597,38 @@ public class InwardBeanController implements Serializable {
      * OPTIMIZED: Fetches all inward charge type totals in ONE query instead of N queries
      * Performance: 52 seconds -> <2 seconds
      */
+    /**
+     * Sum of the discounts stored on inward service bill lines, per inward
+     * charge type, over the same lines as
+     * {@link #calServiceBillItemsTotalByInwardChargeTypeBulk} (issue #24011).
+     */
+    public Map<InwardChargeType, Double> calServiceBillItemsDiscountByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT s.item.inwardChargeType, sum(s.discount) "
+                + " FROM BillItem s"
+                + " WHERE s.retired=false "
+                + " AND s.bill.billType=:btp "
+                + " AND s.bill.patientEncounter IN :pe"
+                + " GROUP BY s.item.inwardChargeType";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+        Map<InwardChargeType, Double> map = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                if (row[0] != null && row[1] != null) {
+                    map.put((InwardChargeType) row[0], ((Number) row[1]).doubleValue());
+                }
+            }
+        }
+        return map;
+    }
+
     public Map<InwardChargeType, Double> calServiceBillItemsTotalByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue+s.marginValue) "
                 + " FROM BillItem s"
@@ -2860,6 +2892,29 @@ public class InwardBeanController implements Serializable {
     public void updateCreditDetail(PatientEncounter patientEncounter, double netTotal) {
         if (patientEncounter == null) {
             return;
+        }
+
+        // When the final bill split the due between credit companies and the
+        // patient, the companies' share is exactly what was committed to them at
+        // settlement. Taking it from the net total instead would record the
+        // patient's co-payment as company-covered, so the patient's due would
+        // read as zero everywhere creditUsedAmount is used.
+        Bill finalBill = patientEncounter.getFinalBill();
+        if (finalBill != null && finalBill.getId() != null) {
+            String jpql = " from Bill b where b.retired=false "
+                    + " and (b.cancelled=false or b.cancelled is null) "
+                    + " and b.billTypeAtomic=:bta "
+                    + " and b.referenceBill=:fb ";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            params.put("fb", finalBill);
+            long commitmentCount = getBillFacade().findLongByJpql("select count(b)" + jpql, params);
+            if (commitmentCount > 0) {
+                double committed = getBillFacade().findDoubleByJpql("select sum(b.netTotal)" + jpql, params);
+                patientEncounter.setCreditUsedAmount(committed);
+                patientEncounterFacade.edit(patientEncounter);
+                return;
+            }
         }
 
         if (patientEncounter.getCreditLimit() == 0) {
