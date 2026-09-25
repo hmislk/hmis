@@ -2977,10 +2977,14 @@ public class InwardReportController1 implements Serializable {
      */
     private List<Bill> findCreditCompanyCommitmentBills() {
         HashMap hm = new HashMap();
-        String dateField = resolveDateField(dateBasis, "b.billDate", "b.patientEncounter", "b.referenceBill.createdAt");
-        String sql = "Select b from Bill b "
+        String dateField = resolveDateField(dateBasis, "b.billDate", "b.patientEncounter", "fb.createdAt");
+        // LEFT JOIN (not the implicit b.referenceBill.* path used elsewhere) so a
+        // commitment bill with no final bill reference isn't dropped by an inner join -
+        // see the FINAL_BILL_ORDER comment below for why that matters here.
+        String sql = "Select b from Bill b LEFT JOIN b.referenceBill fb "
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
+                + " and (fb is null or (fb.retired=false and (fb.cancelled=false or fb.cancelled is null))) "
                 + " and b.billTypeAtomic=:bta "
                 + " and " + dateField + " between :frm and :to ";
 
