@@ -386,6 +386,9 @@
                                         style="width:250px;"
                                         ajax="false"
                                         action="#{inwardDepositController.pay()}" >
+                                        <p:confirm header="Confirm Payment"
+                                                   message="Are you sure you want to make this payment?"
+                                                   icon="pi pi-exclamation-triangle"/>
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -512,6 +515,11 @@
                         </h:panelGroup>
                     </div>
                 </p:panel>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times"/>
+                </p:confirmDialog>
             </h:form>
         </h:panelGroup>
         <p:dialog id="inwardPaymentConfigDialog"
