@@ -2754,7 +2754,6 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getCurrent());
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
                 if (alloc.getAllocatedAmount() > 0) {
                     saveCCBillForAllocation(getPatientEncounter(), alloc);
@@ -2768,6 +2767,11 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
         getPatientEncounter().setPaymentFinalized(true);
         getPatientEncounterFacade().edit(getPatientEncounter());
+        // After the commitment bills exist and this bill is the encounter's final
+        // bill, so creditUsedAmount is taken from the cashier's allocation.
+        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+        }
         getCurrent().setReferenceBill(originalBill);
         getBillFacade().edit(getCurrent());
 
@@ -2880,7 +2884,6 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(current);
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
         }
 
@@ -2897,6 +2900,11 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
         getPatientEncounter().setPaymentFinalized(true);
         getPatientEncounterFacade().edit(getPatientEncounter());
+        // After this bill is the encounter's final bill, so creditUsedAmount is
+        // taken from its own commitment bills, not the previous version's.
+        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+        }
         getCurrent().setReferenceBill(originalBill);
         getBillFacade().edit(getCurrent());
 

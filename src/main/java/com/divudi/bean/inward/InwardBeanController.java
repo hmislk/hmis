@@ -2667,6 +2667,29 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
+        // When the final bill split the due between credit companies and the
+        // patient, the companies' share is exactly what was committed to them at
+        // settlement. Taking it from the net total instead would record the
+        // patient's co-payment as company-covered, so the patient's due would
+        // read as zero everywhere creditUsedAmount is used.
+        Bill finalBill = patientEncounter.getFinalBill();
+        if (finalBill != null && finalBill.getId() != null) {
+            String jpql = " from Bill b where b.retired=false "
+                    + " and (b.cancelled=false or b.cancelled is null) "
+                    + " and b.billTypeAtomic=:bta "
+                    + " and b.referenceBill=:fb ";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            params.put("fb", finalBill);
+            long commitmentCount = getBillFacade().findLongByJpql("select count(b)" + jpql, params);
+            if (commitmentCount > 0) {
+                double committed = getBillFacade().findDoubleByJpql("select sum(b.netTotal)" + jpql, params);
+                patientEncounter.setCreditUsedAmount(committed);
+                patientEncounterFacade.edit(patientEncounter);
+                return;
+            }
+        }
+
         if (patientEncounter.getCreditLimit() == 0) {
             patientEncounter.setCreditUsedAmount(netTotal);
             patientEncounterFacade.edit(patientEncounter);
