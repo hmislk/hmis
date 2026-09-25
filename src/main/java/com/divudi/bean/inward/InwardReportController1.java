@@ -6,11 +6,13 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.table.String1Value2;
 import com.divudi.core.data.table.String2Value4;
@@ -37,10 +39,13 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,10 +83,15 @@ public class InwardReportController1 implements Serializable {
     private Institution admittingInstitution;
     private String dateBasis = "createdAt";
     private boolean outstandingOnly;
+    private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+    private String reportType = "aggregate";
     private List<Bill> bills;
+    private List<BillItem> debtorSettlementItems;
     private double debtorBillTotal;
     private double debtorPaidTotal;
     private double debtorOutstandingTotal;
+    private List<Bill> commitmentBills;
+    private double commitmentTotal;
     PatientEncounter patientEncounter;
     private List<OpdService> opdServices;
     List<String1Value2> timedServices;
@@ -144,6 +154,8 @@ public class InwardReportController1 implements Serializable {
 
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    SessionController sessionController;
 
     public void processForItemsWithInwardMatrix() {
         items = new ArrayList<>();
@@ -1514,11 +1526,17 @@ public class InwardReportController1 implements Serializable {
         admittingInstitution = null;
         department = null;
         outstandingOnly = false;
+        dateBasis = "createdAt";
+        admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+        reportType = "aggregate";
         bills = null;
         billItems = null;
+        debtorSettlementItems = null;
         debtorBillTotal = 0;
         debtorPaidTotal = 0;
         debtorOutstandingTotal = 0;
+        commitmentBills = null;
+        commitmentTotal = 0;
         creditPaymentTotalValue = 0;
     }
 
@@ -2483,16 +2501,54 @@ public class InwardReportController1 implements Serializable {
         this.outstandingOnly = outstandingOnly;
     }
 
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
+
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
+
+    public String getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(String reportType) {
+        this.reportType = reportType;
+    }
+
+    public List<BillItem> getDebtorSettlementItems() {
+        return debtorSettlementItems;
+    }
+
+    public void setDebtorSettlementItems(List<BillItem> debtorSettlementItems) {
+        this.debtorSettlementItems = debtorSettlementItems;
+    }
+
     /**
      * Returns the JPQL date field to apply to the from/to date range based on dateBasis.
      * @param defaultField the field used when dateBasis is "createdAt" (e.g. "b.bill.createdAt")
      * @param encounterAlias JPQL path to the PatientEncounter (e.g. "b.patientEncounter")
      */
     private String resolveDateField(String basis, String defaultField, String encounterAlias) {
+        return resolveDateField(basis, defaultField, encounterAlias, null);
+    }
+
+    /**
+     * Returns the JPQL date field to apply to the from/to date range based on dateBasis.
+     * @param defaultField the field used when dateBasis is "createdAt" (e.g. "b.bill.createdAt")
+     * @param encounterAlias JPQL path to the PatientEncounter (e.g. "b.patientEncounter")
+     * @param finalBillCreatedAtField JPQL path to the main INWARD_FINAL_BILL's createdAt
+     * (e.g. "b.referenceBill.createdAt"), used when dateBasis is "finalBillCreatedAt".
+     * Falls back to defaultField when null (basis not supported by the calling query).
+     */
+    private String resolveDateField(String basis, String defaultField, String encounterAlias, String finalBillCreatedAtField) {
         if ("dischargeDate".equals(basis)) {
             return encounterAlias + ".dateOfDischarge";
         } else if ("admissionDate".equals(basis)) {
             return encounterAlias + ".dateOfAdmission";
+        } else if ("finalBillCreatedAt".equals(basis) && finalBillCreatedAtField != null) {
+            return finalBillCreatedAtField;
         }
         return defaultField;
     }
@@ -2515,6 +2571,14 @@ public class InwardReportController1 implements Serializable {
 
     public double getDebtorOutstandingTotal() {
         return debtorOutstandingTotal;
+    }
+
+    public List<Bill> getCommitmentBills() {
+        return commitmentBills;
+    }
+
+    public double getCommitmentTotal() {
+        return commitmentTotal;
     }
 
     public List<OpdService> getOpdServices() {
@@ -2906,9 +2970,14 @@ public class InwardReportController1 implements Serializable {
         this.toDatePaid = toDatePaid;
     }
 
-    public void inwardCreditCompanyDebtors() {
+    /**
+     * Credit company commitment bills (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY)
+     * matching the current filters, sorted by final bill (creation order,
+     * bills without a final bill last), then credit company.
+     */
+    private List<Bill> findCreditCompanyCommitmentBills() {
         HashMap hm = new HashMap();
-        String dateField = resolveDateField(dateBasis, "b.billDate", "b.patientEncounter");
+        String dateField = resolveDateField(dateBasis, "b.billDate", "b.patientEncounter", "b.referenceBill.createdAt");
         String sql = "Select b from Bill b "
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
@@ -2939,8 +3008,6 @@ public class InwardReportController1 implements Serializable {
             sql += " and b.patientEncounter.paymentMethod=:pm ";
             hm.put("pm", paymentMethod);
         }
-        // Note: outstandingOnly filter is applied in Java after recalculating settled amounts
-        // dynamically, so it reflects the true outstanding balance including any cancellations.
 
         sql += " order by b.creditCompany.name, b.billDate ";
 
@@ -2948,8 +3015,41 @@ public class InwardReportController1 implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 
-        List<Bill> allBills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> found = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (found == null) {
+            return new ArrayList<>();
+        }
+        // Sorted in Java: ordering on b.referenceBill in JPQL would inner-join it
+        // and drop any commitment bill without a final bill. Creation order, not
+        // the deptId string, which would put .../194/... before .../2/...
+        found.sort(FINAL_BILL_ORDER);
+        return found;
+    }
 
+    private static final Comparator<Bill> FINAL_BILL_ORDER = Comparator
+            .comparing((Bill b) -> b.getReferenceBill() == null ? null : b.getReferenceBill().getCreatedAt(),
+                    Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(b -> b.getReferenceBill() == null ? null : b.getReferenceBill().getId(),
+                    Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(b -> b.getCreditCompany() == null ? null : b.getCreditCompany().getName(),
+                    Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(Bill::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+
+    public void inwardCreditCompanyDebtors() {
+        boolean anyStatus = admissionStatus == null || admissionStatus == AdmissionStatus.ANY_STATUS;
+        boolean wantFinalized = anyStatus || admissionStatus == AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+        boolean wantActive = anyStatus || admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+        boolean wantDischargedNotFinalized = anyStatus || admissionStatus == AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
+        boolean individualView = "individual".equals(reportType);
+
+        debtorBillTotal = 0;
+        debtorPaidTotal = 0;
+        debtorOutstandingTotal = 0;
+        bills = new ArrayList<>();
+        debtorSettlementItems = new ArrayList<>();
+
+        // Note: outstandingOnly filter is applied in Java after recalculating settled amounts
+        // dynamically, so it reflects the true outstanding balance including any cancellations.
         // Recalculate settled amounts per CC commitment bill dynamically from BillItems.
         // This includes both RECEIVED (positive netValue) and CANCELLATION (negative netValue)
         // bill types, so cancellations are naturally subtracted without relying on the stored
@@ -2957,35 +3057,64 @@ public class InwardReportController1 implements Serializable {
         List<BillTypeAtomic> settlementTypes =
                 BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
 
-        debtorBillTotal = 0;
-        debtorPaidTotal = 0;
-        debtorOutstandingTotal = 0;
-        bills = new ArrayList<>();
+        List<Bill> eligibleCcBills = new ArrayList<>();
 
-        for (Bill b : allBills) {
-            String settledSql = "Select sum(bi.netValue) from BillItem bi "
-                    + " where bi.retired=false "
-                    + " and bi.referenceBill=:bill "
-                    + " and bi.bill.billTypeAtomic in :types";
-            HashMap<String, Object> settledParams = new HashMap<>();
-            settledParams.put("bill", b);
-            settledParams.put("types", settlementTypes);
-            double settled = BillItemFacade.findDoubleByJpql(settledSql, settledParams);
-            b.setPaidAmount(settled);
-            b.setSettledAmountBySponsor(settled);
+        if (wantFinalized) {
+            List<Bill> allBills = findCreditCompanyCommitmentBills();
 
-            double outstanding = b.getNetTotal() - settled;
-            if (outstandingOnly && outstanding <= 0.01) {
-                continue;
+            for (Bill b : allBills) {
+                String settledSql = "Select sum(bi.netValue) from BillItem bi "
+                        + " where bi.retired=false "
+                        + " and bi.referenceBill=:bill "
+                        + " and bi.bill.billTypeAtomic in :types";
+                HashMap<String, Object> settledParams = new HashMap<>();
+                settledParams.put("bill", b);
+                settledParams.put("types", settlementTypes);
+                double settled = BillItemFacade.findDoubleByJpql(settledSql, settledParams);
+                b.setPaidAmount(settled);
+                b.setSettledAmountBySponsor(settled);
+
+                double outstanding = b.getNetTotal() - settled;
+                if (outstandingOnly && outstanding <= 0.01) {
+                    continue;
+                }
+
+                String lastSettledSql = "Select max(bi.bill.createdAt) from BillItem bi "
+                        + " where bi.retired=false "
+                        + " and bi.referenceBill=:bill "
+                        + " and bi.bill.billTypeAtomic in :types";
+                Date lastSettlementDate = getBillItemFacade().findDateByJpql(lastSettledSql, settledParams, TemporalType.TIMESTAMP);
+                b.setTransLastSettlementDate(lastSettlementDate);
+
+                eligibleCcBills.add(b);
+                debtorBillTotal += b.getNetTotal();
+                debtorPaidTotal += settled;
+                debtorOutstandingTotal += outstanding;
             }
 
-            bills.add(b);
-            debtorBillTotal += b.getNetTotal();
-            debtorPaidTotal += settled;
-            debtorOutstandingTotal += outstanding;
+            if (individualView) {
+                if (!eligibleCcBills.isEmpty()) {
+                    String itemSql = "Select bi from BillItem bi "
+                            + " where bi.retired=false "
+                            + " and bi.referenceBill in :ccBills "
+                            + " and bi.bill.billTypeAtomic in :types "
+                            + " order by bi.referenceBill.creditCompany.name, bi.bill.createdAt";
+                    HashMap<String, Object> itemParams = new HashMap<>();
+                    itemParams.put("ccBills", eligibleCcBills);
+                    itemParams.put("types", settlementTypes);
+                    debtorSettlementItems = getBillItemFacade().findByJpql(itemSql, itemParams);
+                }
+            } else {
+                bills.addAll(eligibleCcBills);
+            }
         }
 
-        // === Non-discharged (currently admitted) credit company patients ===
+        // Individual (per-settlement) view only applies to finalized CC commitment bills above;
+        // the two synthetic summary buckets below have no settlement transactions of their own.
+        if (individualView || (!wantActive && !wantDischargedNotFinalized)) {
+            return;
+        }
+
         List<BillTypeAtomic> chargeTypes = Arrays.asList(
                 BillTypeAtomic.INWARD_SERVICE_BILL,
                 BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
@@ -3020,95 +3149,315 @@ public class InwardReportController1 implements Serializable {
                 BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
         );
 
-        // Non-discharged patients are always filtered by admission date regardless of dateBasis
-        String encSql = "Select pe from PatientEncounter pe"
-                + " where pe.retired=false"
-                + " and (pe.discharged=false or pe.discharged is null)"
-                + " and pe.creditCompany is not null"
-                + " and pe.dateOfAdmission between :frm and :to";
+        if (wantActive) {
+            // === Non-discharged (currently admitted) credit company patients ===
+            // Always filtered by admission date regardless of dateBasis: these encounters
+            // have no discharge date or final bill yet to filter by.
+            String encSql = "Select pe from PatientEncounter pe"
+                    + " where pe.retired=false"
+                    + " and (pe.discharged=false or pe.discharged is null)"
+                    + " and pe.creditCompany is not null"
+                    + " and pe.dateOfAdmission between :frm and :to";
 
-        HashMap<String, Object> encHm = new HashMap<>();
-        if (institution != null) {
-            encSql += " and pe.creditCompany=:cc";
-            encHm.put("cc", institution);
-        }
-        if (admittingInstitution != null) {
-            encSql += " and pe.institution=:ins";
-            encHm.put("ins", admittingInstitution);
-        }
-        if (site != null) {
-            encSql += " and pe.department.site=:site";
-            encHm.put("site", site);
-        }
-        if (department != null) {
-            encSql += " and pe.department=:dept";
-            encHm.put("dept", department);
-        }
-        if (admissionType != null) {
-            encSql += " and pe.admissionType=:at";
-            encHm.put("at", admissionType);
-        }
-        if (paymentMethod != null) {
-            encSql += " and pe.paymentMethod=:pm";
-            encHm.put("pm", paymentMethod);
-        }
-
-        encSql += " order by pe.creditCompany.name, pe.dateOfAdmission";
-        encHm.put("frm", getFromDate());
-        encHm.put("to", getToDate());
-
-        List<PatientEncounter> nonDischargedEncounters = patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
-
-        for (PatientEncounter pe : nonDischargedEncounters) {
-            String chargeSql = "Select sum(b.netTotal) from Bill b"
-                    + " where b.retired=false"
-                    + " and b.patientEncounter=:pe"
-                    + " and b.billTypeAtomic in :chargeTypes";
-            HashMap<String, Object> chargeParams = new HashMap<>();
-            chargeParams.put("pe", pe);
-            chargeParams.put("chargeTypes", chargeTypes);
-            double chargeTotal = billFacade.findDoubleByJpql(chargeSql, chargeParams);
-
-            String ccPaidSql = "Select sum(b.netTotal) from Bill b"
-                    + " where b.retired=false"
-                    + " and b.patientEncounter=:pe"
-                    + " and b.billTypeAtomic in :ccPaymentTypes";
-            HashMap<String, Object> ccPaidParams = new HashMap<>();
-            ccPaidParams.put("pe", pe);
-            ccPaidParams.put("ccPaymentTypes", ccPaymentTypes);
-            double ccPaid = billFacade.findDoubleByJpql(ccPaidSql, ccPaidParams);
-
-            String depositSql = "Select sum(b.netTotal) from Bill b"
-                    + " where b.retired=false"
-                    + " and b.patientEncounter=:pe"
-                    + " and b.billTypeAtomic in :depositTypes";
-            HashMap<String, Object> depositParams = new HashMap<>();
-            depositParams.put("pe", pe);
-            depositParams.put("depositTypes", paymentAndDepositTypes);
-            double deposited = billFacade.findDoubleByJpql(depositSql, depositParams);
-
-            double totalPaid = ccPaid + deposited;
-            double outstanding = chargeTotal - totalPaid;
-
-            if (outstandingOnly && outstanding <= 0.01) {
-                continue;
+            HashMap<String, Object> encHm = new HashMap<>();
+            if (institution != null) {
+                encSql += " and pe.creditCompany=:cc";
+                encHm.put("cc", institution);
+            }
+            if (admittingInstitution != null) {
+                encSql += " and pe.institution=:ins";
+                encHm.put("ins", admittingInstitution);
+            }
+            if (site != null) {
+                encSql += " and pe.department.site=:site";
+                encHm.put("site", site);
+            }
+            if (department != null) {
+                encSql += " and pe.department=:dept";
+                encHm.put("dept", department);
+            }
+            if (admissionType != null) {
+                encSql += " and pe.admissionType=:at";
+                encHm.put("at", admissionType);
+            }
+            if (paymentMethod != null) {
+                encSql += " and pe.paymentMethod=:pm";
+                encHm.put("pm", paymentMethod);
             }
 
-            Bill syntheticBill = new Bill();
-            syntheticBill.setPatientEncounter(pe);
-            syntheticBill.setPatient(pe.getPatient());
-            syntheticBill.setCreditCompany(pe.getCreditCompany());
-            syntheticBill.setDeptId("(Active)");
-            syntheticBill.setBillDate(pe.getDateOfAdmission());
-            syntheticBill.setNetTotal(chargeTotal);
-            syntheticBill.setSettledAmountBySponsor(ccPaid);
-            syntheticBill.setSettledAmountByPatient(deposited);
-            syntheticBill.setPaidAmount(totalPaid);
+            encSql += " order by pe.creditCompany.name, pe.dateOfAdmission";
+            encHm.put("frm", getFromDate());
+            encHm.put("to", getToDate());
 
-            bills.add(syntheticBill);
-            debtorBillTotal += chargeTotal;
-            debtorPaidTotal += totalPaid;
-            debtorOutstandingTotal += outstanding;
+            List<PatientEncounter> nonDischargedEncounters = patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
+
+            for (PatientEncounter pe : nonDischargedEncounters) {
+                addSyntheticDebtorRow(pe, chargeTypes, ccPaymentTypes, paymentAndDepositTypes, "(Active)", pe.getDateOfAdmission());
+            }
+        }
+
+        if (wantDischargedNotFinalized) {
+            // === Discharged but final bill not yet completed ===
+            // No final bill/CC commitment bill exists yet, so filter by discharge date
+            // (or admission date if explicitly requested) rather than dateBasis' other options.
+            String dateField = "admissionDate".equals(dateBasis) ? "pe.dateOfAdmission" : "pe.dateOfDischarge";
+            String encSql = "Select pe from PatientEncounter pe"
+                    + " where pe.retired=false"
+                    + " and pe.discharged=true"
+                    + " and (pe.paymentFinalized=false or pe.paymentFinalized is null)"
+                    + " and pe.creditCompany is not null"
+                    + " and " + dateField + " between :frm and :to";
+
+            HashMap<String, Object> encHm = new HashMap<>();
+            if (institution != null) {
+                encSql += " and pe.creditCompany=:cc";
+                encHm.put("cc", institution);
+            }
+            if (admittingInstitution != null) {
+                encSql += " and pe.institution=:ins";
+                encHm.put("ins", admittingInstitution);
+            }
+            if (site != null) {
+                encSql += " and pe.department.site=:site";
+                encHm.put("site", site);
+            }
+            if (department != null) {
+                encSql += " and pe.department=:dept";
+                encHm.put("dept", department);
+            }
+            if (admissionType != null) {
+                encSql += " and pe.admissionType=:at";
+                encHm.put("at", admissionType);
+            }
+            if (paymentMethod != null) {
+                encSql += " and pe.paymentMethod=:pm";
+                encHm.put("pm", paymentMethod);
+            }
+
+            encSql += " order by pe.creditCompany.name, pe.dateOfDischarge";
+            encHm.put("frm", getFromDate());
+            encHm.put("to", getToDate());
+
+            List<PatientEncounter> dischargedNotFinalizedEncounters = patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
+
+            for (PatientEncounter pe : dischargedNotFinalizedEncounters) {
+                addSyntheticDebtorRow(pe, chargeTypes, ccPaymentTypes, paymentAndDepositTypes, "(Discharged - Bill Pending)", pe.getDateOfDischarge());
+            }
+        }
+    }
+
+    /**
+     * Builds an in-memory (never persisted) synthetic debtor row for a credit-company
+     * encounter that has no CC commitment bill yet (still admitted, or discharged but
+     * not yet finalized) - summing raw charge/payment bills directly against the
+     * encounter since the per-company commitment bill this report otherwise reads
+     * from doesn't exist until the final bill is settled.
+     */
+    private void addSyntheticDebtorRow(PatientEncounter pe, List<BillTypeAtomic> chargeTypes,
+            List<BillTypeAtomic> ccPaymentTypes, List<BillTypeAtomic> paymentAndDepositTypes,
+            String label, Date rowDate) {
+        String chargeSql = "Select sum(b.netTotal) from Bill b"
+                + " where b.retired=false"
+                + " and b.patientEncounter=:pe"
+                + " and b.billTypeAtomic in :chargeTypes";
+        HashMap<String, Object> chargeParams = new HashMap<>();
+        chargeParams.put("pe", pe);
+        chargeParams.put("chargeTypes", chargeTypes);
+        double chargeTotal = billFacade.findDoubleByJpql(chargeSql, chargeParams);
+
+        String ccPaidSql = "Select sum(b.netTotal) from Bill b"
+                + " where b.retired=false"
+                + " and b.patientEncounter=:pe"
+                + " and b.billTypeAtomic in :ccPaymentTypes";
+        HashMap<String, Object> ccPaidParams = new HashMap<>();
+        ccPaidParams.put("pe", pe);
+        ccPaidParams.put("ccPaymentTypes", ccPaymentTypes);
+        double ccPaid = billFacade.findDoubleByJpql(ccPaidSql, ccPaidParams);
+
+        String depositSql = "Select sum(b.netTotal) from Bill b"
+                + " where b.retired=false"
+                + " and b.patientEncounter=:pe"
+                + " and b.billTypeAtomic in :depositTypes";
+        HashMap<String, Object> depositParams = new HashMap<>();
+        depositParams.put("pe", pe);
+        depositParams.put("depositTypes", paymentAndDepositTypes);
+        double deposited = billFacade.findDoubleByJpql(depositSql, depositParams);
+
+        double totalPaid = ccPaid + deposited;
+        double outstanding = chargeTotal - totalPaid;
+
+        if (outstandingOnly && outstanding <= 0.01) {
+            return;
+        }
+
+        Bill syntheticBill = new Bill();
+        syntheticBill.setPatientEncounter(pe);
+        syntheticBill.setPatient(pe.getPatient());
+        syntheticBill.setCreditCompany(pe.getCreditCompany());
+        syntheticBill.setDeptId(label);
+        syntheticBill.setBillDate(rowDate);
+        syntheticBill.setNetTotal(chargeTotal);
+        syntheticBill.setSettledAmountBySponsor(ccPaid);
+        syntheticBill.setSettledAmountByPatient(deposited);
+        syntheticBill.setPaidAmount(totalPaid);
+
+        bills.add(syntheticBill);
+        debtorBillTotal += chargeTotal;
+        debtorPaidTotal += totalPaid;
+        debtorOutstandingTotal += outstanding;
+    }
+
+    /**
+     * Credit Company Commitment Report: one row per finalized credit company
+     * commitment bill. No (Active) rows and no settlement figures.
+     */
+    public void inwardCreditCompanyCommitments() {
+        commitmentBills = findCreditCompanyCommitmentBills();
+        commitmentTotal = 0;
+        for (Bill b : commitmentBills) {
+            commitmentTotal += b.getNetTotal();
+        }
+    }
+
+    public void downloadCreditCompanyDebtorsExcel() {
+        exportCreditCompanyDebtors(true);
+    }
+
+    public void downloadCreditCompanyDebtorsPdf() {
+        exportCreditCompanyDebtors(false);
+    }
+
+    public void downloadCreditCompanyCommitmentsExcel() {
+        exportCreditCompanyCommitments(true);
+    }
+
+    public void downloadCreditCompanyCommitmentsPdf() {
+        exportCreditCompanyCommitments(false);
+    }
+
+    private void exportCreditCompanyDebtors(boolean excel) {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to export. Please process the report first.");
+            return;
+        }
+        TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
+        TabularReportExporter.Align r = TabularReportExporter.Align.RIGHT;
+        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true)
+                .column("Commitment Bill No", 2.6f, l)
+                .column("Final Bill No", 2.4f, l)
+                .column("BHT No", 1.2f, l)
+                .column("Patient Name", 2.2f, l)
+                .column("Credit Company", 2.2f, l)
+                .column("Bill Date", 1.2f, l)
+                .column("Admitted", 1.2f, l)
+                .column("Discharged", 1.2f, l)
+                .column("Final Bill Value", 1.4f, r)
+                .column("Company Commitment", 1.4f, r)
+                .column("Settled by Company", 1.4f, r)
+                .column("Settled by Patient", 1.4f, r)
+                .column("Total Paid", 1.4f, r)
+                .column("Outstanding", 1.4f, r);
+        boolean hasActive = false;
+        for (Bill b : bills) {
+            PatientEncounter pe = b.getPatientEncounter();
+            Bill fb = b.getReferenceBill();
+            if (fb == null && "(Active)".equals(b.getDeptId())) {
+                hasActive = true;
+            }
+            ex.row(b.getDeptId(),
+                    fb == null ? "" : fb.getDeptId(),
+                    pe == null ? "" : pe.getBhtNo(),
+                    b.getPatient() == null || b.getPatient().getPerson() == null ? "" : b.getPatient().getPerson().getName(),
+                    b.getCreditCompany() == null ? "" : b.getCreditCompany().getName(),
+                    b.getBillDate(),
+                    pe == null ? null : pe.getDateOfAdmission(),
+                    pe == null ? null : pe.getDateOfDischarge(),
+                    fb == null ? null : fb.getNetTotal(),
+                    b.getNetTotal(),
+                    b.getSettledAmountBySponsor(),
+                    b.getSettledAmountByPatient(),
+                    b.getPaidAmount(),
+                    b.getNetTotal() - b.getPaidAmount());
+        }
+        ex.totals("Total", null, null, null, null, null, null, null, null, null,
+                debtorBillTotal, null, null, debtorPaidTotal, debtorOutstandingTotal);
+        ex.note("Final Bill Value is not totalled: a final bill shared by two or more credit companies appears once per company.");
+        if (hasActive) {
+            ex.note("(Active) rows are currently admitted patients with no final bill yet: Company Commitment shows running charges.");
+        }
+        writeExport(ex, excel, "inward_credit_company_debtors");
+    }
+
+    private void exportCreditCompanyCommitments(boolean excel) {
+        if (commitmentBills == null || commitmentBills.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to export. Please process the report first.");
+            return;
+        }
+        TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
+        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Commitment Report", false)
+                .column("No.", 0.5f, TabularReportExporter.Align.CENTER)
+                .column("Final Bill No", 2.4f, l)
+                .column("BHT No", 1.2f, l)
+                .column("Patient Name", 2.4f, l)
+                .column("Date of Discharge", 1.3f, l)
+                .column("Credit Company", 2.4f, l)
+                .column("Credit Company Commitment Value", 1.6f, TabularReportExporter.Align.RIGHT);
+        int no = 1;
+        for (Bill b : commitmentBills) {
+            PatientEncounter pe = b.getPatientEncounter();
+            ex.row(String.valueOf(no++),
+                    b.getReferenceBill() == null ? "" : b.getReferenceBill().getDeptId(),
+                    pe == null ? "" : pe.getBhtNo(),
+                    b.getPatient() == null || b.getPatient().getPerson() == null ? "" : b.getPatient().getPerson().getName(),
+                    pe == null ? null : pe.getDateOfDischarge(),
+                    b.getCreditCompany() == null ? "" : b.getCreditCompany().getName(),
+                    b.getNetTotal());
+        }
+        ex.totals("Total", null, null, null, null, null, null, commitmentTotal);
+        writeExport(ex, excel, "inward_credit_company_commitments");
+    }
+
+    private TabularReportExporter newCreditCompanyExporter(String title, boolean withOutstandingFilter) {
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName() : "";
+        String printedBy = sessionController.getLoggedUser() != null
+                && sessionController.getLoggedUser().getWebUserPerson() != null
+                ? sessionController.getLoggedUser().getWebUserPerson().getName() : null;
+        SimpleDateFormat dtf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        String dateBasisLabel;
+        if ("dischargeDate".equals(dateBasis)) {
+            dateBasisLabel = "Discharge Date";
+        } else if ("admissionDate".equals(dateBasis)) {
+            dateBasisLabel = "Admission Date";
+        } else {
+            dateBasisLabel = "Payment/Bill Date";
+        }
+        TabularReportExporter ex = new TabularReportExporter(institutionName, title, printedBy,
+                sessionController.getApplicationPreference().getShortDateFormat())
+                .filter("From", dtf.format(getFromDate()))
+                .filter("To", dtf.format(getToDate()))
+                .filter("Date Basis", dateBasisLabel)
+                .filter("Credit Company", institution == null ? "All" : institution.getName())
+                .filter("Institution", admittingInstitution == null ? "All" : admittingInstitution.getName())
+                .filter("Site", site == null ? "All" : site.getName())
+                .filter("Department", department == null ? "All" : department.getName())
+                .filter("Admission Type", admissionType == null ? "All" : admissionType.getName())
+                .filter("Payment Method", paymentMethod == null ? "All" : paymentMethod.getLabel());
+        if (withOutstandingFilter) {
+            ex.filter("Outstanding Only", outstandingOnly ? "Yes" : "No");
+        }
+        return ex;
+    }
+
+    private void writeExport(TabularReportExporter ex, boolean excel, String fileNameBase) {
+        try {
+            if (excel) {
+                ex.writeExcel(fileNameBase);
+            } else {
+                ex.writePdf(fileNameBase);
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating the export: " + e.getMessage());
         }
     }
 

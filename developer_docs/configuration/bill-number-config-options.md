@@ -54,10 +54,42 @@ public static final String BILL_NUMBER_GENERATION_STRATEGY_FOR_INSTITUTION_ID_IS
 **Key**: `Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments`
 **Type**: Boolean
 **Default**: `false`
-**Description**: When enabled, the **Inward Deposit** (`InwardPaymentBill` / `BillNumberSuffix.INWPAY`) and **Post Final Payment** (`PostFinalBillInwardPayment` / `BillNumberSuffix.INWPFP`) bill numbers are given a separate serial counter per `AdmissionType` (e.g. "BHT" vs "OPD Card") instead of one shared serial across all admission types for the department/institution. The `AdmissionType` code and an extra delimiter are inserted into the bill number, right after the existing suffix and before the numeric serial. Only applies when the bill's `PatientEncounter` has a non-null `AdmissionType`; otherwise the legacy (shared-serial) behavior is used regardless of this setting. Default (`false`) behavior is byte-for-byte identical to the pre-existing bill number format.
+**Description**: When enabled, inward deposits, payments and post-final payments, and their cancellations and refunds, get a separate yearly serial per `AdmissionType` (e.g. "BHT" vs "OPD Card"). The admission type code is inserted after the `Bill Number Suffix for <BillTypeAtomic>` suffix. Only applies when the bill's `PatientEncounter` has an `AdmissionType`. Deposits and payments are numbered by `BillNumberGenerator.departmentInwardPaymentBillNumberGenerator` / `institutionInwardPaymentBillNumberGenerator`. Post-final payments keep the legacy `INWPFP` generator unless option 7 is on.
 
-**Example Output (enabled, admission type code `BHT`)**: `ICUINWPAY/BHT/1`
-**Example Output (disabled, legacy format)**: `ICUINWPAY/1`
+**Example Output (enabled, suffix `DE`, admission type code `BHT`)**: `Inward/DE/BHT/26/000001`
+**Example Output (disabled)**: `Inward/DE/26/000001`
+
+### 5. Inward Payment Bill Numbers - Omit Year
+
+**Key**: `Inward Payment Bill Numbers - Omit Year`
+**Type**: Boolean
+**Default**: `false`
+**Description**: Drops the two-digit year from inward deposit, payment and (with option 7) post-final payment numbers, including their cancellations and refunds, at department and institution level. Without the year, the serial **does not restart in January**. The counters are still stored per year, but each new year continues from the highest serial of earlier years, so a number is never issued twice. With this option on, these bills always use a dedicated counter per department (or institution) and bill type, plus admission type when option 4 is on and option 6 is off. The general `Bill Number Generation Strategy - ...` counters are not used for them.
+
+**Example Output**: `IW/DE/000001`
+
+### 6. Inward Payment Bill Numbers - Omit Admission Type Code
+
+**Key**: `Inward Payment Bill Numbers - Omit Admission Type Code`
+**Type**: Boolean
+**Default**: `false`
+**Description**: Only has an effect when option 4 is on. Drops the admission type code from the number, and the serial is counted **per bill type only**, shared by all admission types. Otherwise a BHT deposit and an OPD Card deposit could both be `IW/DE/000001`. The year is kept unless option 5 is on.
+
+**Example Output (options 4 and 6 on)**: `IW/DE/26/000001`
+**Example Output (options 4, 5 and 6 on)**: `IW/DE/000001`
+
+### 7. Inward Payment Bill Numbers - Use Yearly Generator for Post Final Payments
+
+**Key**: `Inward Payment Bill Numbers - Use Yearly Generator for Post Final Payments`
+**Type**: Boolean
+**Default**: `false`
+**Description**: Numbers post-final payments, their cancellations and refunds with the same generator as deposits and payments. They then take `Bill Number Suffix for POST_FINAL_BILL_INWARD_PAYMENT`, `..._CANCELLATION` and `..._REFUND` instead of the hardcoded `INWPFP` / `CAN` / `INWREF` suffixes, and a yearly counter instead of a lifetime one. Options 4 to 6 apply to them too. A new yearly counter starts from the number of such bills already raised this year. The format differs from the legacy `<dept code>INWPFP/<n>`, so no earlier number is reissued. Set the suffix config before enabling this, otherwise the number gets an empty segment (e.g. `IW//26/000001`).
+
+**Example Output (suffix `FP`, options 4, 5 and 6 on)**: `IW/FP/000001`
+
+**Institution-level numbers**: when `Add the Institution Code to the Bill Number Generator` is `false`, institution-level yearly numbers no longer start with a bare delimiter (`DE/26/000001`, not `/DE/26/000001`).
+
+**Serial width**: set globally by `Bill Number Serial Digit Count` (default `6`).
 
 ## Bill Type Suffix Configuration
 

@@ -288,6 +288,19 @@ public class CostingData {
         dto.setCreditCompanyName(bill.getCreditCompany() != null ? bill.getCreditCompany().getName() : null);
         dto.setDeptId(bill.getDeptId());
 
+        // Fields added for pharmacy purchase order approval status/cancellation (#23944)
+        dto.setReferenceBillId(bill.getReferenceBill() != null ? bill.getReferenceBill().getId() : null);
+        dto.setReferenceBillDeptId(bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : null);
+        dto.setBilledBillId(bill.getBilledBill() != null ? bill.getBilledBill().getId() : null);
+        dto.setForwardReferenceBillId(bill.getForwardReferenceBill() != null ? bill.getForwardReferenceBill().getId() : null);
+        dto.setCancelled(bill.isCancelled());
+        // Legacy entity getter is intentionally named getCheckeAt() (not getCheckedAt()) - do not "fix".
+        dto.setCheckedAt(bill.getCheckeAt());
+        dto.setCheckedById(bill.getCheckedBy() != null ? bill.getCheckedBy().getId() : null);
+        dto.setApproveAt(bill.getApproveAt());
+        dto.setApproveUserId(bill.getApproveUser() != null ? bill.getApproveUser().getId() : null);
+        dto.setComments(bill.getComments());
+
         // Convert Bill Finance Details
         if (bill.getBillFinanceDetails() != null) {
             dto.setBillFinanceDetails(convertBillFinanceDetailsToDTO(bill.getBillFinanceDetails()));
@@ -349,6 +362,7 @@ public class CostingData {
         dto.setGrossValue(billItem.getGrossValue());
         dto.setNetValue(billItem.getNetValue());
         dto.setRetired(billItem.isRetired());
+        dto.setReferanceBillItemId(billItem.getReferanceBillItem() != null ? billItem.getReferanceBillItem().getId() : null);
 
         // Convert Bill Item Finance Details
         if (billItem.getBillItemFinanceDetails() != null) {

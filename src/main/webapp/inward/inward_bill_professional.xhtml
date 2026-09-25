@@ -293,7 +293,7 @@
                                                     var="mysp"
                                                     itemLabel="#{mysp.name}"
                                                     itemValue="#{mysp}">
-                                                    <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff pIxAdd pBillDetails" />
+                                                    <f:ajax event="itemSelect" execute="acSpeciality" listener="#{inwardProfessionalBillController.onSpecialitySelect}" render="scStaff pIxAdd pBillDetails" />
                                                 </p:autoComplete>
                                             </div>
                                         </div>

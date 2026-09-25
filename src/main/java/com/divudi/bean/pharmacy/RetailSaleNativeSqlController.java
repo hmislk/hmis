@@ -270,7 +270,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
                 billSettlingStarted = false;
                 return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

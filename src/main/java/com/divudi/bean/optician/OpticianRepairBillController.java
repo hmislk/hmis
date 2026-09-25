@@ -2740,7 +2740,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
                 collectingCentreBillController.setCollectingCentre(null);
                 return "/Optician/repair_bill?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2768,7 +2768,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
                 }
                 return "/Optician/repair_bill?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

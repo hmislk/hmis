@@ -190,10 +190,9 @@
                                                         postProcessor="#{bhtDepositDetailReportController.postProcessXLSBhtDepositDetail}" />
                                     </p:commandButton>
                                     <p:commandButton value="PDF" icon="fas fa-file-pdf"
-                                                     class="ui-button-danger mx-1" ajax="false">
-                                        <p:dataExporter type="pdf" target="tblReport"
-                                                        fileName="BHT_Deposit_Detail" />
-                                    </p:commandButton>
+                                                     class="ui-button-danger mx-1"
+                                                     actionListener="#{bhtDepositDetailReportController.downloadPdf}"
+                                                     ajax="false" />
                                 </div>
                             </div>
                         </f:facet>
@@ -209,6 +208,9 @@
                                 </f:facet>
                                 <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailBillNoVisible}" itemLabel="Bill No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailBillTypeVisible}" itemLabel="Bill Type">
                                         <p:ajax update="tblReport panelColumnToggler" />
                                     </p:selectBooleanCheckbox>
                                     <p:selectBooleanCheckbox value="#{userSettingsController.inwardBhtDepositDetailBhtNoVisible}" itemLabel="BHT No">
@@ -258,6 +260,11 @@
                                 <h:outputText value="#{row.billNo}" />
                             </p:column>
 
+                            <p:column headerText="Bill Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardBhtDepositDetailBillTypeVisible}">
+                                <h:outputText value="#{row.billType}" styleClass="#{row.amount lt 0 ? 'text-danger' : ''}" />
+                            </p:column>
+
                             <p:column headerText="BHT No" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailBhtNoVisible}">
                                 <h:outputText value="#{row.bhtNo}" />
@@ -301,14 +308,15 @@
 
                             <p:column headerText="Amount" style="text-align:right; white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailAmountVisible}">
-                                <h:outputText value="#{row.amount}">
+                                <h:outputText value="#{row.amount}" styleClass="#{row.amount lt 0 ? 'text-danger' : ''}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                             </p:column>
 
                             <p:columns value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm"
                                        headerText="#{pm.label}" style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{bhtDepositDetailReportController.getRowAmountForMethod(row, pm)}">
+                                <h:outputText value="#{bhtDepositDetailReportController.getRowAmountForMethod(row, pm)}"
+                                              styleClass="#{row.amount lt 0 ? 'text-danger' : ''}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                             </p:columns>
@@ -324,13 +332,15 @@
                                         <strong>
                                             <h:outputText value="#{pm.label}" />:
                                         </strong>
-                                        <h:outputText value="#{bhtDepositDetailReportController.getTotalForMethod(pm)}">
+                                        <h:outputText value="#{bhtDepositDetailReportController.getTotalForMethod(pm)}"
+                                                      styleClass="#{bhtDepositDetailReportController.getTotalForMethod(pm) lt 0 ? 'text-danger' : ''}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
                                     </ui:repeat>
                                     <strong>Grand Total: </strong>
-                                    <h:outputText value="#{bhtDepositDetailReportController.grandTotal}">
+                                    <h:outputText value="#{bhtDepositDetailReportController.grandTotal}"
+                                                  styleClass="#{bhtDepositDetailReportController.grandTotal lt 0 ? 'text-danger' : ''}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </div>

@@ -65,6 +65,8 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.PharmacySaleSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PharmacyPoCancellationException;
+import com.divudi.service.pharmacy.PharmacyPurchaseOrderApprovalCancellationService;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -138,6 +140,8 @@ public class PharmacyBillSearch implements Serializable {
     private EmailManagerEjb emailManagerEjb;
     @EJB
     private TransferIssueNativeSqlService transferIssueNativeSqlService;
+    @EJB
+    private PharmacyPurchaseOrderApprovalCancellationService pharmacyPurchaseOrderApprovalCancellationService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -3799,34 +3803,33 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (pharmacyErrorCheck()) {
-                return;
+            try {
+                pharmacyPurchaseOrderApprovalCancellationService.cancelApproval(
+                        getBill().getId(), getComment(), getSessionController().getLoggedUser());
+                // Refresh the in-memory bill so the reprint page reflects the cancellation.
+                bill = getBillFacade().find(getBill().getId());
+                JsfUtil.addSuccessMessage("Cancelled");
+                printPreview = true;
+            } catch (PharmacyPoCancellationException ex) {
+                switch (ex.getReason()) {
+                    case ALREADY_CANCELLED:
+                        JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+                        break;
+                    case GRN_EXISTS:
+                        JsfUtil.addErrorMessage("Grn already head been Come u can't bill ");
+                        break;
+                    case CONFIG_DISABLED:
+                        JsfUtil.addErrorMessage("Cancelling Pharmacy Purchase Order Bills is disabled");
+                        break;
+                    case NOT_APPROVAL_TYPE:
+                        JsfUtil.addErrorMessage("This bill is not a Pharmacy Purchase Order Approval bill");
+                        break;
+                    case NOT_FOUND:
+                    default:
+                        JsfUtil.addErrorMessage("No Bill to cancel");
+                        break;
+                }
             }
-
-            CancelledBill cb = pharmacyCreateCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.POCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.POCAN));
-            cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_CANCELLED);
-            
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
-            }
-            pharmacyCancelBillItems(cb);
-
-            getBill().getReferenceBill().setReferenceBill(null);
-            getBillFacade().edit(getBill().getReferenceBill());
-
-            getBill().setReferenceBill(null);
-
-            getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit(getBill());
-            JsfUtil.addSuccessMessage("Cancelled");
-
-            //       //System.err.println("Bill : "+getBill().getBillType());
-//            //System.err.println("Reference Bill : "+getBill().getReferenceBill().getBillType());
-            printPreview = true;
-
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
         }

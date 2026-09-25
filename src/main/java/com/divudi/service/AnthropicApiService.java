@@ -625,8 +625,14 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Operation to perform."))
                                 .add("scope", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("enum", Json.createArrayBuilder().add("service").add("pharmacy"))
-                                        .add("description", "Required for POST. Optional filter for LIST."))
+                                        .add("enum", Json.createArrayBuilder().add("service").add("pharmacy").add("room"))
+                                        .add("description", "Required for POST. Optional filter for LIST. 'room' = room charge types (room, linen, maintenance, nursing, MO, administration, medical care) optionally per room category."))
+                                .add("inwardChargeTypes", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "scope=room only: comma-separated InwardChargeType names, e.g. RoomCharges,LinenCharges,MaintainCharges. Required for a room POST. For LIST, a single value filters by that charge type."))
+                                .add("roomCategoryIds", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "scope=room only: comma-separated room category ids (see /api/inward/room-categories). Omit for all rooms; a row for a room's own category wins over an all-rooms row. For LIST, a single id filters by that room category."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Entry id. Required for GET, PUT, DELETE."))
@@ -636,6 +642,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("categoryId", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Category id (service/investigation or pharmaceutical). Optional for POST/PUT/LIST."))
+                                .add("categoryIds", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Comma-separated category ids for a bulk POST (one row per category; existing identical rows are skipped and reported). Use instead of categoryId, e.g. to apply one discount to every pharmaceutical category."))
                                 .add("admissionTypeId", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "AdmissionType id. Optional."))
@@ -2441,6 +2450,9 @@ public class AnthropicApiService implements Serializable {
                     String id                = toolInput.containsKey("id")               ? toolInput.getString("id", "")               : "";
                     String departmentId      = toolInput.containsKey("departmentId")     ? toolInput.getString("departmentId", "")     : "";
                     String categoryId        = toolInput.containsKey("categoryId")       ? toolInput.getString("categoryId", "")       : "";
+                    String categoryIds       = toolInput.containsKey("categoryIds")      ? toolInput.getString("categoryIds", "")      : "";
+                    String inwardChargeTypes = toolInput.containsKey("inwardChargeTypes") ? toolInput.getString("inwardChargeTypes", "") : "";
+                    String roomCategoryIds   = toolInput.containsKey("roomCategoryIds")  ? toolInput.getString("roomCategoryIds", "")  : "";
                     String admissionTypeId   = toolInput.containsKey("admissionTypeId")  ? toolInput.getString("admissionTypeId", "")  : "";
                     String paymentSchemeId   = toolInput.containsKey("paymentSchemeId")  ? toolInput.getString("paymentSchemeId", "")  : "";
                     String paymentMethodStr  = toolInput.containsKey("paymentMethod")    ? toolInput.getString("paymentMethod", "")    : "";
@@ -2449,8 +2461,8 @@ public class AnthropicApiService implements Serializable {
                     String query             = toolInput.containsKey("query")            ? toolInput.getString("query", "")            : "";
                     String limit             = toolInput.containsKey("limit")            ? toolInput.getString("limit", "")            : "";
                     String retireComments    = toolInput.containsKey("retireComments")   ? toolInput.getString("retireComments", "")   : "";
-                    return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId,
-                            admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
+                    return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId, categoryIds,
+                            inwardChargeTypes, roomCategoryIds, admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
                             creditCompanyId, query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_inward_price_adjustment": {
@@ -3708,8 +3720,8 @@ public class AnthropicApiService implements Serializable {
     }
 
     private String callInwardDiscountMatrixApi(
-            String method, String scope, String id, String departmentId, String categoryId,
-            String admissionTypeId, String paymentSchemeId, String paymentMethod,
+            String method, String scope, String id, String departmentId, String categoryId, String categoryIds,
+            String inwardChargeTypes, String roomCategoryIds, String admissionTypeId, String paymentSchemeId, String paymentMethod,
             String discountPercent, String creditCompanyId, String query, String limit,
             String retireComments, String hmisBaseUrl, String hmisApiKey) {
 
@@ -3746,6 +3758,17 @@ public class AnthropicApiService implements Serializable {
                     }
                     if (categoryId != null && !categoryId.isEmpty()) {
                         urlBuilder.append(first ? "?" : "&").append("categoryId=").append(categoryId);
+                        first = false;
+                    }
+                    // scope=room filters: GET takes one value each, so a single
+                    // charge type / room category is sent as a filter.
+                    if (inwardChargeTypes != null && !inwardChargeTypes.trim().isEmpty() && !inwardChargeTypes.contains(",")) {
+                        urlBuilder.append(first ? "?" : "&").append("inwardChargeType=")
+                                .append(URLEncoder.encode(inwardChargeTypes.trim(), StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (roomCategoryIds != null && !roomCategoryIds.trim().isEmpty() && !roomCategoryIds.contains(",")) {
+                        urlBuilder.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryIds.trim());
                         first = false;
                     }
                     if (admissionTypeId != null && !admissionTypeId.isEmpty()) {
@@ -3786,6 +3809,27 @@ public class AnthropicApiService implements Serializable {
                     if (scope != null && !scope.isEmpty()) bodyBuilder.add("scope", scope);
                     if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
                     if (categoryId != null && !categoryId.trim().isEmpty()) bodyBuilder.add("categoryId", Long.parseLong(categoryId.trim()));
+                    if (categoryIds != null && !categoryIds.trim().isEmpty()) {
+                        javax.json.JsonArrayBuilder ids = Json.createArrayBuilder();
+                        for (String cid : categoryIds.split(",")) {
+                            if (!cid.trim().isEmpty()) ids.add(Long.parseLong(cid.trim()));
+                        }
+                        bodyBuilder.add("categoryIds", ids);
+                    }
+                    if (inwardChargeTypes != null && !inwardChargeTypes.trim().isEmpty()) {
+                        javax.json.JsonArrayBuilder t = Json.createArrayBuilder();
+                        for (String ct : inwardChargeTypes.split(",")) {
+                            if (!ct.trim().isEmpty()) t.add(ct.trim());
+                        }
+                        bodyBuilder.add("inwardChargeTypes", t);
+                    }
+                    if (roomCategoryIds != null && !roomCategoryIds.trim().isEmpty()) {
+                        javax.json.JsonArrayBuilder r = Json.createArrayBuilder();
+                        for (String rid : roomCategoryIds.split(",")) {
+                            if (!rid.trim().isEmpty()) r.add(Long.parseLong(rid.trim()));
+                        }
+                        bodyBuilder.add("roomCategoryIds", r);
+                    }
                     if (admissionTypeId != null && !admissionTypeId.trim().isEmpty()) bodyBuilder.add("admissionTypeId", Long.parseLong(admissionTypeId.trim()));
                     if (paymentSchemeId != null && !paymentSchemeId.trim().isEmpty()) bodyBuilder.add("paymentSchemeId", Long.parseLong(paymentSchemeId.trim()));
                     if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
@@ -6629,7 +6673,11 @@ public class AnthropicApiService implements Serializable {
           .append("LIST_PAYMENT_METHODS, LOOKUP_CREDIT_COMPANIES), ")
           .append("then POST to create, PUT to update, or DELETE to retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward billing discounts. ")
-          .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists.\n\n");
+          .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists. ")
+          .append("To apply one discount across many categories (e.g. every pharmaceutical category for a scheme), POST once with categoryIds ")
+          .append("(comma-separated) instead of categoryId; identical existing rows are skipped and listed in the response. ")
+          .append("Room charge discounts use scope='room' with inwardChargeTypes (e.g. RoomCharges) and optional roomCategoryIds; ")
+          .append("a row for a room's own category wins over an all-rooms row.\n\n");
         sb.append("### manage_inward_price_adjustment\n");
         sb.append("Manage Inward Price Adjustment (margin) Matrix entries for services/investigations and pharmacy. ")
           .append("Each row defines a gross-value price range (fromPrice, toPrice) and a margin percentage to apply. ")
@@ -7409,7 +7457,7 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"GET",    "/inward-discount-matrix?scope=X",                               "List entries. Filters: scope, departmentId, categoryId, admissionTypeId, paymentSchemeId, paymentMethod, creditCompanyId, limit"},
                     {"GET",    "/inward-discount-matrix/{id}",                                   "Fetch one entry"},
-                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), discountPercent (required), paymentSchemeId, departmentId, categoryId, admissionTypeId, paymentMethod, creditCompanyId"},
+                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), discountPercent (required), paymentSchemeId, departmentId, categoryId OR categoryIds (array, bulk: one row per category, duplicates skipped), admissionTypeId, paymentMethod, creditCompanyId. scope=room: inwardChargeType(s) + optional roomCategoryId(s) instead of categories"},
                     {"PUT",    "/inward-discount-matrix/{id}",                                   "Update. Body fields all optional; send null to clear a field"},
                     {"DELETE", "/inward-discount-matrix/{id}",                                   "Soft-retire entry. Optional: retireComments"},
                     {"GET",    "/inward-discount-matrix/admission-types/search?query=",          "AdmissionType name → id lookup"},

@@ -490,6 +490,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Bill tmpRefBill;
     @Transient
     private String tmpComments;
+    @Transient
+    private Date transLastSettlementDate;
 
     private String agentRefNo;
     private boolean billClosed;
@@ -3079,6 +3081,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setTmpComments(String tmpComments) {
         this.tmpComments = tmpComments;
+    }
+
+    public Date getTransLastSettlementDate() {
+        return transLastSettlementDate;
+    }
+
+    public void setTransLastSettlementDate(Date transLastSettlementDate) {
+        this.transLastSettlementDate = transLastSettlementDate;
     }
 
     public static Map<String, String> toMap(Bill b) {

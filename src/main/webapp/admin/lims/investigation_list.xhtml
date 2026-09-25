@@ -53,6 +53,13 @@
                             <h:outputText value="#{item.categoryName}"/>
                         </p:column>
 
+                        <p:column sortBy="#{item.legacyCategoryName}" filterBy="#{item.legacyCategoryName}" filterMatchMode="contains"  style="padding: 5px; width: 12em;">
+                            <f:facet name="header">
+                                <h:outputText value="Legacy Investigation Category" title="Older field, still set on some records. Used as the category wherever Category is blank."/>
+                            </f:facet>
+                            <h:outputText value="#{item.legacyCategoryName}"/>
+                        </p:column>
+
                         <p:column sortBy="#{item.institutionName}" filterBy="#{item.institutionName}" filterMatchMode="contains"  style="padding: 5px; width: 16em;">
                             <f:facet name="header">
                                 <h:outputText value="Institution"/>
