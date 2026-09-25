@@ -61,6 +61,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -140,6 +141,8 @@ public class GrnCostingNativeSqlController implements Serializable {
     private Institution referenceInstitution;
     private BillItem currentExpense;
     private Item freeItemToAdd;
+    private BillItem billItemPendingDuplication;
+    private String duplicateComment;
 
     @PostConstruct
     public void init() {
@@ -955,7 +958,13 @@ public class GrnCostingNativeSqlController implements Serializable {
         return tmpBillItems;
     }
 
-    public void duplicateItem(BillItem originalBillItemToDuplicate) {
+    /**
+     * Stages a row for duplication and clears any previous comment, then the
+     * page shows a confirmation dialog requiring a reason before the row is
+     * actually added -- a fast double-click or an accidental click on this
+     * button previously created a duplicate GRN line with no prompt at all.
+     */
+    public void promptDuplicateItem(BillItem originalBillItemToDuplicate) {
         if (originalBillItemToDuplicate == null) {
             return;
         }
@@ -963,6 +972,29 @@ public class GrnCostingNativeSqlController implements Serializable {
             JsfUtil.addInfoMessage("Cannot duplicate an ad-hoc free item line");
             return;
         }
+        billItemPendingDuplication = originalBillItemToDuplicate;
+        duplicateComment = null;
+    }
+
+    public void confirmDuplicateItem() {
+        if (billItemPendingDuplication == null) {
+            return;
+        }
+        if (duplicateComment == null || duplicateComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a comment explaining why this row is being duplicated.");
+            return;
+        }
+        performDuplicateItem(billItemPendingDuplication, duplicateComment.trim());
+        cancelDuplicatePrompt();
+        PrimeFaces.current().executeScript("PF('dlgConfirmDuplicateGrnRow').hide();");
+    }
+
+    public void cancelDuplicatePrompt() {
+        billItemPendingDuplication = null;
+        duplicateComment = null;
+    }
+
+    private void performDuplicateItem(BillItem originalBillItemToDuplicate, String comment) {
         BigDecimal totalQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
         BigDecimal totalFreeQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
 
@@ -972,6 +1004,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         BillItem newBillItemCreatedByDuplication = new BillItem();
         newBillItemCreatedByDuplication.copy(originalBillItemToDuplicate);
         newBillItemCreatedByDuplication.setId(null);
+        newBillItemCreatedByDuplication.setDescreption(comment);
 
         BillItemFinanceDetails newBifd = originalBillItemToDuplicate.getBillItemFinanceDetails().clone();
         newBifd.setId(null);
@@ -2933,6 +2966,22 @@ public class GrnCostingNativeSqlController implements Serializable {
 
     public void setFreeItemToAdd(Item freeItemToAdd) {
         this.freeItemToAdd = freeItemToAdd;
+    }
+
+    public BillItem getBillItemPendingDuplication() {
+        return billItemPendingDuplication;
+    }
+
+    public void setBillItemPendingDuplication(BillItem billItemPendingDuplication) {
+        this.billItemPendingDuplication = billItemPendingDuplication;
+    }
+
+    public String getDuplicateComment() {
+        return duplicateComment;
+    }
+
+    public void setDuplicateComment(String duplicateComment) {
+        this.duplicateComment = duplicateComment;
     }
 
     public SearchKeyword getSearchKeyword() {
