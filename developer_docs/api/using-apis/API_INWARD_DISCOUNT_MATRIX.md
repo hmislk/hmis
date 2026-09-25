@@ -103,3 +103,28 @@ written. For a category discount to reach a bill, the item must have a category 
   `Investigation.investigationCategory` into `category` where `category` is blank. Until then,
   `Investigation.getCategory()` falls back to the legacy field, so the discount lookup already
   sees it.
+
+## Room charges (`scope=room`)
+
+Room charge discounts (room, linen, maintenance, nursing, MO, administration, medical care) use
+`scope=room`. `categoryId(s)` are not accepted.
+
+```json
+{
+  "scope": "room",
+  "paymentSchemeId": 12,
+  "inwardChargeTypes": ["RoomCharges"],
+  "roomCategoryIds": [678, 679],
+  "discountPercent": 30
+}
+```
+
+- `inwardChargeType` or `inwardChargeTypes[]` is required and must be one of `RoomCharges`,
+  `LinenCharges`, `MaintainCharges`, `NursingCharges`, `MOCharges`, `AdministrationCharge`,
+  `MedicalCareICU`.
+- `roomCategoryId` or `roomCategoryIds[]` is optional. Omit it for a row that applies to every
+  room. When a room is charged, a row for its own category wins over an all-rooms row.
+- One row is created per charge type × room category, and existing identical rows are skipped.
+  It always returns the bulk response. Room category ids come from `GET /api/inward/room-categories`.
+- `GET ?scope=room[&inwardChargeType=][&roomCategoryId=]` lists room-charge rows. `scope=service`
+  and `scope=pharmacy` no longer include room-charge rows.
