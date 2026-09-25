@@ -1630,8 +1630,22 @@ public class BhtSummeryController implements Serializable {
                 || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses
                 || cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
 
-            updateServiceBillFeesWithOutMatrix(cit.getInwardChargeType());
+            boolean staffCharge = cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
+                    || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses
+                    || cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge;
             updatePatientItemsWithOutMatrix(cit.getInwardChargeType());
+            if (pm == null && !staffCharge) {
+                // No membership-discount row: apply the Inward Discount Matrix
+                // instead of clearing the fee discounts it set at billing time
+                // (issue #24011 - clearing wiped every service discount at
+                // final-bill settle). Re-applying also picks up a discount
+                // scheme set on the admission after the services were billed.
+                double dis = reapplyInwardDiscountMatrixToServiceBillFees(cit.getInwardChargeType());
+                cit.setDiscount(dis);
+                cit.setAdjustedTotal(cit.getTotal());
+                return dis;
+            }
+            updateServiceBillFeesWithOutMatrix(cit.getInwardChargeType());
             cit.setDiscount(0);
             cit.setAdjustedTotal(cit.getTotal());
             return 0;
@@ -1682,6 +1696,32 @@ public class BhtSummeryController implements Serializable {
             getBillBean().updateBillItemByBillFee(b);
         }
 
+        return disTot;
+    }
+
+    /**
+     * Re-applies the Inward Discount Matrix to every non-staff service fee of
+     * this charge type on the admission (the same rule used when the service
+     * was billed, InwardBeanController.applyInwardDiscountToBillFee) and
+     * returns the total fee discount.
+     */
+    private double reapplyInwardDiscountMatrixToServiceBillFees(InwardChargeType inwardChargeType) {
+        double disTot = 0;
+        List<BillFee> list = getInwardBean().getServiceBillFeesByInwardChargeType(inwardChargeType, getPatientEncounter());
+        if (list == null || list.isEmpty()) {
+            return disTot;
+        }
+        for (BillFee bf : list) {
+            Item item = bf.getBillItem() != null ? bf.getBillItem().getItem() : null;
+            getInwardBean().applyInwardDiscountToBillFee(bf, item, getPatientEncounter());
+            double dis = bf.getFeeDiscount();
+            bf.setFeeValue(bf.getFeeGrossValue() + bf.getFeeMargin() - dis);
+            getBillFeeFacade().edit(bf);
+            disTot += dis;
+        }
+        for (BillItem b : getInwardBean().getServiceBillItemByInwardChargeType(inwardChargeType, getPatientEncounter())) {
+            getBillBean().updateBillItemByBillFee(b);
+        }
         return disTot;
     }
 
@@ -1783,10 +1823,11 @@ public class BhtSummeryController implements Serializable {
 
             if (pm != null) {
                 disTot += updatePatientRoomCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountRoomCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -1820,10 +1861,11 @@ public class BhtSummeryController implements Serializable {
 
             if (pm != null) {
                 disTot += updatePatientMaintainCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountMaintainCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -1879,10 +1921,11 @@ public class BhtSummeryController implements Serializable {
 
             if (pm != null) {
                 disTot += updatePatientMoCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountMoCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -1914,10 +1957,11 @@ public class BhtSummeryController implements Serializable {
 
             if (pm != null) {
                 disTot += updatePatientMedicalCareIcuCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountMedicalCareCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -1948,10 +1992,11 @@ public class BhtSummeryController implements Serializable {
                     null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
             if (pm != null) {
                 disTot += updatePatientAdministrationCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountAdministrationCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -1983,10 +2028,11 @@ public class BhtSummeryController implements Serializable {
                     null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
             if (pm != null) {
                 disTot += updatePatientLinenCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountLinenCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -2018,10 +2064,11 @@ public class BhtSummeryController implements Serializable {
 
             if (pm != null) {
                 disTot += updatePatientNursingCharge(bf, pm.getDiscountPercent());
-            } else {
-                bf.setDiscountNursingCharge(0.0);
-                getPatientRoomFacade().edit(bf);
             }
+            // No membership-discount row: keep the Inward Discount Matrix
+            // discount that setPatientRoomData() has just applied per room
+            // category (issue #24011). It is already netted into the room
+            // line total, so nothing is added to the returned discount.
         }
 
         disTot += calDiscountServicePatientItems(inwardChargeType);
@@ -5016,14 +5063,9 @@ public class BhtSummeryController implements Serializable {
 
         com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(getPatientEncounter());
 
-        // Fetch all discount percentages once per recalculation (not per room)
-        double roomPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.RoomCharges, creditCompany);
-        double maintainPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MaintainCharges, creditCompany);
-        double linenPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.LinenCharges, creditCompany);
-        double nursingPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.NursingCharges, creditCompany);
-        double moPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MOCharges, creditCompany);
-        double adminPct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.AdministrationCharge, creditCompany);
-        double medicalCarePct = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, InwardChargeType.MedicalCareICU, creditCompany);
+        // Discount percentages depend on the room's category (issue #24011),
+        // so they are resolved per room, cached per category for this pass.
+        Map<RoomCategory, double[]> pctByRoomCategory = new HashMap<>();
 
         for (PatientRoom p : patientRooms) {
             if (p.getAdmittedAt() == null) {
@@ -5040,10 +5082,30 @@ public class BhtSummeryController implements Serializable {
             }
             calculateTimedItemCharges(p);
 
-            applyRoomChargeDiscounts(p, roomPct, maintainPct, linenPct, nursingPct, moPct, adminPct, medicalCarePct);
+            RoomCategory rc = p.getRoomFacilityCharge() != null ? p.getRoomFacilityCharge().getRoomCategory() : null;
+            double[] pct = pctByRoomCategory.computeIfAbsent(rc,
+                    k -> roomChargeDiscountPercents(pm, scheme, admType, creditCompany, k));
+            applyRoomChargeDiscounts(p, pct[0], pct[1], pct[2], pct[3], pct[4], pct[5], pct[6]);
 
             getPatientRoomFacade().edit(p);
         }
+    }
+
+    /**
+     * Discount % for each room charge type, in the order applyRoomChargeDiscounts
+     * takes them: room, maintenance, linen, nursing, MO, administration,
+     * medical care. A row for the given room category wins over an all-rooms row.
+     */
+    private double[] roomChargeDiscountPercents(PaymentMethod pm, PaymentScheme scheme, AdmissionType admType,
+            com.divudi.core.entity.Institution creditCompany, RoomCategory rc) {
+        InwardChargeType[] types = {InwardChargeType.RoomCharges, InwardChargeType.MaintainCharges,
+            InwardChargeType.LinenCharges, InwardChargeType.NursingCharges, InwardChargeType.MOCharges,
+            InwardChargeType.AdministrationCharge, InwardChargeType.MedicalCareICU};
+        double[] r = new double[types.length];
+        for (int i = 0; i < types.length; i++) {
+            r[i] = getPriceMatrixController().getInwardDiscountPercentForChargeType(pm, scheme, admType, types[i], creditCompany, rc);
+        }
+        return r;
     }
 
     private void applyRoomChargeDiscounts(PatientRoom p,
@@ -6161,10 +6223,16 @@ public class BhtSummeryController implements Serializable {
     private void setServiceTotCategoryWise() {
         // OPTIMIZED: Fetch all totals in ONE bulk query instead of N separate queries
         Map<InwardChargeType, Double> bulkTotals = getInwardBean().calServiceBillItemsTotalByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        // Service totals are gross + margin; show the discount already stored
+        // on the service lines (Inward Discount Matrix, applied at billing) so
+        // the interim due is net of it (issue #24011). Final-bill settle
+        // recalculates it in calculateDiscount().
+        Map<InwardChargeType, Double> bulkDiscounts = getInwardBean().calServiceBillItemsDiscountByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal ch : chargeItemTotals) {
             Double total = bulkTotals.getOrDefault(ch.getInwardChargeType(), 0.0);
             ch.setTotal(ch.getTotal() + total);
+            ch.setDiscount(ch.getDiscount() + bulkDiscounts.getOrDefault(ch.getInwardChargeType(), 0.0));
         }
     }
 
