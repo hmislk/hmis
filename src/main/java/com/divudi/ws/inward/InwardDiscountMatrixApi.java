@@ -520,6 +520,12 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
+            if (body.containsKey("categoryId") && entry.getInwardChargeType() != null) {
+                // Room-charge rows are looked up with no category; giving one a
+                // category would silently stop its discount from applying.
+                return errorResponse("categoryId cannot be set on a room-charge row (inwardChargeType "
+                        + entry.getInwardChargeType().name() + ")", 400);
+            }
             if (body.containsKey("categoryId")) {
                 Long categoryId = asLong(body.get("categoryId"));
                 if (categoryId == null) {

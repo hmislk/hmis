@@ -629,10 +629,10 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Required for POST. Optional filter for LIST. 'room' = room charge types (room, linen, maintenance, nursing, MO, administration, medical care) optionally per room category."))
                                 .add("inwardChargeTypes", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "scope=room only: comma-separated InwardChargeType names, e.g. RoomCharges,LinenCharges,MaintainCharges. Required for a room POST."))
+                                        .add("description", "scope=room only: comma-separated InwardChargeType names, e.g. RoomCharges,LinenCharges,MaintainCharges. Required for a room POST. For LIST, a single value filters by that charge type."))
                                 .add("roomCategoryIds", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "scope=room only: comma-separated room category ids (see /api/inward/room-categories). Omit for all rooms; a row for a room's own category wins over an all-rooms row."))
+                                        .add("description", "scope=room only: comma-separated room category ids (see /api/inward/room-categories). Omit for all rooms; a row for a room's own category wins over an all-rooms row. For LIST, a single id filters by that room category."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Entry id. Required for GET, PUT, DELETE."))
@@ -3758,6 +3758,17 @@ public class AnthropicApiService implements Serializable {
                     }
                     if (categoryId != null && !categoryId.isEmpty()) {
                         urlBuilder.append(first ? "?" : "&").append("categoryId=").append(categoryId);
+                        first = false;
+                    }
+                    // scope=room filters: GET takes one value each, so a single
+                    // charge type / room category is sent as a filter.
+                    if (inwardChargeTypes != null && !inwardChargeTypes.trim().isEmpty() && !inwardChargeTypes.contains(",")) {
+                        urlBuilder.append(first ? "?" : "&").append("inwardChargeType=")
+                                .append(URLEncoder.encode(inwardChargeTypes.trim(), StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (roomCategoryIds != null && !roomCategoryIds.trim().isEmpty() && !roomCategoryIds.contains(",")) {
+                        urlBuilder.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryIds.trim());
                         first = false;
                     }
                     if (admissionTypeId != null && !admissionTypeId.isEmpty()) {
