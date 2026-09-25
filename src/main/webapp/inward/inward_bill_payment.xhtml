@@ -399,8 +399,10 @@
                                         value="Pay"
                                         style="width:250px;"
                                         ajax="false"
-                                        onclick="if (!confirm('Are you sure?')) return false"
                                         action="#{inwardPaymentController.pay()}" >
+                                        <p:confirm header="Confirm Payment"
+                                                   message="Are you sure you want to make this payment?"
+                                                   icon="pi pi-exclamation-triangle"/>
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -510,6 +512,11 @@
                         </h:panelGroup>
                     </div>
                 </p:panel>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="350">
+                    <p:commandButton value="No" type="button" icon="pi pi-times" styleClass="ui-confirmdialog-no ui-button-flat"/>
+                    <p:commandButton value="Yes, Pay" type="button" icon="pi pi-check" styleClass="ui-confirmdialog-yes ui-button-success"/>
+                </p:confirmDialog>
             </h:form>
         </h:panelGroup>
         <p:dialog id="inwardPaymentConfigDialog"
