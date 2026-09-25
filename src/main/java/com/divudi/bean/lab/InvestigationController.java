@@ -354,6 +354,7 @@ public class InvestigationController implements Serializable {
             }
             i.setReportType(current.getReportType());
             i.setInvestigationCategory(current.getInvestigationCategory());
+            i.setCategory(current.getCategory());
             i.setInvestigationTube(current.getInvestigationTube());
             i.setMachine(current.getMachine());
             i.setSessionNumberType(current.getSessionNumberType());
@@ -895,7 +896,11 @@ public class InvestigationController implements Serializable {
                 catIxs = getItems();
             } else {
                 Map m = new HashMap();
-                String sql = "select i from Investigation i where i.retired=false and i.investigationCategory = :cat order by i.department.name, i.name";
+                // Match the stored category, or the legacy investigationCategory
+                // on records whose category is still blank (issue #24038).
+                String sql = "select i from Investigation i where i.retired=false"
+                        + " and (i.category = :cat or (i.category is null and i.investigationCategory = :cat))"
+                        + " order by i.department.name, i.name";
                 m.put("cat", getCategory());
                 catIxs = getFacade().findByJpql(sql, m);
             }
@@ -1997,11 +2002,13 @@ public class InvestigationController implements Serializable {
                 + "i.code, "
                 + "i.name, "
                 + "cat.name, "
+                + "legacyCat.name, "
                 + "ins.name, "
                 + "dep.name, "
                 + "i.retired) "
                 + "FROM Investigation i "
                 + "LEFT JOIN i.category cat "
+                + "LEFT JOIN i.investigationCategory legacyCat "
                 + "LEFT JOIN i.institution ins "
                 + "LEFT JOIN i.department dep "
                 + "WHERE i.retired = false "

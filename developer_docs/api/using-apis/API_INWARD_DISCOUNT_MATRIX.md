@@ -89,3 +89,17 @@ To list pharmaceutical category ids, use
 capped at 200**, so if `data` comes back with exactly 200 entries there may be more. Narrow the
 search with `query=` (e.g. by first letter) and combine the results before bulk-creating. After
 creating, check the count with `GET /api/inward-discount-matrix?scope=pharmacy&paymentSchemeId=…&limit=…`.
+
+## Services & investigations (`scope=service`)
+
+The same bulk POST works with `scope=service`. `categoryIds` may mix ServiceCategory,
+ServiceSubCategory and InvestigationCategory ids, and any other type returns `400` with nothing
+written. For a category discount to reach a bill, the item must have a category and both
+`Item.discountAllowed` and the fee's `discountAllowed` must be true:
+
+- `POST /api/services/items/bulk-discount-allowed` `{"itemType":"Investigation","discountAllowed":true}`
+- `POST /api/services/fees/bulk-margin` `{"itemType":"Investigation","discountAllowed":true}`
+- `POST /api/investigations/copy-legacy-category` (dry run) / `?apply=true`: copies the deprecated
+  `Investigation.investigationCategory` into `category` where `category` is blank. Until then,
+  `Investigation.getCategory()` falls back to the legacy field, so the discount lookup already
+  sees it.

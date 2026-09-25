@@ -27,6 +27,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collections;
 import java.util.Date;
+import com.divudi.service.inward.DiscountSetupService;
+import javax.ejb.EJB;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +47,9 @@ public class InvestigationApi {
 
     @Inject
     private InvestigationApiService investigationApiService;
+
+    @EJB
+    private DiscountSetupService discountSetupService;
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -170,6 +175,34 @@ public class InvestigationApi {
             }
 
             return successResponse(investigationApiService.setActive(id, true, user));
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Copy the deprecated investigationCategory into category for active
+     * investigations whose category is blank (issue #24038). Dry run unless
+     * {@code ?apply=true}: reports how many would change.
+     * POST /api/investigations/copy-legacy-category[?apply=true]
+     */
+    @POST
+    @Path("/copy-legacy-category")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response copyLegacyCategory() {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            boolean apply = "true".equalsIgnoreCase(uriInfo.getQueryParameters().getFirst("apply"));
+            Map<String, Object> data = new HashMap<>();
+            data.put("apply", apply);
+            data.put("investigationsWithOnlyLegacyCategory", discountSetupService.countInvestigationsUsingLegacyCategory());
+            if (apply) {
+                data.put("updated", discountSetupService.copyLegacyInvestigationCategories(user));
+            }
+            return successResponse(data);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
