@@ -1706,12 +1706,12 @@ public class PriceMatrixController implements Serializable {
      */
     private Double fetchInwardDiscountMatrixPercent(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item) {
-        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false, null);
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false, null, null);
     }
 
     private Double fetchInwardDiscountMatrixPercent(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item, Institution creditCompany) {
-        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false, creditCompany);
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false, creditCompany, null);
     }
 
     /**
@@ -1720,13 +1720,13 @@ public class PriceMatrixController implements Serializable {
      * chargeType; does NOT fall back to null-chargeType rows.
      */
     private Double fetchInwardDiscountMatrixPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
-            AdmissionType admissionType, InwardChargeType chargeType) {
-        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true, null);
+            AdmissionType admissionType, InwardChargeType chargeType, RoomCategory roomCategory) {
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true, null, roomCategory);
     }
 
     private Double fetchInwardDiscountMatrixPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
-            AdmissionType admissionType, InwardChargeType chargeType, Institution creditCompany) {
-        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true, creditCompany);
+            AdmissionType admissionType, InwardChargeType chargeType, Institution creditCompany, RoomCategory roomCategory) {
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true, creditCompany, roomCategory);
     }
 
     /**
@@ -1748,7 +1748,8 @@ public class PriceMatrixController implements Serializable {
      */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
-            InwardChargeType chargeType, boolean chargeTypeSpecific, Institution creditCompany) {
+            InwardChargeType chargeType, boolean chargeTypeSpecific, Institution creditCompany,
+            RoomCategory roomCategory) {
         StringBuilder jpql = new StringBuilder(
                 "select a.discountPercent from InwardDiscountMatrix a"
                 + " where a.retired = false");
@@ -1805,8 +1806,15 @@ public class PriceMatrixController implements Serializable {
         } else {
             jpql.append(" and a.creditCompany is null");
         }
+        // Room category (issue #24011): a row for the room's category wins over
+        // a blank (all rooms) row; with no room category only blank rows match.
+        jpql.append(roomCategoryPredicate(roomCategory));
+        if (roomCategory != null) {
+            params.put("rc", roomCategory);
+        }
         // Prefer specific rows over wildcards: non-null fields rank higher
         jpql.append(" order by"
+                + " case when a.roomCategory is null then 1 else 0 end asc,"
                 + " case when a.paymentMethod is null then 1 else 0 end asc,"
                 + " case when a.admissionType is null then 1 else 0 end asc,"
                 + " case when a.department is null then 1 else 0 end asc,"
@@ -1846,21 +1854,32 @@ public class PriceMatrixController implements Serializable {
 
     public double getInwardDiscountPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, InwardChargeType chargeType, Institution creditCompany) {
+        return getInwardDiscountPercentForChargeType(bhtType, scheme, admissionType, chargeType, creditCompany, null);
+    }
+
+    /**
+     * Room-charge-type discount for a room of the given category (issue
+     * #24011). A row for that room category wins over a row with no room
+     * category (all rooms); pass null when the room category is unknown.
+     */
+    public double getInwardDiscountPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, InwardChargeType chargeType, Institution creditCompany,
+            RoomCategory roomCategory) {
         if (bhtType == null || admissionType == null || chargeType == null) {
             return 0.0;
         }
         if (creditCompany != null) {
-            Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType, creditCompany);
+            Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType, creditCompany, roomCategory);
             if (pct == null && scheme != null) {
-                pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType, creditCompany);
+                pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType, creditCompany, roomCategory);
             }
             if (pct != null) {
                 return pct;
             }
         }
-        Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType);
+        Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType, roomCategory);
         if (pct == null && scheme != null) {
-            pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType);
+            pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType, roomCategory);
         }
         return pct != null ? pct : 0.0;
     }

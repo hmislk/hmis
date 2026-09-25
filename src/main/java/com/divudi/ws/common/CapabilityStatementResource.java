@@ -199,7 +199,10 @@ public class CapabilityStatementResource {
                         + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
                         + "Bulk POST: pass categoryIds (array) instead of categoryId to create one row per category; "
-                        + "identical existing rows are skipped and returned under 'skipped'.",
+                        + "identical existing rows are skipped and returned under 'skipped'. "
+                        + "scope=room manages room charge discounts: inwardChargeType(s) (RoomCharges, LinenCharges, MaintainCharges, "
+                        + "NursingCharges, MOCharges, AdministrationCharge, MedicalCareICU) x optional roomCategoryId(s); "
+                        + "a row for a room's own category wins over an all-rooms row.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",

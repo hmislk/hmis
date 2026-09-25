@@ -46,6 +46,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.entity.inward.RoomCategory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -140,7 +142,20 @@ public class InwardDiscountMatrixApi {
                     + " where a.retired = false");
             Map<String, Object> params = new HashMap<>();
 
-            if ("service".equals(scope)) {
+            if ("room".equals(scope)) {
+                jpql.append(" and a.inwardChargeType is not null");
+                String ictStr = param("inwardChargeType");
+                if (ictStr != null && !ictStr.trim().isEmpty()) {
+                    jpql.append(" and a.inwardChargeType = :ict");
+                    params.put("ict", parseRoomChargeType(ictStr));
+                }
+                Long roomCategoryId = longParam("roomCategoryId");
+                if (roomCategoryId != null) {
+                    jpql.append(" and a.roomCategory.id = :rcid");
+                    params.put("rcid", roomCategoryId);
+                }
+            } else if ("service".equals(scope)) {
+                jpql.append(" and a.inwardChargeType is null");
                 jpql.append(" and (type(a.category) = :svc"
                         + " or type(a.category) = :sub"
                         + " or type(a.category) = :inv"
@@ -149,10 +164,11 @@ public class InwardDiscountMatrixApi {
                 params.put("sub", ServiceSubCategory.class);
                 params.put("inv", InvestigationCategory.class);
             } else if ("pharmacy".equals(scope)) {
+                jpql.append(" and a.inwardChargeType is null");
                 jpql.append(" and (type(a.category) = :pharm or a.category is null)");
                 params.put("pharm", PharmaceuticalItemCategory.class);
             } else if (scope != null && !scope.isEmpty()) {
-                return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
+                return errorResponse("Invalid scope. Use 'service', 'pharmacy' or 'room'.", 400);
             }
 
             if (departmentId != null) {
@@ -253,8 +269,8 @@ public class InwardDiscountMatrixApi {
                 return errorResponse("scope is required ('service' or 'pharmacy')", 400);
             }
             scope = scope.trim().toLowerCase();
-            if (!"service".equals(scope) && !"pharmacy".equals(scope)) {
-                return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
+            if (!"service".equals(scope) && !"pharmacy".equals(scope) && !"room".equals(scope)) {
+                return errorResponse("Invalid scope. Use 'service', 'pharmacy' or 'room'.", 400);
             }
 
             PaymentScheme paymentScheme = null;
@@ -282,6 +298,10 @@ public class InwardDiscountMatrixApi {
                 if (department == null || department.isRetired()) {
                     return errorResponse("Department not found: " + departmentId, 400);
                 }
+            }
+
+            if ("room".equals(scope) && (body.get("categoryId") != null || body.get("categoryIds") != null)) {
+                return errorResponse("categoryId/categoryIds are not used with scope 'room'; use inwardChargeType(s) and roomCategoryId(s)", 400);
             }
 
             Category category = null;
@@ -324,6 +344,11 @@ public class InwardDiscountMatrixApi {
                 if (creditCompany == null || creditCompany.isRetired()) {
                     return errorResponse("Credit company not found: " + creditCompanyId, 400);
                 }
+            }
+
+            if ("room".equals(scope)) {
+                return createRoomChargeRows(body, user, department, admissionType, paymentMethod,
+                        paymentScheme, creditCompany, discountPercent);
             }
 
             // Bulk create across many categories (issue #24029). All ids are
@@ -495,6 +520,12 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
+            if (body.containsKey("categoryId") && entry.getInwardChargeType() != null) {
+                // Room-charge rows are looked up with no category; giving one a
+                // category would silently stop its discount from applying.
+                return errorResponse("categoryId cannot be set on a room-charge row (inwardChargeType "
+                        + entry.getInwardChargeType().name() + ")", 400);
+            }
             if (body.containsKey("categoryId")) {
                 Long categoryId = asLong(body.get("categoryId"));
                 if (categoryId == null) {
@@ -585,7 +616,8 @@ public class InwardDiscountMatrixApi {
 
             InwardDiscountMatrix dup = findDuplicate(
                     entry.getDepartment(), entry.getCategory(), entry.getAdmissionType(),
-                    entry.getPaymentMethod(), entry.getPaymentScheme(), entry.getCreditCompany());
+                    entry.getPaymentMethod(), entry.getPaymentScheme(), entry.getCreditCompany(),
+                    entry.getInwardChargeType(), entry.getRoomCategory());
             if (dup != null && !dup.getId().equals(entry.getId())) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -784,6 +816,161 @@ public class InwardDiscountMatrixApi {
     private InwardDiscountMatrix findDuplicate(Department department, Category category,
             AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme,
             Institution creditCompany) {
+        return findDuplicate(department, category, admissionType, paymentMethod, paymentScheme,
+                creditCompany, null, null);
+    }
+
+    /**
+     * Room charge types a discount row may target (same list as the Room
+     * Charges discount page).
+     */
+    private static final List<InwardChargeType> ROOM_CHARGE_TYPES = Arrays.asList(
+            InwardChargeType.AdministrationCharge, InwardChargeType.LinenCharges,
+            InwardChargeType.MaintainCharges, InwardChargeType.MedicalCareICU,
+            InwardChargeType.MOCharges, InwardChargeType.NursingCharges,
+            InwardChargeType.RoomCharges);
+
+    private InwardChargeType parseRoomChargeType(String s) {
+        InwardChargeType t;
+        try {
+            t = InwardChargeType.valueOf(s.trim());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid inwardChargeType: " + s);
+        }
+        if (!ROOM_CHARGE_TYPES.contains(t)) {
+            List<String> names = new ArrayList<>();
+            for (InwardChargeType r : ROOM_CHARGE_TYPES) {
+                names.add(r.name());
+            }
+            throw new IllegalArgumentException("inwardChargeType must be one of " + names);
+        }
+        return t;
+    }
+
+    /**
+     * scope=room create (issue #24012): one row per charge type x room
+     * category. Takes inwardChargeType or inwardChargeTypes[] (required) and
+     * roomCategoryId or roomCategoryIds[] (optional; none = all rooms). Every
+     * value is validated before anything is written; identical active rows
+     * are skipped and reported. Always returns the bulk response shape.
+     */
+    private Response createRoomChargeRows(Map<?, ?> body, WebUser user, Department department,
+            AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme,
+            Institution creditCompany, Double discountPercent) {
+        List<InwardChargeType> types = new ArrayList<>();
+        Object one = body.get("inwardChargeType");
+        Object many = body.get("inwardChargeTypes");
+        if (one != null && many != null) {
+            return errorResponse("Use either inwardChargeType or inwardChargeTypes, not both", 400);
+        }
+        if (one != null) {
+            types.add(parseRoomChargeType(one.toString()));
+        } else if (many instanceof List && !((List<?>) many).isEmpty()) {
+            for (Object o : (List<?>) many) {
+                if (o == null) {
+                    return errorResponse("inwardChargeTypes must not contain empty values", 400);
+                }
+                InwardChargeType t = parseRoomChargeType(o.toString());
+                if (!types.contains(t)) {
+                    types.add(t);
+                }
+            }
+        } else {
+            return errorResponse("inwardChargeType or a non-empty inwardChargeTypes array is required for scope 'room'", 400);
+        }
+
+        Object rcOne = body.get("roomCategoryId");
+        Object rcMany = body.get("roomCategoryIds");
+        if (rcOne != null && rcMany != null) {
+            return errorResponse("Use either roomCategoryId or roomCategoryIds, not both", 400);
+        }
+        List<Object> rcRaw = new ArrayList<>();
+        if (rcOne != null) {
+            rcRaw.add(rcOne);
+        } else if (body.containsKey("roomCategoryIds")) {
+            if (!(rcMany instanceof List) || ((List<?>) rcMany).isEmpty()) {
+                return errorResponse("roomCategoryIds must be a non-empty array of room category ids", 400);
+            }
+            rcRaw.addAll((List<?>) rcMany);
+        }
+        List<Category> roomCategories = new ArrayList<>();
+        for (Object o : rcRaw) {
+            Long id = asLong(o);
+            if (id == null) {
+                return errorResponse("roomCategoryIds must not contain empty values", 400);
+            }
+            Category c = categoryFacade.find(id);
+            if (c == null || c.isRetired() || !(c instanceof RoomCategory)) {
+                return errorResponse("Room category not found: " + id, 400);
+            }
+            if (!roomCategories.contains(c)) {
+                roomCategories.add(c);
+            }
+        }
+        if (roomCategories.isEmpty()) {
+            roomCategories.add(null);
+        }
+
+        List<Map<String, Object>> created = new ArrayList<>();
+        List<Map<String, Object>> skipped = new ArrayList<>();
+        try {
+            for (InwardChargeType t : types) {
+                for (Category rc : roomCategories) {
+                    InwardDiscountMatrix dup = findDuplicate(department, null, admissionType, paymentMethod,
+                            paymentScheme, creditCompany, t, rc);
+                    if (dup != null) {
+                        Map<String, Object> sk = new LinkedHashMap<>();
+                        sk.put("inwardChargeType", t.name());
+                        sk.put("roomCategoryId", rc == null ? null : rc.getId());
+                        sk.put("existingId", dup.getId());
+                        skipped.add(sk);
+                        continue;
+                    }
+                    InwardDiscountMatrix entry = new InwardDiscountMatrix();
+                    entry.setDepartment(department);
+                    entry.setInwardChargeType(t);
+                    entry.setRoomCategory(rc);
+                    entry.setAdmissionType(admissionType);
+                    entry.setPaymentMethod(paymentMethod);
+                    entry.setPaymentScheme(paymentScheme);
+                    entry.setDiscountPercent(discountPercent);
+                    entry.setCreditCompany(creditCompany);
+                    if (department != null) {
+                        entry.setInstitution(department.getInstitution());
+                    }
+                    entry.setCreatedAt(new Date());
+                    entry.setCreater(user);
+                    priceMatrixFacade.create(entry);
+                    created.add(toDto(entry));
+                }
+            }
+        } catch (Exception e) {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("status", "error");
+            payload.put("code", 500);
+            payload.put("message", "Bulk create stopped after " + created.size()
+                    + " row(s): " + e.getMessage() + ". Re-send the request to add the rest; existing rows are skipped.");
+            payload.put("created", created);
+            payload.put("skipped", skipped);
+            return Response.status(500).entity(gson.toJson(payload)).build();
+        }
+
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("createdCount", created.size());
+        data.put("skippedCount", skipped.size());
+        data.put("created", created);
+        data.put("skipped", skipped);
+        return Response.status(created.isEmpty() ? 200 : 201).entity(gson.toJson(successData(data))).build();
+    }
+
+    /**
+     * Null-safe match on every key column, including the room charge type and
+     * room category (issue #24012), so a room-charge row and a service /
+     * pharmacy row are never treated as duplicates of each other.
+     */
+    private InwardDiscountMatrix findDuplicate(Department department, Category category,
+            AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme,
+            Institution creditCompany, InwardChargeType chargeType, Category roomCategory) {
 
         StringBuilder jpql = new StringBuilder(
                 "select a from InwardDiscountMatrix a where a.retired = false");
@@ -824,6 +1011,18 @@ public class InwardDiscountMatrixApi {
         } else {
             jpql.append(" and a.creditCompany = :cc");
             params.put("cc", creditCompany);
+        }
+        if (chargeType == null) {
+            jpql.append(" and a.inwardChargeType is null");
+        } else {
+            jpql.append(" and a.inwardChargeType = :ict");
+            params.put("ict", chargeType);
+        }
+        if (roomCategory == null) {
+            jpql.append(" and a.roomCategory is null");
+        } else {
+            jpql.append(" and a.roomCategory = :rcat");
+            params.put("rcat", roomCategory);
         }
 
         @SuppressWarnings("unchecked")
@@ -928,6 +1127,16 @@ public class InwardDiscountMatrixApi {
             row.put("category", c);
         } else {
             row.put("category", null);
+        }
+
+        row.put("inwardChargeType", pm.getInwardChargeType() == null ? null : pm.getInwardChargeType().name());
+        if (pm.getRoomCategory() != null) {
+            Map<String, Object> rc = new LinkedHashMap<>();
+            rc.put("id", pm.getRoomCategory().getId());
+            rc.put("name", pm.getRoomCategory().getName());
+            row.put("roomCategory", rc);
+        } else {
+            row.put("roomCategory", null);
         }
 
         if (pm.getAdmissionType() != null) {

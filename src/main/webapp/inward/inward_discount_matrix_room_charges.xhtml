@@ -9,6 +9,14 @@
     <h:body>
         <ui:composition template="/inward/inward_administration.xhtml">
             <ui:define name="subcontent">
+                <style>
+                    /* Keep multi-select labels on one line. */
+                    .single-line-label .ui-selectcheckboxmenu-label {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                </style>
                 <h:form>
                     <p:panel header="Inward Discount Matrix - Room Facility Charges" id="reportPrint" class="row w-100">
 
@@ -49,20 +57,48 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
-                                        <h:outputLabel value="Room Charge Type" class="mt-2"/>
+                                        <h:outputLabel value="Room Charge Types" class="mt-2"/>
                                     </div>
-                                    <div class="col-4">
-                                        <p:selectOneMenu
-                                            class="w-100"
-                                            value="#{inwardDiscountMatrixController.inwardChargeType}">
-                                            <f:selectItem itemLabel="-- Select Charge Type --" itemValue="#{null}"/>
+                                    <div class="col-10">
+                                        <p:selectCheckboxMenu
+                                            id="chargeTypes"
+                                            styleClass="w-100 single-line-label"
+                                            value="#{inwardDiscountMatrixController.roomChargeTypeNames}"
+                                            showHeader="true"
+                                            emptyLabel="Select Charge Types"
+                                            updateLabel="true">
                                             <f:selectItems
                                                 value="#{enumController.roomChargeType}"
-                                                var="rc"
-                                                itemValue="#{rc}"
-                                                itemLabel="#{rc.label}">
-                                            </f:selectItems>
-                                        </p:selectOneMenu>
+                                                var="rct"
+                                                itemValue="#{rct.name()}"
+                                                itemLabel="#{rct.label}"/>
+                                        </p:selectCheckboxMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Room Categories" class="mt-2"/>
+                                    </div>
+                                    <div class="col-10">
+                                        <p:selectCheckboxMenu
+                                            id="roomCategories"
+                                            styleClass="w-100 single-line-label"
+                                            value="#{inwardDiscountMatrixController.roomCategories}"
+                                            converter="#{inwardDiscountMatrixController.categoryConverter}"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            emptyLabel="All Room Categories"
+                                            updateLabel="true"
+                                            scrollHeight="300">
+                                            <f:selectItems
+                                                value="#{inwardDiscountMatrixController.allRoomCategories}"
+                                                var="rcat"
+                                                itemLabel="#{rcat.name}"
+                                                itemValue="#{rcat}"/>
+                                        </p:selectCheckboxMenu>
+                                        <small class="text-muted">Leave blank to apply to every room. A row for a room's own category takes priority over an all-rooms row.</small>
                                     </div>
                                 </div>
 
@@ -179,11 +215,13 @@
                                 value="#{inwardDiscountMatrixController.items}"
                                 filteredValue="#{inwardDiscountMatrixController.filterItems}"
                                 var="a"
+                                rowKey="#{a.id}"
+                                paginator="true"
+                                rows="25"
+                                rowsPerPageTemplate="25,50,100,200"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{totalRecords} rows"
                                 scrollable="true">
-
-                                <p:column headerText="ID" style="width: 3em;">
-                                    #{a.id}
-                                </p:column>
 
                                 <p:column
                                     headerText="Discount Scheme"
@@ -194,17 +232,24 @@
 
                                 <p:column
                                     headerText="Charge Type"
-                                    filterBy="#{a.inwardChargeType}"
+                                    filterBy="#{a.inwardChargeType.label}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{a.inwardChargeType}"/>
+                                    <h:outputText value="#{a.inwardChargeType.label}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Room Category"
+                                    filterBy="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Admission Type">
-                                    <h:outputText value="#{a.admissionType.name}"/>
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
 
                                 <p:column headerText="BHT Type">
-                                    <h:outputText value="#{a.paymentMethod}"/>
+                                    <h:outputText value="#{empty a.paymentMethod ? 'All BHT Types' : a.paymentMethod}"/>
                                 </p:column>
 
                                 <p:column
