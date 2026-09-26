@@ -9,6 +9,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.TheatreRoom;
@@ -432,6 +433,19 @@ public class PatientTransferController implements Serializable {
 
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Patient accepted successfully.");
+    }
+
+    /**
+     * Corrects a PatientRoom's admittedAt/addmittedBy to the real accept time.
+     *
+     * <p>Room-charge billing (BhtSummeryController.getCharge()) reads admittedAt as the
+     * start of the billing clock. AdmissionController stamps admittedAt with the
+     * admission's dateOfAdmission at admission-save time, before any accept step, so this
+     * corrects it to when the patient was actually accepted into the room.
+     */
+    static void stampAcceptedRoomTiming(PatientRoom room, Date acceptedAt, WebUser acceptedBy) {
+        room.setAdmittedAt(acceptedAt);
+        room.setAddmittedBy(acceptedBy);
     }
 
     public void cancelTransfer(PatientTransferRequest req) {
