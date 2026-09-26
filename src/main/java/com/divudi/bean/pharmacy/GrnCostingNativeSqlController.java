@@ -142,6 +142,7 @@ public class GrnCostingNativeSqlController implements Serializable {
     private BillItem currentExpense;
     private Item freeItemToAdd;
     private BillItem billItemPendingDuplication;
+    private Bill grnBillPendingDuplication;
     private String duplicateComment;
 
     @PostConstruct
@@ -258,6 +259,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         currentExpense = null;
         difference = 0;
         insTotal = 0;
+        cancelDuplicatePrompt();
     }
 
     // synchronized: same double-click double-submit guard as finalize/approve below
@@ -973,11 +975,20 @@ public class GrnCostingNativeSqlController implements Serializable {
             return;
         }
         billItemPendingDuplication = originalBillItemToDuplicate;
+        grnBillPendingDuplication = currentGrnBillPre;
         duplicateComment = null;
     }
 
     public void confirmDuplicateItem() {
         if (billItemPendingDuplication == null) {
+            return;
+        }
+        // Session-scoped bean: the GRN in view can change (tab reuse, navigation)
+        // between staging and confirming a duplication -- reject a stale prompt
+        // rather than adding the staged row to a different GRN's item list.
+        if (grnBillPendingDuplication != currentGrnBillPre) {
+            JsfUtil.addErrorMessage("The GRN changed since this row was staged for duplication. Please try again.");
+            cancelDuplicatePrompt();
             return;
         }
         if (duplicateComment == null || duplicateComment.trim().isEmpty()) {
@@ -991,6 +1002,7 @@ public class GrnCostingNativeSqlController implements Serializable {
 
     public void cancelDuplicatePrompt() {
         billItemPendingDuplication = null;
+        grnBillPendingDuplication = null;
         duplicateComment = null;
     }
 
