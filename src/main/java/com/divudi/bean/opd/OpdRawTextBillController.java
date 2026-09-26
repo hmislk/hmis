@@ -2,6 +2,7 @@ package com.divudi.bean.opd;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.util.JsfUtil;
@@ -56,6 +57,8 @@ public class OpdRawTextBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
     private BillService billService;
 
@@ -148,14 +151,19 @@ public class OpdRawTextBillController implements Serializable {
      * Saves the dialog values for the logged department.
      */
     public void saveSettings() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You are not authorised to change print settings.");
+            return;
+        }
         Department dept = sessionController.getDepartment();
         if (dept == null) {
             JsfUtil.addErrorMessage("Select a department first.");
             return;
         }
         OpdBillTextRenderer.Layout l = currentLayout();
-        if (l.getRightBorderColumn() <= l.getLeftMarginColumns()) {
-            JsfUtil.addErrorMessage("Right border column must be greater than the left margin.");
+        if (l.printableWidth() < OpdBillTextRenderer.MIN_BODY_WIDTH) {
+            JsfUtil.addErrorMessage("Right border column must be at least "
+                    + OpdBillTextRenderer.MIN_BODY_WIDTH + " columns beyond the left margin.");
             return;
         }
         configOptionApplicationController.setLongValueByKeyForDepartment(KEY_TOP_MARGIN, dept, (long) l.getTopMarginLines());

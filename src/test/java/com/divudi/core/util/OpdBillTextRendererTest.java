@@ -177,6 +177,17 @@ public class OpdBillTextRendererTest {
     }
 
     @Test
+    public void afternoonTimeUsesTwelveHourClock() {
+        Bill b = sampleBill();
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("Asia/Colombo"));
+        c.set(2026, Calendar.SEPTEMBER, 21, 14, 25, 0);
+        b.setCreatedAt(c.getTime());
+        String out = render(b, false, layout(0, 50));
+        assertTrue(out.contains("02:25 PM"), out);
+        assertFalse(out.contains("14:25"), out);
+    }
+
+    @Test
     public void rowWithoutRightColumnUsesFullWidth() {
         Bill b = sampleBill();
         b.setDeptId("OPDDC//26/0123456789");

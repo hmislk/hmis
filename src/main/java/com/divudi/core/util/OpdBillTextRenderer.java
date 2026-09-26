@@ -32,7 +32,7 @@ public final class OpdBillTextRenderer {
     private static final int NO_WIDTH = 4;
     private static final int QTY_WIDTH = 5;
     private static final int MIN_VALUE_WIDTH = 10;
-    private static final int MIN_BODY_WIDTH = 30;
+    public static final int MIN_BODY_WIDTH = 30;
 
     private OpdBillTextRenderer() {
     }
@@ -207,7 +207,7 @@ public final class OpdBillTextRenderer {
         // Patient and bill information — two columns like the HTML info-table
         SimpleDateFormat dfDate = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         dfDate.setTimeZone(COLOMBO);
-        SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm a", Locale.ENGLISH);
+        SimpleDateFormat dfTime = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
         dfTime.setTimeZone(COLOMBO);
         Date created = bill.getCreatedAt();
 
