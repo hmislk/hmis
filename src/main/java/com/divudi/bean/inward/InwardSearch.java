@@ -3463,6 +3463,10 @@ public class InwardSearch implements Serializable {
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
 
         String heading = "Receipt";
         if (getBill().getBillTypeAtomic() != null) {
@@ -3478,7 +3482,7 @@ public class InwardSearch implements Serializable {
                 getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP, multiplePayments);
+                true, preprinted, topMargin, emitEscP, multiplePayments, lineWidth);
 
         String fileName = "inward-reprint-"
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())

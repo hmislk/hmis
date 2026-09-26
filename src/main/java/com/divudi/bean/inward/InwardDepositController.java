@@ -1121,12 +1121,16 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
 
         java.util.List<com.divudi.core.entity.Payment> multiplePayments =
                 getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getCurrent()) : null;
         String text = InwardReceiptTextRenderer.render(getCurrent(), "Deposit Receipt",
-                false, preprinted, topMargin, emitEscP, multiplePayments);
+                false, preprinted, topMargin, emitEscP, multiplePayments, lineWidth);
 
         String fileName = "inward-deposit-"
                 + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())
