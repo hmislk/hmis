@@ -153,6 +153,7 @@ public class GrnCostingController implements Serializable {
     private Institution referenceInstitution;
     BillItem currentExpense;
     private BillItem billItemPendingDuplication;
+    private Bill grnBillPendingDuplication;
     private String duplicateComment;
 
     public BillItem getBillItemPendingDuplication() {
@@ -207,6 +208,7 @@ public class GrnCostingController implements Serializable {
         currentExpense = null; // Clear current expense to prevent duplication
         difference = 0;
         insTotal = 0;
+        cancelDuplicatePrompt();
     }
 
     public void removeItem(BillItem bi) {
@@ -287,11 +289,20 @@ public class GrnCostingController implements Serializable {
             return;
         }
         billItemPendingDuplication = originalBillItemToDuplicate;
+        grnBillPendingDuplication = currentGrnBillPre;
         duplicateComment = null;
     }
 
     public void confirmDuplicateItem() {
         if (billItemPendingDuplication == null) {
+            return;
+        }
+        // Session-scoped bean: the GRN in view can change (tab reuse, navigation)
+        // between staging and confirming a duplication -- reject a stale prompt
+        // rather than adding the staged row to a different GRN's item list.
+        if (grnBillPendingDuplication != currentGrnBillPre) {
+            JsfUtil.addErrorMessage("The GRN changed since this row was staged for duplication. Please try again.");
+            cancelDuplicatePrompt();
             return;
         }
         if (duplicateComment == null || duplicateComment.trim().isEmpty()) {
@@ -305,6 +316,7 @@ public class GrnCostingController implements Serializable {
 
     public void cancelDuplicatePrompt() {
         billItemPendingDuplication = null;
+        grnBillPendingDuplication = null;
         duplicateComment = null;
     }
 
