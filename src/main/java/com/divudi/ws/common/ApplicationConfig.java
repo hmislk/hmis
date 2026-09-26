@@ -96,6 +96,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.pharmacy.PharmacyF15ReportApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyGrnBifdBackfillApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyItemApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyPurchaseOrdersApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyTransferDeptTypeBackfillApi.class);
         resources.add(com.divudi.ws.pharmacy.StockHistoryApi.class);

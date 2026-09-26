@@ -3292,7 +3292,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                     return "/opd/opd_bill?faces-redirect=true";
                 }
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -3322,7 +3322,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 collectingCentreBillController.setCollectingCentre(null);
                 return "/opd/opd_bill_ac?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -3402,7 +3402,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                     return "/opd/opd_bill?faces-redirect=true";
                 }
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

@@ -385,6 +385,7 @@
                                         value="Pay"
                                         style="width:250px;"
                                         ajax="false"
+                                        onclick="return confirm('Are you sure you want to make this deposit payment?');"
                                         action="#{inwardDepositController.pay()}" >
                                     </p:commandButton>
 
