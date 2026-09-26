@@ -378,12 +378,14 @@ public class PatientTransferController implements Serializable {
 
         if (persisted.getFromPatientRoom() == null) {
             // Admission handover. When the admission-time room selection already
-            // created and set this same room as current (Issue #23145), there is
-            // nothing to do here beyond confirming roomAdmitted — this request only
-            // exists as a nursing acknowledgement. Otherwise (e.g. the room was
-            // assigned later via a manually initiated transfer with no prior room),
-            // no PatientRoom has ever been created for this admission, so
-            // currentPatientRoom must be set here or it stays null forever and the
+            // created and set this same room as current (Issue #23145), the room's
+            // admittedAt is still stamped with the admission's dateOfAdmission from
+            // that earlier save — before this accept step ran. Room-charge billing
+            // (BhtSummeryController.getCharge()) reads admittedAt as the start of the
+            // billing clock, so correct it here to the real accept time. Otherwise
+            // (e.g. the room was assigned later via a manually initiated transfer with
+            // no prior room), no PatientRoom has ever been created for this admission,
+            // so currentPatientRoom must be set here or it stays null forever and the
             // "Current Department" search (#22382) can never find the patient. (#23377)
             Admission admission = persisted.getAdmission();
             PatientRoom existingCurrentRoom = admission.getCurrentPatientRoom();
@@ -402,6 +404,9 @@ public class PatientTransferController implements Serializable {
                         effectiveAt,
                         sessionController.getLoggedUser());
                 admission.setCurrentPatientRoom(newPatientRoom);
+            } else if (alreadyInTargetRoom) {
+                stampAcceptedRoomTiming(existingCurrentRoom, effectiveAt, sessionController.getLoggedUser());
+                patientRoomFacade.edit(existingCurrentRoom);
             }
             admission.setRoomAdmitted(true);
             admissionFacade.edit(admission);
