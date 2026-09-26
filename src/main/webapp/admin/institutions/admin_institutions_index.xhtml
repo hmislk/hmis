@@ -26,6 +26,10 @@
                                         <p:commandButton styleClass="linkButton ui-button-warning" ajax="false" value="Department Preferences" icon="pi pi-wrench"
                                                          action="#{sessionController.toManageDepartmentPreferences()}"/>
 
+                                        <!-- Department Settings: department-scoped options (e.g. Allow Disposal Issue to Same Department) -->
+                                        <p:commandButton styleClass="linkButton ui-button-warning" ajax="false" value="Department Settings" icon="pi pi-building"
+                                                         action="/admin/department_preferences?faces-redirect=true"/>
+
                                         <!-- Application Options Button with emphasized color and icon for high importance -->
                                         <p:commandButton styleClass="linkButton ui-button-success" ajax="false" value="Application Options" icon="pi pi-sliders-h"
                                                          action="#{configOptionController.navigateToApplicationOptions()}"/>

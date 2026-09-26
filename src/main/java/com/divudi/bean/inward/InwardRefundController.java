@@ -10,7 +10,6 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.JsfUtil;
@@ -73,8 +72,6 @@ public class InwardRefundController implements Serializable {
     private boolean printPreview;
     @Inject
     private InwardBeanController inwardBean;
-    @Inject
-    private ConfigOptionApplicationController configOptionApplicationController;
     private List<Bill> eligiblePaymentBills;
     private Bill originalBillToRefund;
     private Map<Long, Double> remainingRefundableAmountCache;
@@ -98,7 +95,7 @@ public class InwardRefundController implements Serializable {
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/inward/inward_bill_refund?faces-redirect=true";
@@ -119,7 +116,7 @@ public class InwardRefundController implements Serializable {
         }
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         getCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());
@@ -148,7 +145,7 @@ public class InwardRefundController implements Serializable {
         }
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         getCurrent().setPatientEncounter(originDepositBill.getPatientEncounter());
@@ -279,16 +276,8 @@ public class InwardRefundController implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
                 ? getCurrent().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), refundAtomic, admissionTypeForBillNumber));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), refundAtomic, admissionTypeForBillNumber));
-        } else {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), refundAtomic));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), refundAtomic));
-        }
+        getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), refundAtomic, admissionTypeForBillNumber));
+        getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), refundAtomic, admissionTypeForBillNumber));
 
         double dbl = Math.abs(getCurrent().getTotal());
 

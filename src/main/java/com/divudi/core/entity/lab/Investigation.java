@@ -6,6 +6,7 @@ package com.divudi.core.entity.lab;
 
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.SymanticType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -35,6 +36,28 @@ public class Investigation extends Item implements Serializable {
      * entry immediately after billing.
      */
     boolean bypassSampleWorkflow;
+
+    /**
+     * The effective category: the stored {@code category}, or, when that is
+     * blank, the legacy {@code investigationCategory} still set on older
+     * records (issue #24038). Persistence uses field access, so this does not
+     * change what is saved; it lets every reader, including the inward
+     * discount lookup, see a category for those records. Saving such a record
+     * from the edit page writes the value into {@code category}.
+     */
+    @Override
+    public Category getCategory() {
+        Category stored = super.getCategory();
+        return stored != null ? stored : investigationCategory;
+    }
+
+    /**
+     * The {@code category} column exactly as stored, without the legacy
+     * fallback of {@link #getCategory()}.
+     */
+    public Category getStoredCategory() {
+        return super.getCategory();
+    }
 
     public InvestigationCategory getInvestigationCategory() {
         return investigationCategory;

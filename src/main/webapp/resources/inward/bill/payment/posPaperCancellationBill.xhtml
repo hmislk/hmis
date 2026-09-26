@@ -47,7 +47,7 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Deposit Cancellation Receipt" style="font-size: 20px;" /><br/>
+                <h:outputLabel value="#{inwardPaymentController.receiptHeading(cc.attrs.bill, 'Cancellation Receipt')}" style="font-size: 20px;" /><br/>
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
             </div>
 

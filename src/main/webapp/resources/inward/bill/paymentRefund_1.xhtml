@@ -42,7 +42,7 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="Refund Receipt"   />
+                <h:outputLabel value="#{inwardPaymentController.receiptHeading(cc.attrs.bill, 'Refund Receipt')}" />
                 <br />
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />

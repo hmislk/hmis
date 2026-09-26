@@ -1,5 +1,6 @@
 package com.divudi.core.util;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Department;
@@ -28,14 +29,68 @@ public final class InwardReceiptTextRenderer {
     }
 
     /**
-     * @param multiplePayments the bill's individual tender rows (from
-     * {@code BillService.fetchBillPayments(bill)}), rendered as a breakdown
-     * when {@code bill.getPaymentMethod()} is {@code MultiplePaymentMethods}.
-     * May be {@code null} or empty — the breakdown is then simply omitted.
+     * Receipt title for an inward deposit / payment family bill, e.g.
+     * "Inward Deposit", "Inward Payment Refund", "Inward Deposit Cancellation".
+     * Post-final-bill payments print as the plain Inward Payment equivalents.
+     * Falls back to "Inward Receipt" for a null or unrelated bill type.
+     */
+    public static String headingFor(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return "Inward Receipt";
+        }
+        switch (billTypeAtomic) {
+            case INWARD_DEPOSIT:
+            case INWARD_DEPOSIT_CANCELLATION:
+            case INWARD_DEPOSIT_REFUND:
+            case INWARD_DEPOSIT_REFUND_CANCELLATION:
+            case INWARD_PAYMENT:
+            case INWARD_PAYMENT_CANCELLATION:
+            case INWARD_PAYMENT_REFUND:
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                return billTypeAtomic.getLabel();
+            case POST_FINAL_BILL_INWARD_PAYMENT:
+                return "Inward Payment";
+            case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
+                return "Inward Payment Cancellation";
+            case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
+                return "Inward Payment Refund";
+            default:
+                String n = billTypeAtomic.name();
+                if (n.contains("DEPOSIT")) {
+                    return "Inward Deposit";
+                } else if (n.contains("PAYMENT")) {
+                    return "Inward Payment";
+                }
+                return "Inward Receipt";
+        }
+    }
+
+    /**
+     * Renders with the Admission Type, Address and Phone rows all shown.
+     *
+     * @see #render(Bill, String, boolean, boolean, int, boolean, List,
+     * boolean, boolean, boolean)
      */
     public static String render(Bill bill, String heading, boolean duplicate,
             boolean preprintedStationery, int topMarginLines, boolean emitEscP,
             List<Payment> multiplePayments) {
+        return render(bill, heading, duplicate, preprintedStationery, topMarginLines,
+                emitEscP, multiplePayments, true, true, true);
+    }
+
+    /**
+     * @param multiplePayments the bill's individual tender rows (from
+     * {@code BillService.fetchBillPayments(bill)}), rendered as a breakdown
+     * when {@code bill.getPaymentMethod()} is {@code MultiplePaymentMethods}.
+     * May be {@code null} or empty — the breakdown is then simply omitted.
+     * @param showAdmissionType print the "Admission Type" row
+     * @param showPatientAddress print the patient "Address" row
+     * @param showPatientPhone print the patient "Phone" row
+     */
+    public static String render(Bill bill, String heading, boolean duplicate,
+            boolean preprintedStationery, int topMarginLines, boolean emitEscP,
+            List<Payment> multiplePayments, boolean showAdmissionType,
+            boolean showPatientAddress, boolean showPatientPhone) {
         StringBuilder sb = new StringBuilder(1024);
 
         if (emitEscP) {
@@ -64,13 +119,20 @@ public final class InwardReceiptTextRenderer {
         }
 
         String head = safe(heading);
+        String markers = "";
         if (duplicate) {
-            head = head + " **Duplicate**";
+            markers = markers + " **Duplicate**";
         }
         if (bill.isCancelled()) {
-            head = head + " **Cancelled**";
+            markers = markers + " **Cancelled**";
         }
-        centre(sb, head);
+        if ((head + markers).length() <= WIDTH) {
+            centre(sb, head + markers);
+        } else {
+            // keep the markers readable instead of clipping them off the title
+            centre(sb, head);
+            centre(sb, markers.trim());
+        }
         rule(sb, '-');
 
         PatientEncounter pe = bill.getPatientEncounter();
@@ -96,11 +158,17 @@ public final class InwardReceiptTextRenderer {
         dfTime.setTimeZone(COLOMBO);
         Date created = bill.getCreatedAt();
 
-        field(sb, "Admission Type", admissionType);
+        if (showAdmissionType) {
+            field(sb, "Admission Type", admissionType);
+        }
         field(sb, "Name", name);
         field(sb, "Age / Gender", (age + " " + sex).trim());
-        field(sb, "Address", address);
-        field(sb, "Phone", phone);
+        if (showPatientAddress) {
+            field(sb, "Address", address);
+        }
+        if (showPatientPhone) {
+            field(sb, "Phone", phone);
+        }
         field(sb, "BHT No", bht);
         field(sb, "Bill No", safe(bill.getDeptId()));
         field(sb, "Bill Date", created == null ? "" : dfDate.format(created));

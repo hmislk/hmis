@@ -1979,7 +1979,22 @@ public class GrnCostingController implements Serializable {
      */
     private void clampQuantityToRemaining(BillItem tmp, BillItemFinanceDetails f) {
         if (tmp.getReferanceBillItem() != null) {
-            double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
+            // getRemainingQty() returns a unit-based quantity, but f.getQuantity()
+            // is in packs for Ampp lines (BillItem quantities for Ampp are always
+            // packs - see generateBillComponent()). Convert the remaining units to
+            // the line's own unit, so the comparison is apples-to-apples for both
+            // Amp (units-per-pack 1) and Ampp items (CodeRabbit #24005).
+            double remainsInUnits = getRemainingQty(tmp.getPharmaceuticalBillItem());
+            double unitsPerPack = 1.0;
+            if (tmp.getItem() instanceof Ampp) {
+                double dblVal = tmp.getItem().getDblValue();
+                unitsPerPack = dblVal > 0.0 ? dblVal : 1.0;
+            }
+            // A PO that is already overcommitted (prior GRNs + sibling rows already
+            // exceed the ordered qty) can make the units-based remainder negative;
+            // floor at zero instead of writing a negative quantity onto this line
+            // (CodeRabbit #24005).
+            double remains = Math.max(remainsInUnits / unitsPerPack, 0.0);
             if (remains < f.getQuantity().doubleValue()) {
                 f.setQuantity(java.math.BigDecimal.valueOf(remains));
                 tmp.setTmpQty(remains);
@@ -3229,45 +3244,75 @@ public class GrnCostingController implements Serializable {
             return "";
         }
 
+        boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
+
+        // Root cause of the recurring "GRN amount exceeds PO amount" defect
+        // (RH General Stores, PO/RH/GSK/26/01621 vs GRN/RH/GSK/26/01634): this
+        // used to check each GRN line individually against the PO's ordered
+        // qty, so two lines referencing the same PO item (e.g. one added via
+        // the "Duplicate" button) could each pass on their own even though
+        // their combined total exceeded the PO. Group by the referenced PO
+        // line first and validate the combined total for that PO item.
+        java.util.Map<BillItem, java.util.List<BillItem>> linesByPoItem = new java.util.LinkedHashMap<>();
         for (BillItem grnItem : billItems) {
             if (grnItem.getReferanceBillItem() == null || grnItem.getPharmaceuticalBillItem() == null) {
                 continue;
             }
+            linesByPoItem.computeIfAbsent(grnItem.getReferanceBillItem(), k -> new java.util.ArrayList<>()).add(grnItem);
+        }
 
-            BillItem purchaseOrderItem = grnItem.getReferanceBillItem();
+        for (java.util.Map.Entry<BillItem, java.util.List<BillItem>> entry : linesByPoItem.entrySet()) {
+            BillItem purchaseOrderItem = entry.getKey();
+            List<BillItem> grnLinesForThisPoItem = entry.getValue();
+
             PharmaceuticalBillItem poItem = purchaseOrderItem.getPharmaceuticalBillItem();
-
             if (poItem == null) {
                 continue;
             }
 
-            PharmaceuticalBillItem currentGrnPbi = grnItem.getPharmaceuticalBillItem();
-
             double orderedQty = poItem.getQty();
             double orderedFreeQty = poItem.getFreeQty();
-            double currentGrnQty = currentGrnPbi.getQty();
-            double currentGrnFreeQty = currentGrnPbi.getFreeQty();
 
-            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered: " + orderedQty + ", Current GRN: " + currentGrnQty);
-            System.out.println("Item: " + grnItem.getItem().getName() + " - Ordered Free: " + orderedFreeQty + ", Current GRN Free: " + currentGrnFreeQty);
+            double currentGrnQty = 0.0;
+            double currentGrnFreeQty = 0.0;
+            String itemName = grnLinesForThisPoItem.get(0).getItem().getName();
+            String negativeLineWarning = null;
+            for (BillItem grnItem : grnLinesForThisPoItem) {
+                double lineQty = grnItem.getPharmaceuticalBillItem().getQty();
+                double lineFreeQty = grnItem.getPharmaceuticalBillItem().getFreeQty();
+                // A negative line quantity could otherwise offset a positive
+                // over-limit line in the sum below (e.g. +20 and -10 summing to
+                // 10 for a 10-unit PO), passing this check while GRN approval
+                // still credits Math.abs() of each line to stock independently
+                // (CodeRabbit #24005). Flag the specific offending line/value
+                // rather than a blanket rejection, then keep summing the rest
+                // of the (valid, positive) lines so the real over/under total
+                // for this PO item is still visible in the error message.
+                if (lineQty < 0 || lineFreeQty < 0) {
+                    negativeLineWarning = "Item " + grnItem.getItem().getName()
+                            + ": a line has a negative Receiving Qty (" + lineQty
+                            + ") or Free Qty (" + lineFreeQty + "). Remove or correct that line - "
+                            + "GRN receiving quantities cannot be negative; use a Return if stock needs to go back.";
+                    continue;
+                }
+                currentGrnQty += lineQty;
+                currentGrnFreeQty += lineFreeQty;
+            }
+            if (negativeLineWarning != null) {
+                return negativeLineWarning;
+            }
 
-            double totalReceivedFromAllGrns = calculateRemainigQtyFromOrder(poItem);
-            double totalFreeReceivedFromAllGrns = calculateRemainingFreeQtyFromOrder(poItem);
-
-            double previouslyReceivedQty = totalReceivedFromAllGrns;
-            double previouslyReceivedFreeQty = totalFreeReceivedFromAllGrns;
-
+            double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
+            double previouslyReceivedFreeQty = calculateRemainingFreeQtyFromOrder(poItem);
 
             if (orderedQty < previouslyReceivedQty + currentGrnQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnQty
+                return "Item " + itemName + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
                         + ", Remaining: " + (orderedQty - previouslyReceivedQty);
             }
 
-            // Feature flag controlled free quantity validation
-            boolean enableFreeQtyValidation = configOptionApplicationController.getBooleanValueByKey("Enable Free Quantity Validation in GRN", false);
             if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
-                return "Item " + grnItem.getItem().getName() + " cannot receive " + currentGrnFreeQty
+                return "Item " + itemName + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
                         + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
@@ -4479,15 +4524,34 @@ public class GrnCostingController implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    // Root cause of the recurring "GRN amount exceeds PO amount" defect
+    // (RH General Stores, PO/RH/GSK/26/01621 vs GRN/RH/GSK/26/01634): this
+    // used calculateRemainingFreeQtyFromOrder() - the FREE-quantity-received
+    // function - to cap the ORDINARY quantity field, so it always returned
+    // the full ordered qty regardless of what had already been received.
+    // It also never accounted for sibling rows already added to the GRN
+    // currently being edited (e.g. via the "Duplicate" button), so two rows
+    // referencing the same PO item could each independently be set to the
+    // full ordered qty. Fixed to subtract both the qty already received in
+    // other, previously-saved GRNs (calculateRemainigQtyFromOrder) and the
+    // qty already committed to sibling in-memory rows of this GRN.
     public double getRemainingQty(PharmaceuticalBillItem ph) {
-        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + ph.getBillItem().getReferanceBillItem().getId();
+        BillItem poBillItem = ph.getBillItem().getReferanceBillItem();
+        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + poBillItem.getId();
         PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 
-        double poQty, remainsFree;
-        poQty = po.getQtyInUnit();
-        remainsFree = poQty - calculateRemainingFreeQtyFromOrder(po);
+        double poQty = po.getQtyInUnit();
+        double alreadyReceivedInOtherGrns = calculateRemainigQtyFromOrder(po);
 
-        return remainsFree;
+        double committedInSiblingRowsOfThisGrn = 0.0;
+        for (BillItem sibling : findAllBillItemsRefernceToOriginalItem(poBillItem)) {
+            if (sibling.getPharmaceuticalBillItem() == ph) {
+                continue;
+            }
+            committedInSiblingRowsOfThisGrn += sibling.getPharmaceuticalBillItem().getQty();
+        }
+
+        return poQty - alreadyReceivedInOtherGrns - committedInSiblingRowsOfThisGrn;
     }
 
     public ItemBatch saveItemBatch(BillItem tmp) {
