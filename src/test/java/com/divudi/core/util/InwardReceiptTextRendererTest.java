@@ -287,6 +287,42 @@ public class InwardReceiptTextRendererTest {
         assertEquals("----------------------------------------", lines[1]);
     }
 
+    @Test
+    public void narrowerLineWidthKeepsEveryLineInside() {
+        Bill b = sampleBill();
+        b.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+        Payment card = new Payment();
+        card.setPaymentMethod(PaymentMethod.Card);
+        card.setCreditCardRefNo("1234567890123456");
+        card.setPaidValue(10000.0);
+        String out = InwardReceiptTextRenderer.render(b, "Inward Deposit",
+                true, false, 0, false, Arrays.asList(card), true, true, true, 32);
+        for (String line : out.split("\n", -1)) {
+            assertTrue(line.length() <= 32,
+                    "line too wide (" + line.length() + "): [" + line + "]");
+        }
+        // wrapped onto the next line, not dropped
+        assertTrue(out.replaceAll("\\s+", "").contains("Inward/26/052052"));
+        assertTrue(out.contains("10,000.00"));
+        assertTrue(out.contains("Cashier : Ziyana"));
+    }
+
+    @Test
+    public void defaultRenderMatchesWidth40() {
+        Bill b = sampleBill();
+        assertEquals(
+                InwardReceiptTextRenderer.render(b, "Inward Deposit", false, false, 0, false, null),
+                InwardReceiptTextRenderer.render(b, "Inward Deposit", false, false, 0, false, null,
+                        true, true, true, 40));
+    }
+
+    @Test
+    public void lineWidthIsClamped() {
+        assertEquals(InwardReceiptTextRenderer.MIN_WIDTH, InwardReceiptTextRenderer.clampWidth(0));
+        assertEquals(InwardReceiptTextRenderer.MAX_WIDTH, InwardReceiptTextRenderer.clampWidth(1000));
+        assertEquals(36, InwardReceiptTextRenderer.clampWidth(36));
+    }
+
     private static int countOccurrences(String haystack, String needle) {
         int count = 0;
         int idx = 0;
