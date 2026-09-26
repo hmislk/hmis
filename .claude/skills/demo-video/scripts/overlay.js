@@ -10,7 +10,9 @@
   #__cap:empty{display:none}
   .__hl{outline:4px solid #ff3b30 !important;outline-offset:3px !important;box-shadow:0 0 0 9px rgba(255,59,48,.22) !important}
   .__ripple{position:fixed;z-index:2147483645;width:16px;height:16px;border-radius:50%;margin:-8px 0 0 -8px;background:rgba(255,59,48,.55);pointer-events:none;animation:__rp .6s ease-out forwards}
-  @keyframes __rp{to{transform:scale(3.2);opacity:0}}`;
+  @keyframes __rp{to{transform:scale(3.2);opacity:0}}
+  /* footer.xhtml's dev-only "Database Migration Pending" bar - CSS hides it before first paint */
+  div.nonPrintBlock[style*="dc3545"]{display:none !important}`;
   function init() {
     if (document.getElementById('__cur')) return;
     const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
@@ -39,5 +41,11 @@
     const c = document.getElementById('__cap'); if (c) c.textContent = t;
     try { sessionStorage.setItem('__cap', t); } catch (e) {}
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  // attach as soon as <body> exists, not at DOMContentLoaded: slow HMIS pages render progressively
+  // for seconds before that event, and would otherwise show without caption/cursor/banner-hiding
+  const tryInit = () => (document.head && document.body ? (init(), true) : false);
+  if (!tryInit()) {
+    const mo = new MutationObserver(() => { if (tryInit()) mo.disconnect(); });
+    mo.observe(document.documentElement || document, { childList: true, subtree: true });
+  }
 })();

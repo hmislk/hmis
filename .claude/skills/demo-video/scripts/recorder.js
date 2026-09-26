@@ -50,6 +50,7 @@ async function menuQuiet(page, top, item) {
 }
 
 async function run(chromium, { setup, flow, workDir = process.cwd() }) {
+  if (!DEPT) { console.error('Set DEPT to the login department label, e.g. DEPT="Main Pharmacy"'); process.exit(2); }
   const script = JSON.parse(fs.readFileSync(path.join(workDir, 'script.json'), 'utf8'));
   const dur = JSON.parse(fs.readFileSync(path.join(workDir, 'audio', 'durations.json'), 'utf8'));
   const say = Object.fromEntries(script.map(s => [s.id, s.say]));
