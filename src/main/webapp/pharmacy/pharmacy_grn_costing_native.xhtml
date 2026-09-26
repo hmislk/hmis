@@ -350,7 +350,7 @@
                                     styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:commandButton
                                         process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
-                                        update=":#{p:resolveFirstComponentWithId('txtDuplicateComment',view).clientId}"
+                                        update=":#{p:resolveFirstComponentWithId('txtDuplicateComment',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
                                         icon="fas fa-plus"
                                         class="ui-button-warning mx-1"
                                         disabled="#{bi.referanceBillItem == null}"
