@@ -299,12 +299,12 @@
                                     headerText="Actions"
                                     width="7em"
                                     styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
-                                        update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
                                         icon="fas fa-plus"
                                         class="ui-button-warning mx-1"
-                                        action="#{grnCostingController.duplicateItem(bi)}"/>
+                                        action="#{grnCostingController.promptDuplicateItem(bi)}"
+                                        oncomplete="PF('dlgConfirmDuplicateGrnRow').show()"/>
                                     <p:commandButton
                                         id="btnRemoveItem"
                                         ajax="false"
@@ -767,8 +767,38 @@
                 </p:panel>
             </h:panelGroup>
 
-
-
+            <!-- Confirm-with-comment dialog for the row "Duplicate" (+) button.
+                 Requires a reason before a second line is added, so a stray or
+                 double click can no longer silently duplicate a GRN row. -->
+            <p:dialog id="dlgConfirmDuplicateGrnRowDialog"
+                      header="Confirm Duplicate Row"
+                      widgetVar="dlgConfirmDuplicateGrnRow"
+                      modal="true"
+                      width="450"
+                      closeOnEscape="true">
+                <h:panelGroup layout="block" class="mb-2">
+                    <h:outputText value="Splitting this item into a second batch/line. Please state why:" />
+                </h:panelGroup>
+                <p:inputTextarea
+                    id="txtDuplicateComment"
+                    value="#{grnCostingController.duplicateComment}"
+                    rows="3"
+                    class="w-100"
+                    placeholder="e.g. remaining quantity received in a different batch" />
+                <h:panelGroup layout="block" class="mt-3 text-end">
+                    <p:commandButton
+                        value="Cancel"
+                        type="button"
+                        class="ui-button-secondary mx-1"
+                        onclick="PF('dlgConfirmDuplicateGrnRow').hide(); return false;" />
+                    <p:commandButton
+                        value="Confirm Duplicate"
+                        class="ui-button-warning mx-1"
+                        process="@this txtDuplicateComment"
+                        update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                        action="#{grnCostingController.confirmDuplicateItem()}" />
+                </h:panelGroup>
+            </p:dialog>
 
         </h:form>
 
