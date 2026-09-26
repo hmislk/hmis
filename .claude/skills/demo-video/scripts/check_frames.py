@@ -12,8 +12,8 @@ ff = imageio_ffmpeg.get_ffmpeg_exe()
 tl = json.load(open('timeline.json'))
 dur = json.load(open('audio/durations.json'))
 os.makedirs('frames', exist_ok=True)
-w, h = tl.get('W', 1600) // 2, tl.get('H', 900) // 2
-files = []
+w, h = tl.get('W', 1920) // 2, tl.get('H', 1080) // 2
+files, missing = [], []
 for i, m in enumerate(tl['marks']):
     f = f"frames/{i:02d}_{m['id']}.png"
     t = m['t'] + dur[m['id']] * frac
@@ -23,12 +23,15 @@ for i, m in enumerate(tl['marks']):
     if res.returncode == 0 and os.path.exists(f):
         files.append(f)
     else:
+        missing.append(m['id'])
         print('no frame for step', m['id'], f'(t={t:.1f}s is past the end of the video?)')
 if not files:
     sys.exit('no frames extracted')
+# the sheet is still built from the frames we have (useful for diagnosis), but the run fails
+fail = f"missing frames for steps: {', '.join(missing)}" if missing else None
 if len(files) == 1:            # xstack needs 2+ inputs
     import shutil
-    shutil.copyfile(files[0], 'frames/sheet.png'); print('frames/sheet.png'); sys.exit(0)
+    shutil.copyfile(files[0], 'frames/sheet.png'); print('frames/sheet.png'); sys.exit(fail)
 args = [ff, '-y']
 for f in files:
     args += ['-i', f]
@@ -39,3 +42,4 @@ r = subprocess.run(args, capture_output=True, text=True)
 if r.returncode:
     sys.exit(r.stderr[-1500:])
 print('frames/sheet.png')
+sys.exit(fail)

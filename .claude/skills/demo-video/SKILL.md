@@ -43,10 +43,11 @@ Worked example (the first accepted video): `examples/pharmacy-issue-own-departme
 | `menu(top, item)` | hover a top menu, highlight the item, click it. `top` is `'Administration'` or an icon menu id suffix: `smPharmacy`, `smInpatient`, `smOpd`, `smLab`, `smStore`, `smReports`, `smSettings` |
 | `click(loc, {nav})` | move the cursor, highlight, click. Use `nav:true` for `ajax="false"` buttons |
 | `point(loc, ms)` | move the cursor and highlight without clicking, to draw attention |
+| `highlight(loc, ms)` | red outline only, cursor stays put. Use it for the menu bar or anything that opens on hover |
 | `type(loc, text)` / `autocomplete(text, pick)` | visible typing / pick from the first PrimeFaces autocomplete |
 | `pinGrowl()` / `unpin()` | pin a styled copy of the growl; returns its text for asserting. To keep it through the explaining step, open that step with `step(id, {keep:true})` |
 
-Environment variables: `VIEW` sets the window size (default `1600x900`; the user asked for this zoomed-out look, and `1366x768` is too cramped). Credentials come from `HMIS_USER`/`HMIS_PASS`, or otherwise from `C:/Credentials/hmis_web_login.txt`.
+Environment variables: `VIEW` sets the window size. The default `1920x1080` is the zoom level users work at, where the whole top menu fits on one line; below about 1760 px wide it wraps to two lines. Captions scale with the width. Credentials come from `HMIS_USER`/`HMIS_PASS`, or otherwise from `C:/Credentials/hmis_web_login.txt`.
 
 ## Common Mistakes
 

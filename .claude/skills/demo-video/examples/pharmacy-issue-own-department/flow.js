@@ -29,7 +29,7 @@ run(chromium, {
       await r.click(p.locator('button:has-text("Select")'), { nav: true });
     };
 
-    await r.step('intro'); await r.sleep(1500); await r.point(p.locator('.ui-menubar').first(), 800); await r.done();
+    await r.step('intro'); await r.sleep(1500); await r.highlight(p.locator('.ui-menubar').first(), 1500); await r.done();
     await r.step('pharmMenu'); await r.menu('smPharmacy', 'Consumption'); await r.done();
     await r.step('newIssue'); await r.click(p.locator('button:has-text("New Consumption Issue")'), { nav: true }); await r.done();
     await r.step('pickOwn1'); await pickOwn(); await r.pinGrowl(); await r.done(300);

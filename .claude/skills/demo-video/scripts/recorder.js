@@ -3,14 +3,14 @@
 //
 //   env: HMIS_BASE  app root, e.g. http://localhost:8080/rh/   (login page only - never inner URLs)
 //        DEPT       login department label, exactly as in the department picker
-//        VIEW       viewport WxH (default 1600x900 = "zoomed out"; 1366x768 looks cramped)
+//        VIEW       viewport WxH (default 1920x1080: the zoom level where the whole top menu fits on one line)
 //        HMIS_USER / HMIS_PASS  else read from C:/Credentials/hmis_web_login.txt
 const fs = require('fs');
 const path = require('path');
 
 const BASE = process.env.HMIS_BASE || 'http://localhost:8080/rh/';
 const DEPT = process.env.DEPT;
-const [W, H] = (process.env.VIEW || '1600x900').split('x').map(Number);
+const [W, H] = (process.env.VIEW || '1920x1080').split('x').map(Number);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function creds() {
@@ -96,6 +96,11 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
     },
     async point(loc, ms = 700) {    // move + red highlight, no click
       await r.moveTo(loc);
+      await loc.evaluate(e => e.classList.add('__hl'));
+      await sleep(ms);
+      await loc.evaluate(e => e.classList.remove('__hl')).catch(() => {});
+    },
+    async highlight(loc, ms = 1500) {   // red outline only, cursor stays put (use for menus/bars: hovering opens dropdowns)
       await loc.evaluate(e => e.classList.add('__hl'));
       await sleep(ms);
       await loc.evaluate(e => e.classList.remove('__hl')).catch(() => {});

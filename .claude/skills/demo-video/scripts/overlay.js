@@ -6,7 +6,7 @@
   #__cur{position:fixed;z-index:2147483647;width:22px;height:22px;margin:-3px 0 0 -3px;pointer-events:none;
     background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22'><path d='M3 2 L3 18 L7.5 14 L10.5 20.5 L13 19.4 L10 13 L16 13 Z' fill='black' stroke='white' stroke-width='1.4'/></svg>") no-repeat}
   #__cap{position:fixed;z-index:2147483646;left:50%;bottom:28px;transform:translateX(-50%);max-width:82%;
-    background:rgba(20,24,33,.86);color:#fff;font:600 20px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 20px;border-radius:10px;text-align:center;pointer-events:none}
+    background:rgba(20,24,33,.86);color:#fff;font:600 clamp(20px,1.4vw,28px)/1.4 'Segoe UI','Iskoola Pota','Nirmala UI',Arial,sans-serif;padding:10px 20px;border-radius:10px;text-align:center;pointer-events:none}
   #__cap:empty{display:none}
   .__hl{outline:4px solid #ff3b30 !important;outline-offset:3px !important;box-shadow:0 0 0 9px rgba(255,59,48,.22) !important}
   .__ripple{position:fixed;z-index:2147483645;width:16px;height:16px;border-radius:50%;margin:-8px 0 0 -8px;background:rgba(255,59,48,.55);pointer-events:none;animation:__rp .6s ease-out forwards}
