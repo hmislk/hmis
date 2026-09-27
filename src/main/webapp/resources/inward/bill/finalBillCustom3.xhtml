@@ -108,14 +108,15 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                             <ui:repeat value="#{bip.proFees}" var="fe">
-                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                <h:panelGroup rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge) and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                     <tr>
                                         <td style="text-align: left;">
                                             <h:outputLabel value="#{fe.staff.person.nameWithTitle}" />
                                             <h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}" />
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                            <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                            <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
