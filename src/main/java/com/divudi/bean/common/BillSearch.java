@@ -5169,11 +5169,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return pharmacyBillSearch.navigateToViewPharmacyBill();
 
             case PHARMACY_ORDER:
-            case PHARMACY_ORDER_APPROVAL:
-                return purchaseOrderNativeSqlController.viewByBillId(bill.getId());
-
             case PHARMACY_ORDER_PRE:
             case PHARMACY_ORDER_CANCELLED:
+            case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintPo();

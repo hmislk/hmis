@@ -29,7 +29,8 @@
                                 </div>
                                 <div>
                                     <p:commandButton value="Cancel" action="#{inwardSearch.cancelBillRefund()}"
-                                                     class="ui-button-danger" ajax="false" icon="fas fa-ban">
+                                                     class="ui-button-danger" ajax="false" icon="fas fa-ban"
+                                                     onclick="return confirm('Are you sure you want to cancel this refund bill? This action cannot be undone.');">
                                     </p:commandButton>
                                 </div>
                             </div>
