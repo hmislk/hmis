@@ -20,7 +20,7 @@ This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService
 > | `ITEMS_MAPPED_TO_LOGGED_DEPARTMENT` | Items mapped to the logged department | Map it with `POST /api/item-mappings` (`departmentId`) — see [API_ITEM_MAPPINGS.md](API_ITEM_MAPPINGS.md) |
 > | `ITEMS_MAPPED_TO_LOGGED_INSTITUTION` | Items mapped to the logged institution | Map it with `POST /api/item-mappings` (`institutionId`) |
 > | `ITEMS_OF_LOGGED_DEPARTMENT` / `ITEMS_OF_LOGGED_INSTITUTION` | Items whose own department / institution is the logged one | Set `departmentId` / `institutionId` on the service |
-> | `SITE_FEE_ITEMS` | Items with a fee for the department's site | Add a site-scoped fee |
+> | `SITE_FEE_ITEMS` | Items with a fee scoped to the department's site (`ItemFee.forInstitution`) | Add a site fee on the admin pricing screens — `POST /api/services/{id}/fees` cannot set the site scope (`institutionId` there is the fee's payee, not `forInstitution`) |
 >
 > On that page items are grouped under buttons by the department that **owns** the service
 > (`departmentId`), not by the department it is mapped to.
