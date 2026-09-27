@@ -10884,6 +10884,54 @@ public class PharmacyController implements Serializable {
         return bill == null ? 0.0 : Math.abs(bill.getDiscount());
     }
 
+    /**
+     * Display-only magnitude of the "PO Sub Total" column on the GRN Summary
+     * Report's Print view ({@code grn_summary_view.xhtml}) — mirrors
+     * {@link #calculateTotalPOAmount()}'s per-row branching so the logic stays
+     * identical, only the sign shown to the user changes. See issue #23604.
+     */
+    public double getGrnSummaryPrintPoSubTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        BillTypeAtomic bta = bill.getBillTypeAtomic();
+        double value;
+        if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN))) {
+            value = -1 * (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0);
+        } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
+            value = -1 * bill.getNetTotal();
+        } else if (bta != null && bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
+            value = bill.getNetTotal();
+        } else {
+            value = bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0;
+        }
+        return Math.abs(value);
+    }
+
+    /**
+     * Display-only magnitude of the "GRN Sub Total" column on the GRN Summary
+     * Report's Print view ({@code grn_summary_view.xhtml}). See issue #23604.
+     */
+    public double getGrnSummaryPrintGrnSubTotal(Bill bill) {
+        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+    }
+
+    /**
+     * Display-only magnitude of the Print view's "PO Sub Total" footer total.
+     * See issue #23604.
+     */
+    public double getGrnSummaryPrintTotalPOAmount() {
+        return Math.abs(calculateTotalPOAmount());
+    }
+
+    /**
+     * Display-only magnitude of the Print view's "GRN Sub Total" footer total.
+     * See issue #23604.
+     */
+    public double getGrnSummaryPrintTotalGrnAmount() {
+        return Math.abs(calculateTotalGrnAmount());
+    }
+
     public Double calculateTotalGrnAmount() {
         double total = 0.0;
 

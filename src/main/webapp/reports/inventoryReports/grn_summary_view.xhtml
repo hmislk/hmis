@@ -257,25 +257,12 @@
                                                         <h:outputText value="#{row.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? row.toInstitution.name : row.fromInstitution.name}" style="margin-left: 1mm;"/>
                                                           </td>
                                                     <td style="width: 10mm; text-align: right;">
-                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or row.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
-                                                                      value="#{-1 * row.referenceBill.netTotal}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED' or row.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"
-                                                                      value="#{-1 * row.netTotal}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"
-                                                                      value="#{row.netTotal}" style="margin-right: 1mm;">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </h:outputText>
-                                                        <h:outputText rendered="#{row.billTypeAtomic eq 'PHARMACY_GRN'}"
-                                                                      value="#{row.referenceBill.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{pharmacyController.getGrnSummaryPrintPoSubTotal(row)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 10mm; text-align: right;">
-                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{pharmacyController.getGrnSummaryPrintGrnSubTotal(row)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -304,12 +291,12 @@
                                                     <h:outputText value="Total" style="padding: 0px!important; margin: 0px!important; font-weight: bold"/>
                                                 </td>
                                                 <td style="width: 10mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintTotalPOAmount()}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
                                                 <td style="width: 10mm; text-align: right;">
-                                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
+                                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintTotalGrnAmount()}" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
