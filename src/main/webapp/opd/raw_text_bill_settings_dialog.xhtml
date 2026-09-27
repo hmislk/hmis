@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:p="http://primefaces.org/ui">
+
+    <!-- Raw Text (dot-matrix) OPD bill print settings, saved per logged department. Issue #24047 -->
+    <p:dialog header="Raw Text Print Settings (Dot-Matrix)"
+              widgetVar="opdRawTextSettingsDialog"
+              modal="true"
+              width="520"
+              resizable="false"
+              closeOnEscape="true">
+        <h:form id="opdRawTextSettingsForm">
+            <p:messages id="opdRawTextSettingsMsg" closable="true"/>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-ruler-horizontal me-2"/>
+                    <h:outputText value="Page Layout"/>
+                </div>
+                <div class="card-body">
+                    <h:panelGrid columns="2" cellpadding="4" style="width: 100%;">
+                        <p:outputLabel for="rtTop" value="Top margin (lines)"/>
+                        <p:inputNumber id="rtTop" value="#{opdRawTextBillController.topMarginLines}"
+                                       decimalPlaces="0" minValue="0" maxValue="60" inputStyle="width: 6em;"/>
+
+                        <p:outputLabel for="rtLeft" value="Left margin (columns)"/>
+                        <p:inputNumber id="rtLeft" value="#{opdRawTextBillController.leftMarginColumns}"
+                                       decimalPlaces="0" minValue="0" maxValue="60" inputStyle="width: 6em;"/>
+
+                        <p:outputLabel for="rtRight" value="Right border (last printed column)"/>
+                        <p:inputNumber id="rtRight" value="#{opdRawTextBillController.rightBorderColumn}"
+                                       decimalPlaces="0" minValue="1" maxValue="200" inputStyle="width: 6em;"/>
+
+                        <p:outputLabel for="rtCpi" value="Characters per inch"/>
+                        <p:selectOneMenu id="rtCpi" value="#{opdRawTextBillController.charactersPerInch}" style="width: 8em;">
+                            <f:selectItem itemLabel="10 CPI" itemValue="#{10}"/>
+                            <f:selectItem itemLabel="12 CPI" itemValue="#{12}"/>
+                            <f:selectItem itemLabel="15 CPI" itemValue="#{15}"/>
+                        </p:selectOneMenu>
+
+                        <p:outputLabel for="rtForm" value="Form length (lines, 0 = printer setting)"/>
+                        <p:inputNumber id="rtForm" value="#{opdRawTextBillController.formLengthLines}"
+                                       decimalPlaces="0" minValue="0" maxValue="127" inputStyle="width: 6em;"/>
+
+                        <p:outputLabel for="rtEsc" value="Send ESC/P printer codes"/>
+                        <h:selectBooleanCheckbox id="rtEsc" value="#{opdRawTextBillController.emitEscP}"/>
+                    </h:panelGrid>
+                    <div class="text-muted mt-2" style="font-size: 0.85em;">
+                        Every value on the bill ends exactly at the right border column. If the right-most
+                        digits are lost off the edge of the paper, reduce the right border.
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <p:commandButton value="Save"
+                                 icon="fas fa-save"
+                                 class="ui-button-success"
+                                 ajax="false"
+                                 action="#{opdRawTextBillController.saveSettings}"/>
+                <p:commandButton value="Cancel"
+                                 icon="fas fa-times"
+                                 class="ui-button-secondary"
+                                 type="button"
+                                 onclick="PF('opdRawTextSettingsDialog').hide(); return false;"/>
+            </div>
+        </h:form>
+    </p:dialog>
+</ui:composition>
