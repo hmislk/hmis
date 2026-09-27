@@ -793,13 +793,18 @@ public class PatientTransferController implements Serializable {
                     && persisted.getSurgeryBill().getProcedure() != null)
                     ? persisted.getSurgeryBill().getProcedure()
                     : persisted.getAdmission();
+            // Theatre charges (BhtSummeryController.getCharge()) read admittedAt as the
+            // start of the billing clock, same as ward rooms. Use the real theatre-accept
+            // time (just stamped above) rather than initiatedAt (the "Send to Theatre"
+            // click), or theatre charges would accrue from send time instead of accept
+            // time. See developer_docs/billing/room-charge-accept-time.md.
             TheatreRoom theatreRoom = new TheatreRoom();
             theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
                     theatreRoom,
                     null,
                     persisted.getToRoomFacilityCharge(),
                     theatreRoomEncounter,
-                    persisted.getInitiatedAt(),
+                    persisted.getAcceptedAt(),
                     sessionController.getLoggedUser());
             persisted.setTheatreRoom(theatreRoom);
         }
