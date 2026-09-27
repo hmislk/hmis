@@ -10867,13 +10867,16 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Display-only magnitude of {@link Bill#getNetTotal()} for the GRN Summary
-     * Report's "Amount" column — the signed value is intentional (negative for
-     * purchases/money-out, positive for cancellations/returns/money-back), but
-     * showing the sign to end users on a per-row report is confusing. See issue #23604.
+     * Display-only sign-flip of {@link Bill#getNetTotal()} for the GRN Summary
+     * Report's "Amount" column. The stored value is intentional and unchanged
+     * (negative for purchases/money-out, positive for cancellations/returns/
+     * money-back) — this only flips the sign shown on screen so an Approved
+     * GRN/Direct Purchase reads positive (value received) and a Cancelled or
+     * Returned one reads negative (value reversed), matching how staff expect
+     * to read the report. See issue #23604.
      */
     public double getGrnDisplayAmount(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+        return bill == null ? 0.0 : -1 * bill.getNetTotal();
     }
 
     /**
@@ -10909,27 +10912,31 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Display-only magnitude of the "GRN Sub Total" column on the GRN Summary
-     * Report's Print view ({@code grn_summary_view.xhtml}). See issue #23604.
+     * Display-only sign-flip of the "GRN Sub Total" column on the GRN Summary
+     * Report's Print view ({@code grn_summary_view.xhtml}) — same field and
+     * same sign rule as {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
      */
     public double getGrnSummaryPrintGrnSubTotal(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+        return bill == null ? 0.0 : -1 * bill.getNetTotal();
     }
 
     /**
      * Display-only magnitude of the Print view's "PO Sub Total" footer total.
-     * See issue #23604.
+     * "PO Sub Total" references a linked PO/GRN's value for comparison, not
+     * this row's own money movement, so it keeps the existing always-positive
+     * display and is not part of the Amount sign-flip. See issue #23604.
      */
     public double getGrnSummaryPrintTotalPOAmount() {
         return Math.abs(calculateTotalPOAmount());
     }
 
     /**
-     * Display-only magnitude of the Print view's "GRN Sub Total" footer total.
-     * See issue #23604.
+     * Display-only sign-flip of the Print view's "GRN Sub Total" footer total
+     * — the sum of each row's {@link #getGrnSummaryPrintGrnSubTotal(Bill)},
+     * i.e. {@code -calculateTotalGrnAmount()}. See issue #23604.
      */
     public double getGrnSummaryPrintTotalGrnAmount() {
-        return Math.abs(calculateTotalGrnAmount());
+        return -1 * calculateTotalGrnAmount();
     }
 
     public Double calculateTotalGrnAmount() {
@@ -11659,7 +11666,7 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(Math.abs(calculateTotalGrnAmount()), bodyFontSmall));
+            table.addCell(numCell(-1 * calculateTotalGrnAmount(), bodyFontSmall));
             table.addCell(numCell(Math.abs(totalDiscount.doubleValue()), bodyFontSmall));
             table.addCell(numCell(totalStockAmount.doubleValue(), bodyFontSmall));
             com.itextpdf.text.pdf.PdfPCell blankStatusFooterCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(""));
