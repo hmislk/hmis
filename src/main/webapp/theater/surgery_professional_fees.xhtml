@@ -160,7 +160,9 @@
                                                     completeMethod="#{specialityController.completeSpeciality}" var="sp"
                                                     itemLabel="#{sp.name}"
                                                     itemValue="#{sp}" size="70" style="width: 400px;" class="mx-4 my-1">
-                                        <p:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc"/>
+                                        <p:ajax event="itemSelect" process="@this"
+                                                listener="#{inwardProfessionalBillController.onSurgeryProfessionalFeeSpecialitySelect}"
+                                                update="cmbDoc cmbFeeCategory"/>
                                     </p:autoComplete>
 
                                     <h:outputText value="Doctor/Staff"/>

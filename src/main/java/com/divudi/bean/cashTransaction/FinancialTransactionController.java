@@ -341,7 +341,7 @@ public class FinancialTransactionController implements Serializable {
             if (getNonClosedShiftStartFundBill() != null) {
                 return "/payments/pay_index?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -371,8 +371,7 @@ public class FinancialTransactionController implements Serializable {
         }
         try {
             // Preserve the error message across the redirect
-            fc.getExternalContext().getFlash().setKeepMessages(true);
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             fc.getExternalContext().redirect(
                     fc.getExternalContext().getRequestContextPath() + "/faces/cashier/index.xhtml");
         } catch (java.io.IOException e) {
@@ -1427,7 +1426,7 @@ public class FinancialTransactionController implements Serializable {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
                 // Use Flash scope to preserve error message across redirect
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -2687,7 +2686,7 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -3982,7 +3981,7 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -4177,7 +4176,7 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }

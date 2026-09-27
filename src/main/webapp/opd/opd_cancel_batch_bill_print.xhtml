@@ -54,6 +54,22 @@
                                                 ajax="false">
                                                 <p:printer target="groupPrint" />
                                             </p:commandButton>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}">
+                                                <p:commandButton
+                                                    value="Print (Raw Text)"
+                                                    title="Download a .prn file for the dot-matrix print agent"
+                                                    class="ui-button-help mx-1"
+                                                    icon="fa fa-file-lines"
+                                                    ajax="false"
+                                                    action="#{opdRawTextBillController.streamBills(opdBillController.bills, false, sessionController.departmentPreference.numberOfOPDBillCopies)}"/>
+                                                <p:commandButton
+                                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                    title="Raw Text Print Settings"
+                                                    icon="fas fa-cog"
+                                                    class="ui-button-secondary"
+                                                    type="button"
+                                                    onclick="PF('opdRawTextSettingsDialog').show();"/>
+                                            </h:panelGroup>
                                         </div>
                                     </f:facet>
                                     <h:panelGroup id="groupPrint" >
@@ -167,6 +183,7 @@
 
                     </p:panel>
                 </h:form>
+                <ui:include src="/opd/raw_text_bill_settings_dialog.xhtml"/>
             </ui:define>
         </ui:composition>
     </h:body>

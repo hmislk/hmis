@@ -181,6 +181,20 @@ No new REST resource, no `ApplicationConfig` change. Add a method to
 | `Inward Raw Text Receipt Preprinted Stationery` | boolean | `false` | Mirror of the Track A stationery option. |
 | `Inward Raw Text Receipt Top Margin Lines` | integer | `8` | Blank leading lines for pre-printed stationery. |
 | `Inward Raw Text Receipt Emit ESC/P Codes` | boolean | `true` | If a site's transport mangles 8-bit control bytes, set `false` for pure ASCII. |
+| `Inward Raw Text Receipt - Show Admission Type` | boolean | `true` | Per-department. `false` drops the `Admission Type` row (issue #23981). |
+| `Inward Raw Text Receipt - Show Patient Address` | boolean | `true` | Per-department. `false` drops the patient `Address` row (issue #23981). |
+| `Inward Raw Text Receipt - Show Patient Phone` | boolean | `true` | Per-department. `false` drops the patient `Phone` row (issue #23981). |
+
+Receipt titles come from `InwardReceiptTextRenderer.headingFor(BillTypeAtomic)`:
+**Inward Deposit**, **Inward Payment**, and the refund / cancellation variants
+(e.g. *Inward Deposit Refund*, *Inward Payment Cancellation*). If the title plus
+its `**Duplicate**` / `**Cancelled**` markers exceeds 40 columns, the markers go
+on a second centred line instead of being clipped.
+
+For pre-printed stationery (letterhead, address and phones already on the form),
+set `Preprinted Stationery = true`, lower `Top Margin Lines` until the title sits
+just under the letterhead, and turn the three `Show …` flags off. The patient block
+then starts with `Name` directly under the title rule.
 
 ### Button
 
