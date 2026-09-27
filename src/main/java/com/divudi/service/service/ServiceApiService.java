@@ -38,10 +38,12 @@ import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.service.AuditService;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -93,6 +95,9 @@ public class ServiceApiService implements Serializable {
 
     @EJB
     private AuditService auditService;
+
+    @Inject
+    private ItemApplicationController itemApplicationController;
 
     // =========================================================================
     // Service Search
@@ -202,12 +207,20 @@ public class ServiceApiService implements Serializable {
 
         String svcType = request.getServiceType().trim();
 
-        // Validate inwardChargeType for Inward services
+        // inwardChargeType is required for Inward services, and optional-but-honored
+        // for OPD services (some OPD services are also billed from the inward side
+        // and need the same charge-type classification).
         InwardChargeType inwardChargeType = null;
         if ("Inward".equalsIgnoreCase(svcType)) {
             if (request.getInwardChargeType() == null || request.getInwardChargeType().trim().isEmpty()) {
                 throw new Exception("inwardChargeType is required when serviceType is Inward");
             }
+            try {
+                inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+            }
+        } else if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
             try {
                 inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
             } catch (IllegalArgumentException e) {
@@ -291,20 +304,25 @@ public class ServiceApiService implements Serializable {
         service.setCreatedAt(Calendar.getInstance().getTime());
         service.setRetired(false);
 
-        // Persist
+        // Persist. createAndFlush (rather than create) is required here because Item
+        // uses GenerationType.IDENTITY: a plain persist() without a flush leaves the
+        // generated id null until the transaction commits, so the response DTO built
+        // below would come back with no id.
         if ("Inward".equalsIgnoreCase(svcType)) {
-            inwardServiceFacade.create((InwardService) service);
+            inwardServiceFacade.createAndFlush((InwardService) service);
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             inwardServiceFacade.edit((InwardService) service);
         } else {
-            serviceFacade.create(service);
+            serviceFacade.createAndFlush(service);
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             serviceFacade.edit(service);
         }
+
+        itemApplicationController.invalidateItems();
 
         return buildServiceResponseDTO(service, new ArrayList<>(), "Service created successfully");
     }
@@ -562,10 +580,13 @@ public class ServiceApiService implements Serializable {
             itemFee.setStaff(staff);
         }
 
-        itemFeeFacade.create(itemFee);
+        // createAndFlush so the generated id (Item/ItemFee use GenerationType.IDENTITY)
+        // is available immediately in the response DTO.
+        itemFeeFacade.createAndFlush(itemFee);
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee added successfully");
@@ -663,6 +684,7 @@ public class ServiceApiService implements Serializable {
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee updated successfully");
@@ -687,6 +709,7 @@ public class ServiceApiService implements Serializable {
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee removed successfully");
@@ -951,7 +974,9 @@ public class ServiceApiService implements Serializable {
         category.setCreatedAt(Calendar.getInstance().getTime());
         category.setRetired(false);
 
-        serviceCategoryFacade.create(category);
+        // createAndFlush so the generated id (ServiceCategory uses GenerationType.IDENTITY)
+        // is available immediately in the response DTO.
+        serviceCategoryFacade.createAndFlush(category);
 
         return buildServiceCategoryDTO(category, "Category created successfully");
     }
@@ -1102,6 +1127,7 @@ public class ServiceApiService implements Serializable {
         } else {
             serviceFacade.edit(service);
         }
+        itemApplicationController.invalidateItems();
     }
 
     /**
