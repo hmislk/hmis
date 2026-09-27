@@ -1,10 +1,14 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.dto.ItemMappingCandidateDTO;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemMapping;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemMappingFacade;
 import com.divudi.core.util.JsfUtil;
@@ -53,18 +57,86 @@ public class ItemMappingController implements Serializable {
     private Item item;
     private ItemMapping selectedItemMapping;
     private List<Item> selectedItems;
+    // Backing lists for the redesigned mapping pages' available-items picker
+    // (issue #24079): availableItems is the left-hand candidate list built by
+    // fillAvailableItems(), selectedCandidates is whatever the user checked
+    // off it. The older Item-based selectedItems path above is kept working
+    // for any other caller.
+    private List<ItemMappingCandidateDTO> availableItems;
+    private List<ItemMappingCandidateDTO> selectedCandidates;
     // Outside-charge-specific mapping page state (issue #23250, Mode B) —
     // kept separate from `institution`/`department` above so the general
     // mapping pages and this one don't clobber each other's selection when
     // both are open in the same session.
     private Institution outsideChargeSite;
 
-    public void addAllSelectedItemsToInstitution() {
-        if (selectedItems == null) {
-            JsfUtil.addErrorMessage("No Items Selected");
-            return;
+    /**
+     * Populates {@link #availableItems} for the redesigned mapping pages
+     * (issue #24079): every non-retired Investigation/Service/InwardService,
+     * eligible to be mapped to a department, institution, or outside-charge
+     * site. Run as three separate queries (one per subtype, each passing its
+     * own itemType label) rather than a single TYPE(i)-based CASE WHEN
+     * projection, since constructor-query support for that is not guaranteed
+     * across EclipseLink versions.
+     */
+    public void fillAvailableItems() {
+        List<ItemMappingCandidateDTO> results = new ArrayList<>();
+        results.addAll(fetchCandidatesByType(Investigation.class, "Investigation"));
+        results.addAll(fetchCandidatesByType(Service.class, "Service"));
+        results.addAll(fetchCandidatesByType(InwardService.class, "Inward Service"));
+        results.sort((a, b) -> {
+            String an = a.getName() != null ? a.getName() : "";
+            String bn = b.getName() != null ? b.getName() : "";
+            return an.compareToIgnoreCase(bn);
+        });
+        availableItems = results;
+        selectedCandidates = new ArrayList<>();
+    }
+
+    private List<ItemMappingCandidateDTO> fetchCandidatesByType(Class<? extends Item> type, String label) {
+        String jpql = "SELECT new com.divudi.core.data.dto.ItemMappingCandidateDTO("
+                + "i.id, i.name, i.code, '" + label + "', "
+                + "ins.name, d.name, i.total, i.createdAt) "
+                + "FROM Item i "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department d "
+                + "WHERE i.retired = false AND TYPE(i) = :itype "
+                + "ORDER BY i.name";
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("itype", type);
+        List<?> results = itemFacade.findLightsByJpql(jpql, parameters);
+        List<ItemMappingCandidateDTO> dtos = new ArrayList<>();
+        if (results != null) {
+            for (Object o : results) {
+                dtos.add((ItemMappingCandidateDTO) o);
+            }
         }
-        if (selectedItems.isEmpty()) {
+        return dtos;
+    }
+
+    /**
+     * Resolves the items to add for addAllSelectedItemsTo*(): prefers the new
+     * selectedCandidates picker (issue #24079) when the caller populated it,
+     * otherwise falls back to the older selectedItems path so any other
+     * caller of that field keeps working unchanged.
+     */
+    private List<Item> resolveItemsForAdd() {
+        if (selectedCandidates != null && !selectedCandidates.isEmpty()) {
+            List<Item> resolved = new ArrayList<>();
+            for (ItemMappingCandidateDTO candidate : selectedCandidates) {
+                Item i = itemFacade.find(candidate.getId());
+                if (i != null) {
+                    resolved.add(i);
+                }
+            }
+            return resolved;
+        }
+        return selectedItems;
+    }
+
+    public void addAllSelectedItemsToInstitution() {
+        List<Item> itemsToAdd = resolveItemsForAdd();
+        if (itemsToAdd == null || itemsToAdd.isEmpty()) {
             JsfUtil.addErrorMessage("No Items Selected");
             return;
         }
@@ -75,7 +147,7 @@ public class ItemMappingController implements Serializable {
         if (items == null) {
             items = new ArrayList<>();
         }
-        for (Item i : selectedItems) {
+        for (Item i : itemsToAdd) {
             ItemMapping im1 = findItemMapping(i, institution);
             if (im1 == null) {
                 im1 = new ItemMapping();
@@ -91,12 +163,14 @@ public class ItemMappingController implements Serializable {
             }
         }
         selectedItems = new ArrayList<>();
+        selectedCandidates = new ArrayList<>();
         fillItemMappingsForSelectedInstitution();
         JsfUtil.addSuccessMessage("All Added");
     }
 
     public void addAllSelectedItemsToDepartment() {
-        if (selectedItems == null || selectedItems.isEmpty()) {
+        List<Item> itemsToAdd = resolveItemsForAdd();
+        if (itemsToAdd == null || itemsToAdd.isEmpty()) {
             JsfUtil.addErrorMessage("No Items Selected");
             return;
         }
@@ -107,7 +181,7 @@ public class ItemMappingController implements Serializable {
         if (items == null) {
             items = new ArrayList<>();
         }
-        for (Item i : selectedItems) {
+        for (Item i : itemsToAdd) {
             ItemMapping im = findItemMapping(i, department);
             if (im == null) {
                 im = new ItemMapping();
@@ -122,6 +196,9 @@ public class ItemMappingController implements Serializable {
                 items.add(im);
             }
         }
+        selectedItems = new ArrayList<>();
+        selectedCandidates = new ArrayList<>();
+        fillItemMappingsForSelectedDepartment();
         JsfUtil.addSuccessMessage("All Added");
     }
 
@@ -272,7 +349,8 @@ public class ItemMappingController implements Serializable {
     // mapping methods above.
     // ------------------------------------------------------------------
     public void addAllSelectedItemsToOutsideChargeSite() {
-        if (selectedItems == null || selectedItems.isEmpty()) {
+        List<Item> itemsToAdd = resolveItemsForAdd();
+        if (itemsToAdd == null || itemsToAdd.isEmpty()) {
             JsfUtil.addErrorMessage("No Items Selected");
             return;
         }
@@ -283,7 +361,7 @@ public class ItemMappingController implements Serializable {
         if (items == null) {
             items = new ArrayList<>();
         }
-        for (Item i : selectedItems) {
+        for (Item i : itemsToAdd) {
             ItemMapping im = findOutsideChargeItemMapping(i, outsideChargeSite);
             if (im == null) {
                 im = new ItemMapping();
@@ -301,6 +379,8 @@ public class ItemMappingController implements Serializable {
             }
         }
         selectedItems = new ArrayList<>();
+        selectedCandidates = new ArrayList<>();
+        fillItemMappingsForSelectedOutsideChargeSite();
         JsfUtil.addSuccessMessage("All Added");
     }
 
@@ -346,6 +426,7 @@ public class ItemMappingController implements Serializable {
 
     // Navigation method for managing Outside Charge Item Mappings
     public String navigateToManageOutsideChargeItemMappings() {
+        fillAvailableItems();
         return "/admin/items/manage_outside_charge_item_mappings?faces-redirect=true";
     }
 
@@ -359,11 +440,13 @@ public class ItemMappingController implements Serializable {
 
     // Navigation method for managing Department Item Mappings
     public String navigateToManageDepartmentItemMappings() {
+        fillAvailableItems();
         return "/admin/items/manage_department_item_mappings?faces-redirect=true";
     }
 
     // Navigation method for managing Institution Item Mappings
     public String navigateToManageInstitutionItemMappings() {
+        fillAvailableItems();
         return "/admin/items/manage_institution_item_mappings?faces-redirect=true";
     }
 
@@ -616,6 +699,22 @@ public class ItemMappingController implements Serializable {
 
     public void setSelectedItems(List<Item> selectedItems) {
         this.selectedItems = selectedItems;
+    }
+
+    public List<ItemMappingCandidateDTO> getAvailableItems() {
+        return availableItems;
+    }
+
+    public void setAvailableItems(List<ItemMappingCandidateDTO> availableItems) {
+        this.availableItems = availableItems;
+    }
+
+    public List<ItemMappingCandidateDTO> getSelectedCandidates() {
+        return selectedCandidates;
+    }
+
+    public void setSelectedCandidates(List<ItemMappingCandidateDTO> selectedCandidates) {
+        this.selectedCandidates = selectedCandidates;
     }
 
     public List<ItemMapping> getSelectedItemMappings() {
