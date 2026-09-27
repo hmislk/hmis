@@ -2469,10 +2469,28 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return error;
     }
 
-    public String settleOpdBill() {
+    // synchronized: two overlapping Settle requests from the same session must not both pass the
+    // billSettlingStarted check before either sets it.
+    public synchronized String settleOpdBill() {
         AuditEvent audirEvent = auditEventController.createNewAuditEvent("Settle OPD Bill");
         if (billSettlingStarted) {
             auditEventController.failAuditEvent(audirEvent, "Failed due to already started OPD Bill Settling Process.");
+            return null;
+        }
+        // billSettlingStarted is reset when the first settle finishes, so a second Settle POST
+        // arriving just after it (double-click, Enter pressed twice) would otherwise settle the same,
+        // already-persisted bill items again: they get re-parented onto the new bills, fees are not
+        // recreated, and the patient is charged twice (issue #23968).
+        if (billEntriesAlreadySettled()) {
+            auditEventController.failAuditEvent(audirEvent, "Failed because the bill items were already settled in a previous request.");
+            // The browser renders the response of the last POST, so send the user to the print page
+            // of the bill that was already settled instead of back to an already-used billing screen.
+            if (getBatchBill() != null && getBatchBill().getId() != null) {
+                return patientEncounter != null
+                        ? "/inward/inward_service_batch_bill_print?faces-redirect=true"
+                        : "/opd/opd_batch_bill_print?faces-redirect=true";
+            }
+            JsfUtil.addErrorMessage("This bill has already been settled. Please start a new bill.");
             return null;
         }
         billSettlingStarted = true;
@@ -2509,6 +2527,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             billSearch.fetchPatientInvestigationsAllowBypassSampleProcess(getBatchBill());
             return "/opd/opd_batch_bill_print?faces-redirect=true";
         }
+    }
+
+    // Retired items are left over from a failed partial settlement (retirePartialBillOnSettlementFailure),
+    // where the user is asked to retry - those must not be treated as "already settled".
+    private boolean billEntriesAlreadySettled() {
+        for (BillEntry be : getLstBillEntries()) {
+            if (be != null && be.getBillItem() != null && be.getBillItem().getId() != null
+                    && !be.getBillItem().isRetired()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean executeSettleBillActions() {
