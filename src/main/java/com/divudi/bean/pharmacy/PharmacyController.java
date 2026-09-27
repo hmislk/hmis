@@ -10867,13 +10867,16 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Display-only magnitude of {@link Bill#getNetTotal()} for the GRN Summary
-     * Report's "Amount" column — the signed value is intentional (negative for
-     * purchases/money-out, positive for cancellations/returns/money-back), but
-     * showing the sign to end users on a per-row report is confusing. See issue #23604.
+     * Display-only sign-flip of {@link Bill#getNetTotal()} for the GRN Summary
+     * Report's "Amount" column. The stored value is intentional and unchanged
+     * (negative for purchases/money-out, positive for cancellations/returns/
+     * money-back) — this only flips the sign shown on screen so an Approved
+     * GRN/Direct Purchase reads positive (value received) and a Cancelled or
+     * Returned one reads negative (value reversed), matching how staff expect
+     * to read the report. See issue #23604.
      */
     public double getGrnDisplayAmount(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+        return bill == null ? 0.0 : -1 * bill.getNetTotal();
     }
 
     /**
@@ -10909,27 +10912,37 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Display-only magnitude of the "GRN Sub Total" column on the GRN Summary
-     * Report's Print view ({@code grn_summary_view.xhtml}). See issue #23604.
+     * Display-only sign-flip of the "GRN Sub Total" column on the GRN Summary
+     * Report's Print view ({@code grn_summary_view.xhtml}) — same field and
+     * same sign rule as {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
      */
     public double getGrnSummaryPrintGrnSubTotal(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+        return bill == null ? 0.0 : -1 * bill.getNetTotal();
     }
 
     /**
-     * Display-only magnitude of the Print view's "PO Sub Total" footer total.
-     * See issue #23604.
+     * Display-only "PO Sub Total" footer total — the sum of each row's
+     * {@link #getGrnSummaryPrintPoSubTotal(Bill)}, so the footer always
+     * matches the values displayed above it. NOT {@code calculateTotalPOAmount()}
+     * — that method nets reversals against their own netTotal rather than
+     * their referenced bill's, a different (and, for a mixed purchase/refund
+     * batch, materially different) calculation. See issue #23604.
      */
     public double getGrnSummaryPrintTotalPOAmount() {
-        return Math.abs(calculateTotalPOAmount());
+        double total = 0.0;
+        for (Bill bill : bills) {
+            total += getGrnSummaryPrintPoSubTotal(bill);
+        }
+        return total;
     }
 
     /**
-     * Display-only magnitude of the Print view's "GRN Sub Total" footer total.
-     * See issue #23604.
+     * Display-only sign-flip of the Print view's "GRN Sub Total" footer total
+     * — the sum of each row's {@link #getGrnSummaryPrintGrnSubTotal(Bill)},
+     * i.e. {@code -calculateTotalGrnAmount()}. See issue #23604.
      */
     public double getGrnSummaryPrintTotalGrnAmount() {
-        return Math.abs(calculateTotalGrnAmount());
+        return -1 * calculateTotalGrnAmount();
     }
 
     public Double calculateTotalGrnAmount() {
@@ -11056,11 +11069,8 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(16).setCellValue("-");
             emptyRow.createCell(17).setCellValue("-");
             emptyRow.createCell(18).setCellValue("-");
-            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic() != null
-                    && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN))
-                    ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
-            emptyRow.createCell(20).setCellValue(bill.getNetTotal());
+            emptyRow.createCell(19).setCellValue(getGrnSummaryPrintPoSubTotal(bill));
+            emptyRow.createCell(20).setCellValue(getGrnSummaryPrintGrnSubTotal(bill));
 
             for (BillItem billItem : bill.getBillItems()) {
                 Row emptyInnerRow = sheet.createRow(rowIndex++);
@@ -11116,7 +11126,7 @@ public class PharmacyController implements Serializable {
                 }
                 emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
                 emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
-                emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
+                emptyInnerRow.createCell(18).setCellValue(getGrnSummaryPrintGrnSubTotal(billItem.getBill()));
                 emptyInnerRow.createCell(19).setCellValue("-");
                 emptyInnerRow.createCell(20).setCellValue("-");
             }
@@ -11142,8 +11152,8 @@ public class PharmacyController implements Serializable {
         }
 
         footerRow.getCell(0).setCellValue("TOTAL");
-        footerRow.createCell(19).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
-        footerRow.createCell(20).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
+        footerRow.createCell(19).setCellValue(Math.round(getGrnSummaryPrintTotalPOAmount() * 100.0) / 100.0);
+        footerRow.createCell(20).setCellValue(Math.round(getGrnSummaryPrintTotalGrnAmount() * 100.0) / 100.0);
         workbook.write(out);
         context.responseComplete();
 
@@ -11321,18 +11331,8 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell("-", bodyFont));
                 table.addCell(textCell("-", bodyFont));
 
-                double poSubTotal = 0.0;
-                if (bill.getReferenceBill() != null) {
-                    double refNet = bill.getReferenceBill().getNetTotal();
-                    if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                            || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
-                        refNet = -1 * refNet;
-                    }
-                    poSubTotal = refNet;
-                }
-
-                table.addCell(numCell(poSubTotal, bodyFont));
-                table.addCell(numCell(bill.getNetTotal(), bodyFont));
+                table.addCell(numCell(getGrnSummaryPrintPoSubTotal(bill), bodyFont));
+                table.addCell(numCell(getGrnSummaryPrintGrnSubTotal(bill), bodyFont));
 
                 // item-level rows
                 for (BillItem billItem : bill.getBillItems()) {
@@ -11405,7 +11405,7 @@ public class PharmacyController implements Serializable {
                     table.addCell(numCell(billItem.getNetValue(), bodyFont));
 
                     table.addCell(numCell(
-                            billItem.getBill() != null ? billItem.getBill().getNetTotal() : null,
+                            billItem.getBill() != null ? getGrnSummaryPrintGrnSubTotal(billItem.getBill()) : null,
                             bodyFont
                     ));
 
@@ -11423,11 +11423,11 @@ public class PharmacyController implements Serializable {
 
             java.text.DecimalFormat amtFmt = new java.text.DecimalFormat("#,##0.00");
             footerTable.addCell(new PdfPCell(new Phrase(
-                    "Total PO Amount: " + amtFmt.format(calculateTotalPOAmount()),
+                    "Total PO Amount: " + amtFmt.format(getGrnSummaryPrintTotalPOAmount()),
                     footerFont
             )));
             footerTable.addCell(new PdfPCell(new Phrase(
-                    "Total GRN Amount: " + amtFmt.format(calculateTotalGrnAmount()),
+                    "Total GRN Amount: " + amtFmt.format(getGrnSummaryPrintTotalGrnAmount()),
                     footerFont
             )));
 
@@ -11517,8 +11517,8 @@ public class PharmacyController implements Serializable {
                         f.getCreatedAt() != null ? sdf.format(f.getCreatedAt()) : "-",
                         bodyFontSmall));
                 table.addCell(textCell(f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN ? (f.getToInstitution()!= null ? f.getToInstitution().getName() : "-") : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
-                table.addCell(numCell(f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_CANCELLED ? -1*(f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) : (f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) , bodyFontSmall));
-                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(getGrnSummaryPrintPoSubTotal(f), bodyFontSmall));
+                table.addCell(numCell(getGrnSummaryPrintGrnSubTotal(f), bodyFontSmall));
             }
 
             com.itextpdf.text.pdf.PdfPCell footerCell =
@@ -11531,8 +11531,8 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(calculateTotalPOAmount(), bodyFontSmall));
-            table.addCell(numCell(calculateTotalGrnAmount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryPrintTotalPOAmount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryPrintTotalGrnAmount(), bodyFontSmall));
 
             document.add(table);
 
@@ -11659,7 +11659,7 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(Math.abs(calculateTotalGrnAmount()), bodyFontSmall));
+            table.addCell(numCell(-1 * calculateTotalGrnAmount(), bodyFontSmall));
             table.addCell(numCell(Math.abs(totalDiscount.doubleValue()), bodyFontSmall));
             table.addCell(numCell(totalStockAmount.doubleValue(), bodyFontSmall));
             com.itextpdf.text.pdf.PdfPCell blankStatusFooterCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(""));
