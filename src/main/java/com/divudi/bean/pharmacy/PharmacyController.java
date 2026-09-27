@@ -10921,13 +10921,19 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Display-only magnitude of the Print view's "PO Sub Total" footer total.
-     * "PO Sub Total" references a linked PO/GRN's value for comparison, not
-     * this row's own money movement, so it keeps the existing always-positive
-     * display and is not part of the Amount sign-flip. See issue #23604.
+     * Display-only "PO Sub Total" footer total — the sum of each row's
+     * {@link #getGrnSummaryPrintPoSubTotal(Bill)}, so the footer always
+     * matches the values displayed above it. NOT {@code calculateTotalPOAmount()}
+     * — that method nets reversals against their own netTotal rather than
+     * their referenced bill's, a different (and, for a mixed purchase/refund
+     * batch, materially different) calculation. See issue #23604.
      */
     public double getGrnSummaryPrintTotalPOAmount() {
-        return Math.abs(calculateTotalPOAmount());
+        double total = 0.0;
+        for (Bill bill : bills) {
+            total += getGrnSummaryPrintPoSubTotal(bill);
+        }
+        return total;
     }
 
     /**
