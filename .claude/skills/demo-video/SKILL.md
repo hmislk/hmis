@@ -12,7 +12,11 @@ description: >
 
 Narrated MP4 demos of real HMIS screens. Playwright drives the running app **through the menus only**, an injected overlay adds a cursor, click highlights and captions, edge-tts voices each step, and ffmpeg mixes it all. Everything comes from a script, so when the UI changes you re-run the video instead of re-recording it.
 
-Worked example (the first accepted video): `examples/pharmacy-issue-own-department/`.
+Works on both Windows and Linux (verified on Ubuntu). See the Linux notes under **Work dir** and **Credentials** below — the only differences are the one-time pip setup and how credential paths are supplied; the recording/build/upload steps themselves are identical.
+
+Worked examples:
+- `examples/pharmacy-issue-own-department/` — the first accepted video; normal case, login happens silently before narration starts.
+- `examples/login-department-select/` — a video *about* logging in itself, using `manualLogin: true` (see Recorder API below).
 
 ## Rules
 
@@ -27,6 +31,7 @@ Worked example (the first accepted video): `examples/pharmacy-issue-own-departme
 2. **Work dir.** `tmp/demo-videos/<slug>/` (gitignored). One-time setup in `tmp/demo-videos/`:
    `npm init -y && npm i playwright`, then `NODE_OPTIONS=--dns-result-order=ipv4first npx playwright install ffmpeg`, then `python -m pip install edge-tts imageio-ffmpeg`.
    The recorder launches the **installed Google Chrome** (`channel: 'chrome'`), because Playwright's own Chromium download fails on this network. Chrome must be installed; there is no `npx playwright install chromium` step.
+   **On Debian/Ubuntu**, the plain `pip install` fails with `externally-managed-environment` (PEP 668). Use `python -m pip install --user --break-system-packages edge-tts imageio-ffmpeg` instead (a venv also works, but needs `python3-venv` installed first, which most boxes don't have by default).
 3. **`script.json`.** Write one `{id, say}` per step, one or two short sentences each. Name menus and buttons exactly as they are labelled on screen. For a Sinhala or Tamil version, reuse the same ids and `flow.js`, translate only the `say` text, and keep the on-screen labels in English exactly as the app shows them ("Pharmacy මෙනුව විවෘත කර, Consumption ක්ලික් කරන්න"). Ask for a native speaker's review before the video goes to users.
 4. **Voice.** Run `python <skill>/scripts/tts.py [voice]`. The default voice is `en-GB-SoniaNeural`. For Sinhala use `si-LK-ThiliniNeural`; for Tamil use `ta-LK-SaranyaNeural`.
 5. **`flow.js`.** Copy the example and edit it. Each step is `r.step(id)` → actions → `r.done()`, and `r.done()` waits until that step's narration has finished. Add a `throw` wherever the result must be true (e.g. the block message appears, the screen opens), so a wrong recording fails loudly.
@@ -38,7 +43,7 @@ Worked example (the first accepted video): `examples/pharmacy-issue-own-departme
 
 ## YouTube publishing setup (one time)
 
-Credentials live outside the repo in `C:/Credentials/youtube/` (override with `YT_CREDENTIALS_DIR`). Use `pip install google-api-python-client google-auth-oauthlib`.
+Credentials live outside the repo in `C:/Credentials/youtube/` on Windows (override with `YT_CREDENTIALS_DIR`). **On Linux there is no default path** — always set `YT_CREDENTIALS_DIR` (e.g. `/home/<user>/Credentials/youtube`). Use `pip install google-api-python-client google-auth-oauthlib` (add `--user --break-system-packages` on Debian/Ubuntu).
 
 1. In Google Cloud Console (as the Google account that owns or manages the channel), create a project and enable **YouTube Data API v3**.
 2. Under **Google Auth Platform**, create the branding: app name, support email, audience **External**, contact email. Accept the User Data Policy (ask the user to do this).
@@ -58,13 +63,16 @@ Credentials live outside the repo in `C:/Credentials/youtube/` (override with `Y
 | `type(loc, text)` / `autocomplete(text, pick)` | visible typing / pick from the first PrimeFaces autocomplete |
 | `pinGrowl()` / `unpin()` | pin a styled copy of the growl; returns its text for asserting. To keep it through the explaining step, open that step with `step(id, {keep:true})` |
 
-Environment variables: `VIEW` sets the window size. The default `1920x1080` is the zoom level users work at, where the whole top menu fits on one line; below about 1760 px wide it wraps to two lines. Captions scale with the width. Credentials come from `HMIS_USER`/`HMIS_PASS`, or otherwise from `C:/Credentials/hmis_web_login.txt`.
+Environment variables: `VIEW` sets the window size. The default `1920x1080` is the zoom level users work at, where the whole top menu fits on one line; below about 1760 px wide it wraps to two lines. Captions scale with the width. Credentials come from `HMIS_USER`/`HMIS_PASS`, or otherwise from `C:/Credentials/hmis_web_login.txt` (Windows default). **On Linux there is no default path** — always set `HMIS_USER`/`HMIS_PASS` explicitly.
+
+`run(chromium, { setup, flow, manualLogin })`: by default (`manualLogin` unset/`false`) the recorder logs in and picks `DEPT` silently before recording narration, and that portion is trimmed from the final video — this is right for a video *about* some other feature. Set `manualLogin: true` to skip that automatic step and have `flow` perform (and narrate) the login and department-selection itself, e.g. for a video that teaches login — see `examples/login-department-select/`. Read credentials inside `flow` with `creds()` (also exported from `recorder.js`), which resolves `HMIS_USER`/`HMIS_PASS` the same way the automatic login does.
 
 ## Common Mistakes
 
 | Symptom | Fix |
 |---|---|
 | `npx playwright install ffmpeg` fails with "Download failure" | Prefix `NODE_OPTIONS=--dns-result-order=ipv4first`. IPv6 to Azure is black-holed on this machine |
+| `pip install` fails with `externally-managed-environment` | Debian/Ubuntu (PEP 668). Add `--user --break-system-packages` |
 | An error message is gone before the narration explains it | Call `pinGrowl()` right after the action that raises it, before `done()` |
 | A datatable column filter finds nothing | PrimeFaces filters match from the start of the text. Type the beginning of the value |
 | Department picker click times out | Its items are table rows (`tr`), not `li`. `login()` already handles this |

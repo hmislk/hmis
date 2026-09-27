@@ -49,7 +49,7 @@ async function menuQuiet(page, top, item) {
   await Promise.all([page.waitForLoadState('networkidle'), li.locator(`a:has-text("${item}")`).first().click()]);
 }
 
-async function run(chromium, { setup, flow, workDir = process.cwd() }) {
+async function run(chromium, { setup, flow, workDir = process.cwd(), manualLogin = false }) {
   if (!DEPT) { console.error('Set DEPT to the login department label, e.g. DEPT="Main Pharmacy"'); process.exit(2); }
   const script = JSON.parse(fs.readFileSync(path.join(workDir, 'script.json'), 'utf8'));
   const dur = JSON.parse(fs.readFileSync(path.join(workDir, 'audio', 'durations.json'), 'utf8'));
@@ -69,8 +69,8 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
   await ctx.addInitScript(overlay);
   const p = await ctx.newPage();
   const tVideo = Date.now();
-  await login(p);
-  await sleep(800);
+  if (manualLogin) { await p.goto(BASE, { waitUntil: 'networkidle' }); }
+  else { await login(p); await sleep(800); }
   const t0 = Date.now();
   const marks = [];
   let stepId, stepStart;
@@ -169,4 +169,4 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
   console.log(`recorded ${marks.length} steps, ${total.toFixed(1)}s, ${W}x${H}`);
 }
 
-module.exports = { run, login, topMenu, sleep };
+module.exports = { run, login, topMenu, sleep, creds };
