@@ -1024,6 +1024,24 @@ public class BillItem implements Serializable, RetirableEntity {
         return result < 0.005 ? 0 : result;
     }
 
+    /**
+     * True when this line lists at least one doctor free of charge (a zero
+     * fee flagged {@code freeOfCharge}). Final-bill print templates use it to
+     * print a ProfessionalCharge line whose total is 0 because every doctor
+     * on it was free (issue #24085).
+     */
+    public boolean isHasFreeOfChargeProFee() {
+        if (proFees == null) {
+            return false;
+        }
+        for (BillFee bf : proFees) {
+            if (bf != null && bf.isFreeOfCharge() && Math.abs(bf.getFeeAdjusted()) < 0.005) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getDescreption() {
         return descreption;
     }

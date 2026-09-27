@@ -4466,8 +4466,14 @@ public class ItemController implements Serializable {
 
     public ItemLight findItemLightById(Long id) {
         Optional<ItemLight> itemLightOptional = findItemLightByIdStreaming(id);
-        ItemLight il = itemLightOptional.orElse(null);
-        return il;
+        if (itemLightOptional.isPresent()) {
+            return itemLightOptional.get();
+        }
+        // ItemApplicationController.getItems() only holds Investigation/Service/
+        // MedicalPackage (no InwardService) and can be stale for items created
+        // after it was loaded, which otherwise makes itemLightConverter return
+        // null for a perfectly valid id. Fall back to a direct DB lookup.
+        return findItemLightByIdFromDb(id);
     }
 
     public Optional<ItemLight> findItemLightByIdStreaming(Long id) {
@@ -4477,6 +4483,34 @@ public class ItemController implements Serializable {
         return itemApplicationController.getItems().stream()
                 .filter(itemLight -> id.equals(itemLight.getId()))
                 .findFirst(); // Returns an Optional describing the first matching element, or an empty Optional if no match is found
+    }
+
+    /**
+     * DB fallback for {@link #findItemLightById(Long)} when the id is not in
+     * {@link ItemApplicationController#getItems()}. Uses the same ItemLight
+     * projection as {@code ItemApplicationController.fillAllItems()}, but with
+     * no TYPE(i) filter, so it also resolves InwardService (and any other Item
+     * subtype) ids that the cached list deliberately excludes.
+     */
+    private ItemLight findItemLightByIdFromDb(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
+                + "i.id, "
+                + "CASE WHEN d.name IS NULL THEN 'No Department' ELSE d.name END, "
+                + "i.name, i.code, i.total, "
+                + "d.id) "
+                + "FROM Item i "
+                + "LEFT JOIN i.department d "
+                + "WHERE i.id = :id AND i.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        List<?> results = itemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+        return (ItemLight) results.get(0);
     }
 
     public ItemLight getSelectedItemLight() {
