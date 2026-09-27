@@ -94,6 +94,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -237,11 +238,6 @@ public class BhtSummeryController implements Serializable {
     private boolean custom2ShowGuardian;
     private boolean custom2ShowCorporateSponsor;
     // Custom4 (Custom Bills tab - letterhead) print-format settings
-    private boolean custom4ShowAddress;
-    private boolean custom4ShowNic;
-    private boolean custom4ShowPhone;
-    private boolean custom4ShowGuardian;
-    private boolean custom4ShowCorporateSponsor;
     // Custom Bills tab - which custom format(s) are shown to end users.
     // An admin flips these via the Settings dialog; end users never pick a
     // format at print time (department-wide choice, not a per-print option).
@@ -511,8 +507,6 @@ public class BhtSummeryController implements Serializable {
         custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
         custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
         custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
-        // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
-        loadCustom4Config();
     }
 
     public void saveCustom2Config() {
@@ -527,8 +521,6 @@ public class BhtSummeryController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
-            // Custom Bills tab shares one settings dialog across Custom2 and Custom4 (letterhead)
-            persistCustom4Config();
             JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
             loadCustom2Config();
         } catch (Exception e) {
@@ -714,77 +706,6 @@ public class BhtSummeryController implements Serializable {
     }
     // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom4 print format (letterhead)">
-    public void loadCustom4Config() {
-        custom4ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", false);
-        custom4ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", false);
-        custom4ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", false);
-        custom4ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", true);
-        custom4ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", true);
-    }
-
-    public void saveCustom4Config() {
-        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
-            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
-            return;
-        }
-        try {
-            persistCustom4Config();
-            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
-            loadCustom4Config();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
-        }
-    }
-
-    private void persistCustom4Config() {
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Address", custom4ShowAddress);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient NIC", custom4ShowNic);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Patient Phone", custom4ShowPhone);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Guardian", custom4ShowGuardian);
-        configOptionController.setBooleanValueByKey("Inward Final Bill Custom4 - Show Corporate Sponsor", custom4ShowCorporateSponsor);
-    }
-
-    public boolean isCustom4ShowAddress() {
-        return custom4ShowAddress;
-    }
-
-    public void setCustom4ShowAddress(boolean custom4ShowAddress) {
-        this.custom4ShowAddress = custom4ShowAddress;
-    }
-
-    public boolean isCustom4ShowNic() {
-        return custom4ShowNic;
-    }
-
-    public void setCustom4ShowNic(boolean custom4ShowNic) {
-        this.custom4ShowNic = custom4ShowNic;
-    }
-
-    public boolean isCustom4ShowPhone() {
-        return custom4ShowPhone;
-    }
-
-    public void setCustom4ShowPhone(boolean custom4ShowPhone) {
-        this.custom4ShowPhone = custom4ShowPhone;
-    }
-
-    public boolean isCustom4ShowGuardian() {
-        return custom4ShowGuardian;
-    }
-
-    public void setCustom4ShowGuardian(boolean custom4ShowGuardian) {
-        this.custom4ShowGuardian = custom4ShowGuardian;
-    }
-
-    public boolean isCustom4ShowCorporateSponsor() {
-        return custom4ShowCorporateSponsor;
-    }
-
-    public void setCustom4ShowCorporateSponsor(boolean custom4ShowCorporateSponsor) {
-        this.custom4ShowCorporateSponsor = custom4ShowCorporateSponsor;
-    }
-    // </editor-fold>
 
     public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
         if (surgeryBills == null) {
@@ -3110,6 +3031,47 @@ public class BhtSummeryController implements Serializable {
             breakdown.add(new CreditCompanyAllocation(patientDue, true));
         }
         return breakdown;
+    }
+
+    /**
+     * Comma-separated names of every credit company registered against the
+     * bill's admission, for printing on a final bill.
+     *
+     * An admission can carry several sponsors - they live in the
+     * EncounterCreditCompany collection, not in the single
+     * Bill.creditCompany / PatientEncounter.creditCompany field, which only
+     * ever holds one of them. Print templates that read the scalar therefore
+     * show one sponsor and silently drop the rest.
+     *
+     * Duplicate registrations for the same institution are possible through
+     * older data paths (see rebuildAllocationsFromSourceBill), so names are
+     * de-duplicated here rather than printed twice.
+     *
+     * Falls back to the bill's own credit company when the admission has no
+     * EncounterCreditCompany rows at all, so older admissions keep printing
+     * the sponsor they always did. Returns an empty string when there is no
+     * sponsor, which the template uses to hide the whole line.
+     */
+    public String creditCompanyNamesForPrint(Bill bill) {
+        if (bill == null) {
+            return "";
+        }
+        LinkedHashSet<String> names = new LinkedHashSet<>();
+        if (bill.getPatientEncounter() != null) {
+            List<EncounterCreditCompany> eccs = fillCreditCompaniesByPatient(bill.getPatientEncounter());
+            if (eccs != null) {
+                for (EncounterCreditCompany ecc : eccs) {
+                    if (ecc.getInstitution() != null && ecc.getInstitution().getName() != null
+                            && !ecc.getInstitution().getName().trim().isEmpty()) {
+                        names.add(ecc.getInstitution().getName().trim());
+                    }
+                }
+            }
+        }
+        if (names.isEmpty() && bill.getCreditCompany() != null && bill.getCreditCompany().getName() != null) {
+            names.add(bill.getCreditCompany().getName().trim());
+        }
+        return String.join(", ", names);
     }
 
     public void saveCreditBillForCreditCompany(PatientEncounter pe, EncounterCreditCompany ecc, Double value) {
