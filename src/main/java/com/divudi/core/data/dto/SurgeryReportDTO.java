@@ -58,7 +58,7 @@ public class SurgeryReportDTO implements Serializable {
                             Title surgeonTitle) {
         this(billId, mrn, patientName, admissionDate, procedureName, otRoomName, wardName, surgeonName, title, consultantName, patientEncounterId, procedureId);
         if (surgeonTitle != null && surgeonName != null && !surgeonName.trim().isEmpty()) {
-            this.surgeonName = surgeonTitle.toString() + " " + surgeonName.trim();
+            this.surgeonName = surgeonTitle.getLabel().trim() + " " + surgeonName.trim();
         }
     }
 

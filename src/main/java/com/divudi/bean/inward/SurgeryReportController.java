@@ -534,7 +534,7 @@ public class SurgeryReportController implements Serializable {
         if (name == null || name.trim().isEmpty()) {
             return "";
         }
-        return title != null ? title.toString() + " " + name.trim() : name.trim();
+        return title != null ? title.getLabel().trim() + " " + name.trim() : name.trim();
     }
 
     private void streamToResponse(byte[] data, String fileName, String contentType) throws java.io.IOException {
