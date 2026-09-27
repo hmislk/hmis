@@ -3972,3 +3972,22 @@ landing in the wrong bucket, easy to miss without doing the arithmetic).
 General lesson: when a link field is reused across unrelated flows, key the
 branch off the row's own concrete type, not off whether the field is
 populated.
+
+## 133. Redacted print evidence on a restored-production DB: clone only the rows you need into a fixed overlay, then screenshot that
+
+Local databases restored from production (e.g. the local `coop` copy) hold **real** patient and doctor names,
+so a full-page screenshot of a final-bill print can never be published as-is (see §8 and the
+GitHub public-content policy). Element screenshots of the print table are also unreliable on these pages:
+the print area sits inside a scrolled container and the page runs at `devicePixelRatio` 0.75, so
+`getBoundingClientRect()` coordinates do not map onto the captured image and crops land on the wrong rows.
+
+What works (issue #24085): in `browser_evaluate`, clone just the rows you need (e.g. *Description* through
+*Total*) into a new `position:fixed; top:0; left:0; z-index:99999` container, replace any names in the
+clone's text nodes with `[Doctor name redacted]`, then `browser_take_screenshot` with `target` set to that
+container. The live page is untouched server-side — the clone is client-only and vanishes on the next
+navigation. Trim any page bleed around the clone afterwards (a PIL crop to the print's background colour is
+enough).
+
+Related: a PrimeFaces `p:toggleSwitch` (e.g. the **FOC** switch on *Add Professional Fee*) ignores clicks on
+its hidden `<input>`; click its `.ui-toggleswitch-slider` child instead, then confirm with
+`document.getElementById('<id>_input').checked`.
