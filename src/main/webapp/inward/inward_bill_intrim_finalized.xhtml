@@ -999,7 +999,7 @@
                                                />
                             </p:commandButton>
                             <p:dataTable id="pro"  scrollable="true" scrollHeight="300"
-                                         value="#{bhtSummeryFinalizedController.proBillFee}" var="pf"
+                                         value="#{bhtSummeryFinalizedController.allStaffBillFees}" var="pf"
                                          rowStyleClass="#{pf.feeValue ne 0
                                                           and pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
                                 <p:column headerText="Name">
@@ -1007,6 +1007,12 @@
                                         <h:outputLabel value="Name"/>
                                     </f:facet>
                                     <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Category">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Category"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{bhtSummeryController.getFeeCategoryLabel(pf)}"/>
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Fee Value">
                                     <f:facet name="header">

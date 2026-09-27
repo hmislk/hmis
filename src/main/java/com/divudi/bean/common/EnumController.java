@@ -787,6 +787,17 @@ public class EnumController implements Serializable {
         return professionalFeeClassificationService.visible(InwardChargeType.values());
     }
 
+    /**
+     * The three inpatient professional Fee Categories, for the Speciality
+     * admin page's Default Professional Fee Category (issue #23983).
+     */
+    public InwardChargeType[] getProfessionalFeeCategories() {
+        return new InwardChargeType[]{
+            InwardChargeType.ProfessionalCharge,
+            InwardChargeType.DoctorAndNurses,
+            InwardChargeType.TechnicianAndParamedicalCharge};
+    }
+
     public InwardChargeType[] getInwardChargeTypesForSetting() {
         InwardChargeType[] settable = Arrays.stream(InwardChargeType.values())
                 .filter(InwardChargeType::isAllowToSetItems)

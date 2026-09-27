@@ -117,7 +117,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/patient_deposit/receive?faces-redirect=true";
@@ -128,7 +128,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/patient_deposit/pay?faces-redirect=true";
