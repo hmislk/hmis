@@ -3024,7 +3024,10 @@ public class InwardReportController1 implements Serializable {
         // filter on it. Legacy backfilled commitment bills may have no final bill;
         // their billTime carries the discharge/final bill time instead.
         String paymentDateField = commitmentReport ? "coalesce(fb.createdAt, b.billTime)" : "b.billDate";
-        String dateField = resolveDateField(dateBasis, paymentDateField, "b.patientEncounter", "fb.createdAt");
+        // dateBasis is shared with other reports on this session bean; for the commitment
+        // report a leftover "finalBillCreatedAt" must also tolerate a null final bill.
+        String dateField = resolveDateField(dateBasis, paymentDateField, "b.patientEncounter",
+                commitmentReport ? paymentDateField : "fb.createdAt");
         // LEFT JOIN (not the implicit b.referenceBill.* path used elsewhere) so a
         // commitment bill with no final bill reference isn't dropped by an inner join -
         // see the FINAL_BILL_ORDER comment below for why that matters here.
