@@ -8,7 +8,22 @@
 
 ## Overview
 
-This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService` DTYPE), their fee structures (`ItemFee`), and service categories (`ServiceCategory`). It enables AI agents to programmatically create and manage services that appear in the inpatient billing autocomplete (`inward_bill_service.xhtml`).
+This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService` DTYPE), their fee structures (`ItemFee`), and service categories (`ServiceCategory`). It enables AI agents to programmatically create and manage services for inpatient billing (`inward_bill_service.xhtml`).
+
+> **Creating a service is not always enough for it to be billable.** Whether a service is listed
+> on *Inward → Services & Items → Add Services & Investigations* depends on the logged-in
+> department's **Inward Item Listing Strategy** (department preference):
+>
+> | Strategy | What is listed | Extra step after creating the service |
+> |---|---|---|
+> | `ALL_ITEMS` | Every active investigation and service | None |
+> | `ITEMS_MAPPED_TO_LOGGED_DEPARTMENT` | Items mapped to the logged department | Map it with `POST /api/item-mappings` (`departmentId`) — see [API_ITEM_MAPPINGS.md](API_ITEM_MAPPINGS.md) |
+> | `ITEMS_MAPPED_TO_LOGGED_INSTITUTION` | Items mapped to the logged institution | Map it with `POST /api/item-mappings` (`institutionId`) |
+> | `ITEMS_OF_LOGGED_DEPARTMENT` / `ITEMS_OF_LOGGED_INSTITUTION` | Items whose own department / institution is the logged one | Set `departmentId` / `institutionId` on the service |
+> | `SITE_FEE_ITEMS` | Items with a fee scoped to the department's site (`ItemFee.forInstitution`) | Add a site fee on the admin pricing screens — `POST /api/services/{id}/fees` cannot set the site scope (`institutionId` there is the fee's payee, not `forInstitution`) |
+>
+> On that page items are grouped under buttons by the department that **owns** the service
+> (`departmentId`), not by the department it is mapped to.
 
 ---
 
@@ -199,7 +214,11 @@ curl -X POST \
   "https://host/hmis/api/services"
 ```
 
-**Response:** HTTP 201 with full `ServiceResponseDTO`.
+**Response:** HTTP 201 with full `ServiceResponseDTO`, including the new service's `id`.
+
+`inwardChargeType` is required for `Inward` services and optional for `OPD` services — when
+supplied for an OPD service it is stored too (many hospitals bill inward charges through
+OPD-type services, and the inward final bill groups lines by this value).
 
 ---
 
@@ -555,7 +574,12 @@ curl -X PATCH -H "Finance: <key>" \
 curl -H "Finance: <key>" \
   "https://host/hmis/api/services/search?query=endoscopy&serviceType=Inward"
 
-# The service should have inactive=false and appear in inward_bill_service.xhtml autocomplete
+# The service should have inactive=false. Whether it is listed in inward_bill_service.xhtml
+# depends on the department's Inward Item Listing Strategy — if the department lists mapped
+# items, map it first:
+curl -X POST -H "Finance: <key>" -H "Content-Type: application/json" \
+  -d '{"itemId": 205, "departmentId": 12}' \
+  "https://host/hmis/api/item-mappings"
 ```
 
 ---
