@@ -9,9 +9,15 @@ import com.divudi.core.data.dto.BillItemData;
 import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockAggregateResult;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
 import java.util.ArrayList;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -203,26 +209,32 @@ public class InpatientDirectIssueNativeSqlService {
         // L2 cache this fanned out into a ~30s recursive load — the "first issue of
         // a batch is slow, later issues of the same batch are fast" symptom (#21888).
         //
-        // A per-class evict list (Bill/StockHistory/Stock/BillItem/BillFinanceDetails/
-        // BillItemFinanceDetails) was tried here, and was widened to evictAll() below,
-        // covering PharmaceuticalBillItem too. Neither actually fixes the "0 lines /
-        // gross 0 right after settle" symptom (#24030) on its own — live-reproduced
-        // even with evictAll() AND a Payara connection-pool flush; only a full Payara
-        // restart cleared it, meaning the staleness survives both the JPA L2 cache and
-        // the JDBC connection pool. The actual fix for #24030 lives on the READ side
-        // instead: PharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()
-        // now reloads via BillBeanController.fetchBillWithItemsAndFeesBypassingCache(),
+        // A per-class evict list was tried here (and briefly widened to a blanket
+        // evictAll()) but on its own neither fixes the "0 lines / gross 0 right
+        // after settle" symptom (#24030) — live-reproduced even with evictAll() AND
+        // a Payara connection-pool flush; only a full Payara restart cleared it,
+        // meaning the staleness survives both the JPA L2 cache and the JDBC
+        // connection pool. The actual fix for #24030 lives on the READ side instead:
+        // PharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill() now
+        // reloads via BillBeanController.fetchBillWithItemsAndFeesBypassingCache(),
         // which uses javax.persistence.cache.retrieveMode=BYPASS / storeMode=REFRESH
-        // (the same pattern as BillService.reloadBill()) instead of a cache-aware JPQL
-        // read — that's what actually forces a fresh Bill instance with a correctly
-        // re-resolved billItems collection. evictAll() is kept here anyway since it's a
-        // strict superset of the old per-class list and settle() runs at most once per
-        // bill, so the negligible one-time L2-miss cost on the next read is free
-        // insurance against whatever else the old hand-picked list might have missed.
+        // (the same pattern as BillService.reloadBill()) instead of a cache-aware
+        // JPQL read — that's what actually forces a fresh Bill instance with a
+        // correctly re-resolved billItems collection. Kept the eviction here scoped
+        // to the entities this method natively writes (rather than evictAll(), which
+        // would also evict unrelated, deliberately long-lived reference-data caches —
+        // see the eclipselink.cache.size.default tuning note in persistence.xml) as
+        // defense-in-depth for any other reader that doesn't use the bypass path.
         long tReconcile = System.currentTimeMillis();
         em.detach(bill);
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
-        cache.evictAll();
+        cache.evict(Bill.class, billId);
+        cache.evict(StockHistory.class);
+        cache.evict(Stock.class);
+        cache.evict(BillItem.class);
+        cache.evict(PharmaceuticalBillItem.class);
+        cache.evict(BillFinanceDetails.class);
+        cache.evict(BillItemFinanceDetails.class);
         LOGGER.log(Level.INFO, "[NativeSettle] cache reconcile done ms={0} reconcileMs={1}",
                 new Object[]{System.currentTimeMillis() - t0, System.currentTimeMillis() - tReconcile});
 

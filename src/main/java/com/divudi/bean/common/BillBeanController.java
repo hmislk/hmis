@@ -2599,6 +2599,7 @@ public class BillBeanController implements Serializable {
         if (billItems == null) {
             return fb;
         }
+        fb.setBillItems(billItems);
         for (BillItem fbi : billItems) {
             List<BillFee> fbfs = findSavedBillFeefromBillItem(fbi);
             if (fbfs != null) {
