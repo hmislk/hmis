@@ -125,7 +125,8 @@ public class ItemMappingController implements Serializable {
             List<Item> resolved = new ArrayList<>();
             for (ItemMappingCandidateDTO candidate : selectedCandidates) {
                 Item i = itemFacade.find(candidate.getId());
-                if (i != null) {
+                // Skip items retired after the picker was loaded.
+                if (i != null && !i.isRetired()) {
                     resolved.add(i);
                 }
             }
@@ -702,6 +703,9 @@ public class ItemMappingController implements Serializable {
     }
 
     public List<ItemMappingCandidateDTO> getAvailableItems() {
+        if (availableItems == null) {
+            fillAvailableItems();
+        }
         return availableItems;
     }
 
