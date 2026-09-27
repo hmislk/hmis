@@ -92,6 +92,11 @@ public class InwardReportController1 implements Serializable {
     private double debtorOutstandingTotal;
     private List<Bill> commitmentBills;
     private double commitmentTotal;
+    private double commitmentPaidTotal;
+    private double commitmentBalanceTotal;
+    // Keyed by commitment bill id; not written onto the managed Bill so a
+    // report run can never persist a recomputed paidAmount by accident.
+    private Map<Long, Double> commitmentPaidByBillId = new HashMap<>();
     PatientEncounter patientEncounter;
     private List<OpdService> opdServices;
     List<String1Value2> timedServices;
@@ -1537,6 +1542,9 @@ public class InwardReportController1 implements Serializable {
         debtorOutstandingTotal = 0;
         commitmentBills = null;
         commitmentTotal = 0;
+        commitmentPaidTotal = 0;
+        commitmentBalanceTotal = 0;
+        commitmentPaidByBillId = new HashMap<>();
         creditPaymentTotalValue = 0;
     }
 
@@ -2577,6 +2585,29 @@ public class InwardReportController1 implements Serializable {
         return commitmentBills;
     }
 
+    public double getCommitmentPaidTotal() {
+        return commitmentPaidTotal;
+    }
+
+    public double getCommitmentBalanceTotal() {
+        return commitmentBalanceTotal;
+    }
+
+    public double getCommitmentPaid(Bill commitmentBill) {
+        if (commitmentBill == null || commitmentBill.getId() == null) {
+            return 0;
+        }
+        Double paid = commitmentPaidByBillId.get(commitmentBill.getId());
+        return paid == null ? 0 : paid;
+    }
+
+    public double getCommitmentBalance(Bill commitmentBill) {
+        if (commitmentBill == null) {
+            return 0;
+        }
+        return commitmentBill.getNetTotal() - getCommitmentPaid(commitmentBill);
+    }
+
     public double getCommitmentTotal() {
         return commitmentTotal;
     }
@@ -2976,8 +3007,24 @@ public class InwardReportController1 implements Serializable {
      * bills without a final bill last), then credit company.
      */
     private List<Bill> findCreditCompanyCommitmentBills() {
+        return findCreditCompanyCommitmentBills(false);
+    }
+
+    /**
+     * @param commitmentReport true for the Credit Company Commitment Report, which
+     * (a) filters "Payment/Bill Date" on the final bill's creation time instead of
+     * the time-less {@code billDate}, and (b) keeps only the commitment bills of
+     * each admission's effective final bill version - see
+     * {@link #keepEffectiveFinalBillVersionOnly(List)}. The Debtor Report passes
+     * false and keeps its existing behaviour.
+     */
+    private List<Bill> findCreditCompanyCommitmentBills(boolean commitmentReport) {
         HashMap hm = new HashMap();
-        String dateField = resolveDateField(dateBasis, "b.billDate", "b.patientEncounter", "fb.createdAt");
+        // Bill.billDate is @Temporal(DATE), so a From/To with a time of day cannot
+        // filter on it. Legacy backfilled commitment bills may have no final bill;
+        // their billTime carries the discharge/final bill time instead.
+        String paymentDateField = commitmentReport ? "coalesce(fb.createdAt, b.billTime)" : "b.billDate";
+        String dateField = resolveDateField(dateBasis, paymentDateField, "b.patientEncounter", "fb.createdAt");
         // LEFT JOIN (not the implicit b.referenceBill.* path used elsewhere) so a
         // commitment bill with no final bill reference isn't dropped by an inner join -
         // see the FINAL_BILL_ORDER comment below for why that matters here.
@@ -3022,6 +3069,9 @@ public class InwardReportController1 implements Serializable {
         List<Bill> found = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         if (found == null) {
             return new ArrayList<>();
+        }
+        if (commitmentReport) {
+            found = keepEffectiveFinalBillVersionOnly(found);
         }
         // Sorted in Java: ordering on b.referenceBill in JPQL would inner-join it
         // and drop any commitment bill without a final bill. Creation order, not
@@ -3316,11 +3366,151 @@ public class InwardReportController1 implements Serializable {
      * commitment bill. No (Active) rows and no settlement figures.
      */
     public void inwardCreditCompanyCommitments() {
-        commitmentBills = findCreditCompanyCommitmentBills();
+        commitmentBills = findCreditCompanyCommitmentBills(true);
+        commitmentPaidByBillId = findCommitmentSettledAmounts(commitmentBills);
         commitmentTotal = 0;
+        commitmentPaidTotal = 0;
+        commitmentBalanceTotal = 0;
         for (Bill b : commitmentBills) {
             commitmentTotal += b.getNetTotal();
+            commitmentPaidTotal += getCommitmentPaid(b);
+            commitmentBalanceTotal += getCommitmentBalance(b);
         }
+    }
+
+    /**
+     * An admission can have several live final bill versions, each with its own
+     * commitment bills; listing them all double-counts the commitment. Keeps only
+     * the rows of each admission's effective version:
+     * <ol>
+     * <li>the confirmed version, when it is approved;</li>
+     * <li>otherwise the latest approved version - settling a new version confirms
+     * it before anyone has approved it;</li>
+     * <li>otherwise (no approved version at all, e.g. final bills settled before
+     * the approval step existed) the confirmed version.</li>
+     * </ol>
+     * Chosen across all the admission's live versions, not only the ones inside the
+     * date range, so a date filter can never promote a superseded version.
+     * Commitment bills with no final bill reference (legacy backfill) are kept.
+     */
+    private List<Bill> keepEffectiveFinalBillVersionOnly(List<Bill> commitmentRows) {
+        Map<Long, PatientEncounter> encounters = new HashMap<>();
+        for (Bill b : commitmentRows) {
+            if (b.getReferenceBill() != null && b.getPatientEncounter() != null) {
+                encounters.put(b.getPatientEncounter().getId(), b.getPatientEncounter());
+            }
+        }
+        if (encounters.isEmpty()) {
+            return commitmentRows;
+        }
+
+        Map<Long, List<Bill>> versionsByEncounter = new HashMap<>();
+        List<PatientEncounter> pes = new ArrayList<>(encounters.values());
+        int chunk = 500;
+        for (int i = 0; i < pes.size(); i += chunk) {
+            String jpql = "select b from Bill b "
+                    + " where b.patientEncounter in :pes "
+                    + " and b.billTypeAtomic=:bta "
+                    + " and b.retired=false "
+                    + " and (b.cancelled=false or b.cancelled is null)";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("pes", new ArrayList<>(pes.subList(i, Math.min(i + chunk, pes.size()))));
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL);
+            List<Bill> versions = billFacade.findByJpql(jpql, params);
+            if (versions == null) {
+                continue;
+            }
+            for (Bill v : versions) {
+                versionsByEncounter.computeIfAbsent(v.getPatientEncounter().getId(), k -> new ArrayList<>()).add(v);
+            }
+        }
+
+        Map<Long, Long> effectiveVersionIdByEncounter = new HashMap<>();
+        for (PatientEncounter pe : pes) {
+            Bill effective = selectEffectiveFinalBillVersion(pe, versionsByEncounter.get(pe.getId()));
+            if (effective != null) {
+                effectiveVersionIdByEncounter.put(pe.getId(), effective.getId());
+            }
+        }
+
+        List<Bill> kept = new ArrayList<>();
+        for (Bill b : commitmentRows) {
+            if (b.getReferenceBill() == null || b.getPatientEncounter() == null) {
+                kept.add(b);
+                continue;
+            }
+            Long effectiveId = effectiveVersionIdByEncounter.get(b.getPatientEncounter().getId());
+            if (effectiveId != null && effectiveId.equals(b.getReferenceBill().getId())) {
+                kept.add(b);
+            }
+        }
+        return kept;
+    }
+
+    private Bill selectEffectiveFinalBillVersion(PatientEncounter pe, List<Bill> liveVersions) {
+        if (liveVersions == null || liveVersions.isEmpty()) {
+            return null;
+        }
+        Long encounterFinalBillId = pe.getFinalBill() == null ? null : pe.getFinalBill().getId();
+        Bill confirmed = null;
+        Bill latestApproved = null;
+        for (Bill v : liveVersions) {
+            if (v.isConfirmedFinalBill() || v.getId().equals(encounterFinalBillId)) {
+                if (confirmed == null || v.isConfirmedFinalBill()) {
+                    confirmed = v;
+                }
+            }
+            if (v.getApproveAt() != null
+                    && (latestApproved == null || LATER_VERSION.compare(v, latestApproved) > 0)) {
+                latestApproved = v;
+            }
+        }
+        if (confirmed != null && confirmed.getApproveAt() != null) {
+            return confirmed;
+        }
+        if (latestApproved != null) {
+            return latestApproved;
+        }
+        return confirmed;
+    }
+
+    private static final Comparator<Bill> LATER_VERSION = Comparator
+            .comparing(Bill::getFinalBillVersionSerial, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(Bill::getId, Comparator.nullsFirst(Comparator.naturalOrder()));
+
+    /**
+     * Amount settled by the credit company against each commitment bill, net of
+     * cancelled settlements - same source as the Debtor Report's Paid column
+     * (settlement BillItems whose referenceBill is the commitment bill).
+     */
+    private Map<Long, Double> findCommitmentSettledAmounts(List<Bill> commitmentRows) {
+        Map<Long, Double> paid = new HashMap<>();
+        if (commitmentRows == null || commitmentRows.isEmpty()) {
+            return paid;
+        }
+        List<BillTypeAtomic> settlementTypes =
+                BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+        int chunk = 500;
+        for (int i = 0; i < commitmentRows.size(); i += chunk) {
+            String jpql = "select bi.referenceBill.id, sum(bi.netValue) from BillItem bi "
+                    + " where bi.retired=false "
+                    + " and bi.referenceBill in :bills "
+                    + " and bi.bill.billTypeAtomic in :types "
+                    + " group by bi.referenceBill.id";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("bills", new ArrayList<>(commitmentRows.subList(i, Math.min(i + chunk, commitmentRows.size()))));
+            params.put("types", settlementTypes);
+            List<Object[]> rows = getBillItemFacade().findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+            if (rows == null) {
+                continue;
+            }
+            for (Object[] r : rows) {
+                if (r[0] != null && r[1] != null) {
+                    paid.put(((Number) r[0]).longValue(), ((Number) r[1]).doubleValue());
+                }
+            }
+        }
+        return paid;
     }
 
     public void downloadCreditCompanyDebtorsExcel() {
@@ -3405,7 +3595,9 @@ public class InwardReportController1 implements Serializable {
                 .column("Patient Name", 2.4f, l)
                 .column("Date of Discharge", 1.3f, l)
                 .column("Credit Company", 2.4f, l)
-                .column("Credit Company Commitment Value", 1.6f, TabularReportExporter.Align.RIGHT);
+                .column("Credit Company Commitment Value", 1.6f, TabularReportExporter.Align.RIGHT)
+                .column("Paid by Credit Company", 1.4f, TabularReportExporter.Align.RIGHT)
+                .column("Remaining Commitment", 1.4f, TabularReportExporter.Align.RIGHT);
         int no = 1;
         for (Bill b : commitmentBills) {
             PatientEncounter pe = b.getPatientEncounter();
@@ -3415,9 +3607,11 @@ public class InwardReportController1 implements Serializable {
                     b.getPatient() == null || b.getPatient().getPerson() == null ? "" : b.getPatient().getPerson().getName(),
                     pe == null ? null : pe.getDateOfDischarge(),
                     b.getCreditCompany() == null ? "" : b.getCreditCompany().getName(),
-                    b.getNetTotal());
+                    b.getNetTotal(),
+                    getCommitmentPaid(b),
+                    getCommitmentBalance(b));
         }
-        ex.totals("Total", null, null, null, null, null, null, commitmentTotal);
+        ex.totals("Total", null, null, null, null, null, null, commitmentTotal, commitmentPaidTotal, commitmentBalanceTotal);
         writeExport(ex, excel, "inward_credit_company_commitments");
     }
 
