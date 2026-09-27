@@ -309,6 +309,9 @@ public class ItemMappingController implements Serializable {
     }
 
     public void fillItemMappingsForSelectedDepartment() {
+        // Also refresh the All Items picker so services created since the page
+        // opened (e.g. through the API) can be mapped without leaving the page.
+        fillAvailableItems();
         if (department == null) {
             JsfUtil.addErrorMessage("Department ?");
             return;
@@ -324,6 +327,9 @@ public class ItemMappingController implements Serializable {
     }
 
     public void fillItemMappingsForSelectedInstitution() {
+        // Also refresh the All Items picker so services created since the page
+        // opened (e.g. through the API) can be mapped without leaving the page.
+        fillAvailableItems();
         if (institution == null) {
             JsfUtil.addErrorMessage("Institution");
             return;
@@ -402,6 +408,9 @@ public class ItemMappingController implements Serializable {
     }
 
     public void fillItemMappingsForSelectedOutsideChargeSite() {
+        // Also refresh the All Items picker so services created since the page
+        // opened (e.g. through the API) can be mapped without leaving the page.
+        fillAvailableItems();
         if (outsideChargeSite == null) {
             JsfUtil.addErrorMessage("Site ?");
             return;
