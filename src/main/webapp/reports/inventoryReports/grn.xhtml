@@ -386,38 +386,22 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="PO Sub Total" width="5em" styleClass="text-end">
-                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or
-                                                       bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
-                                              value="#{-1 * bill.referenceBill.netTotal}">
+                                <h:outputText value="#{pharmacyController.getGrnSummaryPrintPoSubTotal(bill)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED' or
-                                                       bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"
-                                              value="#{-1 * bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"
-                                              value="#{bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN'}"
-                                              value="#{bill.referenceBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
-                                
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintTotalPOAmount()}"
                                                   style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
                             <p:column headerText="GRN Sub Total" width="6em" styleClass="text-end">
-                                <h:outputText value="#{bill.netTotal}">
+                                <h:outputText value="#{pharmacyController.getGrnSummaryPrintGrnSubTotal(bill)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
+                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintTotalGrnAmount()}"
                                                   style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -585,23 +569,7 @@
                                         </p:column>
                                         <p:column styleClass="text-end">
                                             <f:facet name="header">
-                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN'}"
-                                                              value="#{-1 * bill.referenceBill.netTotal}"
-                                                              style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"
-                                                              value="#{-1 * bill.netTotal}"
-                                                              style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"
-                                                              value="#{bill.netTotal}"
-                                                              style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                                <h:outputText rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN'}"
-                                                              value="#{bill.referenceBill.netTotal}"
+                                                <h:outputText value="#{pharmacyController.getGrnSummaryPrintPoSubTotal(bill)}"
                                                               style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
@@ -609,7 +577,7 @@
                                         </p:column>
                                         <p:column styleClass="text-end">
                                             <f:facet name="header">
-                                                <h:outputText value="#{bill.netTotal}" style="font-weight: bold;">
+                                                <h:outputText value="#{pharmacyController.getGrnSummaryPrintGrnSubTotal(bill)}" style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </f:facet>
@@ -692,14 +660,14 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column width="10em" styleClass="text-end">
-                                    <h:outputText value="#{billItem.bill.netTotal}">
+                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintGrnSubTotal(billItem.bill)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>
                                 <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="-"/>
                                     <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalPOAmount()}"
+                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintTotalPOAmount()}"
                                                   style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
@@ -708,7 +676,7 @@
                                 <p:column width="10em" styleClass="text-end">
                                     <h:outputText value="-"/>
                                     <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyController.calculateTotalGrnAmount()}"
+                                    <h:outputText value="#{pharmacyController.getGrnSummaryPrintTotalGrnAmount()}"
                                                   style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
