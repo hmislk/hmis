@@ -27,11 +27,33 @@ Deploy an urgent fix directly to a production branch.
 **The branch name MUST end with `-hotfix`.**
 CI merge validation will block PRs from branches that do not end with `-hotfix`.
 
+**One open PR per production branch.** If a PR targeting `$0` is already
+open, do NOT create a second one. Add the new fix to that PR's head branch,
+push, and update the PR title/body so it lists every fix it carries (Step 1a).
+Parallel PRs against the same production branch conflict with each other,
+deploy in an unpredictable order, and each merge triggers a separate
+production deployment.
+
 ## Step 1 — Stash Any Uncommitted Work
 
 ```bash
 git stash
 ```
+
+## Step 1a — Check for an Existing Open PR on the Production Branch
+
+```bash
+git fetch origin
+gh pr list --state open --base $0 --json number,headRefName,title
+```
+
+- **An open PR exists:** reuse it. Check out its head branch
+  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
+  the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
+  `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
+  the title and body cover every fix in the PR (one section per issue).
+  Do not rename the branch, even if its name only describes the first fix.
+- **No open PR:** continue with Step 2.
 
 ## Step 2 — Create Hotfix Branch from Production
 
