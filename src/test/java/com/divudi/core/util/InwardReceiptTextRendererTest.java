@@ -308,6 +308,35 @@ public class InwardReceiptTextRendererTest {
     }
 
     @Test
+    public void minimumWidthWrapsTitleCardRefAndAmountWithoutLosingText() {
+        Bill b = sampleBill();
+        b.setCancelled(true);
+        b.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+        b.setTotal(1000000.0);
+        Payment card = new Payment();
+        card.setPaymentMethod(PaymentMethod.Card);
+        card.setCreditCardRefNo("1234567890123456");
+        card.setPaidValue(1000000.0);
+        String out = InwardReceiptTextRenderer.render(b,
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION),
+                true, true, 0, false, Arrays.asList(card), false, false, false,
+                InwardReceiptTextRenderer.MIN_WIDTH);
+        String[] lines = out.split("\n", -1);
+        for (String line : lines) {
+            assertTrue(line.length() <= InwardReceiptTextRenderer.MIN_WIDTH,
+                    "line too wide (" + line.length() + "): [" + line + "]");
+        }
+        // title and markers wrapped on word boundaries, nothing clipped
+        assertEquals("Inward Payment Refund", lines[0].trim());
+        assertEquals("Cancellation", lines[1].trim());
+        assertEquals("**Duplicate**", lines[2].trim());
+        assertEquals("**Cancelled**", lines[3].trim());
+        // full card reference kept, amount right-aligned on the next line
+        assertTrue(out.contains("(1234567890123456)"));
+        assertTrue(out.contains("Paying Amount\n            1,000,000.00\n"));
+    }
+
+    @Test
     public void defaultRenderMatchesWidth40() {
         Bill b = sampleBill();
         assertEquals(
