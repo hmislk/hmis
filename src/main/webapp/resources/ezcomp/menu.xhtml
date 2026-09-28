@@ -2160,15 +2160,7 @@
                     </p:menuitem>
                     <p:menuitem
                         ajax="false"
-                        value="Manage Inpatient Packages"
-                        action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}"
-                        icon="fa fa-box-archive"
-                        rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}">
-                    </p:menuitem>
-
-                    <p:menuitem
-                        ajax="false"  
-                        action="#{pharmacyController.navigateToManagePharmaceuticals}" 
+                        action="#{pharmacyController.navigateToManagePharmaceuticals}"
                         value="Pharmaceutical Management" 
                         icon="fa fa-medkit"
                         rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" >

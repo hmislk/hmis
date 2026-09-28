@@ -3991,3 +3991,30 @@ enough).
 Related: a PrimeFaces `p:toggleSwitch` (e.g. the **FOC** switch on *Add Professional Fee*) ignores clicks on
 its hidden `<input>`; click its `.ui-toggleswitch-slider` child instead, then confirm with
 `document.getElementById('<id>_input').checked`.
+
+## 134. `f:validateRegex` on a `p:inputText` bound to a `Map<String,String>` entry fires even on a blank/untouched row — with no visible error
+
+Building the Inpatient Package "Charge Type Amounts" grid (issue #24127) — one `p:inputText` per
+`InwardChargeType`, each bound to a per-row `Map<String,String>` entry
+(`#{controller.amountInputMap[ct.name()]}`, the established pattern from
+`InwardChargeTypeLabelController`) — an `<f:validateRegex pattern="^\d{1,10}(\.\d{1,2})?$"/>` on that
+input silently blocked every Save: JSF's normal "skip attached validators when the submitted value is an
+empty string" behavior did not hold here, so **every blank row in the grid failed the regex**, not just
+the ones a user actually typed into. Symptom was easy to miss: Save just did nothing — `p:growl` stayed
+empty (no `ui-message` element rendered anywhere, since no `h:message` was wired to the per-row inputs),
+and the only server-visible trace was `aria-invalid="true"` plus a `ui-state-error` class on every empty
+`<input>` in the re-rendered panel (confirm with a `browser_evaluate` counting
+`input.className.includes('ui-state-error')` across the grid — in this case 24 of 25 rows on the visible
+page, the one exception being the single row that actually had a valid value typed in).
+
+Fix: drop the `f:validateRegex` entirely and rely on server-side parsing instead (the controller's
+`saveSelected()` already had to tolerantly parse each map entry into a `Double`, skipping blank/unparsable
+ones — that parse step is the real validation and doesn't need a client-side echo). If client-side format
+hinting is still wanted for a Map-bound field, verify empty rows explicitly (fill nothing, Save, assert no
+`ui-state-error`) rather than assuming the standard JSF empty-value skip applies.
+
+Separately: a `p:dataTable` with `paginator="true"` only keeps the **current page's** rows in the DOM —
+editing page 1, clicking to page 2, then Save only submits page 2's inputs; page 1's edits are silently
+lost (nothing in the DOM to decode them from). For a grid with a single page-level Save button (no
+per-row save), use `scrollable="true" scrollHeight="..."` instead of pagination so every row stays in the
+DOM and submits together.
