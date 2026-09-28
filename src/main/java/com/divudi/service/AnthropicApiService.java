@@ -2300,6 +2300,66 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageInpatientPackagesTool = Json.createObjectBuilder()
+                .add("name", "manage_inpatient_packages")
+                .add("description",
+                        "Create, list, fetch, update, or retire Inpatient Package master data — fixed-price "
+                        + "package headers (per AdmissionType + RoomCategory) with their component items "
+                        + "(services, timed items, professional-fee roles, outside charges, pharmacy items). "
+                        + "Distinct from admission charges (manage_admission_charges), which are additive "
+                        + "routine charges rather than a bundled package price. "
+                        + "POST creates a full package with its items in one call. PUT always overwrites header "
+                        + "fields; items, if provided, fully replaces the component set (items with an id "
+                        + "update that component, items without an id create a new one, and any existing "
+                        + "component missing from the array is soft-retired) — omit items entirely on PUT to "
+                        + "leave existing components untouched. totalPrice and fixedRoomCharge are always "
+                        + "server-computed from chargeTypeAmounts and each item's fixedPrice and cannot be set "
+                        + "directly. Always confirm with the user before POST, PUT, or RETIRE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("RETIRE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Package id. Required for GET, PUT and RETIRE."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Package name. Required for POST and PUT."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionType id. Required for POST and PUT; optional filter for LIST."))
+                                .add("roomCategoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "RoomCategory id. Required for POST and PUT; optional filter for LIST."))
+                                .add("includedRoomDurationHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Room duration included in the package price, in hours. Optional, defaults to 0."))
+                                .add("chargeTypeAmounts", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "POST/PUT — the charge-type price map as a JSON object string keyed by "
+                                                + "InwardChargeType name, e.g. {\"RoomCharges\":5000,\"NursingCharges\":1000}. "
+                                                + "The RoomCharges entry becomes fixedRoomCharge; all entries are summed into "
+                                                + "totalPrice along with the items' fixedPrice."))
+                                .add("items", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "POST/PUT — the complete component item list as a JSON array string, e.g. "
+                                                + "[{\"componentType\":\"SERVICE\",\"itemId\":123,\"qty\":1,\"fixedPrice\":2000},"
+                                                + "{\"id\":45,\"componentType\":\"PROFESSIONAL_FEE_ROLE\",\"roleLabel\":\"Visiting Consultant\",\"qty\":1,\"fixedPrice\":3000}]. "
+                                                + "componentType is SERVICE, TIMED_ITEM, PROFESSIONAL_FEE_ROLE, OUTSIDE_CHARGE or "
+                                                + "PHARMACY_ITEM. Every type but PROFESSIONAL_FEE_ROLE requires itemId; "
+                                                + "PROFESSIONAL_FEE_ROLE requires specialityId or roleLabel. Include an id to "
+                                                + "update an existing component, omit it to add one. On PUT, omit this whole "
+                                                + "parameter to leave existing components untouched; pass [] to retire all of them."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "RETIRE only — reason for retiring the package. Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -2341,6 +2401,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageInpatientTemplates)
                 .add(manageTimedItemsTool)
                 .add(manageAdmissionChargesTool)
+                .add(manageInpatientPackagesTool)
                 .add(lookupFinanceBillTool)
                 .build();
     }
@@ -2835,6 +2896,20 @@ public class AnthropicApiService implements Serializable {
                     return manageAdmissionCharges(action, id, itemId, admissionTypeId, paymentMethod, price, qty,
                             orderNo, clearAdmissionType, clearPaymentMethod, includeRetired, retireComments,
                             size, offset, hmisApiKey);
+                }
+                case "manage_inpatient_packages": {
+                    String method              = toolInput.getString("method", "LIST");
+                    String id                  = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String name                = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String admissionTypeId     = toolInput.containsKey("admissionTypeId") ? toolInput.getString("admissionTypeId", "") : "";
+                    String roomCategoryId      = toolInput.containsKey("roomCategoryId") ? toolInput.getString("roomCategoryId", "") : "";
+                    String includedRoomDurationHours = toolInput.containsKey("includedRoomDurationHours") ? toolInput.getString("includedRoomDurationHours", "") : "";
+                    String chargeTypeAmountsJson = toolInput.containsKey("chargeTypeAmounts") ? toolInput.getString("chargeTypeAmounts", "") : "";
+                    String itemsJson           = toolInput.containsKey("items") ? toolInput.getString("items", "") : null;
+                    String retireComments      = toolInput.containsKey("retireComments") ? toolInput.getString("retireComments", "") : "";
+                    return callInpatientPackagesApi(method, id, name, admissionTypeId, roomCategoryId,
+                            includedRoomDurationHours, chargeTypeAmountsJson, itemsJson, retireComments,
+                            hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -6430,6 +6505,115 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callInpatientPackagesApi(String method, String id, String name, String admissionTypeId,
+            String roomCategoryId, String includedRoomDurationHours, String chargeTypeAmountsJson,
+            String itemsJson, String retireComments, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String baseUrl = hmisBaseUrl.replaceAll("/$", "") + "/api/inpatient-packages";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+            switch (method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder url = new StringBuilder(baseUrl);
+                    List<String> qp = new ArrayList<>();
+                    if (!admissionTypeId.isEmpty()) qp.add("admissionTypeId=" + URLEncoder.encode(admissionTypeId, StandardCharsets.UTF_8));
+                    if (!roomCategoryId.isEmpty()) qp.add("roomCategoryId=" + URLEncoder.encode(roomCategoryId, StandardCharsets.UTF_8));
+                    if (!qp.isEmpty()) url.append("?").append(String.join("&", qp));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "GET": {
+                    if (id.isEmpty()) return "Error: id is required for GET.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "POST": {
+                    if (name.isEmpty()) return "Error: name is required for POST.";
+                    if (admissionTypeId.isEmpty()) return "Error: admissionTypeId is required for POST.";
+                    if (roomCategoryId.isEmpty()) return "Error: roomCategoryId is required for POST.";
+                    com.google.gson.JsonObject body = buildInpatientPackageBody(name, admissionTypeId, roomCategoryId,
+                            includedRoomDurationHours, chargeTypeAmountsJson, itemsJson);
+                    if (body == null) return "Error: chargeTypeAmounts and items, if provided, must be valid JSON.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT": {
+                    if (id.isEmpty()) return "Error: id is required for PUT.";
+                    if (name.isEmpty()) return "Error: name is required for PUT.";
+                    if (admissionTypeId.isEmpty()) return "Error: admissionTypeId is required for PUT.";
+                    if (roomCategoryId.isEmpty()) return "Error: roomCategoryId is required for PUT.";
+                    com.google.gson.JsonObject body = buildInpatientPackageBody(name, admissionTypeId, roomCategoryId,
+                            includedRoomDurationHours, chargeTypeAmountsJson, itemsJson);
+                    if (body == null) return "Error: chargeTypeAmounts and items, if provided, must be valid JSON.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "RETIRE": {
+                    if (id.isEmpty()) return "Error: id is required for RETIRE.";
+                    com.google.gson.JsonObject body = new com.google.gson.JsonObject();
+                    if (!retireComments.isEmpty()) body.addProperty("retireComments", retireComments);
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/retire"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                default:
+                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, RETIRE";
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Error: request interrupted.";
+        } catch (Exception e) {
+            return "Error calling Inpatient Packages API: " + e.getMessage();
+        }
+    }
+
+    /**
+     * @return the request body, or null if chargeTypeAmounts/items were supplied but are not
+     *         valid JSON — parsed rather than concatenated so a malformed payload is reported
+     *         here instead of reaching the API as an unparseable body.
+     */
+    private com.google.gson.JsonObject buildInpatientPackageBody(String name, String admissionTypeId,
+            String roomCategoryId, String includedRoomDurationHours, String chargeTypeAmountsJson, String itemsJson) {
+        com.google.gson.JsonObject body = new com.google.gson.JsonObject();
+        body.addProperty("name", name);
+        body.addProperty("admissionTypeId", Long.parseLong(admissionTypeId));
+        body.addProperty("roomCategoryId", Long.parseLong(roomCategoryId));
+        if (includedRoomDurationHours != null && !includedRoomDurationHours.isEmpty()) {
+            body.addProperty("includedRoomDurationHours", Double.parseDouble(includedRoomDurationHours));
+        }
+        if (chargeTypeAmountsJson != null && !chargeTypeAmountsJson.trim().isEmpty()) {
+            try {
+                body.add("chargeTypeAmounts", com.google.gson.JsonParser.parseString(chargeTypeAmountsJson.trim()).getAsJsonObject());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        if (itemsJson != null && !itemsJson.trim().isEmpty()) {
+            try {
+                body.add("items", com.google.gson.JsonParser.parseString(itemsJson.trim()).getAsJsonArray());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        return body;
+    }
+
     /**
      * Handles {@code manage_admission_charges}. Unlike the other manage_* tools, this one is
      * an in-process call to {@link AdmissionChargeApiService} rather than an HTTP round-trip
@@ -7599,6 +7783,21 @@ public class AnthropicApiService implements Serializable {
                     {"PUT",    "/admission-charges/{id}",          "Update (all fields optional). Use clearAdmissionType/clearPaymentMethod to explicitly reset either column to null"},
                     {"DELETE", "/admission-charges/{id}",          "Soft-retire admission charge item. Optional: retireComments (query param)"},
                     {"PATCH",  "/admission-charges/{id}/restore",  "Un-retire admission charge item"}
+                });
+
+        appendModule(sb, "Inpatient Packages", "/inpatient-packages",
+                "Manage fixed-price Inpatient Package headers (per AdmissionType + RoomCategory) and their "
+                + "component items (services, timed items, professional-fee roles, outside charges, pharmacy "
+                + "items). Distinct from Admission Charges, which are additive routine charges rather than a "
+                + "bundled package price. totalPrice and fixedRoomCharge are always server-computed from "
+                + "chargeTypeAmounts and each item's fixedPrice, and are ignored on input.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_INPATIENT_PACKAGES.md"),
+                new String[][]{
+                    {"GET",  "/inpatient-packages?admissionTypeId=&roomCategoryId=", "List non-retired packages with their items"},
+                    {"GET",  "/inpatient-packages/{id}",       "Fetch one package with its items"},
+                    {"POST", "/inpatient-packages",            "Create a full package. Body: name, admissionTypeId, roomCategoryId (required); includedRoomDurationHours, chargeTypeAmounts, items[] optional"},
+                    {"PUT",  "/inpatient-packages/{id}",       "Update. Header fields always overwritten. items[], if present, fully replaces the component set (id=update, no id=create, missing=retire); omit items entirely to leave components untouched"},
+                    {"POST", "/inpatient-packages/{id}/retire","Soft-retire the whole package. Body: {retireComments}"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────
