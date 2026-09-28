@@ -19,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`)
+- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`, `coop-stg-migrated`, `ruhunu-prod-migrated`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -27,7 +27,7 @@ Deploy an urgent fix directly to a production branch.
 **The branch name MUST end with `-hotfix`.**
 CI merge validation will block PRs from branches that do not end with `-hotfix`.
 
-**One open PR per production branch.** If a PR targeting `$0` is already
+**One open PR per production branch** (including staging branches that serve production). If a PR targeting `$0` is already
 open, do NOT create a second one. Add the new fix to that PR's head branch,
 push, and update the PR title/body so it lists every fix it carries (Step 1a).
 Parallel PRs against the same production branch conflict with each other,
@@ -40,11 +40,11 @@ production deployment.
 git stash
 ```
 
-## Step 1a — Check for an Existing Open PR on the Production Branch
+## Step 1a — Check for an Existing Open PR on the Target Branch
 
 ```bash
 git fetch origin
-gh pr list --state open --base $0 --json number,headRefName,title
+gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,isCrossRepository,title
 ```
 
 - **An open PR exists:** reuse it. Check out its head branch
@@ -53,6 +53,8 @@ gh pr list --state open --base $0 --json number,headRefName,title
   `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
   the title and body cover every fix in the PR (one section per issue).
   Do not rename the branch, even if its name only describes the first fix.
+  If `isCrossRepository` is `true` (the PR comes from a fork), its branch is
+  not on `origin` — stop and ask the developer how to proceed.
 - **No open PR:** continue with Step 2.
 
 ## Step 2 — Create Hotfix Branch from Production
@@ -100,6 +102,12 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 ## Step 6 — Push
 
+If you are reusing an existing PR (Step 1a), push its head branch:
+```bash
+git push origin <headRefName>
+```
+
+Otherwise push the new hotfix branch:
 ```bash
 git push origin $1-hotfix
 ```
