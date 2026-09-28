@@ -342,6 +342,19 @@ public class BhtDepositDetailReportController implements Serializable {
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
         }
+        
+        if ("dischargeDate".equals(dateBasis) && fromDate != null && toDate != null) {
+            jpql.append(" and p.bill.patientEncounter.timeOfDischarge between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        }
+        
+        if ("admissionDate".equals(dateBasis) && fromDate != null && toDate != null) {
+            jpql.append(" and p.bill.patientEncounter.dateOfAdmission between :fromDate and :toDate");
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+        }
+       
         jpql.append(" order by p.createdAt");
         return paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
