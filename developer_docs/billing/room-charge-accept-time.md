@@ -119,10 +119,12 @@ coop does not set. The branch is unreachable for coop, not merely inert.
 
 ## Out of scope
 
-- `PatientTransferController.acceptInTheatre()` has the same class of bug — it stamps
+- ~~`PatientTransferController.acceptInTheatre()` has the same class of bug — it stamps
   `TheatreRoom.admittedAt` from `PatientTransferRequest.initiatedAt`, not the real
-  theatre-accept time. This is a ward-room-charge fix; theatre occupancy/billing timing is a
-  separate concern to be raised as its own issue if it needs the same treatment.
+  theatre-accept time.~~ Fixed in #24073: `acceptInTheatre()` now passes
+  `persisted.getAcceptedAt()` instead. Simpler than the ward-room fix since `TheatreRoom` is
+  only ever created once, fresh, inside that method — no "already exists, correct it" branch
+  was needed.
 - The deprecated `RoomChangeController.admitRoom()` / `admit_room.xhtml` manual-assign path
   (used only for the rare roomless-admission / OPD-conversion edge case) is unaffected by
   this change — it doesn't go through `acceptTransfer()` at all, and continues to behave as

@@ -45,6 +45,7 @@
 - **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
 - **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
 - **🚨 HOTFIX BRANCHES MUST END WITH `-hotfix`**: When creating a branch targeting a production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`), the branch name **MUST** end with `-hotfix`. CI merge validation will block PRs from branches that do not end with `-hotfix`. Format: `<description>-hotfix` (e.g., `sequence-preallocation-hotfix`, `critical-billing-fix-hotfix`). See the `/hotfix-deploy` skill.
+- **🚨 ONE OPEN PR PER PRODUCTION BRANCH**: Before opening a PR against a production branch or a staging branch that serves production (e.g. `coop-prod`, `coop-stg-migrated`, `ruhunu-prod-migrated`), check `gh pr list --state open --base <branch>`. If a PR is already open there, do NOT open another. Add the new fix to that PR's head branch, push, and edit the PR title/body so they list every fix it carries. See the `/hotfix-deploy` skill, Step 1a.
 
 ## Situational Guidelines (Reference When Needed)
 

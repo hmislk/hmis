@@ -95,11 +95,13 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -1146,7 +1148,9 @@ public class BhtSummeryController implements Serializable {
                 if (bf.getBill().isCancelled() || !(bf.getBill() instanceof BilledBill)) {
                     continue;
                 }
-                if (bf.getFeeValue() == 0) {
+                // A free-of-charge fee (value 0) is still listed so the screen
+                // matches the printed final bill (issue #24085).
+                if (bf.getFeeValue() == 0 && !bf.isFreeOfCharge()) {
                     continue;
                 }
                 double adjusted = bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
@@ -4334,6 +4338,34 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Doctors with a genuine free-of-charge fee (issue #24085): a fee flagged
+     * {@code freeOfCharge} (the "Free of Charge" tick on Add Professional
+     * Fee), or a legacy zero {@code feeValue} fee, on a non-cancelled
+     * {@link BilledBill}. A doctor in this set is listed on the final bill as
+     * "Free of Charge" even though their fees sum to 0 — unlike a cancelled
+     * or fully refunded fee, whose zero sum comes from a contra/refund bill
+     * and which is still dropped. Static and CDI-free for unit testing.
+     */
+    static Set<Staff> staffWithFreeOfChargeFees(List<BillFee> fees) {
+        Set<Staff> result = new HashSet<>();
+        if (fees == null) {
+            return result;
+        }
+        for (BillFee bf : fees) {
+            if (bf == null || bf.getStaff() == null || bf.getBill() == null) {
+                continue;
+            }
+            if (bf.getBill().isCancelled() || !(bf.getBill() instanceof BilledBill)) {
+                continue;
+            }
+            if (bf.isFreeOfCharge() || Math.abs(bf.getFeeValue()) < 0.005) {
+                result.add(bf.getStaff());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Stores ONE professional fee per doctor on the saved bill: a doctor's
      * individual fees are merged into a single new BillFee (summed feeValue and
      * feeAdjusted, via {@link #sumFeesByStaff}) attached to the final/temp bill
@@ -4341,7 +4373,10 @@ public class BhtSummeryController implements Serializable {
      * orderNo. A doctor whose summed feeValue AND feeAdjusted both net to ~0
      * (e.g. a fully refunded fee) is skipped entirely — not added to {@code
      * bItem.getProFees()} and not persisted — since there is nothing left to
-     * show or pay.
+     * show or pay. The exception is a doctor with a genuine free-of-charge fee
+     * ({@link #staffWithFreeOfChargeFees}): they are kept with a zero merged
+     * fee flagged {@code freeOfCharge}, so the final bill lists them as
+     * "Free of Charge" (issue #24085).
      * <p>
      * The original per-encounter fees are left untouched on their
      * InwardProfessional bills, so doctor-payment/commission reports (which
@@ -4352,6 +4387,7 @@ public class BhtSummeryController implements Serializable {
      */
     private void addMergedDoctorFeesToProFees(List<BillFee> sourceFees, BillItem bItem, boolean persist) {
         Map<Staff, double[]> sums = sumFeesByStaff(sourceFees);
+        Set<Staff> freeOfChargeStaff = staffWithFreeOfChargeFees(sourceFees);
         Map<Staff, BillFee> merged = new LinkedHashMap<>();
         for (BillFee bf : feesOrderedByOrderNo(sourceFees)) {
             Staff staff = bf.getStaff();
@@ -4359,7 +4395,8 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             double[] sum = sums.get(staff);
-            if (Math.abs(sum[0]) < 0.005 && Math.abs(sum[1]) < 0.005) {
+            boolean zeroSum = Math.abs(sum[0]) < 0.005 && Math.abs(sum[1]) < 0.005;
+            if (zeroSum && !freeOfChargeStaff.contains(staff)) {
                 continue;
             }
             BillFee m = new BillFee();
@@ -4373,6 +4410,7 @@ public class BhtSummeryController implements Serializable {
             m.setCreater(getSessionController().getLoggedUser());
             m.setFeeValue(sum[0]);
             m.setFeeAdjusted(sum[1]);
+            m.setFreeOfCharge(zeroSum);
             merged.put(staff, m);
         }
         for (BillFee m : merged.values()) {
@@ -4729,9 +4767,11 @@ public class BhtSummeryController implements Serializable {
         for (BillItem i : bi) {
             boolean isProfessionalCharge = i.getInwardChargeType() == InwardChargeType.ProfessionalCharge;
             boolean isDoctorAndNurses = i.getInwardChargeType() == InwardChargeType.DoctorAndNurses;
+            // A ProfessionalCharge line whose only doctors are free of charge
+            // totals 0 but must still be listed (issue #24085).
             if ((isProfessionalCharge || isDoctorAndNurses)
                     && (includeProfessionalCharge || !isProfessionalCharge)
-                    && i.getAdjustedValue() != 0) {
+                    && (i.getAdjustedValue() != 0 || i.isHasFreeOfChargeProFee())) {
 //                System.out.println("i = " + i);
 //                System.out.println("i.getInwardChargeType() = " + i.getInwardChargeType());
 
@@ -4756,6 +4796,9 @@ public class BhtSummeryController implements Serializable {
                         } else {
                             staffFeeMap.get(staff).setFeeAdjusted(staffFeeMap.get(staff).getFeeAdjusted() + bf.getFeeValue());
                         }
+                        if (bf.isFreeOfCharge()) {
+                            staffFeeMap.get(staff).setFreeOfCharge(true);
+                        }
                     } else {
                         BillFee newBillFee = new BillFee();
                         newBillFee.setStaff(staff);
@@ -4764,6 +4807,7 @@ public class BhtSummeryController implements Serializable {
                         } else {
                             newBillFee.setFeeAdjusted(bf.getFeeValue());
                         }
+                        newBillFee.setFreeOfCharge(bf.isFreeOfCharge());
 
                         staffFeeMap.put(staff, newBillFee);
                     }
