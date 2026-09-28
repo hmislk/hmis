@@ -10733,6 +10733,8 @@ public class PharmacyController implements Serializable {
         }
         if (allTypes || "grnReturn".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            // Deprecated legacy GRN return type, still present in older databases.
+            bta.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
         }
         if (allTypes || "directReturn".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
@@ -10742,21 +10744,22 @@ public class PharmacyController implements Serializable {
 
         // Returns count only once approved: unapproved ones never moved stock (issue
         // #24110). GRNs / Direct Purchases count only once they carry a bill number:
-        // unnumbered ones are saved drafts that never moved stock.
+        // unnumbered ones are saved drafts that never moved stock. Cancellations and
+        // legacy PHARMACY_GRN_REFUND bills (from a flow with no approval step) always count.
         String sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate"
                 + " and ((b.billTypeAtomic IN :returnBtas AND b.completed = true)"
                 + " or (b.billTypeAtomic IN :purchaseBtas AND b.deptId IS NOT NULL)"
-                + " or b.billTypeAtomic IN :cancelBtas)";
+                + " or b.billTypeAtomic IN :alwaysIncludedBtas)";
 
         Map<String, Object> tmp = new HashMap<>();
 
         tmp.put("btas", bta);
         tmp.put("returnBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_RETURN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND));
         tmp.put("purchaseBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE));
-        tmp.put("cancelBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_CANCELLED, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED));
+        tmp.put("alwaysIncludedBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_CANCELLED, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED, BillTypeAtomic.PHARMACY_GRN_REFUND));
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -10900,6 +10903,7 @@ public class PharmacyController implements Serializable {
             case PHARMACY_GRN_CANCELLED:
             case PHARMACY_DIRECT_PURCHASE_CANCELLED:
             case PHARMACY_GRN_RETURN:
+            case PHARMACY_GRN_REFUND:
             case PHARMACY_DIRECT_PURCHASE_REFUND:
                 return -1;
             default:
@@ -10988,7 +10992,8 @@ public class PharmacyController implements Serializable {
         }
         BillTypeAtomic bta = bill.getBillTypeAtomic();
         double value;
-        if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN))) {
+        if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                || bta.equals(BillTypeAtomic.PHARMACY_GRN_REFUND))) {
             value = -1 * (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0);
         } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
             value = -1 * bill.getNetTotal();
@@ -11774,7 +11779,8 @@ public class PharmacyController implements Serializable {
         if (bta == BillTypeAtomic.PHARMACY_GRN_CANCELLED || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) {
             return "Cancelled";
         }
-        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
+        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_GRN_REFUND
+                || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
             return "Returned";
         }
         if (bta == BillTypeAtomic.PHARMACY_GRN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
