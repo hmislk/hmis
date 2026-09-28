@@ -61,7 +61,8 @@ import com.divudi.bean.common.UserSettingsController;
  * Discharge (post-final-bill) payment rows via the {@code reportType} filter,
  * not just deposits.
  *
- * <p>Refunds and cancellations are listed as their own rows with their signed
+ * <p>
+ * Refunds and cancellations are listed as their own rows with their signed
  * (negative) amount and counted in the totals, and an original bill stays
  * listed after it is cancelled or refunded, so the totals are the net cash
  * handled in the period (issue #23980).</p>
@@ -320,9 +321,9 @@ public class BhtDepositDetailReportController implements Serializable {
 
     /**
      * Deliberately does NOT filter on {@code p.bill.cancelled}: cancelling a
-     * bill sets {@code cancelled=true} on the original and records the
-     * reversal as a separate negative contra bill, so filtering would drop the
-     * original and leave the cancellation unbalanced (issue #23980).
+     * bill sets {@code cancelled=true} on the original and records the reversal
+     * as a separate negative contra bill, so filtering would drop the original
+     * and leave the cancellation unbalanced (issue #23980).
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
         StringBuilder jpql = new StringBuilder("select p from Payment p"
@@ -342,19 +343,21 @@ public class BhtDepositDetailReportController implements Serializable {
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
         }
-        
-        if ("dischargeDate".equals(dateBasis) && fromDate != null && toDate != null) {
-            jpql.append(" and p.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate");
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-        }
-        
+
         if ("admissionDate".equals(dateBasis) && fromDate != null && toDate != null) {
             jpql.append(" and p.bill.patientEncounter.dateOfAdmission between :fromDate and :toDate");
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
         }
-       
+
+        if ("dischargeDate".equals(dateBasis) && fromDate != null && toDate != null) {
+            if (enc.getDischarged()) {
+                jpql.append(" and p.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate");
+                params.put("fromDate", fromDate);
+                params.put("toDate", toDate);
+            }
+        }
+
         jpql.append(" order by p.createdAt");
         return paymentFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
@@ -379,10 +382,10 @@ public class BhtDepositDetailReportController implements Serializable {
      * postProcessor for the Excel export (p:dataExporter). p:dataExporter only
      * serializes the exported h:outputText values as text (via the column's
      * f:convertNumber), so monetary columns land as plain strings. This
-     * converts those cells back to real numeric cells formatted as
-     * "#,##0.00" and appends a totals row (per used payment method plus the
-     * grand total), matching the on-screen footer which p:dataExporter does
-     * not otherwise export.
+     * converts those cells back to real numeric cells formatted as "#,##0.00"
+     * and appends a totals row (per used payment method plus the grand total),
+     * matching the on-screen footer which p:dataExporter does not otherwise
+     * export.
      */
     public void postProcessXLSBhtDepositDetail(Object document) {
         if (!(document instanceof Workbook)) {
@@ -446,9 +449,9 @@ public class BhtDepositDetailReportController implements Serializable {
     }
 
     /**
-     * The kind of each exported column, in the same left-to-right order as
-     * the rendered columns on {@code inward_report_bht_deposit_detail.xhtml}
-     * (only columns currently visible per {@code userSettingsController} are
+     * The kind of each exported column, in the same left-to-right order as the
+     * rendered columns on {@code inward_report_bht_deposit_detail.xhtml} (only
+     * columns currently visible per {@code userSettingsController} are
      * included, matching what p:dataExporter actually exports).
      */
     private List<String> exportedColumnKinds() {
@@ -526,8 +529,8 @@ public class BhtDepositDetailReportController implements Serializable {
      * {@link #exportedColumnKinds()}. The filter-summary block reads the
      * appliedXxx snapshot captured by generateReport() rather than the live
      * filter fields, so it can't drift out of sync with the exported rows if
-     * the form's inputs are edited after "Generate" but before "PDF" is
-     * clicked (Issue #23480).
+     * the form's inputs are edited after "Generate" but before "PDF" is clicked
+     * (Issue #23480).
      */
     public void downloadPdf() {
         if (reportRows == null || reportRows.isEmpty()) {
@@ -535,8 +538,8 @@ public class BhtDepositDetailReportController implements Serializable {
         }
 
         FacesContext facesContext = FacesContext.getCurrentInstance();
-        HttpServletResponse response =
-                (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        HttpServletResponse response
+                = (HttpServletResponse) facesContext.getExternalContext().getResponse();
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         SimpleDateFormat dtf = new SimpleDateFormat("dd MMM yyyy HH:mm");
@@ -577,8 +580,8 @@ public class BhtDepositDetailReportController implements Serializable {
             Paragraph p3 = new Paragraph(
                     "Printed By: "
                     + (sessionController.getLoggedUser() != null
-                       && sessionController.getLoggedUser().getWebUserPerson() != null
-                            ? sessionController.getLoggedUser().getWebUserPerson().getName() : "-")
+                    && sessionController.getLoggedUser().getWebUserPerson() != null
+                    ? sessionController.getLoggedUser().getWebUserPerson().getName() : "-")
                     + "   at " + dtf.format(new Date()),
                     subtitleFont);
             p3.setAlignment(Element.ALIGN_CENTER);
@@ -589,9 +592,15 @@ public class BhtDepositDetailReportController implements Serializable {
             // --- Filter details (from the appliedXxx snapshot) ---
             String dateBasisLabel;
             switch (appliedDateBasis) {
-                case "admissionDate": dateBasisLabel = "Admission Date"; break;
-                case "paymentDate":   dateBasisLabel = "Payment Date"; break;
-                default:              dateBasisLabel = "Discharge Date"; break;
+                case "admissionDate":
+                    dateBasisLabel = "Admission Date";
+                    break;
+                case "paymentDate":
+                    dateBasisLabel = "Payment Date";
+                    break;
+                default:
+                    dateBasisLabel = "Discharge Date";
+                    break;
             }
 
             PdfPTable filterTable = new PdfPTable(2);
@@ -795,17 +804,28 @@ public class BhtDepositDetailReportController implements Serializable {
 
     private float pdfColumnWidth(String kind) {
         switch (kind) {
-            case "BILL_NO": return 1f;
-            case "BHT_NO": return 0.8f;
-            case "PATIENT_NAME": return 1.8f;
-            case "ADMISSION_TYPE": return 1.1f;
-            case "ADMITTED": return 0.9f;
-            case "DISCHARGED": return 0.9f;
-            case "DATETIME": return 1.3f;
-            case "PAYMENT_METHOD": return 1.1f;
-            case "AMOUNT": return 1f;
-            case "REFERENCE_NO": return 1.2f;
-            default: return 1f; // PM* columns
+            case "BILL_NO":
+                return 1f;
+            case "BHT_NO":
+                return 0.8f;
+            case "PATIENT_NAME":
+                return 1.8f;
+            case "ADMISSION_TYPE":
+                return 1.1f;
+            case "ADMITTED":
+                return 0.9f;
+            case "DISCHARGED":
+                return 0.9f;
+            case "DATETIME":
+                return 1.3f;
+            case "PAYMENT_METHOD":
+                return 1.1f;
+            case "AMOUNT":
+                return 1f;
+            case "REFERENCE_NO":
+                return 1.2f;
+            default:
+                return 1f; // PM* columns
         }
     }
 
@@ -857,7 +877,7 @@ public class BhtDepositDetailReportController implements Serializable {
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
-    
+
     private static Date endOfCurrentMonth() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
