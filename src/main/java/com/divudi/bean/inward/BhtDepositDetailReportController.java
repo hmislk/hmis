@@ -58,7 +58,7 @@ public class BhtDepositDetailReportController implements Serializable {
     private Date toDate = endOfCurrentMonth();
     private String dateBasis = "dischargeDate";
     private String reportType = "ALL";
-    private AdmissionStatus admissionStatus = AdmissionStatus.ANY_STATUS;
+    private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
     private AdmissionType admissionType;
     private PaymentMethod paymentMethod;
     private Institution institution;
@@ -374,7 +374,7 @@ public class BhtDepositDetailReportController implements Serializable {
         toDate = endOfCurrentMonth();
         dateBasis = "dischargeDate";
         reportType = "ALL";
-        admissionStatus = AdmissionStatus.ANY_STATUS;
+        admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
         paymentMethod = null;
         institution = null;
