@@ -364,6 +364,17 @@ public class InwardReportController implements Serializable {
     private List<RoomCategory> allRoomCategories;
     private List<RoomCategory> selectedRoomCategories;
 
+    /**
+     * Process action for ROOM_OCCUPANCY.xhtml. The page builds its room
+     * category columns with c:forEach, which runs only when the view is built,
+     * so navigate back to the same view to rebuild it with the categories
+     * loaded by this run.
+     */
+    public String processRoomOccupancyReportAndReload() {
+        processRoomOccupancyReport();
+        return "/reports/managementReports/ROOM_OCCUPANCY";
+    }
+
     public void processRoomOccupancyReport() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select From and To dates.");
@@ -463,7 +474,6 @@ public class InwardReportController implements Serializable {
                 {"Institution:", institution != null ? institution.getName() : "All"},
                 {"Site:", site != null ? site.getName() : "All"},
                 {"Department:", department != null ? department.getName() : "All"},
-                {"Ratio Mode:", formatRoomOccupancyRatioMode()},
                 {"Generated:", sdf.format(new Date())}
             };
             for (String[] info : infoRows) {
@@ -662,13 +672,6 @@ public class InwardReportController implements Serializable {
         style.setBorderRight(BorderStyle.THIN);
     }
 
-    private String formatRoomOccupancyRatioMode() {
-        if (RoomCategoryOccupancyDTO.RATIO_MODE_PATIENT_CATEGORY_DURATION.equals(roomOccupancyRatioMode)) {
-            return "Patient Category Duration";
-        }
-        return "Aggregated Room Utilization";
-    }
-
     private List<RoomCategory> getRoomOccupancyCategoriesForReport() {
         if (selectedRoomCategories != null && !selectedRoomCategories.isEmpty()) {
             return selectedRoomCategories;
@@ -731,7 +734,6 @@ public class InwardReportController implements Serializable {
             addRoomOccupancyPdfInfoRow(infoTable, "Institution:", institution != null ? institution.getName() : "All", infoLabelFont, infoValueFont);
             addRoomOccupancyPdfInfoRow(infoTable, "Site:", site != null ? site.getName() : "All", infoLabelFont, infoValueFont);
             addRoomOccupancyPdfInfoRow(infoTable, "Department:", department != null ? department.getName() : "All", infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "Ratio Mode:", formatRoomOccupancyRatioMode(), infoLabelFont, infoValueFont);
             addRoomOccupancyPdfInfoRow(infoTable, "Generated:", sdf.format(new Date()), infoLabelFont, infoValueFont);
             document.add(infoTable);
 
@@ -947,7 +949,7 @@ public class InwardReportController implements Serializable {
         params.put("td", toDate);
 
         if (institution != null) {
-            jpql.append(" and rfc.company = :ins ");
+            jpql.append(" and rfc.department.institution = :ins ");
             params.put("ins", institution);
         }
         if (site != null) {
