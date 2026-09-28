@@ -344,7 +344,7 @@ public class BhtDepositDetailReportController implements Serializable {
         }
         
         if ("dischargeDate".equals(dateBasis) && fromDate != null && toDate != null) {
-            jpql.append(" and p.bill.patientEncounter.timeOfDischarge between :fromDate and :toDate");
+            jpql.append(" and p.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate");
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
         }
