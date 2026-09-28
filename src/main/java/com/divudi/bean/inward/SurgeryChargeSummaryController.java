@@ -159,11 +159,13 @@ public class SurgeryChargeSummaryController implements Serializable {
                 + " AND b.cancelled = false "
                 + " AND b.forwardReferenceBill = :surgeryBill "
                 + " AND b.billType IN :types "
-                + " AND TYPE(b) = :refundClass";
+                + " AND TYPE(b) = :refundClass "
+                + " AND TYPE(b.billedBill) = :preClass";
         Map<String, Object> returnParams = new HashMap<>();
         returnParams.put("surgeryBill", surgeryBill);
         returnParams.put("types", issueTypes);
         returnParams.put("refundClass", RefundBill.class);
+        returnParams.put("preClass", PreBill.class);
         double returned = 0.0;
         List<Bill> returns = billFacade.findByJpql(returnJpql, returnParams);
         if (returns != null) {
