@@ -172,6 +172,52 @@ public class NotificationController implements Serializable {
         }
     }
 
+    /**
+     * Notifies subscribers that an inpatient final bill version was created
+     * (action "FinalBillCreated") or approved ("FinalBillApproved"). The
+     * notification is linked to the bill's patient encounter, not the bill, so
+     * it routes and opens exactly like the discharge notifications (ward
+     * department subscribers + application-wide subscribers; click opens the
+     * admission profile).
+     */
+    public void createInwardFinalBillNotification(Bill finalBill, String action) {
+        if (finalBill == null || finalBill.getPatientEncounter() == null || action == null) {
+            return;
+        }
+        switch (action) {
+            case "FinalBillCreated":
+                createInwardFinalBillNotifications(finalBill, TriggerTypeParent.INWARD_FINAL_BILL_CREATED,
+                        "Message Template for Inward Final Bill Created Notification", "Final bill created");
+                break;
+            case "FinalBillApproved":
+                createInwardFinalBillNotifications(finalBill, TriggerTypeParent.INWARD_FINAL_BILL_APPROVED,
+                        "Message Template for Inward Final Bill Approved Notification", "Final bill approved");
+                break;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    private void createInwardFinalBillNotifications(Bill finalBill, TriggerTypeParent parent, String templateKey, String defaultMessage) {
+        Date date = new Date();
+        PatientEncounter pe = finalBill.getPatientEncounter();
+        String message = createDischargeMessage(templateKey, defaultMessage, pe);
+        String billNo = finalBill.getDeptId() != null ? finalBill.getDeptId() : finalBill.getInsId();
+        if (billNo != null) {
+            message = message + " (Bill No: " + billNo + ")";
+        }
+        for (TriggerType tt : TriggerType.getTriggersByParent(parent)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(message);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED)) {
