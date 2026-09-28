@@ -47,6 +47,9 @@
 - **🚨 HOTFIX BRANCHES MUST END WITH `-hotfix`**: When creating a branch targeting a production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`), the branch name **MUST** end with `-hotfix`. CI merge validation will block PRs from branches that do not end with `-hotfix`. Format: `<description>-hotfix` (e.g., `sequence-preallocation-hotfix`, `critical-billing-fix-hotfix`). See the `/hotfix-deploy` skill.
 - **🚨 ONE OPEN PR PER PRODUCTION BRANCH**: Before opening a PR against a production branch or a staging branch that serves production (e.g. `coop-prod`, `coop-stg-migrated`, `ruhunu-prod-migrated`), check `gh pr list --state open --base <branch>`. If a PR is already open there, do NOT open another. Add the new fix to that PR's head branch, push, and edit the PR title/body so they list every fix it carries. See the `/hotfix-deploy` skill, Step 1a.
 
+### Continuous Improvement
+- **🚨 RETROSPECT AFTER NONTRIVIAL DEV WORK**: After finishing an issue, a `.claude/skills/*` run, a multi-step debugging session, or a deployment, critically look back at how the work went — not just whether it succeeded. If a mistake happened that a documented fact would have prevented, a skill's instructions had a gap only visible by running it, or tribal knowledge (a menu path, a credential location, a config key) got re-derived from scratch instead of being found in `developer_docs/`, propose the specific `CLAUDE.md`/`developer_docs/`/skill fix to the user and ask before opening a PR for it — never auto-create it. Don't retrospect performatively on trivial actions; only surface a genuine, reusable lesson. Read [Continuous Improvement Retrospective](developer_docs/process/continuous-improvement-retrospective.md) first — it has the full noise filter and worked example. (PR #24113 was produced by exactly this pattern.)
+
 ## Situational Guidelines (Reference When Needed)
 
 ### When Working on Persistence/Deployment

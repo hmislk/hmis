@@ -7,6 +7,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -14,7 +15,8 @@ import java.util.TimeZone;
 
 /**
  * Renders an inward deposit / payment receipt as fixed-width plain text for
- * impact (dot-matrix) printers. 40-column body. Optionally wrapped in ESC/P
+ * impact (dot-matrix) printers. 40-column body by default, configurable per
+ * department when the paper cuts off line ends. Optionally wrapped in ESC/P
  * control codes for raw printing that bypasses the browser rasteriser.
  *
  * Pure and side-effect free: no CDI, no DB, no FacesContext — unit-testable.
@@ -22,6 +24,10 @@ import java.util.TimeZone;
 public final class InwardReceiptTextRenderer {
 
     public static final int WIDTH = 40;
+    /** Narrowest width that still leaves room for a value after the 17-char label prefix. */
+    public static final int MIN_WIDTH = 24;
+    /** 136 columns = a wide-carriage printer at 10 CPI. */
+    public static final int MAX_WIDTH = 136;
     private static final int LABEL_WIDTH = 15; // "Admission Type " then ':'
     private static final TimeZone COLOMBO = TimeZone.getTimeZone("Asia/Colombo");
 
@@ -91,6 +97,23 @@ public final class InwardReceiptTextRenderer {
             boolean preprintedStationery, int topMarginLines, boolean emitEscP,
             List<Payment> multiplePayments, boolean showAdmissionType,
             boolean showPatientAddress, boolean showPatientPhone) {
+        return render(bill, heading, duplicate, preprintedStationery, topMarginLines,
+                emitEscP, multiplePayments, showAdmissionType, showPatientAddress,
+                showPatientPhone, WIDTH);
+    }
+
+    /**
+     * @param lineWidth characters per line. Lower it when the printer/paper
+     * cuts off the right-hand end of lines. Clamped to
+     * {@link #MIN_WIDTH}..{@link #MAX_WIDTH}.
+     * @see #render(Bill, String, boolean, boolean, int, boolean, List,
+     * boolean, boolean, boolean)
+     */
+    public static String render(Bill bill, String heading, boolean duplicate,
+            boolean preprintedStationery, int topMarginLines, boolean emitEscP,
+            List<Payment> multiplePayments, boolean showAdmissionType,
+            boolean showPatientAddress, boolean showPatientPhone, int lineWidth) {
+        int width = clampWidth(lineWidth);
         StringBuilder sb = new StringBuilder(1024);
 
         if (emitEscP) {
@@ -106,15 +129,15 @@ public final class InwardReceiptTextRenderer {
 
         Department dept = bill.getDepartment();
         if (!preprintedStationery && dept != null) {
-            centre(sb, safe(dept.getPrintingName()));
-            centre(sb, safe(dept.getAddress()));
+            centre(sb, safe(dept.getPrintingName()), width);
+            centre(sb, safe(dept.getAddress()), width);
             String tel = safe(dept.getTelephone1());
             if (notBlank(dept.getTelephone2())) {
                 tel = tel + " / " + dept.getTelephone2().trim();
             }
-            centre(sb, tel);
+            centre(sb, tel, width);
             if (notBlank(dept.getFax())) {
-                centre(sb, "Fax: " + dept.getFax().trim());
+                centre(sb, "Fax: " + dept.getFax().trim(), width);
             }
         }
 
@@ -126,14 +149,14 @@ public final class InwardReceiptTextRenderer {
         if (bill.isCancelled()) {
             markers = markers + " **Cancelled**";
         }
-        if ((head + markers).length() <= WIDTH) {
-            centre(sb, head + markers);
+        if ((head + markers).length() <= width) {
+            centre(sb, head + markers, width);
         } else {
             // keep the markers readable instead of clipping them off the title
-            centre(sb, head);
-            centre(sb, markers.trim());
+            centreWrapped(sb, head, width);
+            centreWrapped(sb, markers.trim(), width);
         }
-        rule(sb, '-');
+        rule(sb, '-', width);
 
         PatientEncounter pe = bill.getPatientEncounter();
         String admissionType = pe != null && pe.getAdmissionType() != null
@@ -159,53 +182,42 @@ public final class InwardReceiptTextRenderer {
         Date created = bill.getCreatedAt();
 
         if (showAdmissionType) {
-            field(sb, "Admission Type", admissionType);
+            field(sb, "Admission Type", admissionType, width);
         }
-        field(sb, "Name", name);
-        field(sb, "Age / Gender", (age + " " + sex).trim());
+        field(sb, "Name", name, width);
+        field(sb, "Age / Gender", (age + " " + sex).trim(), width);
         if (showPatientAddress) {
-            field(sb, "Address", address);
+            field(sb, "Address", address, width);
         }
         if (showPatientPhone) {
-            field(sb, "Phone", phone);
+            field(sb, "Phone", phone, width);
         }
-        field(sb, "BHT No", bht);
-        field(sb, "Bill No", safe(bill.getDeptId()));
-        field(sb, "Bill Date", created == null ? "" : dfDate.format(created));
-        field(sb, "Bill Time", created == null ? "" : dfTime.format(created).toLowerCase(Locale.ROOT));
+        field(sb, "BHT No", bht, width);
+        field(sb, "Bill No", safe(bill.getDeptId()), width);
+        field(sb, "Bill Date", created == null ? "" : dfDate.format(created), width);
+        field(sb, "Bill Time", created == null ? "" : dfTime.format(created).toLowerCase(Locale.ROOT), width);
         field(sb, "Payment", bill.getPaymentMethod() == null ? ""
-                : bill.getPaymentMethod().toString());
+                : bill.getPaymentMethod().toString(), width);
 
         if (bill.getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                 && multiplePayments != null && !multiplePayments.isEmpty()) {
-            rule(sb, '-');
+            rule(sb, '-', width);
             for (Payment p : multiplePayments) {
                 String label = p.getPaymentMethod() == null ? "" : p.getPaymentMethod().toString();
                 if (p.getPaymentMethod() == com.divudi.core.data.PaymentMethod.Card
                         && notBlank(p.getCreditCardRefNo())) {
                     label = label + " (" + p.getCreditCardRefNo().trim() + ")";
                 }
-                String value = money.format(p.getPaidValue());
-                int payPad = WIDTH - label.length() - value.length();
-                if (payPad < 1) {
-                    payPad = 1;
-                }
-                sb.append(label).append(spaces(payPad)).append(value).append('\n');
+                amountRow(sb, label, money.format(p.getPaidValue()), width);
             }
         }
 
-        rule(sb, '=');
-        String amt = money.format(bill.getTotal());
-        String amtLabel = "Paying Amount";
-        int pad = WIDTH - amtLabel.length() - amt.length();
-        if (pad < 1) {
-            pad = 1;
-        }
-        sb.append(amtLabel).append(spaces(pad)).append(amt).append('\n');
-        rule(sb, '=');
+        rule(sb, '=', width);
+        amountRow(sb, "Paying Amount", money.format(bill.getTotal()), width);
+        rule(sb, '=', width);
 
         if (notBlank(bill.getComments())) {
-            field(sb, "Comment", bill.getComments().trim());
+            field(sb, "Comment", bill.getComments().trim(), width);
         }
 
         sb.append('\n');
@@ -213,7 +225,7 @@ public final class InwardReceiptTextRenderer {
         if (bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null) {
             cashier = safe(bill.getCreater().getWebUserPerson().getName());
         }
-        sb.append(clip("Cashier : " + cashier)).append('\n');
+        sb.append(clip("Cashier : " + cashier, width)).append('\n');
 
         if (emitEscP) {
             sb.append('\f'); // form feed — advance to next form
@@ -221,13 +233,18 @@ public final class InwardReceiptTextRenderer {
         return sb.toString();
     }
 
-    private static void field(StringBuilder sb, String label, String value) {
+    /** Clamps a configured line width to {@link #MIN_WIDTH}..{@link #MAX_WIDTH}. */
+    public static int clampWidth(long lineWidth) {
+        return (int) Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, lineWidth));
+    }
+
+    private static void field(StringBuilder sb, String label, String value, int width) {
         String l = label;
         if (l.length() > LABEL_WIDTH) {
             l = l.substring(0, LABEL_WIDTH);
         }
         String prefix = padRight(l, LABEL_WIDTH) + ": ";
-        int room = WIDTH - prefix.length();
+        int room = width - prefix.length();
         String v = value == null ? "" : value;
         if (v.length() <= room) {
             sb.append(prefix).append(v).append('\n');
@@ -244,25 +261,81 @@ public final class InwardReceiptTextRenderer {
         }
     }
 
-    private static void centre(StringBuilder sb, String s) {
-        String v = clip(s);
-        int lead = (WIDTH - v.length()) / 2;
+    private static void centre(StringBuilder sb, String s, int width) {
+        String v = clip(s, width);
+        int lead = (width - v.length()) / 2;
         if (lead < 0) {
             lead = 0;
         }
         sb.append(spaces(lead)).append(v).append('\n');
     }
 
-    private static void rule(StringBuilder sb, char c) {
-        for (int i = 0; i < WIDTH; i++) {
+    /**
+     * Centres {@code s}, word-wrapping it onto further centred lines (hard
+     * breaking any single word longer than {@code width}) instead of clipping.
+     */
+    private static void centreWrapped(StringBuilder sb, String s, int width) {
+        for (String line : wrap(s, width)) {
+            centre(sb, line, width);
+        }
+    }
+
+    /**
+     * Label left, amount right-aligned. When both do not fit on one line with
+     * at least one space between them, the full label is printed (wrapped if
+     * needed) and the amount goes right-aligned on the line below — nothing is
+     * shortened and no row exceeds {@code width}.
+     */
+    private static void amountRow(StringBuilder sb, String label, String value, int width) {
+        String l = label == null ? "" : label;
+        String v = clip(value, width);
+        if (l.length() + 1 + v.length() <= width) {
+            sb.append(l).append(spaces(width - l.length() - v.length())).append(v).append('\n');
+            return;
+        }
+        for (String line : wrap(l, width)) {
+            sb.append(line).append('\n');
+        }
+        sb.append(spaces(width - v.length())).append(v).append('\n');
+    }
+
+    private static List<String> wrap(String s, int width) {
+        List<String> lines = new ArrayList<>();
+        String line = "";
+        for (String word : (s == null ? "" : s.trim()).split("\\s+")) {
+            while (word.length() > width) {
+                if (!line.isEmpty()) {
+                    lines.add(line);
+                    line = "";
+                }
+                lines.add(word.substring(0, width));
+                word = word.substring(width);
+            }
+            if (line.isEmpty()) {
+                line = word;
+            } else if (line.length() + 1 + word.length() <= width) {
+                line = line + " " + word;
+            } else {
+                lines.add(line);
+                line = word;
+            }
+        }
+        if (!line.isEmpty() || lines.isEmpty()) {
+            lines.add(line);
+        }
+        return lines;
+    }
+
+    private static void rule(StringBuilder sb, char c, int width) {
+        for (int i = 0; i < width; i++) {
             sb.append(c);
         }
         sb.append('\n');
     }
 
-    private static String clip(String s) {
+    private static String clip(String s, int width) {
         String v = s == null ? "" : s;
-        return v.length() > WIDTH ? v.substring(0, WIDTH) : v;
+        return v.length() > width ? v.substring(0, width) : v;
     }
 
     private static String padRight(String s, int n) {
