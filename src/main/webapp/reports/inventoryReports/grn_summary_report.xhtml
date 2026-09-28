@@ -199,6 +199,8 @@
                                 <f:selectItem itemLabel="All Types"/>
                                 <f:selectItem itemLabel="GRN" itemValue="grn"/>
                                 <f:selectItem itemLabel="Direct Purchase" itemValue="direct"/>
+                                <f:selectItem itemLabel="GRN Return" itemValue="grnReturn"/>
+                                <f:selectItem itemLabel="Direct Purchase Return" itemValue="directReturn"/>
                             </p:selectOneMenu>
 
                         </h:panelGrid>
@@ -298,14 +300,7 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Status">
-                                    <h:outputText value="Cancelled"
-                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED'}"/>
-                                    <h:outputText value="Returned"
-                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND'}"/>
-                                    <h:outputText value="Approved"
-                                                  rendered="#{(bill.billTypeAtomic eq 'PHARMACY_GRN' and bill.completed) or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE'}"/>
-                                    <h:outputText value="Pending Approval"
-                                                  rendered="#{bill.billTypeAtomic eq 'PHARMACY_GRN' and not bill.completed}"/>
+                                    <h:outputText value="#{pharmacyController.grnSummaryStatusLabel(bill)}"/>
                                 </p:column>
                                 <p:column headerText="Remark">
                                     <h:outputText value="-"/>
@@ -317,9 +312,33 @@
                                     <h:outputText value="-"/>
                                 </p:column>
 
-                                <f:facet name="footer">
-                                    <h:outputText value="No matching records found." rendered="#{empty pharmacyController.bills}"/>
-                                </f:facet>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="8" footerText="Total" style="text-align: right; font-weight: bold;"/>
+                                        <p:column styleClass="text-end" style="font-weight: bold;">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.grnSummaryTotalAmount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column styleClass="text-end" style="font-weight: bold;">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.grnSummaryTotalDiscount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column styleClass="text-end" style="font-weight: bold;">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{pharmacyController.grnSummaryTotalStockAmount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column colspan="4"/>
+                                    </p:row>
+                                </p:columnGroup>
                             </p:dataTable>
                         </h:panelGroup>
 
