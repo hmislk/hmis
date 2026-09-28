@@ -9,6 +9,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.TheatreRoom;
@@ -377,12 +378,14 @@ public class PatientTransferController implements Serializable {
 
         if (persisted.getFromPatientRoom() == null) {
             // Admission handover. When the admission-time room selection already
-            // created and set this same room as current (Issue #23145), there is
-            // nothing to do here beyond confirming roomAdmitted — this request only
-            // exists as a nursing acknowledgement. Otherwise (e.g. the room was
-            // assigned later via a manually initiated transfer with no prior room),
-            // no PatientRoom has ever been created for this admission, so
-            // currentPatientRoom must be set here or it stays null forever and the
+            // created and set this same room as current (Issue #23145), the room's
+            // admittedAt is still stamped with the admission's dateOfAdmission from
+            // that earlier save — before this accept step ran. Room-charge billing
+            // (BhtSummeryController.getCharge()) reads admittedAt as the start of the
+            // billing clock, so correct it here to the real accept time. Otherwise
+            // (e.g. the room was assigned later via a manually initiated transfer with
+            // no prior room), no PatientRoom has ever been created for this admission,
+            // so currentPatientRoom must be set here or it stays null forever and the
             // "Current Department" search (#22382) can never find the patient. (#23377)
             Admission admission = persisted.getAdmission();
             PatientRoom existingCurrentRoom = admission.getCurrentPatientRoom();
@@ -401,6 +404,9 @@ public class PatientTransferController implements Serializable {
                         effectiveAt,
                         sessionController.getLoggedUser());
                 admission.setCurrentPatientRoom(newPatientRoom);
+            } else if (alreadyInTargetRoom) {
+                stampAcceptedRoomTiming(existingCurrentRoom, effectiveAt, sessionController.getLoggedUser());
+                patientRoomFacade.edit(existingCurrentRoom);
             }
             admission.setRoomAdmitted(true);
             admissionFacade.edit(admission);
@@ -432,6 +438,19 @@ public class PatientTransferController implements Serializable {
 
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Patient accepted successfully.");
+    }
+
+    /**
+     * Corrects a PatientRoom's admittedAt/addmittedBy to the real accept time.
+     *
+     * <p>Room-charge billing (BhtSummeryController.getCharge()) reads admittedAt as the
+     * start of the billing clock. AdmissionController stamps admittedAt with the
+     * admission's dateOfAdmission at admission-save time, before any accept step, so this
+     * corrects it to when the patient was actually accepted into the room.
+     */
+    static void stampAcceptedRoomTiming(PatientRoom room, Date acceptedAt, WebUser acceptedBy) {
+        room.setAdmittedAt(acceptedAt);
+        room.setAddmittedBy(acceptedBy);
     }
 
     public void cancelTransfer(PatientTransferRequest req) {
@@ -774,13 +793,18 @@ public class PatientTransferController implements Serializable {
                     && persisted.getSurgeryBill().getProcedure() != null)
                     ? persisted.getSurgeryBill().getProcedure()
                     : persisted.getAdmission();
+            // Theatre charges (BhtSummeryController.getCharge()) read admittedAt as the
+            // start of the billing clock, same as ward rooms. Use the real theatre-accept
+            // time (just stamped above) rather than initiatedAt (the "Send to Theatre"
+            // click), or theatre charges would accrue from send time instead of accept
+            // time. See developer_docs/billing/room-charge-accept-time.md.
             TheatreRoom theatreRoom = new TheatreRoom();
             theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
                     theatreRoom,
                     null,
                     persisted.getToRoomFacilityCharge(),
                     theatreRoomEncounter,
-                    persisted.getInitiatedAt(),
+                    persisted.getAcceptedAt(),
                     sessionController.getLoggedUser());
             persisted.setTheatreRoom(theatreRoom);
         }

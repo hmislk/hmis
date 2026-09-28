@@ -1,0 +1,11 @@
+[
+ {"id":"intro","say":"This video shows how to log in to HMIS and select your department."},
+ {"id":"username","say":"On the login screen, type your username."},
+ {"id":"password","say":"Then type your password."},
+ {"id":"loginClick","say":"Click Login."},
+ {"id":"deptOpen","say":"HMIS now asks which department you are working in. Click this field to open the department list."},
+ {"id":"deptType","say":"Type part of the department name to filter the list."},
+ {"id":"deptPick","say":"Click the department you want, Main Pharmacy."},
+ {"id":"deptSelect","say":"Click Select to confirm."},
+ {"id":"done","say":"You are now logged in to Main Pharmacy, and ready to work."}
+]

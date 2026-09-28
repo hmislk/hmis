@@ -197,7 +197,12 @@ public class CapabilityStatementResource {
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
                         + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
-                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "Bulk POST: pass categoryIds (array) instead of categoryId to create one row per category; "
+                        + "identical existing rows are skipped and returned under 'skipped'. "
+                        + "scope=room manages room charge discounts: inwardChargeType(s) (RoomCharges, LinenCharges, MaintainCharges, "
+                        + "NursingCharges, MOCharges, AdministrationCharge, MedicalCareICU) x optional roomCategoryId(s); "
+                        + "a row for a room's own category wins over an all-rooms row.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",
@@ -457,7 +462,9 @@ public class CapabilityStatementResource {
                         + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists). "
                         + "discountAllowed (Item-level flag) is readable/writable on all of GET /search, GET /{id}, POST, PUT — "
                         + "note this is distinct from the fee-level discountAllowed on /fees below; the inward discount calculation "
-                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category).",
+                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category). "
+                        + "POST /copy-legacy-category copies the deprecated investigationCategory into category where category is blank "
+                        + "(dry run by default; ?apply=true to update). While category is blank the entity falls back to investigationCategory.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",

@@ -174,7 +174,20 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Company Details"/>
                                     </f:facet>
-                                    <h:outputLabel value="Click Process to view the credit company allocation." />
+                                    <h:panelGroup id="creditSplitSummary" layout="block">
+                                        <h:outputLabel value="Click Process to view the credit company allocation."
+                                                       rendered="#{empty bhtSummeryController.creditCompanyAllocations}"/>
+                                        <ui:repeat value="#{bhtSummeryController.creditCompanyAllocations}" var="split">
+                                            <div class="d-flex justify-content-between py-1">
+                                                <h:outputText value="#{split.patientPortion ? 'Patient (co-payment)' : split.companyName}"
+                                                              style="#{split.patientPortion ? 'font-weight:bold;color:#1565c0;' : ''}"/>
+                                                <h:outputText value="#{split.allocatedAmount}"
+                                                              style="#{split.patientPortion ? 'font-weight:bold;color:#1565c0;' : 'font-weight:bold;'}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </div>
+                                        </ui:repeat>
+                                    </h:panelGroup>
                                 </p:panel>
                             </h:panelGroup>
 
@@ -723,7 +736,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                         <p:ajax event="change"
                                                 process="@this :#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}"
-                                                update=":#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}"
+                                                update=":#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId} :#{p:resolveFirstComponentWithId('creditSplitSummary',view).clientId}"
                                                 listener="#{bhtSummeryController.recalculatePatientPortion()}"/>
                                     </p:inputText>
                                 </h:panelGroup>
@@ -736,7 +749,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                         <p:ajax event="change"
                                                 process="@this"
-                                                update=":#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}"/>
+                                                update=":#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId} :#{p:resolveFirstComponentWithId('creditSplitSummary',view).clientId}"/>
                                     </p:inputText>
                                     <h:outputLabel value=" (patient co-payment)"
                                                    style="color:#888;font-size:0.82em;margin-left:4px;"/>
@@ -823,7 +836,8 @@
                                     actionListener="#{bhtSummeryController.addNewCreditCompany()}"
                                     update="addCreditCompanyContent
                                     :#{p:resolveFirstComponentWithId('addCreditCompanyGrowl',view).clientId}
-                                    :#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}"
+                                    :#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}
+                                    :#{p:resolveFirstComponentWithId('creditSplitSummary',view).clientId}"
                                     oncomplete="if (args &amp;&amp; args.creditCompanyAdded) { PF('addCreditCompanyDlgWv').hide(); }"/>
                             </div>
                         </h:panelGroup>

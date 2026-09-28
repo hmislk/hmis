@@ -127,9 +127,23 @@ git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
     `git branch -D <branch>` manually; otherwise inspect for unmerged work
     first*".
 
-  (If the touched-file list is empty — the branch's commits change nothing —
-  the command degrades to a full-tree diff and will exit `1`; skip and warn,
-  which is the safe outcome for that oddity.)
+  **Empty touched-file list gotcha**: if `git diff --name-only "$mb" <branch>`
+  is empty, the command above degrades to a full-tree `git diff --quiet <base>
+  <branch>` (no pathspec) and will almost always exit `1` — not because
+  `<branch>` differs from `<base>`, but because `<base>` has since changed
+  unrelated files `<branch>` never touched. Don't trust that exit code in this
+  case. Instead compare tree hashes directly:
+
+  ```bash
+  [ "$(git rev-parse <branch>^{tree})" = "$(git rev-parse "$mb"^{tree})" ] && echo IDENTICAL || echo DIVERGED
+  ```
+
+  - **IDENTICAL** — `<branch>`'s tree is byte-identical to the merge-base (its
+    "ahead" commits are no-ops, e.g. an empty merge), and the merge-base is by
+    definition an ancestor of `<base>`. The branch holds zero unique content.
+    **Mark for deletion.**
+  - **DIVERGED** — genuinely different content despite the empty per-commit
+    diff (rare). **Skip** and warn.
 
 ## Step 4 — Switch to development
 

@@ -5,6 +5,7 @@ import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,11 +25,16 @@ import javax.inject.Inject;
  * entry form. When a fee has no category saved (legacy data, or a fee created before
  * this field existed), it falls back to {@link InwardChargeType#ProfessionalCharge}.
  *
- * <p>{@link #defaultCategoryFor(Staff)} gives the entry form the category to preselect
- * when a staff member is picked: a {@link Consultant} defaults to
- * {@link InwardChargeType#ProfessionalCharge} ("Consultant Fee"), a {@link Doctor}
- * (non-consultant) defaults to {@link InwardChargeType#DoctorAndNurses} ("Assistant
- * Fee"), and anyone else (nurse, technician, other paramedical staff) defaults to
+ * <p>{@link #defaultCategoryFor(Staff, Speciality)} gives the entry form the category
+ * to preselect when a staff member or speciality is picked. A speciality's
+ * {@link Speciality#getDefaultProfessionalFeeCategory() Default Professional Fee
+ * Category} wins when an admin has set one (e.g. TECHNICIAN → Technician Fee), because
+ * technicians are usually registered as {@link Consultant} records so they can be
+ * picked on these forms (issue #23983). Otherwise it falls back to the staff record's
+ * subtype: a {@link Consultant} defaults to {@link InwardChargeType#ProfessionalCharge}
+ * ("Consultant Fee"), a {@link Doctor} (non-consultant) defaults to
+ * {@link InwardChargeType#DoctorAndNurses} ("Assistant Fee"), and anyone else (nurse,
+ * technician, other paramedical staff) defaults to
  * {@link InwardChargeType#TechnicianAndParamedicalCharge} ("Technician Fee"). The user
  * may still change the preselected category before saving.
  *
@@ -67,6 +73,28 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
 
     /** The default category to preselect when this staff member is picked on the entry form. */
     public InwardChargeType defaultCategoryFor(Staff staff) {
+        return defaultCategoryFor(staff, null);
+    }
+
+    /**
+     * The default category for a fee entered against {@code staff} under the
+     * speciality selected on the form. The first configured default wins, in
+     * this order: the selected speciality, the staff member's own speciality,
+     * then the staff subtype rule — so nothing changes until an admin sets a
+     * default on a speciality.
+     *
+     * @param staff              the staff member picked on the form; may be null
+     *                           when only a configured speciality is known
+     * @param selectedSpeciality the speciality picked on the form; may be null
+     */
+    public InwardChargeType defaultCategoryFor(Staff staff, Speciality selectedSpeciality) {
+        InwardChargeType fromSpeciality = configuredCategory(selectedSpeciality);
+        if (fromSpeciality == null && staff != null) {
+            fromSpeciality = configuredCategory(staff.getSpeciality());
+        }
+        if (fromSpeciality != null) {
+            return fromSpeciality;
+        }
         if (staff instanceof Consultant) {
             return InwardChargeType.ProfessionalCharge;
         }
@@ -74,6 +102,25 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
             return InwardChargeType.DoctorAndNurses;
         }
         return InwardChargeType.TechnicianAndParamedicalCharge;
+    }
+
+    /**
+     * The speciality's configured default, or null when it has none or it is
+     * not one of the three fee categories. A merged hospital's Assistant Fee
+     * default is still returned: the entry form offers all three categories and
+     * the bill folds Assistant into Consultant itself.
+     */
+    private InwardChargeType configuredCategory(Speciality speciality) {
+        if (speciality == null) {
+            return null;
+        }
+        InwardChargeType category = speciality.getDefaultProfessionalFeeCategory();
+        if (category == InwardChargeType.ProfessionalCharge
+                || category == InwardChargeType.DoctorAndNurses
+                || category == InwardChargeType.TechnicianAndParamedicalCharge) {
+            return category;
+        }
+        return null;
     }
 
     /**
@@ -163,6 +210,27 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
         }
         // DoctorAndNurses: null never defaults here, so no null-check needed.
         return staffNotNull + " and " + categoryField + " = com.divudi.core.data.inward.InwardChargeType." + target.name() + " ";
+    }
+
+    /**
+     * The category half of {@link #staffCondition} for
+     * {@link InwardChargeType#ProfessionalCharge}, negated: true for a fee whose
+     * saved category puts it outside the consultant bucket (technician fees, and
+     * assistant fees when not merged). It has no leading {@code and} and no
+     * staff test, so a caller can OR it with its own null-staff/null-fee tests
+     * to build the exact complement of the professional bucket — e.g. the
+     * "other" side of a professional/other split (issue #23982).
+     *
+     * <p>A null category counts as Consultant Fee, so it never matches here.
+     */
+    public String notProfessionalChargeCategory(String feeAlias) {
+        String categoryField = feeAlias + ".professionalFeeCategory";
+        if (isMerged()) {
+            return " " + categoryField
+                    + " = com.divudi.core.data.inward.InwardChargeType.TechnicianAndParamedicalCharge ";
+        }
+        return " (" + categoryField + " is not null and " + categoryField
+                + " != com.divudi.core.data.inward.InwardChargeType.ProfessionalCharge) ";
     }
 
     /**

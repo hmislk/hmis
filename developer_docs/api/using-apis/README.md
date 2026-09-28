@@ -31,6 +31,7 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 | [API_INWARD.md](API_INWARD.md) | Inpatient admission data and payment processing | `Finance` |
 | [API_INWARD_ROOM.md](API_INWARD_ROOM.md) | Room categories, rooms, room facility charges | `Finance` |
 | [API_INWARD_PRICE_MATRIX.md](API_INWARD_PRICE_MATRIX.md) | Inward price adjustment (margin/discount) matrix CRUD | `Finance` |
+| [API_INWARD_DISCOUNT_MATRIX.md](API_INWARD_DISCOUNT_MATRIX.md) | Inward discount matrix CRUD, incl. bulk create across categories | `Finance` |
 | [API_LIMS.md](API_LIMS.md) | Lab middleware, analyzer, and sample management | Custom (URL/JSON/Basic) |
 | [API_LOGIN_HISTORY.md](API_LOGIN_HISTORY.md) | User login history records | `Finance` |
 | [API_MEMBERSHIP.md](API_MEMBERSHIP.md) | Membership scheme registration and payment | none (public) |

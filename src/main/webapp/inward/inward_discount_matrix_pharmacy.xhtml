@@ -9,6 +9,14 @@
     <h:body>
         <ui:composition template="/inward/inward_administration.xhtml">
             <ui:define name="subcontent">
+                <style>
+                    /* Keep the multi-category label on one line; with 100+ categories selected it would otherwise push the form down. */
+                    .single-line-label .ui-selectcheckboxmenu-label {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                </style>
                 <h:form>
                     <p:panel header="Inward Discount Matrix - Pharmacy" id="reportPrint" class="row w-100">
 
@@ -76,16 +84,23 @@
                                         <h:outputLabel value="Pharmaceutical Category" class="mt-2"/>
                                     </div>
                                     <div class="col-10">
-                                        <p:selectOneMenu
-                                            class="w-100"
-                                            value="#{inwardDiscountMatrixController.category}">
-                                            <f:selectItem itemLabel="Select Categories" itemValue="#{null}"/>
-                                            <f:selectItems 
+                                        <p:selectCheckboxMenu
+                                            id="categories"
+                                            styleClass="w-100 single-line-label"
+                                            value="#{inwardDiscountMatrixController.categories}"
+                                            converter="#{inwardDiscountMatrixController.pharmaceuticalCategoryConverter}"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            emptyLabel="Select Categories"
+                                            updateLabel="true"
+                                            scrollHeight="300">
+                                            <f:selectItems
                                                 value="#{pharmaceuticalItemCategoryController.items}"
                                                 var="c"
                                                 itemLabel="#{c.name}"
                                                 itemValue="#{c}"/>
-                                        </p:selectOneMenu>
+                                        </p:selectCheckboxMenu>
                                     </div>
                                 </div>
 
@@ -203,11 +218,13 @@
                                 value="#{inwardDiscountMatrixController.items}"
                                 filteredValue="#{inwardDiscountMatrixController.filterItems}"
                                 var="a"
+                                rowKey="#{a.id}"
+                                paginator="true"
+                                rows="25"
+                                rowsPerPageTemplate="25,50,100,200"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="{totalRecords} rows"
                                 scrollable="true">
-
-                                <p:column headerText="ID" style="width: 3em;">
-                                    #{a.id}
-                                </p:column>
 
                                 <p:column
                                     headerText="Discount Scheme"
@@ -220,7 +237,7 @@
                                     headerText="Department"
                                     filterBy="#{a.department.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{a.department.name}"/>
+                                    <h:outputText value="#{empty a.department ? 'All Departments' : a.department.name}"/>
                                 </p:column>
 
                                 <p:column
@@ -231,11 +248,11 @@
                                 </p:column>
 
                                 <p:column headerText="Admission Type">
-                                    <h:outputText value="#{a.admissionType.name}"/>
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
 
                                 <p:column headerText="BHT Type">
-                                    <h:outputText value="#{a.paymentMethod}"/>
+                                    <h:outputText value="#{empty a.paymentMethod ? 'All BHT Types' : a.paymentMethod}"/>
                                 </p:column>
 
                                 <p:column

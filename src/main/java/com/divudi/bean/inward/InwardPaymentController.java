@@ -271,7 +271,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      * Post final bill payments are included so a payment taken on the Post
      * Final Payment page is not collected a second time here.
      */
-    private double calculateFinalBillDue(Bill finalBill) {
+    double calculateFinalBillDue(Bill finalBill) {
         // Patient portion = bill total minus the CC committed amount (not paid yet).
         // This correctly shows patient due before the company has actually remitted.
         // The encounter is taken from the freshly fetched final bill rather than
@@ -289,7 +289,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      * total: cancellations and refunds are separate rows with a negated
      * netTotal, so no cancelled=false filter is applied.
      */
-    private double getPostFinalPaymentTotal(PatientEncounter pe) {
+    double getPostFinalPaymentTotal(PatientEncounter pe) {
         String sql = "Select sum(b.netTotal) From Bill b where"
                 + " b.retired=false "
                 + " and b.billType=:btp "
@@ -1047,16 +1047,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
                 ? getCurrent().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic()));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic()));
-        }
+        getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+        getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
@@ -1284,12 +1276,24 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
 
         java.util.List<com.divudi.core.entity.Payment> multiplePayments =
                 getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getCurrent()) : null;
-        String text = InwardReceiptTextRenderer.render(getCurrent(), "Payment Receipt",
-                false, preprinted, topMargin, emitEscP, multiplePayments);
+        String text = InwardReceiptTextRenderer.render(getCurrent(),
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT),
+                false, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
 
         String fileName = "inward-payment-"
                 + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())

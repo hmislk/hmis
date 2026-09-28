@@ -955,6 +955,16 @@ public class PharmacyIssueController implements Serializable {
             return true;
         }
         for (BillItem b : getActiveBillItems()) {
+            // onEdit()/onEditCalculation() assume BillItem.qty is still in its
+            // positive, pre-normalization form (as it is right after a fresh
+            // Add). A prior Save already normalized it negative via
+            // normaliseDisposalIssueQtySign(), so restore the positive
+            // magnitude here before delegating — otherwise onEdit's
+            // `qty <= 0` check misreads the intentional negative disposal
+            // quantity as invalid input and zeroes the item out.
+            if (b.getQty() != null && b.getQty() < 0) {
+                b.setQty(-b.getQty());
+            }
             if (onEdit(b)) {
                 return true;
             }
