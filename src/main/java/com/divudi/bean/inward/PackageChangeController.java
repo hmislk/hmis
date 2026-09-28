@@ -1,6 +1,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.InpatientPackage;
 import com.divudi.core.facade.AdmissionFacade;
@@ -28,6 +29,8 @@ public class PackageChangeController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
     private AuditService auditService;
     @EJB
@@ -46,8 +49,16 @@ public class PackageChangeController implements Serializable {
     }
 
     public void change() {
+        if (!webUserController.hasPrivilege("InwardPackageChange")) {
+            JsfUtil.addErrorMessage("You are not authorized to change the package.");
+            return;
+        }
         if (current == null) {
             JsfUtil.addErrorMessage("No admission selected.");
+            return;
+        }
+        if (Boolean.TRUE.equals(current.getDischarged())) {
+            JsfUtil.addErrorMessage("A discharged admission cannot be changed.");
             return;
         }
         Map<String, Object> beforeState = packageStateMap(current.getInpatientPackage());
