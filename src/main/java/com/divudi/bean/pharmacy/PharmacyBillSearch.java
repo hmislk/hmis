@@ -319,11 +319,16 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Found");
             return null;
         }
-        // Reload the bill with its billItems. When this is reached from the BHT
-        // Issue Return page, `bill` is a detached entity whose billItems were
-        // never fetched, so the reprint page's Item/QTY table renders empty
-        // (issue #22035). Fetching with items populates that table.
-        Bill reloaded = billBean.fetchBillWithItemsAndFees(bill.getId());
+        // Reload the bill with its billItems, bypassing the JPA L2 cache. When
+        // reached from the BHT Issue Return page, `bill` is a detached entity
+        // whose billItems were never fetched, so the reprint page's Item/QTY
+        // table renders empty (issue #22035) — a cache-aware reload alone isn't
+        // enough for a bill just settled via a native-SQL settle path
+        // (InpatientDirectIssueNativeSqlService): the shared cache can keep
+        // returning an already-built Bill instance (0 items, 0 totals) from
+        // before the native INSERTs/UPDATEs existed, even after the settle
+        // path evicts the cache (issue #24030).
+        Bill reloaded = billBean.fetchBillWithItemsAndFeesBypassingCache(bill.getId());
         if (reloaded != null) {
             bill = reloaded;
         }
