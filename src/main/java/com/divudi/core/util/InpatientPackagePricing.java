@@ -2,6 +2,7 @@ package com.divudi.core.util;
 
 import com.divudi.core.entity.inward.InpatientPackageItem;
 import java.util.List;
+import java.util.Map;
 
 public class InpatientPackagePricing {
 
@@ -22,5 +23,17 @@ public class InpatientPackagePricing {
             }
         }
         return total;
+    }
+
+    public static double calculateTotalPrice(Map<String, Double> chargeTypeAmounts, List<InpatientPackageItem> components) {
+        double chargeTypeTotal = 0.0;
+        if (chargeTypeAmounts != null) {
+            for (Double v : chargeTypeAmounts.values()) {
+                if (v != null) {
+                    chargeTypeTotal += v;
+                }
+            }
+        }
+        return calculateTotalPrice(chargeTypeTotal, components);
     }
 }
