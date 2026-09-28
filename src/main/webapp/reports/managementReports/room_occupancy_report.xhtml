@@ -45,10 +45,27 @@
                                 color: #555;
                                 margin: 4px 0 10px 4px;
                             }
-                            .print-only-title {
+                            .print-only-title,
+                            .print-only-meta {
                                 display: none;
                             }
                             @media print {
+                                .print-only-meta {
+                                    display: block;
+                                    text-align: right;
+                                    font-size: 10px;
+                                    margin-bottom: 4px;
+                                }
+                                .print-only table {
+                                    width: 100% !important;
+                                    border-collapse: collapse;
+                                }
+                                .print-only thead {
+                                    display: table-header-group;
+                                }
+                                .print-only tr {
+                                    page-break-inside: avoid;
+                                }
                                 .print-only-title {
                                     display: block;
                                     text-align: center;
@@ -139,7 +156,7 @@
                                             styleClass="w-100"
                                             inputStyleClass="w-100 form-control"
                                             placeholder="Ward"
-                                            completeMethod="#{departmentController.completeInwardDepartments}"
+                                            completeMethod="#{roomOccupancyReportController.completeWard}"
                                             forceSelection="true"
                                             maxResults="10"
                                             var="dept"
@@ -309,7 +326,16 @@
                         <h:panelGroup id="printPanel">
 
                             <div class="print-only-title">
+                                <h:outputText value="#{sessionController.institution.name}"
+                                              rendered="#{not empty sessionController.institution}"/>
+                                <br/>
                                 <h:outputText value="Room Occupancy Report - #{roomOccupancyReportController.reportType}"/>
+                            </div>
+                            <div class="print-only-meta">
+                                <h:outputText value="Printed: "/>
+                                <h:outputText value="#{sessionController.currentDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy hh:mm a" />
+                                </h:outputText>
                             </div>
 
                             <h:panelGroup layout="block" styleClass="applied-filters-line"

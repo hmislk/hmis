@@ -8,7 +8,9 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ public class RoomOccupancyReportController implements Serializable {
 
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
 
     @Inject
     private SessionController sessionController;
@@ -417,7 +421,31 @@ public class RoomOccupancyReportController implements Serializable {
         }
     }
 
+    /**
+     * Ward autocomplete: the departments that actually have rooms/beds
+     * (RoomFacilityCharge.department), which is exactly what the Ward filter
+     * matches on. The shared Inward-type department list offered departments
+     * that no room belongs to, so choosing one returned no data.
+     */
+    public List<Department> completeWard(String qry) {
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select distinct d from RoomFacilityCharge rfc "
+                + " join rfc.department d "
+                + " where rfc.retired = false "
+                + " and d.retired = false "
+                + " and upper(d.name) like :q "
+                + " order by d.name";
+        params.put("q", "%" + (qry == null ? "" : qry.toUpperCase()) + "%");
+        return departmentFacade.findByJpql(jpql, params);
+    }
+
+    // Both discharge calendars default to the same day (start / end of today).
+    // Left null, each picker filled in the current clock time on its own, so
+    // Discharge From and Discharge To came out as different moments.
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -426,6 +454,9 @@ public class RoomOccupancyReportController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
