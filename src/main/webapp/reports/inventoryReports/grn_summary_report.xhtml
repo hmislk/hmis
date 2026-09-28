@@ -279,7 +279,7 @@
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Vendor Name">
-                                    <h:outputText value="#{(bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND') ? bill.toInstitution.name : bill.fromInstitution.name}"/>
+                                    <h:outputText value="#{(bill.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or bill.billTypeAtomic eq 'PHARMACY_GRN_REFUND' or bill.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND') ? bill.toInstitution.name : bill.fromInstitution.name}"/>
                                 </p:column>
                                 <p:column headerText="Payment Mode">
                                     <h:outputText value="#{bill.paymentMethod.label}"/>

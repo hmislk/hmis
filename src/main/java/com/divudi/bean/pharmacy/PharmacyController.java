@@ -10788,6 +10788,7 @@ public class PharmacyController implements Serializable {
             tmp.put("supplier", fromInstitution);
             List<BillTypeAtomic> refundBtas = new ArrayList<>();
             refundBtas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            refundBtas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             refundBtas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             tmp.put("refundBtas", refundBtas);
         }
@@ -11728,7 +11729,8 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell(f.getCreatedAt() != null ? sdfDateOnly.format(f.getCreatedAt()) : "-", bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceNumber(), bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceDate() != null ? sdfDateOnly.format(f.getInvoiceDate()) : "-", bodyFontSmall));
-                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
+                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_REFUND
+                        || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
                         ? (f.getToInstitution() != null ? f.getToInstitution().getName() : "-")
                         : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
                 table.addCell(textCell(f.getPaymentMethod() != null ? f.getPaymentMethod().getLabel() : "-", bodyFontSmall));
