@@ -296,6 +296,28 @@
                                 </f:facet>
                             </p:column>
 
+                            <p:column headerText="Paid by Credit Company" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{inwardReportController1.getCommitmentPaid(b)}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardReportController1.commitmentPaidTotal}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Remaining Commitment" style="text-align:right; white-space:nowrap;">
+                                <h:outputText value="#{inwardReportController1.getCommitmentBalance(b)}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardReportController1.commitmentBalanceTotal}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
                         </p:dataTable>
 
                     </p:panel>
