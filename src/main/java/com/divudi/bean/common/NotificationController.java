@@ -179,22 +179,41 @@ public class NotificationController implements Serializable {
      * it routes and opens exactly like the discharge notifications (ward
      * department subscribers + application-wide subscribers; click opens the
      * admission profile).
+     * <p>
+     * Non-blocking: callers invoke this after the final bill / approval has
+     * already been committed, so a notification failure is logged and
+     * reported as a warning instead of propagating — otherwise the caller's
+     * success message and print preview are skipped and the user may retry an
+     * action that already succeeded (same treatment as the PDF snapshot
+     * failure in InwardSearch.approveFinalBillVersion).
      */
     public void createInwardFinalBillNotification(Bill finalBill, String action) {
         if (finalBill == null || finalBill.getPatientEncounter() == null || action == null) {
             return;
         }
+        TriggerTypeParent parent;
+        String templateKey;
+        String defaultMessage;
         switch (action) {
             case "FinalBillCreated":
-                createInwardFinalBillNotifications(finalBill, TriggerTypeParent.INWARD_FINAL_BILL_CREATED,
-                        "Message Template for Inward Final Bill Created Notification", "Final bill created");
+                parent = TriggerTypeParent.INWARD_FINAL_BILL_CREATED;
+                templateKey = "Message Template for Inward Final Bill Created Notification";
+                defaultMessage = "Final bill created";
                 break;
             case "FinalBillApproved":
-                createInwardFinalBillNotifications(finalBill, TriggerTypeParent.INWARD_FINAL_BILL_APPROVED,
-                        "Message Template for Inward Final Bill Approved Notification", "Final bill approved");
+                parent = TriggerTypeParent.INWARD_FINAL_BILL_APPROVED;
+                templateKey = "Message Template for Inward Final Bill Approved Notification";
+                defaultMessage = "Final bill approved";
                 break;
             default:
                 throw new AssertionError();
+        }
+        try {
+            createInwardFinalBillNotifications(finalBill, parent, templateKey, defaultMessage);
+        } catch (RuntimeException ex) {
+            java.util.logging.Logger.getLogger(NotificationController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Inward final bill notification failed (" + action + ")", ex);
+            JsfUtil.addErrorMessage("Saved, but subscriber notifications could not be sent.");
         }
     }
 
