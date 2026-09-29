@@ -175,14 +175,18 @@ public class InpatientPackageApi {
 
             String retireComments = null;
             if (requestBody != null && !requestBody.trim().isEmpty()) {
-                Map<String, String> body;
+                Map<?, ?> body;
                 try {
                     body = gson.fromJson(requestBody, Map.class);
                 } catch (JsonSyntaxException e) {
                     return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
                 }
                 if (body != null) {
-                    retireComments = body.get("retireComments");
+                    Object rc = body.get("retireComments");
+                    if (rc != null && !(rc instanceof String)) {
+                        return errorResponse("retireComments must be a string", 400);
+                    }
+                    retireComments = (String) rc;
                 }
             }
 

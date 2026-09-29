@@ -320,6 +320,17 @@ public class InpatientPackageApiServiceTest {
     }
 
     @Test
+    @DisplayName("Create rejects a null entry in the items array")
+    public void testCreatePackage_nullItemEntry_throwsValidationException() {
+        InpatientPackageDto dto = baseDto();
+        List<InpatientPackageItemDto> items = new ArrayList<>();
+        items.add(null);
+        dto.setItems(items);
+
+        assertThrows(InpatientPackageValidationException.class, () -> service.createPackage(dto, user));
+    }
+
+    @Test
     @DisplayName("Retire sets retired flag, retirer, retiredAt and comments")
     public void testRetirePackage_setsRetiredFields() throws Exception {
         InpatientPackageDto created = service.createPackage(baseDto(), user);

@@ -6607,9 +6607,10 @@ public class AnthropicApiService implements Serializable {
                 return null;
             }
         }
-        if (itemsJson != null && !itemsJson.trim().isEmpty()) {
+        if (itemsJson != null) {
+            String raw = itemsJson.trim().isEmpty() ? "[]" : itemsJson.trim();
             try {
-                body.add("items", com.google.gson.JsonParser.parseString(itemsJson.trim()).getAsJsonArray());
+                body.add("items", com.google.gson.JsonParser.parseString(raw).getAsJsonArray());
             } catch (Exception ex) {
                 return null;
             }

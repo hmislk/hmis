@@ -180,6 +180,9 @@ public class InpatientPackageApiService implements Serializable {
         List<InpatientPackageItem> result = new ArrayList<>();
 
         for (InpatientPackageItemDto itemDto : itemDtos) {
+            if (itemDto == null) {
+                throw new InpatientPackageValidationException("items must not contain null entries");
+            }
             InpatientPackageItem item;
             if (itemDto.getId() != null) {
                 item = existingById.get(itemDto.getId());
