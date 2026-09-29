@@ -19,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`)
+- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`, `coop-stg-migrated`, `ruhunu-prod-migrated`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -27,11 +27,50 @@ Deploy an urgent fix directly to a production branch.
 **The branch name MUST end with `-hotfix`.**
 CI merge validation will block PRs from branches that do not end with `-hotfix`.
 
+**One open PR per production branch** (including staging branches that serve production). If a PR targeting `$0` is already
+open, do NOT create a second one. Add the new fix to that PR's head branch,
+push, and update the PR title/body so it lists every fix it carries (Step 1a).
+Parallel PRs against the same production branch conflict with each other,
+deploy in an unpredictable order, and each merge triggers a separate
+production deployment.
+
+**Confirm `$0` is the exact branch actually deployed to the environment that
+needs the fix before doing anything else.** Similarly-named branches serve
+different environments and are not interchangeable — e.g. for COOP,
+`coop-prod`, `coop-prod-migrated` and `coop-stg-migrated` are three distinct
+branches/deployments. If there is any doubt which branch backs the environment
+in question, ask the user rather than guess from the name. See the Common
+Production Branches table below, and verify it is still accurate before
+trusting it.
+
 ## Step 1 — Stash Any Uncommitted Work
 
 ```bash
 git stash
 ```
+
+## Step 1a — Check for an Existing Open PR on the Target Branch
+
+```bash
+git fetch origin
+gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,isCrossRepository,title
+```
+
+- **An open PR exists:** reuse it. Check out its head branch
+  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
+  the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
+  `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
+  the title and body cover every fix in the PR (one section per issue).
+  Do not rename the branch, even if its name only describes the first fix.
+  If `isCrossRepository` is `true` (the PR comes from a fork), its branch is
+  not on `origin` — stop and ask the developer how to proceed.
+- **No open PR:** continue with Step 2 — but first check whether a remote
+  `*-hotfix` branch for this same fix already exists without an open PR
+  (`git branch -r | grep -i hotfix`). If one does, find out why before
+  creating a new branch: if its PR was merged, the fix may already be
+  deployed; if its PR was closed unmerged, it may have been abandoned or
+  targeted the wrong branch. Ask the user whether to reuse it (reopen / open a
+  PR from it) or start fresh — don't silently create a parallel branch.
 
 ## Step 2 — Create Hotfix Branch from Production
 
@@ -78,6 +117,12 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 ## Step 6 — Push
 
+If you are reusing an existing PR (Step 1a), push its head branch:
+```bash
+git push origin <headRefName>
+```
+
+Otherwise push the new hotfix branch:
 ```bash
 git push origin $1-hotfix
 ```
@@ -117,11 +162,20 @@ git branch -d $1-hotfix
 
 ## Common Production Branches
 
-| Hospital/Environment | Branch         |
-|----------------------|----------------|
-| COOP hospitals       | `coop-prod`    |
-| Ruhunu hospital      | `ruhunu-prod`  |
-| Southern Lanka       | `southernlanka-prod` |
+Verify against `git branch -r` before trusting this table — branches get
+added/renamed, and similarly-named branches are NOT interchangeable.
+
+| Hospital/Environment | Branch | Notes |
+|----------------------|--------|-------|
+| COOP — pharmacy | `coop-prod`, `coop-prod-migrated` | Pharmacy production. |
+| COOP — inward | `coop-stg-migrated` | Despite the "stg" name, this is what COOP inward users run against day to day. |
+| Ruhunu hospital | `ruhunu-prod`, `ruhunu-prod-migrated` | |
+| Southern Lanka | `southernlanka-prod`, `southernlanka-prod-migrated`, `southernlanka-stg-migrated` | Confirm which one currently serves live users before branching. |
+
+If a hospital has more than one candidate branch and it is not obvious which
+one backs the environment the user means, ask which one before branching —
+guessing from the branch name alone has caused a wrong-target hotfix PR
+before (it had to be closed and redone against the correct branch).
 
 ## Reference
 

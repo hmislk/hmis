@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.inward.InpatientPackage;
 import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.facade.InpatientPackageFacade;
@@ -44,9 +45,14 @@ public class InpatientPackageController implements Serializable {
     private InpatientPackage current;
     private List<InpatientPackage> items;
 
+    private Map<String, String> amountInputMap;
+    private InpatientPackage amountInputMapOwner;
+
     public void prepareAdd() {
         current = new InpatientPackage();
         items = null;
+        amountInputMap = null;
+        amountInputMapOwner = null;
     }
 
     public void delete() {
@@ -85,7 +91,6 @@ public class InpatientPackageController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Room Category");
             return;
         }
-        double fixedRoomCharge = current.getFixedRoomCharge() != null ? current.getFixedRoomCharge() : 0.0;
         List<InpatientPackageItem> components = new ArrayList<>();
         if (current.getId() != null) {
             Map<String, Object> params = new HashMap<>();
@@ -94,7 +99,18 @@ public class InpatientPackageController implements Serializable {
                     "SELECT i FROM InpatientPackageItem i WHERE i.retired = false AND i.inpatientPackage = :pkg",
                     params);
         }
-        current.setTotalPrice(InpatientPackagePricing.calculateTotalPrice(fixedRoomCharge, components));
+        Map<String, Double> parsedAmounts = new HashMap<>();
+        if (amountInputMap != null) {
+            for (Map.Entry<String, String> e : amountInputMap.entrySet()) {
+                Double amount = parseAmount(e.getValue());
+                if (amount != null) {
+                    parsedAmounts.put(e.getKey(), amount);
+                }
+            }
+        }
+        current.setChargeTypeAmounts(parsedAmounts);
+        current.setFixedRoomCharge(parsedAmounts.getOrDefault(InwardChargeType.RoomCharges.name(), 0.0));
+        current.setTotalPrice(InpatientPackagePricing.calculateTotalPrice(parsedAmounts, components));
         if (current.getId() != null) {
             ejbFacade.edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -105,6 +121,46 @@ public class InpatientPackageController implements Serializable {
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         items = null;
+        amountInputMap = null;
+        amountInputMapOwner = null;
+    }
+
+    public Map<String, String> getAmountInputMap() {
+        if (amountInputMap == null || amountInputMapOwner != current) {
+            amountInputMap = new HashMap<>();
+            amountInputMapOwner = current;
+            if (current != null && current.getChargeTypeAmounts() != null) {
+                for (Map.Entry<String, Double> e : current.getChargeTypeAmounts().entrySet()) {
+                    amountInputMap.put(e.getKey(), formatAmount(e.getValue()));
+                }
+            }
+        }
+        return amountInputMap;
+    }
+
+    public void setAmountInputMap(Map<String, String> amountInputMap) {
+        this.amountInputMap = amountInputMap;
+    }
+
+    private String formatAmount(Double v) {
+        if (v == null) {
+            return "";
+        }
+        if (v == Math.floor(v) && !Double.isInfinite(v)) {
+            return String.valueOf(v.longValue());
+        }
+        return String.valueOf(v);
+    }
+
+    private Double parseAmount(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(raw.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public List<InpatientPackage> getItems() {

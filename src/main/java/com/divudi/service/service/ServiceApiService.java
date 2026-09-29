@@ -888,7 +888,10 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Find fees with marginAllowed disabled (false or null) for items in a category.
+     * Find fees with marginAllowed explicitly disabled (false) for items in a
+     * category. Billing (InwardBeanController.setBillFeeMargin) treats a null
+     * marginAllowed as allowed (!Boolean.FALSE.equals(...)), so a null value is
+     * NOT margin-disabled and must not be listed here (issue #24155).
      */
     public List<ItemFeeDTO> findFeesWithMarginDisabled(Long categoryId) throws Exception {
         if (categoryId == null) {
@@ -898,7 +901,7 @@ public class ServiceApiService implements Serializable {
         String jpql = "SELECT f FROM ItemFee f "
                 + "WHERE f.item.category.id = :catId "
                 + "AND f.retired = false "
-                + "AND (f.marginAllowed = false OR f.marginAllowed IS NULL)";
+                + "AND f.marginAllowed = false";
         Map<String, Object> params = new HashMap<>();
         params.put("catId", categoryId);
 

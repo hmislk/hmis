@@ -27,6 +27,7 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 | [API_F15_REPORT.md](API_F15_REPORT.md) | Pharmacy daily stock balance (F15) report | `Finance` |
 | [API_FHIR.md](API_FHIR.md) | FHIR Patient resource endpoints | `FHIR` |
 | [API_FINANCE_LEGACY.md](API_FINANCE_LEGACY.md) | Original `/api/finance` bill query endpoints | `Finance` |
+| [API_INPATIENT_PACKAGES.md](API_INPATIENT_PACKAGES.md) | Fixed-price Inpatient Package headers + component items | `Finance` |
 | [API_INSTITUTION_DEPARTMENT_MANAGEMENT.md](API_INSTITUTION_DEPARTMENT_MANAGEMENT.md) | Institution, department, and site CRUD | `Finance` |
 | [API_INWARD.md](API_INWARD.md) | Inpatient admission data and payment processing | `Finance` |
 | [API_INWARD_ROOM.md](API_INWARD_ROOM.md) | Room categories, rooms, room facility charges | `Finance` |

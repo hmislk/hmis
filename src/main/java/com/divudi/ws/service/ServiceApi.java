@@ -585,7 +585,10 @@ public class ServiceApi {
     }
 
     /**
-     * List fees with marginAllowed disabled (false or null) in a category.
+     * List fees with marginAllowed explicitly disabled (false) in a category.
+     * A null marginAllowed is treated as allowed by billing, matching
+     * InwardBeanController.setBillFeeMargin's !Boolean.FALSE.equals(...) check,
+     * so it is not included here (issue #24155).
      * GET /api/services/fees/margin-disabled?categoryId=X
      */
     @GET

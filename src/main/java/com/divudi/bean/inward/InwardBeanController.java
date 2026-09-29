@@ -3395,8 +3395,7 @@ public class InwardBeanController implements Serializable {
             if (cc != null && billFee.getBillItem() != null) {
                 BillItem bi = billFee.getBillItem();
                 double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
-                Department dept = item.getDepartment() != null ? item.getDepartment()
-                        : (bi.getBill() != null ? bi.getBill().getDepartment() : null);
+                Department dept = resolveFeeDepartment(patientEncounter);
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
                         patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
@@ -3457,6 +3456,26 @@ public class InwardBeanController implements Serializable {
             return null;
         }
         return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
+    /**
+     * The department the inward margin matrix is looked up against, mirroring
+     * {@code BillBhtController.feeDepartment(PatientEncounter)}: the current
+     * room's facility-charge department when the patient is in a room,
+     * otherwise the encounter's own department. The credit-company-specific
+     * override in {@link #setBillFeeMargin} must use this same ward
+     * department as the base lookup — using the item's or bill's department
+     * instead meant a per-ward CC-specific row was never found (issue #24155).
+     */
+    private Department resolveFeeDepartment(PatientEncounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+        if (encounter.getCurrentPatientRoom() != null
+                && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+            return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        }
+        return encounter.getDepartment();
     }
 
     /**

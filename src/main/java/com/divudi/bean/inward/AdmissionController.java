@@ -879,6 +879,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
+    public String navigateToPackageChange() {
+        return "/inward/inward_package_change?faces-redirect=true";
+    }
+
     public String navigateToAddRoom() {
         roomChangeController.createPatientRoom();
         roomChangeController.setInstitution(sessionController.getInstitution());
