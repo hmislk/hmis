@@ -159,6 +159,7 @@ gotcha** — jump straight to the one you need rather than reading the file.
 - [129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button)
 - [131. `p:autoComplete` gives no suggestions to `fill`/`pressSequentially` — drive the widget's `search()`, and pick the right widget id](#131-pautocomplete-gives-no-suggestions-to-fillpresssequentially--drive-the-widgets-search-and-pick-the-right-widget-id)
 - [132. `Bill.referenceBill` means different things on different flows — don't branch on "is it set", branch on the bill's own type](#132-billreferencebill-means-different-things-on-different-flows--dont-branch-on-is-it-set-branch-on-the-bills-own-type)
+- [136. Forcing `.click()` on a still-hidden PrimeFaces menu leaf (parent flyout never actually opened) can crash the JSF view state and log you out](#136-forcing-click-on-a-still-hidden-primefaces-menu-leaf-parent-flyout-never-actually-opened-can-crash-the-jsf-view-state-and-log-you-out)
 - [Quick checklist](#quick-checklist)
 
 ---
@@ -4059,3 +4060,25 @@ Adding a new panel/action gated by a brand-new `Privileges` enum constant (issue
    `document.cookie` and reloading just resumes the same session. Use the app's own logout instead —
    `document.querySelector('[id$="btnLogout"]')?.click()` (the logout `p:commandButton`'s id always ends
    in `btnLogout` regardless of the generated `j_idt###` form prefix) — then log back in.
+
+## 136. Forcing `.click()` on a still-hidden PrimeFaces menu leaf (parent flyout never actually opened) can crash the JSF view state and log you out
+
+Reaching a deeply-nested menu item (e.g. *Settings → Manage My API Keys*, itself two levels under an
+icon-only top-bar menu) by grabbing its `<a class="ui-menuitem-link">` out of a flat
+`querySelectorAll` index and firing `.click()` on it directly — without first opening every ancestor
+`<li>` so the leaf is actually `display: block` — still submits the menu's JSF form (the `onclick`
+still runs `PrimeFaces.addSubmitParam(...).submit(...)`, same as the §106 escape hatch), but against a
+component tree the client never actually rendered as open. On this codebase that didn't just no-op: it
+came back `HTTP 500 View ... could not be restored`, and the next page load landed on the raw login
+form — the whole session was invalidated, not merely the click ignored. This is a step beyond the
+"just doesn't work" failures in §106/§114: it's destructive. Any unsaved in-progress form state
+elsewhere on the same page (e.g. bill items staged but not yet Settled) is lost with it.
+
+Fix: open every ancestor level for real — `browser_hover` each parent `<li>`'s own anchor in turn,
+confirming `getComputedStyle(...).display === 'block'` on its child `<ul>` before going one level
+deeper — so the leaf becomes genuinely visible, then click it normally by CSS selector. Never skip
+straight to `.click()` on an element whose `offsetParent` is `null`; verify visibility first, the same
+way §106's second-level note already recommends confirming `display: block` before descending.
+
+Verified 2026-09-29 while trying to reach *Settings → Manage My API Keys* on the Ruhunu local-staging
+server (`rh-local-staging` branch) mid-investigation of an inward pharmacy margin bug.
