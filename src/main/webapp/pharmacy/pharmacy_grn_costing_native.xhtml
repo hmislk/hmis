@@ -160,6 +160,7 @@
                                 <p:column
                                     width="4em"
                                     headerText="Ordered Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Ordered Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
@@ -169,6 +170,7 @@
                                 <p:column
                                     width="4em"
                                     headerText="Ordered Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Ordered Free Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
@@ -199,6 +201,7 @@
                                 <p:column
                                     width="6em"
                                     headerText="Received Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Received Free Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
@@ -233,6 +236,7 @@
                                 <p:column
                                     width="8em"
                                     headerText="Discount Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Discount Rate Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
@@ -268,6 +272,7 @@
                                 </p:column>
                                 <p:column
                                     headerText="Wholesale Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Wholesale Rate Column', true)}"
                                     width="8em"
                                     styleClass="text-end">
                                     <p:inputText
@@ -287,6 +292,7 @@
 
                                 <p:column
                                     headerText="Line Net Total"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Line Net Total Column', true)}"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:panelGroup id="total">
@@ -323,6 +329,7 @@
                                 </p:column>
                                 <p:column
                                     headerText="Comments"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Comments Column', true)}"
                                     width="5em"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
