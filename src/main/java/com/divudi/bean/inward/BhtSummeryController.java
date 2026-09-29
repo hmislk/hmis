@@ -1563,6 +1563,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void calculateDiscount() {
+        Map<InwardChargeType, Double> packageAllocations = getPatientEncounter() != null
+                ? resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage()) : new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
             double discountValue = 0;
             switch (cit.getInwardChargeType()) {
@@ -1605,11 +1607,35 @@ public class BhtSummeryController implements Serializable {
                     discountValue = discountSet(cit);
             }
 
-            cit.setDiscount(discountValue);
+            // Package-covered rows are held at the package's flat allocated
+            // price (see applyPackagePricingIfApplicable()) — a price-matrix
+            // discount computed against the real underlying charge must not
+            // be copied onto that flat row (it would silently reduce the
+            // package price at settle time). The matrix recalculation above
+            // still runs and still updates the real PatientRoom/BillFee
+            // discount fields; only the flat package row's own discount is
+            // held at zero. chargeTypeDiscount (the manual staff adjustment)
+            // is untouched either way.
+            cit.setDiscount(packageAllocations.containsKey(cit.getInwardChargeType()) ? 0.0 : discountValue);
             cit.setAdjustedTotal(cit.getTotal());
 
         }
 
+    }
+
+    /**
+     * The package's price broken down per InwardChargeType, or an empty map
+     * when {@code inpatientPackage} is null. Shared by
+     * {@link #applyPackagePricingIfApplicable()} and {@link #calculateDiscount()}
+     * so both agree on exactly which charge types the package covers.
+     */
+    private Map<InwardChargeType, Double> resolvePackageChargeTypeAllocationsIfApplicable(InpatientPackage inpatientPackage) {
+        if (inpatientPackage == null) {
+            return new HashMap<>();
+        }
+        Map<InwardChargeType, Double> componentAllocations = resolveComponentChargeTypeAllocations(inpatientPackage);
+        return InpatientPackagePricing.calculateChargeTypeAllocations(
+                inpatientPackage.getChargeTypeAmounts(), componentAllocations);
     }
 
     public double discountSet(ChargeItemTotal cit, double discountPercent) {
@@ -5636,9 +5662,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        Map<InwardChargeType, Double> componentAllocations = resolveComponentChargeTypeAllocations(inpatientPackage);
-        Map<InwardChargeType, Double> perCategoryAllocations = InpatientPackagePricing.calculateChargeTypeAllocations(
-                inpatientPackage.getChargeTypeAmounts(), componentAllocations);
+        Map<InwardChargeType, Double> perCategoryAllocations = resolvePackageChargeTypeAllocationsIfApplicable(inpatientPackage);
 
         Map<InwardChargeType, Double> actualTotalsByType = new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
