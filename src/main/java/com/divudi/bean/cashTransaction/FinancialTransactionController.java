@@ -5366,6 +5366,13 @@ public class FinancialTransactionController implements Serializable {
                 // Net To Handover formula, which must reflect physical cash only (non-cash
                 // floats are already tracked via the currentHolder mechanism on original payments).
                 if (isFundTransferPayment(p)) {
+                    // Accepting a handover resets the sender's floats to handingOverStarted=false
+                    // but marks them completed / in the cashbook while the sender stays their
+                    // current holder, so the hold queries return them again. They were already
+                    // handed over and must not be counted a second time (#24170).
+                    if (p.isHandingOverCompleted() || p.getCashbookEntryStated()) {
+                        continue;
+                    }
                     if (p.getBill() != null) {
                         BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
                         if (bta == BillTypeAtomic.FUND_TRANSFER_BILL
