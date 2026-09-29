@@ -26,7 +26,6 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
 import com.divudi.core.entity.inward.RoomCategory;
-import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.facade.CategoryFacade;
@@ -1049,20 +1048,24 @@ public class InwardPriceAdjustmentApi {
             Institution creditCompany = resolveSingleCreditCompany(encounter);
             RoomCategory roomCategory = resolveCurrentRoomCategory(encounter);
 
-            // The category actually used by the price-matrix lookup: for an
-            // Investigation it is the investigation category (unless the config
-            // flag swaps it for the plain category), matching fetchInwardMargin.
-            Category effectiveCategory;
-            if (item instanceof Investigation
-                    && !configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")) {
-                effectiveCategory = ((Investigation) item).getInvestigationCategory();
-            } else {
-                effectiveCategory = item.getCategory();
-            }
+            // The category actually used by the price-matrix lookup: item.getCategory()
+            // first, falling back to the deprecated Investigation.getInvestigationCategory()
+            // only when category is null — same helper fetchInwardMargin uses (issue #24155).
+            Category effectiveCategory = priceMatrixController.resolveInwardMatrixCategory(item);
 
-            // Price-matrix lookup: reuse the exact cascade + config gating used in billing,
-            // including the admission-type and room-category dimensions (issues #21551, #21977).
-            PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, creditCompany, admissionType, roomCategory);
+            // Price-matrix lookup: mirror billing exactly (issue #24155). BillBhtController.
+            // billFeeFromBillItemWithMatrix always passes creditCompany = null for the base
+            // lookup; InwardBeanController.setBillFeeMargin then tries a credit-company-specific
+            // override against the same department and only replaces the base result when a
+            // CC-specific row is actually found. Report both so a credit-company patient's
+            // diagnostic matches what billing will really do, instead of the single combined
+            // lookup this used to run (which, unlike billing, never fell back from a
+            // creditCompany-specific miss to the generic row).
+            PriceMatrix basePriceMatrix = priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, null, admissionType, roomCategory);
+            PriceMatrix creditCompanyPriceMatrix = creditCompany != null
+                    ? priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, creditCompany, admissionType, roomCategory)
+                    : null;
+            PriceMatrix priceMatrix = creditCompanyPriceMatrix != null ? creditCompanyPriceMatrix : basePriceMatrix;
 
             // Margin is applied to every non-Staff fee on the item: BillBhtController
             // creates a BillFee per item fee and calls setBillFeeMargin, whose
@@ -1091,6 +1094,7 @@ public class InwardPriceAdjustmentApi {
             checks.add(check("PriceMatrix row found", matrixFound,
                     matrixFound
                             ? "ID " + priceMatrix.getId() + ", margin=" + priceMatrix.getMargin() + "%"
+                                    + (creditCompanyPriceMatrix != null ? " (credit-company-specific override)" : " (base row)")
                             : "No matching InwardPriceAdjustment for dept=" + departmentId
                                     + ", category=" + (effectiveCategory != null ? effectiveCategory.getId() : "null")
                                     + ", price=" + price
@@ -1140,6 +1144,10 @@ public class InwardPriceAdjustmentApi {
             data.put("expectedMarginPercent", matrixFound ? priceMatrix.getMargin() : null);
             data.put("expectedMarginValue",
                     (marginWillBeApplied && priceMatrix.getMargin() != null) ? (price * priceMatrix.getMargin()) / 100.0 : null);
+            data.put("basePriceMatrixId", basePriceMatrix != null ? basePriceMatrix.getId() : null);
+            data.put("basePriceMatrixMarginPercent", basePriceMatrix != null ? basePriceMatrix.getMargin() : null);
+            data.put("creditCompanyPriceMatrixId", creditCompanyPriceMatrix != null ? creditCompanyPriceMatrix.getId() : null);
+            data.put("creditCompanyPriceMatrixMarginPercent", creditCompanyPriceMatrix != null ? creditCompanyPriceMatrix.getMargin() : null);
             data.put("checks", checks);
 
             LOGGER.log(java.util.logging.Level.INFO,

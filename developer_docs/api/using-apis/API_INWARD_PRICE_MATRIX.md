@@ -46,6 +46,21 @@ both, or neither, and `roomCategory` participates in duplicate-combination match
 
 ---
 
+## Category resolution at lookup time (Investigations)
+
+`categoryId` on a row is matched at billing time against the item's **canonical** category:
+`Item.category` first, falling back to the deprecated `Investigation.investigationCategory` only
+when `category` is null (issue #24155, following #24038's move to `Item.category` as the
+canonical field for investigations). This applies whether or not the legacy config option "Get
+Category Instead of Investigation Category In Price Matrix" is set — with category checked first,
+that option no longer changes the outcome.
+
+When configuring a matrix row for an Investigation, use the category shown on the investigation's
+own `categoryId` (`Item.category`), not its legacy investigation category, or the row may never
+match if the item has already been migrated to the canonical field.
+
+---
+
 ## Authentication
 
 All endpoints require a valid API key in the `Finance` header, resolved via `ApiKeyController`.
