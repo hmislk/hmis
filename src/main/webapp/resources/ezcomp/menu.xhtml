@@ -458,6 +458,14 @@
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
                         </p:menuitem>
 
+                        <p:menuitem
+                            ajax="false"
+                            value="Package Admission"
+                            action="#{inpatientPackageAdmissionController.navigateToPackageAdmitFromMenu()}"
+                            icon="fa fa-box-archive"
+                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
+                        </p:menuitem>
+
                     </p:submenu>
 
                     <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAppointmentMenu')}">
@@ -474,13 +482,6 @@
                             action="#{appointmentController.navigateToAppointmentAdminFromMenu()}"
                             icon="fa fa-user-plus"
                             rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
-                        </p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            value="Package Admission"
-                            action="#{inpatientPackageAdmissionController.navigateToPackageAdmitFromMenu()}"
-                            icon="fa fa-box-archive"
-                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
@@ -2160,15 +2161,7 @@
                     </p:menuitem>
                     <p:menuitem
                         ajax="false"
-                        value="Manage Inpatient Packages"
-                        action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}"
-                        icon="fa fa-box-archive"
-                        rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}">
-                    </p:menuitem>
-
-                    <p:menuitem
-                        ajax="false"  
-                        action="#{pharmacyController.navigateToManagePharmaceuticals}" 
+                        action="#{pharmacyController.navigateToManagePharmaceuticals}"
                         value="Pharmaceutical Management" 
                         icon="fa fa-medkit"
                         rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" >

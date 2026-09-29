@@ -85,7 +85,7 @@
                                     class="ui-button-warning"
                                     process="btnSavePackage gpPackageDetail"
                                     style="float: right"
-                                    update="lstSelectPackage">
+                                    update="lstSelectPackage gpPackageDetail">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSavePackage"/>
                             </f:facet>
@@ -112,14 +112,37 @@
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
                                 <p:inputNumber id="txtIncludedDuration" value="#{inpatientPackageController.current.includedRoomDurationHours}" class="w-100" minValue="0"/>
 
-                                <h:outputText value="Fixed Room Charge"></h:outputText>
-                                <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
-                                <p:inputNumber id="txtFixedRoomCharge" value="#{inpatientPackageController.current.fixedRoomCharge}" class="w-100" minValue="0"/>
-
                                 <h:outputText value="Total Package Price"></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
                                 <p:outputLabel id="lblTotalPrice" value="#{inpatientPackageController.current.totalPrice}"/>
                             </h:panelGrid>
+
+                            <p:panel class="mt-3">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Charge Type Amounts"/>
+                                </f:facet>
+                                <p:outputLabel value="Enter a price against each charge category this package should include. Total Package Price is the sum of the amounts entered here plus any Manage Components items." styleClass="text-muted small"/>
+                                <p:dataTable
+                                    id="tblChargeTypeAmounts"
+                                    var="ct"
+                                    value="#{enumController.getInwardChargeTypesForSetting()}"
+                                    rowKey="#{ct.name()}"
+                                    widgetVar="wTblChargeTypeAmounts"
+                                    styleClass="p-datatable-sm mt-2"
+                                    scrollable="true"
+                                    scrollHeight="400">
+                                    <p:column headerText="Charge Category" style="width: 60%;">
+                                        <h:outputText value="#{ct.toString()}"/>
+                                    </p:column>
+                                    <p:column headerText="Amount" style="width: 40%;">
+                                        <p:inputText
+                                            style="width: 100%; text-align: right;"
+                                            value="#{inpatientPackageController.amountInputMap[ct.name()]}"
+                                            title="Amount for #{ct.toString()}">
+                                        </p:inputText>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
 
                             <h:panelGroup rendered="#{inpatientPackageController.current.id ne null}">
                                 <p:commandButton

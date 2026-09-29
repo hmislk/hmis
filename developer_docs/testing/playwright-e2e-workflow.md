@@ -1033,6 +1033,12 @@ next page load — no redeploy or Payara restart needed. Reserve raw SQL for *re
 state (e.g. confirming a key auto-created with the right default on first access), never for
 writing it mid-test.
 
+The same cache applies to **any entity**, not just `ConfigOption`. A fixture row that is newly
+`INSERT`ed is picked up by the next query (it is not in the cache yet), but an `UPDATE` to a row the
+app has already loaded is not (issue #24150: retargeting a `PatientTransferRequest` fixture to a
+different room kept rendering the old room). When a hand-built local fixture must be *changed* after
+the app has read it, redeploy (or restart the domain) before re-checking, or insert a fresh row instead.
+
 ## 27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain
 
 On a box with two Payara installs (e.g. `/home/carecode/payara` domain `rh` admin port **9048**,
@@ -3988,6 +3994,68 @@ container. The live page is untouched server-side — the clone is client-only a
 navigation. Trim any page bleed around the clone afterwards (a PIL crop to the print's background colour is
 enough).
 
+This is not specific to print pages. On the Inpatient Dashboard (`admission_profile.xhtml`), too, element
+screenshots (`browser_take_screenshot` with `target`) of a banner/alert land on the wrong region at
+`devicePixelRatio` 0.75, and each miss captured the **Patient Details** panel with a real patient name
+(issue #24150). Manual crops of a viewport screenshot using `getBoundingClientRect()` coordinates missed too.
+Use the fixed-overlay clone above for *any* element you want as evidence on these pages, and check each
+image before it leaves `tmp/`.
+
 Related: a PrimeFaces `p:toggleSwitch` (e.g. the **FOC** switch on *Add Professional Fee*) ignores clicks on
 its hidden `<input>`; click its `.ui-toggleswitch-slider` child instead, then confirm with
 `document.getElementById('<id>_input').checked`.
+
+## 134. `f:validateRegex` on a `p:inputText` bound to a `Map<String,String>` entry fires even on a blank/untouched row — with no visible error
+
+Building the Inpatient Package "Charge Type Amounts" grid (issue #24127) — one `p:inputText` per
+`InwardChargeType`, each bound to a per-row `Map<String,String>` entry
+(`#{controller.amountInputMap[ct.name()]}`, the established pattern from
+`InwardChargeTypeLabelController`) — an `<f:validateRegex pattern="^\d{1,10}(\.\d{1,2})?$"/>` on that
+input silently blocked every Save: JSF's normal "skip attached validators when the submitted value is an
+empty string" behavior did not hold here, so **every blank row in the grid failed the regex**, not just
+the ones a user actually typed into. Symptom was easy to miss: Save just did nothing — `p:growl` stayed
+empty (no `ui-message` element rendered anywhere, since no `h:message` was wired to the per-row inputs),
+and the only server-visible trace was `aria-invalid="true"` plus a `ui-state-error` class on every empty
+`<input>` in the re-rendered panel (confirm with a `browser_evaluate` counting
+`input.className.includes('ui-state-error')` across the grid — in this case 24 of 25 rows on the visible
+page, the one exception being the single row that actually had a valid value typed in).
+
+Fix: drop the `f:validateRegex` entirely and rely on server-side parsing instead (the controller's
+`saveSelected()` already had to tolerantly parse each map entry into a `Double`, skipping blank/unparsable
+ones — that parse step is the real validation and doesn't need a client-side echo). If client-side format
+hinting is still wanted for a Map-bound field, verify empty rows explicitly (fill nothing, Save, assert no
+`ui-state-error`) rather than assuming the standard JSF empty-value skip applies.
+
+Separately: a `p:dataTable` with `paginator="true"` only keeps the **current page's** rows in the DOM —
+editing page 1, clicking to page 2, then Save only submits page 2's inputs; page 1's edits are silently
+lost (nothing in the DOM to decode them from). For a grid with a single page-level Save button (no
+per-row save), use `scrollable="true" scrollHeight="..."` instead of pagination so every row stays in the
+DOM and submits together.
+
+## 135. A brand-new `Privileges` enum value is invisible in Manage Users → Manage Privileges until it's also registered in `UserPrivilageController`'s hand-built tree — and a mid-session grant needs a fresh login to take effect
+
+Adding a new panel/action gated by a brand-new `Privileges` enum constant (issue #24133: `InpatientDashboardPanelPackage`, `InwardPackageChange`) is not enough on its own to test it — two separate, easy-to-miss gaps:
+
+1. **The privilege-assignment UI has its own registry, separate from the enum.** `Privileges.java`'s
+   category `switch` (the block with `case InwardPackageAdmission:` etc.) only controls which broad
+   category (`"Inward"`, `"OPD"`, …) a privilege *reports as* — it does **not** make the privilege
+   selectable anywhere. The actual tree shown on **Administration → Manage Users → View Staff Users →
+   (select user) → Manage Privileges → List Privileges** is hand-built, one `new
+   DefaultTreeNode(new PrivilegeHolder(Privileges.X, "Label"), parentNode)` call per privilege, in
+   `UserPrivilageController.createPrivilegeHolderTreeNodes()`. A privilege missing from that method
+   compiles fine, works fine in `hasPrivilege(...)` checks, and is simply **absent from the tree** — no
+   error, just nothing to search for or check. Confirm with `document.body.textContent.includes('<your
+   label>')` after "List Privileges" (use `textContent`, not `innerText` — collapsed tree branches are
+   `display:none` and `innerText` silently excludes them). Fix: add the missing
+   `new DefaultTreeNode(new PrivilegeHolder(Privileges.YourNewPrivilege, "Label"), someExistingParentNode)`
+   line next to its siblings (e.g. alongside `InpatientDashboardPanelRoomManagement` under
+   `dashboardPanelsNode`, or alongside `InwardPackageAdmission` under `inwardPackageNode`).
+
+2. **`SessionController.getUserPrivileges()` lazily loads once and caches for the whole HTTP session**
+   (`if (userPrivilages == null) { userPrivilages = fillUserPrivileges(...); }`). Granting a privilege to
+   the currently-logged-in test user via "Update User Privileges" does **not** retroactively affect that
+   same browser session — the panel/button stays invisible until a genuinely fresh login. `document.cookie`
+   manipulation does **not** force this: the session cookie is `HttpOnly`, invisible to JS, so clearing
+   `document.cookie` and reloading just resumes the same session. Use the app's own logout instead —
+   `document.querySelector('[id$="btnLogout"]')?.click()` (the logout `p:commandButton`'s id always ends
+   in `btnLogout` regardless of the generated `j_idt###` form prefix) — then log back in.

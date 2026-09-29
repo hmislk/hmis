@@ -180,6 +180,23 @@ public class CapabilityStatementResource {
                 .add(resource("Admission Number Counters", "/api/admission-numbers",
                         "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
                         "API Key (Finance header)", "GET", "PUT"))
+                .add(resource("Inpatient Packages", "/api/inpatient-packages",
+                        "Manage InpatientPackage master data — fixed-price package headers (per AdmissionType + "
+                        + "RoomCategory) and their InpatientPackageItem components (services, timed items, "
+                        + "professional-fee roles, outside charges, pharmacy items). Distinct from Admission "
+                        + "Charges, which are additive routine charges rather than a bundled package price. "
+                        + "POST creates a full package (header + items[] in one call). "
+                        + "GET lists non-retired packages, optionally filtered by admissionTypeId/roomCategoryId; "
+                        + "GET /{id} fetches one with its items. "
+                        + "PUT /{id} always overwrites header fields; items[] is only replaced when the request "
+                        + "includes an \"items\" key — entries with an id update that component, entries without "
+                        + "an id create a new one, and any existing component missing from the array is "
+                        + "soft-retired; omitting \"items\" entirely leaves existing components untouched. "
+                        + "totalPrice and fixedRoomCharge (derived from chargeTypeAmounts[\"RoomCharges\"]) are "
+                        + "always server-computed and ignored on input. "
+                        + "POST /{id}/retire soft-retires the whole package (body: {retireComments}).",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT"))
                 .add(resource("Admission Search", "/api/inward/admissions",
                         "General-purpose admission search — list all currently active (not-discharged) "
                         + "admissions, or search past or current admissions by BHT no, patient name, "
@@ -534,7 +551,8 @@ public class CapabilityStatementResource {
                         + "— at least one is required. itemType targets every item of that subtype directly (e.g. every "
                         + "Investigation) since there is no API to enumerate every category id to loop over instead; "
                         + "categoryId alone still works and is not InvestigationCategory-restricted. "
-                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null). "
+                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false; "
+                        + "null is treated as allowed, matching billing). "
                         + "GET /search also filters on code (item code, substring), so a bulk load can be made idempotent on "
                         + "the natural key rather than on an inexact name match. "
                         + "financialCategoryId (a Category of type FINANCIAL_CATEGORY — the income account) is settable on "

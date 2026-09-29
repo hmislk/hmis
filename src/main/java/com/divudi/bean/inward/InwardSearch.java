@@ -106,6 +106,8 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     private com.divudi.service.AuditService auditService;
+    @Inject
+    private NotificationController notificationController;
     @EJB
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
@@ -944,6 +946,7 @@ public class InwardSearch implements Serializable {
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
                 null, b.getId(), sessionController.getLoggedUser(),
                 "Bill", b.getId());
+        notificationController.createInwardFinalBillNotification(b, "FinalBillApproved");
 
         JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
@@ -3683,6 +3686,10 @@ public class InwardSearch implements Serializable {
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
         boolean showAdmissionType = configOptionApplicationController
                 .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
         boolean showPatientAddress = configOptionApplicationController
@@ -3698,7 +3705,7 @@ public class InwardSearch implements Serializable {
                         ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
                 true, preprinted, topMargin, emitEscP, multiplePayments,
-                showAdmissionType, showPatientAddress, showPatientPhone);
+                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
 
         String fileName = "inward-reprint-"
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())

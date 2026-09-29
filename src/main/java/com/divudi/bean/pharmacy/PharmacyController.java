@@ -265,8 +265,9 @@ public class PharmacyController implements Serializable {
     private PaymentMethod paymentMethod;
     private String reportType;
     // Purchase-type filter for the GRN Summary Report page (grn_summary_report.xhtml).
-    // "grn" restricts to GRN bill types, "direct" to Direct Purchase bill types,
-    // null/unset keeps the existing behaviour of generateGrnReport() (all types). Issue #22984.
+    // "grn" = GRNs + GRN cancellations, "direct" = Direct Purchases + their cancellations,
+    // "grnReturn" = GRN Returns, "directReturn" = Direct Purchase Returns,
+    // null/unset = all of them. Issues #22984, #24107.
     private String purchaseType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
@@ -2539,7 +2540,7 @@ public class PharmacyController implements Serializable {
         filters.put("Site", site != null ? site.getName() : "All Sites");
         filters.put("Department/Store", dept != null ? dept.getName() : "All Departments");
         filters.put("Payment Mode", paymentMethod != null ? paymentMethod.getLabel() : "All Modes");
-        filters.put("Purchase Type", "grn".equals(purchaseType) ? "GRN" : "direct".equals(purchaseType) ? "Direct Purchase" : "All Types");
+        filters.put("Purchase Type", grnSummaryPurchaseTypeLabel());
 
         return filters;
     }
@@ -10716,29 +10717,49 @@ public class PharmacyController implements Serializable {
     public void generateGrnReport() {
         resetFields();
 
+        // Each option covers a purchase type together with its own reversals, so the
+        // period total nets correctly: a cancellation is counted in the period its
+        // cancellation bill was made, whether the original GRN / Direct Purchase falls
+        // inside the period or before the From date. Issue #24107.
+        boolean allTypes = purchaseType == null || purchaseType.trim().isEmpty();
         List<BillTypeAtomic> bta = new ArrayList<>();
-
-        if (!"direct".equals(purchaseType)) {
+        if (allTypes || "grn".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_GRN);
-            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
         }
-        if (!"grn".equals(purchaseType)) {
+        if (allTypes || "direct".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        }
+        if (allTypes || "grnReturn".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            // Deprecated legacy GRN return type, still present in older databases.
+            bta.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        }
+        if (allTypes || "directReturn".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         }
 
         bills = new ArrayList<>();
 
+        // Returns count only once approved: unapproved ones never moved stock (issue
+        // #24110). GRNs / Direct Purchases count only once they carry a bill number:
+        // unnumbered ones are saved drafts that never moved stock. Cancellations and
+        // legacy PHARMACY_GRN_REFUND bills (from a flow with no approval step) always count.
         String sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
                 + " and b.billTypeAtomic In :btas"
-                + " and b.createdAt between :fromDate and :toDate";
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and ((b.billTypeAtomic IN :returnBtas AND b.completed = true)"
+                + " or (b.billTypeAtomic IN :purchaseBtas AND b.deptId IS NOT NULL)"
+                + " or b.billTypeAtomic IN :alwaysIncludedBtas)";
 
         Map<String, Object> tmp = new HashMap<>();
 
         tmp.put("btas", bta);
+        tmp.put("returnBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_RETURN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND));
+        tmp.put("purchaseBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE));
+        tmp.put("alwaysIncludedBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_CANCELLED, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED, BillTypeAtomic.PHARMACY_GRN_REFUND));
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -10767,6 +10788,7 @@ public class PharmacyController implements Serializable {
             tmp.put("supplier", fromInstitution);
             List<BillTypeAtomic> refundBtas = new ArrayList<>();
             refundBtas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            refundBtas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             refundBtas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             tmp.put("refundBtas", refundBtas);
         }
@@ -10863,28 +10885,100 @@ public class PharmacyController implements Serializable {
             return BigDecimal.ZERO;
         }
         BigDecimal amt = grnStockAmountsByBillId.get(bill.getId());
-        return amt != null ? amt : BigDecimal.ZERO;
+        return amt != null ? amt.abs().multiply(BigDecimal.valueOf(grnSummarySign(bill))) : BigDecimal.ZERO;
     }
 
     /**
-     * Display-only sign-flip of {@link Bill#getNetTotal()} for the GRN Summary
-     * Report's "Amount" column. The stored value is intentional and unchanged
-     * (negative for purchases/money-out, positive for cancellations/returns/
-     * money-back) — this only flips the sign shown on screen so an Approved
-     * GRN/Direct Purchase reads positive (value received) and a Cancelled or
-     * Returned one reads negative (value reversed), matching how staff expect
-     * to read the report. See issue #23604.
+     * Display sign of a GRN Summary Report row, decided by bill type rather than
+     * by the stored sign of the bill's values. Stored signs are not consistent
+     * across the legacy and workflow return screens: a GRN Return's netTotal can
+     * be stored either positive or negative. Receipts (GRN, Direct Purchase)
+     * read positive; cancellations and returns read negative, since they reverse
+     * the purchase and stock value. See issues #24107 and #24108.
+     */
+    private int grnSummarySign(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return 1;
+        }
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_GRN_CANCELLED:
+            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
+            case PHARMACY_GRN_RETURN:
+            case PHARMACY_GRN_REFUND:
+            case PHARMACY_DIRECT_PURCHASE_REFUND:
+                return -1;
+            default:
+                return 1;
+        }
+    }
+
+    private String grnSummaryPurchaseTypeLabel() {
+        if (purchaseType == null || purchaseType.trim().isEmpty()) {
+            return "All Types";
+        }
+        switch (purchaseType) {
+            case "grn":
+                return "GRN";
+            case "direct":
+                return "Direct Purchase";
+            case "grnReturn":
+                return "GRN Return";
+            case "directReturn":
+                return "Direct Purchase Return";
+            default:
+                return "All Types";
+        }
+    }
+
+    /**
+     * "Amount" column of the GRN Summary Report: the bill's net total, signed by
+     * {@link #grnSummarySign(Bill)}. See issues #23604 and #24108.
      */
     public double getGrnDisplayAmount(Bill bill) {
-        return bill == null ? 0.0 : -1 * bill.getNetTotal();
+        // "+ 0.0" normalises -0.0 so a zero value never renders as "-0.00".
+        return bill == null ? 0.0 : grnSummarySign(bill) * Math.abs(bill.getNetTotal()) + 0.0;
     }
 
     /**
-     * Display-only magnitude of {@link Bill#getDiscount()} for the GRN Summary
-     * Report — see {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
+     * "Dis. Amount" column of the GRN Summary Report, signed the same way as
+     * {@link #getGrnDisplayAmount(Bill)} so the column totals net correctly.
      */
     public double getGrnDisplayDiscount(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getDiscount());
+        return bill == null ? 0.0 : grnSummarySign(bill) * Math.abs(bill.getDiscount()) + 0.0;
+    }
+
+    /**
+     * Footer totals of the GRN Summary Report: the sums of the displayed row
+     * values, so a footer always equals the rows above it. Issue #24107.
+     */
+    public double getGrnSummaryTotalAmount() {
+        double total = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                total += getGrnDisplayAmount(bill);
+            }
+        }
+        return total;
+    }
+
+    public double getGrnSummaryTotalDiscount() {
+        double total = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                total += getGrnDisplayDiscount(bill);
+            }
+        }
+        return total;
+    }
+
+    public BigDecimal getGrnSummaryTotalStockAmount() {
+        BigDecimal total = BigDecimal.ZERO;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                total = total.add(getGrnStockAmount(bill));
+            }
+        }
+        return total;
     }
 
     /**
@@ -10899,7 +10993,8 @@ public class PharmacyController implements Serializable {
         }
         BillTypeAtomic bta = bill.getBillTypeAtomic();
         double value;
-        if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN))) {
+        if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                || bta.equals(BillTypeAtomic.PHARMACY_GRN_REFUND))) {
             value = -1 * (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0);
         } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
             value = -1 * bill.getNetTotal();
@@ -10917,7 +11012,7 @@ public class PharmacyController implements Serializable {
      * same sign rule as {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
      */
     public double getGrnSummaryPrintGrnSubTotal(Bill bill) {
-        return bill == null ? 0.0 : -1 * bill.getNetTotal();
+        return getGrnDisplayAmount(bill);
     }
 
     /**
@@ -10938,11 +11033,11 @@ public class PharmacyController implements Serializable {
 
     /**
      * Display-only sign-flip of the Print view's "GRN Sub Total" footer total
-     * — the sum of each row's {@link #getGrnSummaryPrintGrnSubTotal(Bill)},
-     * i.e. {@code -calculateTotalGrnAmount()}. See issue #23604.
+     * — the sum of each row's {@link #getGrnSummaryPrintGrnSubTotal(Bill)}.
+     * See issues #23604 and #24108.
      */
     public double getGrnSummaryPrintTotalGrnAmount() {
-        return -1 * calculateTotalGrnAmount();
+        return getGrnSummaryTotalAmount();
     }
 
     public Double calculateTotalGrnAmount() {
@@ -11624,14 +11719,9 @@ public class PharmacyController implements Serializable {
                 table.addCell(cell);
             }
 
-            BigDecimal totalDiscount = BigDecimal.ZERO;
-            BigDecimal totalStockAmount = BigDecimal.ZERO;
-
             int index = 1;
             for (Bill f : rows) {
                 BigDecimal stockAmount = getGrnStockAmount(f);
-                totalDiscount = totalDiscount.add(BigDecimal.valueOf(f.getDiscount()));
-                totalStockAmount = totalStockAmount.add(stockAmount);
 
                 table.addCell(numCell(index++, bodyFontSmall));
                 table.addCell(textCell(f.getDeptId(), bodyFontSmall));
@@ -11639,7 +11729,8 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell(f.getCreatedAt() != null ? sdfDateOnly.format(f.getCreatedAt()) : "-", bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceNumber(), bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceDate() != null ? sdfDateOnly.format(f.getInvoiceDate()) : "-", bodyFontSmall));
-                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
+                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_REFUND
+                        || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
                         ? (f.getToInstitution() != null ? f.getToInstitution().getName() : "-")
                         : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
                 table.addCell(textCell(f.getPaymentMethod() != null ? f.getPaymentMethod().getLabel() : "-", bodyFontSmall));
@@ -11659,9 +11750,9 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(-1 * calculateTotalGrnAmount(), bodyFontSmall));
-            table.addCell(numCell(Math.abs(totalDiscount.doubleValue()), bodyFontSmall));
-            table.addCell(numCell(totalStockAmount.doubleValue(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryTotalAmount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryTotalDiscount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryTotalStockAmount().doubleValue(), bodyFontSmall));
             com.itextpdf.text.pdf.PdfPCell blankStatusFooterCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(""));
             blankStatusFooterCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
             table.addCell(blankStatusFooterCell);
@@ -11679,10 +11770,10 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Same "Status" logic as the on-screen GRN Summary Report table
-     * (grn_summary_report.xhtml) — kept here so the PDF export matches it.
+     * "Status" column of the GRN Summary Report, shared by the on-screen table
+     * (grn_summary_report.xhtml) and the PDF export so both always match.
      */
-    private String grnSummaryStatusLabel(Bill bill) {
+    public String grnSummaryStatusLabel(Bill bill) {
         if (bill == null || bill.getBillTypeAtomic() == null) {
             return "-";
         }
@@ -11690,14 +11781,15 @@ public class PharmacyController implements Serializable {
         if (bta == BillTypeAtomic.PHARMACY_GRN_CANCELLED || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) {
             return "Cancelled";
         }
-        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
+        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_GRN_REFUND
+                || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
             return "Returned";
         }
-        if ((bta == BillTypeAtomic.PHARMACY_GRN && bill.isCompleted()) || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
-            return "Approved";
-        }
-        if (bta == BillTypeAtomic.PHARMACY_GRN && !bill.isCompleted()) {
-            return "Pending Approval";
+        if (bta == BillTypeAtomic.PHARMACY_GRN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
+            // Only numbered (received) GRNs / Direct Purchases reach this report, see
+            // generateGrnReport(). A later cancellation is listed as its own negative
+            // row, so the original and its cancellation net to zero. Issue #24107.
+            return bill.isCancelled() ? "Approved (Cancelled)" : "Approved";
         }
         return "-";
     }

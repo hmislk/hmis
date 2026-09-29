@@ -13,6 +13,7 @@ import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
+import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.SessionController;
@@ -161,6 +162,8 @@ public class BhtSummeryController implements Serializable {
     //////////////////////////
     @EJB
     private com.divudi.service.AuditService auditService;
+    @Inject
+    private NotificationController notificationController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -2839,6 +2842,7 @@ public class BhtSummeryController implements Serializable {
         auditService.logEncounterAudit(getPatientEncounter(), "Final Bill Settled",
                 null, settlementState, sessionController.getLoggedUser(),
                 "Bill", getCurrent().getId());
+        notificationController.createInwardFinalBillNotification(getCurrent(), "FinalBillCreated");
 
         JsfUtil.addSuccessMessage("Bill Saved");
 

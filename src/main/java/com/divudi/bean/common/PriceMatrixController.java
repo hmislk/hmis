@@ -118,27 +118,32 @@ public class PriceMatrixController implements Serializable {
     }
 
     /**
-     * The category the inward price-matrix lookup uses for an item: the
-     * investigation category for investigations (unless the config flag swaps
-     * it for the plain category), otherwise the item's category.
+     * The canonical category the inward price-matrix lookup uses for an item
+     * (issue #24155, following #24038's move to {@code Item.category} as the
+     * canonical field): the item's own category first, falling back to the
+     * deprecated {@code Investigation.getInvestigationCategory()} only when
+     * category is null. Category is now checked first regardless of the
+     * legacy config key "Get Category Instead of Investigation Category In
+     * Price Matrix" — that key is effectively always on, but is left readable
+     * so an existing configuration entry does not break; the fallback below
+     * still runs even when the key is off, so old data with only
+     * investigationCategory populated keeps matching.
      */
-    private Category resolveInwardMatrixCategory(Item item) {
-        if (item instanceof Investigation
-                && !configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")) {
-            return ((Investigation) item).getInvestigationCategory();
+    public Category resolveInwardMatrixCategory(Item item) {
+        if (item == null) {
+            return null;
         }
-        return item.getCategory();
+        Category category = item.getCategory();
+        if (category == null && item instanceof Investigation) {
+            category = ((Investigation) item).getInvestigationCategory();
+        }
+        return category;
     }
 
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
 
         PriceMatrix inwardPriceAdjustment;
-        Category category;
-        if (item instanceof Investigation) {
-            category = ((Investigation) item).getInvestigationCategory();
-        } else {
-            category = item.getCategory();
-        }
+        Category category = resolveInwardMatrixCategory(item);
 
         inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
 
@@ -312,12 +317,7 @@ public class PriceMatrixController implements Serializable {
 
         PriceMatrix inwardPriceAdjustment;
 
-        Category category;
-        if (item instanceof Investigation) {
-            category = ((Investigation) item).getInvestigationCategory();
-        } else {
-            category = item.getCategory();
-        }
+        Category category = resolveInwardMatrixCategory(item);
         if (category == null) {
             return item.getTotal();
         }

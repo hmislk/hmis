@@ -18180,7 +18180,10 @@ public class SearchController implements Serializable {
             double opdDepositTotal = opdPatientDepositPayments.getTotal();
             opdPatientDepositPayments.setTotal(-opdDepositTotal);
             bundle.getBundles().add(opdPatientDepositPayments);
-            collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
+            // Deduct the raw signed utilization (the bundle total above is inverted for display), not
+            // Math.abs(): on a day where deposit-paid cancellations return more to deposits than was used,
+            // net utilization is negative and must be added back, not deducted (issue #23968).
+            collectionForTheDay -= opdDepositTotal;
 
             // Pharmacy Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle pharmacyPatientDepositPayments = generatePharmacyPatientDepositPayments();
@@ -18190,7 +18193,7 @@ public class SearchController implements Serializable {
             pharmacyPatientDepositPayments.setTotal(-pharmacyDepositTotal);
             bundle.getBundles().add(pharmacyPatientDepositPayments);
             double collectionBeforeDeduction = collectionForTheDay;
-            double deductionAmount = Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
+            double deductionAmount = pharmacyDepositTotal; // raw signed utilization - see OPD above
             collectionForTheDay -= deductionAmount;
 
             // Inpatient Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
@@ -18200,7 +18203,7 @@ public class SearchController implements Serializable {
             double inwardDepositTotal = inwardPatientDepositPayments.getTotal();
             inwardPatientDepositPayments.setTotal(-inwardDepositTotal);
             bundle.getBundles().add(inwardPatientDepositPayments);
-            collectionForTheDay -= Math.abs(getSafeTotal(inwardPatientDepositPayments));
+            collectionForTheDay -= inwardDepositTotal; // raw signed utilization - see OPD above
 
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
@@ -18325,7 +18328,7 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(patientDepositUtilization);
 
             // 3. Carried out Patient Deposit Value (Receipts - Utilization)
-            double carriedOutDepositValue = patientDepositReceiptsSummary.getTotal() - Math.abs(getSafeTotal(patientDepositUtilization));
+            double carriedOutDepositValue = patientDepositReceiptsSummary.getTotal() - getSafeTotal(patientDepositUtilization); // signed (this bundle is not inverted) - see OPD above
             ReportTemplateRowBundle carriedOutPatientDeposit = new ReportTemplateRowBundle();
             carriedOutPatientDeposit.setName("Carried out Patient Deposit Value");
             carriedOutPatientDeposit.setBundleType("carriedOutPatientDeposit");
