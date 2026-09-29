@@ -181,8 +181,9 @@ public class NotificationController implements Serializable {
      * admission profile).
      * <p>
      * Non-blocking: callers invoke this after the final bill / approval has
-     * already been committed, so a notification failure is logged and
-     * reported as a warning instead of propagating — otherwise the caller's
+     * already been committed, so a notification failure is logged per
+     * trigger (the remaining media still run) and reported as a warning
+     * instead of propagating — otherwise the caller's
      * success message and print preview are skipped and the user may retry an
      * action that already succeeded (same treatment as the PDF snapshot
      * failure in InwardSearch.approveFinalBillVersion).
@@ -208,32 +209,44 @@ public class NotificationController implements Serializable {
             default:
                 throw new AssertionError();
         }
-        try {
-            createInwardFinalBillNotifications(finalBill, parent, templateKey, defaultMessage);
-        } catch (RuntimeException ex) {
-            java.util.logging.Logger.getLogger(NotificationController.class.getName())
-                    .log(java.util.logging.Level.SEVERE, "Inward final bill notification failed (" + action + ")", ex);
-            JsfUtil.addErrorMessage("Saved, but subscriber notifications could not be sent.");
-        }
+        createInwardFinalBillNotifications(finalBill, parent, templateKey, defaultMessage);
     }
 
     private void createInwardFinalBillNotifications(Bill finalBill, TriggerTypeParent parent, String templateKey, String defaultMessage) {
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(NotificationController.class.getName());
         Date date = new Date();
         PatientEncounter pe = finalBill.getPatientEncounter();
-        String message = createDischargeMessage(templateKey, defaultMessage, pe);
+        String message;
+        try {
+            message = createDischargeMessage(templateKey, defaultMessage, pe);
+        } catch (RuntimeException ex) {
+            // The template is optional; a failed lookup must not stop the notifications themselves.
+            logger.log(java.util.logging.Level.WARNING, "Message template lookup failed for " + templateKey + "; using default", ex);
+            message = defaultMessage + (pe.getBhtNo() != null ? " (BHT: " + pe.getBhtNo() + ")" : "");
+        }
         String billNo = finalBill.getDeptId() != null ? finalBill.getDeptId() : finalBill.getInsId();
         if (billNo != null) {
             message = message + " (Bill No: " + billNo + ")";
         }
+        boolean anyFailed = false;
         for (TriggerType tt : TriggerType.getTriggersByParent(parent)) {
-            Notification nn = new Notification();
-            nn.setCreatedAt(date);
-            nn.setPatientEncounter(pe);
-            nn.setTriggerType(tt);
-            nn.setCreater(sessionController.getLoggedUser());
-            nn.setMessage(message);
-            getFacade().create(nn);
-            userNotificationController.createUserNotifications(nn);
+            // Per-trigger: one medium failing must not stop the remaining media.
+            try {
+                Notification nn = new Notification();
+                nn.setCreatedAt(date);
+                nn.setPatientEncounter(pe);
+                nn.setTriggerType(tt);
+                nn.setCreater(sessionController.getLoggedUser());
+                nn.setMessage(message);
+                getFacade().create(nn);
+                userNotificationController.createUserNotifications(nn);
+            } catch (RuntimeException ex) {
+                anyFailed = true;
+                logger.log(java.util.logging.Level.SEVERE, "Inward final bill notification failed for " + tt, ex);
+            }
+        }
+        if (anyFailed) {
+            JsfUtil.addErrorMessage("Saved, but some subscriber notifications could not be sent.");
         }
     }
 
