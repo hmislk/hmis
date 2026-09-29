@@ -43,6 +43,10 @@ public class InpatientPackageApiServiceTest {
             store.put(entity.getId(), entity);
         }
         @Override public void edit(InpatientPackage entity) { store.put(entity.getId(), entity); }
+        // create() already assigns the id synchronously, so a real flush is unnecessary here;
+        // this override just satisfies InpatientPackageApiService's flush() call, which would
+        // otherwise NPE against this dummy's null EntityManager.
+        @Override public void flush() { }
     }
 
     private static class DummyInpatientPackageItemFacade extends InpatientPackageItemFacade {
