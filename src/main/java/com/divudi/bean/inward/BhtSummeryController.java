@@ -5651,16 +5651,31 @@ public class BhtSummeryController implements Serializable {
         for (ChargeItemTotal cit : chargeItemTotals) {
             Double allocation = perCategoryAllocations.get(cit.getInwardChargeType());
             if (allocation != null) {
-                cit.setTotal(allocation);
+                setChargeItemTotalToFlatAmount(cit, allocation);
             }
         }
 
         if (excess > 0.0) {
             ChargeItemTotal excessRow = new ChargeItemTotal();
             excessRow.setInwardChargeType(InwardChargeType.PackageExcessCharges);
-            excessRow.setTotal(excess);
+            setChargeItemTotalToFlatAmount(excessRow, excess);
             chargeItemTotals.add(excessRow);
         }
+    }
+
+    /**
+     * Sets total/gross/net to the same flat amount and zeroes
+     * discount/margin/vat, so a package-substituted row (or the
+     * PackageExcessCharges row) is internally consistent for anyone
+     * reconciling Gross - Discount - Service Charge = Net on the bill,
+     * rather than leaving Gross holding the pre-substitution real cost.
+     */
+    private void setChargeItemTotalToFlatAmount(ChargeItemTotal cit, double amount) {
+        cit.setTotal(amount);
+        cit.setGross(amount);
+        cit.setDiscount(0.0);
+        cit.setMargin(0.0);
+        cit.setVat(0.0);
     }
 
     /**
