@@ -2742,6 +2742,26 @@ public class ItemController implements Serializable {
 
     }
 
+    public static final String LIST_AMPPS_IN_ITEM_SELECTION = "Pharmacy - List Packs (AMPPs) in Item Selection";
+
+    /**
+     * Whether Packs (AMPPs) are offered in pharmacy item autocompletes (PO,
+     * Direct Purchase, Transfer Request, etc.). Defaults to true; hospitals
+     * that do not use packs turn it off.
+     */
+    public boolean isAmppListedInItemSelection() {
+        return configOptionApplicationController.getBooleanValueByKey(LIST_AMPPS_IN_ITEM_SELECTION, true);
+    }
+
+    /**
+     * Value for the ":ampp" type parameter in item autocompletes. When AMPPs
+     * are not listed it returns Amp.class, so "type(c)=:ampp" matches the same
+     * rows as ":amp" and the query returns AMPs only.
+     */
+    private Class<? extends Item> amppTypeForItemSelection() {
+        return isAmppListedInItemSelection() ? Ampp.class : Amp.class;
+    }
+
     public List<Item> completeAmpAndAmppItem(String query) {
         List<Item> suggestions;
         String sql;
@@ -2756,7 +2776,7 @@ public class ItemController implements Serializable {
             }
 
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("ampp", amppTypeForItemSelection());
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
@@ -2791,7 +2811,7 @@ public class ItemController implements Serializable {
             }
 
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("ampp", amppTypeForItemSelection());
             tmpMap.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
@@ -2833,7 +2853,7 @@ public class ItemController implements Serializable {
             }
 
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("ampp", amppTypeForItemSelection());
             tmpMap.put("dts", lstDepartmentTypes);
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
@@ -2879,7 +2899,7 @@ public class ItemController implements Serializable {
                 + "ORDER BY i.name";
 
         parameters.put("amp", Amp.class);
-        parameters.put("ampp", Ampp.class);
+        parameters.put("ampp", amppTypeForItemSelection());
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
         parameters.put("q", "%" + q + "%");
@@ -2928,7 +2948,7 @@ public class ItemController implements Serializable {
                 + "ORDER BY i.name";
 
         parameters.put("amp", Amp.class);
-        parameters.put("ampp", Ampp.class);
+        parameters.put("ampp", amppTypeForItemSelection());
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
         parameters.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
@@ -2982,7 +3002,7 @@ public class ItemController implements Serializable {
                 + "ORDER BY i.name";
 
         parameters.put("amp", Amp.class);
-        parameters.put("ampp", Ampp.class);
+        parameters.put("ampp", amppTypeForItemSelection());
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
         if (dept == null) {
@@ -3087,7 +3107,9 @@ public class ItemController implements Serializable {
 
         List<ItemDTO> results = new ArrayList<>();
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(ampJpql, params, TemporalType.TIMESTAMP, maxResults));
-        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
+        if (isAmppListedInItemSelection()) {
+            results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
+        }
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmpJpql, params, TemporalType.TIMESTAMP, maxResults));
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmppJpql, params, TemporalType.TIMESTAMP, maxResults));
 

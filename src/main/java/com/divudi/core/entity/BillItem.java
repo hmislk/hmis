@@ -152,7 +152,6 @@ public class BillItem implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     InwardChargeType inwardChargeType;
     private Double overriddenRate;
-    private boolean fromPackage;
     @ManyToOne
     private InpatientPackageItem sourcePackageItem;
     String agentRefNo;
@@ -318,7 +317,6 @@ public class BillItem implements Serializable, RetirableEntity {
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
         overriddenRate = billItem.getOverriddenRate();
-        fromPackage = billItem.isFromPackage();
         sourcePackageItem = billItem.getSourcePackageItem();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
@@ -366,7 +364,6 @@ public class BillItem implements Serializable, RetirableEntity {
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
         overriddenRate = billItem.getOverriddenRate();
-        fromPackage = billItem.isFromPackage();
         sourcePackageItem = billItem.getSourcePackageItem();
 
         // Access field directly to avoid auto-creation, then use getter for cloning
@@ -401,7 +398,6 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
-        fromPackage = billItem.isFromPackage();
         sourcePackageItem = billItem.getSourcePackageItem();
     }
 
@@ -839,14 +835,6 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setOverriddenRate(Double overriddenRate) {
         this.overriddenRate = overriddenRate;
-    }
-
-    public boolean isFromPackage() {
-        return fromPackage;
-    }
-
-    public void setFromPackage(boolean fromPackage) {
-        this.fromPackage = fromPackage;
     }
 
     public InpatientPackageItem getSourcePackageItem() {
