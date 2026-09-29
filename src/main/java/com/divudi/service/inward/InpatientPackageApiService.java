@@ -64,6 +64,10 @@ public class InpatientPackageApiService implements Serializable {
 
         List<InpatientPackageItem> items = applyItems(pkg, dto.getItems(), user, new ArrayList<>());
         recomputeTotal(pkg, items);
+        // IDENTITY-strategy ids (InpatientPackage.id, InpatientPackageItem.id) are not
+        // populated on persist() alone under EclipseLink's container-managed persistence
+        // context -- only on flush. Flush here so the response DTO carries real ids.
+        packageFacade.flush();
 
         return toDto(pkg, items);
     }
@@ -105,6 +109,9 @@ public class InpatientPackageApiService implements Serializable {
         List<InpatientPackageItem> existing = loadItems(pkg);
         List<InpatientPackageItem> items = applyItems(pkg, dto.getItems(), user, existing);
         recomputeTotal(pkg, items);
+        // See createPackage(): flush so any newly-created item's IDENTITY id is
+        // populated before it is serialized into the response DTO.
+        packageFacade.flush();
 
         return toDto(pkg, items);
     }
