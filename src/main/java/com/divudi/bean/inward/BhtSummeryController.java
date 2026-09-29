@@ -31,6 +31,7 @@ import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.dataStructure.InwardBillItem;
 import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InpatientPackageComponentType;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
@@ -52,6 +53,8 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.inward.InpatientPackage;
+import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
 import com.divudi.core.entity.inward.RoomCategory;
@@ -65,6 +68,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InpatientPackageItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
@@ -76,6 +80,7 @@ import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
+import com.divudi.core.util.InpatientPackagePricing;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
@@ -190,6 +195,8 @@ public class BhtSummeryController implements Serializable {
     private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
     @EJB
     private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
+    @EJB
+    private InpatientPackageItemFacade inpatientPackageItemFacade;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
@@ -5599,6 +5606,8 @@ public class BhtSummeryController implements Serializable {
 
             addRunningTimedServiceLiveTopUp();
 
+            applyPackagePricingIfApplicable();
+
         }
 
         setNetAdjustValue();
@@ -5612,6 +5621,79 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+    }
+
+    /**
+     * For an admission under an InpatientPackage: overrides each
+     * package-covered category's total with the package's own allocated
+     * amount, and appends a PackageExcessCharges row if the admission's real
+     * usage across those categories (whole-package netting, not per-category)
+     * exceeds the package's total price. No-op for a non-package admission.
+     */
+    private void applyPackagePricingIfApplicable() {
+        InpatientPackage inpatientPackage = getPatientEncounter().getInpatientPackage();
+        if (inpatientPackage == null) {
+            return;
+        }
+
+        Map<InwardChargeType, Double> componentAllocations = resolveComponentChargeTypeAllocations(inpatientPackage);
+        Map<InwardChargeType, Double> perCategoryAllocations = InpatientPackagePricing.calculateChargeTypeAllocations(
+                inpatientPackage.getChargeTypeAmounts(), componentAllocations);
+
+        Map<InwardChargeType, Double> actualTotalsByType = new HashMap<>();
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            actualTotalsByType.put(cit.getInwardChargeType(), cit.getTotal());
+        }
+
+        double packageTotal = inpatientPackage.getTotalPrice() != null ? inpatientPackage.getTotalPrice() : 0.0;
+        double excess = InpatientPackagePricing.calculatePackageExcess(perCategoryAllocations, actualTotalsByType, packageTotal);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double allocation = perCategoryAllocations.get(cit.getInwardChargeType());
+            if (allocation != null) {
+                cit.setTotal(allocation);
+            }
+        }
+
+        if (excess > 0.0) {
+            ChargeItemTotal excessRow = new ChargeItemTotal();
+            excessRow.setInwardChargeType(InwardChargeType.PackageExcessCharges);
+            excessRow.setTotal(excess);
+            chargeItemTotals.add(excessRow);
+        }
+    }
+
+    /**
+     * Each active component's fixed price, keyed by the InwardChargeType it
+     * resolves to: the component's Item's own inwardChargeType for
+     * SERVICE/TIMED_ITEM/OUTSIDE_CHARGE/PHARMACY_ITEM, or the same
+     * staff-independent default category a professional fee entry form would
+     * preselect (professionalFeeClassificationService.defaultCategoryFor with
+     * a null staff) for PROFESSIONAL_FEE_ROLE, whose real BillFee has no
+     * category until a specific staff member is later assigned.
+     */
+    private Map<InwardChargeType, Double> resolveComponentChargeTypeAllocations(InpatientPackage inpatientPackage) {
+        Map<InwardChargeType, Double> result = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        params.put("pkg", inpatientPackage);
+        List<InpatientPackageItem> components = inpatientPackageItemFacade.findByJpql(
+                "SELECT i FROM InpatientPackageItem i WHERE i.retired = false AND i.inpatientPackage = :pkg",
+                params);
+        for (InpatientPackageItem component : components) {
+            InwardChargeType type;
+            if (component.getComponentType() == InpatientPackageComponentType.PROFESSIONAL_FEE_ROLE) {
+                type = professionalFeeClassificationService.defaultCategoryFor(null, component.getSpeciality());
+            } else if (component.getItem() != null) {
+                type = component.getItem().getInwardChargeType();
+            } else {
+                continue;
+            }
+            if (type == null || component.getFixedPrice() == null) {
+                continue;
+            }
+            result.merge(type, component.getFixedPrice(), Double::sum);
+        }
+        return result;
     }
 
     /**
