@@ -169,6 +169,7 @@ public enum Privileges {
     InwardSendEmail("Inward Send Email"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
+    InwardPackageChange("Inward Package Change"),
     InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
@@ -194,6 +195,7 @@ public enum Privileges {
     InpatientDashboardPanelBilling("Inpatient Dashboard - Billing Panel"),
     InpatientDashboardPanelServices("Inpatient Dashboard - Services Panel"),
     InpatientDashboardPanelRoomManagement("Inpatient Dashboard - Room Management Panel"),
+    InpatientDashboardPanelPackage("Inpatient Dashboard - Package Panel"),
     InpatientDashboardPanelOperationTheatre("Inpatient Dashboard - Operation Theatre Panel"),
     InpatientDashboardPanelClinicalData("Inpatient Dashboard - Clinical Data Panel"),
     InpatientDashboardPanelPharmaceuticals("Inpatient Dashboard - Pharmaceuticals Panel"),
@@ -1682,6 +1684,7 @@ public enum Privileges {
             case InwardSendEmail:
             case InwardPackageAdministration:
             case InwardPackageAdmission:
+            case InwardPackageChange:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:
@@ -1706,6 +1709,7 @@ public enum Privileges {
             case InpatientDashboardPanelBilling:
             case InpatientDashboardPanelServices:
             case InpatientDashboardPanelRoomManagement:
+            case InpatientDashboardPanelPackage:
             case InpatientDashboardPanelOperationTheatre:
             case InpatientDashboardPanelClinicalData:
             case InpatientDashboardPanelPharmaceuticals:

@@ -4018,3 +4018,31 @@ editing page 1, clicking to page 2, then Save only submits page 2's inputs; page
 lost (nothing in the DOM to decode them from). For a grid with a single page-level Save button (no
 per-row save), use `scrollable="true" scrollHeight="..."` instead of pagination so every row stays in the
 DOM and submits together.
+
+## 135. A brand-new `Privileges` enum value is invisible in Manage Users → Manage Privileges until it's also registered in `UserPrivilageController`'s hand-built tree — and a mid-session grant needs a fresh login to take effect
+
+Adding a new panel/action gated by a brand-new `Privileges` enum constant (issue #24133: `InpatientDashboardPanelPackage`, `InwardPackageChange`) is not enough on its own to test it — two separate, easy-to-miss gaps:
+
+1. **The privilege-assignment UI has its own registry, separate from the enum.** `Privileges.java`'s
+   category `switch` (the block with `case InwardPackageAdmission:` etc.) only controls which broad
+   category (`"Inward"`, `"OPD"`, …) a privilege *reports as* — it does **not** make the privilege
+   selectable anywhere. The actual tree shown on **Administration → Manage Users → View Staff Users →
+   (select user) → Manage Privileges → List Privileges** is hand-built, one `new
+   DefaultTreeNode(new PrivilegeHolder(Privileges.X, "Label"), parentNode)` call per privilege, in
+   `UserPrivilageController.createPrivilegeHolderTreeNodes()`. A privilege missing from that method
+   compiles fine, works fine in `hasPrivilege(...)` checks, and is simply **absent from the tree** — no
+   error, just nothing to search for or check. Confirm with `document.body.textContent.includes('<your
+   label>')` after "List Privileges" (use `textContent`, not `innerText` — collapsed tree branches are
+   `display:none` and `innerText` silently excludes them). Fix: add the missing
+   `new DefaultTreeNode(new PrivilegeHolder(Privileges.YourNewPrivilege, "Label"), someExistingParentNode)`
+   line next to its siblings (e.g. alongside `InpatientDashboardPanelRoomManagement` under
+   `dashboardPanelsNode`, or alongside `InwardPackageAdmission` under `inwardPackageNode`).
+
+2. **`SessionController.getUserPrivileges()` lazily loads once and caches for the whole HTTP session**
+   (`if (userPrivilages == null) { userPrivilages = fillUserPrivileges(...); }`). Granting a privilege to
+   the currently-logged-in test user via "Update User Privileges" does **not** retroactively affect that
+   same browser session — the panel/button stays invisible until a genuinely fresh login. `document.cookie`
+   manipulation does **not** force this: the session cookie is `HttpOnly`, invisible to JS, so clearing
+   `document.cookie` and reloading just resumes the same session. Use the app's own logout instead —
+   `document.querySelector('[id$="btnLogout"]')?.click()` (the logout `p:commandButton`'s id always ends
+   in `btnLogout` regardless of the generated `j_idt###` form prefix) — then log back in.
