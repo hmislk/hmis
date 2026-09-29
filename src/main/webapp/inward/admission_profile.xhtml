@@ -129,6 +129,10 @@
                     </div>
                 </ui:fragment>
 
+                <!-- "Not yet accepted" banner: pending admission handover, room transfer or
+                     theatre transfer for this admission (Issue #24150) -->
+                <in:pendingAcceptanceBanner admission="#{admissionController.current}"/>
+
                 <!-- Pending Appointment Deposit Conversion warning: the appointment
                      that was admitted still has an un-cancelled appointment deposit
                      bill that hasn't been converted into this admission's Inward

@@ -1033,6 +1033,12 @@ next page load — no redeploy or Payara restart needed. Reserve raw SQL for *re
 state (e.g. confirming a key auto-created with the right default on first access), never for
 writing it mid-test.
 
+The same cache applies to **any entity**, not just `ConfigOption`. A fixture row that is newly
+`INSERT`ed is picked up by the next query (it is not in the cache yet), but an `UPDATE` to a row the
+app has already loaded is not (issue #24150: retargeting a `PatientTransferRequest` fixture to a
+different room kept rendering the old room). When a hand-built local fixture must be *changed* after
+the app has read it, redeploy (or restart the domain) before re-checking, or insert a fresh row instead.
+
 ## 27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain
 
 On a box with two Payara installs (e.g. `/home/carecode/payara` domain `rh` admin port **9048**,
@@ -3987,6 +3993,13 @@ clone's text nodes with `[Doctor name redacted]`, then `browser_take_screenshot`
 container. The live page is untouched server-side — the clone is client-only and vanishes on the next
 navigation. Trim any page bleed around the clone afterwards (a PIL crop to the print's background colour is
 enough).
+
+This is not specific to print pages. On the Inpatient Dashboard (`admission_profile.xhtml`), too, element
+screenshots (`browser_take_screenshot` with `target`) of a banner/alert land on the wrong region at
+`devicePixelRatio` 0.75, and each miss captured the **Patient Details** panel with a real patient name
+(issue #24150). Manual crops of a viewport screenshot using `getBoundingClientRect()` coordinates missed too.
+Use the fixed-overlay clone above for *any* element you want as evidence on these pages, and check each
+image before it leaves `tmp/`.
 
 Related: a PrimeFaces `p:toggleSwitch` (e.g. the **FOC** switch on *Add Professional Fee*) ignores clicks on
 its hidden `<input>`; click its `.ui-toggleswitch-slider` child instead, then confirm with

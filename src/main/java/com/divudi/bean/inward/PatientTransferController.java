@@ -1204,6 +1204,88 @@ public class PatientTransferController implements Serializable {
     }
 
     /**
+     * Every PENDING transfer request for a single admission, of any kind —
+     * admission handover, room transfer, send-to-theatre or return-to-ward —
+     * for the "not yet accepted" banner on the Inpatient Dashboard and
+     * Nursing WorkBench (#24150). Unlike isHasPendingRequestsForDepartment()
+     * this is scoped to the admission, not to the logged-in department.
+     */
+    public List<PatientTransferRequest> pendingAcceptancesForAdmission(Admission admission) {
+        if (admission == null || admission.getId() == null) {
+            return new ArrayList<>();
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("status", TransferRequestStatus.PENDING);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.status = :status "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params);
+        return results != null ? results : new ArrayList<>();
+    }
+
+    /**
+     * Kind of a pending request, for choosing the banner text and the accept
+     * action: ADMISSION (handover — no source room), ROOM_TRANSFER,
+     * SEND_TO_THEATRE or RETURN_TO_WARD. The theatre type is checked first
+     * because a return-to-ward request also carries a source room.
+     */
+    public String pendingAcceptanceKind(PatientTransferRequest req) {
+        if (req == null) {
+            return "";
+        }
+        if (req.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
+            return "SEND_TO_THEATRE";
+        }
+        if (req.getTheatreTransferType() == TheatreTransferType.RETURN_TO_WARD) {
+            return "RETURN_TO_WARD";
+        }
+        return req.getFromPatientRoom() == null ? "ADMISSION" : "ROOM_TRANSFER";
+    }
+
+    public String pendingAcceptanceLabel(PatientTransferRequest req) {
+        switch (pendingAcceptanceKind(req)) {
+            case "SEND_TO_THEATRE":
+                return "Sent to theatre";
+            case "RETURN_TO_WARD":
+                return "Returning from theatre";
+            case "ADMISSION":
+                return "New admission";
+            case "ROOM_TRANSFER":
+                return "Room transfer";
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * True when the request is to be accepted by the logged-in department
+     * (the target room's department). Drives whether the banner offers the
+     * Accept button or asks the user to contact the other department.
+     */
+    public boolean isPendingAcceptanceForLoggedDepartment(PatientTransferRequest req) {
+        // Same fallback as acceptReturnToWardForAdmission(): sessions started via
+        // loginForRequests() set loggedUser but never a session department.
+        Department userDept = sessionController.getDepartment();
+        if (userDept == null && sessionController.getLoggedUser() != null) {
+            userDept = sessionController.getLoggedUser().getDepartment();
+        }
+        Department targetDept = pendingAcceptanceDepartment(req);
+        return userDept != null && userDept.getId() != null
+                && targetDept != null && targetDept.getId() != null
+                && userDept.getId().equals(targetDept.getId());
+    }
+
+    public Department pendingAcceptanceDepartment(PatientTransferRequest req) {
+        if (req == null || req.getToRoomFacilityCharge() == null) {
+            return null;
+        }
+        return req.getToRoomFacilityCharge().getDepartment();
+    }
+
+    /**
      * Accept from the single-admission focused theatre status view (#23166)
      * — delegates to acceptInTheatre() then refreshes the admission-scoped
      * theatre status instead of the department-wide worklists.
