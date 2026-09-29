@@ -31,6 +31,7 @@ import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.dataStructure.InwardBillItem;
 import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.InpatientPackageComponentType;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
@@ -52,6 +53,8 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.inward.InpatientPackage;
+import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
 import com.divudi.core.entity.inward.RoomCategory;
@@ -65,6 +68,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InpatientPackageItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
@@ -76,6 +80,7 @@ import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
+import com.divudi.core.util.InpatientPackagePricing;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
@@ -190,6 +195,8 @@ public class BhtSummeryController implements Serializable {
     private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
     @EJB
     private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
+    @EJB
+    private InpatientPackageItemFacade inpatientPackageItemFacade;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
@@ -1556,6 +1563,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void calculateDiscount() {
+        Map<InwardChargeType, Double> packageAllocations = getPatientEncounter() != null
+                ? resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage()) : new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
             double discountValue = 0;
             switch (cit.getInwardChargeType()) {
@@ -1598,11 +1607,35 @@ public class BhtSummeryController implements Serializable {
                     discountValue = discountSet(cit);
             }
 
-            cit.setDiscount(discountValue);
+            // Package-covered rows are held at the package's flat allocated
+            // price (see applyPackagePricingIfApplicable()) — a price-matrix
+            // discount computed against the real underlying charge must not
+            // be copied onto that flat row (it would silently reduce the
+            // package price at settle time). The matrix recalculation above
+            // still runs and still updates the real PatientRoom/BillFee
+            // discount fields; only the flat package row's own discount is
+            // held at zero. chargeTypeDiscount (the manual staff adjustment)
+            // is untouched either way.
+            cit.setDiscount(packageAllocations.containsKey(cit.getInwardChargeType()) ? 0.0 : discountValue);
             cit.setAdjustedTotal(cit.getTotal());
 
         }
 
+    }
+
+    /**
+     * The package's price broken down per InwardChargeType, or an empty map
+     * when {@code inpatientPackage} is null. Shared by
+     * {@link #applyPackagePricingIfApplicable()} and {@link #calculateDiscount()}
+     * so both agree on exactly which charge types the package covers.
+     */
+    private Map<InwardChargeType, Double> resolvePackageChargeTypeAllocationsIfApplicable(InpatientPackage inpatientPackage) {
+        if (inpatientPackage == null) {
+            return new HashMap<>();
+        }
+        Map<InwardChargeType, Double> componentAllocations = resolveComponentChargeTypeAllocations(inpatientPackage);
+        return InpatientPackagePricing.calculateChargeTypeAllocations(
+                inpatientPackage.getChargeTypeAmounts(), componentAllocations);
     }
 
     public double discountSet(ChargeItemTotal cit, double discountPercent) {
@@ -2500,15 +2533,6 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Room facility charge not set");
             return;
         }
-        if (pr.isFromPackage() && !isPackageRoomDurationExceeded(pr)) {
-            // Package-locked charge stays as set by InpatientPackageApplicationBean,
-            // but newly-linked timed items still need to be snapshotted so their
-            // charges aren't silently dropped from the bill.
-            getInwardBean().snapshotTimedItems(pr, pr.getRoomFacilityCharge());
-            patientRooms = null;
-            createTables();
-            return;
-        }
         RoomFacilityCharge rfc = pr.getRoomFacilityCharge();
         pr.setCurrentRoomCharge(rfc.getRoomCharge() != null ? rfc.getRoomCharge() : 0.0);
         pr.setCurrentMaintananceCharge(rfc.getMaintananceCharge() != null ? rfc.getMaintananceCharge() : 0.0);
@@ -2531,15 +2555,8 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().create(patientRoom);
         }
 
-        if (patientRoom.isFromPackage() && !isPackageRoomDurationExceeded(patientRoom)) {
-            // Package-locked room: currentRoomCharge already holds the package's fixed
-            // total, not a per-block rate - do not overwrite it with the facility rate
-            // while still within the included duration.
-            patientRoom.setCalculatedRoomCharge(patientRoom.getCurrentRoomCharge() + patientRoom.getAddedRoomCharge());
-        } else {
-            patientRoom.setCurrentRoomCharge(patientRoom.getRoomFacilityCharge().getRoomCharge());
-            calCulateRoomCharge(patientRoom);
-        }
+        patientRoom.setCurrentRoomCharge(patientRoom.getRoomFacilityCharge().getRoomCharge());
+        calCulateRoomCharge(patientRoom);
 
         updatePaitentRoomAdjustedTotal();
     }
@@ -2572,46 +2589,6 @@ public class BhtSummeryController implements Serializable {
         charge = roomCharge * getInwardBean().calCount(timedFee, p.getAdmittedAt(), p.getDischargedAt());
 
         p.setCalculatedRoomCharge(charge);
-    }
-
-    private boolean isPackageRoomDurationExceeded(PatientRoom pr) {
-        if (pr.getIncludedRoomDurationHours() == null) {
-            return true;
-        }
-        Date to = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
-        if (pr.getAdmittedAt() == null) {
-            return false;
-        }
-        long stayedHours = java.time.Duration.between(
-                pr.getAdmittedAt().toInstant(), to.toInstant()).toHours();
-        return stayedHours > pr.getIncludedRoomDurationHours();
-    }
-
-    public double getPackageRoomVarianceCharge(PatientRoom pr) {
-        if (pr == null || !pr.isFromPackage() || !isPackageRoomDurationExceeded(pr) || pr.getRoomFacilityCharge() == null) {
-            return 0.0;
-        }
-        // currentRoomCharge holds the package's locked TOTAL for this room, not a
-        // per-block rate, so it must not be used as the multiplicand here (that was
-        // the bug: reusing calCulateRoomCharge(pr), which multiplies
-        // pr.getCurrentRoomCharge() by elapsed blocks). Both sides of this variance
-        // must be derived from the room's real per-block rate, RoomFacilityCharge.roomCharge.
-        Double facilityRoomCharge = pr.getRoomFacilityCharge().getRoomCharge();
-        if (facilityRoomCharge == null) {
-            return 0.0;
-        }
-        TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
-        double liveEquivalent = facilityRoomCharge * getInwardBean().calCount(timedFee, pr.getAdmittedAt(), pr.getDischargedAt());
-        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee block (see
-        // InwardBeanController.calCount: charge = roomCharge * count, where count is the number
-        // of blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
-        // configs are conventionally 24-hour ("per day") blocks, so we use the actual configured
-        // block length here (falling back to 24.0 if unset) rather than hardcoding 24.
-        // getDurationInHours() honours the configured duration unit, so a block defined in
-        // minutes or days converts to hours instead of being read as a raw hour count.
-        double blockHours = (timedFee != null && timedFee.getDurationInHours() > 0) ? timedFee.getDurationInHours() : 24.0;
-        double includedEquivalent = facilityRoomCharge * (pr.getIncludedRoomDurationHours() / blockHours);
-        return Math.max(0.0, liveEquivalent - includedEquivalent);
     }
 
     private boolean checkDischargeTime() {
@@ -3502,9 +3479,6 @@ public class BhtSummeryController implements Serializable {
 
         int closed = 0;
         for (PatientItem pi : running) {
-            if (pi.getBillItem() != null && pi.getBillItem().isFromPackage()) {
-                continue;
-            }
             if (pi.getFromTime() != null && dischargeTime.before(pi.getFromTime())) {
                 continue;
             }
@@ -3540,7 +3514,7 @@ public class BhtSummeryController implements Serializable {
     /**
      * Pushes a recalculated timed-service charge onto its BillItem and Bill, so
      * the inward totals (which sum the BillItem side) never read a stale
-     * duration. Package-locked items keep their fixed price.
+     * duration.
      * <p>
      * The discount is read from the BillItem, not the PatientItem. The BillItem
      * is the side the discount routines clear when no price matrix applies, and
@@ -3554,9 +3528,6 @@ public class BhtSummeryController implements Serializable {
             return;
         }
         BillItem bi = patientItem.getBillItem();
-        if (bi.isFromPackage()) {
-            return;
-        }
         double discount = bi.getDiscount();
         bi.setGrossValue(patientItem.getServiceValue());
         bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - discount);
@@ -5159,25 +5130,6 @@ public class BhtSummeryController implements Serializable {
     private void applyRoomChargeDiscounts(PatientRoom p,
             double roomPct, double maintainPct, double linenPct, double nursingPct,
             double moPct, double adminPct, double medicalCarePct) {
-        if (p.isFromPackage() && !isPackageRoomDurationExceeded(p)) {
-            // Package-locked room: the price is fixed by the package, not subject
-            // to PriceMatrix discount percentages while within the included duration.
-            p.setDiscountRoomCharge(0.0);
-            p.setDiscountMaintainCharge(0.0);
-            p.setDiscountLinenCharge(0.0);
-            p.setDiscountNursingCharge(0.0);
-            p.setDiscountMoCharge(0.0);
-            p.setDiscountAdministrationCharge(0.0);
-            p.setDiscountMedicalCareCharge(0.0);
-            p.setAdjustedRoomCharge(p.getCalculatedRoomCharge());
-            p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge());
-            p.setAjdustedLinenCharge(p.getCalculatedLinenCharge());
-            p.setAjdustedNursingCharge(p.getCalculatedNursingCharge());
-            p.setAdjustedMoCharge(p.getCalculatedMoCharge());
-            p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge());
-            p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge());
-            return;
-        }
         double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
         double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
         double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
@@ -5347,15 +5299,6 @@ public class BhtSummeryController implements Serializable {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentRoomCharge() == 0) {
             p.setCalculatedRoomCharge(0);
-            p.setMarginRoomCharge(0.0);
-            return;
-        }
-
-        if (p.isFromPackage() && !isPackageRoomDurationExceeded(p)) {
-            // Package-locked room: currentRoomCharge already holds the package's
-            // fixed total for the room, not a per-block rate — do not multiply
-            // it by elapsed TimedItemFee blocks while within the included duration.
-            p.setCalculatedRoomCharge(p.getCurrentRoomCharge() + p.getAddedRoomCharge());
             p.setMarginRoomCharge(0.0);
             return;
         }
@@ -5689,6 +5632,8 @@ public class BhtSummeryController implements Serializable {
 
             addRunningTimedServiceLiveTopUp();
 
+            applyPackagePricingIfApplicable();
+
         }
 
         setNetAdjustValue();
@@ -5702,6 +5647,92 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+    }
+
+    /**
+     * For an admission under an InpatientPackage: overrides each
+     * package-covered category's total with the package's own allocated
+     * amount, and appends a PackageExcessCharges row if the admission's real
+     * usage across those categories (whole-package netting, not per-category)
+     * exceeds the package's total price. No-op for a non-package admission.
+     */
+    private void applyPackagePricingIfApplicable() {
+        InpatientPackage inpatientPackage = getPatientEncounter().getInpatientPackage();
+        if (inpatientPackage == null) {
+            return;
+        }
+
+        Map<InwardChargeType, Double> perCategoryAllocations = resolvePackageChargeTypeAllocationsIfApplicable(inpatientPackage);
+
+        Map<InwardChargeType, Double> actualTotalsByType = new HashMap<>();
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            actualTotalsByType.put(cit.getInwardChargeType(), cit.getTotal());
+        }
+
+        double packageTotal = inpatientPackage.getTotalPrice() != null ? inpatientPackage.getTotalPrice() : 0.0;
+        double excess = InpatientPackagePricing.calculatePackageExcess(perCategoryAllocations, actualTotalsByType, packageTotal);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double allocation = perCategoryAllocations.get(cit.getInwardChargeType());
+            if (allocation != null) {
+                setChargeItemTotalToFlatAmount(cit, allocation);
+            }
+        }
+
+        if (excess > 0.0) {
+            ChargeItemTotal excessRow = new ChargeItemTotal();
+            excessRow.setInwardChargeType(InwardChargeType.PackageExcessCharges);
+            setChargeItemTotalToFlatAmount(excessRow, excess);
+            chargeItemTotals.add(excessRow);
+        }
+    }
+
+    /**
+     * Sets total/gross/net to the same flat amount and zeroes
+     * discount/margin/vat, so a package-substituted row (or the
+     * PackageExcessCharges row) is internally consistent for anyone
+     * reconciling Gross - Discount - Service Charge = Net on the bill,
+     * rather than leaving Gross holding the pre-substitution real cost.
+     */
+    private void setChargeItemTotalToFlatAmount(ChargeItemTotal cit, double amount) {
+        cit.setTotal(amount);
+        cit.setGross(amount);
+        cit.setDiscount(0.0);
+        cit.setMargin(0.0);
+        cit.setVat(0.0);
+    }
+
+    /**
+     * Each active component's fixed price, keyed by the InwardChargeType it
+     * resolves to: the component's Item's own inwardChargeType for
+     * SERVICE/TIMED_ITEM/OUTSIDE_CHARGE/PHARMACY_ITEM, or the same
+     * staff-independent default category a professional fee entry form would
+     * preselect (professionalFeeClassificationService.defaultCategoryFor with
+     * a null staff) for PROFESSIONAL_FEE_ROLE, whose real BillFee has no
+     * category until a specific staff member is later assigned.
+     */
+    private Map<InwardChargeType, Double> resolveComponentChargeTypeAllocations(InpatientPackage inpatientPackage) {
+        Map<InwardChargeType, Double> result = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        params.put("pkg", inpatientPackage);
+        List<InpatientPackageItem> components = inpatientPackageItemFacade.findByJpql(
+                "SELECT i FROM InpatientPackageItem i WHERE i.retired = false AND i.inpatientPackage = :pkg",
+                params);
+        for (InpatientPackageItem component : components) {
+            InwardChargeType type;
+            if (component.getComponentType() == InpatientPackageComponentType.PROFESSIONAL_FEE_ROLE) {
+                type = professionalFeeClassificationService.defaultCategoryFor(null, component.getSpeciality());
+            } else if (component.getItem() != null) {
+                type = component.getItem().getInwardChargeType();
+            } else {
+                continue;
+            }
+            if (type == null || component.getFixedPrice() == null) {
+                continue;
+            }
+            result.merge(type, component.getFixedPrice(), Double::sum);
+        }
+        return result;
     }
 
     /**
@@ -5741,11 +5772,6 @@ public class BhtSummeryController implements Serializable {
 
         for (PatientItem pi : running) {
             if (pi.getItem() == null || !(pi.getItem() instanceof TimedItem)) {
-                continue;
-            }
-            // Package-locked services keep their fixed price - skip, same as the
-            // discharge-time close (finalizeRunningTimedServices).
-            if (pi.getBillItem() != null && pi.getBillItem().isFromPackage()) {
                 continue;
             }
             // A start time in the future has not accrued anything yet.

@@ -625,19 +625,14 @@
                                             </p:column>
                                             <p:column headerText="Time-based Charge"
                                                       rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
-                                                <h:panelGroup rendered="#{not ts.packageLocked}">
-                                                    <h:outputText value="#{ts.blocks}">
-                                                        <f:convertNumber pattern="#,##0.##"/>
-                                                    </h:outputText>
-                                                    <h:outputText value=" × "/>
-                                                    <h:outputText value="#{ts.ratePerBlock}">
-                                                        <f:convertNumber pattern="#,##0.00"/>
-                                                    </h:outputText>
-                                                    <h:outputText value=" (#{ts.blockUnit}) = " styleClass="text-muted"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ts.packageLocked}">
-                                                    <p:tag value="Package" severity="info" styleClass="me-1"/>
-                                                </h:panelGroup>
+                                                <h:outputText value="#{ts.blocks}">
+                                                    <f:convertNumber pattern="#,##0.##"/>
+                                                </h:outputText>
+                                                <h:outputText value=" × "/>
+                                                <h:outputText value="#{ts.ratePerBlock}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputText value=" (#{ts.blockUnit}) = " styleClass="text-muted"/>
                                                 <h:outputText value="#{ts.timeBasedCharge}" styleClass="fw-bold">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>

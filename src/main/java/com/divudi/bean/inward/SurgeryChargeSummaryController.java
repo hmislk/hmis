@@ -219,13 +219,7 @@ public class SurgeryChargeSummaryController implements Serializable {
                 ? "" : blockFee.getDurationUnit().getLabel());
 
         double blocks = inwardBean.calCount(blockFee, room.getAdmittedAt(), to);
-        // Mirrors BhtSummeryController.calculateRoomCharge: a package-locked
-        // room within its included duration holds the package's fixed total in
-        // currentRoomCharge, not a per-block rate.
-        boolean packageLocked = room.isFromPackage() && !isPackageRoomDurationExceeded(room, to);
-        double roomPart = packageLocked
-                ? room.getCurrentRoomCharge()
-                : room.getCurrentRoomCharge() * blocks;
+        double roomPart = room.getCurrentRoomCharge() * blocks;
         double perBlock = room.getCurrentMaintananceCharge()
                 + room.getCurrentNursingCharge()
                 + room.getCurrentAdministrationCharge()
@@ -241,8 +235,7 @@ public class SurgeryChargeSummaryController implements Serializable {
                 + room.getDiscountAdministrationCharge()
                 + room.getDiscountMedicalCareCharge();
         stay.setBlocks(blocks);
-        stay.setRatePerBlock(packageLocked ? perBlock : perBlock + room.getCurrentRoomCharge());
-        stay.setPackageLocked(packageLocked);
+        stay.setRatePerBlock(perBlock + room.getCurrentRoomCharge());
         stay.setTimeBasedCharge(roomPart + perBlock * blocks + added - discount);
 
         boolean foreigner = room.getPatientEncounter() != null && room.getPatientEncounter().isForiegner();
@@ -258,19 +251,6 @@ public class SurgeryChargeSummaryController implements Serializable {
             }
         }
         return stay;
-    }
-
-    // Same rule as BhtSummeryController.isPackageRoomDurationExceeded.
-    private boolean isPackageRoomDurationExceeded(PatientRoom room, Date to) {
-        if (room.getIncludedRoomDurationHours() == null) {
-            return true;
-        }
-        if (room.getAdmittedAt() == null) {
-            return false;
-        }
-        long stayedHours = java.time.Duration.between(
-                room.getAdmittedAt().toInstant(), to.toInstant()).toHours();
-        return stayedHours > room.getIncludedRoomDurationHours();
     }
 
     public double getServiceCharges() {
@@ -317,7 +297,6 @@ public class SurgeryChargeSummaryController implements Serializable {
         private double blocks;
         private double ratePerBlock;
         private double timeBasedCharge;
-        private boolean packageLocked;
         private final List<TheatreItemCharge> items = new ArrayList<>();
 
         public double getTotal() {
@@ -386,14 +365,6 @@ public class SurgeryChargeSummaryController implements Serializable {
 
         public void setTimeBasedCharge(double timeBasedCharge) {
             this.timeBasedCharge = timeBasedCharge;
-        }
-
-        public boolean isPackageLocked() {
-            return packageLocked;
-        }
-
-        public void setPackageLocked(boolean packageLocked) {
-            this.packageLocked = packageLocked;
         }
 
         public List<TheatreItemCharge> getItems() {
