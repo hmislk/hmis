@@ -145,6 +145,20 @@
         text-align:right;
     }
 
+    .a4billFixedFooter{
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        min-height: calc(100vh - 6mm);
+        border: 1.5px solid #000;   /* the box */
+        padding: 4mm;               /* space between the border and the content */
+    }
+
+    /* flex + align-items:center would shrink each section to its content; keep them full width as before */
+    .a4billFixedFooter > div{
+        width: 100%;
+    }
+
 }
 
 
