@@ -2309,12 +2309,15 @@ public class AnthropicApiService implements Serializable {
                         + "Distinct from admission charges (manage_admission_charges), which are additive "
                         + "routine charges rather than a bundled package price. "
                         + "POST creates a full package with its items in one call. PUT always overwrites header "
-                        + "fields; items, if provided, fully replaces the component set (items with an id "
-                        + "update that component, items without an id create a new one, and any existing "
-                        + "component missing from the array is soft-retired) — omit items entirely on PUT to "
-                        + "leave existing components untouched. totalPrice and fixedRoomCharge are always "
-                        + "server-computed from chargeTypeAmounts and each item's fixedPrice and cannot be set "
-                        + "directly. Always confirm with the user before POST, PUT, or RETIRE.")
+                        + "fields — including fields you omit, which reset to their default (0 / empty) since "
+                        + "PUT has no partial-header mode, so always send the complete header; items, if "
+                        + "provided, fully replaces the component set (items with an id update that component, "
+                        + "items without an id create a new one, and any existing component missing from the "
+                        + "array is soft-retired) — omit items entirely on PUT to leave existing components "
+                        + "untouched. totalPrice and fixedRoomCharge are always server-computed from "
+                        + "chargeTypeAmounts and each item's fixedPrice and cannot be set directly. RETIRE "
+                        + "cannot be undone through this API — there is no restore endpoint. Always confirm "
+                        + "with the user before POST, PUT, or RETIRE.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
@@ -2337,7 +2340,7 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "RoomCategory id. Required for POST and PUT; optional filter for LIST."))
                                 .add("includedRoomDurationHours", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "Room duration included in the package price, in hours. Optional, defaults to 0."))
+                                        .add("description", "Room duration included in the package price, in hours. Optional on POST (defaults to 0); on PUT, omitting it resets it to 0 since PUT fully overwrites the header."))
                                 .add("chargeTypeAmounts", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "POST/PUT — the charge-type price map as a JSON object string keyed by "
@@ -7790,14 +7793,16 @@ public class AnthropicApiService implements Serializable {
                 + "component items (services, timed items, professional-fee roles, outside charges, pharmacy "
                 + "items). Distinct from Admission Charges, which are additive routine charges rather than a "
                 + "bundled package price. totalPrice and fixedRoomCharge are always server-computed from "
-                + "chargeTypeAmounts and each item's fixedPrice, and are ignored on input.",
+                + "chargeTypeAmounts and each item's fixedPrice, and are ignored on input. PUT fully overwrites "
+                + "the header (an omitted field resets to its default, e.g. includedRoomDurationHours -> 0), "
+                + "and retire has no restore endpoint.",
                 githubUrl(branch, "developer_docs/api/using-apis/API_INPATIENT_PACKAGES.md"),
                 new String[][]{
                     {"GET",  "/inpatient-packages?admissionTypeId=&roomCategoryId=", "List non-retired packages with their items"},
                     {"GET",  "/inpatient-packages/{id}",       "Fetch one package with its items"},
                     {"POST", "/inpatient-packages",            "Create a full package. Body: name, admissionTypeId, roomCategoryId (required); includedRoomDurationHours, chargeTypeAmounts, items[] optional"},
-                    {"PUT",  "/inpatient-packages/{id}",       "Update. Header fields always overwritten. items[], if present, fully replaces the component set (id=update, no id=create, missing=retire); omit items entirely to leave components untouched"},
-                    {"POST", "/inpatient-packages/{id}/retire","Soft-retire the whole package. Body: {retireComments}"}
+                    {"PUT",  "/inpatient-packages/{id}",       "Full header overwrite (omitted fields reset to default) plus optional items[] full-replace (id=update, no id=create, missing=retire); omit items entirely to leave components untouched"},
+                    {"POST", "/inpatient-packages/{id}/retire","Soft-retire the whole package (irreversible via this API). Body: {retireComments}"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────

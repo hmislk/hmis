@@ -302,6 +302,24 @@ public class InpatientPackageApiServiceTest {
     }
 
     @Test
+    @DisplayName("Update rejects a payload with the same item id listed twice")
+    public void testUpdatePackage_duplicateItemIdInPayload_throws() throws Exception {
+        InpatientPackageDto createDto = baseDto();
+        createDto.setItems(Collections.singletonList(serviceItemDto(null, 1.0, 1000.0)));
+        InpatientPackageDto created = service.createPackage(createDto, user);
+        Long existingItemId = created.getItems().get(0).getId();
+
+        InpatientPackageDto updateDto = baseDto();
+        List<InpatientPackageItemDto> duplicated = new ArrayList<>();
+        duplicated.add(serviceItemDto(existingItemId, 1.0, 1500.0));
+        duplicated.add(serviceItemDto(existingItemId, 1.0, 1500.0));
+        updateDto.setItems(duplicated);
+
+        assertThrows(InpatientPackageValidationException.class,
+                () -> service.updatePackage(created.getId(), updateDto, user));
+    }
+
+    @Test
     @DisplayName("Retire sets retired flag, retirer, retiredAt and comments")
     public void testRetirePackage_setsRetiredFields() throws Exception {
         InpatientPackageDto created = service.createPackage(baseDto(), user);

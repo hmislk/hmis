@@ -50,15 +50,20 @@ Fetch one package with its items.
 
 ### `PUT /inpatient-packages/{id}`
 Full update. Header fields (`name`, `admissionTypeId`, `roomCategoryId`,
-`includedRoomDurationHours`, `chargeTypeAmounts`) are always overwritten from the body.
-`items` behaves differently depending on whether the key is present:
+`includedRoomDurationHours`, `chargeTypeAmounts`) are always overwritten from the body — this is
+not a partial update for the header, so a field you omit resets to its default (`0` for
+`includedRoomDurationHours`, empty for `chargeTypeAmounts`, which also changes the
+server-computed `fixedRoomCharge`/`totalPrice`). Always send the complete header, not just the
+field you're changing. `items` behaves differently depending on whether the key is present:
 - **Key absent** — existing components are left untouched (header-only update).
 - **Key present** (an array, possibly `[]`) — full-replace diff: an item with an `id` updates
   that component, an item without an `id` creates a new one, and any existing component whose
   `id` is missing from the array is soft-retired. `items: []` retires every component.
 
 ### `POST /inpatient-packages/{id}/retire`
-Soft-retire the whole package. Body (optional): `{"retireComments": "..."}`.
+Soft-retire the whole package. Body (optional): `{"retireComments": "..."}`. There is currently
+no restore/un-retire endpoint for this API — retiring a package removes it from every
+GET/LIST response this API offers, and undoing it requires direct database access.
 
 ## Example: create a package with two components
 
@@ -80,10 +85,14 @@ curl -s -H "Finance: <key>" -H "Content-Type: application/json" \
 
 ## Example: header-only rename (items untouched)
 
+Note this still repeats every header field — PUT has no partial-header mode, so
+`includedRoomDurationHours` is included here to avoid resetting it to 0.
+
 ```bash
 curl -s -H "Finance: <key>" -H "Content-Type: application/json" \
   -X PUT "http://localhost:9090/rh/api/inpatient-packages/12" \
   -d '{"name": "Normal Delivery Package (Updated)", "admissionTypeId": 3, "roomCategoryId": 5,
+       "includedRoomDurationHours": 48,
        "chargeTypeAmounts": {"RoomCharges": 5000, "NursingCharges": 1000}}' \
   | python -m json.tool
 ```

@@ -187,7 +187,10 @@ public class InpatientPackageApiService implements Serializable {
                     throw new InpatientPackageValidationException(
                             "InpatientPackageItem not found on this package: " + itemDto.getId());
                 }
-                keptIds.add(item.getId());
+                if (!keptIds.add(item.getId())) {
+                    throw new InpatientPackageValidationException(
+                            "Duplicate item id in payload: " + itemDto.getId());
+                }
             } else {
                 item = new InpatientPackageItem();
                 item.setInpatientPackage(pkg);
