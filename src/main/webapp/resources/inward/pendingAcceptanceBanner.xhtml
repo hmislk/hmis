@@ -32,7 +32,7 @@
                     <h:outputText value=" (#{targetDept.name})" rendered="#{targetDept ne null}"/>
                     <h:outputText value=", initiated "/>
                     <h:outputText value="#{req.initiatedAt}">
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                     </h:outputText>
                     <h:outputText value=" by #{req.initiatedBy.webUserPerson.name}"
                                   rendered="#{req.initiatedBy.webUserPerson ne null}"/>
@@ -59,7 +59,7 @@
                         icon="fa fa-hospital"
                         class="ui-button-success"
                         rendered="#{forMyDept and kind eq 'SEND_TO_THEATRE' and webUserController.hasPrivilege('TheatreAcceptPatient')}"
-                        action="#{patientTransferController.navigateToTheatreStatus(cc.attrs.admission)}"/>
+                        action="#{patientTransferController.navigateToTheatreStatusForRequest(req)}"/>
                     <p:commandButton
                         value="Accept Return from Theatre"
                         ajax="false"
@@ -67,7 +67,7 @@
                         class="ui-button-success"
                         rendered="#{forMyDept and kind eq 'RETURN_TO_WARD' and webUserController.hasPrivilege('WardAcceptTheatreReturn')}"
                         onclick="if (!confirm('Accept this patient back from theatre?')) return false;"
-                        action="#{patientTransferController.acceptReturnToWardForAdmission(cc.attrs.admission)}"/>
+                        action="#{patientTransferController.acceptReturnToWardForRequest(req)}"/>
                 </div>
             </div>
         </ui:repeat>

@@ -1144,6 +1144,27 @@ public class PatientTransferController implements Serializable {
      * department-wide theatre worklists (#23166, mirrors the
      * navigateToPatientAcceptForAdmission pattern from #22420).
      */
+    /**
+     * Opens the per-patient theatre status view on one specific
+     * SEND_TO_THEATRE request — used by the pending-acceptance banner
+     * (#24150). navigateToTheatreStatus(admission) shows only the most recent
+     * active theatre transfer, which on a multi-surgery admission can be a
+     * different surgery than the pending row the user clicked.
+     */
+    public String navigateToTheatreStatusForRequest(PatientTransferRequest selected) {
+        PatientTransferRequest req = (selected == null || selected.getId() == null)
+                ? null : patientTransferRequestFacade.find(selected.getId());
+        if (req == null || req.getTheatreTransferType() != TheatreTransferType.SEND_TO_THEATRE
+                || req.getAdmission() == null) {
+            JsfUtil.addErrorMessage("Theatre transfer request not found.");
+            return "";
+        }
+        current = req.getAdmission();
+        currentTheatreRequest = req;
+        currentTheatreReturnRequest = findPendingReturnRequestForAdmission(req.getAdmission());
+        return "/inward/inward_theatre_status?faces-redirect=true";
+    }
+
     public String navigateToTheatreStatus(Admission admission) {
         if (admission == null) {
             JsfUtil.addErrorMessage("No patient selected.");
@@ -1342,6 +1363,24 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("No pending theatre return found for this patient.");
             return;
         }
+        acceptReturnToWardForRequest(req);
+    }
+
+    /**
+     * Accepts one specific PENDING return-to-ward request — used by the
+     * pending-acceptance banner (#24150), where an admission with several
+     * surgeries can list more than one return and each row's button must act
+     * on its own request rather than on the most recent one.
+     */
+    public void acceptReturnToWardForRequest(PatientTransferRequest selected) {
+        PatientTransferRequest req = (selected == null || selected.getId() == null)
+                ? null : patientTransferRequestFacade.find(selected.getId());
+        if (req == null || req.getTheatreTransferType() != TheatreTransferType.RETURN_TO_WARD
+                || req.getStatus() != TransferRequestStatus.PENDING) {
+            JsfUtil.addErrorMessage("This theatre return is no longer pending.");
+            return;
+        }
+        Admission admission = req.getAdmission();
         // Same target-department constraint as loadPendingReturnsForWard() —
         // without it, a user with WardAcceptTheatreReturn could accept a
         // return bound for a different ward's department (CodeRabbit #23175).
