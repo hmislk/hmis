@@ -20,14 +20,16 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PriceMatrix;
-import com.divudi.core.entity.ServiceCategory;
-import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.Service;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
+import com.divudi.core.entity.inward.InwardService;
 import com.divudi.core.entity.inward.RoomCategory;
-import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.StoreItemCategory;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
@@ -162,19 +164,26 @@ public class InwardPriceAdjustmentApi {
             }
 
             StringBuilder jpql = new StringBuilder(
-                    "select a from InwardPriceAdjustment a where a.retired = false");
+                    "select a from InwardPriceAdjustment a"
+                    + " left join a.category c"
+                    + " left join a.department d"
+                    + " where a.retired = false");
             Map<String, Object> params = new HashMap<>();
 
             if ("service".equals(scope)) {
-                jpql.append(" and (type(a.category) = :svc"
-                        + " or type(a.category) = :sub"
-                        + " or type(a.category) = :inv"
-                        + " or a.category is null)");
-                params.put("svc", ServiceCategory.class);
-                params.put("sub", ServiceSubCategory.class);
-                params.put("inv", InvestigationCategory.class);
+                // Mirrors validateCategoryForScope: any non-pharmacy/store/room category,
+                // since legacy services/investigations sit under plain Category rows.
+                jpql.append(" and (c is null"
+                        + " or (type(c) <> :pharm"
+                        + " and type(c) <> :pcat"
+                        + " and type(c) <> :store"
+                        + " and type(c) <> :room))");
+                params.put("pharm", PharmaceuticalItemCategory.class);
+                params.put("pcat", PharmaceuticalCategory.class);
+                params.put("store", StoreItemCategory.class);
+                params.put("room", RoomCategory.class);
             } else if ("pharmacy".equals(scope)) {
-                jpql.append(" and (type(a.category) = :pharm or a.category is null)");
+                jpql.append(" and (c is null or type(c) = :pharm)");
                 params.put("pharm", PharmaceuticalItemCategory.class);
             } else if (scope != null && !scope.isEmpty()) {
                 return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
@@ -201,7 +210,9 @@ public class InwardPriceAdjustmentApi {
                 params.put("rcid", roomCategoryId);
             }
 
-            jpql.append(" order by a.department.name, a.category.name, a.fromPrice");
+            // Left-joined aliases: a path order-by would inner-join and drop rows
+            // with no category (room-charge rows) or no department.
+            jpql.append(" order by d.name, c.name, a.fromPrice");
 
             List<PriceMatrix> rows = priceMatrixFacade.findByJpql(jpql.toString(), params, limit);
             List<Map<String, Object>> payload = new ArrayList<>();
@@ -605,15 +616,20 @@ public class InwardPriceAdjustmentApi {
             String query = param("query");
             int limit = intParam("limit", 30, 1, 200);
 
-            StringBuilder jpql = new StringBuilder("select c from Category c where c.retired = false");
+            StringBuilder jpql;
             Map<String, Object> params = new HashMap<>();
 
             if ("service".equals(scope)) {
-                jpql.append(" and (type(c) = :svc or type(c) = :sub or type(c) = :inv)");
-                params.put("svc", ServiceCategory.class);
-                params.put("sub", ServiceSubCategory.class);
-                params.put("inv", InvestigationCategory.class);
+                // Categories actually carried by active services/investigations, whatever
+                // their subtype — the same categories billing's matrix lookup will use.
+                jpql = new StringBuilder("select distinct c from Item i join i.category c"
+                        + " where c.retired = false and i.retired = false"
+                        + " and (type(i) = :svc or type(i) = :inw or type(i) = :inv)");
+                params.put("svc", Service.class);
+                params.put("inw", InwardService.class);
+                params.put("inv", Investigation.class);
             } else if ("pharmacy".equals(scope)) {
+                jpql = new StringBuilder("select c from Category c where c.retired = false");
                 jpql.append(" and type(c) = :pharm");
                 params.put("pharm", PharmaceuticalItemCategory.class);
             } else {
@@ -857,11 +873,15 @@ public class InwardPriceAdjustmentApi {
 
     private String validateCategoryForScope(Category category, String scope) {
         if ("service".equals(scope)) {
-            if (!(category instanceof ServiceCategory
-                    || category instanceof ServiceSubCategory
-                    || category instanceof InvestigationCategory)) {
+            // Billing's matrix lookup matches on the item's category whatever its
+            // subtype, and legacy deployments have services/investigations under
+            // plain Category rows, so only reject clearly non-service categories.
+            if (category instanceof PharmaceuticalItemCategory
+                    || category instanceof PharmaceuticalCategory
+                    || category instanceof StoreItemCategory
+                    || category instanceof RoomCategory) {
                 return "Category type does not match scope 'service'. "
-                        + "Expected ServiceCategory, ServiceSubCategory, or InvestigationCategory.";
+                        + "Pharmacy, store and room categories are not allowed.";
             }
         } else if ("pharmacy".equals(scope)) {
             if (!(category instanceof PharmaceuticalItemCategory)) {

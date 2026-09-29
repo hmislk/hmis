@@ -13,6 +13,9 @@ import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.core.data.CategoryType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.Nationality;
 import com.divudi.core.entity.Religion;
 import com.divudi.core.entity.ServiceCategory;
@@ -392,6 +395,26 @@ public class CategoryController implements Serializable {
             c = new ArrayList<>();
         }
         return c;
+    }
+
+    /**
+     * Categories actually carried by active services/investigations, whatever their
+     * Category subtype — the categories the inward price-matrix lookup matches on.
+     * Legacy deployments keep services under plain Category rows that
+     * completeCategoryService (ServiceCategory/ServiceSubCategory only) never offers.
+     */
+    public List<Category> completeCategoryForInwardServiceMatrix(String qry) {
+        Map temMap = new HashMap();
+        String sql = "select distinct c from Item i join i.category c"
+                + " where c.retired=false and i.retired=false"
+                + " and (type(i)= :svc or type(i)= :inw or type(i)= :inv)"
+                + " and upper(c.name) like :q order by c.name";
+        temMap.put("svc", Service.class);
+        temMap.put("inw", InwardService.class);
+        temMap.put("inv", Investigation.class);
+        temMap.put("q", "%" + (qry == null ? "" : qry.toUpperCase()) + "%");
+        List<Category> c = getFacade().findByJpql(sql, temMap, TemporalType.DATE);
+        return c == null ? new ArrayList<>() : c;
     }
 
     public List<Category> completeCategoryServiceInvestigation(String qry) {
