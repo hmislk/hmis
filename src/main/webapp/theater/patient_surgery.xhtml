@@ -441,7 +441,8 @@
                                 </div>
                             </p:panel>
 
-                            <p:panel id="pBillDetails" class="m-1">
+                            <p:panel id="pBillDetails" class="m-1"
+                                     rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-file-invoice" />
                                     <h:outputLabel class="mx-4" value="Bill Details"/>
