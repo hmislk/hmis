@@ -106,6 +106,8 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     private com.divudi.service.AuditService auditService;
+    @Inject
+    private NotificationController notificationController;
     @EJB
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
@@ -944,6 +946,7 @@ public class InwardSearch implements Serializable {
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
                 null, b.getId(), sessionController.getLoggedUser(),
                 "Bill", b.getId());
+        notificationController.createInwardFinalBillNotification(b, "FinalBillApproved");
 
         JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
