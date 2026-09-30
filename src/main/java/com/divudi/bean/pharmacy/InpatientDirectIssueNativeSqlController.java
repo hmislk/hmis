@@ -305,6 +305,16 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         return sessionController.getDepartment();
     }
 
+    private Long resolveCurrentRoomCategoryId() {
+        if (patientEncounter == null
+                || patientEncounter.getCurrentPatientRoom() == null
+                || patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge() == null
+                || patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory() == null) {
+            return null;
+        }
+        return patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory().getId();
+    }
+
     private Bill buildBillHeader(Department matrixDept) {
         Bill b = preBill != null ? preBill : new PreBill();
 
@@ -479,15 +489,16 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             Department matrixDept = determineMatrixDepartment();
             if (matrixDept == null) matrixDept = sessionController.getDepartment();
             long matrixDeptId = matrixDept.getId();
-            double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, grossValue);
+            Long admTypeId = patientEncounter.getAdmissionType() != null ? patientEncounter.getAdmissionType().getId() : null;
+            String pmName = patientEncounter.getPaymentMethod() != null ? patientEncounter.getPaymentMethod().name() : null;
+            Long roomCategoryId = resolveCurrentRoomCategoryId();
+            double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, grossValue, admTypeId, roomCategoryId, pmName);
             if (marginPct != 0.0) {
                 marginRate = (marginPct / 100.0) * lineRetailRate;
                 marginValue = marginRate * absQty;
             }
             if (priceMatrixNativeSqlService.isDiscountAllowed(itemId)) {
                 Long schemeId = patientEncounter.getPaymentScheme() != null ? patientEncounter.getPaymentScheme().getId() : null;
-                Long admTypeId = patientEncounter.getAdmissionType() != null ? patientEncounter.getAdmissionType().getId() : null;
-                String pmName = patientEncounter.getPaymentMethod() != null ? patientEncounter.getPaymentMethod().name() : null;
                 discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(itemId, pmName, schemeId, admTypeId, matrixDeptId);
                 discountValue = (discountPct / 100.0) * grossValue;
             }
