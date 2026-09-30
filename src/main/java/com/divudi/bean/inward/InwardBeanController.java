@@ -855,8 +855,7 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Timed-service BillItems for one charge type, excluding package-locked
-     * ones (their price is fixed by the package and must not be discounted).
+     * Timed-service BillItems for one charge type.
      * These are priced from the PatientItem duration, so their discount is
      * applied straight to the BillItem rather than through BillFees.
      */
@@ -866,7 +865,6 @@ public class InwardBeanController implements Serializable {
                 + " and s.bill.billType=:btp "
                 + " and s.bill.patientEncounter=:pe"
                 + " and type(s.item)=:cls "
-                + " and s.fromPackage=false "
                 + " and s.item.inwardChargeType=:inw ";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -938,7 +936,6 @@ public class InwardBeanController implements Serializable {
                 + " AND s.bill.billType = :btp"
                 + " AND s.bill.patientEncounter = :pe"
                 + " AND type(s.item) = :cls"
-                + " AND s.fromPackage = false"
                 + " AND s.item.inwardChargeType = :inw";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -946,12 +943,6 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         getBillItemFacade().updateByJpql(sql, hm);
-
-        // Deliberately not filtered on billItem.fromPackage. A package item's
-        // price is fixed and never discounted, so its mirrored discount is
-        // already zero and clearing it changes nothing — and avoiding that
-        // navigation keeps this a plain bulk update over PatientItem's own
-        // columns, matching bulkClearPatientItemsWithOutMatrix.
         String piSql = "UPDATE PatientItem s SET s.discount = 0.0"
                 + " WHERE s.retired = false"
                 + " AND type(s.item) = :cls"

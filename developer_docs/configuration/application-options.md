@@ -90,6 +90,23 @@ Inactive items are excluded in all three modes.
 | Key                                                              | Type      | Default | Description                                                                                             |
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Pharmacy - Allow Cross-Department PO Receiving`                | Boolean   | `false` | Institution-wide toggle. When `true`, the Purchase Orders for Receiving list (and its wholesale/with-approval/DTO variants) drops the same-department restriction, so a PO created in one department (e.g. Pharmacy) can be received/GRN'd from any other department in the same institution (e.g. Store). Institution isolation is unaffected — POs from a different institution never appear. Added for RMH Hambantota, which creates POs in Pharmacy but receives into Store. See issue #21848. |
+| `Pharmacy - List Packs (AMPPs) in Item Selection`               | Boolean   | `true`  | When `false`, Packs (AMPPs) are excluded from every pharmacy item autocomplete that offers them — Purchase Order Request (JPA and native), Direct Purchase, Purchase, Donation, Batch Create and Transfer Request — so only AMPs (plus VMPs/VMPPs on Transfer Request) can be chosen. GRN, Issue and Transfer Issue have no AMPP picker of their own (they take items from the PO, the request or stock), so they follow automatically. Bills that already contain AMPPs are unaffected. Implemented in `ItemController.isAmppListedInItemSelection()`. See issue #24164. |
+
+### GRN Item Table Columns (native GRN page)
+
+Columns of the added-items table on `pharmacy/pharmacy_grn_costing_native.xhtml` (Pharmacy → Procurement → Create GRN from PO). Every option defaults to `true`, so hospitals that set nothing see every column. Hiding a column only stops it rendering; the line keeps the value it was created with (see each row) and nothing else about saving changes. Item Name, Receiving Qty, Purchase Rate, Retail Rate, Date Of Expiry, Batch No and Actions are always shown because a GRN cannot be completed correctly without them. See issue #24171.
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Medicine Identification Codes Used`                            | Boolean   | `true`  | Shows the Code column (shared with other pharmacy pages). |
+| `GRN - Show Ordered Qty Column`                                 | Boolean   | `true`  | Shows the Ordered Qty column. |
+| `GRN - Show Ordered Free Qty Column`                            | Boolean   | `true`  | Shows the Ordered Free Qty column. |
+| `GRN - Show Received Free Qty Column`                           | Boolean   | `true`  | Shows the Received Free Qty input. When hidden, the line receives the free quantity still outstanding on the PO. |
+| `GRN - Show Discount Rate Column`                               | Boolean   | `true`  | Shows the Discount Rate input. When hidden, no line discount is applied (a GRN line starts at 0). |
+| `GRN - Show Wholesale Rate Column`                              | Boolean   | `true`  | Shows the Wholesale Rate input. When hidden, the wholesale rate stays 0 (a GRN line starts at 0). |
+| `GRN - Show Line Net Total Column`                              | Boolean   | `true`  | Shows the Line Net Total column. |
+| `GRN - Show Comments Column`                                    | Boolean   | `true`  | Shows the Comments input. |
+| `Show Profit Percentage in GRN`                                 | Boolean   | `true`  | Shows the Profit % column. |
 
 ## Inventory Reports
 
