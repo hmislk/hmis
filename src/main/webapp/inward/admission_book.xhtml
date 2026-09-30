@@ -16,12 +16,13 @@
 
                     <p:panel header="BHT Addmission Details" >
 
-                        <h:panelGrid columns="2" >
+                        <h:panelGrid columns="2"
+                                     style="border-collapse: separate; border-spacing: 12px 8px;">
 
                             <h:outputLabel value="From Date" />
                             <p:calendar value="#{inwardReportController.fromDate}" styleClass="dateTimePicker"
                                         navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
-                            
+
                             <h:outputLabel value="To Date" />
                             <p:calendar value="#{inwardReportController.toDate}" styleClass="dateTimePicker"
                                         navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
@@ -60,36 +61,36 @@
                                     value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
                                     value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
-                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
                                     value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
-                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                                 <p:selectOneMenu
                                     rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
                                     value="#{inwardReportController.department}" filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
-                                        var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
                             <p:outputLabel value="Without Canceled BHT" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.withoutCancelBHT}" />
-                            
-                            <p:outputLabel value="Selection Methord" />
-                            <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}" >
+
+                            <p:outputLabel value="Selection Method" />
+                            <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string} " styleClass="selectionMethodRadio">
                                 <f:selectItem itemLabel="All" itemValue="0" />
                                 <f:selectItem itemLabel="Not Discharged &amp; Payment Not Finalized" itemValue="1" />
                                 <f:selectItem itemLabel="Discharged &amp; Payment Not Finalized" itemValue="2" />
@@ -98,9 +99,10 @@
                             </p:selectOneRadio>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
+                        <h:panelGrid columns="3"
+                                     style="border-collapse: separate; border-spacing: 8px 4px;">
                             <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
-<!--                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}"  ></p:commandButton>
+<!--                        <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}"  ></p:commandButton>
@@ -114,7 +116,8 @@
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                             </p:commandButton>  
                         </h:panelGrid>
-                        <h:panelGrid columns="4">
+                        <h:panelGrid columns="4"
+                                     style="border-collapse: separate; border-spacing: 18px 7px;">
                             <p:outputLabel value="BHT No" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
                             <p:outputLabel value="Payment Methord" />
@@ -137,14 +140,51 @@
                             <p:selectBooleanCheckbox value="#{inwardReportController.finalBillTotal}" />
                         </h:panelGrid>
 
+                        <style type="text/css">
+
+                            /* Selection Method */
+                            .selectionMethodRadio td {
+                                white-space: nowrap !important;
+                                padding-right: 16px !important;
+                            }
+
+                            .selectionMethodRadio label {
+                                white-space: nowrap !important;
+                            }
+
+                            /* Admission Report Table */
+                            .admissionReportTable {
+                                width: 100%;
+                            }
+
+                            .admissionReportTable table {
+                                table-layout: auto !important;
+                            }
+
+                            .admissionReportTable th {
+                                padding: 10px 8px !important;
+                                line-height: 1.4 !important;
+                                white-space: normal !important;
+                                vertical-align: middle !important;
+                                min-width: 70px;
+                            }
+
+                            .admissionReportTable td {
+                                padding: 8px !important;
+                            }
+
+                        </style>
+
                         <h:panelGroup id="gpBillPreview">
+
                             <p:dataTable id="tbl"  rowStyleClass="#{i.retired ? 'crossLine':''}" 
-                                         styleClass="noBorder normalFont" value="#{inwardReportController.patientEncounters}" 
+                                         styleClass="noBorder normalFont admissionReportTable" value="#{inwardReportController.patientEncounters}" 
                                          var="i" rowIndexVar="a" >
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Payment Bill Item "/>
                                     <h:outputLabel value="#{i.department.institution.name}"/> 
-                                    <h:panelGrid columns="4">
+                                    <h:panelGrid columns="4"
+                                                 style="width:100%; border-collapse: separate; border-spacing: 12px 4px;">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
@@ -189,7 +229,7 @@
 
                                 <p:column headerText="Patient Name" rendered="#{inwardReportController.person}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Patient Name"/>
+                                        <h:outputLabel value="Patient Name" style="white-space: normal; line-height: 1.4;"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.patient.person.name}"  >
                                     </h:outputLabel>
@@ -220,7 +260,7 @@
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Admission Created Time" rendered="#{inwardReportController.addmitDetails}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Admission Created Time"/>
@@ -311,7 +351,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column styleClass="averageNumericColumn"  headerText="Paid" rendered="#{inwardReportController.finalBillTotal}">
                                     <h:outputLabel value="#{i.paidByCreditCompany+i.finalBill.paidAmount}">
                                         <f:convertNumber pattern="#,##0.00" />
