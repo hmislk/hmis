@@ -85,6 +85,17 @@ public class CapabilityStatementResource {
                         + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Categories", "/api/categories",
+                        "Search and create generic Category master-data rows (the single-table-inheritance "
+                        + "base for DosageForm, PharmaceuticalItemCategory, RoomCategory, InvestigationCategory, ...). "
+                        + "GET supports type (a CategoryType enum name, e.g. DOSAGE_FORM) and query (name substring); "
+                        + "omitting type searches across every category type. "
+                        + "POST creates a category with the correct concrete subtype stamped (required: name, categoryType; "
+                        + "optional: description, code); only pharmacy-relevant categoryTypes can be created this way "
+                        + "(DOSAGE_FORM, PHARMACEUTICAL_CATEGORY, PHARMACEUTICAL_ITEM_CATEGORY, PHARMACEUTICAL_ITEM_TYPE, "
+                        + "STORE_ITEM_CATEGORY); returns already_exists/409 when a non-retired row with the same name+type exists.",
+                        "API Key",
+                        "GET", "POST"))
                 .add(resource("Membership", "/api/apiMembership",
                         "Membership-related operations",
                         "API Key",
@@ -241,7 +252,12 @@ public class CapabilityStatementResource {
                         + "Supports discountPercent, admissionTypeId, and creditCompanyId. "
                         + "All create/update/retire actions are audit-logged (PRICE_MATRIX_CREATED/UPDATED/RETIRED). "
                         + "Query params: categoryId, departmentId, paymentMethod, limit. "
-                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "POST /bulk-retire soft-retires many entries at once: either {\"ids\":[...]} (executes "
+                        + "immediately, max 2000/call), or a filter body {departmentId, categoryId, roomCategoryId, "
+                        + "paymentMethod} which only previews matchedCount + a sample unless \"confirm\": true is "
+                        + "also sent — at least one filter or an ids list is required, an unfiltered retire-everything "
+                        + "call is rejected.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Categories", "/api/inward/room-categories",

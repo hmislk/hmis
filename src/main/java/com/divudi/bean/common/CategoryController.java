@@ -12,6 +12,7 @@ import com.divudi.bean.pharmacy.ConsumableCategoryController;
 import com.divudi.bean.pharmacy.PharmaceuticalItemCategoryController;
 import com.divudi.core.data.CategoryType;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.DosageForm;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Service;
 import com.divudi.core.entity.inward.InwardService;
@@ -225,6 +226,38 @@ public class CategoryController implements Serializable {
         c = getFacade().findFirstByJpql(jpql, m);
         if (c == null) {
             c = new Category();
+            c.setName(qry);
+            c.setCode("category_" + CommonFunctions.nameToCode(qry));
+            getFacade().create(c);
+        }
+        return c;
+    }
+
+    /**
+     * Same as {@link #findAndCreateCategoryByName(String)}, but stamps the
+     * new row with the correct concrete subtype (e.g. {@link DosageForm})
+     * when it has to create one, instead of a plain, untyped {@code Category}
+     * row. The lookup still matches any existing Category by name regardless
+     * of its subtype (so an existing row created the old way, or via the
+     * admin UI, is reused rather than duplicated) — only the create path
+     * differs. Currently only DOSAGE_FORM is supported; other types fall back
+     * to the untyped behaviour of {@link #findAndCreateCategoryByName(String)}.
+     */
+    public Category findAndCreateCategoryByName(String qry, CategoryType type) {
+        if (type != CategoryType.DOSAGE_FORM) {
+            return findAndCreateCategoryByName(qry);
+        }
+        String jpql = "select c from "
+                + " Category c "
+                + " where c.retired=:ret "
+                + " and c.name=:name "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        Category c = getFacade().findFirstByJpql(jpql, m);
+        if (c == null) {
+            c = new DosageForm();
             c.setName(qry);
             c.setCode("category_" + CommonFunctions.nameToCode(qry));
             getFacade().create(c);

@@ -586,6 +586,191 @@ public class PriceMatrixInwardApi {
         }
     }
 
+    /**
+     * Bulk soft-retire, either by an explicit id list (executes immediately)
+     * or by filter (department/category/roomCategory/paymentMethod — safe by
+     * default: previews what would be retired unless "confirm": true is
+     * also sent).
+     * POST /api/price-matrix/inward/bulk-retire
+     *
+     * Id-based body: {"ids": [123, 456], "retireComments": "..."}
+     *
+     * Filter-based body (preview): {"departmentId":.., "categoryId":.., "roomCategoryId":..,
+     * "paymentMethod":"Cash"} — any subset of these filters; returns matchedCount
+     * and a sample instead of retiring anything.
+     *
+     * Filter-based body (execute): same as above plus "confirm": true.
+     *
+     * At least one of ids / departmentId / categoryId / roomCategoryId / paymentMethod
+     * is required — an unfiltered "retire everything" call is rejected. Filter-based
+     * matches are capped at BULK_RETIRE_MAX; narrow the filter if that's exceeded.
+     */
+    @POST
+    @Path("/bulk-retire")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkRetire(String requestBody) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            Map<?, ?> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            String retireComments = asString(body.get("retireComments"));
+            List<Long> ids = asLongList(body.get("ids"));
+
+            if (ids != null && !ids.isEmpty()) {
+                if (ids.size() > BULK_RETIRE_MAX) {
+                    return errorResponse("Too many ids. Max allowed per call: " + BULK_RETIRE_MAX, 400);
+                }
+                return executeBulkRetireByIds(ids, retireComments, user);
+            }
+
+            Long departmentId = asLong(body.get("departmentId"));
+            Long categoryId = asLong(body.get("categoryId"));
+            Long roomCategoryId = asLong(body.get("roomCategoryId"));
+            String paymentMethodStr = asString(body.get("paymentMethod"));
+            boolean confirm = Boolean.TRUE.equals(body.get("confirm"));
+
+            if (departmentId == null && categoryId == null && roomCategoryId == null
+                    && (paymentMethodStr == null || paymentMethodStr.trim().isEmpty())) {
+                return errorResponse("Provide an explicit \"ids\" list, or at least one filter "
+                        + "(departmentId, categoryId, roomCategoryId, paymentMethod) — an unfiltered "
+                        + "bulk-retire of the whole matrix is not allowed", 400);
+            }
+
+            PaymentMethod paymentMethod = null;
+            if (paymentMethodStr != null && !paymentMethodStr.trim().isEmpty()) {
+                try {
+                    paymentMethod = PaymentMethod.valueOf(paymentMethodStr.trim());
+                } catch (IllegalArgumentException e) {
+                    return errorResponse("Invalid paymentMethod: " + paymentMethodStr, 400);
+                }
+            }
+
+            StringBuilder jpql = new StringBuilder(
+                    "select a from InwardPriceAdjustment a where a.retired = false");
+            Map<String, Object> params = new HashMap<>();
+            if (departmentId != null) {
+                jpql.append(" and a.department.id = :did");
+                params.put("did", departmentId);
+            }
+            if (categoryId != null) {
+                jpql.append(" and a.category.id = :cid");
+                params.put("cid", categoryId);
+            }
+            if (roomCategoryId != null) {
+                jpql.append(" and a.roomCategory.id = :rcid");
+                params.put("rcid", roomCategoryId);
+            }
+            if (paymentMethod != null) {
+                jpql.append(" and a.paymentMethod = :pm");
+                params.put("pm", paymentMethod);
+            }
+
+            @SuppressWarnings("unchecked")
+            List<PriceMatrix> matches = (List<PriceMatrix>) (List<?>)
+                    priceMatrixFacade.findByJpql(jpql.toString(), params, BULK_RETIRE_MAX + 1);
+            int matchedCount = matches == null ? 0 : matches.size();
+
+            if (matchedCount > BULK_RETIRE_MAX) {
+                return errorResponse("More than " + BULK_RETIRE_MAX + " rows match this filter — narrow it "
+                        + "(add categoryId/roomCategoryId/paymentMethod) before retiring in bulk", 400);
+            }
+
+            if (!confirm) {
+                List<Map<String, Object>> sample = new ArrayList<>();
+                if (matches != null) {
+                    for (int i = 0; i < matches.size() && i < 20; i++) {
+                        sample.add(toDto(matches.get(i)));
+                    }
+                }
+                Map<String, Object> preview = new LinkedHashMap<>();
+                preview.put("dryRun", true);
+                preview.put("matchedCount", matchedCount);
+                preview.put("sample", sample);
+                preview.put("note", "Re-submit the same filters with \"confirm\": true to retire these "
+                        + matchedCount + " row(s).");
+                return successResponse(preview);
+            }
+
+            List<Long> idsToRetire = new ArrayList<>();
+            if (matches != null) {
+                for (PriceMatrix pm : matches) {
+                    idsToRetire.add(pm.getId());
+                }
+            }
+            return executeBulkRetireByIds(idsToRetire, retireComments, user);
+
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    private static final int BULK_RETIRE_MAX = 2000;
+
+    private Response executeBulkRetireByIds(List<Long> ids, String retireComments, WebUser user) {
+        int retiredCount = 0;
+        int alreadyRetired = 0;
+        int notFound = 0;
+        List<Long> retiredIds = new ArrayList<>();
+        for (Long id : ids) {
+            if (id == null) {
+                continue;
+            }
+            PriceMatrix pm = priceMatrixFacade.find(id);
+            if (pm == null || !(pm instanceof InwardPriceAdjustment)) {
+                notFound++;
+                continue;
+            }
+            if (pm.isRetired()) {
+                alreadyRetired++;
+                continue;
+            }
+            Map<String, Object> beforeState = toDto(pm);
+            pm.setRetired(true);
+            pm.setRetiredAt(new Date());
+            pm.setRetirer(user);
+            if (retireComments != null && !retireComments.trim().isEmpty()) {
+                pm.setRetireComments(retireComments.trim());
+            }
+            priceMatrixFacade.edit(pm);
+            auditService.logAudit(beforeState, toDto(pm), user,
+                    "InwardPriceAdjustment", "PRICE_MATRIX_RETIRED", pm.getId());
+            retiredCount++;
+            retiredIds.add(pm.getId());
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("retiredCount", retiredCount);
+        result.put("alreadyRetired", alreadyRetired);
+        result.put("notFound", notFound);
+        result.put("retiredIds", retiredIds);
+        return successResponse(result);
+    }
+
+    private List<Long> asLongList(Object o) {
+        if (!(o instanceof List)) {
+            return null;
+        }
+        List<Long> result = new ArrayList<>();
+        for (Object item : (List<?>) o) {
+            result.add(asLong(item));
+        }
+        return result;
+    }
+
     // =========================================================================
     // DTO conversion
     // =========================================================================

@@ -6,9 +6,15 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.entity.Department;
+import com.divudi.core.facade.DepartmentFacade;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -36,9 +42,16 @@ public class PriceMatrixNativeSqlService {
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
 
+    @EJB
+    private DepartmentFacade departmentFacade;
+
     private volatile String tItem = null;
     private volatile String tCategory = null;
     private volatile String tPriceMatrix = null;
+
+    // DTYPE values of Item subclasses under PharmaceuticalItem (single-table inheritance)
+    private static final Set<String> PHARMACEUTICAL_ITEM_DTYPES = new HashSet<>(
+            Arrays.asList("Vmp", "Amp", "Vmpp", "Ampp", "Vtm", "Atm"));
 
     // -----------------------------------------------------------------------
     // Public API
@@ -76,7 +89,7 @@ public class PriceMatrixNativeSqlService {
     public double getInwardMarginPct(long itemId, long deptId, double grossValue,
             Long admissionTypeId, Long roomCategoryId, String paymentMethodName) {
         try {
-            Long catId = getItemCategoryId(itemId);
+            Long catId = getItemMarginCategoryId(itemId, deptId);
             if (catId == null) return 0.0;
 
             Double margin = queryMargin(catId, deptId, grossValue, admissionTypeId, roomCategoryId, paymentMethodName);
@@ -168,6 +181,41 @@ public class PriceMatrixNativeSqlService {
                 .setParameter(1, itemId)
                 .getSingleResult();
         return result == null ? null : ((Number) result).longValue();
+    }
+
+    /**
+     * Same as {@link #getItemCategoryId(long)}, but for the inward MARGIN
+     * lookup only: when the item is a pharmaceutical item (Vmp/Amp/...) and
+     * the department has opted into "Inward Matrix - Resolve Pharmacy Margin
+     * By Dosage Form" (default false — unchanged behaviour for every other
+     * hospital), returns dosageForm_ID instead of category_ID. Mirrors
+     * PriceMatrixController.resolveInwardMatrixCategory(Item, Department).
+     * Does not affect getInwardDiscountPct, which still calls
+     * {@link #getItemCategoryId(long)} directly.
+     */
+    private Long getItemMarginCategoryId(long itemId, long deptId) {
+        Object[] row;
+        try {
+            row = (Object[]) em.createNativeQuery(
+                    "SELECT DTYPE, category_ID, dosageForm_ID FROM " + itemTable() + " WHERE ID=?")
+                    .setParameter(1, itemId)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        String dtype = row[0] == null ? null : row[0].toString();
+        Number dosageFormId = (Number) row[2];
+
+        if (dtype != null && PHARMACEUTICAL_ITEM_DTYPES.contains(dtype) && dosageFormId != null) {
+            Department department = departmentFacade.find(deptId);
+            boolean useDosageForm = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Inward Matrix - Resolve Pharmacy Margin By Dosage Form", department, false);
+            if (useDosageForm) {
+                return dosageFormId.longValue();
+            }
+        }
+        Number categoryId = (Number) row[1];
+        return categoryId == null ? null : categoryId.longValue();
     }
 
     private Long getParentCategoryId(long catId) {
