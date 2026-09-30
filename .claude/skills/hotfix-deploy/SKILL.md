@@ -160,6 +160,34 @@ After the PR is merged:
 git branch -d $1-hotfix
 ```
 
+## Step 9a — Check Whether `development` Needs the Same Fix
+
+**Do this for every hotfix, immediately after it merges.** A hotfix branch and
+`development` drift apart the moment they diverge; skipping this step is how
+they end up meaningfully different a few hotfixes later, with confusing
+stale-file conflicts on the next migration or cherry-pick.
+
+- If the hotfix's commits were cherry-picked *from* commits that already exist
+  in `development` (the common case when porting an already-merged
+  development fix forward to a lagging production branch), there is nothing
+  to do — `development` already has it.
+- If any commit was written directly on the hotfix branch (a fix invented
+  there, or a follow-up discovered while hotfixing, as opposed to a
+  cherry-pick), check whether `development`'s copy of the same file(s)
+  already contains it:
+  ```bash
+  git log origin/development --oneline --grep="<distinctive phrase from the commit message>"
+  ```
+  If it's missing, branch off `origin/development` (a normal feature branch,
+  **not** `-hotfix` — the target here is `development`, not a production
+  branch), re-apply the same change, and open a separate PR targeting
+  `development`. Do not fold this into the hotfix PR itself; they target
+  different branches.
+- Either way, say explicitly in the hotfix PR body (or in a follow-up
+  comment) whether `development` already had the fix or needed a mirror PR,
+  and link that PR if one was opened. This is what a reviewer or the next
+  developer checks instead of re-deriving branch drift from scratch.
+
 ## Common Production Branches
 
 Verify against `git branch -r` before trusting this table — branches get

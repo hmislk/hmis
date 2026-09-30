@@ -266,11 +266,6 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
 
-        if (encounterComponent.getBillFee().isFromPackage()) {
-            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
-            return;
-        }
-
         retiredEncounterComponent(encounterComponent);
         retiredBillFee(encounterComponent.getBillFee());
 
@@ -834,7 +829,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void assignStaffToPackageFee(BillFee billFee, Staff staff) {
-        if (billFee == null || !billFee.isFromPackage()) {
+        if (billFee == null || billFee.getSourcePackageItem() == null) {
             JsfUtil.addErrorMessage("This action is only for package-included professional fee roles.");
             return;
         }
@@ -1364,10 +1359,6 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void remove(BillFee bf) {
-        if (bf.isFromPackage()) {
-            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
-            return;
-        }
         bf.setRetiredAt(new Date());
         bf.setRetired(true);
         bf.setRetirer(getSessionController().getLoggedUser());
