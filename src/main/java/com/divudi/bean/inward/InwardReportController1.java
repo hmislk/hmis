@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
@@ -161,6 +162,8 @@ public class InwardReportController1 implements Serializable {
     PriceMatrixController priceMatrixController;
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public void processForItemsWithInwardMatrix() {
         items = new ArrayList<>();
@@ -3590,6 +3593,8 @@ public class InwardReportController1 implements Serializable {
             JsfUtil.addErrorMessage("Nothing to export. Please process the report first.");
             return;
         }
+        boolean showPaidAndRemaining = configOptionApplicationController.getBooleanValueByKey(
+                "Credit Company Commitment Report - Show Paid and Remaining Columns", true);
         TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
         TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Commitment Report", false)
                 .column("No.", 0.5f, TabularReportExporter.Align.CENTER)
@@ -3598,23 +3603,34 @@ public class InwardReportController1 implements Serializable {
                 .column("Patient Name", 2.4f, l)
                 .column("Date of Discharge", 1.3f, l)
                 .column("Credit Company", 2.4f, l)
-                .column("Credit Company Commitment Value", 1.6f, TabularReportExporter.Align.RIGHT)
-                .column("Paid by Credit Company", 1.4f, TabularReportExporter.Align.RIGHT)
-                .column("Remaining Commitment", 1.4f, TabularReportExporter.Align.RIGHT);
+                .column("Credit Company Commitment Value", 1.6f, TabularReportExporter.Align.RIGHT);
+        if (showPaidAndRemaining) {
+            ex.column("Paid by Credit Company", 1.4f, TabularReportExporter.Align.RIGHT)
+                    .column("Remaining Commitment", 1.4f, TabularReportExporter.Align.RIGHT);
+        }
         int no = 1;
         for (Bill b : commitmentBills) {
             PatientEncounter pe = b.getPatientEncounter();
-            ex.row(String.valueOf(no++),
+            List<Object> row = new ArrayList<>(Arrays.asList(
+                    String.valueOf(no++),
                     b.getReferenceBill() == null ? "" : b.getReferenceBill().getDeptId(),
                     pe == null ? "" : pe.getBhtNo(),
                     b.getPatient() == null || b.getPatient().getPerson() == null ? "" : b.getPatient().getPerson().getName(),
                     pe == null ? null : pe.getDateOfDischarge(),
                     b.getCreditCompany() == null ? "" : b.getCreditCompany().getName(),
-                    b.getNetTotal(),
-                    getCommitmentPaid(b),
-                    getCommitmentBalance(b));
+                    b.getNetTotal()));
+            if (showPaidAndRemaining) {
+                row.add(getCommitmentPaid(b));
+                row.add(getCommitmentBalance(b));
+            }
+            ex.row(row.toArray());
         }
-        ex.totals("Total", null, null, null, null, null, null, commitmentTotal, commitmentPaidTotal, commitmentBalanceTotal);
+        List<Double> totals = new ArrayList<>(Arrays.asList(null, null, null, null, null, null, commitmentTotal));
+        if (showPaidAndRemaining) {
+            totals.add(commitmentPaidTotal);
+            totals.add(commitmentBalanceTotal);
+        }
+        ex.totals("Total", totals.toArray(new Double[0]));
         writeExport(ex, excel, "inward_credit_company_commitments");
     }
 
