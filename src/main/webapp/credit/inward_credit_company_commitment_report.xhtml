@@ -296,7 +296,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Paid by Credit Company" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Paid by Credit Company" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Credit Company Commitment Report - Show Paid and Remaining Columns', true)}">
                                 <h:outputText value="#{inwardReportController1.getCommitmentPaid(b)}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -307,7 +308,8 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Remaining Commitment" style="text-align:right; white-space:nowrap;">
+                            <p:column headerText="Remaining Commitment" style="text-align:right; white-space:nowrap;"
+                                      rendered="#{configOptionApplicationController.getBooleanValueByKey('Credit Company Commitment Report - Show Paid and Remaining Columns', true)}">
                                 <h:outputText value="#{inwardReportController1.getCommitmentBalance(b)}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
