@@ -108,10 +108,6 @@
                                     <f:selectItems value="#{roomCategoryController.items}" var="rc" itemValue="#{rc}" itemLabel="#{rc.name}"/>
                                 </p:selectOneMenu>
 
-                                <h:outputText value="Included Room Duration (Hours)"></h:outputText>
-                                <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
-                                <p:inputNumber id="txtIncludedDuration" value="#{inpatientPackageController.current.includedRoomDurationHours}" class="w-100" minValue="0"/>
-
                                 <h:outputText value="Total Package Price"></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
                                 <p:outputLabel id="lblTotalPrice" value="#{inpatientPackageController.current.totalPrice}"/>
