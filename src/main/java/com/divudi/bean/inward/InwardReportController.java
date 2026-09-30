@@ -301,6 +301,9 @@ public class InwardReportController implements Serializable {
     private ReportTemplateRowBundle bundle;
     private SurgeryType surgeryType;
     private List<MonthlySurgeryCountDTO> monthlySurgeryCountList;
+    // Filters that produced monthlySurgeryCountList, so the Excel export describes
+    // the rows it contains even if the filters are changed before Download.
+    private Map<String, String> surgerySurveyAppliedFilters;
     private List<String> surgeryHeaders;
 
     private Date dischargeFromDate;
@@ -2795,6 +2798,7 @@ public class InwardReportController implements Serializable {
         }
 
         monthlySurgeryCountList = new ArrayList<>();
+        surgerySurveyAppliedFilters = buildSurgerySurveyFilterSummary();
 
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -3071,6 +3075,105 @@ public class InwardReportController implements Serializable {
         v.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
         v.setPadding(3);
         info.addCell(v);
+    }
+
+    // PostProcessor for the Surgery Survey Summary Excel export - the xlsx
+    // dataExporter had no preProcessor/postProcessor at all, so the applied
+    // filters (visible in the PDF export via addInfoRow above) never made it
+    // into the downloaded Excel file.
+    public void postProcessSurgerySurveySummaryExcel(Object document) {
+        insertSurgerySurveyExcelFilterSummary(document, "Surgery Survey Summary Report");
+    }
+
+    public void postProcessSurgerySurveyDetailExcel(Object document) {
+        insertSurgerySurveyExcelFilterSummary(document, "Surgery Survey Detail Report");
+    }
+
+    private void insertSurgerySurveyExcelFilterSummary(Object document, String title) {
+        if (!(document instanceof XSSFWorkbook)) {
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        Map<String, String> filters = surgerySurveyAppliedFilters != null
+                ? surgerySurveyAppliedFilters : buildSurgerySurveyFilterSummary();
+
+        String institutionName = sessionController != null && sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName() : null;
+
+        int rowsNeeded = (institutionName != null ? 1 : 0) + 1 + filters.size() + 1;
+
+        int lastRowNum = sheet.getLastRowNum();
+        if (sheet.getPhysicalNumberOfRows() > 0) {
+            sheet.shiftRows(0, lastRowNum, rowsNeeded);
+        }
+
+        Font instFont = workbook.createFont();
+        instFont.setBold(true);
+        instFont.setFontHeightInPoints((short) 14);
+        CellStyle instStyle = workbook.createCellStyle();
+        instStyle.setFont(instFont);
+        instStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 12);
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setFont(titleFont);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Font labelFont = workbook.createFont();
+        labelFont.setBold(true);
+
+        int lastCol = 7;
+        int rowIndex = 0;
+
+        if (institutionName != null) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institutionName);
+            instCell.setCellStyle(instStyle);
+        }
+
+        sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(title);
+        titleCell.setCellStyle(titleStyle);
+
+        // One "Label: value" per row, merged across the report width, so long
+        // names never overlap the next criterion or depend on data column widths.
+        for (Map.Entry<String, String> entry : filters.entrySet()) {
+            String label = entry.getKey() + ": ";
+            XSSFRichTextString text = new XSSFRichTextString(label + entry.getValue());
+            text.applyFont(0, label.length(), labelFont);
+
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+            Row row = sheet.createRow(rowIndex++);
+            row.createCell(0).setCellValue(text);
+        }
+    }
+
+    private Map<String, String> buildSurgerySurveyFilterSummary() {
+        // Same date-time pattern as the report's date pickers, so the applied
+        // time bounds are visible, not just the dates.
+        String pattern = sessionController != null && sessionController.getApplicationPreference() != null
+                ? sessionController.getApplicationPreference().getLongDateTimeFormat()
+                : "dd MMM yyyy HH:mm:ss";
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        Map<String, String> filters = new LinkedHashMap<>();
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "All");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "All");
+        filters.put("Surgery Type", surgeryType != null ? surgeryType.getName() : "All");
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        return filters;
     }
 
     public void processIpUnsettledInvoicesReport() {
