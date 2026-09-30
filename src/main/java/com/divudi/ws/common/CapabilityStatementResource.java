@@ -257,7 +257,8 @@ public class CapabilityStatementResource {
                         + "immediately, max 2000/call), or a filter body {departmentId, categoryId, roomCategoryId, "
                         + "paymentMethod} which only previews matchedCount + a sample unless \"confirm\": true is "
                         + "also sent — at least one filter or an ids list is required, an unfiltered retire-everything "
-                        + "call is rejected.",
+                        + "call is rejected. Each row is retired independently; a failure on one row is reported in "
+                        + "failedIds rather than aborting the rest of the batch.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Categories", "/api/inward/room-categories",

@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * REST API for Inward Price Adjustment (margin) Matrix management.
@@ -64,6 +66,8 @@ import java.util.Map;
 @Path("price-matrix/inward")
 @RequestScoped
 public class PriceMatrixInwardApi {
+
+    private static final Logger LOGGER = Logger.getLogger(PriceMatrixInwardApi.class.getName());
 
     @Context
     private HttpServletRequest requestContext;
@@ -721,41 +725,57 @@ public class PriceMatrixInwardApi {
 
     private static final int BULK_RETIRE_MAX = 2000;
 
+    /**
+     * Retires each id independently (no shared transaction across the loop —
+     * this is a @RequestScoped JAX-RS resource, and each facade edit() commits
+     * on its own). A failure on one row must not lose track of rows already
+     * retired or abort the rest of the batch, so every row is isolated in its
+     * own try/catch and failures are reported back in failedIds rather than
+     * thrown out of the method (issue found in CodeRabbit review of #24194).
+     */
     private Response executeBulkRetireByIds(List<Long> ids, String retireComments, WebUser user) {
         int retiredCount = 0;
         int alreadyRetired = 0;
         int notFound = 0;
         List<Long> retiredIds = new ArrayList<>();
+        List<Long> failedIds = new ArrayList<>();
         for (Long id : ids) {
             if (id == null) {
                 continue;
             }
-            PriceMatrix pm = priceMatrixFacade.find(id);
-            if (pm == null || !(pm instanceof InwardPriceAdjustment)) {
-                notFound++;
-                continue;
+            try {
+                PriceMatrix pm = priceMatrixFacade.find(id);
+                if (pm == null || !(pm instanceof InwardPriceAdjustment)) {
+                    notFound++;
+                    continue;
+                }
+                if (pm.isRetired()) {
+                    alreadyRetired++;
+                    continue;
+                }
+                Map<String, Object> beforeState = toDto(pm);
+                pm.setRetired(true);
+                pm.setRetiredAt(new Date());
+                pm.setRetirer(user);
+                if (retireComments != null && !retireComments.trim().isEmpty()) {
+                    pm.setRetireComments(retireComments.trim());
+                }
+                priceMatrixFacade.edit(pm);
+                auditService.logAudit(beforeState, toDto(pm), user,
+                        "InwardPriceAdjustment", "PRICE_MATRIX_RETIRED", pm.getId());
+                retiredCount++;
+                retiredIds.add(pm.getId());
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "[PriceMatrixInwardApi] bulk-retire failed for id={0}: {1}",
+                        new Object[]{id, e.getMessage()});
+                failedIds.add(id);
             }
-            if (pm.isRetired()) {
-                alreadyRetired++;
-                continue;
-            }
-            Map<String, Object> beforeState = toDto(pm);
-            pm.setRetired(true);
-            pm.setRetiredAt(new Date());
-            pm.setRetirer(user);
-            if (retireComments != null && !retireComments.trim().isEmpty()) {
-                pm.setRetireComments(retireComments.trim());
-            }
-            priceMatrixFacade.edit(pm);
-            auditService.logAudit(beforeState, toDto(pm), user,
-                    "InwardPriceAdjustment", "PRICE_MATRIX_RETIRED", pm.getId());
-            retiredCount++;
-            retiredIds.add(pm.getId());
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("retiredCount", retiredCount);
         result.put("alreadyRetired", alreadyRetired);
         result.put("notFound", notFound);
+        result.put("failedIds", failedIds);
         result.put("retiredIds", retiredIds);
         return successResponse(result);
     }

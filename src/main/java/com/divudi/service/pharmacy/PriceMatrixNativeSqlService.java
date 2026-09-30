@@ -49,9 +49,14 @@ public class PriceMatrixNativeSqlService {
     private volatile String tCategory = null;
     private volatile String tPriceMatrix = null;
 
-    // DTYPE values of Item subclasses under PharmaceuticalItem (single-table inheritance)
+    // DTYPE values of PharmaceuticalItem and its subclasses (single-table inheritance).
+    // Includes the base "PharmaceuticalItem" DTYPE itself — PharmacyItemApi.create()
+    // persists plain PharmaceuticalItem rows directly, and ItemBatch.item is typed as
+    // the generic Item, so a stocked base-DTYPE item is reachable here too. Must mirror
+    // PriceMatrixController.resolveInwardMatrixCategory's `instanceof PharmaceuticalItem`
+    // check exactly.
     private static final Set<String> PHARMACEUTICAL_ITEM_DTYPES = new HashSet<>(
-            Arrays.asList("Vmp", "Amp", "Vmpp", "Ampp", "Vtm", "Atm"));
+            Arrays.asList("PharmaceuticalItem", "Vmp", "Amp", "Vmpp", "Ampp", "Vtm", "Atm"));
 
     // -----------------------------------------------------------------------
     // Public API
