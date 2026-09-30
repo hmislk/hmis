@@ -392,7 +392,6 @@
                                     <p:column headerText="Item" style="width: 26em;">
                                         <h:outputText value="#{bid.itemName}"></h:outputText>
                                         <p:commandButton
-                                            rendered="#{!bid.fromPackage}"
                                             id="btnSelectSubstitute"
                                             icon="pi pi-refresh"
                                             title="Select a Substitute"
@@ -401,10 +400,6 @@
                                             oncomplete="PF('substituteDialog').show();"
                                             process="@this"
                                             styleClass="ui-button-warning ui-button-icon-only mx-1" />
-                                        <h:outputText
-                                            rendered="#{bid.fromPackage}"
-                                            styleClass="pi pi-lock mx-1 text-muted"
-                                            title="Package-priced item — substitution not available" />
                                     </p:column>
                                     <p:column headerText="Quantity" width="8em" class="text-end">
                                         <p:inputText
