@@ -4111,6 +4111,53 @@ public class ItemController implements Serializable {
      * id-exclusion is applied — using {@code i.id != null} would wrongly filter
      * out every row and make the check always pass.
      */
+    /**
+     * Warns, without blocking the save, when another active item of the same
+     * type has the same name once case, spaces and punctuation are ignored.
+     * Users sometimes register an existing product again instead of selecting
+     * it, which splits its stock and billing across two records. Hospitals
+     * also keep identical names on purpose (e.g. the same service in two
+     * departments with different codes), so this is advisory only.
+     */
+    public void warnIfItemNameDuplicated(Item item) {
+        if (item == null || item.getName() == null) {
+            return;
+        }
+        String key = normalizeItemName(item.getName());
+        if (key.isEmpty()) {
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select i.name, i.code from Item i where i.retired = false "
+                + "and (i.inactive = false or i.inactive is null) and type(i) = :t ");
+        m.put("t", item.getClass());
+        if (item.getId() != null) {
+            jpql.append("and i.id <> :id ");
+            m.put("id", item.getId());
+        }
+        List<Object[]> rows = getFacade().findObjectArrayByJpql(jpql.toString(), m, null);
+        if (rows == null) {
+            return;
+        }
+        List<String> matches = new ArrayList<>();
+        for (Object[] r : rows) {
+            if (key.equals(normalizeItemName((String) r[0]))) {
+                matches.add(r[0] + (r[1] != null ? " (code " + r[1] + ")" : ""));
+            }
+        }
+        if (!matches.isEmpty()) {
+            JsfUtil.addWarningMessage("Possible duplicate - an item with the same name already exists: "
+                    + String.join(", ", matches.subList(0, Math.min(3, matches.size())))
+                    + (matches.size() > 3 ? " and " + (matches.size() - 3) + " more" : "")
+                    + ". Please check it is not the same item.");
+        }
+    }
+
+    private String normalizeItemName(String name) {
+        return name == null ? "" : name.toLowerCase().replaceAll("[^a-z0-9]", "");
+    }
+
     public boolean isItemCodeDuplicate(String code, Long excludeId) {
         if (code == null || code.trim().isEmpty()) {
             return false;
