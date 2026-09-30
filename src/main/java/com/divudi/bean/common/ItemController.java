@@ -3379,6 +3379,8 @@ public class ItemController implements Serializable {
      */
     public static final String THEATRE_LIST_MAPPED_SERVICES
             = "Theatre Surgery Bill - List Services Mapped to the Logged Department";
+    public static final String THEATRE_LIST_ALL_SERVICES_AND_INVESTIGATIONS
+            = "Theatre Surgery Bill - List All Services and Investigations";
     public static final String THEATRE_LIST_ALL_SERVICES
             = "Theatre Surgery Bill - List All Services";
     public static final String THEATRE_LIST_THEATRE_SERVICES_ONLY
@@ -3390,7 +3392,8 @@ public class ItemController implements Serializable {
      * Which items qualify is configurable per department: a hospital that
      * maintains a dedicated Theatre Service master keeps the default
      * (theatre services only), while one that bills theatre consumables from
-     * its existing OPD/Inward service master turns on "List All Services", or
+     * its existing OPD/Inward service master turns on "List All Services"
+     * (or "List All Services and Investigations" to include investigations), or
      * maps the items it wants to the theatre department and turns on "List
      * Services Mapped to the Logged Department".
      *
@@ -3405,6 +3408,8 @@ public class ItemController implements Serializable {
 
         boolean listMapped = configOptionController.getBooleanValueByKeyReadOnly(
                 THEATRE_LIST_MAPPED_SERVICES, false);
+        boolean listAllServicesAndInvestigations = configOptionController.getBooleanValueByKeyReadOnly(
+                THEATRE_LIST_ALL_SERVICES_AND_INVESTIGATIONS, false);
         boolean listAllServices = configOptionController.getBooleanValueByKeyReadOnly(
                 THEATRE_LIST_ALL_SERVICES, false);
         boolean listTheatreServicesOnly = configOptionController.getBooleanValueByKeyReadOnly(
@@ -3417,7 +3422,7 @@ public class ItemController implements Serializable {
         // intent is explicit and the key is not silently ignored. This mirrors
         // TransferIssueController's three transfer-rate booleans, which have
         // the same shape.
-        if (!listMapped && !listAllServices && !listTheatreServicesOnly) {
+        if (!listMapped && !listAllServicesAndInvestigations && !listAllServices && !listTheatreServicesOnly) {
             listTheatreServicesOnly = true;
         }
 
@@ -3434,6 +3439,19 @@ public class ItemController implements Serializable {
                     + " and UPPER(im.item.name) like :q"
                     + " order by im.item.name";
             m.put("dept", getSessionController().getDepartment());
+        } else if (listAllServicesAndInvestigations) {
+            // Service covers InwardService and TheatreService too (both
+            // extend it); Investigation is a separate Item subtype.
+            sql = "select c from Item c "
+                    + " where c.retired=false "
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + " and (type(c)=:ser or type(c)=:ward or type(c)=:the or type(c)=:inv) "
+                    + " and UPPER(c.name) like :q"
+                    + " order by c.name";
+            m.put("ser", Service.class);
+            m.put("ward", InwardService.class);
+            m.put("the", TheatreService.class);
+            m.put("inv", Investigation.class);
         } else if (listAllServices) {
             // Service is the common superclass of InwardService and
             // TheatreService, so this covers all three in one query.

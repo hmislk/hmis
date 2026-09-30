@@ -62,16 +62,17 @@ They are read in a **fixed precedence, most restrictive first**, by
 result:
 
 1. `Theatre Surgery Bill - List Services Mapped to the Logged Department`
-2. `Theatre Surgery Bill - List All Services`
-3. `Theatre Surgery Bill - List Theatre Services Only` — the default mode
+2. `Theatre Surgery Bill - List All Services and Investigations`
+3. `Theatre Surgery Bill - List All Services`
+4. `Theatre Surgery Bill - List Theatre Services Only` — the default mode
 
 `List Theatre Services Only` is a **declarative marker for the default mode, not a live switch**.
 It names what the final branch does, but since that branch is the default, unticking it does not
 change the item list — the bill still falls back to theatre services only. It is read alongside the
-other two, with an all-disabled guard, so the key is not silently ignored.
+others, with an all-disabled guard, so the key is not silently ignored.
 `TransferIssueController`'s three transfer-rate booleans have the same shape.
 
-All three resolve **department-scoped key first, then application-wide**, via
+All four resolve **department-scoped key first, then application-wide**, via
 `ConfigOptionController.getBooleanValueByKeyReadOnly`. To override for one department only, set
 `<Department Name> - <key>`, e.g. `Operation Theatre - Theatre Surgery Bill - List All Services`.
 The read-only accessor is deliberate: this runs on every autocomplete keystroke and must not
@@ -79,11 +80,12 @@ persist a ConfigOption row just because someone typed.
 
 | Key                                                              | Type      | Default | Description                                                                                             |
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `Theatre Surgery Bill - List Services Mapped to the Logged Department` | Boolean | `false` | Lists only items mapped to the logged department via `ItemMapping`. Highest precedence. Use when the theatre needs a curated subset. Note there is no API for creating these mappings yet (issue #23748) — use Administration → Manage Items → Item Mapping. |
+| `Theatre Surgery Bill - List Services Mapped to the Logged Department` | Boolean | `false` | Lists only items mapped to the logged department via `ItemMapping`. Highest precedence. Use when the theatre needs a curated subset. Create the mappings under Administration → Manage Items → Item Mapping, or in bulk with `POST /api/item-mappings/bulk` (see `developer_docs/api/using-apis/API_ITEM_MAPPINGS.md`). Items created later must be mapped too, or they will not appear. |
+| `Theatre Surgery Bill - List All Services and Investigations`    | Boolean   | `false` | Lists every `Service`, `InwardService`, `TheatreService` and `Investigation`. Use when theatre staff bill both services and investigations; unlike the mapped mode, it needs no per-item mappings and picks up newly created items automatically. |
 | `Theatre Surgery Bill - List All Services`                       | Boolean   | `false` | Lists `Service`, `InwardService` and `TheatreService` (one polymorphic query — the latter two extend `Service`). Use when the hospital bills theatre consumables from its ordinary service master rather than a dedicated Theatre Service master. |
 | `Theatre Surgery Bill - List Theatre Services Only`              | Boolean   | `true`  | The default mode: only items whose DTYPE is `TheatreService`. This was the hardcoded behaviour before the setting existed, so a hospital that changes nothing sees no change. Note that most deployments have an **empty** Theatre Service master, in which case this mode lists nothing — see issue #23743. |
 
-Inactive items are excluded in all three modes.
+Inactive items are excluded in all four modes.
 
 ## Pharmacy Procurement
 
