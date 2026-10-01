@@ -511,34 +511,23 @@ public class InwardBeanController implements Serializable {
      * {@code BhtSummeryController.setKnownChargeTot()}, so the Interim Bill's "Service Charge
      * (Margin)" line always showed 0.00 for Medicine even though the margin was correctly
      * applied to every pharmacy bill (QA report, 2026-10-01).
+     *
+     * <p>Margin is deliberately derived as {@code netTotal - gross} by the caller rather than
+     * summed from a third {@code Bill.margin} field: margin is set independently by close to
+     * a dozen different pharmacy issue/return/cancellation controllers, several of which (e.g.
+     * ward-to-pharmacy returns) compute it as its own separate expression rather than as
+     * {@code netTotal - total}, so a row-by-row rounding/computation drift between
+     * {@code Bill.margin} and {@code Bill.netTotal - Bill.total} is plausible even though
+     * {@code total}/{@code netTotal} themselves are trustworthy (they drive the actual amount
+     * due everywhere else in the app). Deriving margin from the two already-reliable fields
+     * instead of trusting a third, independently-maintained one removes that whole class of
+     * drift — caught in review on #24213's follow-up by a second Claude session cross-checking
+     * live {@code coop} data, 2026-10-01.
      */
     public double calGrossCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts) {
         String sql;
         HashMap hm;
         sql = "SELECT  sum(b.total)"
-                + " FROM Bill b "
-                + " WHERE b.retired=false "
-                + " and b.billTypeAtomic IN :btp "
-                + " and  b.patientEncounter IN :pe";
-        hm = new HashMap();
-        hm.put("btp", btas);
-        List<PatientEncounter> pts = new ArrayList<>();
-        pts.add(patientEncounter);
-        if (cpts != null && !cpts.isEmpty()) {
-            pts.addAll(cpts);
-        }
-        hm.put("pe", pts);
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
-    }
-
-    /**
-     * Same filter as {@link #calCostOfIssueByBill(PatientEncounter, List, List)}, but sums
-     * {@code Bill.margin} — see {@link #calGrossCostOfIssueByBill} for why this exists.
-     */
-    public double calMarginCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts) {
-        String sql;
-        HashMap hm;
-        sql = "SELECT  sum(b.margin)"
                 + " FROM Bill b "
                 + " WHERE b.retired=false "
                 + " and b.billTypeAtomic IN :btp "
@@ -629,41 +618,6 @@ public class InwardBeanController implements Serializable {
         String sql;
         HashMap hm;
         sql = "SELECT  sum(b.total)"
-                + " FROM Bill b "
-                + " LEFT JOIN b.billedBill bb "
-                + " LEFT JOIN b.referenceBill rb "
-                + " LEFT JOIN rb.fromDepartment rbFromDept "
-                + " LEFT JOIN rb.department rbDept "
-                + " LEFT JOIN bb.department bbDept "
-                + " WHERE b.retired=false "
-                + " AND b.billTypeAtomic IN :btp "
-                + " AND b.patientEncounter IN :pe "
-                + " AND ("
-                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
-                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
-                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
-                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
-                + "     )";
-        hm = new HashMap();
-        hm.put("btp", btas);
-        hm.put("type", billingDepartmentType);
-        List<PatientEncounter> pts = new ArrayList<>();
-        pts.add(patientEncounter);
-        if (cpts != null && !cpts.isEmpty()) {
-            pts.addAll(cpts);
-        }
-        hm.put("pe", pts);
-        return getBillItemFacade().findDoubleByJpql(sql, hm);
-    }
-
-    /**
-     * Department-split sibling of {@link #calMarginCostOfIssueByBill(PatientEncounter, List, List)}
-     * — same issuing-department resolution as {@link #calCostOfIssueByBill(PatientEncounter, List, List, DepartmentType)}.
-     */
-    public double calMarginCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
-        String sql;
-        HashMap hm;
-        sql = "SELECT  sum(b.margin)"
                 + " FROM Bill b "
                 + " LEFT JOIN b.billedBill bb "
                 + " LEFT JOIN b.referenceBill rb "
