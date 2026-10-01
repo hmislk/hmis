@@ -99,7 +99,7 @@ git show origin/$0:src/main/resources/META-INF/persistence.xml
 
 - Use a sibling clone, not a worktree: `git clone --branch $0 --single-branch https://github.com/hmislk/hmis.git ../$0`, then set `user.name`/`user.email` (a fresh clone can't commit).
 - Swap in local JNDI (unstaged), build, then deploy with `asadmin --port 9048 deploy --force=true --contextroot rh --name rh-3.0.0 target/rh-3.0.0.war`. This replaces the developer's deployed build, so redeploy theirs when done.
-- If the menu is empty after login, sync the `Privileges` enum (see [Playwright E2E §138](../../../developer_docs/testing/playwright-e2e-workflow.md)), and ask whether the sync ships in the PR.
+- If the menu is empty after login, sync the `Privileges` enum (see [Playwright E2E §138](../../../developer_docs/testing/playwright-e2e/privileges-config.md)), and ask whether the sync ships in the PR.
 
 ## Step 4 — Pre-Commit Checklist
 
