@@ -1022,6 +1022,7 @@ public class PurchaseOrderRequestController implements Serializable {
             return;
         }
         List<Item> allItems = getPharmacyBillBean().getItemsForDealor(getCurrentBill().getToInstitution());
+        allItems = itemController.removeAmppsIfNotListed(allItems);
         generateBillComponentsForAllSupplierItems(allItems);
     }
 
@@ -1042,6 +1043,7 @@ public class PurchaseOrderRequestController implements Serializable {
         parameters.put("supplier", getCurrentBill().getToInstitution());
         parameters.put("department", getSessionController().getDepartment());
         List<Item> itemsBelowReorderLevel = getItemFacade().findByJpql(jpql, parameters);
+        itemsBelowReorderLevel = itemController.removeAmppsIfNotListed(itemsBelowReorderLevel);
 
         if (itemsBelowReorderLevel == null || itemsBelowReorderLevel.isEmpty()) {
             JsfUtil.addErrorMessage("No items found below reorder level for the selected supplier and department.");
@@ -1120,6 +1122,7 @@ public class PurchaseOrderRequestController implements Serializable {
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
         lst = itemFacade.findByJpql(sql, hm, 200);
+        lst = itemController.removeAmppsIfNotListed(lst);
 
         // Filter by department type if set
         if (getCurrentBill().getDepartmentType() != null && lst != null) {

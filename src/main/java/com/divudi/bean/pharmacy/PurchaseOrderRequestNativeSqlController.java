@@ -220,6 +220,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
                 + " order by c.item.name";
         hm.put("ins", getCurrentBill().getToInstitution());
         lst = itemFacade.findByJpql(sql, hm, 200);
+        lst = itemController.removeAmppsIfNotListed(lst);
 
         // Filter by department type if set
         if (getCurrentBill().getDepartmentType() != null && lst != null) {
@@ -696,6 +697,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
             return;
         }
         List<Item> allItems = pharmacyBillBean.getItemsForDealor(getCurrentBill().getToInstitution());
+        allItems = itemController.removeAmppsIfNotListed(allItems);
         generateBillComponentsForAllSupplierItems(allItems);
     }
 
@@ -716,6 +718,7 @@ public class PurchaseOrderRequestNativeSqlController implements Serializable {
         parameters.put("supplier", getCurrentBill().getToInstitution());
         parameters.put("department", sessionController.getDepartment());
         List<Item> itemsBelowReorderLevel = itemFacade.findByJpql(jpql, parameters);
+        itemsBelowReorderLevel = itemController.removeAmppsIfNotListed(itemsBelowReorderLevel);
 
         if (itemsBelowReorderLevel == null || itemsBelowReorderLevel.isEmpty()) {
             JsfUtil.addErrorMessage("No items found below reorder level for the selected supplier and department.");
