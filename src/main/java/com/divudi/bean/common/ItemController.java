@@ -2760,6 +2760,25 @@ public class ItemController implements Serializable {
         return isAmppListedInItemSelection() ? Ampp.class : Amp.class;
     }
 
+    /**
+     * Drops Packs (AMPPs) from an item list that did not come from an item
+     * autocomplete (e.g. a supplier's distributor items on the Purchase Order
+     * page) when AMPPs are not listed in item selection. Returns the list
+     * unchanged otherwise.
+     */
+    public List<Item> removeAmppsIfNotListed(List<Item> items) {
+        if (items == null || isAmppListedInItemSelection()) {
+            return items;
+        }
+        List<Item> filtered = new ArrayList<>();
+        for (Item i : items) {
+            if (!(i instanceof Ampp)) {
+                filtered.add(i);
+            }
+        }
+        return filtered;
+    }
+
     public List<Item> completeAmpAndAmppItem(String query) {
         List<Item> suggestions;
         String sql;
