@@ -358,4 +358,8 @@ indefinitely.
 
 Report the PR link, the issue comment from step 10, a short summary of what
 changed, and what was verified (including the published screenshots).
+If you mention the project board status, re-read it from GitHub first (the `start-issue`
+Step 5 read-back query) and quote what it returns. Never report the board status from
+memory of an earlier update call. (Issue #24105 was reported as "In Progress" when the
+board still showed Backlog.)
 **Never merge** — that's the user's call.
