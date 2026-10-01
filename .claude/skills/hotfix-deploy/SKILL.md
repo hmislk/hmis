@@ -95,31 +95,11 @@ Before editing `persistence.xml`, compare against the target production branch t
 git show origin/$0:src/main/resources/META-INF/persistence.xml
 ```
 
-## Step 3a — Test the Hotfix Locally on the Production Branch's Own Code
+## Step 3a — Test on the Production Branch's Own Code
 
-A production branch can lag `development` by thousands of commits, so a fix verified only on
-`development` is not verified for `$0`. Build and run `$0` itself:
-
-1. **Use a sibling clone, not a worktree** (CLAUDE.md forbids worktrees). Do this once per branch:
-   ```bash
-   cd .. && git clone --branch $0 --single-branch https://github.com/hmislk/hmis.git $0
-   cd $0 && git remote set-branches --add origin development && git fetch origin development
-   git config user.name "$(git -C ../rh config user.name)" && git config user.email "$(git -C ../rh config user.email)"
-   ```
-   A fresh clone has no commit identity, so set it as above or the first `git commit` fails with *Author identity unknown*.
-2. **Swap in local JNDI** (`${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`). Leave it unstaged, as in the main checkout.
-3. **Build and deploy over the local app.** On the carecode machine always pass `--port 9048`:
-   ```bash
-   mvn -q clean package -DskipTests
-   /home/carecode/payara/bin/asadmin --port 9048 deploy --force=true --contextroot rh --name rh-3.0.0 target/rh-3.0.0.war
-   ```
-   This replaces whatever `rh` build was deployed. Tell the developer, and redeploy their own branch when you are done.
-4. **If the menu is empty after login** (only Home and Request Manager show): the branch's `Privileges` enum is missing
-   values that the local database already stores. Privilege rows are stored by enum name, so a single unknown name
-   stops the user's privileges from loading at all. Copy the missing constants from `origin/development`, using the
-   diff method in [Playwright E2E Workflow §138](../../../developer_docs/testing/playwright-e2e-workflow.md). Ask the developer
-   whether the sync should also ship in the hotfix PR (for COOP it did, as a separate commit in #24227).
-5. Reach every page through the menus and verify in the database, exactly as for a `development` fix.
+- Use a sibling clone, not a worktree: `git clone --branch $0 --single-branch https://github.com/hmislk/hmis.git ../$0`, then set `user.name`/`user.email` (a fresh clone can't commit).
+- Swap in local JNDI (unstaged), build, then deploy with `asadmin --port 9048 deploy --force=true --contextroot rh --name rh-3.0.0 target/rh-3.0.0.war`. This replaces the developer's deployed build, so redeploy theirs when done.
+- If the menu is empty after login, sync the `Privileges` enum (see [Playwright E2E §138](../../../developer_docs/testing/playwright-e2e-workflow.md)), and ask whether the sync ships in the PR.
 
 ## Step 4 — Pre-Commit Checklist
 
@@ -165,13 +145,7 @@ gh pr create \
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
 
-When you reuse an open PR (Step 1a), `gh pr edit --title/--body` can fail. It prints
-`GraphQL: Projects (classic) is being deprecated ... (repository.pullRequest.projectCards)` and **changes nothing**,
-even though the command doesn't look like it failed. Update the PR through the REST API instead, then read it back:
-```bash
-gh api -X PATCH repos/hmislk/hmis/pulls/<number> -f title="..." -F body=@tmp/pr-body.md --jq .title
-gh pr view <number> --repo hmislk/hmis --json title,body
-```
+If `gh pr edit` prints a "Projects (classic) is being deprecated" error, it changed nothing. Use `gh api -X PATCH repos/hmislk/hmis/pulls/<n> -f title=... -F body=@file` instead.
 
 A hotfix PR is where hospital-specific detail leaks most easily, because the
 whole point is that one hospital is affected. The body is public: state the

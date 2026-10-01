@@ -4105,60 +4105,16 @@ way §106's second-level note already recommends confirming `display: block` bef
 Verified 2026-09-29 while trying to reach *Settings → Manage My API Keys* on the Ruhunu local-staging
 server (`rh-local-staging` branch) mid-investigation of an inward pharmacy margin bug.
 
-## 137. PrimeFaces' global tooltip removes a button's `title` on hover — a `button[title="…"]` locator works once, then finds nothing
+## 137. `button[title="…"]` locator works once, then finds nothing
 
-Many data-table row buttons on this codebase are icon-only and carry their meaning only in
-`title="…"` (e.g. *Manage Pharmacy Tokens* → `title="Call Token"`, `"Pay at Cashier"`,
-`"Pharmacy Sale for Cashier for token 8"`). The page's global `p:tooltip` takes that `title` over
-the first time the mouse hovers the button, and the attribute stays gone afterwards. So a locator
-such as `row.locator('button[title^="Pharmacy Sale for Cashier"]')`:
+PrimeFaces' global tooltip removes a button's `title` on its first hover. Locate icon-only row buttons by icon class (`button:has(.fa-pills)`) or `id`, never by `title`. Give new row buttons a stable `id`.
 
-- resolves on its first use,
-- then, after any hover (including Playwright's own actionability hover before a click, or a
-  demo-video `r.point()`), returns `count() === 0`, and the next `click()`/`getAttribute()` times
-  out with the locator still "waiting for" the button. That looks like the row disappeared, but it
-  didn't.
+## 138. Menu shows only Home and Request Manager after login on an older branch
 
-Reproduce: `count before=1`, `await b.hover()`, `count after hover=0`, while the row and the button
-are still on screen.
-
-Fix: locate icon-only row buttons by something the tooltip doesn't touch. Use the icon class
-(`button:has(.fa-pills)`, `button:has(.fa-money-bill)`), or the button's `id` when the markup gives
-it one (`[id$="btnRetailBillForCashier"]`). When you add such a button, give it a stable `id` (see
-the accessibility-first UI rule). Its `title` can still be read *before* any hover, e.g. to assert
-the tooltip text once.
-
-Verified 2026-10-01 while recording the pharmacy-token demo video (issue #24225).
-
-## 138. Logged in fine but the top menu shows only Home and Request Manager — the branch's `Privileges` enum is missing values the database holds
-
-When you build an older production branch (e.g. `coop-prod-migrated`) and point it at a local
-database that a `development` build has already used, login and department selection work, but
-every privilege-gated menu is gone. Only *Home* and *Request Manager* (plus the logout button)
-render. There is no error on screen.
-
-Cause: `WebUserPrivilege.privilege` is stored by enum name. If any row for the user names a constant
-that the deployed branch's `Privileges.java` doesn't declare, the user's privileges evidently fail to
-load as a whole, and `webUserController.hasPrivilege(...)` returns `false` for everything. (Observed:
-adding the missing constants, with no other change, brought the full menu back. The exact exception
-path wasn't traced.) On
-2026-10-01 `coop-prod-migrated` was missing **533** of `development`'s constants.
-
-Diagnose and fix (from the production-branch clone):
+The branch's `Privileges` enum lacks constants the DB stores (privileges are stored by name), so no privilege loads. List the missing ones and copy their single-line declarations from development into the enum (additive only):
 ```bash
-S=<scratch dir>; F=src/main/java/com/divudi/core/data/Privileges.java
-git show origin/development:$F > $S/dev.java
-ext(){ grep -oE '^\s*[A-Z][A-Za-z0-9_]*\s*\(' "$1" | sed -E 's/[ (\t]//g' | sort -u; }
-ext $S/dev.java > $S/dev.names; ext $F > $S/prod.names
-comm -23 $S/dev.names $S/prod.names      # constants the branch is missing
+F=src/main/java/com/divudi/core/data/Privileges.java
+ext(){ grep -oE '^\s*[A-Z][A-Za-z0-9_]*\s*\(' | sed -E 's/[ (\t]//g' | sort -u; }
+comm -23 <(git show origin/development:$F | ext) <(ext < $F)
 ```
-Every constant is a single-line `Name("Label"),` declaration, so the missing lines can be copied
-verbatim from `dev.java` into a `// Synced from development - missing privileges` block just before
-the enum's terminating `;`. The change is purely additive. To make them grantable from the admin UI
-as well, wire them into `UserPrivilageController` as described in §135 and
-[Privilege System](../security/privilege-system.md).
-
-This is a different failure from §135, where a newly *added* constant is missing from the admin tree.
-Here the constant is missing from the enum itself, and it takes the whole menu down with it.
-
-Verified 2026-10-01 (shipped to `coop-prod-migrated` in PR #24227).
+To make them grantable in the UI, also wire them into `UserPrivilageController` (§135).
