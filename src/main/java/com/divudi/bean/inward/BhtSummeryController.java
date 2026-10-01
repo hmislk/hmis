@@ -5873,6 +5873,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Medicine charge types whose gross/margin are already computed correctly in
+     * {@link #setKnownChargeTot()} (from {@code Bill.total}/{@code Bill.margin}, not
+     * {@code BillItem}) — {@link #setGrossMarginVatBreakdown} must not overwrite them with
+     * its generic {@code cit.getTotal()} fallback, since the service-only breakdown map it
+     * builds from is scoped to {@code BillType.InwardBill} and never contains a Medicine
+     * entry (CodeRabbit review of #24213: the fallback was silently re-breaking the margin
+     * fix for Medicine).
+     */
+    private static final Set<InwardChargeType> MEDICINE_CHARGE_TYPES_WITH_OWN_BREAKDOWN = new HashSet<>(Arrays.asList(
+            InwardChargeType.Medicine, InwardChargeType.Etu_Medicine, InwardChargeType.Pharmacy_Medicine,
+            InwardChargeType.Inward_Medicine, InwardChargeType.Theatre_Medicine, InwardChargeType.Store_Medicine,
+            InwardChargeType.Inventry_Medicine));
+
+    /**
      * Populates Gross/Service Charge (Margin)/VAT on each ChargeItemTotal so
      * the "Charges" summary table and the Summary panel can show the full
      * breakdown, not just the net total. Services/investigations
@@ -5889,19 +5903,6 @@ public class BhtSummeryController implements Serializable {
      * @param additionalChargeTotals Outside Charge totals by charge type, as
      *                               already added to each row total
      */
-    /**
-     * Medicine charge types whose gross/margin are already computed correctly in
-     * {@link #setKnownChargeTot()} (from {@code Bill.total}/{@code Bill.margin}, not
-     * {@code BillItem}) — {@link #setGrossMarginVatBreakdown} must not overwrite them with
-     * its generic {@code cit.getTotal()} fallback, since {@code serviceBreakdown} below is
-     * scoped to {@code BillType.InwardBill} and never contains a Medicine entry (CodeRabbit
-     * review of #24213: the fallback was silently re-breaking the margin fix for Medicine).
-     */
-    private static final Set<InwardChargeType> MEDICINE_CHARGE_TYPES_WITH_OWN_BREAKDOWN = new HashSet<>(Arrays.asList(
-            InwardChargeType.Medicine, InwardChargeType.Etu_Medicine, InwardChargeType.Pharmacy_Medicine,
-            InwardChargeType.Inward_Medicine, InwardChargeType.Theatre_Medicine, InwardChargeType.Store_Medicine,
-            InwardChargeType.Inventry_Medicine));
-
     private void setGrossMarginVatBreakdown(Map<InwardChargeType, Double> additionalChargeTotals) {
         Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
         // Timed services that predate the bill-at-add change still carry their
