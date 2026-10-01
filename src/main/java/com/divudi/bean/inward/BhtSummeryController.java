@@ -97,6 +97,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
@@ -5872,6 +5873,20 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Medicine charge types whose gross/margin are already computed correctly in
+     * {@link #setKnownChargeTot()} (from {@code Bill.total}/{@code Bill.margin}, not
+     * {@code BillItem}) — {@link #setGrossMarginVatBreakdown} must not overwrite them with
+     * its generic {@code cit.getTotal()} fallback, since the service-only breakdown map it
+     * builds from is scoped to {@code BillType.InwardBill} and never contains a Medicine
+     * entry (CodeRabbit review of #24213: the fallback was silently re-breaking the margin
+     * fix for Medicine).
+     */
+    private static final Set<InwardChargeType> MEDICINE_CHARGE_TYPES_WITH_OWN_BREAKDOWN = new HashSet<>(Arrays.asList(
+            InwardChargeType.Medicine, InwardChargeType.Etu_Medicine, InwardChargeType.Pharmacy_Medicine,
+            InwardChargeType.Inward_Medicine, InwardChargeType.Theatre_Medicine, InwardChargeType.Store_Medicine,
+            InwardChargeType.Inventry_Medicine));
+
+    /**
      * Populates Gross/Service Charge (Margin)/VAT on each ChargeItemTotal so
      * the "Charges" summary table and the Summary panel can show the full
      * breakdown, not just the net total. Services/investigations
@@ -5904,7 +5919,7 @@ public class BhtSummeryController implements Serializable {
                 cit.setGross(values[0] + (timedTotal != null ? timedTotal : 0.0));
                 cit.setMargin(values[1]);
                 cit.setVat(values[2]);
-            } else {
+            } else if (!MEDICINE_CHARGE_TYPES_WITH_OWN_BREAKDOWN.contains(cit.getInwardChargeType())) {
                 cit.setGross(cit.getTotal());
             }
         }
@@ -6204,7 +6219,21 @@ public class BhtSummeryController implements Serializable {
                     break;
                 case Medicine:
                     if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
-                        i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
+                        double medicineNet = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters);
+                        double medicineGross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters);
+                        i.setTotal(medicineNet);
+                        // Net total above already includes margin; break it out separately too
+                        // so the Interim Bill's "Service Charge (Margin)" summary line isn't
+                        // stuck at 0.00 for Medicine (QA report, 2026-10-01 — margin was always
+                        // applied correctly per bill, just never surfaced here). Derived as
+                        // net - gross rather than summed from Bill.margin directly: margin is
+                        // set independently by close to a dozen different pharmacy issue/
+                        // return/cancellation controllers, so deriving it from the two fields
+                        // that actually drive the amount due elsewhere in the app (total,
+                        // netTotal) is more robust than trusting a third field that could drift
+                        // from them in an edge case (caught on #24213's follow-up review).
+                        i.setGross(medicineGross);
+                        i.setMargin(medicineNet - medicineGross);
                     }
                     break;
                 case CancelledReturnedMedicine:
@@ -6251,42 +6280,72 @@ public class BhtSummeryController implements Serializable {
 
             for (DepartmentType dt : medicineIssueingDepartmentTypes) {
                 switch (dt) {
-                    case Etu:
+                    case Etu: {
                         ChargeItemTotal etuDrugTotal = new ChargeItemTotal();
                         etuDrugTotal.setInwardChargeType(InwardChargeType.Etu_Medicine);
-                        etuDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Etu));
+                        double net = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Etu);
+                        double gross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Etu);
+                        etuDrugTotal.setTotal(net);
+                        etuDrugTotal.setGross(gross);
+                        etuDrugTotal.setMargin(net - gross);
                         chargeItemTotals.add(etuDrugTotal);
                         break;
-                    case Pharmacy:
+                    }
+                    case Pharmacy: {
                         ChargeItemTotal pharmacyDrugTotal = new ChargeItemTotal();
                         pharmacyDrugTotal.setInwardChargeType(InwardChargeType.Pharmacy_Medicine);
-                        pharmacyDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Pharmacy));
+                        double net = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Pharmacy);
+                        double gross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Pharmacy);
+                        pharmacyDrugTotal.setTotal(net);
+                        pharmacyDrugTotal.setGross(gross);
+                        pharmacyDrugTotal.setMargin(net - gross);
                         chargeItemTotals.add(pharmacyDrugTotal);
                         break;
-                    case Inward:
+                    }
+                    case Inward: {
                         ChargeItemTotal inwardDrugTotal = new ChargeItemTotal();
                         inwardDrugTotal.setInwardChargeType(InwardChargeType.Inward_Medicine);
-                        inwardDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inward));
+                        double net = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inward);
+                        double gross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inward);
+                        inwardDrugTotal.setTotal(net);
+                        inwardDrugTotal.setGross(gross);
+                        inwardDrugTotal.setMargin(net - gross);
                         chargeItemTotals.add(inwardDrugTotal);
                         break;
-                    case Theatre:
+                    }
+                    case Theatre: {
                         ChargeItemTotal theatreDrugTotal = new ChargeItemTotal();
                         theatreDrugTotal.setInwardChargeType(InwardChargeType.Theatre_Medicine);
-                        theatreDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Theatre));
+                        double net = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Theatre);
+                        double gross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Theatre);
+                        theatreDrugTotal.setTotal(net);
+                        theatreDrugTotal.setGross(gross);
+                        theatreDrugTotal.setMargin(net - gross);
                         chargeItemTotals.add(theatreDrugTotal);
                         break;
-                    case Store:
+                    }
+                    case Store: {
                         ChargeItemTotal storeDrugTotal = new ChargeItemTotal();
                         storeDrugTotal.setInwardChargeType(InwardChargeType.Store_Medicine);
-                        storeDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Store));
+                        double net = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Store);
+                        double gross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Store);
+                        storeDrugTotal.setTotal(net);
+                        storeDrugTotal.setGross(gross);
+                        storeDrugTotal.setMargin(net - gross);
                         chargeItemTotals.add(storeDrugTotal);
                         break;
-                    case Inventry:
+                    }
+                    case Inventry: {
                         ChargeItemTotal inventryDrugTotal = new ChargeItemTotal();
                         inventryDrugTotal.setInwardChargeType(InwardChargeType.Etu_Medicine);
-                        inventryDrugTotal.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inventry));
+                        double net = getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inventry);
+                        double gross = getInwardBean().calGrossCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters, DepartmentType.Inventry);
+                        inventryDrugTotal.setTotal(net);
+                        inventryDrugTotal.setGross(gross);
+                        inventryDrugTotal.setMargin(net - gross);
                         chargeItemTotals.add(inventryDrugTotal);
                         break;
+                    }
                     default:
                         throw new AssertionError();
                 }

@@ -296,45 +296,46 @@
 
 
                                         <div class="card p-4">
-                                            <h:panelGrid columns="3" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" style="font-size: 16px;">
+                                            <h:panelGrid columns="3" columnClasses="text-muted,text-muted text-center,text-end"
+                                                         rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" style="font-size: 16px;">
                                                 <h:outputLabel value="Gross Total"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.grossTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Service Charge (Margin)"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
-                                                <h:outputLabel value="#{bhtSummeryController.marginTotal}">
+                                                <h:outputLabel value=":"/>
+                                                <h:outputLabel value="#{bhtSummeryController.marginTotal}" styleClass="text-success fw-semibold">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Item Discounts"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.itemDiscountTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Charge Type Discounts"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.chargeTypeDiscountTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Bill Level Discount"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.billLevelDiscount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Total Discount"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.discount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="VAT"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.vatTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
@@ -342,22 +343,24 @@
 
                                             <hr/>
 
-                                            <h:panelGrid columns="3" style="font-weight: bold; font-size: 22px;">
+                                            <h:panelGrid columns="3" columnClasses="text-dark,text-center,text-end"
+                                                         style="font-weight: bold; font-size: 22px;">
                                                 <h:outputLabel  value="Total Charges"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
-                                                <h:outputLabel value="#{bhtSummeryController.grantTotal}">
+                                                <h:outputLabel value=":"/>
+                                                <h:outputLabel value="#{bhtSummeryController.grantTotal}" styleClass="text-primary">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
-                                                <h:outputLabel value="Paid By Patient   " />
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="Paid By Patient" />
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.paid}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Due" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }" />
-                                                <h:outputLabel value=":" class="mx-2" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
-                                                <h:outputLabel value="#{bhtSummeryController.due}" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
+                                                <h:outputLabel value=":" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
+                                                <h:outputLabel value="#{bhtSummeryController.due}" styleClass="text-danger"
+                                                                rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </h:panelGrid>
@@ -453,12 +456,12 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Service Charge" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
-                                            <h:outputLabel value="#{c.margin}">
+                                            <h:outputLabel value="#{c.margin}" styleClass="text-success fw-semibold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Net" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
-                                            <h:outputLabel value="#{c.netTotal}">
+                                            <h:outputLabel value="#{c.netTotal}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
