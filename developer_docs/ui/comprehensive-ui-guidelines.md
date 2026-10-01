@@ -399,6 +399,8 @@ Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-ent
 
 If the sum of all column widths exceeds the table container, add `scrollable="true"` to enable horizontal scroll rather than letting columns collapse to zero.
 
+**Never key a `p:column`'s `rendered` on the table's row variable** (e.g. `rendered="#{row.total > 0}"` where `row` is the `var` of the enclosing `p:dataTable`). PrimeFaces evaluates a column's `rendered` once for the whole table, not per data row — so when it depends on row-scoped state, the **header row can silently fail to render** while the body rows keep rendering correctly with the right values in the right columns. This is easy to miss in review because the data looks completely right; only the header is gone. If a column needs to be conditionally shown, key it on table-level or user-level state only (privileges, config options, aggregate totals computed in the backing bean) — never on the per-row loop variable. To hide specific *rows* instead, filter the backing list or use a `rowStyleClass` pattern, not `p:column rendered`. (Found fixing hmislk/hmis#24219 — a table had rendered with no header since it was first written, because every column's `rendered` referenced the row var.)
+
 ### Badge Usage for Status Indicators
 - **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)
 - PrimeFaces badges provide better visibility and theming support
