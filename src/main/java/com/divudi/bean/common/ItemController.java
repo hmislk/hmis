@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +59,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -4125,6 +4127,132 @@ public class ItemController implements Serializable {
         }
         Item existing = getFacade().findFirstByJpql(jpql.toString(), m);
         return existing != null;
+    }
+
+    /**
+     * Warns, without blocking the save, when another active item of the same
+     * type has the same name once case, spaces and punctuation are ignored (see
+     * {@link #normalizeItemName(String)}). Users sometimes register an existing
+     * product again instead of selecting it, which splits its stock and billing
+     * across two records. Hospitals also keep identical names on purpose (e.g.
+     * the same service in two departments with different codes), so this is
+     * advisory only and never prevents the save.
+     *
+     * <p>Only items of exactly the same entity type are compared, so an OPD
+     * service is never matched against an inward service, and the sample
+     * component row created alongside each investigation is never matched
+     * against the investigation itself. The item being edited is excluded, so
+     * re-saving an item does not warn about itself.</p>
+     *
+     * <p>Only name and code are fetched, never entities, and the comparison is
+     * done in Java because JPQL cannot strip punctuation. This runs once per
+     * admin save, not per keystroke.</p>
+     *
+     * @param item the item about to be saved
+     */
+    public void warnIfItemNameDuplicated(Item item) {
+        if (item == null || normalizeItemName(item.getName()).isEmpty()) {
+            return;
+        }
+        try {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select i.name, i.code from Item i where i.retired = false "
+                    + "and (i.inactive = false or i.inactive is null) and type(i) = :t ");
+            m.put("t", item.getClass());
+            if (item.getId() != null) {
+                jpql.append("and i.id <> :id ");
+                m.put("id", item.getId());
+            }
+            List<Object[]> otherItems = getFacade().findObjectArrayByJpql(jpql.toString(), m, null);
+            String warning = buildDuplicateItemNameWarning(item.getName(), otherItems);
+            if (warning != null) {
+                JsfUtil.addWarningMessage(warning);
+            }
+        } catch (RuntimeException e) {
+            // This check is advisory only, so a failure here must never stop the item being saved.
+            Logger.getLogger(ItemController.class.getName()).log(Level.WARNING, "Duplicate item name check failed", e);
+        }
+    }
+
+    /**
+     * Builds the warning shown when other items share a name with the item
+     * being saved.
+     *
+     * @param name name of the item being saved
+     * @param otherItems {@code {name, code}} rows of the other items of the
+     * same type
+     * @return the warning, listing up to three matching items with their codes
+     * (any further matches are only counted, to keep the message readable), or
+     * null when no other item matches
+     */
+    static String buildDuplicateItemNameWarning(String name, List<Object[]> otherItems) {
+        String key = normalizeItemName(name);
+        if (key.isEmpty() || otherItems == null) {
+            return null;
+        }
+        List<String> matches = new ArrayList<>();
+        for (Object[] row : otherItems) {
+            String otherName = (String) row[0];
+            if (key.equals(normalizeItemName(otherName))) {
+                String otherCode = row[1] == null ? "" : row[1].toString().trim();
+                matches.add(otherName.trim() + (otherCode.isEmpty() ? "" : " (code " + otherCode + ")"));
+            }
+        }
+        if (matches.isEmpty()) {
+            return null;
+        }
+        final int maxListed = 3;
+        int listed = Math.min(maxListed, matches.size());
+        StringBuilder warning = new StringBuilder("Possible duplicate - an active item with the same name already exists: ");
+        warning.append(String.join(", ", matches.subList(0, listed)));
+        if (matches.size() > listed) {
+            warning.append(" and ").append(matches.size() - listed).append(" more");
+        }
+        return warning.append(". Please check it is not the same item.").toString();
+    }
+
+    /**
+     * Reduces an item name to the form used to decide whether two names are
+     * the same: Unicode-normalised, lower-cased, and stripped of everything
+     * except letters, digits and combining marks. {@code "Blood Urea"},
+     * {@code "BLOOD  UREA"} and {@code "blood-urea."} all become
+     * {@code "bloodurea"}.
+     *
+     * <p>Letters of every script are kept - a plain a-z filter would make names
+     * that differ only in Greek or Sinhala letters look identical. The decimal
+     * point inside a number is also kept, because it changes the value:
+     * {@code "Methotrexate 2.5mg"} is not {@code "Methotrexate 25mg"}.</p>
+     *
+     * @return the comparison key, or an empty string when the name is null or
+     * has nothing left to compare after stripping
+     */
+    static String normalizeItemName(String name) {
+        if (name == null) {
+            return "";
+        }
+        String folded = Normalizer.normalize(name, Normalizer.Form.NFKC).toLowerCase(Locale.ROOT);
+        StringBuilder key = new StringBuilder(folded.length());
+        int previous = ' ';
+        for (int i = 0; i < folded.length();) {
+            int cp = folded.codePointAt(i);
+            i += Character.charCount(cp);
+            if (Character.isLetterOrDigit(cp) || isCombiningMark(cp)) {
+                key.appendCodePoint(cp);
+            } else if (cp == '.' && Character.isDigit(previous)
+                    && i < folded.length() && Character.isDigit(folded.codePointAt(i))) {
+                key.appendCodePoint(cp);
+            }
+            previous = cp;
+        }
+        return key.toString();
+    }
+
+    private static boolean isCombiningMark(int codePoint) {
+        int type = Character.getType(codePoint);
+        return type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK
+                || type == Character.ENCLOSING_MARK;
     }
 
     public void saveSelected(Item item) {

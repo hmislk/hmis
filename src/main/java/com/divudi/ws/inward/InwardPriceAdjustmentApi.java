@@ -1071,7 +1071,9 @@ public class InwardPriceAdjustmentApi {
             // The category actually used by the price-matrix lookup: item.getCategory()
             // first, falling back to the deprecated Investigation.getInvestigationCategory()
             // only when category is null — same helper fetchInwardMargin uses (issue #24155).
-            Category effectiveCategory = priceMatrixController.resolveInwardMatrixCategory(item);
+            // For pharmacy items this resolves to dosageForm instead when the department has
+            // opted into "Inward Matrix - Resolve Pharmacy Margin By Dosage Form".
+            Category effectiveCategory = priceMatrixController.resolveInwardMatrixCategory(item, department);
 
             // Price-matrix lookup: mirror billing exactly (issue #24155). BillBhtController.
             // billFeeFromBillItemWithMatrix always passes creditCompany = null for the base

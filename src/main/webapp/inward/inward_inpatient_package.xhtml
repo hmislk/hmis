@@ -34,6 +34,7 @@
                                 <p:commandButton
                                     id="btnAddPackage"
                                     value="Add"
+                                    title="Add Inpatient Package"
                                     icon="fa fa-plus"
                                     action="#{inpatientPackageController.prepareAdd()}"
                                     class="w-25 ui-button-success"
@@ -46,6 +47,7 @@
                                     class="w-25 mx-2 ui-button-danger"
                                     action="#{inpatientPackageController.delete()}"
                                     value="Delete"
+                                    title="Delete Inpatient Package"
                                     icon="fa fa-trash"
                                     process="btnDeletePackage"
                                     update="lstSelectPackage gpPackageDetail">
@@ -80,6 +82,7 @@
                                 <p:commandButton
                                     id="btnSavePackage"
                                     value="Save"
+                                    title="Save Inpatient Package"
                                     icon="fa fa-save"
                                     action="#{inpatientPackageController.saveSelected()}"
                                     class="ui-button-warning"
@@ -107,10 +110,6 @@
                                     <f:selectItem itemLabel="Select One" itemValue="#{null}"/>
                                     <f:selectItems value="#{roomCategoryController.items}" var="rc" itemValue="#{rc}" itemLabel="#{rc.name}"/>
                                 </p:selectOneMenu>
-
-                                <h:outputText value="Included Room Duration (Hours)"></h:outputText>
-                                <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
-                                <p:inputNumber id="txtIncludedDuration" value="#{inpatientPackageController.current.includedRoomDurationHours}" class="w-100" minValue="0"/>
 
                                 <h:outputText value="Total Package Price"></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
@@ -148,6 +147,7 @@
                                 <p:commandButton
                                     id="btnManageComponents"
                                     value="Manage Components"
+                                    title="Manage Components for this Inpatient Package"
                                     icon="fa fa-list"
                                     ajax="false"
                                     action="#{inpatientPackageItemController.navigateToManageComponents(inpatientPackageController.current)}"

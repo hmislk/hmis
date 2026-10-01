@@ -1806,6 +1806,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String navigateToCollectingCentreSelfBillingKeepingCollectingCentre() {
+        collectingCentre = sessionController.getInstitution();
         loadCCFinancialData(collectingCentre);
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);

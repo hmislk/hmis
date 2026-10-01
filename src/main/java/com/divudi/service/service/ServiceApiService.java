@@ -122,58 +122,94 @@ public class ServiceApiService implements Serializable {
      */
     public List<ServiceSearchResultDTO> searchServices(String query, String code, String serviceType,
             Long categoryId, Boolean inactive, int limit) throws Exception {
+        return searchServices(query, code, serviceType, categoryId, inactive, limit, 0);
+    }
+
+    /**
+     * Search services, returning one page starting at {@code offset}.
+     *
+     * Rows are ordered by name then id. The id tiebreaker is what makes paging safe:
+     * two services can share a name, and without it the database is free to order
+     * them differently from one page request to the next, so a row could appear on
+     * two pages or on none.
+     */
+    public List<ServiceSearchResultDTO> searchServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive, int limit, int offset) throws Exception {
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + (query != null ? query : "") + "%");
+        String where = buildServiceSearchWhere(params, query, code, serviceType, categoryId, inactive);
 
-        StringBuilder jpql = new StringBuilder();
-        // Query FROM Service covers both Service (OPD) and InwardService (Inward)
-        // since InwardService extends Service. Type filter narrows if needed.
-        jpql.append("SELECT i FROM Service i ")
-            .append("WHERE i.retired = false ");
-
-        // Type filter using DTYPE discriminator
-        if ("OPD".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = Service ");
-        } else if ("Inward".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = InwardService ");
-        } else {
-            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
-            jpql.append("AND (type(i) = Service OR type(i) = InwardService) ");
-        }
-
-        if (query != null && !query.trim().isEmpty()) {
-            jpql.append("AND i.name LIKE :query ");
-        } else {
-            params.remove("query");
-        }
-
-        if (code != null && !code.trim().isEmpty()) {
-            jpql.append("AND i.code LIKE :code ");
-            params.put("code", "%" + code.trim() + "%");
-        }
-
-        if (categoryId != null) {
-            jpql.append("AND i.category.id = :categoryId ");
-            params.put("categoryId", categoryId);
-        }
-
-        if (inactive != null) {
-            jpql.append("AND i.inactive = :inactive ");
-            params.put("inactive", inactive);
-        }
-
-        jpql.append("ORDER BY i.name");
-
-        @SuppressWarnings("unchecked")
-        List<Service> results = serviceFacade.findByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP, limit);
+        // Strict: a failed query must surface as an error. Callers use this search to decide
+        // "already loaded?" before creating a service, and a paging client reads a short page
+        // as "end of the list" — an empty list produced by a swallowed error would be
+        // mistaken for "not found" / "no more rows".
+        List<Service> results = serviceFacade.findByJpqlWithRangeStrict(
+                "SELECT i FROM Service i " + where + "ORDER BY i.name, i.id",
+                params, offset, limit);
 
         List<ServiceSearchResultDTO> dtos = new ArrayList<>();
         for (Service item : results) {
             dtos.add(buildSearchResultDTO(item));
         }
         return dtos;
+    }
+
+    /**
+     * Number of services matching the same filters as
+     * {@link #searchServices(String, String, String, Long, Boolean, int, int)},
+     * ignoring limit and offset, so a paging caller knows when it has seen them all.
+     */
+    public long countServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        String where = buildServiceSearchWhere(params, query, code, serviceType, categoryId, inactive);
+        // COUNT returns a Long — findLongByJpql, never findDoubleByJpql (which would
+        // swallow the ClassCastException and report 0 every time).
+        return serviceFacade.findLongByJpql("SELECT COUNT(i) FROM Service i " + where, params);
+    }
+
+    /**
+     * WHERE clause shared by the page query and the count query, so the two can never
+     * disagree about which rows match. Fills {@code params} with the bind values.
+     */
+    private String buildServiceSearchWhere(Map<String, Object> params, String query, String code,
+            String serviceType, Long categoryId, Boolean inactive) {
+
+        // Query FROM Service covers both Service (OPD) and InwardService (Inward)
+        // since InwardService extends Service. Type filter narrows if needed.
+        StringBuilder where = new StringBuilder("WHERE i.retired = false ");
+
+        // Type filter using DTYPE discriminator
+        if ("OPD".equalsIgnoreCase(serviceType)) {
+            where.append("AND type(i) = Service ");
+        } else if ("Inward".equalsIgnoreCase(serviceType)) {
+            where.append("AND type(i) = InwardService ");
+        } else {
+            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
+            where.append("AND (type(i) = Service OR type(i) = InwardService) ");
+        }
+
+        if (query != null && !query.trim().isEmpty()) {
+            where.append("AND i.name LIKE :query ");
+            params.put("query", "%" + query + "%");
+        }
+
+        if (code != null && !code.trim().isEmpty()) {
+            where.append("AND i.code LIKE :code ");
+            params.put("code", "%" + code.trim() + "%");
+        }
+
+        if (categoryId != null) {
+            where.append("AND i.category.id = :categoryId ");
+            params.put("categoryId", categoryId);
+        }
+
+        if (inactive != null) {
+            where.append("AND i.inactive = :inactive ");
+            params.put("inactive", inactive);
+        }
+
+        return where.toString();
     }
 
     // =========================================================================

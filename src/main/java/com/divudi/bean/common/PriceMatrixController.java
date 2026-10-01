@@ -26,6 +26,7 @@ import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.entity.membership.OpdMemberShipDiscount;
 import com.divudi.core.entity.membership.PaymentSchemeDiscount;
 import com.divudi.core.entity.membership.PharmacyMemberShipDiscount;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.core.facade.PaymentSchemeDiscountFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
@@ -67,7 +68,7 @@ public class PriceMatrixController implements Serializable {
      */
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department, PaymentMethod paymentMethod) {
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, department);
         PriceMatrix inwardPriceAdjustment;
         if (isPaymentMethodAllowedInInwardMatrix) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
@@ -100,7 +101,7 @@ public class PriceMatrixController implements Serializable {
 
     private PriceMatrix fetchInwardMarginWithCreditCompany(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, Institution creditCompany) {
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, department);
         PriceMatrix result;
         if (isPaymentMethodAllowedInInwardMatrix) {
             result = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod, creditCompany);
@@ -128,10 +129,28 @@ public class PriceMatrixController implements Serializable {
      * so an existing configuration entry does not break; the fallback below
      * still runs even when the key is off, so old data with only
      * investigationCategory populated keeps matching.
+     *
+     * Opt-in exception for pharmacy items (Vmp/Amp/...): when the
+     * department-scoped config key "Inward Matrix - Resolve Pharmacy Margin
+     * By Dosage Form" is true, a pharmaceutical item resolves via
+     * {@code Item.dosageForm} instead of {@code Item.category}. Item.category
+     * is typically a broad/unpopulated therapeutic bucket for pharmacy items
+     * (e.g. "Drugs"), while dosageForm reliably holds the Tablet/Capsule/
+     * Injection/... value hospitals actually price inward margins by — but
+     * other hospitals' existing pharmacy price matrices are built against
+     * category, so this defaults to false (unchanged behaviour) and must be
+     * turned on per department.
      */
-    public Category resolveInwardMatrixCategory(Item item) {
+    public Category resolveInwardMatrixCategory(Item item, Department department) {
         if (item == null) {
             return null;
+        }
+        if (item instanceof PharmaceuticalItem) {
+            boolean useDosageForm = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Inward Matrix - Resolve Pharmacy Margin By Dosage Form", department, false);
+            if (useDosageForm && item.getDosageForm() != null) {
+                return item.getDosageForm();
+            }
         }
         Category category = item.getCategory();
         if (category == null && item instanceof Investigation) {
@@ -143,7 +162,7 @@ public class PriceMatrixController implements Serializable {
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
 
         PriceMatrix inwardPriceAdjustment;
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, department);
 
         inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
 
@@ -175,7 +194,7 @@ public class PriceMatrixController implements Serializable {
 
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, AdmissionType admissionType) {
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, department);
         PriceMatrix inwardPriceAdjustment;
         if (isPaymentMethodAllowedInInwardMatrix) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod, admissionType);
@@ -208,7 +227,7 @@ public class PriceMatrixController implements Serializable {
 
     private PriceMatrix fetchInwardMarginWithCreditCompany(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType) {
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, department);
         PriceMatrix result;
         if (isPaymentMethodAllowedInInwardMatrix) {
             result = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod, creditCompany, admissionType);
@@ -243,7 +262,7 @@ public class PriceMatrixController implements Serializable {
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department,
             PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType, RoomCategory roomCategory) {
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, department);
         PaymentMethod pm = isPaymentMethodAllowedInInwardMatrix ? paymentMethod : null;
         PriceMatrix result = getInwardPriceAdjustment(department, serviceValue, category, pm, creditCompany, admissionType, roomCategory);
         if (result == null && category != null) {
@@ -317,7 +336,7 @@ public class PriceMatrixController implements Serializable {
 
         PriceMatrix inwardPriceAdjustment;
 
-        Category category = resolveInwardMatrixCategory(item);
+        Category category = resolveInwardMatrixCategory(item, item.getDepartment());
         if (category == null) {
             return item.getTotal();
         }
