@@ -211,10 +211,11 @@ retest (step 7). Repeat until the flow passes end-to-end.
 
 ## 9. Record learnings
 
-If this pass surfaced a new Playwright/dev gotcha (a new PrimeFaces timing
-quirk, a new accessibility gap, a new verification pattern), append it to
-`developer_docs/testing/playwright-e2e-workflow.md` — same pattern as the
-§0a/§5a additions from issue #21499. Don't force this if nothing new came up.
+If a new Playwright/dev gotcha surfaced, add it to the matching topic file in
+`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use,
+and list it in the main guide's Contents. Write it as a symptom heading plus
+1–3 lines of fix. Leave the story, dates and issue history out; they belong in
+the PR. Skip this step if nothing new came up.
 
 ## 10. Publish evidence and update the wiki
 
