@@ -866,6 +866,8 @@ public class AmpController implements Serializable {
             current.setItemType(ItemType.Amp);
         }
 
+        itemController.warnIfItemNameDuplicated(getCurrent());
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state
             Amp beforeUpdate = getFacade().find(getCurrent().getId());
