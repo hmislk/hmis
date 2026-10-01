@@ -7817,7 +7817,8 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "System Configuration", "/config",
                 "Search and set application configuration options at runtime. "
-                + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
+                + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'. "
+                + "Every endpoint (read and write) requires an API key of type Config; other key types get 401.",
                 githubUrl(branch, "developer_docs/api/using-apis/API_CONFIG.md"),
                 new String[][]{
                     {"GET",  "/config?scope={tag}",  "List config options whose key contains {tag} (e.g. scope=inward); omit scope for all"},

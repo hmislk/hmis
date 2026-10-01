@@ -65,6 +65,9 @@ public class InpatientPackageAdmissionController implements Serializable {
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
         admissionController.setBhtText("");
+        // Clear a stale "Patient Already Admitted" warning left on the session-scoped
+        // AdmissionController by an earlier abandoned attempt. (Issue #24000)
+        admissionController.cancelActiveAdmissionWarning();
 
         patient = null;
         inpatientPackage = null;

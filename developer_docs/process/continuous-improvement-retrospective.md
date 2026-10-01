@@ -62,6 +62,11 @@ for cases where a future session would hit the exact same wall.
    `-hotfix` base if the lesson came from a hotfix flow), make the scoped
    doc/skill change **only** — never bundled into the feature/fix branch that
    surfaced the lesson — and open a PR targeting `development`.
+4. **Write the lesson as a rule, not a story**: a symptom → fix line, with no
+   background, dates or issue history (those go in the PR description).
+   `CLAUDE.md` is loaded on every message, so add to it only if leaving the
+   rule out would cause mistakes in every session. Otherwise put it in the
+   relevant skill or topic doc. See [Anthropic's skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
 
 ## Relationship to the private memory system
 

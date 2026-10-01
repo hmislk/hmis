@@ -55,7 +55,12 @@ GET /api/services/search
 | `serviceType` | string | No | `OPD`, `Inward`, or omit for both |
 | `categoryId` | long | No | Filter by ServiceCategory ID |
 | `inactive` | boolean | No | `true` = inactive only, `false` = active only |
-| `limit` | int | No | Max results (default 30, max 100) |
+| `limit` | int | No | Page size (default 30, max 100; larger values are clamped to 100) |
+| `offset` | int | No | Rows to skip, for paging (default 0; negative is treated as 0; non-numeric → 400) |
+| `includeTotal` | boolean | No | `true` adds `totalCount`, `offset` and `limit` beside `data` (see [Listing the whole master](#listing-the-whole-master)). `false`/omitted = response unchanged. Anything else → 400 |
+
+Results are always ordered by `name`, then `id`. The `id` tiebreaker keeps pages stable when two
+services share a name, so paging never repeats or skips a row.
 
 **Example:**
 ```bash
@@ -93,6 +98,54 @@ Look a service up by its code before creating it:
 
 ```bash
 curl -H "Finance: <key>" "https://host/hmis/api/services/search?code=SM-RH-0122&limit=5"
+```
+
+##### Listing the whole master
+
+One request returns at most 100 rows, so list the full service master by paging with `offset`
+instead of firing many substring queries. Add `includeTotal=true` to learn how many rows match:
+
+```bash
+curl -H "Finance: <key>" \
+  "https://host/hmis/api/services/search?limit=100&offset=0&includeTotal=true"
+```
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [ { "id": 101, "name": "Ward Procedure", "...": "..." } ],
+  "totalCount": 1234,
+  "offset": 0,
+  "limit": 100
+}
+```
+
+- `data` is still a plain array, so existing callers are unaffected. `totalCount` is the number of
+  rows matching the filters, ignoring `limit` and `offset`. The envelope field is named `totalCount`
+  (not `total`) because every row in `data` already has a `total` — its price.
+- `limit` in the response is the **effective** page size after clamping to 100. Advance `offset`
+  by the number of rows you actually received (`data.length`), never by the `limit` you asked for.
+- Stop at the first page that returns fewer rows than the `limit` you sent (an empty page is the
+  limiting case). A failed query comes back as an HTTP error, never as an empty page, so a short
+  page really is the end of the list. `totalCount` is for progress and for cross-checking that you
+  collected everything; callers that do not ask for it pay nothing for it.
+- Paging combines with every filter (`query`, `code`, `serviceType`, `categoryId`, `inactive`),
+  so the same loop can walk just the Inward services, for example.
+- Without `includeTotal=true` no count query runs and the response is exactly what it was before
+  paging existed.
+
+```bash
+# Walk the whole service master, 100 at a time
+offset=0; limit=100
+while :; do
+  page=$(curl -sf -H "Finance: <key>" \
+    "https://host/hmis/api/services/search?limit=$limit&offset=$offset") || { echo "request failed" >&2; exit 1; }
+  count=$(echo "$page" | jq '.data | length')
+  echo "$page" | jq -c '.data[] | {id, name}'
+  offset=$((offset + count))
+  [ "$count" -lt "$limit" ] && break
+done
 ```
 
 ---
