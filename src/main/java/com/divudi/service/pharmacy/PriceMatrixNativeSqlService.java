@@ -6,6 +6,7 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.core.entity.Department;
 import com.divudi.core.facade.DepartmentFacade;
 import java.util.Arrays;
@@ -250,7 +251,7 @@ public class PriceMatrixNativeSqlService {
                 "SELECT margin FROM " + priceMatrixTable()
                 + " WHERE DTYPE='InwardPriceAdjustment' AND retired=0"
                 + " AND category_ID=? AND department_ID=?"
-                + " AND fromPrice < ? AND toPrice > ?"
+                + " AND fromPrice <= ? AND toPrice >= ?"
                 + " AND creditCompany_ID IS NULL");
 
         if (applyPaymentMethodFilter) {
@@ -280,6 +281,9 @@ public class PriceMatrixNativeSqlService {
             } else {
                 sql.append(roomRank + " ASC");
             }
+            sql.append(", fromPrice DESC");
+        } else {
+            sql.append(" ORDER BY fromPrice DESC");
         }
         sql.append(" LIMIT 1");
 
@@ -287,8 +291,10 @@ public class PriceMatrixNativeSqlService {
         int p = 1;
         query.setParameter(p++, catId);
         query.setParameter(p++, deptId);
-        query.setParameter(p++, grossValue);
-        query.setParameter(p++, grossValue);
+        // Inclusive, 2-decimal band match (issue #24245) — mirrors PriceMatrixController.
+        double bandValue = PriceMatrixController.toBandValue(grossValue);
+        query.setParameter(p++, bandValue);
+        query.setParameter(p++, bandValue);
         if (applyPaymentMethodFilter) query.setParameter(p++, paymentMethodName);
         if (admissionTypeSupplied)    query.setParameter(p++, admissionTypeId);
         if (roomCategorySupplied)     query.setParameter(p++, roomCategoryId);
