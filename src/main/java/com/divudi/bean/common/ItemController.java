@@ -3440,8 +3440,9 @@ public class ItemController implements Serializable {
                     + " order by im.item.name";
             m.put("dept", getSessionController().getDepartment());
         } else if (listAllServicesAndInvestigations) {
-            // Service covers InwardService and TheatreService too (both
-            // extend it); Investigation is a separate Item subtype.
+            // type() matches the exact class only, so Service and its two
+            // subclasses (InwardService, TheatreService) are each listed;
+            // Investigation is a separate Item subtype.
             sql = "select c from Item c "
                     + " where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
