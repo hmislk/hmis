@@ -167,11 +167,13 @@
                                     <h:outputText value="#{im.item.department.name}" ></h:outputText>
                                 </p:column>
                                 <p:column 
-                                    headerText="Mapped Institution" 
-                                    sortBy="#{im.institution.name}"
-                                    filterBy="#{im.institution.name}"
+                                    headerText="Mapped Institution"
+                                    sortBy="#{im.institution ne null ? im.institution.name : im.department.institution.name}"
+                                    filterBy="#{im.institution ne null ? im.institution.name : im.department.institution.name}"
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{im.institution.name}" ></h:outputText>
+                                    <!-- A department mapping stores only the department (issue #24105);
+                                         its institution is the department's institution. -->
+                                    <h:outputText value="#{im.institution ne null ? im.institution.name : im.department.institution.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
                                     headerText="Mapped Department"  

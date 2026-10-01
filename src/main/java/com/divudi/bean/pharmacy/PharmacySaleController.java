@@ -3884,10 +3884,29 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         paymentService.updateBalances(payments);
 
+        linkIssuedPharmacyTokenToPreBill();
+
         resetAll();
         billSettlingStarted = false;
         billPreview = true;
 
+    }
+
+    /**
+     * Links a token issued from Token Management (PHARMACY_TOKEN) to the
+     * pre-bill of this retail sale. The pre-bill references the settled sale
+     * bill, so Manage Pharmacy Tokens shows the token as paid.
+     */
+    private void linkIssuedPharmacyTokenToPreBill() {
+        Token t = getToken();
+        if (t == null || t.getTokenType() != TokenType.PHARMACY_TOKEN) {
+            return;
+        }
+        if (getPreBill() == null || getPreBill().getId() == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        tokenController.save(t);
     }
 
     /**

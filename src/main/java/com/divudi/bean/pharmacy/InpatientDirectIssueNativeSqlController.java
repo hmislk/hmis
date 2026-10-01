@@ -492,7 +492,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             Long admTypeId = patientEncounter.getAdmissionType() != null ? patientEncounter.getAdmissionType().getId() : null;
             String pmName = patientEncounter.getPaymentMethod() != null ? patientEncounter.getPaymentMethod().name() : null;
             Long roomCategoryId = resolveCurrentRoomCategoryId();
-            double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, grossValue, admTypeId, roomCategoryId, pmName);
+            // The matrix price band is per-unit (issue #24245), as in issue-on-request.
+            double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, lineRetailRate, admTypeId, roomCategoryId, pmName);
             if (marginPct != 0.0) {
                 marginRate = (marginPct / 100.0) * lineRetailRate;
                 marginValue = marginRate * absQty;

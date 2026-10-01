@@ -2233,6 +2233,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         fulfillingApprovedRequest = approvedRequest;
         stock = getStockFacade().find(pbi.getStock().getId());
+        selectedStockDto = buildStockDtoFromLiveStock(stock);
         qty = pbi.getAfterAdjustmentValue();
         comment = approvedRequest.getComments();
         return "/pharmacy/adjustments/pharmacy_adjustment_department?faces-redirect=true";
@@ -2285,6 +2286,32 @@ public class PharmacyAdjustmentController implements Serializable {
         comment = approvedRequest.getComments();
         selectedStaff = stock != null ? stock.getStaff() : null;
         return "/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true";
+    }
+
+    /**
+     * Builds the Item Details DTO a fulfilment page's "Item Details" panel
+     * reads (pharmacy_adjustment_department.xhtml, pharmacy_adjustment_expiry_date.xhtml
+     * bind to selectedStockDto, not to the stock entity) from a live Stock.
+     */
+    private StockDTO buildStockDtoFromLiveStock(Stock liveStock) {
+        if (liveStock == null || liveStock.getItemBatch() == null) {
+            return null;
+        }
+        ItemBatch ib = liveStock.getItemBatch();
+        StockDTO dto = new StockDTO();
+        dto.setStockId(liveStock.getId());
+        dto.setItemBatchId(ib.getId());
+        dto.setItemId(ib.getItem() != null ? ib.getItem().getId() : null);
+        dto.setItemName(ib.getItem() != null ? ib.getItem().getName() : null);
+        dto.setCode(ib.getItem() != null ? ib.getItem().getCode() : null);
+        dto.setStockQty(liveStock.getStock());
+        dto.setPurchaseRate(ib.getPurcahseRate());
+        dto.setCostRate(ib.getCostRate());
+        dto.setRetailRate(ib.getRetailsaleRate());
+        dto.setWholesaleRate(ib.getWholesaleRate());
+        dto.setDateOfExpire(ib.getDateOfExpire());
+        dto.setBatchNo(ib.getBatchNo());
+        return dto;
     }
 
     /**
@@ -2425,6 +2452,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         fulfillingApprovedRequest = approvedRequest;
         stock = getStockFacade().find(pbi.getStock().getId());
+        selectedStockDto = buildStockDtoFromLiveStock(stock);
         exDate = pbi.getAfterAdjustmentExpiry();
         comment = approvedRequest.getComments();
         return "/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true";

@@ -213,6 +213,7 @@ public class InwardDiscountMatrixController implements Serializable {
         appendNullSafe(jpql, params, "a.paymentMethod", "pm", pm);
         appendNullSafe(jpql, params, "a.paymentScheme", "ps", ps);
         appendNullSafe(jpql, params, "a.creditCompany", "cc", cc);
+        appendNullSafe(jpql, params, "a.roomCategory", "rc", null);
         return (InwardDiscountMatrix) ejbFacade.findFirstByJpql(jpql.toString(), params);
     }
 
@@ -374,7 +375,11 @@ public class InwardDiscountMatrixController implements Serializable {
 
     /**
      * Narrows a matrix listing by each field selected in the entry form;
-     * fields left blank do not filter.
+     * fields left blank do not filter. Department, category, admission type
+     * and BHT type also keep the rows left blank ("All ..."), because the
+     * billing lookup applies those rows to every value and an admin checking
+     * what applies to a selection must see them. Scheme and credit company
+     * match exactly, as they do in the lookup.
      */
     private void appendSelectionFilters(StringBuilder sql, Map<String, Object> hm) {
         if (paymentScheme != null) {
@@ -382,19 +387,19 @@ public class InwardDiscountMatrixController implements Serializable {
             hm.put("ps", paymentScheme);
         }
         if (department != null) {
-            sql.append(" and a.department = :dep");
+            sql.append(" and (a.department = :dep or a.department is null)");
             hm.put("dep", department);
         }
         if (categories != null && !categories.isEmpty()) {
-            sql.append(" and a.category in :cats");
+            sql.append(" and (a.category in :cats or a.category is null)");
             hm.put("cats", new ArrayList<>(categories));
         }
         if (admissionType != null) {
-            sql.append(" and a.admissionType = :at");
+            sql.append(" and (a.admissionType = :at or a.admissionType is null)");
             hm.put("at", admissionType);
         }
         if (paymentMethod != null) {
-            sql.append(" and a.paymentMethod = :pm");
+            sql.append(" and (a.paymentMethod = :pm or a.paymentMethod is null)");
             hm.put("pm", paymentMethod);
         }
         if (creditCompany != null) {
@@ -422,7 +427,7 @@ public class InwardDiscountMatrixController implements Serializable {
             hm.put("icts", types);
         }
         if (roomCategories != null && !roomCategories.isEmpty()) {
-            sql.append(" and a.roomCategory in :rcs");
+            sql.append(" and (a.roomCategory in :rcs or a.roomCategory is null)");
             hm.put("rcs", new ArrayList<>(roomCategories));
         }
         // The shared filters add the category condition only when categories
@@ -511,11 +516,33 @@ public class InwardDiscountMatrixController implements Serializable {
     // -------------------------------------------------------------------------
     // Edit / Delete
     // -------------------------------------------------------------------------
+    /**
+     * Saves an inline percentage edit. Same 0-100 rule as the API update; an
+     * out-of-range value is put back to what is stored so the table does not
+     * keep showing a discount that was never saved.
+     */
     public void onEdit(PriceMatrix entry) {
+        if (entry == null) {
+            return;
+        }
+        double pct = entry.getDiscountPercent();
+        if (Double.isNaN(pct) || Double.isInfinite(pct) || pct < 0.0 || pct > 100.0) {
+            PriceMatrix stored = entry.getId() == null ? null : ejbFacade.find(entry.getId());
+            if (stored != null) {
+                entry.setDiscountPercent(stored.getDiscountPercent());
+            }
+            JsfUtil.addErrorMessage("Discount % must be between 0 and 100");
+            return;
+        }
         ejbFacade.edit(entry);
         JsfUtil.addSuccessMessage("Updated Successfully");
     }
 
+    /**
+     * Retires the selected row and drops it from the listing on screen, so the
+     * rest of the filtered picture stays visible instead of the table going
+     * blank until Fill is pressed again.
+     */
     public void delete() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
@@ -526,7 +553,15 @@ public class InwardDiscountMatrixController implements Serializable {
         current.setRetirer(sessionController.getLoggedUser());
         ejbFacade.edit(current);
         JsfUtil.addSuccessMessage("Deleted Successfully");
-        items = null;
+        // Copies, because the list PrimeFaces hands back for filteredValue is not guaranteed modifiable.
+        if (items != null) {
+            items = new ArrayList<>(items);
+            items.remove(current);
+        }
+        if (filterItems != null) {
+            filterItems = new ArrayList<>(filterItems);
+            filterItems.remove(current);
+        }
         current = null;
     }
 
