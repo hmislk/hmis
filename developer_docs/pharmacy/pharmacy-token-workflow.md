@@ -20,7 +20,7 @@ Manage Tokens' Bill column comes from `token.bill`: `referenceBill` set → PAYM
 
 - Set state on the bean that backs the target page (grep the XHTML), not the deprecated `PharmacySaleController` methods.
 - Call the bean's `navigateTo…()` first, then set patient/token: navigation runs `resetAll()`, which clears them.
-- Link `token.bill = preBill` (`linkIssuedPharmacyTokenToPreBill()`) before the `Enable token system in sale for cashier` block; otherwise that block creates a duplicate `PHARMACY_TOKEN_SALE_FOR_CASHIER` token.
+- Link `token.bill = preBill` before the `Enable token system in sale for cashier` lookup (`findPharmacyTokens(preBill)`); otherwise that block creates a duplicate `PHARMACY_TOKEN_SALE_FOR_CASHIER` token. Only `PharmacySaleForCashierController` (both settle methods) and `PharmacySaleController.settleBillWithPay()` do this, via `linkIssuedPharmacyTokenToPreBill()`. `PharmacyFastRetailSaleForCashierController` (Sale for Cashier – By Item) has no token entry and doesn't link; add the same call before its lookup if a token button ever targets it.
 
 ## Config
 
