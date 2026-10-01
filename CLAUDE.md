@@ -73,6 +73,9 @@
 - [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
 - [Inward CC Settlement Tracking](developer_docs/billing/inward-cc-settlement-tracking.md) - Data model, settlement paths, cancellation flows, and debtor report pattern for inpatient credit company payments
 
+### When Working on Pharmacy Tokens
+- [Pharmacy Token Workflow](developer_docs/pharmacy/pharmacy-token-workflow.md) - Page↔bean map (Sale for Cashier is `PharmacySaleForCashierController`, not `PharmacySaleController`), navigate-then-set rule, how a token links to its bill, config keys, known gaps
+
 ### When Reviewing a PR
 - **🚨 AFTER APPLYING ANY CODERABBIT/CODEX FIX**: Always verify method names exist on the actual entity before pushing. Automated tools frequently generate wrong getter names (e.g., `getCompleted()` instead of `isCompleted()` for primitive `boolean` fields). See [PR Review Workflow §4a](developer_docs/git/pr-review-workflow.md).
 
