@@ -3851,6 +3851,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 }
             }
 
+            linkIssuedPharmacyTokenToPreBill();
             if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
                 if (getPatient() != null) {
                     Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -4083,6 +4084,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 //        setPrintBill(getBillFacade().find(id));
 
+        linkIssuedPharmacyTokenToPreBill();
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
 
             if (getPatient() != null) {
@@ -4109,6 +4111,23 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         resetAll();
         setPrintBill(billService.reloadBill(id));
         billPreview = true;
+    }
+
+    /**
+     * Links a token issued from Token Management (PHARMACY_TOKEN) to the
+     * pre-bill created for it, so Manage Pharmacy Tokens can show the bill and
+     * offer Pay at Cashier.
+     */
+    private void linkIssuedPharmacyTokenToPreBill() {
+        Token t = getToken();
+        if (t == null || t.getTokenType() != TokenType.PHARMACY_TOKEN) {
+            return;
+        }
+        if (getPreBill() == null || getPreBill().getId() == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        tokenController.save(t);
     }
 
     public void markInprogress() {
