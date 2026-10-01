@@ -4104,3 +4104,17 @@ way §106's second-level note already recommends confirming `display: block` bef
 
 Verified 2026-09-29 while trying to reach *Settings → Manage My API Keys* on the Ruhunu local-staging
 server (`rh-local-staging` branch) mid-investigation of an inward pharmacy margin bug.
+
+## 137. `button[title="…"]` locator works once, then finds nothing
+
+PrimeFaces' global tooltip removes a button's `title` on its first hover. Locate icon-only row buttons by icon class (`button:has(.fa-pills)`) or `id`, never by `title`. Give new row buttons a stable `id`.
+
+## 138. Menu shows only Home and Request Manager after login on an older branch
+
+The branch's `Privileges` enum lacks constants the DB stores (privileges are stored by name), so no privilege loads. List the missing ones and copy their single-line declarations from development into the enum (additive only):
+```bash
+F=src/main/java/com/divudi/core/data/Privileges.java
+ext(){ grep -oE '^\s*[A-Z][A-Za-z0-9_]*\s*\(' | sed -E 's/[ (\t]//g' | sort -u; }
+comm -23 <(git show origin/development:$F | ext) <(ext < $F)
+```
+To make them grantable in the UI, also wire them into `UserPrivilageController` (§135).
