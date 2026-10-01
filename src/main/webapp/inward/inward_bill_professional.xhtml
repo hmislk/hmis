@@ -638,7 +638,7 @@
                                             <h:outputLabel value="#{bif.speciality.name}" rendered="#{bif.speciality != null}"/>
                                         </p:column>
                                         <p:column headerText="Doctor">
-                                            <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff != null}" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{bif.staff.person.nameWithTitle}" rendered="#{bif.staff != null}" styleClass="fw-bold"/>
                                         </p:column>
                                         <p:column headerText="Fee Date">
                                             <h:outputLabel value="#{bif.feeAt}">
