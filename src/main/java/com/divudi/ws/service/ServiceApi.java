@@ -71,6 +71,11 @@ public class ServiceApi {
     /**
      * Search services by name, type, category, and active status.
      * GET /api/services/search?query=ward&serviceType=Inward&limit=30
+     *
+     * Results are ordered by name then id. To list the whole master, page with
+     * {@code offset}: GET /api/services/search?limit=100&offset=200&includeTotal=true.
+     * {@code data} stays a plain array; {@code includeTotal=true} adds {@code totalCount},
+     * {@code offset} and {@code limit} beside it. Without it the response is unchanged.
      */
     @GET
     @Path("/search")
@@ -89,6 +94,8 @@ public class ServiceApi {
             String categoryIdStr = uriInfo.getQueryParameters().getFirst("categoryId");
             String inactiveStr = uriInfo.getQueryParameters().getFirst("inactive");
             String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+            String offsetStr = uriInfo.getQueryParameters().getFirst("offset");
+            String includeTotalStr = uriInfo.getQueryParameters().getFirst("includeTotal");
 
             Long categoryId = null;
             if (categoryIdStr != null && !categoryIdStr.trim().isEmpty()) {
@@ -114,9 +121,38 @@ public class ServiceApi {
                 }
             }
 
+            int offset = 0;
+            if (offsetStr != null && !offsetStr.trim().isEmpty()) {
+                try {
+                    offset = Math.max(Integer.parseInt(offsetStr.trim()), 0);
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid offset format", 400);
+                }
+            }
+
+            boolean includeTotal = false;
+            if (includeTotalStr != null && !includeTotalStr.trim().isEmpty()) {
+                String raw = includeTotalStr.trim().toLowerCase();
+                if (!"true".equals(raw) && !"false".equals(raw)) {
+                    return errorResponse("Invalid includeTotal value. Use true or false.", 400);
+                }
+                includeTotal = Boolean.parseBoolean(raw);
+            }
+
             List<ServiceSearchResultDTO> results = serviceApiService.searchServices(
-                    query, code, serviceType, categoryId, inactive, limit);
-            return successResponse(results);
+                    query, code, serviceType, categoryId, inactive, limit, offset);
+            if (!includeTotal) {
+                return successResponse(results);
+            }
+
+            // limit is echoed because it is clamped to 100: a caller that asked for more
+            // must advance by what it actually got, not by what it asked for.
+            Map<String, Object> body = successData(results);
+            body.put("totalCount", serviceApiService.countServices(
+                    query, code, serviceType, categoryId, inactive));
+            body.put("offset", offset);
+            body.put("limit", limit);
+            return Response.status(200).entity(gson.toJson(body)).build();
 
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);

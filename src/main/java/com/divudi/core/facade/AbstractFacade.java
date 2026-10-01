@@ -626,6 +626,32 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Same paging as {@link #findByJpqlWithRange(String, Map, int, int)}, but a query
+     * failure propagates instead of being turned into an empty list.
+     *
+     * <p>Use this where an empty page is read as "nothing there" — an API that callers
+     * poll to decide whether a record already exists, or a listing a client pages through
+     * until it runs dry — so a database error surfaces as an error rather than as the end
+     * of the data.
+     */
+    public List<T> findByJpqlWithRangeStrict(String jpql, Map<String, Object> parameters,
+            int startPosition, int maxResults) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                if (entry.getValue() instanceof Date) {
+                    qry.setParameter(entry.getKey(), (Date) entry.getValue(), TemporalType.TIMESTAMP);
+                } else {
+                    qry.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        qry.setFirstResult(Math.max(startPosition, 0));
+        qry.setMaxResults(Math.max(maxResults, 1));
+        return qry.getResultList();
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
