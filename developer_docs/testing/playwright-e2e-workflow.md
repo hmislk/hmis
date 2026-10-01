@@ -1931,17 +1931,25 @@ While testing issue #22719 (appointment → admission → deposit conversion), t
   originally-reserved `Room 101`) to proceed; the room shown on the
   reservation and the room picked at admission time are independent fields.
 - **A hidden `ConfigOption` boolean can block the whole Admit action with no
-  visual hint on the form.** `AdmissionController` checks
-  `"Patient Age is Required in Patient Admission"` (default `false`, but was
-  `true` on this Galle Co-op local dev DB) and rejects with "Patient Age is
-  Required" if the patient has no DOB — the message doesn't say which field
-  or where to fix it. A sibling check, `"Patient Address is Required in
-  Patient Admission"`, was also `true` on this same DB (confirmed 2026-09-30
-  while recording the Package Admission demo video) and rejects with
-  "Patient Address is Required" if the **Address** field on the new-patient
-  panel is empty — the two checks fire one at a time (fixing DOB just
-  reveals the Address error next), so don't assume one error means there's
-  only one blocker. Related traps while fixing these:
+  visual hint on the form.** `AdmissionController.errorCheck()`
+  (`AdmissionController.java` ~2235-2297) runs a whole chain of these gates,
+  but only when the umbrella key `"Patient Details Required in Patient
+  Admission"` is `true` **and** the admission isn't a Rapid/Temp A&E one
+  (those admit with deliberately-incomplete demographics — issue #21183).
+  Once past that gate, the individual checks run in a fixed order — Title,
+  Gender, **Age**, Name, **Address**, Area, Mail, then (for a non-baby
+  admission) NIC and Phone Number — each independently toggled by its own
+  `"Patient <Field> is Required in Patient Admission"` `ConfigOption` (all
+  default `false`). On this Galle Co-op local dev DB, Age and Address were
+  both `true` (confirmed 2026-09-30 while recording the Package Admission
+  demo video), so fixing the DOB-triggered "Patient Age is Required" error
+  just revealed "Patient Address is Required" next — **and if Name were also
+  enabled, it would have fired in between the two**, since Name is checked
+  before Address. The method returns on the *first* failing check, so a
+  single error message never tells you how many more are enabled behind it —
+  check the config keys directly (or just fill every field) rather than
+  assuming the one error you see is the last one. Related traps while fixing
+  these:
   - Typing into the **Years/Months/Days** age inputs on `patient_edit.xhtml`
     looks like it commits (`textbox "Years": "30"`) but doesn't persist a DOB —
     that widget only *computes* a DOB client-side via a JS listener that a
@@ -1967,9 +1975,9 @@ While testing issue #22719 (appointment → admission → deposit conversion), t
     a test, **toggle it back afterward** and confirm via
     `SELECT OPTIONVALUE FROM configoption WHERE OPTIONKEY = '...'` — this is
     live config on a real hospital's local dev copy, not disposable test data.
-    Simplest path for a one-off demo/test admission: just fill DOB and
-    Address for real rather than chasing the config toggle — both are normal
-    fields on the form anyway.
+    Simplest path for a one-off demo/test admission: fill DOB, Name, and
+    Address for real rather than chasing the config toggle — all three are
+    normal fields on the form anyway.
 
 ## 59. `CreditCompanyBillSearch.printPreview` is a single shared flag reused for two different meanings — viewing a bill before cancelling can make the cancel form permanently unreachable via normal navigation
 
