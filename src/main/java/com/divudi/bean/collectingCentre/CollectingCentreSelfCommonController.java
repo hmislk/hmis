@@ -53,10 +53,23 @@ public class CollectingCentreSelfCommonController implements Serializable {
             return;
         }
         if (reportController.getFromDate() == null || reportController.getToDate() == null) {
+            reportController.setAgentHistories(null);
             JsfUtil.addErrorMessage("Please select From and To dates");
             return;
         }
         reportController.processCollectingCentreStatementReportNew();
+    }
+
+    /**
+     * Re-processes the current criteria before exporting, so the PDF never
+     * carries rows from an earlier Process run under the new criteria.
+     */
+    public void exportCollectingCentreSelfStatementToPDF() {
+        processCollectingCentreSelfStatement();
+        if (reportController.getAgentHistories() == null) {
+            return;
+        }
+        reportController.exportCollectionCenterStatementReportToPDF();
     }
 
     private boolean restrictStatementToOwnCollectingCentre() {
