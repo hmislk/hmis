@@ -81,7 +81,7 @@
                                                 icon="fas fa-cogs"
                                                 value="Process"
                                                 process="@form"
-                                                update="tblStatement msg"
+                                                update="statementHeader tblStatement msg"
                                                 action="#{collectingCentreSelfCommonController.processCollectingCentreSelfStatement}">
                                             </p:commandButton>
 
@@ -118,6 +118,18 @@
                                         <h:outputText styleClass="fa-solid fa-list"/>
                                         <h:outputText value="Statement" class="mx-2"/>
                                     </f:facet>
+
+                                    <h:panelGroup id="statementHeader" layout="block" styleClass="text-center mb-3 fs-5">
+                                        <h:outputText value="#{sessionController.institution.name}" styleClass="d-block fw-bold fs-4"/>
+                                        <h:outputText value="From "/>
+                                        <h:outputText value="#{reportController.fromDate}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value=" To "/>
+                                        <h:outputText value="#{reportController.toDate}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </h:panelGroup>
 
                                     <p:dataTable
                                         id="tblStatement"
