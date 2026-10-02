@@ -43,6 +43,7 @@
                                         <h:outputLabel value="From Date" for="fromDate"/>
                                         <p:calendar
                                             id="fromDate"
+                                            placeholder="Select from date"
                                             value="#{collectingCentreSelfSearchController.fromDate}"
                                             navigator="false"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -54,6 +55,7 @@
                                         <h:outputLabel value="To Date" for="toDate" class="mt-2"/>
                                         <p:calendar
                                             id="toDate"
+                                            placeholder="Select to date"
                                             value="#{collectingCentreSelfSearchController.toDate}"
                                             navigator="false"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -73,13 +75,13 @@
                                         </p:commandButton>
 
                                         <h:outputLabel value="Bill No" for="txtBillNo" class="mt-2"/>
-                                        <p:inputText id="txtBillNo" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.billNo}" class="w-100"/>
+                                        <p:inputText id="txtBillNo" placeholder="Enter bill number" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.billNo}" class="w-100"/>
 
                                         <h:outputLabel value="Patient Name" for="txtPatientName" class="mt-2"/>
-                                        <p:inputText id="txtPatientName" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientName}" class="w-100"/>
+                                        <p:inputText id="txtPatientName" placeholder="Enter patient name" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientName}" class="w-100"/>
 
                                         <h:outputLabel value="Patient Phone" for="txtPatientPhone" class="mt-2"/>
-                                        <p:inputText id="txtPatientPhone" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientPhone}" class="w-100"/>
+                                        <p:inputText id="txtPatientPhone" placeholder="Enter patient phone number" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientPhone}" class="w-100"/>
 
                                     </p:panel>
                                 </div>
