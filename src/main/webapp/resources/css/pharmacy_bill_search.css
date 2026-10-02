@@ -1,0 +1,83 @@
+/*
+ * Pharmacy Bill Search pages (by Bill Type, by Bill Type Atomic, by Item) and
+ * every result table under resources/pharmacy/search/ (issue #24250).
+ * Data-dense layout: one horizontal filter bar, full-width results,
+ * single-line rows.
+ */
+
+.pharma-search-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.pharma-search-filter {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.pharma-search-filter > label {
+    font-size: 0.8rem;
+    margin-bottom: 0.15rem;
+}
+
+.pharma-search-filter-date { width: 12rem; }
+.pharma-search-filter-type { width: 20rem; }
+.pharma-search-filter-item { width: 22rem; }
+.pharma-search-filter-count { width: 6rem; }
+
+/* PrimeFaces sizes selectOneMenu / autoComplete inline; force them to the filter's width. */
+.pharma-search-filter .ui-calendar,
+.pharma-search-filter .ui-selectonemenu,
+.pharma-search-filter .ui-autocomplete,
+.pharma-search-filter input {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+}
+
+.pharma-search-results .ui-panel-content {
+    padding: 0.25rem;
+}
+
+.pharma-search-results .ui-panel-titlebar {
+    padding: 0.35rem 0.6rem;
+}
+
+.pharma-search-wrapper {
+    overflow-x: auto;
+}
+
+.pharma-search-wrapper .ui-datatable {
+    font-size: 0.85rem;
+}
+
+/* Size columns to their content instead of equal fixed widths, so long
+   values (bill type labels, names) are not cut off. */
+.pharma-search-wrapper .ui-datatable table {
+    table-layout: auto;
+}
+
+.pharma-search-wrapper .ui-datatable tbody td .ui-button {
+    padding: 0.1rem 0.35rem;
+}
+
+.pharma-search-wrapper .ui-datatable thead th,
+.pharma-search-wrapper .ui-datatable tbody td,
+.pharma-search-wrapper .ui-datatable tfoot td {
+    white-space: nowrap;
+    padding: 0.2rem 0.5rem !important;
+}
+
+.pharma-search-wrapper .ui-datatable .ui-column-filter {
+    width: 100%;
+    min-width: 5rem;
+    padding: 0.15rem 0.3rem;
+}
+
+.pharma-search-wrapper .ui-paginator {
+    padding: 0.15rem;
+}

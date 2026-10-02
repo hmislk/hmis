@@ -264,6 +264,12 @@ the rebuilt component tree. That is a test artifact, not a defect. After any
 swap, leave the page (Home → back through the menus) to get a fresh view before
 testing again, and don't trust anything a pre-swap view did after the swap.
 
+**Third caveat — a swapped CSS file is served fresh but the browser keeps the old one.**
+JSF resource URLs (`javax.faces.resource/x.css?ln=css`) carry no version, so the
+browser reuses its cached copy. Force it with
+`browser_evaluate(() => fetch('/rh/faces/javax.faces.resource/x.css?ln=css', {cache:'reload'}))`,
+then reopen the page through the menu.
+
 
 ## 87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect
 

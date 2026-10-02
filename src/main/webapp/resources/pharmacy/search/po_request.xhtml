@@ -21,7 +21,7 @@
         COALESCE on person names and nullable fields prevents silent row drops.
     -->
     <cc:implementation>
-        <p:panel>
+        <p:panel styleClass="pharma-search-results">
             <f:facet name="header">
                 <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                     <span>PURCHASE ORDER REQUEST</span>
@@ -39,9 +39,12 @@
                              value="#{pharmacyBillSearch.poRequestSearchDtos}"
                              var="dto"
                              paginator="true"
-                             rows="10"
+                             rows="25"
+                             paginatorPosition="bottom"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,20,50,100"
+                             rowsPerPageTemplate="25,50,100,200"
+                             stickyHeader="true"
+                             styleClass="p-datatable-sm"
                              emptyMessage="No Purchase Order Requests Found">
 
                     <p:column headerText="Req No"
