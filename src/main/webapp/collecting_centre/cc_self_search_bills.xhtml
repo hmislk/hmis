@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - Search Bills</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Search Bills"
+                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                pageIcon="fa-solid fa-magnifying-glass"
+                                backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                                backLabel="Back to Dashboard"/>
+
+                            <p:growl id="msg"/>
+
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <p:panel styleClass="cc-bill-card cc-c-blue">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-filter"/>
+                                            <h:outputText value="Search Criteria" class="mx-2"/>
+                                        </f:facet>
+
+                                        <h:outputLabel value="From Date" for="fromDate"/>
+                                        <p:calendar
+                                            id="fromDate"
+                                            placeholder="Select from date"
+                                            value="#{collectingCentreSelfSearchController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+
+                                        <h:outputLabel value="To Date" for="toDate" class="mt-2"/>
+                                        <p:calendar
+                                            id="toDate"
+                                            placeholder="Select to date"
+                                            value="#{collectingCentreSelfSearchController.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+                                        
+                                        <p:commandButton
+                                            id="btnSearch"
+                                            class="ui-button-warning w-100 mt-3"
+                                            icon="fas fa-search"
+                                            value="Search Bills"
+                                            process="@form"
+                                            update="tblBills msg"
+                                            action="#{collectingCentreSelfSearchController.searchBills}">
+                                        </p:commandButton>
+
+                                        <h:outputLabel value="Bill No" for="txtBillNo" class="mt-2"/>
+                                        <p:inputText id="txtBillNo" placeholder="Enter bill number" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.billNo}" class="w-100"/>
+
+                                        <h:outputLabel value="Patient Name" for="txtPatientName" class="mt-2"/>
+                                        <p:inputText id="txtPatientName" placeholder="Enter patient name" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientName}" class="w-100"/>
+
+                                        <h:outputLabel value="Patient Phone" for="txtPatientPhone" class="mt-2"/>
+                                        <p:inputText id="txtPatientPhone" placeholder="Enter patient phone number" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientPhone}" class="w-100"/>
+
+                                    </p:panel>
+                                </div>
+
+                                <div class="col-md-9">
+                                    <p:panel styleClass="cc-bill-card cc-c-green">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-list"/>
+                                            <h:outputText value="Bills" class="mx-2"/>
+                                        </f:facet>
+
+                                        <p:dataTable
+                                            rowIndexVar="i"
+                                            id="tblBills"
+                                            value="#{collectingCentreSelfSearchController.bills}"
+                                            var="bill"
+                                            style="min-width: 100%;"
+                                            paginator="true"
+                                            rows="15"
+                                            paginatorPosition="bottom"
+                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                            rowsPerPageTemplate="15,25,50,100"
+                                            emptyMessage="No bills found for the selected criteria">
+
+                                            <p:column headerText="No" style="width: 3em; padding: 8px;">
+                                                <h:outputText value="#{i+1}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Bill No" style="width: 13em; padding: 8px;">
+                                                <p:commandLink
+                                                    ajax="false"
+                                                    value="#{bill.deptId}"
+                                                    title="View / Reprint"
+                                                    action="#{collectingCentreSelfSearchController.navigateToReprintBill(bill)}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Billed At" style="width: 11em; padding: 8px;">
+                                                <h:outputText value="#{bill.createdAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Patient" style="padding: 8px;">
+                                                <h:outputText value="#{bill.patient.person.nameWithTitle}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Patient Phone" style="width: 9em; padding: 8px;">
+                                                <h:outputText value="#{bill.patient.person.phone}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Billed By" style="width: 8em; padding: 8px;">
+                                                <h:outputText value="#{bill.creater.name}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Status" style="width: 8em; padding: 8px;" class="text-center">
+                                                <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"/>
+                                                <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"/>
+                                            </p:column>
+
+                                            <p:column headerText="Gross Value" style="width: 8em; padding: 8px;" class="text-end">
+                                                <h:outputText value="#{bill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Discount" style="width: 7em; padding: 8px;" class="text-end">
+                                                <h:outputText value="#{bill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Net Value" style="width: 8em; padding: 8px;" class="text-end">
+                                                <h:outputText value="#{bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
