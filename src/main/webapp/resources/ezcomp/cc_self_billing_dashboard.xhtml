@@ -138,13 +138,14 @@
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Payments"/>
                             </div>
-                            <div class="cc-action-card cc-c-teal">
-                                <span class="cc-action-badge">Soon</span>
+                            <h:commandLink
+                                styleClass="cc-action-card cc-c-teal"
+                                action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfStatement()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-file-alt"/>
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Statements"/>
-                            </div>
+                            </h:commandLink>
                             <div class="cc-action-card cc-c-red">
                                 <span class="cc-action-badge">Soon</span>
                                 <div class="cc-action-icon">
