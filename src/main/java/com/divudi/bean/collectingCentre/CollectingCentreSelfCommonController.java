@@ -52,7 +52,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
             reportController.setAgentHistories(null);
             return;
         }
-        if (reportController.getFromDate() == null || reportController.getToDate() == null) {
+        // has*Date, not get*Date: the getters silently default a cleared date to today
+        if (!reportController.hasFromDate() || !reportController.hasToDate()) {
             reportController.setAgentHistories(null);
             JsfUtil.addErrorMessage("Please select From and To dates");
             return;
