@@ -116,13 +116,14 @@
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Create Bill"/>
                             </h:commandLink>
-                            <div class="cc-action-card cc-c-green">
-                                <span class="cc-action-badge">Soon</span>
+                            <h:commandLink
+                                styleClass="cc-action-card cc-c-green"
+                                action="#{collectingCentreSelfSearchController.navigateToSearchBills()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-search"/>
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Search Bills"/>
-                            </div>
+                            </h:commandLink>
                             <div class="cc-action-card cc-c-orange">
                                 <span class="cc-action-badge">Soon</span>
                                 <div class="cc-action-icon">
@@ -218,7 +219,7 @@
                                 <h:outputText styleClass="cc-timeline-title" value="Self-billing home page"/>
                                 <h:outputText styleClass="cc-timeline-desc" value="You are here"/>
                             </li>
-                            <li class="cc-c-blue">
+                            <li class="done">
                                 <h:outputText styleClass="cc-timeline-title" value="Create &amp; search own bills"/>
                                 <h:outputText styleClass="cc-timeline-desc" value="Raise and look up your centre's bills"/>
                             </li>
