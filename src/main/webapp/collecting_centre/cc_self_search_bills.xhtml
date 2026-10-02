@@ -120,7 +120,7 @@
 
                                             <p:column headerText="Billed At" style="width: 11em; padding: 8px;">
                                                 <h:outputText value="#{bill.createdAt}">
-                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputText>
                                             </p:column>
 
