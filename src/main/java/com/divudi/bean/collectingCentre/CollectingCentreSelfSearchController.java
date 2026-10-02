@@ -118,7 +118,7 @@ public class CollectingCentreSelfSearchController implements Serializable {
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 
-        bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        bills = billFacade.findByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
     }
 
     private boolean isOwnBill(Bill bill) {
