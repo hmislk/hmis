@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
@@ -22,11 +23,13 @@
                                 value="#{surgeryReportController.fromYearDate}"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"   
-                                showTime="false"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                />
+                                pattern="dd/MM/yyyy HH:mm:ss"
+                                showTime="true"
+                                monthNavigator="true"
+                                yearNavigator="true"
+                                >
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" type="both"/>
+                            </p:datePicker>
 
                             <p:spacer width="40"/>
 
@@ -41,11 +44,13 @@
                                 value="#{surgeryReportController.toYearDate}"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy"   
-                                showTime="false"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                />
+                                pattern="dd/MM/yyyy HH:mm:ss"
+                                showTime="true"
+                                monthNavigator="true"
+                                yearNavigator="true"
+                                >
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" type="both"/>
+                            </p:datePicker>
 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -70,11 +75,12 @@
                                 ajax="false"
                                 value="Process" />
 
-                            <p:commandButton 
+                            <p:commandButton
                                 id="btnPrintAllOtRoom"
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
+                                onclick="captureChartsForPrint();"
                                 value="Print All">
                                 <p:printer target="printArea" />
                             </p:commandButton>
@@ -104,6 +110,11 @@
                         <h:inputHidden id="otRoomLineChartImg" value="#{surgeryReportController.otRoomLineChartImage}"/>
 
                         <h:panelGroup id="printArea" layout="block">
+
+                            <h:panelGroup layout="block" rendered="#{not empty surgeryReportController.otRoomWiseList}" style="font-weight:bold; margin-bottom:10px;">
+                                <h:outputText value="Period: #{surgeryReportController.otRoomPeriodLabel}"/>
+                            </h:panelGroup>
+
                             <p:dataTable id="tb"
                                          value="#{surgeryReportController.otRoomWiseList}"
                                          var="c"
@@ -123,7 +134,7 @@
                                                 <h:outputText value="OT Room"/>
                                             </f:facet>
                                         </p:column>
-                                        <p:column colspan="12" style="text-align:center;" >
+                                        <p:column colspan="#{surgeryReportController.otRoomMonthIndices.size()}" style="text-align:center;" >
                                             <f:facet name="header">
                                                 <h:outputText value="#{surgeryReportController.otRoomSelectedYear}" />
                                             </f:facet>
@@ -134,105 +145,34 @@
                                             </f:facet>
                                         </p:column>
                                     </p:row>
-    
+
                                     <p:row>
-                                        <p:column><f:facet name="header"><h:outputText value="Jan"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Feb"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Mar"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Apr"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="May"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Jun"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Jul"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Aug"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Sep"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Oct"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Nov"/></f:facet></p:column>
-                                        <p:column><f:facet name="header"><h:outputText value="Dec"/></f:facet></p:column>
+                                        <c:forEach items="#{surgeryReportController.otRoomMonthIndices}" var="m">
+                                            <p:column><f:facet name="header"><h:outputText value="#{surgeryReportController.getOtRoomMonthLabel(m)}"/></f:facet></p:column>
+                                        </c:forEach>
                                     </p:row>
                                 </p:columnGroup>
-    
+
                                 <p:column><h:outputText value="#{c.roomName}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(0)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(1)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(2)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(3)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(4)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(5)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(6)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(7)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(8)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(9)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(10)}" /></p:column>
-                                <p:column style="text-align: left;"><h:outputText value="#{c.getCount(11)}" /></p:column>
+                                <c:forEach items="#{surgeryReportController.otRoomMonthIndices}" var="m">
+                                    <p:column style="text-align: left;"><h:outputText value="#{c.getCount(m)}" /></p:column>
+                                </c:forEach>
                                 <p:column style="text-align: left; font-weight: bold;"><h:outputText value="#{c.totalCount}" /></p:column>
-    
+
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column style="text-align: left;">
                                             <f:facet name="footer">
                                                 <h:outputText value="Total Count:" />
-                                            </f:facet> 
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(0)}" />
                                             </f:facet>
                                         </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(1)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(2)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(3)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(4)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(5)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(6)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(7)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(8)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(9)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(10)}" />
-                                            </f:facet>
-                                        </p:column>
-                                        <p:column style="text-align: left;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(11)}" />
-                                            </f:facet>
-                                        </p:column>
+                                        <c:forEach items="#{surgeryReportController.otRoomMonthIndices}" var="m">
+                                            <p:column style="text-align: left;">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{surgeryReportController.getOtRoomMonthlyTotal(m)}" />
+                                                </f:facet>
+                                            </p:column>
+                                        </c:forEach>
                                         <p:column style="text-align: left;">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{surgeryReportController.otRoomGrandTotal}" />
@@ -249,18 +189,24 @@
                                     <!-- Bar Chart -->
                                     <h:panelGroup layout="block" rendered="#{surgeryReportController.otRoomChartType eq 'bar' and surgeryReportController.otRoomBarChartModel ne null}" styleClass="my-3">
                                         <p:panel header="OT Room Count - Bar Chart (#{surgeryReportController.otRoomSelectedYear})">
-                                            <h:panelGroup layout="block" style="width:100%; height:400px;">
+                                            <!-- Canvas charts don't survive being cloned into the print window
+                                                 (only the DOM element gets copied, not the drawn pixels), so
+                                                 captureChartsForPrint() swaps this for a plain &lt;img&gt; snapshot
+                                                 right before printing. -->
+                                            <div id="otRoomBarChartCanvasWrap" style="width:100%; height:400px;">
                                                 <p:chart value="#{surgeryReportController.otRoomBarChartModel}" widgetVar="otRoomBarWV" style="width:100%; height:100%;" />
-                                            </h:panelGroup>
+                                            </div>
+                                            <img id="otRoomBarChartPrintImg" style="display:none; width:100%;" alt="OT Room Bar Chart"/>
                                         </p:panel>
                                     </h:panelGroup>
 
                                     <!-- Line Chart -->
                                     <h:panelGroup layout="block" rendered="#{surgeryReportController.otRoomChartType eq 'line' and surgeryReportController.otRoomLineChartModel ne null}" styleClass="my-3">
                                         <p:panel header="OT Room Count - Line Chart (#{surgeryReportController.otRoomSelectedYear})">
-                                            <h:panelGroup layout="block" style="width:100%; height:400px;">
+                                            <div id="otRoomLineChartCanvasWrap" style="width:100%; height:400px;">
                                                 <p:chart value="#{surgeryReportController.otRoomLineChartModel}" widgetVar="otRoomLineWV" style="width:100%; height:100%;" />
-                                            </h:panelGroup>
+                                            </div>
+                                            <img id="otRoomLineChartPrintImg" style="display:none; width:100%;" alt="OT Room Line Chart"/>
                                         </p:panel>
                                     </h:panelGroup>
 
@@ -302,6 +248,35 @@
                                     }
                                 } catch(e) {
                                     console.warn('Chart export capture failed: ' + pair.wv, e);
+                                }
+                            });
+                        }
+
+                        // p:printer clones the printArea DOM into a separate print window, but a
+                        // &lt;canvas&gt; clone carries no pixels - only the &lt;img&gt; below actually
+                        // prints. Swap the on-screen chart for a captured PNG right before printing,
+                        // then swap back after the print dialog has had time to read the DOM.
+                        function captureChartsForPrint() {
+                            var pairs = [
+                                { wv: 'otRoomBarWV',  imgId: 'otRoomBarChartPrintImg',  wrapId: 'otRoomBarChartCanvasWrap' },
+                                { wv: 'otRoomLineWV', imgId: 'otRoomLineChartPrintImg', wrapId: 'otRoomLineChartCanvasWrap' }
+                            ];
+                            pairs.forEach(function(pair) {
+                                try {
+                                    var widget = PF(pair.wv);
+                                    var img = document.getElementById(pair.imgId);
+                                    var wrap = document.getElementById(pair.wrapId);
+                                    if (widget &amp;&amp; widget.chart &amp;&amp; img &amp;&amp; wrap) {
+                                        img.src = widget.chart.toBase64Image('image/png', 1);
+                                        img.style.display = 'block';
+                                        wrap.style.display = 'none';
+                                        setTimeout(function() {
+                                            img.style.display = 'none';
+                                            wrap.style.display = '';
+                                        }, 2000);
+                                    }
+                                } catch(e) {
+                                    console.warn('Chart print capture failed: ' + pair.wv, e);
                                 }
                             });
                         }
