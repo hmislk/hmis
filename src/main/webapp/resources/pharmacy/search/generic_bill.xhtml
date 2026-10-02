@@ -12,111 +12,111 @@
 
     <!-- IMPLEMENTATION -->
     <!--
-        DTO-based GRN search composite (issue #21012 / #20299).
-        Binds to pharmacyBillSearch.grnSearchDtos
-        (List<PharmacyGrnSearchDTO>) populated by
-        SearchController.createTableByBillType() when billType == PharmacyGrnBill,
-        and by SearchController.processPharmacyBillSearch() for all
-        PharmacyGrnBill atomics.
-        LEFT JOIN on referenceBill and creater prevents silent row drops.
+        Result table for every pharmacy bill type / atomic that has no dedicated
+        table (issue #24250): adjustment sub-types, disposal issues, inpatient
+        medicine issues, donations, physical count, snapshot, etc.
+        Binds to pharmacyBillSearch.genericSearchDtos, filled by
+        PharmacyBillSearch.searchPharmacyBills().
     -->
     <cc:implementation>
         <p:panel styleClass="pharma-search-results">
             <f:facet name="header">
                 <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
-                    <span>GOOD RECEIVE NOTE</span>
+                    <span>BILLS</span>
                     <p:commandButton ajax="false" value="Download" icon="fa fa-download"
                                      styleClass="ui-button-success ui-button-sm">
-                        <p:dataExporter target="tblGrn" type="xlsx" fileName="grn_list"/>
+                        <p:dataExporter target="tblGenericBills" type="xlsx" fileName="pharmacy_bills"/>
                     </p:commandButton>
                 </div>
             </f:facet>
 
             <div class="pharma-search-wrapper">
                 <p:dataTable rowIndexVar="i"
-                             id="tblGrn"
-                             widgetVar="tblGrn"
-                             value="#{pharmacyBillSearch.grnSearchDtos}"
+                             id="tblGenericBills"
+                             widgetVar="tblGenericBills"
+                             value="#{pharmacyBillSearch.genericSearchDtos}"
                              var="dto"
                              paginator="true"
                              rows="25"
+                             stickyHeader="true"
+                             styleClass="p-datatable-sm"
                              paginatorPosition="bottom"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="25,50,100,200"
-                             stickyHeader="true"
-                             styleClass="p-datatable-sm"
-                             emptyMessage="No GRN Bills Found">
+                             emptyMessage="No Bills Found">
 
-                    <p:column headerText="GRN No"
+                    <p:column headerText="Bill No"
                               sortBy="#{dto.deptId}"
                               filterBy="#{dto.deptId}"
                               filterMatchMode="contains">
-                        <h:outputLabel value="#{dto.deptId}"/>
+                        <h:outputText value="#{dto.deptId}"/>
                     </p:column>
 
-                    <p:column headerText="PO No"
-                              sortBy="#{dto.referenceBillDeptId}"
-                              filterBy="#{dto.referenceBillDeptId}"
+                    <p:column headerText="Type"
+                              sortBy="#{dto.typeLabel}"
+                              filterBy="#{dto.typeLabel}"
                               filterMatchMode="contains">
-                        <h:outputLabel value="#{dto.referenceBillDeptId}"/>
-                    </p:column>
-
-                    <p:column headerText="Invoice No"
-                              sortBy="#{dto.invoiceNumber}"
-                              filterBy="#{dto.invoiceNumber}"
-                              filterMatchMode="contains">
-                        <h:outputLabel value="#{dto.invoiceNumber}"/>
-                    </p:column>
-
-                    <p:column headerText="Invoice Date" sortBy="#{dto.invoiceDate}">
-                        <h:outputLabel value="#{dto.invoiceDate}">
-                            <f:convertDateTime timeZone="Asia/Colombo"
-                                               pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column headerText="Dealer Name"
-                              sortBy="#{dto.fromInstitutionName}"
-                              filterBy="#{dto.fromInstitutionName}"
-                              filterMatchMode="contains">
-                        <h:outputLabel value="#{dto.fromInstitutionName}"/>
+                        <h:outputText value="#{dto.typeLabel}"/>
                     </p:column>
 
                     <p:column headerText="Billed At" sortBy="#{dto.createdAt}">
-                        <h:outputLabel value="#{dto.createdAt}">
+                        <h:outputText value="#{dto.createdAt}">
                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                        </h:outputLabel>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="From"
+                              sortBy="#{dto.fromName}"
+                              filterBy="#{dto.fromName}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{dto.fromName}"/>
+                    </p:column>
+
+                    <p:column headerText="To"
+                              sortBy="#{dto.toName}"
+                              filterBy="#{dto.toName}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{dto.toName}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient"
+                              sortBy="#{dto.patientName}"
+                              filterBy="#{dto.patientName}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{dto.patientName}"/>
+                    </p:column>
+
+                    <p:column headerText="BHT"
+                              sortBy="#{dto.bhtNo}"
+                              filterBy="#{dto.bhtNo}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{dto.bhtNo}"/>
                     </p:column>
 
                     <p:column headerText="Billed By"
                               sortBy="#{dto.creatorName}"
                               filterBy="#{dto.creatorName}"
                               filterMatchMode="contains">
-                        <h:outputLabel value="#{dto.creatorName}"/>
-                    </p:column>
-
-                    <p:column headerText="Payment Method"
-                              sortBy="#{dto.paymentMethod}"
-                              filterBy="#{dto.paymentMethod}"
-                              filterMatchMode="contains">
-                        <h:outputLabel value="#{dto.paymentMethod}"/>
+                        <h:outputText value="#{dto.creatorName}"/>
                     </p:column>
 
                     <p:column headerText="Net Value" sortBy="#{dto.netTotal}" style="text-align:right;">
-                        <h:outputLabel value="#{dto.netTotal}">
+                        <h:outputText value="#{dto.netTotal}">
                             <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column headerText="Sale Value" sortBy="#{dto.saleValue}" style="text-align:right;">
-                        <h:outputLabel value="#{dto.saleValue}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
+                        </h:outputText>
                     </p:column>
 
                     <p:column headerText="Status">
                         <h:outputText value="Cancelled" rendered="#{dto.cancelled}" style="display:none;"/>
                         <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                        <h:outputText value="Refunded" rendered="#{dto.refunded}" style="display:none;"/>
+                        <p:badge value="Refunded" severity="warning" rendered="#{dto.refunded}"/>
+                    </p:column>
+
+                    <p:column headerText="Comments"
+                              filterBy="#{dto.comments}"
+                              filterMatchMode="contains">
+                        <h:outputText value="#{dto.comments}"/>
                     </p:column>
 
                     <!-- Actions (last column, not exported) -->
@@ -125,7 +125,7 @@
                             ajax="false"
                             icon="fa fa-eye"
                             styleClass="ui-button-info ui-button-sm"
-                            title="View GRN"
+                            title="View Bill"
                             action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.id)}"/>
                     </p:column>
 
