@@ -132,6 +132,7 @@
                                     </h:panelGroup>
 
                                     <p:dataTable
+                                        rowIndexVar="i"
                                         id="tblStatement"
                                         value="#{reportController.agentHistories}"
                                         var="agentHx"
@@ -145,6 +146,10 @@
                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
                                         reflow="true"
                                         emptyMessage="No transactions found for the selected criteria">
+
+                                        <p:column headerText="No" style="background-color: #{reportController.getTableRowColor(agentHx)}; width: 3em; padding: 8px;">
+                                            <h:outputText value="#{i+1}"/>
+                                        </p:column>
 
                                         <p:column headerText="Bill No" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;">
                                             <h:outputText value="#{agentHx.bill.deptId}"/>
