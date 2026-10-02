@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - Statement</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Statement"
+                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                pageIcon="fa-solid fa-file-alt"
+                                backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                                backLabel="Back to Dashboard"/>
+
+                            <p:growl id="msg"/>
+
+                            <p:panel styleClass="cc-bill-card cc-c-blue">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-filter"/>
+                                    <h:outputText value="Statement Criteria" class="mx-2"/>
+                                </f:facet>
+
+                                <div class="row align-items-end cc-criteria-row">
+                                    <div class="col-md-3">
+                                        <h:outputLabel value="From Date" for="fromDate" styleClass="d-block mb-1"/>
+                                        <p:calendar
+                                            id="fromDate"
+                                            placeholder="Select from date"
+                                            value="#{reportController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <h:outputLabel value="To Date" for="toDate" styleClass="d-block mb-1"/>
+                                        <p:calendar
+                                            id="toDate"
+                                            placeholder="Select to date"
+                                            value="#{reportController.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <h:outputLabel value="Bill / Invoice No" for="txtInvoiceNo" styleClass="d-block mb-1"/>
+                                        <p:inputText id="txtInvoiceNo" placeholder="Enter bill or invoice number" autocomplete="off" value="#{reportController.invoiceNumber}" class="w-100"/>
+                                    </div>
+
+                                    <div class="col-md-4 mt-2 mt-md-0">
+                                        <span class="d-none d-md-block mb-1 cc-criteria-spacer">&#160;</span>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                id="btnProcess"
+                                                class="ui-button-warning flex-fill"
+                                                icon="fas fa-cogs"
+                                                value="Process"
+                                                process="@form"
+                                                update="tblStatement msg"
+                                                action="#{collectingCentreSelfCommonController.processCollectingCentreSelfStatement}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnExcel"
+                                                class="ui-button-success flex-fill"
+                                                icon="fas fa-file-excel"
+                                                value="Excel"
+                                                ajax="false"
+                                                action="#{collectingCentreSelfCommonController.processCollectingCentreSelfStatement}">
+                                                <p:dataExporter
+                                                    type="xlsx"
+                                                    target="tblStatement"
+                                                    fileName="cc_statement_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
+                                                    postProcessor="#{reportController.postProcessCollectionCenterStatementReportExcel}"/>
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnPdf"
+                                                class="ui-button-danger flex-fill"
+                                                icon="fa-solid fa-file-pdf"
+                                                value="PDF"
+                                                ajax="false"
+                                                action="#{reportController.exportCollectionCenterStatementReportToPDF()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                            <div class="mt-3">
+                                <p:panel styleClass="cc-bill-card cc-c-green">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-list"/>
+                                        <h:outputText value="Statement" class="mx-2"/>
+                                    </f:facet>
+
+                                    <p:dataTable
+                                        id="tblStatement"
+                                        value="#{reportController.agentHistories}"
+                                        var="agentHx"
+                                        rowKey="#{agentHx.id}"
+                                        style="min-width: 100%;"
+                                        paginator="true"
+                                        rows="20"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="20,50,100"
+                                        currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                                        reflow="true"
+                                        emptyMessage="No transactions found for the selected criteria">
+
+                                        <p:column headerText="Bill No" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;">
+                                            <h:outputText value="#{agentHx.bill.deptId}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Ref Bill No" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;">
+                                            <h:outputText value="#{agentHx.bill.cancelledBill.deptId}" rendered="#{agentHx.bill.cancelled}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Date &amp; Time" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;">
+                                            <h:outputText value="#{agentHx.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Bill Type" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;">
+                                            <h:outputText value="#{agentHx.bill.billTypeAtomic.label}"/>
+                                        </p:column>
+
+                                        <p:column headerText="History Type" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;">
+                                            <h:outputText value="#{agentHx.historyType}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Leaf No" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.bill.referenceNumber}" style="display: block;"/>
+                                            <h:outputText value="#{agentHx.bill.invoiceNumber}" style="display: block;"/>
+                                        </p:column>
+
+                                        <p:column headerText="Hospital Fee" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.companyTransactionValue}"
+                                                          rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT_CANCELLATION'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Staff Fee" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.staffTrasnactionValue}"
+                                                          rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT_CANCELLATION'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="CC Fee" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.agentTransactionValue}"
+                                                          rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT_CANCELLATION'}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Paid by CC" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.paidAmountByAgency}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Paid to CC" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.paidAmountToAgency}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Adjustments" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.adjustmentToAgencyBalance}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Balance Before" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.balanceBeforeTransaction}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Transaction Amount" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.transactionValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Balance After" style="background-color: #{reportController.getTableRowColor(agentHx)}; padding: 8px;" class="text-end">
+                                            <h:outputText value="#{agentHx.balanceAfterTransaction}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
