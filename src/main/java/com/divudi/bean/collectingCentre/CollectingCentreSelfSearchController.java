@@ -111,26 +111,6 @@ public class CollectingCentreSelfSearchController implements Serializable {
             params.put("patientPhone", "%" + sk.getPatientPhone().trim() + "%");
         }
 
-        if (hasText(sk.getTotal())) {
-            Double total = parseAmount(sk.getTotal());
-            if (total == null) {
-                JsfUtil.addErrorMessage("Total must be a number");
-                return;
-            }
-            jpql += " and bill.total = :total ";
-            params.put("total", total);
-        }
-
-        if (hasText(sk.getNetTotal())) {
-            Double netTotal = parseAmount(sk.getNetTotal());
-            if (netTotal == null) {
-                JsfUtil.addErrorMessage("Net Total must be a number");
-                return;
-            }
-            jpql += " and bill.netTotal = :netTotal ";
-            params.put("netTotal", netTotal);
-        }
-
         jpql += " order by bill.createdAt desc ";
 
         params.put("billType", BillType.CollectingCentreBill);
