@@ -5366,6 +5366,7 @@ public class PharmacyBillSearch implements Serializable {
      * methods runs its query unchanged.
      */
     private com.divudi.core.data.BillTypeAtomic criteriaBillTypeAtomic;
+    private com.divudi.core.data.BillType criteriaBillType;
     private com.divudi.core.entity.Item criteriaItem;
 
     private static final java.util.regex.Pattern BILL_SUBCLASS_FROM
@@ -5388,20 +5389,27 @@ public class PharmacyBillSearch implements Serializable {
      * With no criteria set the query is returned unchanged.
      */
     private String applyCriteria(String sql, Map<String, Object> m) {
+        String typeCondition = null;
         if (criteriaBillTypeAtomic != null) {
+            typeCondition = "b.billTypeAtomic = :criteriaBta";
+            m.put("criteriaBta", criteriaBillTypeAtomic);
+        } else if (criteriaBillType != null) {
+            typeCondition = "b.billType = :criteriaBt";
+            m.put("criteriaBt", criteriaBillType);
+        }
+        if (typeCondition != null) {
             sql = BILL_SUBCLASS_FROM.matcher(sql).replaceFirst("FROM Bill b ");
             java.util.regex.Matcher bt = BILL_TYPE_CONDITION.matcher(sql);
             java.util.regex.Matcher bta = BILL_TYPE_ATOMIC_IN_CONDITION.matcher(sql);
             if (bt.find()) {
                 m.remove(bt.group(1));
-                sql = bt.replaceFirst("b.billTypeAtomic = :criteriaBta");
+                sql = bt.replaceFirst(typeCondition);
             } else if (bta.find()) {
                 m.remove(bta.group(1));
-                sql = bta.replaceFirst("b.billTypeAtomic = :criteriaBta");
+                sql = bta.replaceFirst(typeCondition);
             } else {
-                sql = sql.replaceFirst("WHERE ", "WHERE b.billTypeAtomic = :criteriaBta AND ");
+                sql = sql.replaceFirst("WHERE ", "WHERE " + typeCondition + " AND ");
             }
-            m.put("criteriaBta", criteriaBillTypeAtomic);
         }
         if (criteriaItem != null) {
             String itemCondition = " AND b.id IN (SELECT cbi.bill.id FROM BillItem cbi "
@@ -5444,6 +5452,10 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
         criteriaBillTypeAtomic = billTypeAtomic;
+        // A dedicated table's query may be fixed to a different bill type (e.g. the
+        // GRN payment query uses GrnPaymentPre, the adjustment query an atomic list),
+        // so force the selected bill type when searching by bill type.
+        criteriaBillType = billTypeAtomic == null && !fetchFiltersOnBillType(resultView, bt) ? bt : null;
         criteriaItem = item;
         try {
             switch (resultView) {
@@ -5500,7 +5512,24 @@ public class PharmacyBillSearch implements Serializable {
             }
         } finally {
             criteriaBillTypeAtomic = null;
+            criteriaBillType = null;
             criteriaItem = null;
+        }
+    }
+
+    /**
+     * Whether the fetch behind a result view already filters on the given bill
+     * type by itself. Where it does not (a query fixed to another bill type),
+     * {@link #searchPharmacyBills} narrows it to the selected bill type.
+     */
+    private boolean fetchFiltersOnBillType(String view, com.divudi.core.data.BillType bt) {
+        switch (view) {
+            case "grnPayment":
+                return bt == com.divudi.core.data.BillType.GrnPaymentPre;
+            case "adjustment":
+                return bt == com.divudi.core.data.BillType.PharmacyAdjustment;
+            default:
+                return true;
         }
     }
 

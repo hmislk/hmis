@@ -1434,6 +1434,7 @@ public class EnumController implements Serializable {
 
     public void setAllUtilizedBillTypeAtomics(List<BillTypeAtomic> allUtilizedBillTypeAtomics) {
         this.allUtilizedBillTypeAtomics = allUtilizedBillTypeAtomics;
+        this.billTypeAtomicsForPharmacyBillSearch = null;
     }
 
     public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
@@ -1515,6 +1516,10 @@ public class EnumController implements Serializable {
                 }
             }
             list.sort(Comparator.comparing(BillTypeAtomic::getLabel));
+            // Don't cache an empty list (e.g. the base query failed) so a later call retries.
+            if (list.isEmpty()) {
+                return list;
+            }
             billTypeAtomicsForPharmacyBillSearch = list;
         }
         return billTypeAtomicsForPharmacyBillSearch;
