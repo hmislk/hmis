@@ -89,23 +89,7 @@
                 </div>
             </h:panelGroup>
             
-            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Pending Disbursement Recieve Notice',false) and searchController.pendingTransferReceiveCountForLoggedDepartment > 0}">
-                <div class="pending-receive-menu-banner">
-                    <i class="pi pi-exclamation-triangle"/>
-                    <h:outputFormat styleClass="pending-receive-menu-banner-text" value="You have {0} transfer issue(s) pending to receive for {1}.">
-                        <f:param value="#{searchController.pendingTransferReceiveCountForLoggedDepartment}"/>
-                        <f:param value="#{sessionController.department.name}"/>
-                    </h:outputFormat>
-                    <p:commandButton
-                        value="Receive Now"
-                        ajax="false"
-                        title="Go to the Receive Issued Items list"
-                        action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"
-                        actionListener="#{searchController.makeListNull()}"
-                        styleClass="ui-button-warning"
-                        icon="fas fa-truck-loading"/>
-                </div>
-            </h:panelGroup>
+            <!-- the "pending-receive banner" code was here (from line 92) until 1st Oct. 2026 1.19 PM (Now it just moved to line 2214)-->
 
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
                 <p:menuitem
@@ -2226,6 +2210,26 @@
                 </f:facet>
 
             </p:menubar>
+            
+            <!-- PENDING RECEIVE BANNER (1st Oct. 2026, Moved this code block from line 92 to line 2214 as QA required) -->
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Pending Disbursement Recieve Notice',false) and searchController.pendingTransferReceiveCountForLoggedDepartment > 0}">
+                <div class="pending-receive-menu-banner">
+                    <i class="pi pi-exclamation-triangle"/>
+                    <h:outputFormat styleClass="pending-receive-menu-banner-text" value="You have {0} transfer issue(s) pending to receive for {1}.">
+                        <f:param value="#{searchController.pendingTransferReceiveCountForLoggedDepartment}"/>
+                        <f:param value="#{sessionController.department.name}"/>
+                    </h:outputFormat>
+                    <p:commandButton
+                        value="Receive Now"
+                        ajax="false"
+                        title="Go to the Receive Issued Items list"
+                        action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"
+                        actionListener="#{searchController.makeListNull()}"
+                        styleClass="ui-button-warning"
+                        icon="fas fa-truck-loading"/>
+                </div>
+            </h:panelGroup>
+            
         </h:form>
     </cc:implementation>
 </html>
