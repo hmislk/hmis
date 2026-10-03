@@ -2976,7 +2976,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         quantity = bi.getQty();
         originalRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
-        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate * quantity;
+        // The matrix price band is a per-unit price band (issue #24245), the same
+        // value issue-on-request uses — not the line value (rate x quantity).
+        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate;
 
         PaymentMethod paymentMethod = null;
         if (getPatientEncounter() != null) {
@@ -3033,7 +3035,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department matrixDept = resolveMatrixDepartment();
         double quantity = bi.getQty();
-        double estimatedValue = retailRate * quantity;
+        // Per-unit price band, not line value (issue #24245).
+        double estimatedValue = retailRate;
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
         PriceMatrix priceMatrix = null;

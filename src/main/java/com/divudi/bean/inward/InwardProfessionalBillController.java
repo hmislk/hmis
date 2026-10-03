@@ -947,6 +947,12 @@ public class InwardProfessionalBillController implements Serializable {
 
         fetchEncounterProfessionalFees();
         fetchSavedEstimatedProfessionalFees();
+        // The Interim Bill (BhtSummeryController) is @SessionScoped and caches its
+        // Professional Fees tab list (profesionallFee) until explicitly invalidated.
+        // Without this call, a fee added here would not show up in the Interim Bill
+        // until some unrelated action happened to reset the cache. Same class of bug
+        // fixed for the surgery/theatre save path under #20146. See issue #24210.
+        bhtSummeryController.refreshProfesionallFee();
 
         printPreview = true;
 

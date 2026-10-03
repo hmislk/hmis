@@ -272,6 +272,57 @@
                             </p:panel>
                         </div>
                     </div>
+
+                    <p:panel
+                        id="pnlPreviousPostFinalPayments"
+                        class="mt-2"
+                        rendered="#{not empty postFinalBillInwardPaymentController.postFinalPaymentBillsForCurrentEncounter}">
+                        <f:facet name="header">
+                            <h:outputText styleClass="fas fa-history"/>
+                            <h:outputLabel value="Previous Post Final Payments" class="mx-2"/>
+                        </f:facet>
+                        <p:dataTable
+                            id="tblPreviousPostFinalPayments"
+                            value="#{postFinalBillInwardPaymentController.postFinalPaymentBillsForCurrentEncounter}"
+                            var="pfp"
+                            styleClass="p-datatable-sm"
+                            rowKey="#{pfp.id}">
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{pfp.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Paid At">
+                                <h:outputText value="#{pfp.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Paid By">
+                                <h:outputText value="#{pfp.creater.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method">
+                                <h:outputText value="#{pfp.paymentMethod}"/>
+                            </p:column>
+                            <p:column headerText="Amount" class="text-end">
+                                <h:outputText value="#{pfp.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="Cancelled" class="badge bg-danger" rendered="#{pfp.cancelled}"/>
+                                <h:outputText value="Refunded" class="badge bg-warning text-dark" rendered="#{not pfp.cancelled and pfp.refunded}"/>
+                                <h:outputText value="Active" class="badge bg-success" rendered="#{not pfp.cancelled and not pfp.refunded}"/>
+                            </p:column>
+                            <p:column headerText="Action" width="8em">
+                                <p:commandButton
+                                    id="btnViewPostFinalPayment"
+                                    ajax="false"
+                                    value="View"
+                                    icon="fa fa-eye"
+                                    class="ui-button-info"
+                                    title="View, print, cancel or refund this payment"
+                                    action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(pfp)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
                 </p:panel>
 
                 <p:panel rendered="#{postFinalBillInwardPaymentController.printPreview}">
@@ -293,6 +344,14 @@
                                 action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+                            <p:commandButton
+                                id="btnViewCancelPostFinalPayment"
+                                value="View / Cancel"
+                                ajax="false"
+                                icon="fa fa-eye"
+                                class="ui-button-warning"
+                                title="Open this payment to cancel or refund it"
+                                action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(postFinalBillInwardPaymentController.current)}"/>
                             <p:commandButton
                                 rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                 value="Settings"
