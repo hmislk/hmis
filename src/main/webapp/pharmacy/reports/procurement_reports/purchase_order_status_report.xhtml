@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frmPoStatus">
+
+                    <p:panel header="Purchase Order Status">
+
+                        <h:panelGroup id="pnlFilters" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Report type -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputText styleClass="fa fa-filter mr-2" />
+                                        <h:outputLabel value="Report Type" for="cmbStatus" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu id="cmbStatus"
+                                                     value="#{purchaseOrderStatusReportController.status}"
+                                                     styleClass="w-100">
+                                        <f:selectItems value="#{purchaseOrderStatusReportController.statuses}"
+                                                       var="st" itemLabel="#{st.label}" itemValue="#{st}"/>
+                                        <p:ajax event="change"
+                                                listener="#{purchaseOrderStatusReportController.onStatusChange}"
+                                                process="@this"
+                                                update="pnlFilters pnlResults"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <!-- From date -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputText styleClass="fa fa-calendar mr-2" />
+                                        <h:outputLabel value="From (#{purchaseOrderStatusReportController.status.dateBasis} Date)" for="fromDate" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:calendar id="fromDate"
+                                                value="#{purchaseOrderStatusReportController.fromDate}"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100 form-control"
+                                                navigator="false"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:panelGroup>
+                                <!-- To date -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputText styleClass="fa fa-calendar mr-2" />
+                                        <h:outputLabel value="To (#{purchaseOrderStatusReportController.status.dateBasis} Date)" for="toDate" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:calendar id="toDate"
+                                                value="#{purchaseOrderStatusReportController.toDate}"
+                                                styleClass="w-100"
+                                                inputStyleClass="w-100 form-control"
+                                                navigator="false"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <common:institution_site_department_filter controller="#{purchaseOrderStatusReportController}"/>
+
+                        <h:panelGroup layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Supplier -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputText styleClass="fa fa-truck mr-2" />
+                                        <h:outputLabel value="Supplier" for="acSupplier" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:autoComplete id="acSupplier"
+                                                    converter="deal"
+                                                    value="#{purchaseOrderStatusReportController.supplier}"
+                                                    completeMethod="#{dealerController.completeDealor}"
+                                                    forceSelection="true"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100"
+                                                    placeholder="All suppliers"
+                                                    var="sup" itemLabel="#{sup.name}" itemValue="#{sup}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="d-flex gap-2 my-2">
+                            <p:commandButton id="btnProcess"
+                                             value="Process"
+                                             icon="fas fa-cogs"
+                                             styleClass="ui-button-warning"
+                                             ajax="false"
+                                             action="#{purchaseOrderStatusReportController.processReport()}"/>
+                            <p:commandButton value="Excel"
+                                             icon="fas fa-file-excel"
+                                             styleClass="ui-button-success"
+                                             ajax="false">
+                                <p:dataExporter type="xlsx" target="tblPoStatus" fileName="Purchase_Order_Status"/>
+                            </p:commandButton>
+                            <p:commandButton value="Print"
+                                             icon="fas fa-print"
+                                             styleClass="ui-button-info"
+                                             ajax="false">
+                                <p:printer target="pnlResults"/>
+                            </p:commandButton>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="pnlResults" layout="block">
+                            <h4 class="my-2">
+                                <h:outputText value="#{purchaseOrderStatusReportController.status.label}"/>
+                            </h4>
+                            <p:dataTable id="tblPoStatus"
+                                         value="#{purchaseOrderStatusReportController.rows}"
+                                         var="r"
+                                         rowKey="#{r.billId}"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="50"
+                                         rowsPerPageTemplate="20,50,100,500"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         emptyMessage="No purchase orders found for the selected criteria">
+
+                                <p:column headerText="PO No" sortBy="#{r.deptId}">
+                                    <h:outputText value="#{r.deptId}"/>
+                                </p:column>
+
+                                <p:column headerText="Created At" sortBy="#{r.createdAt}" styleClass="text-nowrap">
+                                    <h:outputText value="#{r.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Created By" sortBy="#{r.creatorName}">
+                                    <h:outputText value="#{r.creatorName}"/>
+                                </p:column>
+
+                                <p:column headerText="Finalized At" sortBy="#{r.finalizedAt}" styleClass="text-nowrap">
+                                    <h:outputText value="#{r.finalizedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Finalized By" sortBy="#{r.finalizedByName}">
+                                    <h:outputText value="#{r.finalizedByName}"/>
+                                </p:column>
+
+                                <p:column headerText="Approval No" sortBy="#{r.approvalDeptId}"
+                                          rendered="#{purchaseOrderStatusReportController.approvedView}">
+                                    <h:outputText value="#{r.approvalDeptId}"/>
+                                </p:column>
+
+                                <p:column headerText="Approved At" sortBy="#{r.approvedAt}" styleClass="text-nowrap"
+                                          rendered="#{purchaseOrderStatusReportController.approvedView}">
+                                    <h:outputText value="#{r.approvedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Approved By" sortBy="#{r.approvedByName}"
+                                          rendered="#{purchaseOrderStatusReportController.approvedView}">
+                                    <h:outputText value="#{r.approvedByName}"/>
+                                </p:column>
+
+                                <p:column headerText="Supplier" sortBy="#{r.supplierName}">
+                                    <h:outputText value="#{r.supplierName}"/>
+                                </p:column>
+
+                                <p:column headerText="Department" sortBy="#{r.departmentName}">
+                                    <h:outputText value="#{r.departmentName}"/>
+                                </p:column>
+
+                                <p:column headerText="Net Value" sortBy="#{r.netTotal}" styleClass="text-end">
+                                    <h:outputText value="#{r.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{purchaseOrderStatusReportController.netTotal}" styleClass="fw-bold">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <f:facet name="footer">
+                                    <h:outputText value="#{purchaseOrderStatusReportController.rows.size()} purchase order(s)"
+                                                  rendered="#{not empty purchaseOrderStatusReportController.rows}"/>
+                                </f:facet>
+                            </p:dataTable>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
