@@ -4897,11 +4897,14 @@ public class BhtSummeryController implements Serializable {
 
     /**
      * CDI-aware wrapper around {@link #buildBundledRows}, used by
-     * finalBillBundledCustom1.xhtml. Deliberately excludes ProfessionalCharge
-     * and DoctorAndNurses from the charge-type universe passed to
-     * buildBundledRows — those two are always printed separately with their
-     * per-staff fee breakdown (see the composite), never folded into a
-     * generic summed row, so their BillItems must not double-count here.
+     * finalBillBundledCustom1.xhtml. Deliberately excludes ProfessionalCharge,
+     * DoctorAndNurses and TechnicianAndParamedicalCharge from the charge-type
+     * universe passed to buildBundledRows — those three are always printed
+     * separately with their per-staff fee breakdown (see the composite),
+     * never folded into a generic summed row, so their BillItems must not
+     * double-count here. TechnicianAndParamedicalCharge was missing from this
+     * exclusion until #24209 — it fell into the generic bucket and printed
+     * with no staff name, unlike its two sibling professional-fee types.
      */
     public List<FinalBillPrintRowDTO> getBundledFinalBillRows(Bill bill) {
         List<BillItem> items = bill == null ? new ArrayList<>() : bill.getBillItems();
@@ -4928,7 +4931,8 @@ public class BhtSummeryController implements Serializable {
         Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
 
         for (InwardChargeType type : presentTypes) {
-            if (type == InwardChargeType.ProfessionalCharge || type == InwardChargeType.DoctorAndNurses) {
+            if (type == InwardChargeType.ProfessionalCharge || type == InwardChargeType.DoctorAndNurses
+                    || type == InwardChargeType.TechnicianAndParamedicalCharge) {
                 continue;
             }
             groupByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
