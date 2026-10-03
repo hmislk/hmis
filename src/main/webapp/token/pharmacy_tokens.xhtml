@@ -110,7 +110,7 @@
                                                  class="#{token.completed ? 'ui-button-danger' : 'ui-button-success'}"
                                                  update="@form"
                                                  title="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}"
-                                                 action="#{tokenController.toggleCompletedStatus}"
+                                                 action="#{tokenController.toggleCompletedStatusAndRefreshPharmacyTokens}"
                                                  process="@this">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                     <p:tooltip value="#{token.completed ? 'Reverse Complete Service' : 'Complete Service'}" />
@@ -119,27 +119,24 @@
 
 
                                 <p:commandButton 
-                                    id="btnRetailBillForCashier"
+                                    id="btnRetailSale"
                                     ajax="false"
                                     class="ui-button-primary mx-2"
-                                    icon="fa fa-pills" 
-                                    rendered="#{token.bill eq null}"
-                                    title="Pharmacy Bill for Cashier" 
-                                    action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
-                                    <f:setPropertyActionListener target="#{pharmacySaleController.currentToken}" value="#{token}" />
+                                    icon="fa fa-cash-register" 
+                                    rendered="#{token.bill eq null or token.bill.cancelled}"
+                                    title="Pharmacy Retail Sale for token #{token.tokenNumber}" 
+                                    action="#{tokenController.navigateToNewPharmacyRetailSale()}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
-                                <p:tooltip value="Bill For Cashier" />
 
                                 <p:commandButton 
+                                    id="btnRetailBillForCashier"
                                     ajax="false"
                                     class="ui-button-primary"
-
-                                    icon="fa fa-tablets" 
-
-                                    rendered="#{token.bill eq null}"
-                                    title="Pharmacy Bill for Cashier (WholeSale)" 
-                                    action="#{tokenController.navigateToNewPharmacyBillForCashierWholeSale()}">
+                                    icon="fa fa-pills" 
+                                    rendered="#{token.bill eq null or token.bill.cancelled}"
+                                    title="Pharmacy Sale for Cashier for token #{token.tokenNumber}" 
+                                    action="#{tokenController.navigateToNewPharmacyBillForCashier()}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />
                                 </p:commandButton>
 
@@ -160,7 +157,7 @@
                                     class="ui-button-warning"
                                     icon="fas fa-pen" 
                                     disabled="#{token.bill.referenceBill ne null || token.bill.cancelled eq true}"
-                                    rendered="#{token.bill ne null}"
+                                    rendered="#{token.bill ne null and configOptionApplicationController.getBooleanValueByKey('Enable bill edit in sale for cashier token management system', false)}"
                                     title="Edit Bill" 
                                     action="#{tokenController.navigateToSaleForCashier}">
                                     <f:setPropertyActionListener target="#{tokenController.currentToken}" value="#{token}" />

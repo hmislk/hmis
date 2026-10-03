@@ -117,7 +117,7 @@
                                         action="#{itemMappingController.removeSelectedItemMappingForInstitution()}"></p:commandButton>
                                 </f:facet>
                                 <p:column selectionBox="true" width="15"></p:column>
-                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{pasindu.item.name}" filterMatchMode="contains">
+                                <p:column headerText="Name"  sortBy="#{im.item.name}" filterBy="#{im.item.name}" filterMatchMode="contains">
                                     <h:outputText value="#{im.item.name}" ></h:outputText>
                                 </p:column>
                                 <p:column 
@@ -125,12 +125,12 @@
                                     sortBy="#{im.institution.name}" 
                                     filterBy="#{im.institution.name}" 
                                     filterMatchMode="contains">
-                                    <h:outputText value="#{pasindu.institution.name}" ></h:outputText>
+                                    <h:outputText value="#{im.institution.name}" ></h:outputText>
                                 </p:column>
                                 <p:column
-                                    headerText="Department"  
-                                    sortBy="#{pasindu.department.name}" 
-                                    filterBy="#{pasindu.department.name}" 
+                                    headerText="Department"
+                                    sortBy="#{im.department.name}"
+                                    filterBy="#{im.department.name}"
                                     filterMatchMode="contains">
                                     <h:outputText value="#{im.department.name}" ></h:outputText>
                                 </p:column>

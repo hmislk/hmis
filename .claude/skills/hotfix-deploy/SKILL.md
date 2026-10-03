@@ -95,6 +95,12 @@ Before editing `persistence.xml`, compare against the target production branch t
 git show origin/$0:src/main/resources/META-INF/persistence.xml
 ```
 
+## Step 3a — Test on the Production Branch's Own Code
+
+- Use a sibling clone, not a worktree: `git clone --branch $0 --single-branch https://github.com/hmislk/hmis.git ../$0`, then set `user.name`/`user.email` (a fresh clone can't commit). Do Steps 2–3 in the clone, so the build you test includes the fix.
+- Swap in local JNDI (unstaged), build, then deploy with `asadmin --port 9048 deploy --force=true --contextroot rh --name rh-3.0.0 target/rh-3.0.0.war`. This replaces the developer's deployed build, so redeploy theirs when done.
+- If the menu is empty after login, sync the `Privileges` enum (see [Playwright E2E §138](../../../developer_docs/testing/playwright-e2e/privileges-config.md)), and ask whether the sync ships in the PR.
+
 ## Step 4 — Pre-Commit Checklist
 
 - [ ] `persistence.xml` uses `${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` — not hardcoded JNDI names (e.g., `jdbc/coop`)
@@ -138,6 +144,8 @@ gh pr create \
 ```
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
+
+If `gh pr edit` prints a "Projects (classic) is being deprecated" error, it changed nothing. Use `gh api -X PATCH repos/hmislk/hmis/pulls/<n> -f title=... -F body=@file` instead.
 
 A hotfix PR is where hospital-specific detail leaks most easily, because the
 whole point is that one hospital is affected. The body is public: state the

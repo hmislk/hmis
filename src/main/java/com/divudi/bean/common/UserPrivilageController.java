@@ -1124,6 +1124,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsPurcharseBillWithSupplier, "Purcharse Bill with Supplier"), pharmacyAnalyticsProcurementReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsPharmacyGRNReport, "Pharmacy GRN Report"), pharmacyAnalyticsProcurementReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsPharmacyGRNAndPurchaseReport, "Pharmacy GRN and purchase Report"), pharmacyAnalyticsProcurementReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsBillSearchByItem, "Pharmacy Bill Search by Item"), pharmacyAnalyticsProcurementReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsGRNPurchaseItemsBySupplier, "GRN Purchase Items by Supplier"), pharmacyAnalyticsProcurementReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsGRNSummaryBySupplier, "GRN Summary By Supplier"), pharmacyAnalyticsProcurementReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAnalyticsGRNBillItemReport, "GRN Bill Item Report"), pharmacyAnalyticsProcurementReportsNode);

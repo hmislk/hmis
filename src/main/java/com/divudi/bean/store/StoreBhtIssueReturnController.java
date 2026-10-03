@@ -252,7 +252,12 @@ public class StoreBhtIssueReturnController implements Serializable {
 
         getBillFacade().edit(getReturnBill());
 
-        getBill().getReturnBhtIssueBills().add(getReturnBill());
+        // The lazy returnBhtIssueBills list may already hold the just-persisted return
+        // (it loads from the DB on first access); adding it again duplicated the row
+        // in the cached bill and on the BHT issue search page (issue #24109).
+        if (!getBill().getReturnBhtIssueBills().contains(getReturnBill())) {
+            getBill().getReturnBhtIssueBills().add(getReturnBill());
+        }
         getBillFacade().edit(getBill());
 
         /// setOnlyReturnValue();
