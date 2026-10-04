@@ -36,14 +36,17 @@ Tools in this folder:
 | All checks passed, head is the reviewed commit, GitHub reports `MERGEABLE`/`CLEAN` | **Merge** (`gh pr merge --match-head-commit`), then stop |
 | Already merged, by hand or by an earlier minute | Stop quietly |
 | Checks still running, mergeability still computing, network or API error, merge call failed | Retry next minute |
+| `BLOCKED` by branch rules, e.g. unresolved review conversations | Retry next minute; the log and comment name the cause |
+| Merge accepted but not yet `MERGED`, e.g. a merge queue | Keep checking; success is reported only once GitHub shows `MERGED` |
 | PR closed, base changed, **new commits pushed**, a check failed, conflicts | Give up now: retrying can't fix these |
 | Still not ready in the last minute of the window | Give up |
 | Machine was off for the whole window | Give up, from the first run that does happen |
 
 Every give-up and every merge posts a PR comment.
 
-It never uses `--admin` and never merges outside the window. An overlapping
-attempt skips its minute.
+It never uses `--admin` and never merges outside `[start, start+window)`:
+the clock is re-read just before the merge call. Only the latest run of
+each check counts. An overlapping attempt skips its minute.
 
 Results go to two places:
 - **PR comment:** a ⏰ comment saying whether it merged, and why not if it
@@ -69,20 +72,28 @@ so without that the job would fire again next year.
    mkdir -p ~/.config/hmis-scheduled-merge && chmod 700 ~/.config/hmis-scheduled-merge
    (umask 077; gh auth token > ~/.config/hmis-scheduled-merge/gh-token)
    ```
-3. **Dry run in a cron-like environment.** This must print `DRY-RUN OK`:
+3. **Dry run in a cron-like environment.** This must end with
+   `RESULT: would merge now`. Anything else names the blocker. A common one
+   is an unresolved review conversation (often from CodeRabbit) on a base
+   branch whose rules require conversations to be resolved. Get those
+   resolved first.
    ```bash
    .claude/skills/scheduled-pr-merge/schedule.sh test --repo hmislk/hmis --pr <N>
    ```
-4. **Schedule.** Claude Code's auto mode may refuse to edit the crontab. If
-   it does, give the developer the exact line to run with `!`. Do not work
-   around the refusal.
+4. **Schedule.** Read the PR, the pinned head and the window back to the
+   developer, then run `add`. This works if the developer has allowed
+   `Bash(~/.local/share/hmis-scheduled-merge/schedule.sh *)` in
+   `.claude/settings.local.json`. If auto mode refuses anyway, give the
+   developer the exact line to run with `!`. Do not work around the refusal.
    ```bash
    ! ~/.local/share/hmis-scheduled-merge/schedule.sh add --repo hmislk/hmis --pr <N> --at "2026-10-05 03:00" --window-minutes 30
    ```
    Then confirm with `schedule.sh list`.
-5. **Report.** Give the job id, the pinned head commit, the window with its
-   time zone, the log path, and how to cancel it
-   (`schedule.sh cancel <job-id>`).
+5. **Report.** Give the job id (`<owner>-<repo>-pr<N>-<epoch>`), the pinned
+   head commit, the window with its time zone, the log path, and how to
+   cancel it (`schedule.sh cancel <job-id>`). If `add` printed a merge-state
+   WARNING, resolve the cause before the window. Re-running `test` shortly
+   before leaving catches review comments that arrived after scheduling.
 6. **Optional session watch.** Ask whether to keep this session open. If
    yes, set a one-shot reminder (`CronCreate`) for just after the window
    ends to read the log and the PR state and report. If not, the PR
@@ -102,3 +113,4 @@ so without that the job would fire again next year.
 | Time given without a zone | `--at` is read in the machine's zone (Asia/Colombo). Repeat the window back with its zone. |
 | Window ends too early | Give the full customer window with `--window-minutes`. The job never merges after it ends. |
 | A new push after `add` | The job aborts by design. Re-run `add` after re-review. |
+| A bot review lands after scheduling | Its unresolved conversations can block the merge (`BLOCKED`). Re-run `test` before leaving. |

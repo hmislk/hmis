@@ -10,6 +10,10 @@
 #     (checks pending, GitHub still computing mergeability, network/API error)
 #   still not ready at the end of window   -> comment, remove entries, give up
 #
+# A merge happens only inside [--at, --at + window): the clock is re-read
+# immediately before `gh pr merge`, and success is reported only once GitHub
+# shows the PR as MERGED (a merge queue may accept it first and merge later).
+#
 # Usage:
 #   scheduled-merge.sh --repo OWNER/REPO --pr N --base BRANCH --sha HEADSHA \
 #                      --at EPOCH --job-id ID [--window-minutes 30] \
@@ -78,9 +82,12 @@ not_ready() {
 
 log "--- job $JOB_ID attempt (dry-run=$DRY_RUN, window $window_txt, last-chance=$LAST_CHANCE)"
 
-[ "$now" -ge $(( AT - 60 )) ] || { log "before the window; nothing to do"; exit 0; }
-# Far past the window (e.g. machine was off, or cron's yearless line came round again).
-[ "$now" -le $(( END + 120 )) ] || give_up "the job only got to run at $(date '+%Y-%m-%d %H:%M'), after the window."
+[ "$now" -ge "$AT" ] || { log "before the window; nothing to do"; exit 0; }
+ATTEMPTED="$STATE_DIR/$JOB_ID.merge-requested"
+# Past the window (machine was off, or cron's yearless line came round again).
+if [ "$now" -ge "$END" ] && [ ! -e "$ATTEMPTED" ]; then
+  give_up "the job only got to run at $(date '+%Y-%m-%d %H:%M'), after the window."
+fi
 
 if [ -r "$TOKEN_FILE" ]; then
   GH_TOKEN="$(cat "$TOKEN_FILE")"; export GH_TOKEN
@@ -97,12 +104,35 @@ base=$(jq -r .baseRefName <<<"$info")
 head=$(jq -r .headRefOid <<<"$info")
 mergeable=$(jq -r .mergeable <<<"$info")
 mstate=$(jq -r .mergeStateStatus <<<"$info")
-pending=$(jq '[.statusCheckRollup[] | (.conclusion // .state // "") | select(IN("","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED"))] | length' <<<"$info")
-failed=$(jq -r '[.statusCheckRollup[] | select(((.conclusion // .state // "") | IN("SUCCESS","NEUTRAL","SKIPPED","","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED")) | not) | (.name // .context)] | join(", ")' <<<"$info")
+# Only the latest run of each check counts (an older cancelled run can sit
+# beside a newer successful one).
+checks=$(jq '[.statusCheckRollup[] | {n: (.name // .context), r: (.conclusion // .state // ""), t: (.completedAt // .startedAt // "")}]
+              | group_by(.n) | map(max_by(.t))' <<<"$info")
+pending=$(jq '[.[] | select(.r | IN("","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED"))] | length' <<<"$checks")
+failed=$(jq -r '[.[] | select((.r | IN("SUCCESS","NEUTRAL","SKIPPED","","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED")) | not) | .n] | join(", ")' <<<"$checks")
 log "state=$state base=$base head=${head:0:10} mergeable=$mergeable mergeState=$mstate pending=$pending failed=[$failed]"
 
 # Already done (e.g. someone merged by hand, or a previous minute did).
-[ "$state" = "MERGED" ] && { log "already merged"; remove_cron; exit 0; }
+if [ "$state" = "MERGED" ]; then
+  if [ -e "$ATTEMPTED" ]; then
+    log "MERGED (completed after the merge request, e.g. via merge queue)"
+    comment "⏰ Merged by the scheduled merge job (completed $(date '+%Y-%m-%d %H:%M %Z')), within the agreed window $window_txt. Head commit \`${SHA:0:10}\` (the reviewed one)."
+    rm -f "$ATTEMPTED"
+  else
+    log "already merged (not by this job)"
+  fi
+  remove_cron; exit 0
+fi
+# A merge was requested earlier (e.g. queued) and has not landed: keep watching.
+if [ -e "$ATTEMPTED" ]; then
+  if [ "$LAST_CHANCE" -eq 1 ] || [ "$now" -ge "$END" ]; then
+    log "window over: merge was requested but is still not MERGED (state=$state)"
+    comment "⏰ The scheduled merge was **requested** within the window $window_txt, but GitHub had not completed it when the window ended (state: $state, e.g. a merge queue). It may still complete; please check this PR."
+    rm -f "$ATTEMPTED"; remove_cron; exit 1
+  fi
+  log "merge requested earlier, not merged yet; checking again next minute"
+  exit 0
+fi
 
 # Changed since review: retrying cannot help, so stop now and say why.
 [ "$state" = "OPEN" ] || give_up "the PR is $state."
@@ -114,16 +144,40 @@ log "state=$state base=$base head=${head:0:10} mergeable=$mergeable mergeState=$
 # Temporarily not ready: retry next minute until the window ends.
 [ "$pending" -eq 0 ] || not_ready "$pending check(s) still running"
 [ "$mergeable" = "MERGEABLE" ] || not_ready "GitHub mergeability is $mergeable"
-case "$mstate" in CLEAN|HAS_HOOKS) ;; *) not_ready "merge state is $mstate" ;; esac
+case "$mstate" in
+  CLEAN|HAS_HOOKS) ;;
+  BLOCKED)
+    owner=${REPO%%/*}; name=${REPO##*/}
+    unresolved=$(gh api graphql -f query="query{repository(owner:\"$owner\",name:\"$name\"){pullRequest(number:$PR){reviewThreads(first:100){nodes{isResolved}}}}}" \
+      --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length' 2>/dev/null || echo "?")
+    if [ "$unresolved" != "?" ] && [ "$unresolved" -gt 0 ]; then
+      not_ready "blocked by $unresolved unresolved review conversation(s), which branch rules require to be resolved"
+    fi
+    not_ready "merge is blocked by branch rules (e.g. a required review)" ;;
+  *) not_ready "merge state is $mstate" ;;
+esac
 
 if [ "$DRY_RUN" -eq 1 ]; then
   log "DRY-RUN OK: all preconditions met; would run: gh pr merge $PR --$METHOD --match-head-commit $SHA"
   exit 0
 fi
+# Re-read the clock: the checks above may have taken a while.
+[ "$(date +%s)" -lt "$END" ] || give_up "the window ended while the final checks were running."
 if out=$(gh pr merge "$PR" --repo "$REPO" "--$METHOD" --match-head-commit "$SHA" 2>&1); then
-  log "MERGED: $out"
-  comment "⏰ Merged by the scheduled merge job at $(date '+%Y-%m-%d %H:%M %Z'), within the agreed window $window_txt. Head commit \`${SHA:0:10}\` (the reviewed one); all checks passed."
-  remove_cron
+  : >"$ATTEMPTED"
+  log "merge requested: $out"
+  # Success only once GitHub shows MERGED (a merge queue may accept first).
+  for i in 1 2 3 4 5 6; do
+    st=$(gh pr view "$PR" --repo "$REPO" --json state --jq .state 2>/dev/null || echo "?")
+    if [ "$st" = "MERGED" ]; then
+      log "MERGED"
+      comment "⏰ Merged by the scheduled merge job at $(date '+%Y-%m-%d %H:%M %Z'), within the agreed window $window_txt. Head commit \`${SHA:0:10}\` (the reviewed one); all checks passed."
+      rm -f "$ATTEMPTED"; remove_cron; exit 0
+    fi
+    sleep 10
+  done
+  log "merge accepted but PR not MERGED yet (state=$st); will keep checking each minute"
+  comment "⏰ Scheduled merge requested at $(date '+%Y-%m-%d %H:%M %Z') within the window $window_txt, but GitHub has not merged it yet (state: $st, e.g. merge queue). The job keeps checking and will comment again."
   exit 0
 fi
 # A failed merge call is retried; a real change (e.g. new head) is caught as

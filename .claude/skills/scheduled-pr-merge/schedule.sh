@@ -50,21 +50,36 @@ done
 
 pr_field() { gh pr view "$PR" --repo "$REPO" --json "$1" --jq ".$1"; }
 
+# Values that end up in the cron command line are validated and then quoted,
+# so PR metadata (e.g. a branch name) can never be read as shell syntax.
+validate() {
+  [[ "$REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]] || { echo "bad --repo: $REPO" >&2; exit 2; }
+  [[ "$PR" =~ ^[0-9]+$ ]] || { echo "bad --pr: $PR" >&2; exit 2; }
+  [[ "$METHOD" =~ ^(merge|squash|rebase)$ ]] || { echo "bad --method: $METHOD" >&2; exit 2; }
+  [[ "$WINDOW" =~ ^[0-9]+$ ]] && [ "$WINDOW" -ge 1 ] && [ "$WINDOW" -le 240 ] || { echo "--window-minutes must be 1..240" >&2; exit 2; }
+}
+validate_pr_meta() {
+  [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "unexpected head SHA: $SHA" >&2; exit 1; }
+  [[ "$BASE" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo "base branch name has unusual characters, refusing: $BASE" >&2; exit 1; }
+}
+
 case "$cmd" in
   add)
     [ -n "$REPO" ] && [ -n "$PR" ] && [ -n "$AT_STR" ] || { echo "add needs --repo --pr --at" >&2; exit 2; }
+    validate
     need_token
     AT=$(date -d "$AT_STR" +%s)
     [ "$AT" -gt $(( $(date +%s) + 120 )) ] || { echo "Time must be at least 2 minutes in the future: $(date -d "@$AT")" >&2; exit 1; }
     SHA=$(pr_field headRefOid); BASE=$(pr_field baseRefName); STATE=$(pr_field state)
     [ "$STATE" = "OPEN" ] || { echo "PR #$PR is $STATE" >&2; exit 1; }
+    validate_pr_meta
     install_runner
-    JOB_ID="pr$PR-$AT"
-    [ "$WINDOW" -ge 0 ] && [ "$WINDOW" -le 240 ] || { echo "--window-minutes must be 0..240" >&2; exit 2; }
-    CMD="PATH=/usr/local/bin:/usr/bin:/bin $RUNNER --repo $REPO --pr $PR --base $BASE --sha $SHA --at $AT --job-id $JOB_ID --window-minutes $WINDOW --method $METHOD # hmis-scheduled-merge:$JOB_ID"
-    # One line per minute of the window (handles hour/midnight crossings).
+    JOB_ID="${REPO//\//-}-pr$PR-$AT"
+    CMD="PATH=/usr/local/bin:/usr/bin:/bin $(printf '%q ' "$RUNNER" --repo "$REPO" --pr "$PR" --base "$BASE" --sha "$SHA" --at "$AT" --job-id "$JOB_ID" --window-minutes "$WINDOW" --method "$METHOD")# hmis-scheduled-merge:$JOB_ID"
+    # One line per minute inside the window [start, start+window), which also
+    # handles hour/midnight crossings.
     LINES=""
-    for m in $(seq 0 "$WINDOW"); do
+    for m in $(seq 0 $(( WINDOW - 1 ))); do
       LINES+="$(date -d "@$(( AT + m * 60 ))" '+%-M %-H %-d %-m *') $CMD"$'\n'
     done
     ( crontab -l 2>/dev/null | grep -v "hmis-scheduled-merge:$JOB_ID\$" || true; printf '%s' "$LINES" ) | crontab -
@@ -73,16 +88,29 @@ case "$cmd" in
     echo "  Head:    $SHA (pinned; any new push cancels the merge)"
     echo "  Window:  $(date -d "@$AT" '+%Y-%m-%d %H:%M')–$(date -d "@$(( AT + WINDOW * 60 ))" '+%H:%M %Z') (tries every minute; gives up at the end)"
     echo "  Log:     $STATE_DIR/pr-$PR.log"
+    MS=$(pr_field mergeStateStatus)
+    [ "$MS" = "CLEAN" ] || echo "  WARNING: GitHub currently reports merge state $MS (not CLEAN). Unless that changes before the window, the job will not merge. Run 'test' for details."
     ;;
   test)
     [ -n "$REPO" ] && [ -n "$PR" ] || { echo "test needs --repo --pr" >&2; exit 2; }
+    validate
     need_token
     install_runner
     SHA=$(pr_field headRefOid); BASE=$(pr_field baseRefName)
+    validate_pr_meta
+    LOGF="$STATE_DIR/pr-$PR.log"; mkdir -p "$STATE_DIR"; touch "$LOGF"
+    before=$(wc -l <"$LOGF")
     # env -i mimics cron: no keyring, no session variables.
+    rc=0
     env -i HOME="$HOME" PATH=/usr/local/bin:/usr/bin:/bin "$RUNNER" --repo "$REPO" --pr "$PR" \
-      --base "$BASE" --sha "$SHA" --at "$(date +%s)" --job-id "test-$PR" --dry-run || true
-    tail -n 5 "$STATE_DIR/pr-$PR.log"
+      --base "$BASE" --sha "$SHA" --at "$(date +%s)" --job-id "test-$PR" --window-minutes 30 --dry-run || rc=$?
+    # Show only this invocation's lines, never an older result from the shared log.
+    tail -n +$(( before + 1 )) "$LOGF"
+    if [ "$rc" -eq 0 ] && tail -n +$(( before + 1 )) "$LOGF" | grep -q "DRY-RUN OK"; then
+      echo "RESULT: would merge now"
+    else
+      echo "RESULT: would NOT merge now (exit $rc); see the lines above"; exit 1
+    fi
     ;;
   list)
     { crontab -l 2>/dev/null | grep "hmis-scheduled-merge:" || true; } \
