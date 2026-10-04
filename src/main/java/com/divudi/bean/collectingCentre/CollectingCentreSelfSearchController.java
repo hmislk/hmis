@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -115,6 +116,8 @@ public class CollectingCentreSelfSearchController implements Serializable {
         }
         billSearch.setBill(viewingBill);
         billSearch.setComment(null);
+        billSearch.setRefundingItems(new ArrayList<>());
+        billSearch.setRefundAmount(0.0);
         String outcome = billSearch.navigateToRefundCollectingCentreBill();
         if (outcome == null || outcome.isEmpty()) {
             return outcome;
