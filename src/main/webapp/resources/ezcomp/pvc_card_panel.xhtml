@@ -10,22 +10,26 @@
     <cc:interface>
         <cc:attribute name="layout" type="com.divudi.core.data.PvcCardLayout" required="true"/>
         <cc:attribute name="backgroundExternalUrl" type="java.lang.String"/>
-        <cc:attribute name="backgroundStream" type="org.primefaces.model.StreamedContent"/>
+        <cc:attribute name="side" type="java.lang.String" required="true"/>
     </cc:interface>
 
     <cc:implementation>
         <h:panelGroup layout="block"
                       style="position:relative; overflow:hidden; width:#{cc.attrs.layout.widthMm}mm; height:#{cc.attrs.layout.heightMm}mm;">
 
+            <h:outputText escape="false" value="&lt;style&gt;@page { size: #{cc.attrs.layout.widthMm}mm #{cc.attrs.layout.heightMm}mm; margin: #{cc.attrs.layout.marginMm}mm; }&lt;/style&gt;"/>
+
             <h:panelGroup layout="block" rendered="#{not empty cc.attrs.backgroundExternalUrl}"
                           style="position:absolute; top:0; left:0; width:100%; height:100%;">
                 <p:graphicImage value="#{cc.attrs.backgroundExternalUrl}" cache="false"
                                  style="width:100%; height:100%; object-fit:cover;"/>
             </h:panelGroup>
-            <h:panelGroup layout="block" rendered="#{empty cc.attrs.backgroundExternalUrl and not empty cc.attrs.backgroundStream}"
+            <h:panelGroup layout="block" rendered="#{empty cc.attrs.backgroundExternalUrl}"
                           style="position:absolute; top:0; left:0; width:100%; height:100%;">
-                <p:graphicImage value="#{cc.attrs.backgroundStream}" cache="false"
-                                 style="width:100%; height:100%; object-fit:cover;"/>
+                <p:graphicImage value="#{pvcCardBackgroundViewController.stream}" cache="false"
+                                 style="width:100%; height:100%; object-fit:cover;">
+                    <f:param name="side" value="#{cc.attrs.side}"/>
+                </p:graphicImage>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['institutionName'].visible}"
