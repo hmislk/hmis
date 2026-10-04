@@ -95,14 +95,14 @@ Each holds a JSON object:
   "heightMm": 54.0,
   "marginMm": 2.0,
   "slots": {
-    "name":           { "visible": true,  "xMm": 5,  "yMm": 20, "fontSizePt": 9,  "fontColor": "#000000" },
-    "dob":             { "visible": true,  "xMm": 5,  "yMm": 26, "fontSizePt": 8,  "fontColor": "#000000" },
-    "phone":           { "visible": true,  "xMm": 5,  "yMm": 32, "fontSizePt": 8,  "fontColor": "#000000" },
-    "gender":          { "visible": true,  "xMm": 5,  "yMm": 38, "fontSizePt": 8,  "fontColor": "#000000" },
-    "address":         { "visible": false, "xMm": 5,  "yMm": 44, "fontSizePt": 7,  "fontColor": "#000000" },
-    "institutionName": { "visible": true,  "xMm": 5,  "yMm": 4,  "fontSizePt": 11, "fontColor": "#000000" },
-    "departmentName":  { "visible": false, "xMm": 5,  "yMm": 10, "fontSizePt": 9,  "fontColor": "#000000" },
-    "barcode":         { "visible": true,  "xMm": 5,  "yMm": 48, "widthMm": 40, "heightMm": 10, "type": "code128" }
+    "name":           { "visible": true,  "leftMm": 5,  "topMm": 20, "fontSizePt": 9,  "fontColor": "#000000" },
+    "dob":             { "visible": true,  "leftMm": 5,  "topMm": 26, "fontSizePt": 8,  "fontColor": "#000000" },
+    "phone":           { "visible": true,  "leftMm": 5,  "topMm": 32, "fontSizePt": 8,  "fontColor": "#000000" },
+    "gender":          { "visible": true,  "leftMm": 5,  "topMm": 38, "fontSizePt": 8,  "fontColor": "#000000" },
+    "address":         { "visible": false, "leftMm": 5,  "topMm": 44, "fontSizePt": 7,  "fontColor": "#000000" },
+    "institutionName": { "visible": true,  "leftMm": 5,  "topMm": 4,  "fontSizePt": 11, "fontColor": "#000000" },
+    "departmentName":  { "visible": false, "leftMm": 5,  "topMm": 10, "fontSizePt": 9,  "fontColor": "#000000" },
+    "barcode":         { "visible": true,  "leftMm": 5,  "topMm": 48, "widthMm": 40, "heightMm": 10, "type": "code128" }
   }
 }
 ```
@@ -125,7 +125,7 @@ default values (shown above) rather than rendering a blank/broken card.
   `back`), each exposing `widthMm`/`heightMm`/`marginMm` and a `slots` map
   keyed by slot name (`name`, `dob`, `phone`, `gender`, `address`,
   `institutionName`, `departmentName`, `barcode`) → an object with
-  `visible`/`xMm`/`yMm`/`fontSizePt`/`fontColor` (barcode slot additionally has
+  `visible`/`leftMm`/`topMm`/`fontSizePt`/`fontColor` (barcode slot additionally has
   `widthMm`/`heightMm`/`type`).
 - Falls back to defaults on missing/invalid JSON (see above).
 - Used both by the print panels on `opd/patient.xhtml` and by the admin page's
@@ -140,7 +140,7 @@ Takes `side` (front/back) and renders:
 - Outer `div`/`h:panelGroup` sized by `widthMm`/`heightMm`, with
   `background-image` CSS pointing at the resolved background source.
 - One `h:panelGroup` per slot: `rendered` on `visible`, absolutely positioned
-  (`left`/`top` from `xMm`/`yMm`, `font-size` from `fontSizePt`, `color` from
+  (`left`/`top` from `leftMm`/`topMm`, `font-size` from `fontSizePt`, `color` from
   `fontColor`), content bound to the real data source for that slot.
 - Barcode slot renders `<p:barcode value="#{patientController.current.phn}"
   type="#{...slot.type}" .../>` sized from the slot's width/height.

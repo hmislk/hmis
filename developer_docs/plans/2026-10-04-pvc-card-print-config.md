@@ -10,6 +10,8 @@
 
 **Spec:** `developer_docs/specs/2026-10-04-pvc-card-print-config-design.md`
 
+> **Post-implementation note (2026-10-05):** the composite's background-streaming attribute described below as `backgroundStream` (a `StreamedContent` bound to `cc.attrs`) was replaced with a `side` (`String`) attribute, because PrimeFaces's secondary image-resource request cannot reliably re-resolve `cc.attrs.*` or reactivate a `@ViewScoped` bean's context. The image is now streamed by a new `@RequestScoped` `PvcCardBackgroundViewController`, selecting front/back via an `f:param name="side"` baked into the resource URL at render time (mirroring the existing `UploadViewController` pattern). Code blocks below still show `backgroundStream` as originally planned — treat `side` as the actual, as-built attribute.
+
 ## Global Constraints
 
 - Namespace is `javax.faces`/`javax.persistence` (pre-Jakarta) throughout — do not use `jakarta.*` imports.
@@ -38,7 +40,7 @@
 - Test: `src/test/java/com/divudi/core/data/PvcCardSlotTest.java`
 
 **Interfaces:**
-- Produces: `PvcCardSlot` — a mutable POJO with `visible` (boolean), `xMm`/`yMm`/`fontSizePt`/`widthMm`/`heightMm` (double), `fontColor`/`type` (String); a no-arg constructor (for JSON round-tripping and JSF EL mutation), a convenience constructor `PvcCardSlot(boolean visible, double xMm, double yMm, double fontSizePt, String fontColor)`, a static factory `PvcCardSlot.barcodeSlot(boolean visible, double xMm, double yMm, double widthMm, double heightMm, String type)`, a static `PvcCardSlot.fromJson(JSONObject json)`, and an instance `toJson()` returning `org.json.JSONObject`. Used by Task 2's `PvcCardLayout`.
+- Produces: `PvcCardSlot` — a mutable POJO with `visible` (boolean), `leftMm`/`topMm`/`fontSizePt`/`widthMm`/`heightMm` (double), `fontColor`/`type` (String); a no-arg constructor (for JSON round-tripping and JSF EL mutation), a convenience constructor `PvcCardSlot(boolean visible, double leftMm, double topMm, double fontSizePt, String fontColor)`, a static factory `PvcCardSlot.barcodeSlot(boolean visible, double leftMm, double topMm, double widthMm, double heightMm, String type)`, a static `PvcCardSlot.fromJson(JSONObject json)`, and an instance `toJson()` returning `org.json.JSONObject`. Used by Task 2's `PvcCardLayout`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -62,8 +64,8 @@ class PvcCardSlotTest {
         PvcCardSlot restored = PvcCardSlot.fromJson(json);
 
         assertTrue(restored.isVisible());
-        assertEquals(5.5, restored.getXMm());
-        assertEquals(20.25, restored.getYMm());
+        assertEquals(5.5, restored.getLeftMm());
+        assertEquals(20.25, restored.getTopMm());
         assertEquals(9.0, restored.getFontSizePt());
         assertEquals("#112233", restored.getFontColor());
     }
@@ -85,7 +87,7 @@ class PvcCardSlotTest {
         PvcCardSlot restored = PvcCardSlot.fromJson(new JSONObject());
 
         assertFalse(restored.isVisible());
-        assertEquals(0.0, restored.getXMm());
+        assertEquals(0.0, restored.getLeftMm());
         assertEquals(8.0, restored.getFontSizePt());
         assertEquals("#000000", restored.getFontColor());
         assertEquals("code128", restored.getType());
@@ -110,8 +112,8 @@ import java.io.Serializable;
 public class PvcCardSlot implements Serializable {
 
     private boolean visible;
-    private double xMm;
-    private double yMm;
+    private double leftMm;
+    private double topMm;
     private double fontSizePt = 8.0;
     private String fontColor = "#000000";
     private double widthMm;
@@ -121,19 +123,19 @@ public class PvcCardSlot implements Serializable {
     public PvcCardSlot() {
     }
 
-    public PvcCardSlot(boolean visible, double xMm, double yMm, double fontSizePt, String fontColor) {
+    public PvcCardSlot(boolean visible, double leftMm, double topMm, double fontSizePt, String fontColor) {
         this.visible = visible;
-        this.xMm = xMm;
-        this.yMm = yMm;
+        this.leftMm = leftMm;
+        this.topMm = topMm;
         this.fontSizePt = fontSizePt;
         this.fontColor = fontColor;
     }
 
-    public static PvcCardSlot barcodeSlot(boolean visible, double xMm, double yMm, double widthMm, double heightMm, String type) {
+    public static PvcCardSlot barcodeSlot(boolean visible, double leftMm, double topMm, double widthMm, double heightMm, String type) {
         PvcCardSlot slot = new PvcCardSlot();
         slot.visible = visible;
-        slot.xMm = xMm;
-        slot.yMm = yMm;
+        slot.leftMm = leftMm;
+        slot.topMm = topMm;
         slot.widthMm = widthMm;
         slot.heightMm = heightMm;
         slot.type = type;
@@ -143,8 +145,8 @@ public class PvcCardSlot implements Serializable {
     public static PvcCardSlot fromJson(JSONObject json) {
         PvcCardSlot slot = new PvcCardSlot();
         slot.visible = json.optBoolean("visible", false);
-        slot.xMm = json.optDouble("xMm", 0.0);
-        slot.yMm = json.optDouble("yMm", 0.0);
+        slot.leftMm = json.optDouble("leftMm", 0.0);
+        slot.topMm = json.optDouble("topMm", 0.0);
         slot.fontSizePt = json.optDouble("fontSizePt", 8.0);
         slot.fontColor = json.optString("fontColor", "#000000");
         slot.widthMm = json.optDouble("widthMm", 0.0);
@@ -156,8 +158,8 @@ public class PvcCardSlot implements Serializable {
     public JSONObject toJson() {
         JSONObject json = new JSONObject();
         json.put("visible", visible);
-        json.put("xMm", xMm);
-        json.put("yMm", yMm);
+        json.put("leftMm", leftMm);
+        json.put("topMm", topMm);
         json.put("fontSizePt", fontSizePt);
         json.put("fontColor", fontColor);
         json.put("widthMm", widthMm);
@@ -174,20 +176,20 @@ public class PvcCardSlot implements Serializable {
         this.visible = visible;
     }
 
-    public double getXMm() {
-        return xMm;
+    public double getLeftMm() {
+        return leftMm;
     }
 
-    public void setXMm(double xMm) {
-        this.xMm = xMm;
+    public void setLeftMm(double leftMm) {
+        this.leftMm = leftMm;
     }
 
-    public double getYMm() {
-        return yMm;
+    public double getTopMm() {
+        return topMm;
     }
 
-    public void setYMm(double yMm) {
-        this.yMm = yMm;
+    public void setTopMm(double topMm) {
+        this.topMm = topMm;
     }
 
     public double getFontSizePt() {
@@ -304,13 +306,13 @@ class PvcCardLayoutTest {
     void fromJsonRoundTripsCustomValues() {
         PvcCardLayout original = PvcCardLayout.defaultLayout();
         original.setWidthMm(90.0);
-        original.getSlots().get(PvcCardLayout.SLOT_NAME).setXMm(12.5);
+        original.getSlots().get(PvcCardLayout.SLOT_NAME).setLeftMm(12.5);
         original.getSlots().get(PvcCardLayout.SLOT_ADDRESS).setVisible(true);
 
         PvcCardLayout restored = PvcCardLayout.fromJson(original.toJson());
 
         assertEquals(90.0, restored.getWidthMm());
-        assertEquals(12.5, restored.getSlots().get(PvcCardLayout.SLOT_NAME).getXMm());
+        assertEquals(12.5, restored.getSlots().get(PvcCardLayout.SLOT_NAME).getLeftMm());
         assertTrue(restored.getSlots().get(PvcCardLayout.SLOT_ADDRESS).isVisible());
     }
 
@@ -601,8 +603,8 @@ public class PvcCardLayoutController implements Serializable {
                 JsfUtil.addErrorMessage("Font size for '" + entry.getKey() + "' must be greater than zero");
                 return false;
             }
-            if (slot.getXMm() < 0 || slot.getXMm() > layout.getWidthMm()
-                    || slot.getYMm() < 0 || slot.getYMm() > layout.getHeightMm()) {
+            if (slot.getLeftMm() < 0 || slot.getLeftMm() > layout.getWidthMm()
+                    || slot.getTopMm() < 0 || slot.getTopMm() > layout.getHeightMm()) {
                 JsfUtil.addErrorMessage("Position for '" + entry.getKey() + "' is outside the card bounds");
                 return false;
             }
@@ -792,44 +794,44 @@ No automated test for this task — it is pure XHTML composition with no Java lo
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['institutionName'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['institutionName'].xMm}mm; top:#{cc.attrs.layout.slots['institutionName'].yMm}mm; font-size:#{cc.attrs.layout.slots['institutionName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['institutionName'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['institutionName'].leftMm}mm; top:#{cc.attrs.layout.slots['institutionName'].topMm}mm; font-size:#{cc.attrs.layout.slots['institutionName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['institutionName'].fontColor};">
                 <h:outputText value="#{sessionController.institution.name}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['departmentName'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['departmentName'].xMm}mm; top:#{cc.attrs.layout.slots['departmentName'].yMm}mm; font-size:#{cc.attrs.layout.slots['departmentName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['departmentName'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['departmentName'].leftMm}mm; top:#{cc.attrs.layout.slots['departmentName'].topMm}mm; font-size:#{cc.attrs.layout.slots['departmentName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['departmentName'].fontColor};">
                 <h:outputText value="#{sessionController.department.name}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['name'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['name'].xMm}mm; top:#{cc.attrs.layout.slots['name'].yMm}mm; font-size:#{cc.attrs.layout.slots['name'].fontSizePt}pt; color:#{cc.attrs.layout.slots['name'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['name'].leftMm}mm; top:#{cc.attrs.layout.slots['name'].topMm}mm; font-size:#{cc.attrs.layout.slots['name'].fontSizePt}pt; color:#{cc.attrs.layout.slots['name'].fontColor};">
                 <h:outputText value="#{patientController.current.person.nameWithTitle}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['dob'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['dob'].xMm}mm; top:#{cc.attrs.layout.slots['dob'].yMm}mm; font-size:#{cc.attrs.layout.slots['dob'].fontSizePt}pt; color:#{cc.attrs.layout.slots['dob'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['dob'].leftMm}mm; top:#{cc.attrs.layout.slots['dob'].topMm}mm; font-size:#{cc.attrs.layout.slots['dob'].fontSizePt}pt; color:#{cc.attrs.layout.slots['dob'].fontColor};">
                 <h:outputText value="#{patientController.current.person.dob}">
                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['phone'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['phone'].xMm}mm; top:#{cc.attrs.layout.slots['phone'].yMm}mm; font-size:#{cc.attrs.layout.slots['phone'].fontSizePt}pt; color:#{cc.attrs.layout.slots['phone'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['phone'].leftMm}mm; top:#{cc.attrs.layout.slots['phone'].topMm}mm; font-size:#{cc.attrs.layout.slots['phone'].fontSizePt}pt; color:#{cc.attrs.layout.slots['phone'].fontColor};">
                 <h:outputText value="#{patientController.current.person.phone}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['gender'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['gender'].xMm}mm; top:#{cc.attrs.layout.slots['gender'].yMm}mm; font-size:#{cc.attrs.layout.slots['gender'].fontSizePt}pt; color:#{cc.attrs.layout.slots['gender'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['gender'].leftMm}mm; top:#{cc.attrs.layout.slots['gender'].topMm}mm; font-size:#{cc.attrs.layout.slots['gender'].fontSizePt}pt; color:#{cc.attrs.layout.slots['gender'].fontColor};">
                 <h:outputText value="#{patientController.current.person.sex}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['address'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['address'].xMm}mm; top:#{cc.attrs.layout.slots['address'].yMm}mm; font-size:#{cc.attrs.layout.slots['address'].fontSizePt}pt; color:#{cc.attrs.layout.slots['address'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['address'].leftMm}mm; top:#{cc.attrs.layout.slots['address'].topMm}mm; font-size:#{cc.attrs.layout.slots['address'].fontSizePt}pt; color:#{cc.attrs.layout.slots['address'].fontColor};">
                 <h:outputText value="#{patientController.current.person.address}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['barcode'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['barcode'].xMm}mm; top:#{cc.attrs.layout.slots['barcode'].yMm}mm;">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['barcode'].leftMm}mm; top:#{cc.attrs.layout.slots['barcode'].topMm}mm;">
                 <p:barcode value="#{patientController.current.phn}"
                            type="#{cc.attrs.layout.slots['barcode'].type}"
                            format="svg" hrp="none" cache="false"
@@ -987,12 +989,12 @@ No automated test for this task (XHTML-only, admin UI) — verified by Task 7's 
                                                 </p:selectBooleanCheckbox>
                                             </p:column>
                                             <p:column headerText="X (mm)">
-                                                <p:inputNumber value="#{entry.value.xMm}">
+                                                <p:inputNumber value="#{entry.value.leftMm}">
                                                     <p:ajax update="frontPreview"/>
                                                 </p:inputNumber>
                                             </p:column>
                                             <p:column headerText="Y (mm)">
-                                                <p:inputNumber value="#{entry.value.yMm}">
+                                                <p:inputNumber value="#{entry.value.topMm}">
                                                     <p:ajax update="frontPreview"/>
                                                 </p:inputNumber>
                                             </p:column>
@@ -1062,12 +1064,12 @@ No automated test for this task (XHTML-only, admin UI) — verified by Task 7's 
                                                 </p:selectBooleanCheckbox>
                                             </p:column>
                                             <p:column headerText="X (mm)">
-                                                <p:inputNumber value="#{entry.value.xMm}">
+                                                <p:inputNumber value="#{entry.value.leftMm}">
                                                     <p:ajax update="backPreview"/>
                                                 </p:inputNumber>
                                             </p:column>
                                             <p:column headerText="Y (mm)">
-                                                <p:inputNumber value="#{entry.value.yMm}">
+                                                <p:inputNumber value="#{entry.value.topMm}">
                                                     <p:ajax update="backPreview"/>
                                                 </p:inputNumber>
                                             </p:column>

@@ -8,15 +8,12 @@ import com.divudi.core.facade.UploadFacade;
 import com.divudi.core.util.JsfUtil;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -42,13 +39,17 @@ public class PvcCardLayoutController implements Serializable {
     private PvcCardLayout back;
     private String frontUrlInput;
     private String backUrlInput;
+    private String frontExternalUrl;
+    private String backExternalUrl;
 
     @PostConstruct
     public void init() {
         front = PvcCardLayout.fromJson(configOptionApplicationController.getLongTextValueByKeyReadOnly(KEY_FRONT_LAYOUT, ""));
         back = PvcCardLayout.fromJson(configOptionApplicationController.getLongTextValueByKeyReadOnly(KEY_BACK_LAYOUT, ""));
-        frontUrlInput = backgroundUrl(UploadType.PVC_Card_Front_Background);
-        backUrlInput = backgroundUrl(UploadType.PVC_Card_Back_Background);
+        frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
+        backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
+        frontUrlInput = frontExternalUrl;
+        backUrlInput = backExternalUrl;
     }
 
     public PvcCardLayout getFront() {
@@ -103,19 +104,11 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public String getFrontBackgroundExternalUrl() {
-        return backgroundUrl(UploadType.PVC_Card_Front_Background);
+        return frontExternalUrl;
     }
 
     public String getBackBackgroundExternalUrl() {
-        return backgroundUrl(UploadType.PVC_Card_Back_Background);
-    }
-
-    public StreamedContent getFrontBackgroundStream() {
-        return backgroundStream(UploadType.PVC_Card_Front_Background);
-    }
-
-    public StreamedContent getBackBackgroundStream() {
-        return backgroundStream(UploadType.PVC_Card_Back_Background);
+        return backExternalUrl;
     }
 
     public String getFrontUrlInput() {
@@ -136,18 +129,22 @@ public class PvcCardLayoutController implements Serializable {
 
     public void saveFrontBackgroundUrl() {
         saveBackgroundUrl(UploadType.PVC_Card_Front_Background, frontUrlInput);
+        frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
     }
 
     public void saveBackBackgroundUrl() {
         saveBackgroundUrl(UploadType.PVC_Card_Back_Background, backUrlInput);
+        backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
     }
 
     public void uploadFrontBackground(FileUploadEvent event) {
         saveBackgroundUpload(UploadType.PVC_Card_Front_Background, event);
+        frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
     }
 
     public void uploadBackBackground(FileUploadEvent event) {
         saveBackgroundUpload(UploadType.PVC_Card_Back_Background, event);
+        backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
     }
 
     private String backgroundUrl(UploadType type) {
@@ -156,19 +153,6 @@ public class PvcCardLayoutController implements Serializable {
             return "";
         }
         return upload.getFileUrl();
-    }
-
-    private StreamedContent backgroundStream(UploadType type) {
-        Upload upload = findUploadByType(type);
-        if (upload == null || upload.getBaImage() == null) {
-            return null;
-        }
-        byte[] bytes = upload.getBaImage();
-        String contentType = upload.getFileType() != null ? upload.getFileType() : "image/png";
-        return DefaultStreamedContent.builder()
-                .contentType(contentType)
-                .stream(() -> new ByteArrayInputStream(bytes))
-                .build();
     }
 
     private void saveBackgroundUpload(UploadType type, FileUploadEvent event) {
