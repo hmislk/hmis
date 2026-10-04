@@ -29,7 +29,8 @@
                                         <h:outputText value="Margin (mm)"/>
                                         <p:inputNumber value="#{pvcCardLayoutController.front.marginMm}" minValue="0"/>
 
-                                        <p:dataTable value="#{pvcCardLayoutController.front.slots.entrySet().toArray()}" var="entry">
+                                        <p:dataTable value="#{pvcCardLayoutController.front.slots.entrySet().toArray()}" var="entry"
+                                                     id="frontSlotsTable" widgetVar="frontSlotsTable" rowKey="#{entry.key}">
                                             <p:column headerText="Field">
                                                 <h:outputText value="#{entry.key}"/>
                                             </p:column>
@@ -104,7 +105,8 @@
                                         <h:outputText value="Margin (mm)"/>
                                         <p:inputNumber value="#{pvcCardLayoutController.back.marginMm}" minValue="0"/>
 
-                                        <p:dataTable value="#{pvcCardLayoutController.back.slots.entrySet().toArray()}" var="entry">
+                                        <p:dataTable value="#{pvcCardLayoutController.back.slots.entrySet().toArray()}" var="entry"
+                                                     id="backSlotsTable" widgetVar="backSlotsTable" rowKey="#{entry.key}">
                                             <p:column headerText="Field">
                                                 <h:outputText value="#{entry.key}"/>
                                             </p:column>
