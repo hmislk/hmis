@@ -38,15 +38,19 @@ public class PvcCardSlot implements Serializable {
     }
 
     public static PvcCardSlot fromJson(JSONObject json) {
+        return fromJson(json, new PvcCardSlot());
+    }
+
+    public static PvcCardSlot fromJson(JSONObject json, PvcCardSlot fallback) {
         PvcCardSlot slot = new PvcCardSlot();
-        slot.visible = json.optBoolean("visible", false);
-        slot.leftMm = json.optDouble("leftMm", 0.0);
-        slot.topMm = json.optDouble("topMm", 0.0);
-        slot.fontSizePt = json.optDouble("fontSizePt", 8.0);
-        slot.fontColor = json.optString("fontColor", "#000000");
-        slot.widthMm = json.optDouble("widthMm", 0.0);
-        slot.heightMm = json.optDouble("heightMm", 0.0);
-        slot.type = json.optString("type", "code128");
+        slot.visible = json.optBoolean("visible", fallback.visible);
+        slot.leftMm = json.optDouble("leftMm", fallback.leftMm);
+        slot.topMm = json.optDouble("topMm", fallback.topMm);
+        slot.fontSizePt = json.optDouble("fontSizePt", fallback.fontSizePt);
+        slot.fontColor = json.optString("fontColor", fallback.fontColor);
+        slot.widthMm = json.optDouble("widthMm", fallback.widthMm);
+        slot.heightMm = json.optDouble("heightMm", fallback.heightMm);
+        slot.type = json.optString("type", fallback.type);
         return slot;
     }
 

@@ -60,4 +60,23 @@ class PvcCardLayoutTest {
         assertTrue(layout.getSlots().containsKey(PvcCardLayout.SLOT_BARCODE));
         assertTrue(layout.getSlots().get(PvcCardLayout.SLOT_BARCODE).isVisible());
     }
+
+    @Test
+    void fromJsonRejectsZeroOrNegativeDimensions() {
+        PvcCardLayout layout = PvcCardLayout.fromJson("{\"widthMm\":0,\"heightMm\":-5,\"marginMm\":-1,\"slots\":{}}");
+
+        assertEquals(85.6, layout.getWidthMm());
+        assertEquals(54.0, layout.getHeightMm());
+        assertEquals(2.0, layout.getMarginMm());
+    }
+
+    @Test
+    void fromJsonInheritsMissingSlotPropertiesFromNamedDefaultNotGenericDefault() {
+        PvcCardLayout layout = PvcCardLayout.fromJson("{\"slots\":{\"barcode\":{\"type\":\"code128\"}}}");
+
+        PvcCardSlot barcode = layout.getSlots().get(PvcCardLayout.SLOT_BARCODE);
+        assertTrue(barcode.isVisible());
+        assertEquals(40.0, barcode.getWidthMm());
+        assertEquals(8.0, barcode.getHeightMm());
+    }
 }
