@@ -121,7 +121,7 @@
                                                     styleClass="ui-button-danger"
                                                     title="Cancel the whole bill"
                                                     disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}"
-                                                    action="#{billSearch.cancelCollectingCentreBill()}">
+                                                    action="#{collectingCentreSelfSearchController.cancelBill()}">
                                                     <p:confirm header="Confirm Cancellation" message="Are you sure you want to cancel this bill? This cannot be undone." icon="pi pi-exclamation-triangle"/>
                                                 </p:commandButton>
                                             </f:facet>

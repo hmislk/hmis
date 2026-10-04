@@ -125,6 +125,42 @@ public class CollectingCentreSelfSearchController implements Serializable {
         return "/collecting_centre/cc_self_bill_refund?faces-redirect=true";
     }
 
+    /**
+     * Self-service submit for cancel: re-checks that the bill held by the
+     * session-scoped BillSearch belongs to this collecting centre before
+     * delegating, since the page can be reached without navigateToCancelBill().
+     */
+    public void cancelBill() {
+        if (!isBillSearchBillOwn()) {
+            return;
+        }
+        billSearch.cancelCollectingCentreBill();
+    }
+
+    /**
+     * Self-service submit for refund: same ownership re-check as cancelBill().
+     */
+    public String refundBill() {
+        if (!isBillSearchBillOwn()) {
+            return "";
+        }
+        return billSearch.refundCollectingCenterBill();
+    }
+
+    private boolean isBillSearchBillOwn() {
+        Bill current = billSearch.getBill();
+        Bill fetched = (current == null || current.getId() == null) ? null : billFacade.find(current.getId());
+        if (fetched == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return false;
+        }
+        if (!isOwnBill(fetched)) {
+            JsfUtil.addErrorMessage("This bill does not belong to your collecting centre");
+            return false;
+        }
+        return true;
+    }
+
     private boolean isViewingOwnBill() {
         if (viewingBill == null || viewingBill.getId() == null) {
             JsfUtil.addErrorMessage("No bill selected");

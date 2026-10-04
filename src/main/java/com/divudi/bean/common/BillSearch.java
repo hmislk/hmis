@@ -3137,9 +3137,18 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                     return;
                 }
             }
-        }else{
-            // check the Privillages to Cancel CC Self Billing
-            // Currntly now is Pending.
+        } else {
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
+                if (!checkCancelBill(getBill())) {
+                    JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        ccBillCancellingStarted.set(false);
+                        return;
+                    }
+                }
+            }
         }
 
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
