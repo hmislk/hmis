@@ -136,7 +136,7 @@
                                             var="b"
                                             itemLabel="#{b.deptId}"
                                             itemValue="#{b}"/>
-                                        <p:ajax process="@this" update="tblreq reqtbls" event="change"/>
+                                        <p:ajax process="@this" listener="#{inwardReportControllerBht.processRequestIssueRows()}" update="billSummary tblReqIssue" event="change"/>
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                             </p:panel>
@@ -145,64 +145,90 @@
                             <common:admission_details admission="#{inwardReportControllerBht.patientEncounter}" class="w-100 m-1"></common:admission_details>
                         </div>
                     </div>
+                    <h:panelGroup id="billSummary" layout="block" class="row my-2">
+                        <h:panelGroup layout="block" class="col-12" rendered="#{inwardReportControllerBht.bill ne null}">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h:outputLabel value="Requested From :&#160;" class="fw-bold" />
+                                    <h:outputText value="#{inwardReportControllerBht.bill.department.name}" /><br/>
+                                    <h:outputLabel value="Requested User :&#160;" class="fw-bold" />
+                                    <h:outputText value="#{inwardReportControllerBht.bill.creater.webUserPerson.nameWithTitle}" />
+                                </div>
+                                <div class="col-6">
+                                    <ui:repeat value="#{inwardReportControllerBht.requestIssueSummaryBills}" var="sb">
+                                        <h:outputLabel value="#{sb.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : sb.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION' ? 'Cancelled' : 'Issued'} :&#160;" class="fw-bold" />
+                                        <h:outputText value="#{sb.deptId} from #{sb.department.name} by #{sb.creater.webUserPerson.nameWithTitle}" /><br/>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </h:panelGroup>
                     <div class="row my-2">
-                        <div class="col-6">
-                            <p:dataTable id="tblreq" value="#{billBeanController.fetchBillItems(inwardReportControllerBht.bill)}" var="bi">
-                                <f:facet name="header">
-                                    <h:outputLabel value="Requested From &nbsp;" />
-                                    <h:outputLabel value="&nbsp;:&nbsp;" />
-                                    <h:outputLabel value="#{inwardReportControllerBht.bill.department.name}" /><br/>
-                                    <h:outputLabel value="Requested User&nbsp;" />
-                                    <h:outputLabel value="&nbsp;:&nbsp;" />
-                                    <h:outputLabel value="#{inwardReportControllerBht.bill.creater.webUserPerson.nameWithTitle}" />
-                                </f:facet>
-                                <p:column headerText="Item">
-                                    <h:outputLabel value="#{bi.item.name}" />
+                        <div class="col-12">
+                            <p:dataTable
+                                id="tblReqIssue"
+                                value="#{inwardReportControllerBht.requestIssueRows}"
+                                var="r"
+                                rowIndexVar="ri"
+                                emptyMessage="Select a requested bill to compare requested and issued items.">
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column rowspan="2" headerText="No" style="width: 4em;" />
+                                        <p:column colspan="2" headerText="Requested" />
+                                        <p:column colspan="5" headerText="Issued" />
+                                    </p:row>
+                                    <p:row>
+                                        <p:column headerText="Item" />
+                                        <p:column headerText="Qty" style="width: 6em;" />
+                                        <p:column headerText="Item" />
+                                        <p:column headerText="Qty" style="width: 6em;" />
+                                        <p:column headerText="Issue Bill No" />
+                                        <p:column headerText="Returned / Cancelled" style="width: 10em;" />
+                                        <p:column headerText="Net Issued" style="width: 7em;" />
+                                    </p:row>
+                                </p:columnGroup>
+
+                                <p:column>
+                                    <h:outputText value="#{r.serialNo}" rendered="#{r.firstRowOfRequestedItem}" />
                                 </p:column>
-                                <p:column headerText="Qty">
-                                    <h:outputLabel value="#{commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
+                                <p:column>
+                                    <h:outputText value="#{r.requestedBillItem.item.name}" rendered="#{r.firstRowOfRequestedItem}" />
+                                    <h:outputText value="Not linked to a request line" class="text-muted fst-italic" rendered="#{r.notInRequest}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{r.requestedQty}" rendered="#{r.firstRowOfRequestedItem}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{r.issuedBillItem.item.name}" rendered="#{not r.notIssued}" />
+                                    <h:outputText value=" (Substitute)" class="text-primary" rendered="#{r.substituted}" />
+                                    <h:outputText value="Not issued" class="text-danger fst-italic" rendered="#{r.notIssued}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{r.issuedQty}" rendered="#{not r.notIssued}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{r.issuedBillItem.bill.deptId}" rendered="#{not r.notIssued}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{-r.returnedQty}" class="text-warning" rendered="#{r.returnedQty ne 0}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                    <h:outputText value=" returned" class="text-warning" rendered="#{r.returnedQty ne 0}" />
+                                    <h:outputText value="#{-r.cancelledQty}" class="text-danger" rendered="#{r.cancelledQty ne 0}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                    <h:outputText value=" cancelled" class="text-danger" rendered="#{r.cancelledQty ne 0}" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{r.netIssuedQty}" rendered="#{not r.notIssued}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
                                 </p:column>
                             </p:dataTable>
-                        </div>
-                        <div class="col-6">
-                            <h:panelGroup id="reqtbls">
-                                <ui:repeat value="#{inwardReportControllerBht.getBHTIssudBills(inwardReportControllerBht.bill)}" var="b">
-                                    <p:dataTable id="tblIssue" value="#{billBeanController.fetchBillItems(b)}" var="bi">
-                                        <f:facet name="header">
-                                            <h:outputLabel value="Issued From &nbsp;" />
-                                            <h:outputLabel value="&nbsp;:&nbsp;" />
-                                            <h:outputLabel value="#{b.department.name}" /><br/>
-                                            <h:outputLabel value="Issued User&nbsp;" />
-                                            <h:outputLabel value="&nbsp;:&nbsp;" />
-                                            <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
-                                        </f:facet>
-                                        <p:column headerText="Item">
-                                            <h:outputLabel value="#{bi.item.name}" />
-                                        </p:column>
-                                        <p:column headerText="Qty">
-                                            <h:outputLabel value="#{commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
-                                        </p:column>
-                                    </p:dataTable>
-                                    <ui:repeat value="#{inwardReportControllerBht.getReturnAndCancelBHTIssueBills(b)}" var="b">
-                                        <p:dataTable id="tblIssueRet" value="#{billBeanController.fetchBillItems(b)}" var="bi">
-                                            <f:facet name="header">
-                                                <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} From &nbsp;" />
-                                                <h:outputLabel value="&nbsp;:&nbsp;" />
-                                                <h:outputLabel value="#{b.department.name}" /><br/>
-                                                <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} User&nbsp;" />
-                                                <h:outputLabel value="&nbsp;:&nbsp;" />
-                                                <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
-                                            </f:facet>
-                                            <p:column headerText="Item" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}" >
-                                                <h:outputLabel value="#{bi.item.name}" />
-                                            </p:column>
-                                            <p:column headerText="Qty" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}">
-                                                <h:outputLabel value="#{-commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
-                                            </p:column>
-                                        </p:dataTable>
-                                    </ui:repeat>
-                                </ui:repeat>
-                            </h:panelGroup>
                         </div>
                     </div>
                 </p:panel>

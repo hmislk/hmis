@@ -7,13 +7,18 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:se="http://xmlns.jcp.org/jsf/composite/pharmacy/search">
 
+    <!--
+        Pharmacy Bill Search by Item (issue #24250): bills of the selected bill
+        type atomic, in the logged-in department, that contain the selected
+        item. Reached from Pharmacy Analytics > Procurement Reports.
+    -->
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
                     <p:panel id="gpBillPreview">
                         <f:facet name="header" >
-                            <h:outputText value="Pharmacy Bill Search by Bill Type Atomic"/>
+                            <h:outputText value="Pharmacy Bill Search by Item"/>
                         </f:facet>
 
                         <div class="pharma-search-filters">
@@ -37,6 +42,28 @@
                                     <p:ajax event="change" process="@this" update="results" listener="#{pharmacyBillSearch.clearResultView()}"/>
                                 </p:selectOneMenu>
                             </div>
+                            <div class="pharma-search-filter pharma-search-filter-item">
+                                <p:outputLabel for="item" value="Item"/>
+                                <p:autoComplete
+                                    id="item"
+                                    value="#{searchController.billSearchItem}"
+                                    forceSelection="true"
+                                    inputStyleClass="w-100"
+                                    minQueryLength="3"
+                                    queryDelay="300"
+                                    completeMethod="#{itemController.completeAmpItem}"
+                                    var="vt"
+                                    itemLabel="#{vt.name}"
+                                    itemValue="#{vt}"
+                                    placeholder="Type at least 3 letters">
+                                    <p:column headerText="Item">
+                                        <h:outputText value="#{vt.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputText value="#{vt.code}"/>
+                                    </p:column>
+                                </p:autoComplete>
+                            </div>
                             <div class="pharma-search-filter pharma-search-filter-count">
                                 <p:outputLabel for="listCount" value="List Count"/>
                                 <p:inputText id="listCount" autocomplete="off" value="#{searchController.maxResult}"/>
@@ -48,7 +75,7 @@
                                     icon="fas fa-search"
                                     class="ui-button-warning"
                                     value="Search"
-                                    action="#{searchController.searchPharmacyBillsByBillTypeAtomic}">
+                                    action="#{searchController.searchPharmacyBillsByItem}">
                                 </p:commandButton>
                             </div>
                         </div>

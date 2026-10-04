@@ -50,6 +50,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -82,6 +83,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     PatientFacade patientFacade;
     @EJB
     private com.divudi.service.BillService billService;
+    @EJB
+    private com.divudi.core.facade.PatientEncounterFacade patientEncounterFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -106,6 +109,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private boolean printPreview;
     private double due;
     String comment;
+
+    /** True only for the "Inward Deposit" entry point - see {@link #navigateToInwardDepositPayment()}. */
+    private boolean advanceDepositEntry;
 
     private PaymentMethod paymentMethod;
     private double remainAmount;
@@ -177,6 +183,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      */
     public String navigateToInwardDepositPayment() {
         makeNull();
+        advanceDepositEntry = true;
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
@@ -301,16 +308,39 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     /**
-     * Rejects a paying amount above the live due once a confirmed final bill
-     * exists. Before the final bill there is no cap: advance money is taken
-     * as a Deposit, and any excess is refunded at finalization.
+     * Rejects a paying amount above the due. Once a confirmed final bill
+     * exists, the due is the live final-bill due ({@link #calculateFinalBillDue}).
+     * Before that, there is no single running bill to compute a live due
+     * from (charges accrue across several BillTypes), so the cap falls back
+     * to {@code patientEncounter.amountDueAtFinalProcessing} - the same
+     * "Due Amount" box this page already shows before finalization (not the
+     * separate {@link #due} field, which this page only renders once
+     * finalized) - net of any payment taken since that snapshot (re-queried
+     * live, so a payment just recorded in another tab/session is picked up
+     * and can't be collected twice against the same stale total). That
+     * snapshot is only set by the final-bill-edit page's "Process" action,
+     * so a never-processed encounter has no due baseline yet and is not
+     * capped.
+     *
+     * This pre-final-bill cap is skipped entirely for the "Inward Deposit"
+     * entry point ({@link #advanceDepositEntry}): that flow shares this same
+     * page/pay() path but is deliberately uncapped - advance money taken
+     * there is a Deposit, with any excess refunded at finalization.
      */
     private boolean payingAmountExceedsDue() {
         Bill finalBill = fetchConfirmedFinalBill();
-        if (finalBill == null) {
+        if (finalBill != null) {
+            due = calculateFinalBillDue(finalBill);
+        } else if (!advanceDepositEntry) {
+            PatientEncounter pe = patientEncounterFacade.find(getCurrent().getPatientEncounter().getId());
+            if (pe == null || pe.getLastProcessAt() == null) {
+                return false;
+            }
+            double paidSinceProcessing = getPaymentsSince(pe, pe.getLastProcessAt());
+            due = Math.max(0.0, pe.getAmountDueAtFinalProcessing() - paidSinceProcessing);
+        } else {
             return false;
         }
-        due = calculateFinalBillDue(finalBill);
         double payingAmount = getCurrent().getTotal();
         if (payingAmount > due + 0.01) {
             DecimalFormat df = new DecimalFormat("#,##0.00");
@@ -318,6 +348,26 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             return true;
         }
         return false;
+    }
+
+    /**
+     * Sum of InwardPaymentBill netTotal (payments, deposits, and their
+     * negative cancellation/refund rows) recorded strictly after {@code since}
+     * - the part of the pre-final-bill due basis that
+     * {@code amountDueAtFinalProcessing} cannot already reflect, since it was
+     * only computed as of the last "Process" click.
+     */
+    private double getPaymentsSince(PatientEncounter pe, Date since) {
+        String sql = "Select sum(b.netTotal) From Bill b where"
+                + " b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe "
+                + " and b.createdAt > :since";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pe", pe);
+        hm.put("since", since);
+        return getBilledBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private boolean errorCheck() {
@@ -1036,6 +1086,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         finalBillTotal = 0.0;
         due = 0.0;
         paymentInProgress = false;
+        advanceDepositEntry = false;
     }
 
     private void saveBill() {

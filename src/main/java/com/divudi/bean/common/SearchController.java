@@ -410,6 +410,8 @@ public class SearchController implements Serializable {
     private PatientEncounter patientEncounter;
     private Staff staff;
     private Item item;
+    // Item selected on the Pharmacy Bill Search by Item report (issue #24250).
+    private Item billSearchItem;
     private double dueTotal;
     private double doneTotal;
     private double netTotal;
@@ -10561,6 +10563,60 @@ public class SearchController implements Serializable {
         printPreview = true;
         duplicateBillView = true;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBillSearchByItem() {
+        printPreview = true;
+        duplicateBillView = true;
+        billSearchItem = null;
+        pharmacyBillSearch.setResultView(null);
+        return "/pharmacy/pharmacy_bill_search_by_item?faces-redirect=true";
+    }
+
+    /**
+     * Pharmacy Bill Search by Bill Type page (issue #24250).
+     */
+    public void searchPharmacyBillsByBillType() {
+        if (billType == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(billType, null, null, maxResult);
+    }
+
+    /**
+     * Pharmacy Bill Search by Bill Type Atomic page (issue #24250).
+     */
+    public void searchPharmacyBillsByBillTypeAtomic() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null, maxResult);
+    }
+
+    /**
+     * Pharmacy Bill Search by Item report (issue #24250): bills of the selected
+     * bill type atomic that contain the selected item.
+     */
+    public void searchPharmacyBillsByItem() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        if (billSearchItem == null) {
+            JsfUtil.addErrorMessage("Please Select an Item");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, billSearchItem, maxResult);
+    }
+
+    public Item getBillSearchItem() {
+        return billSearchItem;
+    }
+
+    public void setBillSearchItem(Item billSearchItem) {
+        this.billSearchItem = billSearchItem;
     }
 
     public String navigateToItemizedSaleSummary() {
