@@ -93,8 +93,8 @@ public class PvcCardLayoutController implements Serializable {
                 JsfUtil.addErrorMessage("Font size for '" + entry.getKey() + "' must be greater than zero");
                 return false;
             }
-            if (slot.getXMm() < 0 || slot.getXMm() > layout.getWidthMm()
-                    || slot.getYMm() < 0 || slot.getYMm() > layout.getHeightMm()) {
+            if (slot.getLeftMm() < 0 || slot.getLeftMm() > layout.getWidthMm()
+                    || slot.getTopMm() < 0 || slot.getTopMm() > layout.getHeightMm()) {
                 JsfUtil.addErrorMessage("Position for '" + entry.getKey() + "' is outside the card bounds");
                 return false;
             }

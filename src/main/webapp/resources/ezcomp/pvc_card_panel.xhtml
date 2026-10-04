@@ -29,44 +29,44 @@
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['institutionName'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['institutionName'].xMm}mm; top:#{cc.attrs.layout.slots['institutionName'].yMm}mm; font-size:#{cc.attrs.layout.slots['institutionName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['institutionName'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['institutionName'].leftMm}mm; top:#{cc.attrs.layout.slots['institutionName'].topMm}mm; font-size:#{cc.attrs.layout.slots['institutionName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['institutionName'].fontColor};">
                 <h:outputText value="#{sessionController.institution.name}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['departmentName'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['departmentName'].xMm}mm; top:#{cc.attrs.layout.slots['departmentName'].yMm}mm; font-size:#{cc.attrs.layout.slots['departmentName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['departmentName'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['departmentName'].leftMm}mm; top:#{cc.attrs.layout.slots['departmentName'].topMm}mm; font-size:#{cc.attrs.layout.slots['departmentName'].fontSizePt}pt; color:#{cc.attrs.layout.slots['departmentName'].fontColor};">
                 <h:outputText value="#{sessionController.department.name}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['name'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['name'].xMm}mm; top:#{cc.attrs.layout.slots['name'].yMm}mm; font-size:#{cc.attrs.layout.slots['name'].fontSizePt}pt; color:#{cc.attrs.layout.slots['name'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['name'].leftMm}mm; top:#{cc.attrs.layout.slots['name'].topMm}mm; font-size:#{cc.attrs.layout.slots['name'].fontSizePt}pt; color:#{cc.attrs.layout.slots['name'].fontColor};">
                 <h:outputText value="#{patientController.current.person.nameWithTitle}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['dob'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['dob'].xMm}mm; top:#{cc.attrs.layout.slots['dob'].yMm}mm; font-size:#{cc.attrs.layout.slots['dob'].fontSizePt}pt; color:#{cc.attrs.layout.slots['dob'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['dob'].leftMm}mm; top:#{cc.attrs.layout.slots['dob'].topMm}mm; font-size:#{cc.attrs.layout.slots['dob'].fontSizePt}pt; color:#{cc.attrs.layout.slots['dob'].fontColor};">
                 <h:outputText value="#{patientController.current.person.dob}">
                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['phone'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['phone'].xMm}mm; top:#{cc.attrs.layout.slots['phone'].yMm}mm; font-size:#{cc.attrs.layout.slots['phone'].fontSizePt}pt; color:#{cc.attrs.layout.slots['phone'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['phone'].leftMm}mm; top:#{cc.attrs.layout.slots['phone'].topMm}mm; font-size:#{cc.attrs.layout.slots['phone'].fontSizePt}pt; color:#{cc.attrs.layout.slots['phone'].fontColor};">
                 <h:outputText value="#{patientController.current.person.phone}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['gender'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['gender'].xMm}mm; top:#{cc.attrs.layout.slots['gender'].yMm}mm; font-size:#{cc.attrs.layout.slots['gender'].fontSizePt}pt; color:#{cc.attrs.layout.slots['gender'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['gender'].leftMm}mm; top:#{cc.attrs.layout.slots['gender'].topMm}mm; font-size:#{cc.attrs.layout.slots['gender'].fontSizePt}pt; color:#{cc.attrs.layout.slots['gender'].fontColor};">
                 <h:outputText value="#{patientController.current.person.sex}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['address'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['address'].xMm}mm; top:#{cc.attrs.layout.slots['address'].yMm}mm; font-size:#{cc.attrs.layout.slots['address'].fontSizePt}pt; color:#{cc.attrs.layout.slots['address'].fontColor};">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['address'].leftMm}mm; top:#{cc.attrs.layout.slots['address'].topMm}mm; font-size:#{cc.attrs.layout.slots['address'].fontSizePt}pt; color:#{cc.attrs.layout.slots['address'].fontColor};">
                 <h:outputText value="#{patientController.current.person.address}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['barcode'].visible}"
-                          style="position:absolute; left:#{cc.attrs.layout.slots['barcode'].xMm}mm; top:#{cc.attrs.layout.slots['barcode'].yMm}mm;">
+                          style="position:absolute; left:#{cc.attrs.layout.slots['barcode'].leftMm}mm; top:#{cc.attrs.layout.slots['barcode'].topMm}mm;">
                 <p:barcode value="#{patientController.current.phn}"
                            type="#{cc.attrs.layout.slots['barcode'].type}"
                            format="svg" hrp="none" cache="false"
