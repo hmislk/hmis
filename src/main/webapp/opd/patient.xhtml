@@ -5,12 +5,11 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:pvc="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <h:head>
         <title>Patient Profile</title>
-        <!-- Include the font link in the <head> section of your JSF page -->
-        <h:outputStylesheet name="https://fonts.googleapis.com/css2?family=Libre+Barcode+128+Text&amp;display=swap" />
     </h:head>
 
     <h:body>
@@ -28,10 +27,17 @@
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             icon="pi pi-print"
-                                            value="Print Card"
+                                            value="Print Front"
                                             styleClass="ui-button-info"
-                                            title="Print patient card" >
-                                            <p:printer target="groupPatientCard"/>
+                                            title="Print front of patient card" >
+                                            <p:printer target="pvcCardFront"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            icon="pi pi-print"
+                                            value="Print Back"
+                                            styleClass="ui-button-info"
+                                            title="Print back of patient card" >
+                                            <p:printer target="pvcCardBack"/>
                                         </p:commandButton>
                                         <p:commandButton
                                             icon="pi pi-search"
@@ -322,34 +328,16 @@
                                         </div>
                                     </div>
 
-                                    <div style="transform: scale(2.0); transform-origin: top left; width: 10.0cm; height:5.0cm" >
-                                        <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm;" layout="block">
-                                            <div style="line-height: 0.5; padding: 0; margin: 0;">
-                                                <div class="mt-1" style="height: 0.9cm;  overflow-x: hidden; overflow-y: hidden">
-                                                    <p:barcode format="svg" hrp="none" width="185" value="#{patientController.current.phn}" type="code128" cache="false" rendered="true" />
-                                                </div>
-                                                <div>
-                                                    <p:outputLabel value="#{patientController.current.phn}" style="font-size: 8px;font-weight: 600;" />
-                                                </div>
-                                            </div>
-
-                                            <div class="mt-1 mb-1" style="line-height: 0.6; padding: 0; margin: 0;">
-                                                <div class="w-100">
-                                                    <h:outputText value="#{patientController.current.person.nameWithTitle}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                                    <p:outputLabel value="&#160;&#124;&#160;" style="font-size: 8px;" />
-                                                    <h:outputText value="#{patientController.current.person.sex eq 'Male' ? 'M' : 'F'}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" class="w-100"/>
-                                                </div>
-                                                <div class="w-100">
-                                                    <h:outputText value="#{patientController.current.person.dob}" class="mx-2" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;">
-                                                        <f:convertDateTime pattern="dd/MM/yyyy" />
-                                                    </h:outputText>
-                                                    <p:outputLabel value="&#160;&#124;&#160;&#160;" style="font-size: 8px;" rendered="#{patientController.current.person.nic ne null}"/>
-                                                    <h:outputText value="#{patientController.current.person.nic}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                                </div>
-                                                <div class="w-100">
-                                                    <h:outputText value="#{patientController.current.person.phone}" style="font-size: 8px; font-family: 'Libre Barcode 128 Text', sans-serif;" />
-                                                </div>
-                                            </div>
+                                    <div style="display:none;">
+                                        <h:panelGroup id="pvcCardFront" layout="block">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
+                                                                 side="front"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="pvcCardBack" layout="block">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
+                                                                 side="back"/>
                                         </h:panelGroup>
                                     </div>
 
