@@ -44,8 +44,8 @@ public class PvcCardLayoutController implements Serializable {
 
     @PostConstruct
     public void init() {
-        front = PvcCardLayout.fromJson(configOptionApplicationController.getLongTextValueByKeyReadOnly(KEY_FRONT_LAYOUT, ""));
-        back = PvcCardLayout.fromJson(configOptionApplicationController.getLongTextValueByKeyReadOnly(KEY_BACK_LAYOUT, ""));
+        front = PvcCardLayout.fromJson(configOptionApplicationController.getLongTextValueByKey(KEY_FRONT_LAYOUT, ""));
+        back = PvcCardLayout.fromJson(configOptionApplicationController.getLongTextValueByKey(KEY_BACK_LAYOUT, ""));
         frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
         backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
         frontUrlInput = frontExternalUrl;
