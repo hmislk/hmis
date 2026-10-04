@@ -161,7 +161,7 @@ public class PvcCardLayoutController implements Serializable {
     private StreamedContent backgroundStream(UploadType type) {
         Upload upload = findUploadByType(type);
         if (upload == null || upload.getBaImage() == null) {
-            return new DefaultStreamedContent();
+            return null;
         }
         byte[] bytes = upload.getBaImage();
         String contentType = upload.getFileType() != null ? upload.getFileType() : "image/png";
