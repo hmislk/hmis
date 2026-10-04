@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -173,8 +174,10 @@ public class PvcCardLayoutController implements Serializable {
     private void saveBackgroundUpload(UploadType type, FileUploadEvent event) {
         try {
             Upload upload = existingOrNewUpload(type);
-            byte[] bytes = IOUtils.toByteArray(event.getFile().getInputStream());
-            upload.setBaImage(bytes);
+            try (InputStream input = event.getFile().getInputStream()) {
+                byte[] bytes = IOUtils.toByteArray(input);
+                upload.setBaImage(bytes);
+            }
             upload.setFileName(event.getFile().getFileName());
             upload.setFileType(event.getFile().getContentType());
             upload.setFileUrl(null);
