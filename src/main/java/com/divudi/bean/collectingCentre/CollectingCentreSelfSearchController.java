@@ -109,6 +109,19 @@ public class CollectingCentreSelfSearchController implements Serializable {
         return outcome;
     }
 
+    public String navigateToRefundBill() {
+        if (!isViewingOwnBill()) {
+            return null;
+        }
+        billSearch.setBill(viewingBill);
+        billSearch.setComment(null);
+        String outcome = billSearch.navigateToRefundCollectingCentreBill();
+        if (outcome == null || outcome.isEmpty()) {
+            return outcome;
+        }
+        return "/collecting_centre/cc_self_bill_refund?faces-redirect=true";
+    }
+
     private boolean isViewingOwnBill() {
         if (viewingBill == null || viewingBill.getId() == null) {
             JsfUtil.addErrorMessage("No bill selected");

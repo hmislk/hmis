@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill">
+    <h:head>
+        <title>Collecting Centre Self Billing - Bill Refund</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Bill Refund"
+                                highlight="#{billSearch.bill.deptId}"
+                                pageIcon="fa-solid fa-money-bill-wave"
+                                backAction="#{collectingCentreSelfSearchController.navigateBackToReprintBill}"
+                                backLabel="Back to Bill"/>
+
+                            <h:panelGroup layout="block" styleClass="alert alert-warning" rendered="#{billSearch.bill eq null}">
+                                <h:outputText value="No bill selected. Go back to Search Bills and pick a bill."/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{billSearch.bill ne null and not billSearch.printPreview}">
+                                <div class="d-flex justify-content-end gap-3 mb-3 mx-2">
+                                    <p:inputText
+                                        placeholder="Enter Comments to Refund Bill"
+                                        value="#{billSearch.comment}"
+                                        style="width: 500px;"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Refund Bill"
+                                        icon="fa fa-money-bill-wave"
+                                        class="ui-button-warning"
+                                        action="#{billSearch.refundCollectingCenterBill()}"
+                                        onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
+                                                    return false;">
+                                    </p:commandButton>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p:panel class="mb-3">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-money-bill"/>
+                                                <h:outputLabel value="Payment Mode" class="mx-2"/>
+                                            </f:facet>
+                                            <p:selectOneMenu
+                                                id="cmbPs"
+                                                value="#{billSearch.paymentMethod}"
+                                                disabled="#{billSearch.bill.paymentMethod eq 'Agent'}">
+                                                <f:selectItem itemLabel="Select paymentMethod"/>
+                                                <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
+                                            </p:selectOneMenu>
+                                        </p:panel>
+
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-id-card-alt"/>
+                                                <h:outputLabel value="Patient Details" class="mx-2"/>
+                                            </f:facet>
+                                            <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
+                                        </p:panel>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p:panel>
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-list-alt"/>
+                                                <h:outputLabel value="Bill Details" class="mx-2"/>
+                                            </f:facet>
+                                            <p:panelGrid columns="2">
+                                                <h:outputLabel value="Collecting Centre Name:"/>
+                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.name}"/>
+                                                <h:outputLabel value="Collecting Centre Code:"/>
+                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.code}"/>
+                                                <h:outputLabel value="Route :"/>
+                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.route.name}"/>
+                                                <h:outputLabel value="Bill No :"/>
+                                                <h:outputLabel value="#{billSearch.bill.deptId}"/>
+                                                <h:outputLabel value="Total :"/>
+                                                <h:outputLabel value="#{billSearch.bill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Discount :"/>
+                                                <h:outputLabel value="#{billSearch.bill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Net Total :"/>
+                                                <h:outputLabel value="#{billSearch.bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Total Refund" style="font-weight: bold;"/>
+                                                <h:outputLabel id="txtTotal" value="#{billSearch.refundAmount}" style="font-weight: bold;">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </p:panelGrid>
+                                        </p:panel>
+                                    </div>
+                                </div>
+
+                                <p:panel class="mt-3">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt"/>
+                                        <h:outputLabel value="Bill Item Details" class="mx-2"/>
+                                    </f:facet>
+                                    <p:dataTable
+                                        id="dtF"
+                                        rowIndexVar="rowIndex"
+                                        value="#{billSearch.billItems}"
+                                        var="b"
+                                        selectionMode="multiple"
+                                        rowKey="#{b.id}"
+                                        selection="#{billSearch.refundingItems}">
+                                        <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
+                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
+                                        <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
+                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
+                                        <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}"
+                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
+
+                                        <p:column selectionBox="true" id="colSelect" width="2em"/>
+                                        <p:column headerText="No" width="3em">
+                                            <h:outputLabel value="#{rowIndex+1}"/>
+                                        </p:column>
+                                        <p:column headerText="Item Name">
+                                            <h:outputLabel value="#{b.item.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Fee Value" styleClass="text-end">
+                                            <h:outputLabel value="#{b.netValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Refunded" width="6em">
+                                            <p:tag severity="warning" value="Refunded" rendered="#{b.refunded}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </h:panelGroup>
+
+                            <p:panel rendered="#{billSearch.bill ne null and billSearch.printPreview}">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Refund Bill" class="mt-2"/>
+                                    <p:commandButton
+                                        value="Print"
+                                        type="button"
+                                        class="ui-button-info"
+                                        icon="fa fa-print"
+                                        style="float: right;">
+                                        <p:printer target="refundBillPreview"/>
+                                    </p:commandButton>
+                                </f:facet>
+                                <h:panelGroup id="refundBillPreview">
+                                    <bi:fiveFiveCCBill_CC_Refund_Custom1 bill="#{billSearch.bill}" duplicate="false"/>
+                                </h:panelGroup>
+                            </p:panel>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
