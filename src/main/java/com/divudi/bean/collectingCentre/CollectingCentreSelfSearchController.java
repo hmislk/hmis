@@ -1,5 +1,6 @@
 package com.divudi.bean.collectingCentre;
 
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -12,10 +13,12 @@ import com.divudi.service.BillService;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +42,10 @@ public class CollectingCentreSelfSearchController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private BillSearch billSearch;
+
+    private static final String SUBMITTED_BILL_ID_PARAM = "ccSelfBillId";
 
     private Date fromDate;
     private Date toDate;
@@ -72,6 +79,127 @@ public class CollectingCentreSelfSearchController implements Serializable {
         fetched.setBillItems(billService.fetchBillItems(fetched));
         viewingBill = fetched;
         return "/collecting_centre/cc_self_bill_reprint?faces-redirect=true";
+    }
+
+    public String navigateBackToReprintBill() {
+        if (viewingBill == null) {
+            return navigateBackToSearchBills();
+        }
+        return navigateToReprintBill(viewingBill);
+    }
+
+    public String navigateToOriginalBillPrint() {
+        if (!isViewingOwnBill()) {
+            return null;
+        }
+        return "/collecting_centre/cc_self_bill_original_print?faces-redirect=true";
+    }
+
+    /**
+     * Reuses BillSearch's collecting centre cancellation flow (privileges and
+     * cancel-request approval included); only the normal cancel page is swapped
+     * for the self-service one.
+     */
+    public String navigateToCancelBill() {
+        if (!isViewingOwnBill()) {
+            return null;
+        }
+        billSearch.setBill(viewingBill);
+        billSearch.setComment(null);
+        String outcome = billSearch.navigateToCancelCollectingCentreBill();
+        if (outcome != null && outcome.startsWith("/collecting_centre/bill_cancel")) {
+            return "/collecting_centre/cc_self_bill_cancel?faces-redirect=true";
+        }
+        return outcome;
+    }
+
+    public String navigateToRefundBill() {
+        if (!isViewingOwnBill()) {
+            return null;
+        }
+        billSearch.setBill(viewingBill);
+        billSearch.setComment(null);
+        billSearch.setRefundingItems(new ArrayList<>());
+        billSearch.setRefundAmount(0.0);
+        String outcome = billSearch.navigateToRefundCollectingCentreBill();
+        if (outcome == null || outcome.isEmpty()) {
+            return outcome;
+        }
+        return "/collecting_centre/cc_self_bill_refund?faces-redirect=true";
+    }
+
+    /**
+     * Self-service submit for cancel: re-checks the bill held by the
+     * session-scoped BillSearch before delegating, since the page can be
+     * reached without navigateToCancelBill().
+     */
+    public void cancelBill() {
+        Bill fetched = fetchSubmittedOwnBill();
+        if (fetched == null) {
+            return;
+        }
+        if (fetched.isCancelled()) {
+            JsfUtil.addErrorMessage("This bill is already cancelled");
+            return;
+        }
+        if (fetched.isRefunded()) {
+            JsfUtil.addErrorMessage("This bill has refunds and can not be cancelled");
+            return;
+        }
+        billSearch.cancelCollectingCentreBill();
+    }
+
+    /**
+     * Self-service submit for refund: same checks as cancelBill(). Already
+     * refunded bills are allowed, as remaining items can still be refunded.
+     */
+    public String refundBill() {
+        if (fetchSubmittedOwnBill() == null) {
+            return "";
+        }
+        return billSearch.refundCollectingCenterBill();
+    }
+
+    /**
+     * Returns the persisted bill if the bill ID submitted with the form (the
+     * bill the page was rendered for) still matches BillSearch's session bill
+     * and belongs to this collecting centre; otherwise adds an error and
+     * returns null. Guards against another tab replacing the session bill.
+     */
+    private Bill fetchSubmittedOwnBill() {
+        Bill current = billSearch.getBill();
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return null;
+        }
+        String submittedId = FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestParameterMap().get(SUBMITTED_BILL_ID_PARAM);
+        if (submittedId == null || !submittedId.equals(String.valueOf(current.getId()))) {
+            JsfUtil.addErrorMessage("The selected bill was changed in another tab. Please reopen the bill and try again.");
+            return null;
+        }
+        Bill fetched = billFacade.find(current.getId());
+        if (fetched == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return null;
+        }
+        if (!isOwnBill(fetched)) {
+            JsfUtil.addErrorMessage("This bill does not belong to your collecting centre");
+            return null;
+        }
+        return fetched;
+    }
+
+    private boolean isViewingOwnBill() {
+        if (viewingBill == null || viewingBill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return false;
+        }
+        if (!isOwnBill(viewingBill)) {
+            JsfUtil.addErrorMessage("This bill does not belong to your collecting centre");
+            return false;
+        }
+        return true;
     }
 
     public void searchBills() {

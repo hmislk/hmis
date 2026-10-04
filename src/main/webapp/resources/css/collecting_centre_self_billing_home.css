@@ -415,7 +415,7 @@ a.cc-action-card {
     .cc-hero-right { width: 100%; }
     .cc-hero-right { justify-content: space-between; }
     .cc-hero-chip {
-        min-width: 0;
+        min-width: 250px;
         flex: 1 1 auto;
     }
 
