@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pvc="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:head>
+        <title>PVC Card Layout</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="pvcCardLayoutForm">
+                    <p:growl id="messages" showDetail="true"/>
+                    <p:panel header="PVC Card Layout">
+                        <p:tabView>
+
+                            <p:tab title="Front">
+                                <p:panelGrid columns="2" styleClass="w-100">
+                                    <h:panelGroup layout="block">
+                                        <h:outputText value="Card width (mm)"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.front.widthMm}" minValue="1"/>
+                                        <h:outputText value="Card height (mm)"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.front.heightMm}" minValue="1"/>
+                                        <h:outputText value="Margin (mm)"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.front.marginMm}" minValue="0"/>
+
+                                        <p:dataTable value="#{pvcCardLayoutController.front.slots.entrySet().toArray()}" var="entry">
+                                            <p:column headerText="Field">
+                                                <h:outputText value="#{entry.key}"/>
+                                            </p:column>
+                                            <p:column headerText="Visible">
+                                                <p:selectBooleanCheckbox value="#{entry.value.visible}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                            <p:column headerText="X (mm)">
+                                                <p:inputNumber value="#{entry.value.xMm}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Y (mm)">
+                                                <p:inputNumber value="#{entry.value.yMm}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font size (pt)">
+                                                <p:inputNumber value="#{entry.value.fontSizePt}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font color">
+                                                <p:colorPicker value="#{entry.value.fontColor}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:colorPicker>
+                                            </p:column>
+                                            <p:column headerText="Barcode type/size">
+                                                <p:inputText value="#{entry.value.type}" style="width:6rem;"
+                                                             rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:inputText>
+                                                <p:inputNumber value="#{entry.value.widthMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:inputNumber>
+                                                <p:inputNumber value="#{entry.value.heightMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="frontPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <p:fileUpload listener="#{pvcCardLayoutController.uploadFrontBackground}"
+                                                      mode="advanced" auto="true" update="frontPreview messages"
+                                                      label="Upload front background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
+                                        <h:outputText value="or external URL:"/>
+                                        <p:inputText value="#{pvcCardLayoutController.frontUrlInput}" style="width:20rem;"/>
+                                        <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveFrontBackgroundUrl}"
+                                                         update="frontPreview messages"/>
+
+                                        <p:commandButton value="Save Front Layout" action="#{pvcCardLayoutController.saveFrontLayout}"
+                                                          update="messages" styleClass="ui-button-success"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="frontPreview" layout="block">
+                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
+                                                             backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
+                                                             backgroundStream="#{pvcCardLayoutController.frontBackgroundStream}"/>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab title="Back">
+                                <p:panelGrid columns="2" styleClass="w-100">
+                                    <h:panelGroup layout="block">
+                                        <h:outputText value="Card width (mm)"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.back.widthMm}" minValue="1"/>
+                                        <h:outputText value="Card height (mm)"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.back.heightMm}" minValue="1"/>
+                                        <h:outputText value="Margin (mm)"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.back.marginMm}" minValue="0"/>
+
+                                        <p:dataTable value="#{pvcCardLayoutController.back.slots.entrySet().toArray()}" var="entry">
+                                            <p:column headerText="Field">
+                                                <h:outputText value="#{entry.key}"/>
+                                            </p:column>
+                                            <p:column headerText="Visible">
+                                                <p:selectBooleanCheckbox value="#{entry.value.visible}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                            <p:column headerText="X (mm)">
+                                                <p:inputNumber value="#{entry.value.xMm}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Y (mm)">
+                                                <p:inputNumber value="#{entry.value.yMm}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font size (pt)">
+                                                <p:inputNumber value="#{entry.value.fontSizePt}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font color">
+                                                <p:colorPicker value="#{entry.value.fontColor}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:colorPicker>
+                                            </p:column>
+                                            <p:column headerText="Barcode type/size">
+                                                <p:inputText value="#{entry.value.type}" style="width:6rem;"
+                                                             rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:inputText>
+                                                <p:inputNumber value="#{entry.value.widthMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:inputNumber>
+                                                <p:inputNumber value="#{entry.value.heightMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="backPreview"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <p:fileUpload listener="#{pvcCardLayoutController.uploadBackBackground}"
+                                                      mode="advanced" auto="true" update="backPreview messages"
+                                                      label="Upload back background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
+                                        <h:outputText value="or external URL:"/>
+                                        <p:inputText value="#{pvcCardLayoutController.backUrlInput}" style="width:20rem;"/>
+                                        <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveBackBackgroundUrl}"
+                                                         update="backPreview messages"/>
+
+                                        <p:commandButton value="Save Back Layout" action="#{pvcCardLayoutController.saveBackLayout}"
+                                                          update="messages" styleClass="ui-button-success"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="backPreview" layout="block">
+                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
+                                                             backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
+                                                             backgroundStream="#{pvcCardLayoutController.backBackgroundStream}"/>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:tab>
+
+                        </p:tabView>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
