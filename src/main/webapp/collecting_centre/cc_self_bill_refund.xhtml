@@ -37,123 +37,182 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{billSearch.bill ne null and not billSearch.printPreview}">
-                                <div class="d-flex justify-content-end gap-3 mb-3 mx-2">
-                                    <p:inputText
-                                        placeholder="Enter Comments to Refund Bill"
-                                        value="#{billSearch.comment}"
-                                        style="width: 500px;"/>
-                                    <p:commandButton
-                                        ajax="false"
-                                        value="Refund Bill"
-                                        icon="fa fa-money-bill-wave"
-                                        class="ui-button-warning"
-                                        action="#{billSearch.refundCollectingCenterBill()}"
-                                        onclick="if (!confirm('Are you sure you want to Refund This Bill ?'))
-                                                    return false;">
-                                    </p:commandButton>
+                                <!-- Bill summary -->
+                                <div class="cc-balance-grid mx-1">
+                                    <div class="cc-balance-stat cc-c-blue cc-balance-stat-highlight">
+                                        <span class="cc-balance-stat-icon">
+                                            <h:outputText styleClass="fas fa-receipt"/>
+                                        </span>
+                                        <span class="cc-balance-stat-body">
+                                            <span class="cc-balance-stat-label">Bill No</span>
+                                            <h:outputText styleClass="cc-balance-stat-value" value="#{billSearch.bill.deptId}"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc-balance-stat cc-c-purple">
+                                        <span class="cc-balance-stat-icon">
+                                            <h:outputText styleClass="fas fa-calendar-day"/>
+                                        </span>
+                                        <span class="cc-balance-stat-body">
+                                            <span class="cc-balance-stat-label">Billed At</span>
+                                            <h:outputText styleClass="cc-balance-stat-value" value="#{billSearch.bill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </span>
+                                    </div>
+                                    <div class="cc-balance-stat cc-c-green">
+                                        <span class="cc-balance-stat-icon">
+                                            <h:outputText styleClass="fas fa-building"/>
+                                        </span>
+                                        <span class="cc-balance-stat-body">
+                                            <span class="cc-balance-stat-label">Collecting Centre</span>
+                                            <h:outputText styleClass="cc-balance-stat-value" value="#{billSearch.bill.collectingCentre.code}"/>
+                                        </span>
+                                    </div>
+                                    <div class="cc-balance-stat cc-c-red">
+                                        <span class="cc-balance-stat-icon">
+                                            <h:outputText styleClass="fas fa-coins"/>
+                                        </span>
+                                        <span class="cc-balance-stat-body">
+                                            <span class="cc-balance-stat-label">Net Total</span>
+                                            <h:outputText styleClass="cc-balance-stat-value" value="#{billSearch.bill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <p:panel>
+                                    <div class="col-md-7">
+                                        <p:panel styleClass="cc-bill-card cc-c-blue m-1">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-list-check"/>
+                                                <h:outputText value="Select Items to Refund" class="mx-2"/>
+                                            </f:facet>
+                                            <p:dataTable
+                                                id="dtF"
+                                                rowIndexVar="rowIndex"
+                                                value="#{billSearch.billItems}"
+                                                var="b"
+                                                selectionMode="multiple"
+                                                rowKey="#{b.id}"
+                                                selection="#{billSearch.refundingItems}"
+                                                emptyMessage="No items in this bill">
+                                                <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
+                                                        update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
+                                                <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
+                                                        update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
+                                                <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}"
+                                                        update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
+
+                                                <p:column selectionBox="true" id="colSelect" width="2.5em"/>
+                                                <p:column headerText="No" width="3em">
+                                                    <h:outputText value="#{rowIndex+1}"/>
+                                                </p:column>
+                                                <p:column headerText="Item">
+                                                    <h:outputText value="#{b.item.name}"/>
+                                                    <p:tag severity="warning" value="Refunded" styleClass="mx-2" rendered="#{b.refunded}"/>
+                                                </p:column>
+                                                <p:column headerText="Fee" width="9em" styleClass="text-end">
+                                                    <h:outputText value="#{b.netValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </p:panel>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <p:panel styleClass="cc-bill-card cc-c-orange m-1">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                                <h:outputText value="Refund Selected Items" class="mx-2"/>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    style="float: right;"
+                                                    value="Refund Bill"
+                                                    icon="fa fa-money-bill-wave"
+                                                    styleClass="ui-button-warning"
+                                                    title="Refund the selected items"
+                                                    action="#{billSearch.refundCollectingCenterBill()}">
+                                                    <p:confirm header="Confirm Refund" message="Are you sure you want to refund the selected items? This cannot be undone." icon="pi pi-exclamation-triangle"/>
+                                                </p:commandButton>
+                                            </f:facet>
+                                            <div class="d-flex flex-column gap-3">
+                                                <p:outputLabel for="txtComment" value="Reason for Refund"/>
+                                                <p:inputText
+                                                    id="txtComment"
+                                                    placeholder="Enter a reason to refund"
+                                                    value="#{billSearch.comment}"
+                                                    styleClass="w-100"/>
+
+                                                <div class="cc-bill-total-bar">
+                                                    <span class="cc-bill-total-label">Refund Amount</span>
+                                                    <h:outputText id="txtTotal" styleClass="cc-bill-total-value" value="#{billSearch.refundAmount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                        </p:panel>
+
+                                        <p:panel styleClass="cc-bill-card cc-c-purple m-1">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-id-card-alt"/>
-                                                <h:outputLabel value="Patient Details" class="mx-2"/>
+                                                <h:outputText value="Patient Details" class="mx-2"/>
                                             </f:facet>
                                             <common:patient patient="#{billSearch.bill.patient}" class="w-100"/>
                                         </p:panel>
                                     </div>
+                                </div>
+
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" styleClass="cc-confirm-dialog" closeOnEscape="true">
+                                    <p:commandButton value="Yes, Refund" type="button" styleClass="ui-confirmdialog-yes ui-button-warning" icon="pi pi-check" onclick="PF('ccProcessingDlg').show();"/>
+                                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                                </p:confirmDialog>
+
+                                <p:dialog widgetVar="ccProcessingDlg" modal="true" closable="false" resizable="false" draggable="false" showHeader="false" styleClass="cc-settling-dialog">
+                                    <div class="cc-settling-body">
+                                        <span class="cc-settling-spinner">
+                                            <h:outputText styleClass="fa fa-spinner fa-spin"/>
+                                        </span>
+                                        <div class="cc-settling-text">
+                                            <span class="cc-settling-title">Refunding Bill</span>
+                                            <span class="cc-settling-subtitle">Please wait, this will only take a moment...</span>
+                                        </div>
+                                    </div>
+                                </p:dialog>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{billSearch.bill ne null and billSearch.printPreview}">
+                                <div class="d-flex justify-content-end mb-3 mx-2">
+                                    <p:commandButton
+                                        value="Back to Search"
+                                        icon="fa-solid fa-magnifying-glass"
+                                        ajax="false"
+                                        styleClass="ui-button-info ui-button-outlined mx-1"
+                                        action="#{collectingCentreSelfSearchController.navigateBackToSearchBills}"/>
+                                </div>
+                                <div class="row justify-content-center">
                                     <div class="col-md-6">
-                                        <p:panel>
+                                        <p:panel styleClass="cc-bill-card cc-c-orange">
                                             <f:facet name="header">
-                                                <h:outputText styleClass="fas fa-list-alt"/>
-                                                <h:outputLabel value="Bill Details" class="mx-2"/>
+                                                <h:outputText styleClass="fa-solid fa-money-bill-wave"/>
+                                                <h:outputText value="Refund Bill" class="mx-2"/>
+                                                <p:commandButton
+                                                    value="Print"
+                                                    type="button"
+                                                    styleClass="ui-button-info"
+                                                    icon="fa fa-print"
+                                                    style="float: right;">
+                                                    <p:printer target="refundBillPreview"/>
+                                                </p:commandButton>
                                             </f:facet>
-                                            <p:panelGrid columns="2">
-                                                <h:outputLabel value="Collecting Centre Name:"/>
-                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.name}"/>
-                                                <h:outputLabel value="Collecting Centre Code:"/>
-                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.code}"/>
-                                                <h:outputLabel value="Route :"/>
-                                                <h:outputLabel value="#{billSearch.bill.collectingCentre.route.name}"/>
-                                                <h:outputLabel value="Bill No :"/>
-                                                <h:outputLabel value="#{billSearch.bill.deptId}"/>
-                                                <h:outputLabel value="Total :"/>
-                                                <h:outputLabel value="#{billSearch.bill.total}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                                <h:outputLabel value="Discount :"/>
-                                                <h:outputLabel value="#{billSearch.bill.discount}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                                <h:outputLabel value="Net Total :"/>
-                                                <h:outputLabel value="#{billSearch.bill.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                                <h:outputLabel value="Total Refund" style="font-weight: bold;"/>
-                                                <h:outputLabel id="txtTotal" value="#{billSearch.refundAmount}" style="font-weight: bold;">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-                                            </p:panelGrid>
+                                            <h:panelGroup id="refundBillPreview">
+                                                <bi:fiveFiveCCBill_CC_Refund_Custom1 bill="#{billSearch.bill}" duplicate="false"/>
+                                            </h:panelGroup>
                                         </p:panel>
                                     </div>
                                 </div>
-
-                                <p:panel class="mt-3">
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fas fa-list-alt"/>
-                                        <h:outputLabel value="Bill Item Details" class="mx-2"/>
-                                    </f:facet>
-                                    <p:dataTable
-                                        id="dtF"
-                                        rowIndexVar="rowIndex"
-                                        value="#{billSearch.billItems}"
-                                        var="b"
-                                        selectionMode="multiple"
-                                        rowKey="#{b.id}"
-                                        selection="#{billSearch.refundingItems}">
-                                        <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
-                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
-                                        <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
-                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
-                                        <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}"
-                                                update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
-
-                                        <p:column selectionBox="true" id="colSelect" width="2em"/>
-                                        <p:column headerText="No" width="3em">
-                                            <h:outputLabel value="#{rowIndex+1}"/>
-                                        </p:column>
-                                        <p:column headerText="Item Name">
-                                            <h:outputLabel value="#{b.item.name}"/>
-                                        </p:column>
-                                        <p:column headerText="Fee Value" styleClass="text-end">
-                                            <h:outputLabel value="#{b.netValue}">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Refunded" width="6em">
-                                            <p:tag severity="warning" value="Refunded" rendered="#{b.refunded}"/>
-                                        </p:column>
-                                    </p:dataTable>
-                                </p:panel>
                             </h:panelGroup>
-
-                            <p:panel rendered="#{billSearch.bill ne null and billSearch.printPreview}">
-                                <f:facet name="header">
-                                    <p:outputLabel value="Refund Bill" class="mt-2"/>
-                                    <p:commandButton
-                                        value="Print"
-                                        type="button"
-                                        class="ui-button-info"
-                                        icon="fa fa-print"
-                                        style="float: right;">
-                                        <p:printer target="refundBillPreview"/>
-                                    </p:commandButton>
-                                </f:facet>
-                                <h:panelGroup id="refundBillPreview">
-                                    <bi:fiveFiveCCBill_CC_Refund_Custom1 bill="#{billSearch.bill}" duplicate="false"/>
-                                </h:panelGroup>
-                            </p:panel>
                         </h:form>
                     </div>
                 </h:panelGroup>
