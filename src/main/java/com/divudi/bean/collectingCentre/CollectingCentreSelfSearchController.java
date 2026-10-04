@@ -1,5 +1,6 @@
 package com.divudi.bean.collectingCentre;
 
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -39,6 +40,8 @@ public class CollectingCentreSelfSearchController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private BillSearch billSearch;
 
     private Date fromDate;
     private Date toDate;
@@ -86,6 +89,24 @@ public class CollectingCentreSelfSearchController implements Serializable {
             return null;
         }
         return "/collecting_centre/cc_self_bill_original_print?faces-redirect=true";
+    }
+
+    /**
+     * Reuses BillSearch's collecting centre cancellation flow (privileges and
+     * cancel-request approval included); only the normal cancel page is swapped
+     * for the self-service one.
+     */
+    public String navigateToCancelBill() {
+        if (!isViewingOwnBill()) {
+            return null;
+        }
+        billSearch.setBill(viewingBill);
+        billSearch.setComment(null);
+        String outcome = billSearch.navigateToCancelCollectingCentreBill();
+        if (outcome != null && outcome.startsWith("/collecting_centre/bill_cancel")) {
+            return "/collecting_centre/cc_self_bill_cancel?faces-redirect=true";
+        }
+        return outcome;
     }
 
     private boolean isViewingOwnBill() {
