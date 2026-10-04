@@ -32,6 +32,8 @@ public class PvcCardLayoutController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
     private UploadFacade uploadFacade;
 
@@ -61,6 +63,9 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public void saveFrontLayout() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         if (!isValid(front)) {
             return;
         }
@@ -69,11 +74,22 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public void saveBackLayout() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         if (!isValid(back)) {
             return;
         }
         configOptionApplicationController.setLongTextValueByKey(KEY_BACK_LAYOUT, back.toJson());
         JsfUtil.addSuccessMessage("Back layout saved");
+    }
+
+    private boolean hasWritePrivilege() {
+        if (!webUserController.hasPrivilege("Developers")) {
+            JsfUtil.addErrorMessage("You do not have privilege to modify the PVC card layout");
+            return false;
+        }
+        return true;
     }
 
     private boolean isValid(PvcCardLayout layout) {
@@ -98,6 +114,16 @@ public class PvcCardLayoutController implements Serializable {
                     || slot.getTopMm() < 0 || slot.getTopMm() > layout.getHeightMm()) {
                 JsfUtil.addErrorMessage("Position for '" + entry.getKey() + "' is outside the card bounds");
                 return false;
+            }
+            if (PvcCardLayout.SLOT_BARCODE.equals(entry.getKey())) {
+                if (slot.getWidthMm() <= 0 || slot.getHeightMm() <= 0) {
+                    JsfUtil.addErrorMessage("Barcode width and height must be greater than zero");
+                    return false;
+                }
+                if (slot.getType() == null || slot.getType().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Barcode type cannot be blank");
+                    return false;
+                }
             }
         }
         return true;
@@ -128,21 +154,33 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public void saveFrontBackgroundUrl() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUrl(UploadType.PVC_Card_Front_Background, frontUrlInput);
         frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
     }
 
     public void saveBackBackgroundUrl() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUrl(UploadType.PVC_Card_Back_Background, backUrlInput);
         backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
     }
 
     public void uploadFrontBackground(FileUploadEvent event) {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUpload(UploadType.PVC_Card_Front_Background, event);
         frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
     }
 
     public void uploadBackBackground(FileUploadEvent event) {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUpload(UploadType.PVC_Card_Back_Background, event);
         backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
     }
