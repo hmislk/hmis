@@ -13,6 +13,7 @@ import com.divudi.service.BillService;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -43,6 +44,8 @@ public class CollectingCentreSelfSearchController implements Serializable {
     private SessionController sessionController;
     @Inject
     private BillSearch billSearch;
+
+    private static final String SUBMITTED_BILL_ID_PARAM = "ccSelfBillId";
 
     private Date fromDate;
     private Date toDate;
@@ -126,39 +129,65 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     /**
-     * Self-service submit for cancel: re-checks that the bill held by the
-     * session-scoped BillSearch belongs to this collecting centre before
-     * delegating, since the page can be reached without navigateToCancelBill().
+     * Self-service submit for cancel: re-checks the bill held by the
+     * session-scoped BillSearch before delegating, since the page can be
+     * reached without navigateToCancelBill().
      */
     public void cancelBill() {
-        if (!isBillSearchBillOwn()) {
+        Bill fetched = fetchSubmittedOwnBill();
+        if (fetched == null) {
+            return;
+        }
+        if (fetched.isCancelled()) {
+            JsfUtil.addErrorMessage("This bill is already cancelled");
+            return;
+        }
+        if (fetched.isRefunded()) {
+            JsfUtil.addErrorMessage("This bill has refunds and can not be cancelled");
             return;
         }
         billSearch.cancelCollectingCentreBill();
     }
 
     /**
-     * Self-service submit for refund: same ownership re-check as cancelBill().
+     * Self-service submit for refund: same checks as cancelBill(). Already
+     * refunded bills are allowed, as remaining items can still be refunded.
      */
     public String refundBill() {
-        if (!isBillSearchBillOwn()) {
+        if (fetchSubmittedOwnBill() == null) {
             return "";
         }
         return billSearch.refundCollectingCenterBill();
     }
 
-    private boolean isBillSearchBillOwn() {
+    /**
+     * Returns the persisted bill if the bill ID submitted with the form (the
+     * bill the page was rendered for) still matches BillSearch's session bill
+     * and belongs to this collecting centre; otherwise adds an error and
+     * returns null. Guards against another tab replacing the session bill.
+     */
+    private Bill fetchSubmittedOwnBill() {
         Bill current = billSearch.getBill();
-        Bill fetched = (current == null || current.getId() == null) ? null : billFacade.find(current.getId());
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return null;
+        }
+        String submittedId = FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestParameterMap().get(SUBMITTED_BILL_ID_PARAM);
+        if (submittedId == null || !submittedId.equals(String.valueOf(current.getId()))) {
+            JsfUtil.addErrorMessage("The selected bill was changed in another tab. Please reopen the bill and try again.");
+            return null;
+        }
+        Bill fetched = billFacade.find(current.getId());
         if (fetched == null) {
             JsfUtil.addErrorMessage("No bill selected");
-            return false;
+            return null;
         }
         if (!isOwnBill(fetched)) {
             JsfUtil.addErrorMessage("This bill does not belong to your collecting centre");
-            return false;
+            return null;
         }
-        return true;
+        return fetched;
     }
 
     private boolean isViewingOwnBill() {

@@ -25,6 +25,7 @@
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
                     <div class="cc-bill-page">
                         <h:form id="form">
+                            <input type="hidden" name="ccSelfBillId" value="#{billSearch.bill.id}"/>
                             <ez:cc_self_billing_header
                                 pageTitle="Bill Refund"
                                 highlight="#{billSearch.bill.deptId}"
