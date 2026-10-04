@@ -96,6 +96,8 @@
                                                 selectionMode="multiple"
                                                 rowKey="#{b.id}"
                                                 selection="#{billSearch.refundingItems}"
+                                                selectionDisabled="#{b.transRefund or b.refunded}"
+                                                rowStyleClass="#{(b.transRefund or b.refunded) ? 'text-muted' : ''}"
                                                 emptyMessage="No items in this bill">
                                                 <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}"
                                                         update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"/>
@@ -110,7 +112,7 @@
                                                 </p:column>
                                                 <p:column headerText="Item">
                                                     <h:outputText value="#{b.item.name}"/>
-                                                    <p:tag severity="warning" value="Refunded" styleClass="mx-2" rendered="#{b.refunded}"/>
+                                                    <p:tag severity="warning" value="Refunded" styleClass="mx-2" rendered="#{b.transRefund or b.refunded}"/>
                                                 </p:column>
                                                 <p:column headerText="Fee" width="9em" styleClass="text-end">
                                                     <h:outputText value="#{b.netValue}">
