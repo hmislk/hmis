@@ -74,6 +74,32 @@ public class CollectingCentreSelfSearchController implements Serializable {
         return "/collecting_centre/cc_self_bill_reprint?faces-redirect=true";
     }
 
+    public String navigateBackToReprintBill() {
+        if (viewingBill == null) {
+            return navigateBackToSearchBills();
+        }
+        return navigateToReprintBill(viewingBill);
+    }
+
+    public String navigateToOriginalBillPrint() {
+        if (!isViewingOwnBill()) {
+            return null;
+        }
+        return "/collecting_centre/cc_self_bill_original_print?faces-redirect=true";
+    }
+
+    private boolean isViewingOwnBill() {
+        if (viewingBill == null || viewingBill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return false;
+        }
+        if (!isOwnBill(viewingBill)) {
+            JsfUtil.addErrorMessage("This bill does not belong to your collecting centre");
+            return false;
+        }
+        return true;
+    }
+
     public void searchBills() {
         bills = null;
         Institution collectingCentre = sessionController.getInstitution();
