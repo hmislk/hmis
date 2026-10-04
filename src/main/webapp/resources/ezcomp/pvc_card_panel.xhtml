@@ -15,16 +15,16 @@
 
     <cc:implementation>
         <h:panelGroup layout="block"
-                      style="position:relative; overflow:hidden; width:#{cc.attrs.layout.widthMm}mm; height:#{cc.attrs.layout.heightMm}mm;">
+                      style="position:relative; overflow:hidden; width:#{cc.attrs.layout.widthMm}mm; height:#{cc.attrs.layout.heightMm}mm; page:#{cc.attrs.side};">
 
-            <h:outputText escape="false" value="&lt;style&gt;@page { size: #{cc.attrs.layout.widthMm}mm #{cc.attrs.layout.heightMm}mm; margin: #{cc.attrs.layout.marginMm}mm; }&lt;/style&gt;"/>
+            <h:outputText escape="false" value="&lt;style&gt;@page #{cc.attrs.side} { size: #{cc.attrs.layout.widthMm}mm #{cc.attrs.layout.heightMm}mm; margin: #{cc.attrs.layout.marginMm}mm; }&lt;/style&gt;"/>
 
             <h:panelGroup layout="block" rendered="#{not empty cc.attrs.backgroundExternalUrl}"
                           style="position:absolute; top:0; left:0; width:100%; height:100%;">
                 <p:graphicImage value="#{cc.attrs.backgroundExternalUrl}" cache="false"
                                  style="width:100%; height:100%; object-fit:cover;"/>
             </h:panelGroup>
-            <h:panelGroup layout="block" rendered="#{empty cc.attrs.backgroundExternalUrl}"
+            <h:panelGroup layout="block" rendered="#{empty cc.attrs.backgroundExternalUrl and pvcCardBackgroundViewController.hasStream(cc.attrs.side)}"
                           style="position:absolute; top:0; left:0; width:100%; height:100%;">
                 <p:graphicImage value="#{pvcCardBackgroundViewController.stream}" cache="false"
                                  style="width:100%; height:100%; object-fit:cover;">

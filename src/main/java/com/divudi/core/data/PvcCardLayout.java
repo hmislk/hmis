@@ -35,8 +35,8 @@ public class PvcCardLayout implements Serializable {
         layout.slots.put(SLOT_PHONE, new PvcCardSlot(true, 5, 32, 8, "#000000"));
         layout.slots.put(SLOT_GENDER, new PvcCardSlot(true, 5, 38, 8, "#000000"));
         layout.slots.put(SLOT_ADDRESS, new PvcCardSlot(false, 5, 44, 7, "#000000"));
-        layout.slots.put(SLOT_BARCODE, PvcCardSlot.barcodeSlot(true, 5, 48, 40, 10, "code128"));
-        layout.slots.put(SLOT_PHN, new PvcCardSlot(true, 5, 50, 7, "#000000"));
+        layout.slots.put(SLOT_BARCODE, PvcCardSlot.barcodeSlot(true, 5, 42, 40, 8, "code128"));
+        layout.slots.put(SLOT_PHN, new PvcCardSlot(true, 5, 51, 7, "#000000"));
         return layout;
     }
 
@@ -49,12 +49,21 @@ public class PvcCardLayout implements Serializable {
             PvcCardLayout defaults = defaultLayout();
             PvcCardLayout layout = new PvcCardLayout();
             layout.widthMm = root.optDouble("widthMm", defaults.widthMm);
+            if (layout.widthMm <= 0) {
+                layout.widthMm = defaults.widthMm;
+            }
             layout.heightMm = root.optDouble("heightMm", defaults.heightMm);
+            if (layout.heightMm <= 0) {
+                layout.heightMm = defaults.heightMm;
+            }
             layout.marginMm = root.optDouble("marginMm", defaults.marginMm);
+            if (layout.marginMm < 0) {
+                layout.marginMm = defaults.marginMm;
+            }
             JSONObject slotsJson = root.optJSONObject("slots");
             for (Map.Entry<String, PvcCardSlot> entry : defaults.slots.entrySet()) {
                 JSONObject slotJson = slotsJson == null ? null : slotsJson.optJSONObject(entry.getKey());
-                layout.slots.put(entry.getKey(), slotJson == null ? entry.getValue() : PvcCardSlot.fromJson(slotJson));
+                layout.slots.put(entry.getKey(), slotJson == null ? entry.getValue() : PvcCardSlot.fromJson(slotJson, entry.getValue()));
             }
             return layout;
         } catch (Exception e) {

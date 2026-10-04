@@ -45,4 +45,17 @@ class PvcCardSlotTest {
         assertEquals("#000000", restored.getFontColor());
         assertEquals("code128", restored.getType());
     }
+
+    @Test
+    void fromJsonWithFallbackInheritsMissingFieldsFromFallbackNotGenericDefaults() {
+        PvcCardSlot fallback = PvcCardSlot.barcodeSlot(true, 5, 48, 40, 10, "code128");
+        JSONObject partial = new JSONObject();
+        partial.put("type", "code128");
+
+        PvcCardSlot restored = PvcCardSlot.fromJson(partial, fallback);
+
+        assertTrue(restored.isVisible());
+        assertEquals(40.0, restored.getWidthMm());
+        assertEquals(10.0, restored.getHeightMm());
+    }
 }
