@@ -41,13 +41,13 @@ class PvcCardLayoutTest {
     void fromJsonRoundTripsCustomValues() {
         PvcCardLayout original = PvcCardLayout.defaultLayout();
         original.setWidthMm(90.0);
-        original.getSlots().get(PvcCardLayout.SLOT_NAME).setXMm(12.5);
+        original.getSlots().get(PvcCardLayout.SLOT_NAME).setLeftMm(12.5);
         original.getSlots().get(PvcCardLayout.SLOT_ADDRESS).setVisible(true);
 
         PvcCardLayout restored = PvcCardLayout.fromJson(original.toJson());
 
         assertEquals(90.0, restored.getWidthMm());
-        assertEquals(12.5, restored.getSlots().get(PvcCardLayout.SLOT_NAME).getXMm());
+        assertEquals(12.5, restored.getSlots().get(PvcCardLayout.SLOT_NAME).getLeftMm());
         assertTrue(restored.getSlots().get(PvcCardLayout.SLOT_ADDRESS).isVisible());
     }
 
