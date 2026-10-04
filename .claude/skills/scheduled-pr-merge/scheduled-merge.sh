@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
-# One-shot, fail-safe scheduled merge of a reviewed GitHub PR.
-# Installed copy + cron entry are created by the scheduled-pr-merge skill.
+# Fail-safe scheduled merge of a reviewed GitHub PR within a time window.
+# Cron starts this every minute from --at until --at + --window-minutes
+# (entries created by schedule.sh). Each start makes ONE attempt:
 #
-# Merges ONLY if, at run time:
-#   - the PR is still OPEN and targets the expected base branch
-#   - its head commit is still the one that was reviewed (no pushes since)
-#   - every status check has passed (pending checks are waited on, briefly)
-#   - GitHub reports it MERGEABLE and CLEAN
-#   - the job is not running more than --late-minutes after the scheduled time
-# Otherwise it does nothing except log and comment on the PR.
+#   merged now / already merged            -> remove cron entries, done
+#   something changed since review         -> comment, remove entries, give up
+#     (PR closed, base changed, new commits, a check failed, conflicts)
+#   temporarily not ready                  -> log, exit; the next minute retries
+#     (checks pending, GitHub still computing mergeability, network/API error)
+#   still not ready at the end of window   -> comment, remove entries, give up
 #
 # Usage:
 #   scheduled-merge.sh --repo OWNER/REPO --pr N --base BRANCH --sha HEADSHA \
-#                      --at EPOCH --job-id ID [--method merge|squash|rebase] \
-#                      [--late-minutes 30] [--dry-run]
+#                      --at EPOCH --job-id ID [--window-minutes 30] \
+#                      [--method merge|squash|rebase] [--dry-run]
 
 set -u
 
-REPO="" PR="" BASE="" SHA="" AT="" JOB_ID="" METHOD="merge" LATE_MIN=30 DRY_RUN=0
+REPO="" PR="" BASE="" SHA="" AT="" JOB_ID="" METHOD="merge" WINDOW_MIN=30 DRY_RUN=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --repo) REPO="$2"; shift 2 ;;
@@ -27,7 +27,7 @@ while [ $# -gt 0 ]; do
     --at) AT="$2"; shift 2 ;;
     --job-id) JOB_ID="$2"; shift 2 ;;
     --method) METHOD="$2"; shift 2 ;;
-    --late-minutes) LATE_MIN="$2"; shift 2 ;;
+    --window-minutes) WINDOW_MIN="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
@@ -43,69 +43,89 @@ mkdir -p "$STATE_DIR"
 exec >>"$LOG" 2>&1
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S %z')] $*"; }
 
-log "=== job $JOB_ID start (dry-run=$DRY_RUN) repo=$REPO pr=#$PR base=$BASE sha=${SHA:0:10} method=$METHOD"
+# Never let two attempts overlap (a slow attempt may outlast its minute).
+exec 9>"$STATE_DIR/pr-$PR.lock"
+flock -n 9 || { log "job $JOB_ID: previous attempt still running; skipping this minute"; exit 0; }
 
-# One-shot: a real run removes its own cron line first, so it can never fire
-# again (cron has no year field; the same line would fire next year).
-if [ "$DRY_RUN" -eq 0 ]; then
+END=$(( AT + WINDOW_MIN * 60 ))
+now=$(date +%s)
+LAST_CHANCE=0; [ $(( now + 60 )) -gt "$END" ] && LAST_CHANCE=1
+window_txt="$(date -d "@$AT" '+%H:%M')–$(date -d "@$END" '+%H:%M %Z')"
+
+remove_cron() {
+  [ "$DRY_RUN" -eq 1 ] && return
   crontab -l 2>/dev/null | grep -v "hmis-scheduled-merge:$JOB_ID\$" | crontab -
-  log "removed cron entry for job $JOB_ID"
-fi
-
-if [ -r "$TOKEN_FILE" ]; then
-  GH_TOKEN="$(cat "$TOKEN_FILE")"; export GH_TOKEN
-else
-  log "ABORT: token file $TOKEN_FILE not readable"; exit 1
-fi
-
+  log "removed cron entries for job $JOB_ID"
+}
 comment() {
   [ "$DRY_RUN" -eq 1 ] && { log "(dry-run) would comment: $1"; return; }
   gh pr comment "$PR" --repo "$REPO" --body "$1" >/dev/null 2>&1 \
     && log "commented on PR" || log "WARN: could not comment on PR"
 }
-abort() {
-  log "ABORT: $1"
-  comment "⏰ Scheduled merge **not performed**: $1 Nothing was merged; please merge manually when ready."
+give_up() {
+  log "GIVE UP: $1"
+  comment "⏰ Scheduled merge (window $window_txt) **not performed**: $1 Nothing was merged; please merge manually."
+  remove_cron
   exit 1
 }
+not_ready() {
+  if [ "$LAST_CHANCE" -eq 1 ]; then
+    give_up "the window ended and the PR was still not ready ($1)."
+  fi
+  log "not ready yet ($1); will retry next minute"
+  exit 0
+}
 
-now=$(date +%s)
-if [ $((now - AT)) -gt $((LATE_MIN * 60)) ]; then
-  abort "the job ran $(( (now - AT) / 60 )) minutes after its scheduled time (limit ${LATE_MIN} min), outside the agreed window."
+log "--- job $JOB_ID attempt (dry-run=$DRY_RUN, window $window_txt, last-chance=$LAST_CHANCE)"
+
+[ "$now" -ge $(( AT - 60 )) ] || { log "before the window; nothing to do"; exit 0; }
+# Far past the window (e.g. machine was off, or cron's yearless line came round again).
+[ "$now" -le $(( END + 120 )) ] || give_up "the job only got to run at $(date '+%Y-%m-%d %H:%M'), after the window."
+
+if [ -r "$TOKEN_FILE" ]; then
+  GH_TOKEN="$(cat "$TOKEN_FILE")"; export GH_TOKEN
+else
+  log "token file $TOKEN_FILE not readable"
+  not_ready "GitHub token file missing on the scheduling machine"
 fi
 
-# Wait (max ~15 min) for pending checks / mergeability to settle.
-for attempt in $(seq 1 15); do
-  info=$(gh pr view "$PR" --repo "$REPO" \
-    --json state,baseRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup 2>&1) \
-    || { log "gh error (attempt $attempt): $info"; sleep 60; continue; }
-  state=$(jq -r .state <<<"$info")
-  base=$(jq -r .baseRefName <<<"$info")
-  head=$(jq -r .headRefOid <<<"$info")
-  mergeable=$(jq -r .mergeable <<<"$info")
-  mstate=$(jq -r .mergeStateStatus <<<"$info")
-  pending=$(jq '[.statusCheckRollup[] | (.conclusion // .state // "") | select(. == "" or . == "PENDING" or . == "QUEUED" or . == "IN_PROGRESS" or . == "EXPECTED")] | length' <<<"$info")
-  failed=$(jq -r '[.statusCheckRollup[] | select(((.conclusion // .state // "") | IN("SUCCESS","NEUTRAL","SKIPPED","","PENDING","QUEUED","IN_PROGRESS","EXPECTED")) | not) | (.name // .context)] | join(", ")' <<<"$info")
-  log "attempt $attempt: state=$state base=$base head=${head:0:10} mergeable=$mergeable mergeState=$mstate pending=$pending failed=[$failed]"
+info=$(gh pr view "$PR" --repo "$REPO" \
+  --json state,baseRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup 2>&1) \
+  || not_ready "GitHub API error: $(echo "$info" | head -1)"
+state=$(jq -r .state <<<"$info")
+base=$(jq -r .baseRefName <<<"$info")
+head=$(jq -r .headRefOid <<<"$info")
+mergeable=$(jq -r .mergeable <<<"$info")
+mstate=$(jq -r .mergeStateStatus <<<"$info")
+pending=$(jq '[.statusCheckRollup[] | (.conclusion // .state // "") | select(IN("","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED"))] | length' <<<"$info")
+failed=$(jq -r '[.statusCheckRollup[] | select(((.conclusion // .state // "") | IN("SUCCESS","NEUTRAL","SKIPPED","","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED")) | not) | (.name // .context)] | join(", ")' <<<"$info")
+log "state=$state base=$base head=${head:0:10} mergeable=$mergeable mergeState=$mstate pending=$pending failed=[$failed]"
 
-  [ "$state" = "MERGED" ] && { log "already merged; nothing to do"; exit 0; }
-  [ "$state" = "OPEN" ] || abort "the PR is $state."
-  [ "$base" = "$BASE" ] || abort "the PR now targets \`$base\`, not \`$BASE\`."
-  [ "$head" = "$SHA" ] || abort "new commits were pushed after review (head is now \`${head:0:10}\`, reviewed \`${SHA:0:10}\`)."
-  [ -z "$failed" ] || abort "status checks failed: $failed."
-  if [ "$pending" -eq 0 ] && [ "$mergeable" = "MERGEABLE" ] && { [ "$mstate" = "CLEAN" ] || [ "$mstate" = "HAS_HOOKS" ]; }; then
-    if [ "$DRY_RUN" -eq 1 ]; then
-      log "DRY-RUN OK: all preconditions met; would run: gh pr merge $PR --$METHOD --match-head-commit $SHA"
-      exit 0
-    fi
-    if out=$(gh pr merge "$PR" --repo "$REPO" "--$METHOD" --match-head-commit "$SHA" 2>&1); then
-      log "MERGED: $out"
-      comment "⏰ Merged by the scheduled merge job at $(date '+%Y-%m-%d %H:%M %Z'), as agreed with the customer. Head commit \`${SHA:0:10}\` (the reviewed one); all checks passed."
-      exit 0
-    fi
-    abort "\`gh pr merge\` failed: $(echo "$out" | head -1)"
-  fi
-  [ "$mergeable" = "CONFLICTING" ] && abort "the PR has merge conflicts."
-  sleep 60
-done
-abort "checks were still pending or GitHub did not report the PR as cleanly mergeable after 15 minutes (mergeable=$mergeable, state=$mstate)."
+# Already done (e.g. someone merged by hand, or a previous minute did).
+[ "$state" = "MERGED" ] && { log "already merged"; remove_cron; exit 0; }
+
+# Changed since review: retrying cannot help, so stop now and say why.
+[ "$state" = "OPEN" ] || give_up "the PR is $state."
+[ "$base" = "$BASE" ] || give_up "the PR now targets \`$base\`, not \`$BASE\`."
+[ "$head" = "$SHA" ] || give_up "new commits were pushed after review (head is now \`${head:0:10}\`, reviewed \`${SHA:0:10}\`)."
+[ -z "$failed" ] || give_up "status checks failed: $failed."
+[ "$mergeable" = "CONFLICTING" ] && give_up "the PR has merge conflicts."
+
+# Temporarily not ready: retry next minute until the window ends.
+[ "$pending" -eq 0 ] || not_ready "$pending check(s) still running"
+[ "$mergeable" = "MERGEABLE" ] || not_ready "GitHub mergeability is $mergeable"
+case "$mstate" in CLEAN|HAS_HOOKS) ;; *) not_ready "merge state is $mstate" ;; esac
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  log "DRY-RUN OK: all preconditions met; would run: gh pr merge $PR --$METHOD --match-head-commit $SHA"
+  exit 0
+fi
+if out=$(gh pr merge "$PR" --repo "$REPO" "--$METHOD" --match-head-commit "$SHA" 2>&1); then
+  log "MERGED: $out"
+  comment "⏰ Merged by the scheduled merge job at $(date '+%Y-%m-%d %H:%M %Z'), within the agreed window $window_txt. Head commit \`${SHA:0:10}\` (the reviewed one); all checks passed."
+  remove_cron
+  exit 0
+fi
+# A failed merge call is retried; a real change (e.g. new head) is caught as
+# a give-up on the next attempt.
+not_ready "\`gh pr merge\` failed: $(echo "$out" | head -1)"

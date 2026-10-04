@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# Schedule, list or cancel one-shot PR merges (cron-based, survives Claude
-# sessions ending; needs the machine on and the cron daemon running).
+# Schedule, list or cancel PR merges within a time window (cron-based,
+# survives Claude sessions ending; needs the machine on and cron running).
 #
-#   schedule.sh add    --repo OWNER/REPO --pr N --at "2026-10-05 03:00" [--method merge] [--late-minutes 30]
+#   schedule.sh add    --repo OWNER/REPO --pr N --at "2026-10-05 03:00" [--window-minutes 30] [--method merge]
 #   schedule.sh test   --repo OWNER/REPO --pr N      # dry-run now, in a cron-like env
 #   schedule.sh list
 #   schedule.sh cancel JOB_ID
 #
 # "add" pins the PR's CURRENT head commit and base branch as the reviewed
-# state: if either changes before the scheduled time, the job will not merge.
+# state: if either changes before the merge, the job will not merge.
+# Cron starts the runner every minute of the window; it retries temporary
+# problems until the window ends and stops for good once merged.
 
 set -euo pipefail
 
@@ -34,14 +36,14 @@ need_token() {
 }
 
 cmd="${1:-}"; shift || true
-REPO="" PR="" AT_STR="" METHOD="merge" LATE=30
+REPO="" PR="" AT_STR="" METHOD="merge" WINDOW=30
 while [ $# -gt 0 ]; do
   case "$1" in
     --repo) REPO="$2"; shift 2 ;;
     --pr) PR="$2"; shift 2 ;;
     --at) AT_STR="$2"; shift 2 ;;
     --method) METHOD="$2"; shift 2 ;;
-    --late-minutes) LATE="$2"; shift 2 ;;
+    --window-minutes) WINDOW="$2"; shift 2 ;;
     *) break ;;
   esac
 done
@@ -58,13 +60,18 @@ case "$cmd" in
     [ "$STATE" = "OPEN" ] || { echo "PR #$PR is $STATE" >&2; exit 1; }
     install_runner
     JOB_ID="pr$PR-$AT"
-    CRON_TIME=$(date -d "@$AT" '+%-M %-H %-d %-m *')
-    LINE="$CRON_TIME PATH=/usr/local/bin:/usr/bin:/bin $RUNNER --repo $REPO --pr $PR --base $BASE --sha $SHA --at $AT --job-id $JOB_ID --method $METHOD --late-minutes $LATE # hmis-scheduled-merge:$JOB_ID"
-    ( crontab -l 2>/dev/null | grep -v "hmis-scheduled-merge:$JOB_ID\$" || true; echo "$LINE" ) | crontab -
+    [ "$WINDOW" -ge 0 ] && [ "$WINDOW" -le 240 ] || { echo "--window-minutes must be 0..240" >&2; exit 2; }
+    CMD="PATH=/usr/local/bin:/usr/bin:/bin $RUNNER --repo $REPO --pr $PR --base $BASE --sha $SHA --at $AT --job-id $JOB_ID --window-minutes $WINDOW --method $METHOD # hmis-scheduled-merge:$JOB_ID"
+    # One line per minute of the window (handles hour/midnight crossings).
+    LINES=""
+    for m in $(seq 0 "$WINDOW"); do
+      LINES+="$(date -d "@$(( AT + m * 60 ))" '+%-M %-H %-d %-m *') $CMD"$'\n'
+    done
+    ( crontab -l 2>/dev/null | grep -v "hmis-scheduled-merge:$JOB_ID\$" || true; printf '%s' "$LINES" ) | crontab -
     echo "Scheduled job $JOB_ID"
     echo "  PR:      $REPO#$PR -> $BASE ($METHOD)"
     echo "  Head:    $SHA (pinned; any new push cancels the merge)"
-    echo "  When:    $(date -d "@$AT" '+%Y-%m-%d %H:%M %Z') (aborts if more than $LATE min late)"
+    echo "  Window:  $(date -d "@$AT" '+%Y-%m-%d %H:%M')–$(date -d "@$(( AT + WINDOW * 60 ))" '+%H:%M %Z') (tries every minute; gives up at the end)"
     echo "  Log:     $STATE_DIR/pr-$PR.log"
     ;;
   test)
@@ -78,8 +85,11 @@ case "$cmd" in
     tail -n 5 "$STATE_DIR/pr-$PR.log"
     ;;
   list)
-    { crontab -l 2>/dev/null | grep "hmis-scheduled-merge:" || true; } | sed -E 's/.*--pr ([0-9]+).*--at ([0-9]+).*hmis-scheduled-merge:(.*)$/\3  PR #\1  at \2/' \
-      | while read -r id pr num at at_epoch; do echo "$id  $pr $num  $(date -d "@$at_epoch" '+%Y-%m-%d %H:%M %Z')"; done
+    { crontab -l 2>/dev/null | grep "hmis-scheduled-merge:" || true; } \
+      | sed -E 's/.*--pr ([0-9]+).*--at ([0-9]+).*--window-minutes ([0-9]+).*hmis-scheduled-merge:(.*)$/\4 \1 \2 \3/' | sort -u \
+      | while read -r id num at_epoch win; do
+          echo "$id  PR #$num  $(date -d "@$at_epoch" '+%Y-%m-%d %H:%M')–$(date -d "@$(( at_epoch + win * 60 ))" '+%H:%M %Z')"
+        done
     crontab -l 2>/dev/null | grep -q "hmis-scheduled-merge:" || echo "No scheduled merges."
     ;;
   cancel)
