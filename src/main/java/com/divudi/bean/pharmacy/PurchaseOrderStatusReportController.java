@@ -1,6 +1,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ControllerWithReportFilters;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.ReportViewType;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -62,8 +64,12 @@ public class PurchaseOrderStatusReportController implements Serializable, Contro
         }
     }
 
+    private static final String PRIVILEGE = "PharmacyAnalyticsPurchaseOrdersNotApproved";
+
     @EJB
     private BillFacade billFacade;
+    @Inject
+    private WebUserController webUserController;
 
     private Date fromDate;
     private Date toDate;
@@ -85,6 +91,10 @@ public class PurchaseOrderStatusReportController implements Serializable, Contro
      * than in an f:viewAction because this controller is @SessionScoped.
      */
     public String navigateToPurchaseOrderStatusReport() {
+        if (!webUserController.hasPrivilege(PRIVILEGE)) {
+            JsfUtil.addErrorMessage("You are not authorized to view this report");
+            return null;
+        }
         status = PurchaseOrderStatus.WAITING_APPROVAL;
         fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -30L));
         toDate = CommonFunctions.getEndOfDay();
@@ -98,6 +108,12 @@ public class PurchaseOrderStatusReportController implements Serializable, Contro
     }
 
     public void processReport() {
+        if (!webUserController.hasPrivilege(PRIVILEGE)) {
+            JsfUtil.addErrorMessage("You are not authorized to view this report");
+            rows = new ArrayList<>();
+            netTotal = 0.0;
+            return;
+        }
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select From and To dates");
             return;
