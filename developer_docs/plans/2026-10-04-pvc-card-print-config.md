@@ -260,6 +260,8 @@ Closes #24297"
 - Consumes: `PvcCardSlot` (Task 1) — `new PvcCardSlot(boolean, double, double, double, String)`, `PvcCardSlot.barcodeSlot(...)`, `PvcCardSlot.fromJson(JSONObject)`, `slot.toJson()`.
 - Produces: `PvcCardLayout` — mutable POJO with `widthMm`/`heightMm`/`marginMm` (double, getters/setters) and `slots` (`Map<String, PvcCardSlot>`, getter/setter), slot-name constants `SLOT_NAME="name"`, `SLOT_DOB="dob"`, `SLOT_PHONE="phone"`, `SLOT_GENDER="gender"`, `SLOT_ADDRESS="address"`, `SLOT_INSTITUTION_NAME="institutionName"`, `SLOT_DEPARTMENT_NAME="departmentName"`, `SLOT_BARCODE="barcode"`; static `PvcCardLayout.defaultLayout()`; static `PvcCardLayout.fromJson(String json)` (never throws — falls back to `defaultLayout()` on null/blank/malformed input, and fills any missing slot with its default); instance `toJson()` returning a JSON `String`. Used by Task 3 (`PvcCardLayoutController`) and Task 4 (print-panel composite).
 
+> **Post-implementation addition (2026-10-05):** a ninth slot, `SLOT_PHN="phn"`, was added after this plan was originally written, following this exact same mechanism, to show the readable PHN (plain text) that the pre-existing inline card had and the barcode-only card had dropped. Not reflected in the task write-up below.
+
 - [ ] **Step 1: Write the failing test**
 
 ```java

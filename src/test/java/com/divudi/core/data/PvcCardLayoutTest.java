@@ -18,6 +18,8 @@ class PvcCardLayoutTest {
         assertTrue(layout.getSlots().containsKey(PvcCardLayout.SLOT_BARCODE));
         assertTrue(layout.getSlots().get(PvcCardLayout.SLOT_BARCODE).isVisible());
         assertFalse(layout.getSlots().get(PvcCardLayout.SLOT_ADDRESS).isVisible());
+        assertTrue(layout.getSlots().containsKey(PvcCardLayout.SLOT_PHN));
+        assertTrue(layout.getSlots().get(PvcCardLayout.SLOT_PHN).isVisible());
     }
 
     @Test

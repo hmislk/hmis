@@ -102,7 +102,8 @@ Each holds a JSON object:
     "address":         { "visible": false, "leftMm": 5,  "topMm": 44, "fontSizePt": 7,  "fontColor": "#000000" },
     "institutionName": { "visible": true,  "leftMm": 5,  "topMm": 4,  "fontSizePt": 11, "fontColor": "#000000" },
     "departmentName":  { "visible": false, "leftMm": 5,  "topMm": 10, "fontSizePt": 9,  "fontColor": "#000000" },
-    "barcode":         { "visible": true,  "leftMm": 5,  "topMm": 48, "widthMm": 40, "heightMm": 10, "type": "code128" }
+    "barcode":         { "visible": true,  "leftMm": 5,  "topMm": 48, "widthMm": 40, "heightMm": 10, "type": "code128" },
+    "phn":             { "visible": true,  "leftMm": 5,  "topMm": 59, "fontSizePt": 7,  "fontColor": "#000000" }
   }
 }
 ```
@@ -113,6 +114,12 @@ institution name, department name) are bound live at render time via the
 existing session/patient managed beans, exactly as today's inline card does.
 This keeps the config schema stable regardless of which patient/institution is
 being printed.
+
+**Post-design addition:** a `phn` text slot was added after the original design
+(this doc's slot list above predates it) so the readable PHN that the
+pre-existing inline card showed as plain text isn't lost now that the barcode
+is the only PHN representation — it follows the exact same slot mechanism as
+`name`/`dob`/etc., just bound to `patientController.current.phn`.
 
 If a key is missing or fails to parse, the controller falls back to built-in
 default values (shown above) rather than rendering a blank/broken card.
