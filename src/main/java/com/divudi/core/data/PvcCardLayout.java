@@ -36,7 +36,7 @@ public class PvcCardLayout implements Serializable {
         layout.slots.put(SLOT_GENDER, new PvcCardSlot(true, 5, 38, 8, "#000000"));
         layout.slots.put(SLOT_ADDRESS, new PvcCardSlot(false, 5, 44, 7, "#000000"));
         layout.slots.put(SLOT_BARCODE, PvcCardSlot.barcodeSlot(true, 5, 48, 40, 10, "code128"));
-        layout.slots.put(SLOT_PHN, new PvcCardSlot(true, 5, 59, 7, "#000000"));
+        layout.slots.put(SLOT_PHN, new PvcCardSlot(true, 5, 50, 7, "#000000"));
         return layout;
     }
 
