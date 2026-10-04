@@ -44,7 +44,7 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 ### Bill Number
 - Prefix and year counting strategies
 - Department-specific number generation
-- **🚨 Inward deposit/payment series:** with `Unique Serial Per Admission Type for Inward Payments` off (and `Omit Year` off or not deployed), their serial is the institution-wide shared counter. See option 4 in the Bill Number Config doc.
+- **🚨 Inward deposit/payment series:** with `Unique Serial Per Admission Type for Inward Payments` off (and `Omit Year` off or not deployed), their serial follows the general `Bill Number Generation Strategy - ...` counter. That counter is institution-wide, shared by all bills, when none of those options is on. See option 4 in the Bill Number Config doc.
 
 ### 🚨 Applying config to a live hospital
 1. **Apply the agreed values exactly.** Use the recorded plan (memory, tracker, issue). If you think a value should differ, ask before setting it. Never "simplify" a value on your own reading of the requirement.
