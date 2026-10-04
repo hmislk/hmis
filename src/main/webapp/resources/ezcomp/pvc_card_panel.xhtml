@@ -22,7 +22,7 @@
                 <p:graphicImage value="#{cc.attrs.backgroundExternalUrl}" cache="false"
                                  style="width:100%; height:100%; object-fit:cover;"/>
             </h:panelGroup>
-            <h:panelGroup layout="block" rendered="#{empty cc.attrs.backgroundExternalUrl}"
+            <h:panelGroup layout="block" rendered="#{empty cc.attrs.backgroundExternalUrl and not empty cc.attrs.backgroundStream}"
                           style="position:absolute; top:0; left:0; width:100%; height:100%;">
                 <p:graphicImage value="#{cc.attrs.backgroundStream}" cache="false"
                                  style="width:100%; height:100%; object-fit:cover;"/>
