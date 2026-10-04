@@ -2041,9 +2041,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     // Temporary test method to verify AJAX is working
-    
-
-
     public void testAjaxMethod() {
         // Retained for existing view bindings.
     }
@@ -3115,15 +3112,23 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+        if (sessionController.getInstitution().getInstitutionType() != InstitutionType.CollectingCentre && getBill().getInstitution().getInstitutionType() != InstitutionType.CollectingCentre) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
+                if (!checkCancelBill(getBill())) {
+                    JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        ccBillCancellingStarted.set(false);
+                        return;
+                    }
                 } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    ccBillCancellingStarted.set(false);
-                    return;
+                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        ccBillCancellingStarted.set(false);
+                        return;
+                    }
                 }
             } else {
                 if (!getWebUserController().hasPrivilege("OpdCancel")) {
@@ -3132,14 +3137,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                     return;
                 }
             }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                ccBillCancellingStarted.set(false);
-                return;
-            }
+        }else{
+            // check the Privillages to Cancel CC Self Billing
+            // Currntly now is Pending.
         }
-        
+
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
 //        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
@@ -3162,7 +3164,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
-        
+
 //        Institution collectingCentre,
 //            double hospitalFee,
 //            double collectingCentreFee,
@@ -3170,7 +3172,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-
         collectingCentreApplicationController.updateCcBalance(
                 getBill().getCollectingCentre(),
                 bill.getTotalHospitalFee(),
@@ -3188,7 +3189,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 requestController.complteRequest(billRequest);
             }
         }
-        
+
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
@@ -4470,7 +4471,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return "";
         }
         billReturnController.setNewlyReturnedBill(viewingBill);
-        
+
         return "/opd/bill_return_print?faces-redirect=true";
     }
 
