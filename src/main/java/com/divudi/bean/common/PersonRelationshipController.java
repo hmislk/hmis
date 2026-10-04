@@ -160,6 +160,9 @@ public class PersonRelationshipController implements Serializable {
     // Getters and setters
 
     public PersonRelationship getCurrent() {
+        if (current == null) {
+            current = new PersonRelationship();
+        }
         return current;
     }
 
