@@ -17,9 +17,11 @@ nothing has changed since the review.
 
 Tools in this folder:
 - `schedule.sh` handles `add`, `test`, `list` and `cancel`.
-- `scheduled-merge.sh` is the runner. `add` and `test` install a copy at
-  `~/.local/share/hmis-scheduled-merge/`, so the job keeps working whatever
-  branch the repo is checked out on.
+- `scheduled-merge.sh` is the runner.
+
+`add` and `test` install both scripts in
+`~/.local/share/hmis-scheduled-merge/`. Jobs run from there, and so can
+`list` and `cancel`, whatever branch the repo is on.
 
 ## What the runner checks at merge time
 

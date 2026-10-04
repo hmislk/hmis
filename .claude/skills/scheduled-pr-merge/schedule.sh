@@ -20,8 +20,12 @@ RUNNER="$SHARE/scheduled-merge.sh"
 
 install_runner() {
   mkdir -p "$SHARE"
-  # Installed copy, so the job keeps working whatever branch the repo is on.
-  install -m 700 "$HERE/scheduled-merge.sh" "$RUNNER"
+  # Installed copies, so jobs (and this tool) keep working whatever branch
+  # the repo is on. Skip when already running from the installed copy.
+  if [ "$HERE" != "$SHARE" ]; then
+    install -m 700 "$HERE/scheduled-merge.sh" "$RUNNER"
+    install -m 700 "$HERE/schedule.sh" "$SHARE/schedule.sh"
+  fi
 }
 
 need_token() {
