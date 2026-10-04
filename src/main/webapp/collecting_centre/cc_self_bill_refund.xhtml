@@ -55,20 +55,6 @@
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <p:panel class="mb-3">
-                                            <f:facet name="header">
-                                                <h:outputText styleClass="fas fa-money-bill"/>
-                                                <h:outputLabel value="Payment Mode" class="mx-2"/>
-                                            </f:facet>
-                                            <p:selectOneMenu
-                                                id="cmbPs"
-                                                value="#{billSearch.paymentMethod}"
-                                                disabled="#{billSearch.bill.paymentMethod eq 'Agent'}">
-                                                <f:selectItem itemLabel="Select paymentMethod"/>
-                                                <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
-                                            </p:selectOneMenu>
-                                        </p:panel>
-
                                         <p:panel>
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fas fa-id-card-alt"/>
