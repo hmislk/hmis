@@ -22,7 +22,7 @@
                                 <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
                                         <h:outputText styleClass="fa fa-filter mr-2" />
-                                        <h:outputLabel value="Report Type" for="cmbStatus" styleClass="mb-0"/>
+                                        <p:outputLabel value="Report Type" for="cmbStatus" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <p:selectOneMenu id="cmbStatus"
                                                      value="#{purchaseOrderStatusReportController.status}"
@@ -32,14 +32,14 @@
                                         <p:ajax event="change"
                                                 listener="#{purchaseOrderStatusReportController.onStatusChange}"
                                                 process="@this"
-                                                update="pnlFilters pnlResults"/>
+                                                update="pnlFilters pnlResults pnlPrint"/>
                                     </p:selectOneMenu>
                                 </h:panelGroup>
                                 <!-- From date -->
                                 <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
                                         <h:outputText styleClass="fa fa-calendar mr-2" />
-                                        <h:outputLabel value="From (#{purchaseOrderStatusReportController.status.dateBasis} Date)" for="fromDate" styleClass="mb-0"/>
+                                        <p:outputLabel value="From (#{purchaseOrderStatusReportController.status.dateBasis} Date)" for="fromDate" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <p:calendar id="fromDate"
                                                 value="#{purchaseOrderStatusReportController.fromDate}"
@@ -52,7 +52,7 @@
                                 <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
                                         <h:outputText styleClass="fa fa-calendar mr-2" />
-                                        <h:outputLabel value="To (#{purchaseOrderStatusReportController.status.dateBasis} Date)" for="toDate" styleClass="mb-0"/>
+                                        <p:outputLabel value="To (#{purchaseOrderStatusReportController.status.dateBasis} Date)" for="toDate" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <p:calendar id="toDate"
                                                 value="#{purchaseOrderStatusReportController.toDate}"
@@ -72,7 +72,7 @@
                                 <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
                                         <h:outputText styleClass="fa fa-truck mr-2" />
-                                        <h:outputLabel value="Supplier" for="acSupplier" styleClass="mb-0"/>
+                                        <p:outputLabel value="Supplier" for="acSupplier" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <p:autoComplete id="acSupplier"
                                                     converter="deal"
@@ -104,7 +104,7 @@
                                              icon="fas fa-print"
                                              styleClass="ui-button-info"
                                              ajax="false">
-                                <p:printer target="pnlResults"/>
+                                <p:printer target="pnlPrint"/>
                             </p:commandButton>
                         </h:panelGroup>
 
@@ -188,6 +188,75 @@
                                                   rendered="#{not empty purchaseOrderStatusReportController.rows}"/>
                                 </f:facet>
                             </p:dataTable>
+                        </h:panelGroup>
+
+                        <!-- Print-only copy of every row: the on-screen table is paginated -->
+                        <h:panelGroup layout="block" style="display: none;">
+                            <h:panelGroup id="pnlPrint" layout="block">
+                                <h4>Purchase Order Status - #{purchaseOrderStatusReportController.status.label}</h4>
+                                <h:dataTable value="#{purchaseOrderStatusReportController.rows}" var="pr"
+                                             styleClass="table table-sm table-bordered w-100">
+                                    <h:column>
+                                        <f:facet name="header">PO No</f:facet>
+                                        <h:outputText value="#{pr.deptId}"/>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Created At</f:facet>
+                                        <h:outputText value="#{pr.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Created By</f:facet>
+                                        <h:outputText value="#{pr.creatorName}"/>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Finalized At</f:facet>
+                                        <h:outputText value="#{pr.finalizedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Finalized By</f:facet>
+                                        <h:outputText value="#{pr.finalizedByName}"/>
+                                    </h:column>
+                                    <h:column rendered="#{purchaseOrderStatusReportController.approvedView}">
+                                        <f:facet name="header">Approval No</f:facet>
+                                        <h:outputText value="#{pr.approvalDeptId}"/>
+                                    </h:column>
+                                    <h:column rendered="#{purchaseOrderStatusReportController.approvedView}">
+                                        <f:facet name="header">Approved At</f:facet>
+                                        <h:outputText value="#{pr.approvedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </h:column>
+                                    <h:column rendered="#{purchaseOrderStatusReportController.approvedView}">
+                                        <f:facet name="header">Approved By</f:facet>
+                                        <h:outputText value="#{pr.approvedByName}"/>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Supplier</f:facet>
+                                        <h:outputText value="#{pr.supplierName}"/>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Department</f:facet>
+                                        <h:outputText value="#{pr.departmentName}"/>
+                                    </h:column>
+                                    <h:column>
+                                        <f:facet name="header">Net Value</f:facet>
+                                        <h:outputText value="#{pr.netTotal}" style="float: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{purchaseOrderStatusReportController.netTotal}" style="float: right; font-weight: bold;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </h:column>
+                                </h:dataTable>
+                                <h:outputText value="#{purchaseOrderStatusReportController.rows.size()} purchase order(s)"
+                                              rendered="#{not empty purchaseOrderStatusReportController.rows}"/>
+                            </h:panelGroup>
                         </h:panelGroup>
 
                     </p:panel>
