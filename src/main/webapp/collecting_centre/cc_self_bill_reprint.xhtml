@@ -35,6 +35,36 @@
                                 <h:outputText value="No bill selected. Go back to Search Bills and pick a bill."/>
                             </h:panelGroup>
 
+                            <h:panelGroup layout="block" styleClass="d-flex justify-content-end mb-3 mx-2" rendered="#{collectingCentreSelfSearchController.viewingBill ne null}">
+                                <p:commandButton
+                                    value="Print Original Bill"
+                                    class="ui-button-info m-1"
+                                    icon="fa fa-print"
+                                    action="#{collectingCentreSelfSearchController.navigateToOriginalBillPrint()}"
+                                    rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}"
+                                    ajax="false"/>
+                                <p:commandButton
+                                    value="To Cancel"
+                                    class="ui-button-danger m-1"
+                                    icon="fa fa-times"
+                                    action="#{collectingCentreSelfSearchController.navigateToCancelBill()}"
+                                    disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or collectingCentreSelfSearchController.viewingBill.refunded}"
+                                    ajax="false"/>
+                                <p:commandButton
+                                    value="To Refund"
+                                    class="ui-button-warning m-1"
+                                    icon="fa fa-money-bill-wave"
+                                    action="#{collectingCentreSelfSearchController.navigateToRefundBill()}"
+                                    disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or not billReturnController.checkCanReturnBill(collectingCentreSelfSearchController.viewingBill)}"
+                                    ajax="false"/>
+                                <p:commandButton
+                                    value="To Sample Management"
+                                    class="ui-button-info m-1"
+                                    icon="fas fa-flask"
+                                    action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(collectingCentreSelfSearchController.viewingBill)}"
+                                    ajax="false"/>
+                            </h:panelGroup>
+
                             <h:panelGroup layout="block" styleClass="row" rendered="#{collectingCentreSelfSearchController.viewingBill ne null}">
                                 <div class="col-md-6">
                                     <p:panel>
