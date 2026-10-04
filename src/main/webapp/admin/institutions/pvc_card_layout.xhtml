@@ -23,11 +23,17 @@
                                 <p:panelGrid columns="2" styleClass="w-100">
                                     <h:panelGroup layout="block">
                                         <h:outputText value="Card width (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.front.widthMm}" minValue="1"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.front.widthMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
                                         <h:outputText value="Card height (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.front.heightMm}" minValue="1"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.front.heightMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
                                         <h:outputText value="Margin (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.front.marginMm}" minValue="0"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.front.marginMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
 
                                         <p:dataTable value="#{pvcCardLayoutController.front.slots.entrySet().toArray()}" var="entry"
                                                      id="frontSlotsTable" widgetVar="frontSlotsTable" rowKey="#{entry.key}">
@@ -79,7 +85,9 @@
                                                       mode="advanced" auto="true" update="@form"
                                                       label="Upload front background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
                                         <h:outputText value="or external URL:"/>
-                                        <p:inputText value="#{pvcCardLayoutController.frontUrlInput}" style="width:20rem;"/>
+                                        <p:inputText value="#{pvcCardLayoutController.frontUrlInput}" style="width:20rem;">
+                                            <p:ajax update="@form"/>
+                                        </p:inputText>
                                         <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveFrontBackgroundUrl}"
                                                          update="@form"/>
 
@@ -90,7 +98,7 @@
                                     <h:panelGroup id="frontPreview" layout="block">
                                         <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
                                                              backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
-                                                             backgroundStream="#{pvcCardLayoutController.frontBackgroundStream}"/>
+                                                             side="front"/>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
@@ -99,11 +107,17 @@
                                 <p:panelGrid columns="2" styleClass="w-100">
                                     <h:panelGroup layout="block">
                                         <h:outputText value="Card width (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.back.widthMm}" minValue="1"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.back.widthMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
                                         <h:outputText value="Card height (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.back.heightMm}" minValue="1"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.back.heightMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
                                         <h:outputText value="Margin (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.back.marginMm}" minValue="0"/>
+                                        <p:inputNumber value="#{pvcCardLayoutController.back.marginMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
 
                                         <p:dataTable value="#{pvcCardLayoutController.back.slots.entrySet().toArray()}" var="entry"
                                                      id="backSlotsTable" widgetVar="backSlotsTable" rowKey="#{entry.key}">
@@ -155,7 +169,9 @@
                                                       mode="advanced" auto="true" update="@form"
                                                       label="Upload back background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
                                         <h:outputText value="or external URL:"/>
-                                        <p:inputText value="#{pvcCardLayoutController.backUrlInput}" style="width:20rem;"/>
+                                        <p:inputText value="#{pvcCardLayoutController.backUrlInput}" style="width:20rem;">
+                                            <p:ajax update="@form"/>
+                                        </p:inputText>
                                         <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveBackBackgroundUrl}"
                                                          update="@form"/>
 
@@ -166,7 +182,7 @@
                                     <h:panelGroup id="backPreview" layout="block">
                                         <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
                                                              backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
-                                                             backgroundStream="#{pvcCardLayoutController.backBackgroundStream}"/>
+                                                             side="back"/>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
