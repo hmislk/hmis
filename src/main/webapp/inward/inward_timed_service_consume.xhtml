@@ -299,7 +299,7 @@
                                 showTime="true"
                                 timeInput="true"
                                 value="#{ti.fromTime}"
-                                disabled="#{ti.billItem.fromPackage or ti.bill.checkedBy ne null}"
+                                disabled="#{ti.bill.checkedBy ne null}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:datePicker>
                         </p:column>
@@ -309,7 +309,7 @@
                                 showTime="true"
                                 timeInput="true"
                                 value="#{ti.toTime}"
-                                disabled="#{ti.billItem.fromPackage or ti.bill.checkedBy ne null}"
+                                disabled="#{ti.bill.checkedBy ne null}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:datePicker>
                         </p:column>
@@ -339,8 +339,7 @@
                                     icon="fa fa-pencil"
                                     ajax="false"
                                     action="#{inwardTimedItemController.finalizeService(ti)}"
-                                    disabled="#{ti.bill.checkedBy ne null}"
-                                    rendered="#{not ti.billItem.fromPackage}" >
+                                    disabled="#{ti.bill.checkedBy ne null}" >
                                 </p:commandButton>
                                 <p:commandButton
                                     icon="fa-solid fa-trash"
@@ -348,8 +347,7 @@
                                     ajax="false"
                                     value="Remove"
                                     action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized or ti.bill.checkedBy ne null}"
-                                    rendered="#{not ti.billItem.fromPackage}" >
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized or ti.bill.checkedBy ne null}" >
                                 </p:commandButton>
                             </div>
 

@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="frmCombinedPayments">
+
+                    <p:panel header="Combined Inward Payments" class="m-1">
+
+                        <div class="row">
+
+                            <!-- Filters -->
+                            <div class="col-12 col-lg-3">
+
+                                <h:outputLabel for="fromDate" value="From" styleClass="d-block mt-2" />
+                                <p:calendar id="fromDate"
+                                            value="#{inwardCombinedPaymentReportController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            navigator="false"
+                                            styleClass="w-100" inputStyleClass="w-100" />
+
+                                <h:outputLabel for="toDate" value="To" styleClass="d-block mt-2" />
+                                <p:calendar id="toDate"
+                                            value="#{inwardCombinedPaymentReportController.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            navigator="false"
+                                            styleClass="w-100" inputStyleClass="w-100" />
+
+                                <h:outputLabel for="cmbDepartment" value="Department" styleClass="d-block mt-2" />
+                                <p:selectOneMenu id="cmbDepartment"
+                                                 value="#{inwardCombinedPaymentReportController.department}"
+                                                 filterMatchMode="contains"
+                                                 filter="true"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="dept"
+                                                   itemLabel="#{dept.name}"
+                                                   itemValue="#{dept}" />
+                                </p:selectOneMenu>
+
+                                <h:outputLabel for="cmbView" value="View" styleClass="d-block mt-2" />
+                                <p:selectOneMenu id="cmbView"
+                                                 value="#{inwardCombinedPaymentReportController.viewMode}"
+                                                 styleClass="w-100">
+                                    <f:selectItem itemValue="SUMMARY" itemLabel="Summary" />
+                                    <f:selectItem itemValue="GROUPED_TYPE" itemLabel="Grouped by Bill Type" />
+                                    <f:selectItem itemValue="GROUPED_BHT" itemLabel="Grouped by BHT" />
+                                    <f:selectItem itemValue="DETAIL" itemLabel="Details" />
+                                </p:selectOneMenu>
+
+                                <p:commandButton ajax="false"
+                                                 action="#{inwardCombinedPaymentReportController.generateReport()}"
+                                                 value="Generate Report"
+                                                 icon="fas fa-search"
+                                                 styleClass="ui-button-warning w-100 my-2" />
+
+                                <!-- Two exporters rather than one with a dynamic target:
+                                     p:dataExporter resolves its target at build time, so an
+                                     EL-chosen id would not follow the selected view. -->
+                                <p:commandButton ajax="false"
+                                                 value="Download as Excel"
+                                                 icon="fa-solid fa-file-excel"
+                                                 styleClass="ui-button-success w-100 my-1"
+                                                 rendered="#{inwardCombinedPaymentReportController.reportGenerated
+                                                             and inwardCombinedPaymentReportController.summaryView}">
+                                    <p:dataExporter type="xlsx"
+                                                    target="tblSubtotals"
+                                                    fileName="Combined Inward Payments Summary" />
+                                </p:commandButton>
+
+                                <p:commandButton ajax="false"
+                                                 value="Download as Excel"
+                                                 icon="fa-solid fa-file-excel"
+                                                 styleClass="ui-button-success w-100 my-1"
+                                                 rendered="#{inwardCombinedPaymentReportController.reportGenerated
+                                                             and not inwardCombinedPaymentReportController.summaryView}">
+                                    <p:dataExporter type="xlsx"
+                                                    target="tblRows"
+                                                    fileName="Combined Inward Payments"
+                                                    postProcessor="#{inwardCombinedPaymentReportController.postProcessRowsExport}" />
+                                </p:commandButton>
+
+                            </div>
+
+                            <!-- Results -->
+                            <div class="col-12 col-lg-9">
+
+                                <h:panelGroup layout="block" styleClass="alert alert-info py-2"
+                                              rendered="#{inwardCombinedPaymentReportController.noResults}">
+                                    <h:outputText value="No inward deposits, payments, post-final-bill payments or refunds in this date range." />
+                                </h:panelGroup>
+
+                                <h:panelGroup layout="block"
+                                              rendered="#{inwardCombinedPaymentReportController.reportGenerated
+                                                          and not inwardCombinedPaymentReportController.noResults}">
+
+                                    <!-- Period totals -->
+                                    <div class="row mb-3">
+                                        <div class="col-6 col-md-3">
+                                            <p:panel header="Received" styleClass="text-end">
+                                                <h:outputText value="#{inwardCombinedPaymentReportController.totalCashIn}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <p:panel header="Refunded" styleClass="text-end">
+                                                <h:outputText value="#{inwardCombinedPaymentReportController.totalCashOut}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <p:panel header="Net" styleClass="text-end fw-bold">
+                                                <h:outputText value="#{inwardCombinedPaymentReportController.grandTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <p:panel header="Cancelled Bills" styleClass="text-end">
+                                                <h:outputText value="#{inwardCombinedPaymentReportController.cancelledCount}" />
+                                            </p:panel>
+                                        </div>
+                                    </div>
+
+                                    <!-- Subtotals: shown for Summary and both grouped views -->
+                                    <p:dataTable id="tblSubtotals"
+                                                 value="#{inwardCombinedPaymentReportController.groups}"
+                                                 var="g"
+                                                 styleClass="mb-3"
+                                                 rendered="#{not inwardCombinedPaymentReportController.detailView}">
+
+                                        <p:column headerText="#{inwardCombinedPaymentReportController.groupColumnHeader}">
+                                            <h:outputText value="#{g.groupLabel}" />
+                                        </p:column>
+
+                                        <p:column headerText="Bills" styleClass="text-end">
+                                            <h:outputText value="#{g.count}" />
+                                        </p:column>
+
+                                        <p:column headerText="Received" styleClass="text-end">
+                                            <h:outputText value="#{g.cashIn}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Refunded" styleClass="text-end">
+                                            <h:outputText value="#{g.cashOut}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net" styleClass="text-end">
+                                            <h:outputText value="#{g.total}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                    <!-- Rows: shown for both grouped views and Details. In a grouped view the
+                                         rows arrive ordered by group, and the group is already visible in
+                                         the Type or BHT No column, so no separate group column is added. -->
+                                    <p:dataTable id="tblRows"
+                                                 value="#{inwardCombinedPaymentReportController.displayRows}"
+                                                 var="r"
+                                                 paginator="true"
+                                                 rows="25"
+                                                 paginatorPosition="bottom"
+                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                 rowsPerPageTemplate="25,50,100"
+                                                 rendered="#{not inwardCombinedPaymentReportController.summaryView}">
+
+                                        <p:column headerText="Date">
+                                            <h:outputText value="#{r.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Bill No">
+                                            <h:outputText value="#{r.billNo}" />
+                                        </p:column>
+
+                                        <p:column headerText="Type">
+                                            <h:outputText value="#{r.typeLabel}" />
+                                        </p:column>
+
+                                        <p:column headerText="BHT No">
+                                            <h:outputText value="#{r.bhtNo}" />
+                                        </p:column>
+
+                                        <p:column headerText="Patient">
+                                            <h:outputText value="#{r.patientName}" />
+                                        </p:column>
+
+                                        <p:column headerText="Payment Method">
+                                            <h:outputText value="#{r.paymentMethod}" />
+                                        </p:column>
+
+                                        <p:column headerText="Amount" styleClass="text-end">
+                                            <h:outputText value="#{r.signedAmount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Status">
+                                            <h:outputText value="#{r.cancelled ? 'Cancelled' : ''}" />
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                </h:panelGroup>
+
+                            </div>
+
+                        </div>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

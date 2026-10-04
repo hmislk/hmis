@@ -116,6 +116,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     private Patient patient;
     private PaymentMethodData paymentMethodData;
     private List<Bill> eligiblePostFinalPaymentBills;
+    private List<Bill> postFinalPaymentBillsForCurrentEncounter;
     private Bill originalBillToRefund;
     private Map<Long, Double> remainingRefundableAmountCache;
     // </editor-fold>
@@ -139,7 +140,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         makeNull();
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
 
@@ -179,6 +180,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             current.setPatientEncounter(null);
             return;
         }
+        postFinalPaymentBillsForCurrentEncounter = null;
         paymentListener();
     }
 
@@ -622,7 +624,51 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
 
         JsfUtil.addSuccessMessage("Payment Bill Saved");
         paymentMethod = null;
+        postFinalPaymentBillsForCurrentEncounter = null;
         printPreview = true;
+    }
+
+    /**
+     * Opens the Post Final Bill Payment Reprint page (View / Cancel / Refund /
+     * Print) for one post-final payment bill. Lets the cashier reach those
+     * actions from the Post Final Payment page itself (issue #24163) - before
+     * this, the only route was the Interim Bill's "Post Final Payment" tab,
+     * which is no longer offered once the final bill is confirmed.
+     */
+    public String navigateToViewPostFinalPayment(Bill bill) {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (!(bill instanceof BilledBill)) {
+            JsfUtil.addErrorMessage("Only a post final payment bill can be viewed here");
+            return "";
+        }
+        current = (BilledBill) bill;
+        printPreview = false;
+        postFinalPaymentBillsForCurrentEncounter = null;
+        return "/inward/inward_reprint_bill_post_final_payment?faces-redirect=true";
+    }
+
+    /**
+     * The current encounter's post-final payment bills (originals only, not
+     * their cancellation/refund rows), newest first, for the "Previous Post
+     * Final Payments" list on the Post Final Payment page.
+     */
+    public List<Bill> getPostFinalPaymentBillsForCurrentEncounter() {
+        if (postFinalPaymentBillsForCurrentEncounter == null) {
+            postFinalPaymentBillsForCurrentEncounter = new ArrayList<>();
+            PatientEncounter pe = getCurrent().getPatientEncounter();
+            if (pe != null) {
+                for (Bill b : getInwardBean().fetchPostFinalPaymentBill(pe, null)) {
+                    if (b instanceof BilledBill) {
+                        postFinalPaymentBillsForCurrentEncounter.add(b);
+                    }
+                }
+                postFinalPaymentBillsForCurrentEncounter.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+            }
+        }
+        return postFinalPaymentBillsForCurrentEncounter;
     }
 
     private void saveBill() {
@@ -637,7 +683,10 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
                 && configOptionApplicationController.getBooleanValueByKey(
                         "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
+        if (isYearlyBillNumberForPostFinalPayments()) {
+            getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+            getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+        } else if (uniqueSerialPerAdmissionType) {
             getCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP, admissionTypeForBillNumber));
             getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPFP, admissionTypeForBillNumber));
         } else {
@@ -655,6 +704,17 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         if (getCurrent().getId() == null) {
             getBilledBillFacade().create(getCurrent());
         }
+    }
+
+    /**
+     * Post-final payments, their cancellations and refunds are numbered by the
+     * same yearly generator as deposits and payments (with "Bill Number Suffix
+     * for POST_FINAL_BILL_INWARD_PAYMENT" etc.) instead of the legacy lifetime
+     * INWPFP / CAN / INWREF counters (issue #23986).
+     */
+    private boolean isYearlyBillNumberForPostFinalPayments() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Inward Payment Bill Numbers - Use Yearly Generator for Post Final Payments", false);
     }
 
     private void saveBillItem() {
@@ -729,8 +789,15 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         cb.setBillTypeAtomic(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION);
         cb.setInstitution(getSessionController().getInstitution());
         cb.setDepartment(getSessionController().getDepartment());
-        cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
+        if (isYearlyBillNumberForPostFinalPayments()) {
+            AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
+                    ? getCurrent().getPatientEncounter().getAdmissionType() : null;
+            cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+            cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        } else {
+            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
+            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.CAN));
+        }
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setTotal(0 - getCurrent().getTotal());
@@ -805,7 +872,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         remainingRefundableAmountCache = null;
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/inward/inward_bill_post_final_payment_refund?faces-redirect=true";
@@ -829,7 +896,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         }
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         getRefundCurrent().setPatientEncounter(originPaymentBill.getPatientEncounter());
@@ -1024,8 +1091,16 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         getRefundCurrent().setInstitution(getSessionController().getInstitution());
         getRefundCurrent().setDepartment(getSessionController().getDepartment());
         getRefundCurrent().setReferenceBill(getOriginalBillToRefund());
-        getRefundCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getRefundCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
-        getRefundCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getRefundCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
+        if (isYearlyBillNumberForPostFinalPayments()) {
+            // The refund's BillTypeAtomic is only stamped after this save, in refundPostFinalPayment().
+            AdmissionType admissionTypeForBillNumber = getRefundCurrent().getPatientEncounter() != null
+                    ? getRefundCurrent().getPatientEncounter().getAdmissionType() : null;
+            getRefundCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND, admissionTypeForBillNumber));
+            getRefundCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND, admissionTypeForBillNumber));
+        } else {
+            getRefundCurrent().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getRefundCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
+            getRefundCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getRefundCurrent().getBillType(), BillClassType.RefundBill, BillNumberSuffix.INWREF));
+        }
 
         double dbl = Math.abs(getRefundCurrent().getTotal());
 
@@ -1095,6 +1170,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     public void makeNull() {
         current = null;
         printPreview = false;
+        postFinalPaymentBillsForCurrentEncounter = null;
         comment = null;
         paymentMethod = null;
         total = 0.0;

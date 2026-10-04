@@ -341,7 +341,7 @@ public class FinancialTransactionController implements Serializable {
             if (getNonClosedShiftStartFundBill() != null) {
                 return "/payments/pay_index?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -371,8 +371,7 @@ public class FinancialTransactionController implements Serializable {
         }
         try {
             // Preserve the error message across the redirect
-            fc.getExternalContext().getFlash().setKeepMessages(true);
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             fc.getExternalContext().redirect(
                     fc.getExternalContext().getRequestContextPath() + "/faces/cashier/index.xhtml");
         } catch (java.io.IOException e) {
@@ -1427,7 +1426,7 @@ public class FinancialTransactionController implements Serializable {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
                 // Use Flash scope to preserve error message across redirect
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -2294,32 +2293,7 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        // Reset float transfer payments that were marked handingOverStarted=true during CREATE.
-        // selectedBill.getReferenceBill() is the shift start bill — use its ID as the lower
-        // bound to scope float payments to this shift only.
-        Bill shiftStartBill = selectedBill.getReferenceBill();
-        if (shiftStartBill != null && shiftStartBill.getId() != null) {
-            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
-            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
-            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
-            Map<String, Object> floatParams = new HashMap<>();
-            String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
-                    + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
-                    + "AND p.retired = false "
-                    + "AND p.cancelled = false "
-                    + "AND p.handingOverStarted = true "
-                    + "AND p.cashbookEntryStated = false "
-                    + "AND b.billTypeAtomic IN :btas "
-                    + "AND b.id > :sid";
-            floatParams.put("cu", selectedBill.getFromWebUser());
-            floatParams.put("btas", floatTransferBtas);
-            floatParams.put("sid", shiftStartBill.getId());
-            List<Payment> floatPaymentsToReset = paymentFacade.findByJpql(floatJpql, floatParams);
-            for (Payment ftp : floatPaymentsToReset) {
-                ftp.setHandingOverStarted(false);
-                paymentController.save(ftp);
-            }
-        }
+        resetFloatPaymentsOfHandover(selectedBill);
 
         return navigateToReceiveHandoverBillsForMe();
     }
@@ -2373,14 +2347,54 @@ public class FinancialTransactionController implements Serializable {
             }
         }
 
-        // Reset float transfer payments that were marked handingOverStarted=true during CREATE.
-        // selectedBill.getReferenceBill() is the shift start bill — use its ID as the lower
-        // bound to scope float payments to this shift only.
-        Bill shiftStartBill = selectedBill.getReferenceBill();
+        resetFloatPaymentsOfHandover(selectedBill);
+
+        return navigateToMyHandovers();
+    }
+
+    /**
+     * Resets the float transfer payments a handover marked handingOverStarted=true, so a
+     * recalled or rejected handover returns them to the sender. Handovers created after
+     * #24170 link their floats via PaymentHandoverItem (handoverCreatedBill set, no componant
+     * bill), which covers floats that pre-date the shift. Older handovers have no such links,
+     * so they fall back to the previous shift-bounded query.
+     */
+    private void resetFloatPaymentsOfHandover(Bill handoverBill) {
+        if (handoverBill == null) {
+            return;
+        }
+        List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
+        floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+        floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+
+        Map<String, Object> phiParams = new HashMap<>();
+        String phiJpql = "SELECT phi FROM PaymentHandoverItem phi "
+                + "WHERE phi.retired = false "
+                + "AND phi.handoverCreatedBill = :hb "
+                + "AND phi.handoverShiftComponantBill IS NULL "
+                + "AND phi.payment.bill.billTypeAtomic IN :btas";
+        phiParams.put("hb", handoverBill);
+        phiParams.put("btas", floatTransferBtas);
+        List<PaymentHandoverItem> floatPhis = paymentHandoverItemFacade.findByJpql(phiJpql, phiParams);
+        if (floatPhis != null && !floatPhis.isEmpty()) {
+            for (PaymentHandoverItem phi : floatPhis) {
+                Payment ftp = phi.getPayment();
+                if (ftp != null && ftp.isHandingOverStarted()) {
+                    ftp.setHandingOverStarted(false);
+                    paymentController.save(ftp);
+                }
+                phi.setRetired(true);
+                phi.setRetiredAt(new Date());
+                phi.setRetirer(sessionController.getLoggedUser());
+                paymentHandoverItemController.save(phi);
+            }
+            return;
+        }
+
+        // Legacy handovers: selectedBill.getReferenceBill() is the shift start bill — use its
+        // ID as the lower bound to scope float payments to this shift only.
+        Bill shiftStartBill = handoverBill.getReferenceBill();
         if (shiftStartBill != null && shiftStartBill.getId() != null) {
-            List<BillTypeAtomic> floatTransferBtas = new ArrayList<>();
-            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_BILL);
-            floatTransferBtas.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
             Map<String, Object> floatParams = new HashMap<>();
             String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
                     + "WHERE (p.creater = :cu OR p.floatRecipient = :cu) "
@@ -2390,7 +2404,7 @@ public class FinancialTransactionController implements Serializable {
                     + "AND p.cashbookEntryStated = false "
                     + "AND b.billTypeAtomic IN :btas "
                     + "AND b.id > :sid";
-            floatParams.put("cu", selectedBill.getFromWebUser());
+            floatParams.put("cu", handoverBill.getFromWebUser());
             floatParams.put("btas", floatTransferBtas);
             floatParams.put("sid", shiftStartBill.getId());
             List<Payment> floatPaymentsToReset = paymentFacade.findByJpql(floatJpql, floatParams);
@@ -2399,8 +2413,6 @@ public class FinancialTransactionController implements Serializable {
                 paymentController.save(ftp);
             }
         }
-
-        return navigateToMyHandovers();
     }
 
     @Deprecated
@@ -2687,7 +2699,7 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -3982,7 +3994,7 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -4177,7 +4189,7 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First!");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }
@@ -5343,6 +5355,7 @@ public class FinancialTransactionController implements Serializable {
         double floatInAcc = 0.0;
         double cashFloatOutAcc = 0.0;
         double cashFloatInAcc = 0.0;
+        List<Payment> countedFundTransferPayments = new ArrayList<>();
 
         if (shiftPayments != null) {
             for (Payment p : shiftPayments) {
@@ -5353,6 +5366,13 @@ public class FinancialTransactionController implements Serializable {
                 // Net To Handover formula, which must reflect physical cash only (non-cash
                 // floats are already tracked via the currentHolder mechanism on original payments).
                 if (isFundTransferPayment(p)) {
+                    // Accepting a handover resets the sender's floats to handingOverStarted=false
+                    // but marks them completed / in the cashbook while the sender stays their
+                    // current holder, so the hold queries return them again. They were already
+                    // handed over and must not be counted a second time (#24170).
+                    if (p.isHandingOverCompleted() || p.getCashbookEntryStated()) {
+                        continue;
+                    }
                     if (p.getBill() != null) {
                         BillTypeAtomic bta = p.getBill().getBillTypeAtomic();
                         if (bta == BillTypeAtomic.FUND_TRANSFER_BILL
@@ -5376,9 +5396,11 @@ public class FinancialTransactionController implements Serializable {
                                 if (p.getPaymentMethod() == PaymentMethod.Cash) {
                                     cashFloatOutAcc += Math.abs(p.getPaidValue());
                                 }
+                                countedFundTransferPayments.add(p);
                             }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
                             // Float in received by this user
+                            countedFundTransferPayments.add(p);
                             floatInAcc += Math.abs(p.getPaidValue());
                             if (p.getPaymentMethod() == PaymentMethod.Cash) {
                                 cashFloatInAcc += Math.abs(p.getPaidValue());
@@ -5476,6 +5498,7 @@ public class FinancialTransactionController implements Serializable {
         bundleToHoldDeptUserDayBundle.setFloatInTotal(floatInAcc);
         bundleToHoldDeptUserDayBundle.setCashFloatOutTotal(cashFloatOutAcc);
         bundleToHoldDeptUserDayBundle.setCashFloatInTotal(cashFloatInAcc);
+        bundleToHoldDeptUserDayBundle.setCountedFundTransferPayments(countedFundTransferPayments);
         if (startBill != null) {
             bundleToHoldDeptUserDayBundle.setUser(startBill.getCreater());
         } else {
@@ -6496,7 +6519,32 @@ public class FinancialTransactionController implements Serializable {
         // no longer reappear in the shift end page. All fund transfers are guaranteed accepted
         // at this point (validated at the start of this method).
         Bill shiftStartBillForFloats = bundle.getStartBill();
-        if (shiftStartBillForFloats != null && shiftStartBillForFloats.getId() != null) {
+        if (bundle.isCountedFundTransferPaymentsTracked()) {
+            // Mark exactly the floats counted into this handover's Net Float — including
+            // received floats that pre-date the current shift, which a shift-bounded re-query
+            // would miss, leaving them to reappear on every later handover (#24170).
+            // Each is linked to the handover via a PaymentHandoverItem (no componant bill,
+            // so componant-based payment lookups are unaffected) for recall/reject to reset.
+            for (Payment counted : bundle.getCountedFundTransferPayments()) {
+                if (counted == null || counted.getId() == null) {
+                    continue;
+                }
+                Payment ftp = paymentFacade.find(counted.getId());
+                if (ftp == null || ftp.isRetired() || ftp.isCancelled()
+                        || ftp.isHandingOverStarted() || ftp.getCashbookEntryStated()) {
+                    continue;
+                }
+                ftp.setHandingOverStarted(true);
+                paymentController.save(ftp);
+                PaymentHandoverItem floatPhi = new PaymentHandoverItem(ftp);
+                floatPhi.setHandoverCreatedBill(currentBill);
+                floatPhi.setHandoverShiftBill(shiftStartBillForFloats);
+                paymentHandoverItemController.save(floatPhi);
+                ReportTemplateRow floatRow = new ReportTemplateRow();
+                floatRow.setPayment(ftp);
+                bundle.getReportTemplateRows().add(floatRow);
+            }
+        } else if (shiftStartBillForFloats != null && shiftStartBillForFloats.getId() != null) {
             Map<String, Object> floatParams = new HashMap<>();
             String floatJpql = "SELECT p FROM Payment p JOIN p.bill b "
                     + "WHERE ((b.billTypeAtomic = :ftBill AND p.creater = :cu) "

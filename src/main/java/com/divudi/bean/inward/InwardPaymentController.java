@@ -50,6 +50,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -82,6 +83,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     PatientFacade patientFacade;
     @EJB
     private com.divudi.service.BillService billService;
+    @EJB
+    private com.divudi.core.facade.PatientEncounterFacade patientEncounterFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -107,6 +110,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private double due;
     String comment;
 
+    /** True only for the "Inward Deposit" entry point - see {@link #navigateToInwardDepositPayment()}. */
+    private boolean advanceDepositEntry;
+
     private PaymentMethod paymentMethod;
     private double remainAmount;
     private double total;
@@ -114,6 +120,25 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private PaymentMethodData paymentMethodData;
     /** Net total of the inward final bill; populated by bhtListener for display on the co-payment page. */
     private double finalBillTotal;
+    /**
+     * Double-submit guard for pay(): set true the instant pay() is entered.
+     * Cleared on a pre-payment validation failure (no Payment was created,
+     * safe to retry) or by makeNull() when navigating to pay a different
+     * BHT - but deliberately NEVER cleared once createPayment() has
+     * succeeded for the current bill, success path included. A DB-level
+     * pessimistic lock can't close this race because this is a plain
+     * @SessionScoped bean, not an EJB - each facade call inside pay() opens
+     * and commits its own short transaction, so a lock held during one
+     * facade call is already released before the next facade call runs.
+     * `synchronized` on pay() closes the execution-order race but not this
+     * one: a second request queued on the monitor is released the instant
+     * pay() returns, so if this flag were reset to false on success, that
+     * queued request would see a clear flag and create a second Payment
+     * for the same bill. Mirrors billSettlingStarted in
+     * RetailSaleNativeSqlController, adapted for the extra queued-request
+     * case that a plain "reset on success" latch does not cover.
+     */
+    private boolean paymentInProgress;
 
     // </editor-fold>
 
@@ -145,7 +170,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/credit/inward_patient_copay_payment?faces-redirect=true";
@@ -158,10 +183,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      */
     public String navigateToInwardDepositPayment() {
         makeNull();
+        advanceDepositEntry = true;
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/inward/inward_bill_payment?faces-redirect=true";
@@ -216,7 +242,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         return "inward_cancel_bill_refund?faces-redirect=true";
     }
 
-    private double getFinalBillDue() {
+    /** Latest confirmed final bill of the current admission, or null before the final bill is settled. */
+    private Bill fetchConfirmedFinalBill() {
         String sql = "Select b From BilledBill b where"
                 + " b.retired=false "
                 + " and b.cancelled=false "
@@ -227,17 +254,120 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
         hm.put("pe", getCurrent().getPatientEncounter());
+        return getBilledBillFacade().findFirstByJpql(sql, hm);
+    }
 
-        Bill b = getBilledBillFacade().findFirstByJpql(sql, hm);
-
+    private double getFinalBillDue() {
+        Bill b = fetchConfirmedFinalBill();
         if (b == null) {
             return 0;
         }
+        return calculateFinalBillDue(b);
+    }
+
+    /**
+     * Patient's outstanding due against the confirmed final bill, computed
+     * fresh from the database on every call (never trusted from the value
+     * cached when the page opened):
+     *
+     * due = (finalBill.netTotal - CC committed amount)
+     *       - SUM(netTotal of InwardPaymentBill rows: payments, deposits,
+     *             and their negative cancellation/refund rows)
+     *       - SUM(netTotal of PostFinalBillInwardPayment rows)
+     *
+     * Post final bill payments are included so a payment taken on the Post
+     * Final Payment page is not collected a second time here.
+     */
+    double calculateFinalBillDue(Bill finalBill) {
         // Patient portion = bill total minus the CC committed amount (not paid yet).
         // This correctly shows patient due before the company has actually remitted.
-        PatientEncounter pe = getCurrent().getPatientEncounter();
-        double patientPortion = Math.max(0.0, b.getNetTotal() - pe.getCreditUsedAmount());
-        return Math.max(0.0, patientPortion - b.getPaidAmount());
+        // The encounter is taken from the freshly fetched final bill rather than
+        // the session copy, so a re-settled CC commitment is picked up.
+        PatientEncounter pe = finalBill.getPatientEncounter() != null
+                ? finalBill.getPatientEncounter() : getCurrent().getPatientEncounter();
+        double patientPortion = Math.max(0.0, finalBill.getNetTotal() - pe.getCreditUsedAmount());
+        double paidByPatient = getInwardBean().getPaidValue(pe) + getPostFinalPaymentTotal(pe);
+        return Math.max(0.0, patientPortion - paidByPatient);
+    }
+
+    /**
+     * Same unfiltered sum as
+     * {@link PostFinalBillInwardPaymentController}'s post final payment
+     * total: cancellations and refunds are separate rows with a negated
+     * netTotal, so no cancelled=false filter is applied.
+     */
+    double getPostFinalPaymentTotal(PatientEncounter pe) {
+        String sql = "Select sum(b.netTotal) From Bill b where"
+                + " b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.PostFinalBillInwardPayment);
+        hm.put("pe", pe);
+        return getBilledBillFacade().findDoubleByJpql(sql, hm);
+    }
+
+    /**
+     * Rejects a paying amount above the due. Once a confirmed final bill
+     * exists, the due is the live final-bill due ({@link #calculateFinalBillDue}).
+     * Before that, there is no single running bill to compute a live due
+     * from (charges accrue across several BillTypes), so the cap falls back
+     * to {@code patientEncounter.amountDueAtFinalProcessing} - the same
+     * "Due Amount" box this page already shows before finalization (not the
+     * separate {@link #due} field, which this page only renders once
+     * finalized) - net of any payment taken since that snapshot (re-queried
+     * live, so a payment just recorded in another tab/session is picked up
+     * and can't be collected twice against the same stale total). That
+     * snapshot is only set by the final-bill-edit page's "Process" action,
+     * so a never-processed encounter has no due baseline yet and is not
+     * capped.
+     *
+     * This pre-final-bill cap is skipped entirely for the "Inward Deposit"
+     * entry point ({@link #advanceDepositEntry}): that flow shares this same
+     * page/pay() path but is deliberately uncapped - advance money taken
+     * there is a Deposit, with any excess refunded at finalization.
+     */
+    private boolean payingAmountExceedsDue() {
+        Bill finalBill = fetchConfirmedFinalBill();
+        if (finalBill != null) {
+            due = calculateFinalBillDue(finalBill);
+        } else if (!advanceDepositEntry) {
+            PatientEncounter pe = patientEncounterFacade.find(getCurrent().getPatientEncounter().getId());
+            if (pe == null || pe.getLastProcessAt() == null) {
+                return false;
+            }
+            double paidSinceProcessing = getPaymentsSince(pe, pe.getLastProcessAt());
+            due = Math.max(0.0, pe.getAmountDueAtFinalProcessing() - paidSinceProcessing);
+        } else {
+            return false;
+        }
+        double payingAmount = getCurrent().getTotal();
+        if (payingAmount > due + 0.01) {
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+            JsfUtil.addErrorMessage("Paying amount (" + df.format(payingAmount) + ") cannot exceed the due amount (" + df.format(due) + ").");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sum of InwardPaymentBill netTotal (payments, deposits, and their
+     * negative cancellation/refund rows) recorded strictly after {@code since}
+     * - the part of the pre-final-bill due basis that
+     * {@code amountDueAtFinalProcessing} cannot already reflect, since it was
+     * only computed as of the last "Process" click.
+     */
+    private double getPaymentsSince(PatientEncounter pe, Date since) {
+        String sql = "Select sum(b.netTotal) From Bill b where"
+                + " b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe "
+                + " and b.createdAt > :since";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pe", pe);
+        hm.put("since", since);
+        return getBilledBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private boolean errorCheck() {
@@ -254,7 +384,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (checkErrorsInPaymentMethod(paymentMethod, paymentMethodData)) {
             return true;
         }
-        
+
+        // checkErrorsInPaymentMethod has set current.total to the amount of
+        // the selected method (or the sum of all components for Multiple).
+        if (payingAmountExceedsDue()) {
+            return true;
+        }
+
         return false;
 
     }
@@ -689,9 +825,78 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient() == null
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
-    
-    public void pay() {
+
+    /**
+     * Heading for an inpatient payment / deposit receipt. The same print
+     * components render payments, deposits and their cancellations and
+     * refunds, so the heading is derived from the bill's type rather than
+     * hardcoded in the component (issue #23985).
+     *
+     * @param bill the bill being printed
+     * @param fallback heading used when the bill has no, or an unmapped,
+     * bill type atomic (e.g. legacy bills)
+     */
+    public String receiptHeading(Bill bill, String fallback) {
+        return receiptHeadingFor(bill == null ? null : bill.getBillTypeAtomic(), fallback);
+    }
+
+    static String receiptHeadingFor(BillTypeAtomic billTypeAtomic, String fallback) {
+        if (billTypeAtomic == null) {
+            return fallback;
+        }
+        switch (billTypeAtomic) {
+            case INWARD_DEPOSIT:
+                return "Inward Deposit Receipt";
+            case INWARD_DEPOSIT_CANCELLATION:
+                return "Inward Deposit Cancellation Receipt";
+            case INWARD_DEPOSIT_REFUND:
+                return "Inward Deposit Refund Receipt";
+            case INWARD_DEPOSIT_REFUND_CANCELLATION:
+                return "Inward Deposit Refund Cancellation Receipt";
+            case INWARD_PAYMENT:
+                return "Inward Payment Receipt";
+            case INWARD_PAYMENT_CANCELLATION:
+                return "Inward Payment Cancellation Receipt";
+            case INWARD_PAYMENT_REFUND:
+                return "Inward Payment Refund Receipt";
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                return "Inward Payment Refund Cancellation Receipt";
+            case POST_FINAL_BILL_INWARD_PAYMENT:
+                return "Post Final Bill Payment Receipt";
+            case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
+                return "Post Final Bill Payment Cancellation Receipt";
+            case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
+                return "Post Final Bill Payment Refund Receipt";
+            default:
+                return fallback;
+        }
+    }
+
+    public synchronized void pay() {
+        // Double-submit guard (double-click, or a retried request before the
+        // page re-renders): each facade call below runs in its own short
+        // EJB transaction since this is a plain @SessionScoped bean, not an
+        // EJB, so a DB-level pessimistic lock can't span the method and
+        // gives no protection - a second thread can slip through between
+        // two of those facade calls. `synchronized` alone is not enough
+        // either: a second request queued on the monitor is released the
+        // instant this method returns, and if paymentInProgress was already
+        // reset to false by then, the queued request sees a clear flag and
+        // calls createPayment() again for the same `current` bill. So
+        // paymentInProgress is intentionally NOT reset back to false on the
+        // success path below - once a payment is made for `current`, pay()
+        // stays latched for the rest of that bill's lifetime. The flag only
+        // clears via makeNull(), which is always called first when
+        // navigating to pay a *different* BHT (navigateToInwardDepositPayment/
+        // navigateToInwardPatientCopayment), so this never blocks a
+        // legitimate new payment - only a retry against the same `current`.
+        if (paymentInProgress) {
+            return;
+        }
+        paymentInProgress = true;
+
         if (errorCheck()) {
+            paymentInProgress = false;
             return;
         }
 
@@ -700,6 +905,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
             if (comment == null || comment.trim().isEmpty()) { // Trim to handle whitespace-only cases
                 JsfUtil.addErrorMessage("Please Select a Payment Type");
+                paymentInProgress = false;
                 return;
             }
         }
@@ -707,11 +913,18 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         saveBill();
         saveBillItem();
 
+        // Once createPayment() below succeeds, the Payment exists in the
+        // database - paymentInProgress must stay true for the rest of this
+        // method and is never reset back to false afterwards (see the
+        // class-level latch comment above), whether the post-payment
+        // bookkeeping below succeeds or throws. Resetting it here would let
+        // either a queued duplicate request or a retry after a later
+        // failure reach createPayment() again and create a second Payment.
         paymentService.createPayment(
                 current,
-                current.getPaymentMethod(), 
-                paymentMethodData, 
-                sessionController.getInstitution(), 
+                current.getPaymentMethod(),
+                paymentMethodData,
+                sessionController.getInstitution(),
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());
 
@@ -860,7 +1073,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         this.comment = comment;
     }
 
-    public void makeNull() {
+    // synchronized on the same monitor as pay(): both read/write current,
+    // paymentMethod, comment, and paymentMethodData, so an unsynchronized
+    // makeNull() (e.g. from the "New" button) could clear that state out
+    // from under a pay() call still in flight on the same session.
+    public synchronized void makeNull() {
         current = null;
         printPreview = false;
         comment = null;
@@ -868,6 +1085,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         total = 0.0;
         finalBillTotal = 0.0;
         due = 0.0;
+        paymentInProgress = false;
+        advanceDepositEntry = false;
     }
 
     private void saveBill() {
@@ -879,16 +1098,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
                 ? getCurrent().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic()));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic()));
-        }
+        getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+        getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
@@ -1101,7 +1312,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     /**
      * Streams the current payment receipt as a raw byte file (.prn) for
      * dot-matrix printing that bypasses the browser rasteriser. See
-     * developer_docs/printing/raw-text-print-agent.ps1.
+     * tools/client-print-agent/.
      */
     public void streamCurrentPaymentReceiptAsRawText() {
         if (getCurrent() == null || getCurrent().getId() == null) {
@@ -1116,12 +1327,24 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
 
         java.util.List<com.divudi.core.entity.Payment> multiplePayments =
                 getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getCurrent()) : null;
-        String text = InwardReceiptTextRenderer.render(getCurrent(), "Payment Receipt",
-                false, preprinted, topMargin, emitEscP, multiplePayments);
+        String text = InwardReceiptTextRenderer.render(getCurrent(),
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT),
+                false, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
 
         String fileName = "inward-payment-"
                 + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())

@@ -8,7 +8,22 @@
 
 ## Overview
 
-This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService` DTYPE), their fee structures (`ItemFee`), and service categories (`ServiceCategory`). It enables AI agents to programmatically create and manage services that appear in the inpatient billing autocomplete (`inward_bill_service.xhtml`).
+This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService` DTYPE), their fee structures (`ItemFee`), and service categories (`ServiceCategory`). It enables AI agents to programmatically create and manage services for inpatient billing (`inward_bill_service.xhtml`).
+
+> **Creating a service is not always enough for it to be billable.** Whether a service is listed
+> on *Inward → Services & Items → Add Services & Investigations* depends on the logged-in
+> department's **Inward Item Listing Strategy** (department preference):
+>
+> | Strategy | What is listed | Extra step after creating the service |
+> |---|---|---|
+> | `ALL_ITEMS` | Every active investigation and service | None |
+> | `ITEMS_MAPPED_TO_LOGGED_DEPARTMENT` | Items mapped to the logged department | Map it with `POST /api/item-mappings` (`departmentId`) — see [API_ITEM_MAPPINGS.md](API_ITEM_MAPPINGS.md) |
+> | `ITEMS_MAPPED_TO_LOGGED_INSTITUTION` | Items mapped to the logged institution | Map it with `POST /api/item-mappings` (`institutionId`) |
+> | `ITEMS_OF_LOGGED_DEPARTMENT` / `ITEMS_OF_LOGGED_INSTITUTION` | Items whose own department / institution is the logged one | Set `departmentId` / `institutionId` on the service |
+> | `SITE_FEE_ITEMS` | Items with a fee scoped to the department's site (`ItemFee.forInstitution`) | Add a site fee on the admin pricing screens — `POST /api/services/{id}/fees` cannot set the site scope (`institutionId` there is the fee's payee, not `forInstitution`) |
+>
+> On that page items are grouped under buttons by the department that **owns** the service
+> (`departmentId`), not by the department it is mapped to.
 
 ---
 
@@ -40,7 +55,12 @@ GET /api/services/search
 | `serviceType` | string | No | `OPD`, `Inward`, or omit for both |
 | `categoryId` | long | No | Filter by ServiceCategory ID |
 | `inactive` | boolean | No | `true` = inactive only, `false` = active only |
-| `limit` | int | No | Max results (default 30, max 100) |
+| `limit` | int | No | Page size (default 30, max 100; larger values are clamped to 100) |
+| `offset` | int | No | Rows to skip, for paging (default 0; negative is treated as 0; non-numeric → 400) |
+| `includeTotal` | boolean | No | `true` adds `totalCount`, `offset` and `limit` beside `data` (see [Listing the whole master](#listing-the-whole-master)). `false`/omitted = response unchanged. Anything else → 400 |
+
+Results are always ordered by `name`, then `id`. The `id` tiebreaker keeps pages stable when two
+services share a name, so paging never repeats or skips a row.
 
 **Example:**
 ```bash
@@ -78,6 +98,54 @@ Look a service up by its code before creating it:
 
 ```bash
 curl -H "Finance: <key>" "https://host/hmis/api/services/search?code=SM-RH-0122&limit=5"
+```
+
+##### Listing the whole master
+
+One request returns at most 100 rows, so list the full service master by paging with `offset`
+instead of firing many substring queries. Add `includeTotal=true` to learn how many rows match:
+
+```bash
+curl -H "Finance: <key>" \
+  "https://host/hmis/api/services/search?limit=100&offset=0&includeTotal=true"
+```
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [ { "id": 101, "name": "Ward Procedure", "...": "..." } ],
+  "totalCount": 1234,
+  "offset": 0,
+  "limit": 100
+}
+```
+
+- `data` is still a plain array, so existing callers are unaffected. `totalCount` is the number of
+  rows matching the filters, ignoring `limit` and `offset`. The envelope field is named `totalCount`
+  (not `total`) because every row in `data` already has a `total` — its price.
+- `limit` in the response is the **effective** page size after clamping to 100. Advance `offset`
+  by the number of rows you actually received (`data.length`), never by the `limit` you asked for.
+- Stop at the first page that returns fewer rows than the `limit` you sent (an empty page is the
+  limiting case). A failed query comes back as an HTTP error, never as an empty page, so a short
+  page really is the end of the list. `totalCount` is for progress and for cross-checking that you
+  collected everything; callers that do not ask for it pay nothing for it.
+- Paging combines with every filter (`query`, `code`, `serviceType`, `categoryId`, `inactive`),
+  so the same loop can walk just the Inward services, for example.
+- Without `includeTotal=true` no count query runs and the response is exactly what it was before
+  paging existed.
+
+```bash
+# Walk the whole service master, 100 at a time
+offset=0; limit=100
+while :; do
+  page=$(curl -sf -H "Finance: <key>" \
+    "https://host/hmis/api/services/search?limit=$limit&offset=$offset") || { echo "request failed" >&2; exit 1; }
+  count=$(echo "$page" | jq '.data | length')
+  echo "$page" | jq -c '.data[] | {id, name}'
+  offset=$((offset + count))
+  [ "$count" -lt "$limit" ] && break
+done
 ```
 
 ---
@@ -199,7 +267,11 @@ curl -X POST \
   "https://host/hmis/api/services"
 ```
 
-**Response:** HTTP 201 with full `ServiceResponseDTO`.
+**Response:** HTTP 201 with full `ServiceResponseDTO`, including the new service's `id`.
+
+`inwardChargeType` is required for `Inward` services and optional for `OPD` services — when
+supplied for an OPD service it is stored too (many hospitals bill inward charges through
+OPD-type services, and the inward final bill groups lines by this value).
 
 ---
 
@@ -555,7 +627,12 @@ curl -X PATCH -H "Finance: <key>" \
 curl -H "Finance: <key>" \
   "https://host/hmis/api/services/search?query=endoscopy&serviceType=Inward"
 
-# The service should have inactive=false and appear in inward_bill_service.xhtml autocomplete
+# The service should have inactive=false. Whether it is listed in inward_bill_service.xhtml
+# depends on the department's Inward Item Listing Strategy — if the department lists mapped
+# items, map it first:
+curl -X POST -H "Finance: <key>" -H "Content-Type: application/json" \
+  -d '{"itemId": 205, "departmentId": 12}' \
+  "https://host/hmis/api/item-mappings"
 ```
 
 ---

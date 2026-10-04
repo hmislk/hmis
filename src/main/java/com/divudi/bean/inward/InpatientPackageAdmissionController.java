@@ -6,7 +6,6 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.InpatientPackage;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.InpatientPackageFacade;
-import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
@@ -31,25 +30,11 @@ public class InpatientPackageAdmissionController implements Serializable {
     private AdmissionController admissionController;
 
     @EJB
-    private PatientFacade patientFacade;
-    @EJB
     private InpatientPackageFacade inpatientPackageFacade;
 
+    // Set only via PatientController.navigateToPackageAdmitFromPatientProfile(); this page has no patient field of its own.
     private Patient patient;
     private InpatientPackage inpatientPackage;
-
-    public List<Patient> completePatient(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-        Map<String, Object> m = new HashMap<>();
-        m.put("name", "%" + query.toUpperCase() + "%");
-        String jpql = "SELECT p FROM Patient p"
-                + " WHERE p.retired = false"
-                + " AND UPPER(p.person.name) LIKE :name"
-                + " ORDER BY p.person.name";
-        return patientFacade.findByJpql(jpql, m, 15);
-    }
 
     public List<InpatientPackage> completeInpatientPackage(String query) {
         Map<String, Object> m = new HashMap<>();
@@ -62,10 +47,6 @@ public class InpatientPackageAdmissionController implements Serializable {
     }
 
     public String navigatePackageAdmit() {
-        if (patient == null || patient.getId() == null) {
-            JsfUtil.addErrorMessage("Please select a Patient");
-            return "";
-        }
         if (inpatientPackage == null || inpatientPackage.getId() == null) {
             JsfUtil.addErrorMessage("Please select an Inpatient Package");
             return "";
@@ -84,6 +65,9 @@ public class InpatientPackageAdmissionController implements Serializable {
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
         admissionController.setBhtText("");
+        // Clear a stale "Patient Already Admitted" warning left on the session-scoped
+        // AdmissionController by an earlier abandoned attempt. (Issue #24000)
+        admissionController.cancelActiveAdmissionWarning();
 
         patient = null;
         inpatientPackage = null;
@@ -97,19 +81,15 @@ public class InpatientPackageAdmissionController implements Serializable {
         return "/inward/package_admit?faces-redirect=true";
     }
 
-    public Patient getPatient() {
-        return patient;
-    }
-
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
-
     public InpatientPackage getInpatientPackage() {
         return inpatientPackage;
     }
 
     public void setInpatientPackage(InpatientPackage inpatientPackage) {
         this.inpatientPackage = inpatientPackage;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 }

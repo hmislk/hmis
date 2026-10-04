@@ -19,6 +19,7 @@ public class BhtPaymentDetailDTO implements Serializable {
     private AdmissionType admissionType;
     private Date dateOfAdmission;
     private Date dateOfDischarge;
+    private Long billId;
     private String billNo;
     private Date createdAt;
     private PaymentMethod paymentMethod;
@@ -37,6 +38,15 @@ public class BhtPaymentDetailDTO implements Serializable {
      * possibly-wrong category.
      */
     private String paymentCategory;
+
+    /**
+     * The row's bill type - e.g. "Deposit", "Deposit Refund", "Payment
+     * Cancellation" - so a negative contra row (cancellation / refund) is
+     * self-explanatory. Set by {@code BhtDepositDetailReportController} and
+     * {@code BhtDepositDetailWithCreditCompaniesReportController} (issue
+     * #23980); other callers leave it blank.
+     */
+    private String billType;
 
     /**
      * Credit companies on this row's admission's Final Bill, each with its
@@ -101,6 +111,9 @@ public class BhtPaymentDetailDTO implements Serializable {
     public Date getDateOfDischarge() { return dateOfDischarge; }
     public void setDateOfDischarge(Date dateOfDischarge) { this.dateOfDischarge = dateOfDischarge; }
 
+    public Long getBillId() { return billId; }
+    public void setBillId(Long billId) { this.billId = billId; }
+
     public String getBillNo() { return billNo; }
     public void setBillNo(String billNo) { this.billNo = billNo; }
 
@@ -121,4 +134,7 @@ public class BhtPaymentDetailDTO implements Serializable {
 
     public String getPaymentCategory() { return paymentCategory != null ? paymentCategory : ""; }
     public void setPaymentCategory(String paymentCategory) { this.paymentCategory = paymentCategory; }
+
+    public String getBillType() { return billType != null ? billType : ""; }
+    public void setBillType(String billType) { this.billType = billType; }
 }

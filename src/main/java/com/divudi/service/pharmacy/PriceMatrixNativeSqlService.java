@@ -5,12 +5,21 @@
  */
 package com.divudi.service.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.core.entity.Department;
+import com.divudi.core.facade.DepartmentFacade;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -31,9 +40,24 @@ public class PriceMatrixNativeSqlService {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+
+    @EJB
+    private DepartmentFacade departmentFacade;
+
     private volatile String tItem = null;
     private volatile String tCategory = null;
     private volatile String tPriceMatrix = null;
+
+    // DTYPE values of PharmaceuticalItem and its subclasses (single-table inheritance).
+    // Includes the base "PharmaceuticalItem" DTYPE itself — PharmacyItemApi.create()
+    // persists plain PharmaceuticalItem rows directly, and ItemBatch.item is typed as
+    // the generic Item, so a stocked base-DTYPE item is reachable here too. Must mirror
+    // PriceMatrixController.resolveInwardMatrixCategory's `instanceof PharmaceuticalItem`
+    // check exactly.
+    private static final Set<String> PHARMACEUTICAL_ITEM_DTYPES = new HashSet<>(
+            Arrays.asList("PharmaceuticalItem", "Vmp", "Amp", "Vmpp", "Ampp", "Vtm", "Atm"));
 
     // -----------------------------------------------------------------------
     // Public API
@@ -62,19 +86,24 @@ public class PriceMatrixNativeSqlService {
      * Returns the inward margin percentage for the given item / department / grossValue.
      * Replaces: priceMatrixController.fetchInwardMargin(item, grossValue, dept).getMargin()
      *
+     * @param admissionTypeId optional admission type filter (nullable)
+     * @param roomCategoryId optional room category filter (nullable)
+     * @param paymentMethodName optional payment method filter (nullable)
+     *
      * Returns 0.0 when no matrix row is found.
      */
-    public double getInwardMarginPct(long itemId, long deptId, double grossValue) {
+    public double getInwardMarginPct(long itemId, long deptId, double grossValue,
+            Long admissionTypeId, Long roomCategoryId, String paymentMethodName) {
         try {
-            Long catId = getItemCategoryId(itemId);
+            Long catId = getItemMarginCategoryId(itemId, deptId);
             if (catId == null) return 0.0;
 
-            Double margin = queryMargin(catId, deptId, grossValue);
+            Double margin = queryMargin(catId, deptId, grossValue, admissionTypeId, roomCategoryId, paymentMethodName);
             if (margin != null) return margin;
 
             Long parentCatId = getParentCategoryId(catId);
             if (parentCatId != null) {
-                margin = queryMargin(parentCatId, deptId, grossValue);
+                margin = queryMargin(parentCatId, deptId, grossValue, admissionTypeId, roomCategoryId, paymentMethodName);
                 if (margin != null) return margin;
             }
         } catch (Exception e) {
@@ -160,6 +189,41 @@ public class PriceMatrixNativeSqlService {
         return result == null ? null : ((Number) result).longValue();
     }
 
+    /**
+     * Same as {@link #getItemCategoryId(long)}, but for the inward MARGIN
+     * lookup only: when the item is a pharmaceutical item (Vmp/Amp/...) and
+     * the department has opted into "Inward Matrix - Resolve Pharmacy Margin
+     * By Dosage Form" (default false — unchanged behaviour for every other
+     * hospital), returns dosageForm_ID instead of category_ID. Mirrors
+     * PriceMatrixController.resolveInwardMatrixCategory(Item, Department).
+     * Does not affect getInwardDiscountPct, which still calls
+     * {@link #getItemCategoryId(long)} directly.
+     */
+    private Long getItemMarginCategoryId(long itemId, long deptId) {
+        Object[] row;
+        try {
+            row = (Object[]) em.createNativeQuery(
+                    "SELECT DTYPE, category_ID, dosageForm_ID FROM " + itemTable() + " WHERE ID=?")
+                    .setParameter(1, itemId)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        String dtype = row[0] == null ? null : row[0].toString();
+        Number dosageFormId = (Number) row[2];
+
+        if (dtype != null && PHARMACEUTICAL_ITEM_DTYPES.contains(dtype) && dosageFormId != null) {
+            Department department = departmentFacade.find(deptId);
+            boolean useDosageForm = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Inward Matrix - Resolve Pharmacy Margin By Dosage Form", department, false);
+            if (useDosageForm) {
+                return dosageFormId.longValue();
+            }
+        }
+        Number categoryId = (Number) row[1];
+        return categoryId == null ? null : categoryId.longValue();
+    }
+
     private Long getParentCategoryId(long catId) {
         try {
             Object result = em.createNativeQuery(
@@ -172,21 +236,71 @@ public class PriceMatrixNativeSqlService {
         }
     }
 
-    private Double queryMargin(long catId, long deptId, double grossValue) {
-        @SuppressWarnings("unchecked")
-        List<Object> rs = em.createNativeQuery(
+    private Double queryMargin(long catId, long deptId, double grossValue,
+            Long admissionTypeId, Long roomCategoryId, String paymentMethodName) {
+
+        boolean paymentMethodFilterEnabled = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
+        boolean roomCategoryTakesPriority = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Matrix - Room Category takes priority over Admission Type", false);
+        boolean applyPaymentMethodFilter = paymentMethodFilterEnabled && paymentMethodName != null;
+        boolean admissionTypeSupplied = admissionTypeId != null;
+        boolean roomCategorySupplied = roomCategoryId != null;
+
+        StringBuilder sql = new StringBuilder(
                 "SELECT margin FROM " + priceMatrixTable()
                 + " WHERE DTYPE='InwardPriceAdjustment' AND retired=0"
                 + " AND category_ID=? AND department_ID=?"
-                + " AND fromPrice < ? AND toPrice > ?"
-                + " AND creditCompany_ID IS NULL"
-                + " ORDER BY CASE WHEN admissionType_ID IS NULL THEN 1 ELSE 0 END ASC"
-                + " LIMIT 1")
-                .setParameter(1, catId)
-                .setParameter(2, deptId)
-                .setParameter(3, grossValue)
-                .setParameter(4, grossValue)
-                .getResultList();
+                + " AND fromPrice <= ? AND toPrice >= ?"
+                + " AND creditCompany_ID IS NULL");
+
+        if (applyPaymentMethodFilter) {
+            sql.append(" AND paymentMethod=?");
+        }
+        if (admissionTypeSupplied) {
+            sql.append(" AND (admissionType_ID=? OR admissionType_ID IS NULL)");
+        } else {
+            sql.append(" AND admissionType_ID IS NULL");
+        }
+        if (roomCategorySupplied) {
+            sql.append(" AND (roomCategory_ID=? OR roomCategory_ID IS NULL)");
+        } else {
+            sql.append(" AND roomCategory_ID IS NULL");
+        }
+
+        if (admissionTypeSupplied || roomCategorySupplied) {
+            String admRank = "CASE WHEN admissionType_ID IS NULL THEN 1 ELSE 0 END";
+            String roomRank = "CASE WHEN roomCategory_ID IS NULL THEN 1 ELSE 0 END";
+            sql.append(" ORDER BY ");
+            if (admissionTypeSupplied && roomCategorySupplied) {
+                sql.append(roomCategoryTakesPriority
+                        ? roomRank + " ASC, " + admRank + " ASC"
+                        : admRank + " ASC, " + roomRank + " ASC");
+            } else if (admissionTypeSupplied) {
+                sql.append(admRank + " ASC");
+            } else {
+                sql.append(roomRank + " ASC");
+            }
+            sql.append(", fromPrice DESC");
+        } else {
+            sql.append(" ORDER BY fromPrice DESC");
+        }
+        sql.append(" LIMIT 1");
+
+        var query = em.createNativeQuery(sql.toString());
+        int p = 1;
+        query.setParameter(p++, catId);
+        query.setParameter(p++, deptId);
+        // Inclusive, 2-decimal band match (issue #24245) — mirrors PriceMatrixController.
+        double bandValue = PriceMatrixController.toBandValue(grossValue);
+        query.setParameter(p++, bandValue);
+        query.setParameter(p++, bandValue);
+        if (applyPaymentMethodFilter) query.setParameter(p++, paymentMethodName);
+        if (admissionTypeSupplied)    query.setParameter(p++, admissionTypeId);
+        if (roomCategorySupplied)     query.setParameter(p++, roomCategoryId);
+
+        @SuppressWarnings("unchecked")
+        List<Object> rs = query.getResultList();
         if (rs == null || rs.isEmpty() || rs.get(0) == null) return null;
         return ((Number) rs.get(0)).doubleValue();
     }

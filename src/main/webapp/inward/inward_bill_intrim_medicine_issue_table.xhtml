@@ -4,15 +4,16 @@
                 xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui">
 
+    <!-- No rowStyleClass row-hiding here (issue #23871): #{issues} is now fetched by
+         InwardBeanController.fetchIssueTable() scoped to exactly the BillTypeAtomic set
+         that feeds the Medicine charge total, so every row returned belongs on screen -
+         including the porter-based ward return, which is a BilledBill rather than the
+         PreBill/RefundBill pair this table used to require. -->
     <p:dataTable
         id="#{tableId}"
         value="#{issues}"
         var="iss"
-        rowIndexVar="rowIndex"
-        rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
-                         or
-                         (iss.billedBill ne null
-                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+        rowIndexVar="rowIndex">
         <p:column headerText="#" class="text-center" width="3em;">
             <h:outputLabel value="#{rowIndex + 1}"/>
         </p:column>
@@ -97,6 +98,16 @@
                     rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
                     class="ui-button-warning"
                     value="View Returns"  >
+                    <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                </p:commandButton>
+                <!-- Porter-based ward return (issue #23871): a BilledBill, not a RefundBill,
+                     but the same generic reprint page works off Bill base fields. -->
+                <p:commandButton
+                    ajax="false"
+                    action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
+                    rendered="#{iss.billClass eq 'class com.divudi.core.entity.BilledBill'}"
+                    class="ui-button-warning"
+                    value="View Return"  >
                     <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                 </p:commandButton>
             </div>

@@ -69,31 +69,47 @@ If the command fails with a scope error, inform the user that they need to run:
 
 ## Step 5 — Project Board (CareCode: HMIS Board)
 
-Attempt to add the issue to project #11 and set status to **In Progress** via GraphQL:
+Make sure the issue is on project #11, set **Status = In Progress**, then **read the status
+back**. All three steps are mandatory: the update call's success response returns only the
+item ID, not the new value, so it is not proof that the change was saved. Issue #24105 was
+reported as "In Progress" from that response alone, but the board still showed Backlog.
+
+The issue is often **already on the board**: the "Item added to project" automation puts new
+issues in Backlog. `addProjectV2ItemById` handles both cases. If the issue is already on the
+board, it returns the existing item instead of adding a duplicate.
 
 ```bash
-# Get issue node ID
-gh api repos/hmislk/hmis/issues/$0 --jq '.node_id'
+# 1. Issue node ID
+ISSUE_NODE=$(gh api repos/hmislk/hmis/issues/$0 --jq '.node_id')
 
-# Get project ID (requires 'project' token scope)
+# 2. Add to project #11, or get the existing item, and capture the item ID
+ITEM_ID=$(gh api graphql -f query='
+mutation($p:ID!,$c:ID!){ addProjectV2ItemById(input:{projectId:$p,contentId:$c}){ item{ id } } }' \
+  -f p=PVT_kwDOAHw-zs4ApMln -f c="$ISSUE_NODE" --jq '.data.addProjectV2ItemById.item.id')
+
+# 3. Set Status = In Progress
 gh api graphql -f query='
-query {
-  organization(login: "hmislk") {
-    projectV2(number: 11) {
-      id
-      fields(first: 20) {
-        nodes {
-          ... on ProjectV2SingleSelectField {
-            id
-            name
-            options { id name }
-          }
-        }
-      }
-    }
-  }
-}'
+mutation($p:ID!,$i:ID!){ updateProjectV2ItemFieldValue(input:{
+  projectId:$p, itemId:$i,
+  fieldId:"PVTSSF_lADOAHw-zs4ApMlnzggpN3k",
+  value:{singleSelectOptionId:"47fc9ee4"} }){ projectV2Item{ id } } }' \
+  -f p=PVT_kwDOAHw-zs4ApMln -f i="$ITEM_ID"
+
+# 4. READ BACK: this output is the only thing that may be reported as the board status
+gh api graphql -f query='
+query($i:ID!){ node(id:$i){ ... on ProjectV2Item{
+  fieldValueByName(name:"Status"){ ... on ProjectV2ItemFieldSingleSelectValue{ name updatedAt } } } } }' \
+  -f i="$ITEM_ID" --jq '.data.node.fieldValueByName'
 ```
+
+IDs, verified 2026-10-01: project `PVT_kwDOAHw-zs4ApMln`, Status field
+`PVTSSF_lADOAHw-zs4ApMlnzggpN3k`, "In Progress" option `47fc9ee4`. If a mutation fails with
+an unknown or invalid ID error, re-query them:
+`gh api graphql -f query='query{organization(login:"hmislk"){projectV2(number:11){id field(name:"Status"){... on ProjectV2SingleSelectField{id options{id name}}}}}}'`
+
+**If step 4 does not print `"name":"In Progress"`**, do not retry silently and do not report
+success. Tell the user that the automated status change did not stick, show what the board
+actually holds, and ask them to set it manually at https://github.com/orgs/hmislk/projects/11.
 
 If the token lacks the `project` scope (error: INSUFFICIENT_SCOPES), tell the user:
 
@@ -110,7 +126,8 @@ Report what was done:
 - Branch name created and pushed
 - persistence.xml local JNDI set to (name)
 - Issue assigned to buddhika75
-- Project board status (automated or manual instruction given)
+- Project board status: quote the value read back in Step 5 step 4, or say that a manual
+  change is needed. Never report the status from the update call's success response alone.
 
 Remind the user: **persistence.xml must be reverted to `${JDBC_DATASOURCE}` before any git push.**
 Check it directly (or let `commit-code` catch it — it verifies persistence.xml when staged).

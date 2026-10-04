@@ -34,6 +34,8 @@ import com.divudi.core.data.dto.ConsumptionBillDto;
 import com.divudi.core.data.dto.ConsumptionBillItemDto;
 import com.divudi.core.data.dto.ConsumptionCategoryItemDto;
 import com.divudi.core.data.dto.DepartmentSaleIssueDTO;
+import com.divudi.core.data.dto.PharmacyDepartmentWiseSaleDTO;
+import com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.BeforeStockTakingDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
@@ -263,8 +265,9 @@ public class PharmacyController implements Serializable {
     private PaymentMethod paymentMethod;
     private String reportType;
     // Purchase-type filter for the GRN Summary Report page (grn_summary_report.xhtml).
-    // "grn" restricts to GRN bill types, "direct" to Direct Purchase bill types,
-    // null/unset keeps the existing behaviour of generateGrnReport() (all types). Issue #22984.
+    // "grn" = GRNs + GRN cancellations, "direct" = Direct Purchases + their cancellations,
+    // "grnReturn" = GRN Returns, "directReturn" = Direct Purchase Returns,
+    // null/unset = all of them. Issues #22984, #24107.
     private String purchaseType;
     private double totalCreditPurchaseValue;
     private double totalCashPurchaseValue;
@@ -923,7 +926,7 @@ public class PharmacyController implements Serializable {
 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Pharmacy Analytics - Show Purchase Orders Not Approved",
-                "Controls visibility of Purchase Orders Not Approved button",
+                "Controls visibility of the Purchase Order Status report button",
                 OptionScope.APPLICATION
         ));
 
@@ -1185,6 +1188,8 @@ public class PharmacyController implements Serializable {
     public void fillDetails() {
         createStocksDto();
         createDepartmentSaleDto();
+        createWholeSaleByBillTypeDto();
+        createDepartmentWiseSaleDtos();
         createBatchDetailsDto();  // Add batch details with expiry information
         createInstitutionBhtIssue(); // TODO: Fix this
         createDepartmentSaleIssueDto();
@@ -2137,6 +2142,8 @@ public class PharmacyController implements Serializable {
         institutionStocks = null;
         institutionSales = null;
         salesByBillType = null;
+        wholeSaleByBillType = null;
+        departmentWiseSaleGroups = null;
         transferIssuesByDepartment = null;
         transferReceivesByDepartment = null;
         disposeIssuesByDepartment = null;
@@ -2533,7 +2540,7 @@ public class PharmacyController implements Serializable {
         filters.put("Site", site != null ? site.getName() : "All Sites");
         filters.put("Department/Store", dept != null ? dept.getName() : "All Departments");
         filters.put("Payment Mode", paymentMethod != null ? paymentMethod.getLabel() : "All Modes");
-        filters.put("Purchase Type", "grn".equals(purchaseType) ? "GRN" : "direct".equals(purchaseType) ? "Direct Purchase" : "All Types");
+        filters.put("Purchase Type", grnSummaryPurchaseTypeLabel());
 
         return filters;
     }
@@ -8025,6 +8032,8 @@ public class PharmacyController implements Serializable {
         pendingGrns = null;
         institutionSales = null;
         salesByBillType = null;
+        wholeSaleByBillType = null;
+        departmentWiseSaleGroups = null;
         transferIssuesByDepartment = null;
         transferReceivesByDepartment = null;
         disposeIssuesByDepartment = null;
@@ -8924,9 +8933,11 @@ public class PharmacyController implements Serializable {
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
-    public void createDepartmentSaleDto() {
-        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
-
+    /**
+     * Retail sale bill types shown in the Sale and Department Wise Sale blocks
+     * of the item history panel.
+     */
+    private List<BillTypeAtomic> retailSaleBillTypeAtomics() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -8934,13 +8945,38 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        return btas;
+    }
+
+    /**
+     * Wholesale bill types shown in the Whole Sale block of the item history
+     * panel.
+     */
+    private List<BillTypeAtomic> wholeSaleBillTypeAtomics() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_REFUND);
+        return btas;
+    }
+
+    public void createDepartmentSaleDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        List<BillTypeAtomic> btas = retailSaleBillTypeAtomics();
 
         boolean listOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey(
                 "Pharmacy History Lists Only Department Transactions for Sales", true);
 
+        // pharmaceuticalBillItem.qty is stored negative for stock-out
+        // movements, so negating makes a sale read positive. Cancellations and
+        // returns are stored with the opposite sign and therefore come out
+        // negative, which makes them subtract from the total rather than
+        // inflate it. Do NOT use abs() here - that sums magnitudes and makes a
+        // cancelled sale increase the figure.
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -8963,6 +8999,107 @@ public class PharmacyController implements Serializable {
         salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * Builds the Whole Sale block's data. Previously the block reused
+     * {@code salesByBillType} and filtered it in the view, which could never
+     * match because that list only holds retail bill types.
+     */
+    public void createWholeSaleByBillTypeDto() {
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        // An empty list would bind to "i.item in :ris" and yield invalid SQL.
+        if (relatedAmpAndAmpps == null || relatedAmpAndAmpps.isEmpty()) {
+            wholeSaleByBillType = new ArrayList<>();
+            return;
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
+                + "i.bill.billTypeAtomic, "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to ";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", wholeSaleBillTypeAtomics());
+
+        // Same department scoping rule as the retail Sale block.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy History Lists Only Department Transactions for Sales", true)) {
+            jpql += "AND i.bill.department=:dep ";
+            m.put("dep", sessionController.getDepartment());
+        }
+
+        jpql += "GROUP BY i.bill.billTypeAtomic";
+
+        wholeSaleByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Builds the Department Wise Sale block: retail sale quantities grouped by
+     * department and then by bill type, with a subtotal per department.
+     *
+     * Always spans every department regardless of the
+     * "Pharmacy History Lists Only Department Transactions for Sales" option -
+     * a per-department breakdown restricted to a single department would be
+     * pointless.
+     */
+    public void createDepartmentWiseSaleDtos() {
+        departmentWiseSaleGroups = new ArrayList<>();
+
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+
+        // An empty list would bind to "i.item in :ris" and yield invalid SQL.
+        if (relatedAmpAndAmpps == null || relatedAmpAndAmpps.isEmpty()) {
+            return;
+        }
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDepartmentWiseSaleDTO("
+                + "i.bill.department, "
+                + "i.bill.billTypeAtomic, "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
+                + "FROM BillItem i "
+                + "WHERE (i.bill.retired is null or i.bill.retired=false) "
+                + "AND i.item in :ris "
+                + "AND i.bill.billTypeAtomic in :btas "
+                + "AND i.createdAt between :frm and :to "
+                + "GROUP BY i.bill.department, i.bill.billTypeAtomic "
+                + "ORDER BY i.bill.department, i.bill.billTypeAtomic";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ris", relatedAmpAndAmpps);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btas", retailSaleBillTypeAtomics());
+
+        List<PharmacyDepartmentWiseSaleDTO> rows
+                = (List<PharmacyDepartmentWiseSaleDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        // The query orders by department, so rows for one department arrive
+        // together; a LinkedHashMap keeps that order in the rendered table.
+        Map<Long, PharmacyDepartmentWiseSaleGroupDTO> groupsByDepartmentId = new LinkedHashMap<>();
+        for (PharmacyDepartmentWiseSaleDTO row : rows) {
+            Long departmentId = row.getDepartment() == null ? null : row.getDepartment().getId();
+            PharmacyDepartmentWiseSaleGroupDTO group = groupsByDepartmentId.get(departmentId);
+            if (group == null) {
+                group = new PharmacyDepartmentWiseSaleGroupDTO(row.getDepartment());
+                groupsByDepartmentId.put(departmentId, group);
+            }
+            group.addRow(row);
+        }
+
+        departmentWiseSaleGroups = new ArrayList<>(groupsByDepartmentId.values());
+    }
+
     public void createDepartmentTransferIssueDto() {
         List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
 
@@ -8975,7 +9112,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO("
                 + "i.bill.toDepartment, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9032,7 +9169,7 @@ public class PharmacyController implements Serializable {
 
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO("
                 + "i.bill.toDepartment, "
-                + "sum(i.pharmaceuticalBillItem.qty)) "
+                + "sum(i.pharmaceuticalBillItem.qty) * -1) "
                 + "FROM BillItem i "
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
@@ -9838,6 +9975,8 @@ public class PharmacyController implements Serializable {
     private List<InstitutionSale> institutionWholeSales;
     private List<InstitutionSale> institutionBhtIssue;
     private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> salesByBillType;
+    private List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> wholeSaleByBillType;
+    private List<com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO> departmentWiseSaleGroups;
     private List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> transferIssuesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO> transferReceivesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment;
@@ -10578,29 +10717,49 @@ public class PharmacyController implements Serializable {
     public void generateGrnReport() {
         resetFields();
 
+        // Each option covers a purchase type together with its own reversals, so the
+        // period total nets correctly: a cancellation is counted in the period its
+        // cancellation bill was made, whether the original GRN / Direct Purchase falls
+        // inside the period or before the From date. Issue #24107.
+        boolean allTypes = purchaseType == null || purchaseType.trim().isEmpty();
         List<BillTypeAtomic> bta = new ArrayList<>();
-
-        if (!"direct".equals(purchaseType)) {
+        if (allTypes || "grn".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_GRN);
-            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
             bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
         }
-        if (!"grn".equals(purchaseType)) {
+        if (allTypes || "direct".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+        }
+        if (allTypes || "grnReturn".equals(purchaseType)) {
+            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            // Deprecated legacy GRN return type, still present in older databases.
+            bta.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        }
+        if (allTypes || "directReturn".equals(purchaseType)) {
             bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         }
 
         bills = new ArrayList<>();
 
+        // Returns count only once approved: unapproved ones never moved stock (issue
+        // #24110). GRNs / Direct Purchases count only once they carry a bill number:
+        // unnumbered ones are saved drafts that never moved stock. Cancellations and
+        // legacy PHARMACY_GRN_REFUND bills (from a flow with no approval step) always count.
         String sql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
                 + " and b.billTypeAtomic In :btas"
-                + " and b.createdAt between :fromDate and :toDate";
+                + " and b.createdAt between :fromDate and :toDate"
+                + " and ((b.billTypeAtomic IN :returnBtas AND b.completed = true)"
+                + " or (b.billTypeAtomic IN :purchaseBtas AND b.deptId IS NOT NULL)"
+                + " or b.billTypeAtomic IN :alwaysIncludedBtas)";
 
         Map<String, Object> tmp = new HashMap<>();
 
         tmp.put("btas", bta);
+        tmp.put("returnBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_RETURN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND));
+        tmp.put("purchaseBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE));
+        tmp.put("alwaysIncludedBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_CANCELLED, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED, BillTypeAtomic.PHARMACY_GRN_REFUND));
         tmp.put("fromDate", getFromDate());
         tmp.put("toDate", getToDate());
 
@@ -10629,6 +10788,7 @@ public class PharmacyController implements Serializable {
             tmp.put("supplier", fromInstitution);
             List<BillTypeAtomic> refundBtas = new ArrayList<>();
             refundBtas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            refundBtas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
             refundBtas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             tmp.put("refundBtas", refundBtas);
         }
@@ -10725,25 +10885,159 @@ public class PharmacyController implements Serializable {
             return BigDecimal.ZERO;
         }
         BigDecimal amt = grnStockAmountsByBillId.get(bill.getId());
-        return amt != null ? amt : BigDecimal.ZERO;
+        return amt != null ? amt.abs().multiply(BigDecimal.valueOf(grnSummarySign(bill))) : BigDecimal.ZERO;
     }
 
     /**
-     * Display-only magnitude of {@link Bill#getNetTotal()} for the GRN Summary
-     * Report's "Amount" column — the signed value is intentional (negative for
-     * purchases/money-out, positive for cancellations/returns/money-back), but
-     * showing the sign to end users on a per-row report is confusing. See issue #23604.
+     * Display sign of a GRN Summary Report row, decided by bill type rather than
+     * by the stored sign of the bill's values. Stored signs are not consistent
+     * across the legacy and workflow return screens: a GRN Return's netTotal can
+     * be stored either positive or negative. Receipts (GRN, Direct Purchase)
+     * read positive; cancellations and returns read negative, since they reverse
+     * the purchase and stock value. See issues #24107 and #24108.
+     */
+    private int grnSummarySign(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return 1;
+        }
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_GRN_CANCELLED:
+            case PHARMACY_DIRECT_PURCHASE_CANCELLED:
+            case PHARMACY_GRN_RETURN:
+            case PHARMACY_GRN_REFUND:
+            case PHARMACY_DIRECT_PURCHASE_REFUND:
+                return -1;
+            default:
+                return 1;
+        }
+    }
+
+    private String grnSummaryPurchaseTypeLabel() {
+        if (purchaseType == null || purchaseType.trim().isEmpty()) {
+            return "All Types";
+        }
+        switch (purchaseType) {
+            case "grn":
+                return "GRN";
+            case "direct":
+                return "Direct Purchase";
+            case "grnReturn":
+                return "GRN Return";
+            case "directReturn":
+                return "Direct Purchase Return";
+            default:
+                return "All Types";
+        }
+    }
+
+    /**
+     * "Amount" column of the GRN Summary Report: the bill's net total, signed by
+     * {@link #grnSummarySign(Bill)}. See issues #23604 and #24108.
      */
     public double getGrnDisplayAmount(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getNetTotal());
+        // "+ 0.0" normalises -0.0 so a zero value never renders as "-0.00".
+        return bill == null ? 0.0 : grnSummarySign(bill) * Math.abs(bill.getNetTotal()) + 0.0;
     }
 
     /**
-     * Display-only magnitude of {@link Bill#getDiscount()} for the GRN Summary
-     * Report — see {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
+     * "Dis. Amount" column of the GRN Summary Report, signed the same way as
+     * {@link #getGrnDisplayAmount(Bill)} so the column totals net correctly.
      */
     public double getGrnDisplayDiscount(Bill bill) {
-        return bill == null ? 0.0 : Math.abs(bill.getDiscount());
+        return bill == null ? 0.0 : grnSummarySign(bill) * Math.abs(bill.getDiscount()) + 0.0;
+    }
+
+    /**
+     * Footer totals of the GRN Summary Report: the sums of the displayed row
+     * values, so a footer always equals the rows above it. Issue #24107.
+     */
+    public double getGrnSummaryTotalAmount() {
+        double total = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                total += getGrnDisplayAmount(bill);
+            }
+        }
+        return total;
+    }
+
+    public double getGrnSummaryTotalDiscount() {
+        double total = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                total += getGrnDisplayDiscount(bill);
+            }
+        }
+        return total;
+    }
+
+    public BigDecimal getGrnSummaryTotalStockAmount() {
+        BigDecimal total = BigDecimal.ZERO;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                total = total.add(getGrnStockAmount(bill));
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Display-only magnitude of the "PO Sub Total" column on the GRN Summary
+     * Report's Print view ({@code grn_summary_view.xhtml}) — mirrors
+     * {@link #calculateTotalPOAmount()}'s per-row branching so the logic stays
+     * identical, only the sign shown to the user changes. See issue #23604.
+     */
+    public double getGrnSummaryPrintPoSubTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        BillTypeAtomic bta = bill.getBillTypeAtomic();
+        double value;
+        if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                || bta.equals(BillTypeAtomic.PHARMACY_GRN_REFUND))) {
+            value = -1 * (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0);
+        } else if (bta != null && (bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) || bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))) {
+            value = -1 * bill.getNetTotal();
+        } else if (bta != null && bta.equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
+            value = bill.getNetTotal();
+        } else {
+            value = bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0;
+        }
+        return Math.abs(value);
+    }
+
+    /**
+     * Display-only sign-flip of the "GRN Sub Total" column on the GRN Summary
+     * Report's Print view ({@code grn_summary_view.xhtml}) — same field and
+     * same sign rule as {@link #getGrnDisplayAmount(Bill)}. See issue #23604.
+     */
+    public double getGrnSummaryPrintGrnSubTotal(Bill bill) {
+        return getGrnDisplayAmount(bill);
+    }
+
+    /**
+     * Display-only "PO Sub Total" footer total — the sum of each row's
+     * {@link #getGrnSummaryPrintPoSubTotal(Bill)}, so the footer always
+     * matches the values displayed above it. NOT {@code calculateTotalPOAmount()}
+     * — that method nets reversals against their own netTotal rather than
+     * their referenced bill's, a different (and, for a mixed purchase/refund
+     * batch, materially different) calculation. See issue #23604.
+     */
+    public double getGrnSummaryPrintTotalPOAmount() {
+        double total = 0.0;
+        for (Bill bill : bills) {
+            total += getGrnSummaryPrintPoSubTotal(bill);
+        }
+        return total;
+    }
+
+    /**
+     * Display-only sign-flip of the Print view's "GRN Sub Total" footer total
+     * — the sum of each row's {@link #getGrnSummaryPrintGrnSubTotal(Bill)}.
+     * See issues #23604 and #24108.
+     */
+    public double getGrnSummaryPrintTotalGrnAmount() {
+        return getGrnSummaryTotalAmount();
     }
 
     public Double calculateTotalGrnAmount() {
@@ -10870,11 +11164,8 @@ public class PharmacyController implements Serializable {
             emptyRow.createCell(16).setCellValue("-");
             emptyRow.createCell(17).setCellValue("-");
             emptyRow.createCell(18).setCellValue("-");
-            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic() != null
-                    && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN))
-                    ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
-            emptyRow.createCell(20).setCellValue(bill.getNetTotal());
+            emptyRow.createCell(19).setCellValue(getGrnSummaryPrintPoSubTotal(bill));
+            emptyRow.createCell(20).setCellValue(getGrnSummaryPrintGrnSubTotal(bill));
 
             for (BillItem billItem : bill.getBillItems()) {
                 Row emptyInnerRow = sheet.createRow(rowIndex++);
@@ -10930,7 +11221,7 @@ public class PharmacyController implements Serializable {
                 }
                 emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
                 emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
-                emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
+                emptyInnerRow.createCell(18).setCellValue(getGrnSummaryPrintGrnSubTotal(billItem.getBill()));
                 emptyInnerRow.createCell(19).setCellValue("-");
                 emptyInnerRow.createCell(20).setCellValue("-");
             }
@@ -10956,8 +11247,8 @@ public class PharmacyController implements Serializable {
         }
 
         footerRow.getCell(0).setCellValue("TOTAL");
-        footerRow.createCell(19).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
-        footerRow.createCell(20).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
+        footerRow.createCell(19).setCellValue(Math.round(getGrnSummaryPrintTotalPOAmount() * 100.0) / 100.0);
+        footerRow.createCell(20).setCellValue(Math.round(getGrnSummaryPrintTotalGrnAmount() * 100.0) / 100.0);
         workbook.write(out);
         context.responseComplete();
 
@@ -11135,18 +11426,8 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell("-", bodyFont));
                 table.addCell(textCell("-", bodyFont));
 
-                double poSubTotal = 0.0;
-                if (bill.getReferenceBill() != null) {
-                    double refNet = bill.getReferenceBill().getNetTotal();
-                    if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                            || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
-                        refNet = -1 * refNet;
-                    }
-                    poSubTotal = refNet;
-                }
-
-                table.addCell(numCell(poSubTotal, bodyFont));
-                table.addCell(numCell(bill.getNetTotal(), bodyFont));
+                table.addCell(numCell(getGrnSummaryPrintPoSubTotal(bill), bodyFont));
+                table.addCell(numCell(getGrnSummaryPrintGrnSubTotal(bill), bodyFont));
 
                 // item-level rows
                 for (BillItem billItem : bill.getBillItems()) {
@@ -11219,7 +11500,7 @@ public class PharmacyController implements Serializable {
                     table.addCell(numCell(billItem.getNetValue(), bodyFont));
 
                     table.addCell(numCell(
-                            billItem.getBill() != null ? billItem.getBill().getNetTotal() : null,
+                            billItem.getBill() != null ? getGrnSummaryPrintGrnSubTotal(billItem.getBill()) : null,
                             bodyFont
                     ));
 
@@ -11237,11 +11518,11 @@ public class PharmacyController implements Serializable {
 
             java.text.DecimalFormat amtFmt = new java.text.DecimalFormat("#,##0.00");
             footerTable.addCell(new PdfPCell(new Phrase(
-                    "Total PO Amount: " + amtFmt.format(calculateTotalPOAmount()),
+                    "Total PO Amount: " + amtFmt.format(getGrnSummaryPrintTotalPOAmount()),
                     footerFont
             )));
             footerTable.addCell(new PdfPCell(new Phrase(
-                    "Total GRN Amount: " + amtFmt.format(calculateTotalGrnAmount()),
+                    "Total GRN Amount: " + amtFmt.format(getGrnSummaryPrintTotalGrnAmount()),
                     footerFont
             )));
 
@@ -11331,8 +11612,8 @@ public class PharmacyController implements Serializable {
                         f.getCreatedAt() != null ? sdf.format(f.getCreatedAt()) : "-",
                         bodyFontSmall));
                 table.addCell(textCell(f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN ? (f.getToInstitution()!= null ? f.getToInstitution().getName() : "-") : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
-                table.addCell(numCell(f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_CANCELLED ? -1*(f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) : (f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) , bodyFontSmall));
-                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+                table.addCell(numCell(getGrnSummaryPrintPoSubTotal(f), bodyFontSmall));
+                table.addCell(numCell(getGrnSummaryPrintGrnSubTotal(f), bodyFontSmall));
             }
 
             com.itextpdf.text.pdf.PdfPCell footerCell =
@@ -11345,8 +11626,8 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(calculateTotalPOAmount(), bodyFontSmall));
-            table.addCell(numCell(calculateTotalGrnAmount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryPrintTotalPOAmount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryPrintTotalGrnAmount(), bodyFontSmall));
 
             document.add(table);
 
@@ -11438,14 +11719,9 @@ public class PharmacyController implements Serializable {
                 table.addCell(cell);
             }
 
-            BigDecimal totalDiscount = BigDecimal.ZERO;
-            BigDecimal totalStockAmount = BigDecimal.ZERO;
-
             int index = 1;
             for (Bill f : rows) {
                 BigDecimal stockAmount = getGrnStockAmount(f);
-                totalDiscount = totalDiscount.add(BigDecimal.valueOf(f.getDiscount()));
-                totalStockAmount = totalStockAmount.add(stockAmount);
 
                 table.addCell(numCell(index++, bodyFontSmall));
                 table.addCell(textCell(f.getDeptId(), bodyFontSmall));
@@ -11453,7 +11729,8 @@ public class PharmacyController implements Serializable {
                 table.addCell(textCell(f.getCreatedAt() != null ? sdfDateOnly.format(f.getCreatedAt()) : "-", bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceNumber(), bodyFontSmall));
                 table.addCell(textCell(f.getInvoiceDate() != null ? sdfDateOnly.format(f.getInvoiceDate()) : "-", bodyFontSmall));
-                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
+                table.addCell(textCell((f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_REFUND
+                        || f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)
                         ? (f.getToInstitution() != null ? f.getToInstitution().getName() : "-")
                         : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
                 table.addCell(textCell(f.getPaymentMethod() != null ? f.getPaymentMethod().getLabel() : "-", bodyFontSmall));
@@ -11473,9 +11750,9 @@ public class PharmacyController implements Serializable {
             footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
             table.addCell(footerCell);
 
-            table.addCell(numCell(Math.abs(calculateTotalGrnAmount()), bodyFontSmall));
-            table.addCell(numCell(Math.abs(totalDiscount.doubleValue()), bodyFontSmall));
-            table.addCell(numCell(totalStockAmount.doubleValue(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryTotalAmount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryTotalDiscount(), bodyFontSmall));
+            table.addCell(numCell(getGrnSummaryTotalStockAmount().doubleValue(), bodyFontSmall));
             com.itextpdf.text.pdf.PdfPCell blankStatusFooterCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(""));
             blankStatusFooterCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
             table.addCell(blankStatusFooterCell);
@@ -11493,10 +11770,10 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Same "Status" logic as the on-screen GRN Summary Report table
-     * (grn_summary_report.xhtml) — kept here so the PDF export matches it.
+     * "Status" column of the GRN Summary Report, shared by the on-screen table
+     * (grn_summary_report.xhtml) and the PDF export so both always match.
      */
-    private String grnSummaryStatusLabel(Bill bill) {
+    public String grnSummaryStatusLabel(Bill bill) {
         if (bill == null || bill.getBillTypeAtomic() == null) {
             return "-";
         }
@@ -11504,14 +11781,15 @@ public class PharmacyController implements Serializable {
         if (bta == BillTypeAtomic.PHARMACY_GRN_CANCELLED || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) {
             return "Cancelled";
         }
-        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
+        if (bta == BillTypeAtomic.PHARMACY_GRN_RETURN || bta == BillTypeAtomic.PHARMACY_GRN_REFUND
+                || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
             return "Returned";
         }
-        if ((bta == BillTypeAtomic.PHARMACY_GRN && bill.isCompleted()) || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
-            return "Approved";
-        }
-        if (bta == BillTypeAtomic.PHARMACY_GRN && !bill.isCompleted()) {
-            return "Pending Approval";
+        if (bta == BillTypeAtomic.PHARMACY_GRN || bta == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
+            // Only numbered (received) GRNs / Direct Purchases reach this report, see
+            // generateGrnReport(). A later cancellation is listed as its own negative
+            // row, so the original and its cancellation net to zero. Issue #24107.
+            return bill.isCancelled() ? "Approved (Cancelled)" : "Approved";
         }
         return "-";
     }
@@ -11956,6 +12234,48 @@ public class PharmacyController implements Serializable {
         for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : salesByBillType) {
             if (dto.getQuantity() != null) {
                 total += dto.getQuantity();
+            }
+        }
+        return total;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> getWholeSaleByBillType() {
+        return wholeSaleByBillType;
+    }
+
+    public void setWholeSaleByBillType(List<com.divudi.core.data.dto.PharmacySaleByBillTypeDTO> wholeSaleByBillType) {
+        this.wholeSaleByBillType = wholeSaleByBillType;
+    }
+
+    public Double getTotalWholeSaleByBillTypeQuantity() {
+        if (wholeSaleByBillType == null || wholeSaleByBillType.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacySaleByBillTypeDTO dto : wholeSaleByBillType) {
+            if (dto.getQuantity() != null) {
+                total += dto.getQuantity();
+            }
+        }
+        return total;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO> getDepartmentWiseSaleGroups() {
+        return departmentWiseSaleGroups;
+    }
+
+    public void setDepartmentWiseSaleGroups(List<com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO> departmentWiseSaleGroups) {
+        this.departmentWiseSaleGroups = departmentWiseSaleGroups;
+    }
+
+    public Double getTotalDepartmentWiseSaleQuantity() {
+        if (departmentWiseSaleGroups == null || departmentWiseSaleGroups.isEmpty()) {
+            return 0.0;
+        }
+        double total = 0.0;
+        for (com.divudi.core.data.dto.PharmacyDepartmentWiseSaleGroupDTO group : departmentWiseSaleGroups) {
+            if (group.getDepartmentTotal() != null) {
+                total += group.getDepartmentTotal();
             }
         }
         return total;

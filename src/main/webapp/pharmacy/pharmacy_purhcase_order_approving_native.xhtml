@@ -297,6 +297,15 @@
                         styleClass="ui-button-secondary m-1"
                         oncomplete="PF('emailDialog').show();"
                         update="emailDialogForm"/>
+                    <p:commandButton
+                        value="Send SMS"
+                        icon="fas fa-sms"
+                        styleClass="ui-button-secondary m-1"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Send SMS Button', true)}"
+                        disabled="#{purchaseOrderApprovingNativeSqlController.approvedBill.cancelled}"
+                        action="#{purchaseOrderSmsController.prepareSmsDialog(purchaseOrderApprovingNativeSqlController.approvedBill.id)}"
+                        update=":poSmsDialogForm"
+                        oncomplete="PF('poSmsDialog').show();"/>
 
                     <h:panelGroup  id="gpBillPreview" class="my-2">
 
@@ -325,6 +334,8 @@
             </h:panelGroup>
 
         </h:form>
+
+        <ui:include src="fragments/po_sms_dialog.xhtml"/>
 
         <p:dialog widgetVar="emailDialog" modal="true" header="Send Purchase Order Email" width="400px" height="auto" resizable="false">
             <h:form id="emailDialogForm">

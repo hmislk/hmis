@@ -39,6 +39,19 @@ Handoff question, if that chain gets invoked anywhere in this flow (e.g.
 during step 5): auto-select **option 1, Subagent-Driven** without asking —
 do not stop for it as an additional discussion gate.
 
+## 0. Anything you write to GitHub is public
+
+`hmislk/hmis` is a public repo. Before every `gh issue create`,
+`gh issue comment`, `gh pr create` or `gh pr comment` in the steps below,
+apply
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md):
+no patient/doctor/staff names, production record identifiers (bill/BHT/PHN
+numbers, entity IDs), affected-record counts, production schema names, cutover
+dates, per-staff statistics, data-fix logs or credentials. Describe the defect
+and the local test evidence; keep hospital-specific numbers in `tmp/`. This
+applies to the issue body as much as to the PR — including an issue *you* file
+mid-run for a bug you found yourself.
+
 ## 1. Setup
 
 Run the `start-issue` skill for `$0`: creates the branch from
@@ -198,10 +211,11 @@ retest (step 7). Repeat until the flow passes end-to-end.
 
 ## 9. Record learnings
 
-If this pass surfaced a new Playwright/dev gotcha (a new PrimeFaces timing
-quirk, a new accessibility gap, a new verification pattern), append it to
-`developer_docs/testing/playwright-e2e-workflow.md` — same pattern as the
-§0a/§5a additions from issue #21499. Don't force this if nothing new came up.
+If a new Playwright/dev gotcha surfaced, add it to the matching topic file in
+`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use,
+and list it in the main guide's Contents. Write it as a symptom heading plus
+1–3 lines of fix. Leave the story, dates and issue history out; they belong in
+the PR. Skip this step if nothing new came up.
 
 ## 10. Publish evidence and update the wiki
 
@@ -345,4 +359,8 @@ indefinitely.
 
 Report the PR link, the issue comment from step 10, a short summary of what
 changed, and what was verified (including the published screenshots).
+If you mention the project board status, re-read it from GitHub first (the `start-issue`
+Step 5 read-back query) and quote what it returns. Never report the board status from
+memory of an earlier update call. (Issue #24105 was reported as "In Progress" when the
+board still showed Backlog.)
 **Never merge** — that's the user's call.

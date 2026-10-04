@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:se="http://xmlns.jcp.org/jsf/composite/pharmacy/search">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <!--
+        Result area shared by the Pharmacy Bill Search pages (by Bill Type,
+        by Bill Type Atomic, by Item) — issue #24250. Shows the table chosen
+        by PharmacyBillSearch.searchPharmacyBills() via resultView.
+    -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="pharmacy_bill_search.css"/>
+        <h:panelGroup layout="block" id="billSearchResults">
+            <se:sale rendered="#{pharmacyBillSearch.resultView eq 'sale'}"/>
+            <se:transfer_request rendered="#{pharmacyBillSearch.resultView eq 'transferRequest'}"/>
+            <se:transfer_issue rendered="#{pharmacyBillSearch.resultView eq 'transferIssue'}"/>
+            <se:pharmacy_transfer_recieve rendered="#{pharmacyBillSearch.resultView eq 'transferReceive'}"/>
+            <se:pre_bill rendered="#{pharmacyBillSearch.resultView eq 'preBill'}"/>
+            <se:pharmacy_whole_sale rendered="#{pharmacyBillSearch.resultView eq 'wholeSale'}"/>
+            <se:po_request rendered="#{pharmacyBillSearch.resultView eq 'poRequest'}"/>
+            <se:po_approve rendered="#{pharmacyBillSearch.resultView eq 'poApprove'}"/>
+            <se:grn rendered="#{pharmacyBillSearch.resultView eq 'grn'}"/>
+            <se:purchase rendered="#{pharmacyBillSearch.resultView eq 'purchase'}"/>
+            <se:grn_return rendered="#{pharmacyBillSearch.resultView eq 'grnReturn'}"/>
+            <se:grn_return_without_traising rendered="#{pharmacyBillSearch.resultView eq 'returnWithoutTraising'}"/>
+            <se:pharmacy_issue rendered="#{pharmacyBillSearch.resultView eq 'issue'}"/>
+            <se:adjustment rendered="#{pharmacyBillSearch.resultView eq 'adjustment'}"/>
+            <se:grn_payment rendered="#{pharmacyBillSearch.resultView eq 'grnPayment'}"/>
+            <se:purchase_return rendered="#{pharmacyBillSearch.resultView eq 'purchaseReturn'}"/>
+            <se:generic_bill rendered="#{pharmacyBillSearch.resultView eq 'generic'}"/>
+        </h:panelGroup>
+    </cc:implementation>
+</html>

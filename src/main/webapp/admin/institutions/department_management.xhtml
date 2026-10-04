@@ -219,13 +219,18 @@
                                             <h:outputText value="Department Type" />
                                             <p:selectOneMenu class="w-100" id="cmbDept" filter="true" filterMatchMode="contains"
                                                              value="#{departmentController.current.departmentType}"
-                                                             disabled="#{!departmentController.editable}">
+                                                             disabled="#{!departmentController.editable or departmentController.current.departmentType eq 'CollectingCentre'}">
                                                 <f:selectItem itemLabel="Select the Department Type" />
                                                 <f:selectItems value="#{departmentController.departmentType}"/>
                                             </p:selectOneMenu>
 
                                             <h:outputText value="Institution" />
                                             <h:panelGroup id="pnlInstitution" layout="block">
+                                                <p:inputText
+                                                    class="w-100"
+                                                    value="#{departmentController.current.institution.name}"
+                                                    rendered="#{departmentController.current.departmentType eq 'CollectingCentre'}"
+                                                    disabled="true" />
                                                 <p:autoComplete
                                                     id="acIns"
                                                     class="w-100"
@@ -236,6 +241,7 @@
                                                     itemValue="#{pta}"
                                                     forceSelection="true"
                                                     value="#{departmentController.current.institution}"
+                                                    rendered="#{departmentController.current.departmentType ne 'CollectingCentre'}"
                                                     disabled="#{!departmentController.editable}">
                                                     <p:ajax process="acIns" update="cmbSupDept pnlInstitution"/>
                                                 </p:autoComplete>

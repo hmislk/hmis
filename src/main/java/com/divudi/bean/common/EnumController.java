@@ -24,6 +24,7 @@ import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -74,6 +75,7 @@ public class EnumController implements Serializable {
 
     private List<BillTypeAtomic> allUtilizedBillTypeAtomics;
     private List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy;
+    private List<BillTypeAtomic> billTypeAtomicsForPharmacyBillSearch;
 
     private List<PettyCashType> pettyCashBillTypes;
 
@@ -646,6 +648,9 @@ public class EnumController implements Serializable {
         rt.add(RequestType.PETTYCASH_APROVEL);
         rt.add(RequestType.PETTYCASH_CANCELLATION);
         rt.add(RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
+        rt.add(RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL);
+        rt.add(RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL);
+        rt.add(RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL);
         //rt.add(RequestType.EDIT_REQUEST);
         //rt.add(RequestType.INFORMATION_UPDATE);
         //rt.add(RequestType.QUANTITY_CHANGE);
@@ -782,6 +787,17 @@ public class EnumController implements Serializable {
      */
     public InwardChargeType[] getInwardChargeTypes() {
         return professionalFeeClassificationService.visible(InwardChargeType.values());
+    }
+
+    /**
+     * The three inpatient professional Fee Categories, for the Speciality
+     * admin page's Default Professional Fee Category (issue #23983).
+     */
+    public InwardChargeType[] getProfessionalFeeCategories() {
+        return new InwardChargeType[]{
+            InwardChargeType.ProfessionalCharge,
+            InwardChargeType.DoctorAndNurses,
+            InwardChargeType.TechnicianAndParamedicalCharge};
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
@@ -1335,8 +1351,6 @@ public class EnumController implements Serializable {
         availableStatusforCancel = new ArrayList<>();
         availableStatusforCancel.add(PatientInvestigationStatus.ORDERED);
         availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_GENERATED);
-        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
-        availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_SENT);
         availableStatusforCancel.add(PatientInvestigationStatus.SAMPLE_REJECTED);
         return availableStatusforCancel;
     }
@@ -1420,6 +1434,7 @@ public class EnumController implements Serializable {
 
     public void setAllUtilizedBillTypeAtomics(List<BillTypeAtomic> allUtilizedBillTypeAtomics) {
         this.allUtilizedBillTypeAtomics = allUtilizedBillTypeAtomics;
+        this.billTypeAtomicsForPharmacyBillSearch = null;
     }
 
     public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
@@ -1427,6 +1442,87 @@ public class EnumController implements Serializable {
             allUtilizedBillTypeAtomicsForPharmacy = filterBillTypeAtomics(getAllUtilizedBillTypeAtomics(), ServiceType.PHARMACY);
         }
         return allUtilizedBillTypeAtomicsForPharmacy;
+    }
+
+    /**
+     * Every pharmacy bill type, for the Pharmacy Bill Search by Bill Type page
+     * (issue #24250). Bills saved without a bill type atomic can only be found
+     * there, so this list must stay complete. {@link #getPharmacyBillTypes()}
+     * is a separate, shorter list used by the ordering pages.
+     */
+    public BillType[] getPharmacyBillTypesForBillSearch() {
+        return new BillType[]{
+            BillType.PharmacyPre,
+            BillType.PharmacySale,
+            BillType.PharmacySaleWithoutStock,
+            BillType.PharmacyWholesalePre,
+            BillType.PharmacyWholeSale,
+            BillType.PharmacyAddtoStock,
+            BillType.PharmacyBill,
+            BillType.PharmacyOrder,
+            BillType.PharmacyOrderApprove,
+            BillType.PharmacyGrnBill,
+            BillType.PharmacyGrnBillImport,
+            BillType.PharmacyPurchaseBill,
+            BillType.PharmacyDonationBill,
+            BillType.PharmacyGrnReturn,
+            BillType.PurchaseReturn,
+            BillType.PharmacyReturnWithoutTraising,
+            BillType.GrnPaymentPre,
+            BillType.GrnPayment,
+            BillType.PharmacyTransferRequest,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyDirectIssue,
+            BillType.PharmacyTransferReceive,
+            BillType.PharmacyDirectReceive,
+            BillType.PharmacyIssue,
+            BillType.PharmacyDisposalIssue,
+            BillType.PharmacyBhtIssue,
+            BillType.PharmacyBhtPre,
+            BillType.PharmacyAdjustment,
+            BillType.PharmacyAdjustmentDepartmentStock,
+            BillType.PharmacyAdjustmentDepartmentSingleStock,
+            BillType.PharmacyAdjustmentStaffStock,
+            BillType.PharmacyAdjustmentSaleRate,
+            BillType.PharmacyAdjustmentWholeSaleRate,
+            BillType.PharmacyAdjustmentPurchaseRate,
+            BillType.PharmacyAdjustmentCostRate,
+            BillType.PharmacyAdjustmentExpiryDate,
+            BillType.PharmacyMajorAdjustment,
+            BillType.PharmacyAdjustmentApprovalRequest,
+            BillType.PharmacyStockAdjustmentBill,
+            BillType.PharmacyPhysicalCountBill,
+            BillType.PharmacySnapshotBill};
+    }
+
+    /**
+     * Bill type atomics offered on the Pharmacy Bill Search by Bill Type Atomic
+     * and by Item pages (issue #24250): the atomics in use in this database
+     * that are pharmacy atomics, or that belong to a pharmacy bill type (e.g.
+     * inpatient medicine issues and supplier payments, whose service type is
+     * not PHARMACY).
+     */
+    public synchronized List<BillTypeAtomic> getBillTypeAtomicsForPharmacyBillSearch() {
+        if (billTypeAtomicsForPharmacyBillSearch == null) {
+            List<BillType> pharmacyBillTypes = Arrays.asList(getPharmacyBillTypesForBillSearch());
+            List<BillTypeAtomic> list = new ArrayList<>();
+            for (BillTypeAtomic bta : getAllUtilizedBillTypeAtomics()) {
+                if (bta == null) {
+                    continue;
+                }
+                if (ServiceType.PHARMACY.equals(bta.getServiceType())
+                        || pharmacyBillTypes.contains(bta.getBillType())) {
+                    list.add(bta);
+                }
+            }
+            list.sort(Comparator.comparing(BillTypeAtomic::getLabel));
+            // Don't cache an empty list (e.g. the base query failed) so a later call retries.
+            if (list.isEmpty()) {
+                return list;
+            }
+            billTypeAtomicsForPharmacyBillSearch = list;
+        }
+        return billTypeAtomicsForPharmacyBillSearch;
     }
 
     public List<BillTypeAtomic> filterBillTypeAtomics(List<BillTypeAtomic> btas, ServiceType serviceType) {

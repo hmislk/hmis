@@ -175,7 +175,8 @@
                                 <f:selectItem itemLabel="All Institutions"/>
                                 <f:selectItems value="#{institutionController.companies}"
                                                var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
-                                <p:ajax process="phmIns" update="phmDept"/>
+                                <p:ajax process="phmIns" update="phmDept"
+                                        listener="#{inwardReportController.setDepartment(null)}"/>
                             </p:selectOneMenu>
                             <p:spacer width="20"/>
 
@@ -189,7 +190,8 @@
                                 <f:selectItem itemLabel="All Sites"/>
                                 <f:selectItems value="#{institutionController.sites}"
                                                var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
-                                <p:ajax process="phmSite" update="phmDept"/>
+                                <p:ajax process="phmSite" update="phmDept"
+                                        listener="#{inwardReportController.setDepartment(null)}"/>
                             </p:selectOneMenu>
                             
 
@@ -261,7 +263,7 @@
                         <div class="d-flex align-items-center my-4">
                             <p:commandButton class="ui-button-warning mx-1"
                                              icon="fas fa-cogs" ajax="false"
-                                             action="#{inwardReportController.processRoomOccupancyReport()}"
+                                             action="#{inwardReportController.processRoomOccupancyReportAndReload()}"
                                              value="Process"/>
                             <p:commandButton
                                 class="mx-2 ui-button-info m-1"

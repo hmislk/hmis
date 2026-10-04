@@ -502,7 +502,47 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", pts);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
-    
+
+    /**
+     * Same filter as {@link #calCostOfIssueByBill(PatientEncounter, List, List)}, but sums
+     * {@code Bill.total} (gross, pre-margin) instead of {@code Bill.netTotal}. Exists so the
+     * Medicine charge category can report gross and margin as their own breakout lines —
+     * previously only {@code .setTotal(...)} (net) was ever called for Medicine in
+     * {@code BhtSummeryController.setKnownChargeTot()}, so the Interim Bill's "Service Charge
+     * (Margin)" line always showed 0.00 for Medicine even though the margin was correctly
+     * applied to every pharmacy bill (QA report, 2026-10-01).
+     *
+     * <p>Margin is deliberately derived as {@code netTotal - gross} by the caller rather than
+     * summed from a third {@code Bill.margin} field: margin is set independently by close to
+     * a dozen different pharmacy issue/return/cancellation controllers, several of which (e.g.
+     * ward-to-pharmacy returns) compute it as its own separate expression rather than as
+     * {@code netTotal - total}, so a row-by-row rounding/computation drift between
+     * {@code Bill.margin} and {@code Bill.netTotal - Bill.total} is plausible even though
+     * {@code total}/{@code netTotal} themselves are trustworthy (they drive the actual amount
+     * due everywhere else in the app). Deriving margin from the two already-reliable fields
+     * instead of trusting a third, independently-maintained one removes that whole class of
+     * drift — caught in review on #24213's follow-up by a second Claude session cross-checking
+     * live {@code coop} data, 2026-10-01.
+     */
+    public double calGrossCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.total)"
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and  b.patientEncounter IN :pe";
+        hm = new HashMap();
+        hm.put("btp", btas);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
     /**
      * Sums the value of cancelled/returned issue bills as a positive magnitude, so it can be
      * printed as its own breakup line instead of silently netting out of the parent charge
@@ -528,15 +568,71 @@ public class InwardBeanController implements Serializable {
         return -getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    /**
+     * Sums {@code Bill.netTotal} for the given {@code btas} restricted to one issuing
+     * department. Resolves "issuing department" the same way as
+     * {@link #fetchMedicineIssueTable(PatientEncounter, List, DepartmentType)} - a return's
+     * own {@code department} is often the department that processed the return, not the one
+     * that issued the medicine, so a {@code RefundBill}/{@code BilledBill} return is attributed
+     * back to its linked issue/receive bill's department instead (issue #23871). This keeps the
+     * department-split Medicine totals (via {@code BhtSummeryController.setKnownChargeTot()})
+     * consistent with the department-split Medicine list built by
+     * {@code fetchMedicineIssueTable}.
+     */
     public double calCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
         String sql;
         HashMap hm;
         sql = "SELECT  sum(b.netTotal)"
                 + " FROM Bill b "
+                + " LEFT JOIN b.billedBill bb "
+                + " LEFT JOIN b.referenceBill rb "
+                + " LEFT JOIN rb.fromDepartment rbFromDept "
+                + " LEFT JOIN rb.department rbDept "
+                + " LEFT JOIN bb.department bbDept "
                 + " WHERE b.retired=false "
-                + " and b.billTypeAtomic IN :btp "
-                + " and  b.patientEncounter IN :pe"
-                + " and  b.department.departmentType = :type";
+                + " AND b.billTypeAtomic IN :btp "
+                + " AND b.patientEncounter IN :pe "
+                + " AND ("
+                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
+                + "     )";
+        hm = new HashMap();
+        hm.put("btp", btas);
+        hm.put("type", billingDepartmentType);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    /**
+     * Department-split sibling of {@link #calGrossCostOfIssueByBill(PatientEncounter, List, List)}
+     * — same issuing-department resolution as {@link #calCostOfIssueByBill(PatientEncounter, List, List, DepartmentType)}.
+     */
+    public double calGrossCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.total)"
+                + " FROM Bill b "
+                + " LEFT JOIN b.billedBill bb "
+                + " LEFT JOIN b.referenceBill rb "
+                + " LEFT JOIN rb.fromDepartment rbFromDept "
+                + " LEFT JOIN rb.department rbDept "
+                + " LEFT JOIN bb.department bbDept "
+                + " WHERE b.retired=false "
+                + " AND b.billTypeAtomic IN :btp "
+                + " AND b.patientEncounter IN :pe "
+                + " AND ("
+                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
+                + "     )";
         hm = new HashMap();
         hm.put("btp", btas);
         hm.put("type", billingDepartmentType);
@@ -576,6 +672,38 @@ public class InwardBeanController implements Serializable {
      * OPTIMIZED: Fetches all inward charge type totals in ONE query instead of N queries
      * Performance: 52 seconds -> <2 seconds
      */
+    /**
+     * Sum of the discounts stored on inward service bill lines, per inward
+     * charge type, over the same lines as
+     * {@link #calServiceBillItemsTotalByInwardChargeTypeBulk} (issue #24011).
+     */
+    public Map<InwardChargeType, Double> calServiceBillItemsDiscountByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT s.item.inwardChargeType, sum(s.discount) "
+                + " FROM BillItem s"
+                + " WHERE s.retired=false "
+                + " AND s.bill.billType=:btp "
+                + " AND s.bill.patientEncounter IN :pe"
+                + " GROUP BY s.item.inwardChargeType";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+        Map<InwardChargeType, Double> map = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                if (row[0] != null && row[1] != null) {
+                    map.put((InwardChargeType) row[0], ((Number) row[1]).doubleValue());
+                }
+            }
+        }
+        return map;
+    }
+
     public Map<InwardChargeType, Double> calServiceBillItemsTotalByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue+s.marginValue) "
                 + " FROM BillItem s"
@@ -679,6 +807,64 @@ public class InwardBeanController implements Serializable {
         return val;
     }
 
+    /**
+     * Total of the technician/paramedical fees on an admission (issue #23982).
+     * This category is its own bucket whatever the merge toggle says, so
+     * neither {@link #calculateProfessionalCharges} nor
+     * {@link #calculateDoctorAndNurseCharges} includes these fees. Without this
+     * they were left out of the interim and final bill altogether.
+     */
+    public double calculateTechnicianCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(bt.feeValue)"
+                + " FROM BillFee bt"
+                + " WHERE bt.retired=false"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
+                + " and bt.fee.feeType=:ftp  "
+                + " and bt.bill.billType in :bt"
+                + " and bt.bill.patientEncounter IN :pe";
+        hm.put("ftp", FeeType.Staff);
+        hm.put("bt", technicianFeeBillTypes(isEstimatedBill));
+        hm.put("pe", encounterWithChildren(patientEncounter, cpts));
+
+        return getBillFeeFacade().findDoubleByJpql(sql, hm, TemporalType.TIME);
+    }
+
+    /**
+     * The technician/paramedical fees behind {@link #calculateTechnicianCharges},
+     * over the same bill types so the listed fees always add up to that total.
+     */
+    public List<BillFee> createTechnicianFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT bt FROM BillFee bt WHERE "
+                + " bt.retired=false "
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
+                + " and bt.fee.feeType=:ftp "
+                + " and bt.bill.billType in :bt"
+                + " and bt.bill.patientEncounter IN :pe ";
+        hm.put("ftp", FeeType.Staff);
+        hm.put("bt", technicianFeeBillTypes(isEstimatedBill));
+        hm.put("pe", encounterWithChildren(patientEncounter, cpts));
+
+        return getBillFeeFacade().findByJpql(sql, hm, TemporalType.TIME);
+    }
+
+    private List<BillType> technicianFeeBillTypes(boolean isEstimatedBill) {
+        if (isEstimatedBill) {
+            return List.of(BillType.InwardProfessional, BillType.InwardProfessionalEstimates);
+        }
+        return List.of(BillType.InwardProfessional);
+    }
+
+    private List<PatientEncounter> encounterWithChildren(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        return pts;
+    }
+
     public double calOutSideBillItemsTotalByInwardChargeType(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
         String sql = "Select sum(s.feeValue) From BillFee s"
                 + " where s.retired=false "
@@ -744,8 +930,7 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Timed-service BillItems for one charge type, excluding package-locked
-     * ones (their price is fixed by the package and must not be discounted).
+     * Timed-service BillItems for one charge type.
      * These are priced from the PatientItem duration, so their discount is
      * applied straight to the BillItem rather than through BillFees.
      */
@@ -755,7 +940,6 @@ public class InwardBeanController implements Serializable {
                 + " and s.bill.billType=:btp "
                 + " and s.bill.patientEncounter=:pe"
                 + " and type(s.item)=:cls "
-                + " and s.fromPackage=false "
                 + " and s.item.inwardChargeType=:inw ";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -827,7 +1011,6 @@ public class InwardBeanController implements Serializable {
                 + " AND s.bill.billType = :btp"
                 + " AND s.bill.patientEncounter = :pe"
                 + " AND type(s.item) = :cls"
-                + " AND s.fromPackage = false"
                 + " AND s.item.inwardChargeType = :inw";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -835,12 +1018,6 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         getBillItemFacade().updateByJpql(sql, hm);
-
-        // Deliberately not filtered on billItem.fromPackage. A package item's
-        // price is fixed and never discounted, so its mirrored discount is
-        // already zero and clearing it changes nothing — and avoiding that
-        // navigation keeps this a plain bulk update over PatientItem's own
-        // columns, matching bulkClearPatientItemsWithOutMatrix.
         String piSql = "UPDATE PatientItem s SET s.discount = 0.0"
                 + " WHERE s.retired = false"
                 + " AND type(s.item) = :cls"
@@ -970,6 +1147,24 @@ public class InwardBeanController implements Serializable {
         getBillFeeFacade().updateByJpql(sql, hm);
     }
 
+    /**
+     * Mirror of {@link #setAssistingFeeAdjusted} for technician/paramedical
+     * fees, which are their own bucket in both merged and unmerged mode.
+     */
+    public void setTechnicianFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        HashMap hm = new HashMap();
+        String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
+                + " WHERE bt.retired=false"
+                + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
+                + " AND bt.fee.feeType=:ftp"
+                + " AND bt.bill.billType=:btp"
+                + " AND bt.bill.patientEncounter IN :pe";
+        hm.put("ftp", FeeType.Staff);
+        hm.put("btp", BillType.InwardProfessional);
+        hm.put("pe", encounterWithChildren(patientEncounter, cpts));
+        getBillFeeFacade().updateByJpql(sql, hm);
+    }
+
     public void bulkClearServiceBillFeesWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
         String sql = "UPDATE BillFee s SET s.feeDiscount = 0.0, s.feeValue = s.feeGrossValue + s.feeMargin"
                 + " WHERE s.retired = false"
@@ -1010,7 +1205,105 @@ public class InwardBeanController implements Serializable {
         getPatientItemFacade().updateByJpql(sql, hm);
     }
 
+    /**
+     * Fetches the bills shown in the Interim Bill's issue/return list for a
+     * given {@code billType}. For {@link BillType#PharmacyBhtPre} (the
+     * Medicine list) this now queries by the same
+     * {@link #INWARD_MEDICINE_BILL_TYPES} set the Medicine total uses
+     * (issue #23871), so every bill flow that feeds the total - including
+     * the porter-based ward return, which is a {@code BilledBill} with no
+     * {@code billedBill} link rather than a {@code PreBill}/{@code RefundBill}
+     * pair - is guaranteed to have a row here too. Any other
+     * {@code billType} (e.g. {@link BillType#StoreBhtPre} for General
+     * Issuing) keeps the original {@code PreBill}/{@code RefundBill}
+     * query, unaffected by this change.
+     */
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
+        if (billType == BillType.PharmacyBhtPre) {
+            return fetchMedicineIssueTable(patientEncounter, cpts);
+        }
+        return fetchIssueTableLegacy(patientEncounter, billType, cpts);
+    }
+
+    /**
+     * @see #fetchIssueTable(PatientEncounter, BillType, List)
+     */
+    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        if (billType == BillType.PharmacyBhtPre) {
+            return fetchMedicineIssueTable(patientEncounter, cpts, billingDepartmentType);
+        }
+        return fetchIssueTableLegacy(patientEncounter, billType, cpts, billingDepartmentType);
+    }
+
+    private List<PatientEncounter> patientEncountersWithChildren(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        return pts;
+    }
+
+    private List<Bill> fetchMedicineIssueTable(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " AND b.billTypeAtomic IN :btas "
+                + " AND b.patientEncounter IN :pe "
+                + " ORDER BY b.createdAt";
+        HashMap hm = new HashMap();
+        hm.put("btas", INWARD_MEDICINE_BILL_TYPES);
+        hm.put("pe", patientEncountersWithChildren(patientEncounter, cpts));
+
+        return getBillFacade().findByJpql(sql, hm);
+    }
+
+    /**
+     * Same as {@link #fetchMedicineIssueTable(PatientEncounter, List)} but
+     * restricted to the bills whose <em>issuing</em> department matches
+     * {@code billingDepartmentType} - used by the department-split Medicine
+     * tabs. "Issuing department" is resolved per bill shape (issue #23871):
+     * <ul>
+     * <li>A {@code RefundBill} return linked via {@code billedBill} (direct
+     * issue / issue-on-request returns): the linked issue bill's
+     * {@code department}.</li>
+     * <li>A {@code BilledBill} return linked via {@code referenceBill}
+     * (porter-based ward return): the referenced receive bill's
+     * {@code fromDepartment} (the department that originally issued the
+     * medicine to the ward), falling back to its own {@code department} if
+     * {@code fromDepartment} was never set.</li>
+     * <li>Everything else (issues, cancellations, and any other bill shape) -
+     * including a {@code PreBill}/{@code BilledBill} issue that itself carries
+     * a {@code referenceBill} back to its originating request bill, which is
+     * a different relationship from the porter-return case above and must
+     * NOT be resolved the same way: its own {@code department}.</li>
+     * </ul>
+     */
+    private List<Bill> fetchMedicineIssueTable(PatientEncounter patientEncounter, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        String sql = "SELECT b FROM Bill b "
+                + " LEFT JOIN b.billedBill bb "
+                + " LEFT JOIN b.referenceBill rb "
+                + " LEFT JOIN rb.fromDepartment rbFromDept "
+                + " LEFT JOIN rb.department rbDept "
+                + " LEFT JOIN bb.department bbDept "
+                + " WHERE b.retired=false "
+                + " AND b.billTypeAtomic IN :btas "
+                + " AND b.patientEncounter IN :pe "
+                + " AND ("
+                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
+                + "     )"
+                + " ORDER BY b.createdAt";
+        HashMap hm = new HashMap();
+        hm.put("btas", INWARD_MEDICINE_BILL_TYPES);
+        hm.put("pe", patientEncountersWithChildren(patientEncounter, cpts));
+        hm.put("type", billingDepartmentType);
+
+        return getBillFacade().findByJpql(sql, hm);
+    }
+
+    private List<Bill> fetchIssueTableLegacy(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts) {
         List<Bill> list = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -1064,8 +1357,8 @@ public class InwardBeanController implements Serializable {
 
         return sortedList;
     }
-    
-    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+
+    private List<Bill> fetchIssueTableLegacy(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
         List<Bill> list = new ArrayList<>();
         String sql;
         HashMap hm;
@@ -2667,6 +2960,29 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
+        // When the final bill split the due between credit companies and the
+        // patient, the companies' share is exactly what was committed to them at
+        // settlement. Taking it from the net total instead would record the
+        // patient's co-payment as company-covered, so the patient's due would
+        // read as zero everywhere creditUsedAmount is used.
+        Bill finalBill = patientEncounter.getFinalBill();
+        if (finalBill != null && finalBill.getId() != null) {
+            String jpql = " from Bill b where b.retired=false "
+                    + " and (b.cancelled=false or b.cancelled is null) "
+                    + " and b.billTypeAtomic=:bta "
+                    + " and b.referenceBill=:fb ";
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            params.put("fb", finalBill);
+            long commitmentCount = getBillFacade().findLongByJpql("select count(b)" + jpql, params);
+            if (commitmentCount > 0) {
+                double committed = getBillFacade().findDoubleByJpql("select sum(b.netTotal)" + jpql, params);
+                patientEncounter.setCreditUsedAmount(committed);
+                patientEncounterFacade.edit(patientEncounter);
+                return;
+            }
+        }
+
         if (patientEncounter.getCreditLimit() == 0) {
             patientEncounter.setCreditUsedAmount(netTotal);
             patientEncounterFacade.edit(patientEncounter);
@@ -3145,8 +3461,7 @@ public class InwardBeanController implements Serializable {
             if (cc != null && billFee.getBillItem() != null) {
                 BillItem bi = billFee.getBillItem();
                 double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
-                Department dept = item.getDepartment() != null ? item.getDepartment()
-                        : (bi.getBill() != null ? bi.getBill().getDepartment() : null);
+                Department dept = resolveFeeDepartment(patientEncounter);
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
                         patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
@@ -3207,6 +3522,26 @@ public class InwardBeanController implements Serializable {
             return null;
         }
         return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
+    /**
+     * The department the inward margin matrix is looked up against, mirroring
+     * {@code BillBhtController.feeDepartment(PatientEncounter)}: the current
+     * room's facility-charge department when the patient is in a room,
+     * otherwise the encounter's own department. The credit-company-specific
+     * override in {@link #setBillFeeMargin} must use this same ward
+     * department as the base lookup — using the item's or bill's department
+     * instead meant a per-ward CC-specific row was never found (issue #24155).
+     */
+    private Department resolveFeeDepartment(PatientEncounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+        if (encounter.getCurrentPatientRoom() != null
+                && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+            return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        }
+        return encounter.getDepartment();
     }
 
     /**
@@ -3540,6 +3875,19 @@ public class InwardBeanController implements Serializable {
         return count;
     }
     
+    /**
+     * The complete set of {@link BillTypeAtomic} values that make up the
+     * Inward Medicine charge category, across every issue/return flow
+     * (Direct Issue, Direct Issue Discharge, Issue on Request, the
+     * porter-based ward return, and Theatre medicine) plus their
+     * cancellations. This is the single source of truth shared by the
+     * Medicine total ({@link #calculateInwardTotal}, and
+     * {@code BhtSummeryController.setKnownChargeTot()} via
+     * {@link #getInwardMedicineBillTypes()}) and the Medicine issue list
+     * ({@link #fetchIssueTable}) so the two can no longer drift apart the
+     * way they did in issue #23871 (a porter-flow return counted in the
+     * total but missing from the list).
+     */
     private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
         BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
         BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
@@ -3554,8 +3902,23 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
         // Porter-based ward return flow (#21466/#21470) - see issue #22990.
         BillTypeAtomic.RETURN_MEDICINE_INWARD,
-        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION
+        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
+        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
     );
+
+    /**
+     * Exposes {@link #INWARD_MEDICINE_BILL_TYPES} so callers such as
+     * {@code BhtSummeryController.setKnownChargeTot()} can share the exact
+     * same bill-type universe as {@link #fetchIssueTable} and
+     * {@link #calculateInwardTotal} instead of keeping their own
+     * independently-maintained copy (issue #23871).
+     */
+    public List<BillTypeAtomic> getInwardMedicineBillTypes() {
+        return INWARD_MEDICINE_BILL_TYPES;
+    }
+
     public double calculateInwardTotal(PatientEncounter patientEncounter) {
         if (patientEncounter == null) {
             return 0.0;
@@ -3583,6 +3946,7 @@ public class InwardBeanController implements Serializable {
         total += calCostOfIssue(patientEncounter, BillType.StoreBhtPre, childPatientEncounters);
         total += calculateProfessionalCharges(patientEncounter, childPatientEncounters, false);
         total += calculateDoctorAndNurseCharges(patientEncounter, childPatientEncounters);
+        total += calculateTechnicianCharges(patientEncounter, childPatientEncounters, false);
 
         total += sumTotals(calServiceBillItemsTotalByInwardChargeTypeBulk(patientEncounter, childPatientEncounters));
         total += sumTotals(getTimedItemFeeTotalByInwardChargeTypeBulk(patientEncounter, childPatientEncounters));

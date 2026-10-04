@@ -30,6 +30,7 @@ public class PharmacyTransferRequestListDTO implements Serializable {
     private Boolean checked;
     private Boolean approved;
     private Double netTotal;
+    private String cancellationReason;
     private List<PharmacyTransferRequestIssueDTO> issuedBills = new ArrayList<>();
 
     // ------------------------------------------------------------------
@@ -170,6 +171,21 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.netTotal = netTotal;
     }
 
+    /**
+     * Constructor for the transfer-request "to approve" list page, adding the
+     * cancellation/rejection reason on top of the existing 9-arg constructor.
+     * The reason is the cancellation bill's comment, which both the requesting
+     * department's cancel and the approving store's reject record there.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String toDepartmentName, String creatorName, Boolean cancelled,
+            Date cancelledAt, String cancellerName, Double netTotal,
+            String cancellationReason) {
+        this(billId, deptId, createdAt, toDepartmentName, creatorName, cancelled,
+                cancelledAt, cancellerName, netTotal);
+        this.cancellationReason = cancellationReason;
+    }
+
     // ------------------------------------------------------------------
     // Getters & Setters
     // ------------------------------------------------------------------
@@ -284,6 +300,14 @@ public class PharmacyTransferRequestListDTO implements Serializable {
 
     public void setCancellerName(String cancellerName) {
         this.cancellerName = cancellerName;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
     }
 
     public List<PharmacyTransferRequestIssueDTO> getIssuedBills() {

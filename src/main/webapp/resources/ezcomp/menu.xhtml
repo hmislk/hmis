@@ -108,14 +108,14 @@
             </h:panelGroup>
 
             <p:menubar autoDisplay="#{sessionController.userPreference.autodisplayMenu}"  >
-                <p:menuitem 
+                <p:menuitem
                     id="home"
                     ajax="false"
-                    action="/home?faces-redirect=true" 
+                    action="/home?faces-redirect=true"
                     icon="pi pi-home"
                     title="Home">
                 </p:menuitem>
-
+               
                 <!--            OPD Section-->
                 <p:submenu 
                     id="smOpd"
@@ -458,6 +458,14 @@
                             rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}" >
                         </p:menuitem>
 
+                        <p:menuitem
+                            ajax="false"
+                            value="Package Admission"
+                            action="#{inpatientPackageAdmissionController.navigateToPackageAdmitFromMenu()}"
+                            icon="fa fa-box-archive"
+                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
+                        </p:menuitem>
+
                     </p:submenu>
 
                     <p:submenu label="Appointment" icon="fa fa-calendar-plus" rendered="#{webUserController.hasPrivilege('InwardAppointmentMenu')}">
@@ -474,13 +482,6 @@
                             action="#{appointmentController.navigateToAppointmentAdminFromMenu()}"
                             icon="fa fa-user-plus"
                             rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
-                        </p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            value="Package Admission"
-                            action="#{inpatientPackageAdmissionController.navigateToPackageAdmitFromMenu()}"
-                            icon="fa fa-box-archive"
-                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
@@ -812,6 +813,14 @@
                     </p:menuitem>
 
                 </p:submenu>
+                
+                <p:menuitem
+                    id="ccSelfBillingHome"
+                    ajax="false"
+                    action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                    icon="fas fa-hospital-user"
+                    title="Collecting Centre Self Billing Home">
+                </p:menuitem>
 
                 <!--            Collecting Centre Section-->
                 <p:submenu id="smCC" icon="fas fa-city" rendered="#{webUserController.hasPrivilege('CollectingCentreManageMenu')}">
@@ -1277,6 +1286,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
+                        <p:menuitem  ajax="false" action="#{inpatientPharmacyItemMovementController.navigateToItemMovementSummaryFromPharmacy()}"  value="Inpatient Pharmacy Item Summary" icon="fas fa-pills" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"
                                      value="Search Inpatient Direct Issues by Bill" icon="fas fa-file-medical" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyBill')}" ></p:menuitem>
@@ -2151,15 +2161,7 @@
                     </p:menuitem>
                     <p:menuitem
                         ajax="false"
-                        value="Manage Inpatient Packages"
-                        action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}"
-                        icon="fa fa-box-archive"
-                        rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}">
-                    </p:menuitem>
-
-                    <p:menuitem
-                        ajax="false"  
-                        action="#{pharmacyController.navigateToManagePharmaceuticals}" 
+                        action="#{pharmacyController.navigateToManagePharmaceuticals}"
                         value="Pharmaceutical Management" 
                         icon="fa fa-medkit"
                         rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" >

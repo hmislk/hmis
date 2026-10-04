@@ -2041,9 +2041,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     // Temporary test method to verify AJAX is working
-    
-
-
     public void testAjaxMethod() {
         // Retained for existing view bindings.
     }
@@ -2155,14 +2152,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 }
             }
         }
-        if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
-            if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
-                if (sampleHasBeenCollected(refundingBill)) {
-                    JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
-                    return "";
-                }
+        if (configOptionApplicationController.getBooleanValueByKey("Immediate Refund Request for OPO Bills of Any Status", true)) {
+            if (sampleHasBeenCollected(refundingBill)) {
+                JsfUtil.addErrorMessage("One or more bill Item you are refunding has been already undersone process at the Lab. Can not return.");
+                return "";
             }
-
         }
 
         if (billFeeIsAlreadyRefunded(refundingBill)) {
@@ -2916,26 +2910,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                return;
-            }
+        if (!checkCancelBill(getBill())) {
+            JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+            return;
+        }
+
+        if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+            return;
         }
 
         // CRITICAL: Check if batch bill has been settled with credit company
@@ -3130,15 +3112,23 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+        if (sessionController.getInstitution().getInstitutionType() != InstitutionType.CollectingCentre && getBill().getInstitution().getInstitutionType() != InstitutionType.CollectingCentre) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
+                if (!checkCancelBill(getBill())) {
+                    JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        ccBillCancellingStarted.set(false);
+                        return;
+                    }
                 } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    ccBillCancellingStarted.set(false);
-                    return;
+                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        ccBillCancellingStarted.set(false);
+                        return;
+                    }
                 }
             } else {
                 if (!getWebUserController().hasPrivilege("OpdCancel")) {
@@ -3148,13 +3138,19 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 }
             }
         } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                ccBillCancellingStarted.set(false);
-                return;
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
+                if (!checkCancelBill(getBill())) {
+                    JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        ccBillCancellingStarted.set(false);
+                        return;
+                    }
+                }
             }
         }
-        
+
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
         billController.save(cancellationBill);
 //        Payment p = getOpdPreSettleController().createPaymentForCancellationsforOPDBill(cancellationBill, paymentMethod);
@@ -3177,7 +3173,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         billController.save(getBill());
         JsfUtil.addSuccessMessage("Cancelled");
-        
+
 //        Institution collectingCentre,
 //            double hospitalFee,
 //            double collectingCentreFee,
@@ -3185,7 +3181,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-
         collectingCentreApplicationController.updateCcBalance(
                 getBill().getCollectingCentre(),
                 bill.getTotalHospitalFee(),
@@ -3203,7 +3198,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 requestController.complteRequest(billRequest);
             }
         }
-        
+
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
@@ -4485,7 +4480,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return "";
         }
         billReturnController.setNewlyReturnedBill(viewingBill);
-        
+
         return "/opd/bill_return_print?faces-redirect=true";
     }
 
@@ -5184,11 +5179,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return pharmacyBillSearch.navigateToViewPharmacyBill();
 
             case PHARMACY_ORDER:
-            case PHARMACY_ORDER_APPROVAL:
-                return purchaseOrderNativeSqlController.viewByBillId(bill.getId());
-
             case PHARMACY_ORDER_PRE:
             case PHARMACY_ORDER_CANCELLED:
+            case PHARMACY_ORDER_APPROVAL:
             case PHARMACY_ORDER_APPROVAL_CANCELLED:
                 pharmacyBillSearch.setBill(bill);
                 return pharmacyBillSearch.navigatePharmacyReprintPo();

@@ -1,5 +1,6 @@
 package com.divudi.core.util;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
@@ -176,6 +177,179 @@ public class InwardReceiptTextRendererTest {
         } finally {
             TimeZone.setDefault(original);
         }
+    }
+
+    @Test
+    public void headingForMapsInwardBillTypesToInwardTitles() {
+        assertEquals("Inward Deposit",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_DEPOSIT));
+        assertEquals("Inward Payment",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT));
+        assertEquals("Inward Deposit Refund",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_DEPOSIT_REFUND));
+        assertEquals("Inward Deposit Cancellation",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION));
+        assertEquals("Inward Payment Cancellation",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT_CANCELLATION));
+        assertEquals("Inward Payment Refund Cancellation",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION));
+        assertEquals("Inward Payment",
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT));
+        assertEquals("Inward Receipt", InwardReceiptTextRenderer.headingFor(null));
+    }
+
+    @Test
+    public void admissionTypeAddressAndPhoneRowsShownByDefault() {
+        String out = InwardReceiptTextRenderer.render(sampleBill(), "Inward Deposit",
+                false, false, 0, false, null);
+        assertTrue(out.contains("Admission Type : BHT"));
+        assertTrue(out.contains("Address        : Rathgama"));
+        assertTrue(out.contains("Phone          : 0770000000"));
+    }
+
+    @Test
+    public void admissionTypeAddressAndPhoneRowsHiddenWhenFlagsOff() {
+        String out = InwardReceiptTextRenderer.render(sampleBill(), "Inward Deposit",
+                false, false, 0, false, null, false, false, false);
+        assertFalse(out.contains("Admission Type"));
+        assertFalse(out.contains("Address"));
+        assertFalse(out.contains("Rathgama"));
+        assertFalse(out.contains("Phone"));
+        assertFalse(out.contains("0770000000"));
+        assertTrue(out.contains("Name           : H K Isali Lisansa"));
+        assertTrue(out.contains("Age / Gender   : "));
+        assertTrue(out.contains("BHT No         : BHT/57939"));
+    }
+
+    @Test
+    public void eachShowFlagControlsOnlyItsOwnRow() {
+        String noAdmission = InwardReceiptTextRenderer.render(sampleBill(), "Inward Deposit",
+                false, false, 0, false, null, false, true, true);
+        assertFalse(noAdmission.contains("Admission Type"));
+        assertTrue(noAdmission.contains("Rathgama"));
+        assertTrue(noAdmission.contains("0770000000"));
+
+        String noAddress = InwardReceiptTextRenderer.render(sampleBill(), "Inward Deposit",
+                false, false, 0, false, null, true, false, true);
+        assertTrue(noAddress.contains("Admission Type"));
+        assertFalse(noAddress.contains("Rathgama"));
+        assertTrue(noAddress.contains("0770000000"));
+
+        String noPhone = InwardReceiptTextRenderer.render(sampleBill(), "Inward Deposit",
+                false, false, 0, false, null, true, true, false);
+        assertTrue(noPhone.contains("Admission Type"));
+        assertTrue(noPhone.contains("Rathgama"));
+        assertFalse(noPhone.contains("0770000000"));
+    }
+
+    @Test
+    public void preprintedCompactLayoutPutsNameDirectlyUnderTitleRule() {
+        String out = InwardReceiptTextRenderer.render(sampleBill(),
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT),
+                true, true, 3, false, null, false, false, false);
+        String[] lines = out.split("\n", -1);
+        assertEquals("", lines[0]);
+        assertEquals("", lines[1]);
+        assertEquals("", lines[2]);
+        assertEquals("Inward Payment **Duplicate**", lines[3].trim());
+        assertEquals("----------------------------------------", lines[4]);
+        assertTrue(lines[5].startsWith("Name           : "),
+                "Name row must follow the title rule directly: [" + lines[5] + "]");
+        assertTrue(lines[6].startsWith("Age / Gender   : "));
+        assertFalse(out.contains("Admission Type"));
+        assertFalse(out.contains("Galle Co-operative Hospital Ltd."));
+        assertFalse(out.contains("091-2234270"));
+    }
+
+    @Test
+    public void longHeadingWithMarkersWrapsInsteadOfClipping() {
+        Bill bill = sampleBill();
+        bill.setCancelled(true);
+        String out = InwardReceiptTextRenderer.render(bill,
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION),
+                true, true, 0, false, null, false, false, false);
+        String[] lines = out.split("\n", -1);
+        assertEquals("Inward Payment Refund Cancellation", lines[0].trim());
+        assertEquals("**Duplicate** **Cancelled**", lines[1].trim());
+        assertEquals("----------------------------------------", lines[2]);
+        for (String line : lines) {
+            assertTrue(line.length() <= InwardReceiptTextRenderer.WIDTH,
+                    "line too wide (" + line.length() + "): [" + line + "]");
+        }
+    }
+
+    @Test
+    public void shortHeadingWithMarkersStaysOnOneLine() {
+        String out = InwardReceiptTextRenderer.render(sampleBill(), "Inward Deposit",
+                true, true, 0, false, null, false, false, false);
+        String[] lines = out.split("\n", -1);
+        assertEquals("Inward Deposit **Duplicate**", lines[0].trim());
+        assertEquals("----------------------------------------", lines[1]);
+    }
+
+    @Test
+    public void narrowerLineWidthKeepsEveryLineInside() {
+        Bill b = sampleBill();
+        b.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+        Payment card = new Payment();
+        card.setPaymentMethod(PaymentMethod.Card);
+        card.setCreditCardRefNo("1234567890123456");
+        card.setPaidValue(10000.0);
+        String out = InwardReceiptTextRenderer.render(b, "Inward Deposit",
+                true, false, 0, false, Arrays.asList(card), true, true, true, 32);
+        for (String line : out.split("\n", -1)) {
+            assertTrue(line.length() <= 32,
+                    "line too wide (" + line.length() + "): [" + line + "]");
+        }
+        // wrapped onto the next line, not dropped
+        assertTrue(out.replaceAll("\\s+", "").contains("Inward/26/052052"));
+        assertTrue(out.contains("10,000.00"));
+        assertTrue(out.contains("Cashier : Ziyana"));
+    }
+
+    @Test
+    public void minimumWidthWrapsTitleCardRefAndAmountWithoutLosingText() {
+        Bill b = sampleBill();
+        b.setCancelled(true);
+        b.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+        b.setTotal(1000000.0);
+        Payment card = new Payment();
+        card.setPaymentMethod(PaymentMethod.Card);
+        card.setCreditCardRefNo("1234567890123456");
+        card.setPaidValue(1000000.0);
+        String out = InwardReceiptTextRenderer.render(b,
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION),
+                true, true, 0, false, Arrays.asList(card), false, false, false,
+                InwardReceiptTextRenderer.MIN_WIDTH);
+        String[] lines = out.split("\n", -1);
+        for (String line : lines) {
+            assertTrue(line.length() <= InwardReceiptTextRenderer.MIN_WIDTH,
+                    "line too wide (" + line.length() + "): [" + line + "]");
+        }
+        // title and markers wrapped on word boundaries, nothing clipped
+        assertEquals("Inward Payment Refund", lines[0].trim());
+        assertEquals("Cancellation", lines[1].trim());
+        assertEquals("**Duplicate**", lines[2].trim());
+        assertEquals("**Cancelled**", lines[3].trim());
+        // full card reference kept, amount right-aligned on the next line
+        assertTrue(out.contains("(1234567890123456)"));
+        assertTrue(out.contains("Paying Amount\n            1,000,000.00\n"));
+    }
+
+    @Test
+    public void defaultRenderMatchesWidth40() {
+        Bill b = sampleBill();
+        assertEquals(
+                InwardReceiptTextRenderer.render(b, "Inward Deposit", false, false, 0, false, null),
+                InwardReceiptTextRenderer.render(b, "Inward Deposit", false, false, 0, false, null,
+                        true, true, true, 40));
+    }
+
+    @Test
+    public void lineWidthIsClamped() {
+        assertEquals(InwardReceiptTextRenderer.MIN_WIDTH, InwardReceiptTextRenderer.clampWidth(0));
+        assertEquals(InwardReceiptTextRenderer.MAX_WIDTH, InwardReceiptTextRenderer.clampWidth(1000));
+        assertEquals(36, InwardReceiptTextRenderer.clampWidth(36));
     }
 
     private static int countOccurrences(String haystack, String needle) {

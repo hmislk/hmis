@@ -5,8 +5,10 @@ description: >
   (coop-prod, ruhunu-prod, southernlanka-prod, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
-  through the normal development → QA → prod pipeline.
-disable-model-invocation: true
+  through the normal development → QA → prod pipeline. The agent may invoke
+  this on its own judgment to prepare a hotfix (branch, fix, commit, push,
+  PR) — merging the PR, which is what actually triggers CI/CD deployment,
+  remains a manual human action.
 allowed-tools: Bash, Read, Grep, Edit, Write
 argument-hint: "<prod-branch> <description>"
 ---
@@ -91,6 +93,11 @@ gh pr create \
 ```
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
+
+The body is public: state the defect, the fix and the deploy note, and keep the
+affected hospital's record counts, production bill numbers, schema names and
+data-fix steps out of it. See
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
 
 ## Step 8 — Restore Stashed Work
 
