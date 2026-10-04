@@ -2958,8 +2958,8 @@ public class BillNumberGenerator {
         StringBuilder result = new StringBuilder();
         if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
             result.append(ins.getInstitutionCode());
-            result.append(getBillNumberDelimiter());
         }
+        result.append(getBillNumberDelimiter());
         result.append(billSuffix);
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(getBillNumberDelimiter());
@@ -2983,8 +2983,8 @@ public class BillNumberGenerator {
         StringBuilder result = new StringBuilder();
         if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
             result.append(ins.getInstitutionCode());
-            result.append(getBillNumberDelimiter());
         }
+        result.append(getBillNumberDelimiter());
         result.append(billSuffix);
         result.append(getBillNumberDelimiter());
         result.append(admissionType.getCode());

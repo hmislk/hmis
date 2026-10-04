@@ -329,12 +329,12 @@ public class InwardPaymentBillNumberGeneratorTest {
     }
 
     @Test
-    @DisplayName("Institution code not added: institution number has no leading delimiter")
-    public void institutionNumberHasNoLeadingDelimiter() throws Exception {
+    @DisplayName("Shared institution generators are unchanged, so non-inward bill numbers keep their format")
+    public void sharedInstitutionGeneratorsUnchanged() throws Exception {
         BillNumberGenerator generator = wire(new BillNumberGenerator());
 
-        assertEquals("DE/" + yy + "/000001", generator.institutionBillNumberGeneratorYearly(institution, BillTypeAtomic.INWARD_DEPOSIT));
-        assertEquals("DE/BHT/" + yy + "/000001", generator.institutionBillNumberGeneratorYearly(institution, BillTypeAtomic.INWARD_DEPOSIT, bht));
+        assertEquals("/DE/" + yy + "/000001", generator.institutionBillNumberGeneratorYearly(institution, BillTypeAtomic.INWARD_DEPOSIT));
+        assertEquals("/DE/BHT/" + yy + "/000001", generator.institutionBillNumberGeneratorYearly(institution, BillTypeAtomic.INWARD_DEPOSIT, bht));
 
         config.booleans.put(ADD_INSTITUTION_CODE, true);
         assertEquals("CO/DE/" + yy + "/000002", generator.institutionBillNumberGeneratorYearly(institution, BillTypeAtomic.INWARD_DEPOSIT));
