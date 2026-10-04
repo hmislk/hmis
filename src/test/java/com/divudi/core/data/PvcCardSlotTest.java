@@ -17,8 +17,8 @@ class PvcCardSlotTest {
         PvcCardSlot restored = PvcCardSlot.fromJson(json);
 
         assertTrue(restored.isVisible());
-        assertEquals(5.5, restored.getXMm());
-        assertEquals(20.25, restored.getYMm());
+        assertEquals(5.5, restored.getLeftMm());
+        assertEquals(20.25, restored.getTopMm());
         assertEquals(9.0, restored.getFontSizePt());
         assertEquals("#112233", restored.getFontColor());
     }
@@ -40,7 +40,7 @@ class PvcCardSlotTest {
         PvcCardSlot restored = PvcCardSlot.fromJson(new JSONObject());
 
         assertFalse(restored.isVisible());
-        assertEquals(0.0, restored.getXMm());
+        assertEquals(0.0, restored.getLeftMm());
         assertEquals(8.0, restored.getFontSizePt());
         assertEquals("#000000", restored.getFontColor());
         assertEquals("code128", restored.getType());
