@@ -21,6 +21,7 @@ public class InwardCombinedPaymentGroupDto implements Serializable {
     private double total;
     private double cashIn;
     private double cashOut;
+    private double cancelled;
 
     public InwardCombinedPaymentGroupDto() {
     }
@@ -33,7 +34,10 @@ public class InwardCombinedPaymentGroupDto implements Serializable {
         rows.add(row);
         double signed = row.getSignedAmount();
         total += signed;
-        if (signed < 0) {
+        // By kind, not by sign: a deposit cancellation is negative but is not a refund.
+        if (row.isCancellation()) {
+            cancelled += signed;
+        } else if (row.isRefund()) {
             cashOut += signed;
         } else {
             cashIn += signed;
@@ -82,5 +86,13 @@ public class InwardCombinedPaymentGroupDto implements Serializable {
 
     public void setCashOut(double cashOut) {
         this.cashOut = cashOut;
+    }
+
+    public double getCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(double cancelled) {
+        this.cancelled = cancelled;
     }
 }
