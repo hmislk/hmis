@@ -1,8 +1,13 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.PvcCardBarcodeSvg;
 import com.divudi.core.data.PvcCardLayout;
 import com.divudi.core.data.PvcCardSlot;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 import com.divudi.core.data.UploadType;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import com.divudi.core.util.JsfUtil;
@@ -17,6 +22,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +49,7 @@ public class PvcCardLayoutController implements Serializable {
     private String backUrlInput;
     private String frontExternalUrl;
     private String backExternalUrl;
+    private Patient previewPatient;
 
     @PostConstruct
     public void init() {
@@ -127,6 +134,40 @@ public class PvcCardLayoutController implements Serializable {
             }
         }
         return true;
+    }
+
+    /**
+     * Transient, never-persisted patient used only by the layout preview, so
+     * every slot (including the barcode) shows realistic content while the
+     * layout is being edited.
+     */
+    public Patient getPreviewPatient() {
+        if (previewPatient == null) {
+            Person person = new Person();
+            person.setTitle(Title.Mr);
+            person.setName("Sample Patient");
+            Calendar dob = Calendar.getInstance();
+            dob.set(1985, Calendar.JANUARY, 15);
+            person.setDob(dob.getTime());
+            person.setPhone("0771234567");
+            person.setSex(Sex.Male);
+            person.setAddress("No 1, Sample Road");
+            previewPatient = new Patient();
+            previewPatient.setPerson(person);
+            previewPatient.setPhn("PHN0000001");
+        }
+        return previewPatient;
+    }
+
+    /**
+     * Inline SVG barcode sized to the slot, or null when the slot's type is
+     * not a linear Barcode4J type (the panel then falls back to p:barcode).
+     */
+    public String barcodeSvg(PvcCardSlot slot, String value) {
+        if (slot == null) {
+            return null;
+        }
+        return PvcCardBarcodeSvg.render(slot.getType(), value, slot.getWidthMm(), slot.getHeightMm());
     }
 
     public String getFrontBackgroundExternalUrl() {

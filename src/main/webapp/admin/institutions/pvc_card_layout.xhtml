@@ -96,9 +96,12 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="frontPreview" layout="block">
-                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
-                                                             backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
-                                                             side="front"/>
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; outline-offset:0;">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
+                                                                 side="front"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
@@ -180,9 +183,12 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="backPreview" layout="block">
-                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
-                                                             backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
-                                                             side="back"/>
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; outline-offset:0;">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
+                                                                 side="back"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
