@@ -4517,6 +4517,47 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void createTables() {
+        recalculateTables();
+        if (patientEncounter != null) {
+            JsfUtil.addSuccessMessage("Recalculated Successfully");
+        }
+    }
+
+    /**
+     * The Inpatient Dashboard billing panel reads the snapshot stored on the
+     * PatientEncounter by updateTotal(). That snapshot is only written when the
+     * Interim Bill is opened, so it goes stale after deposits, payments or fees.
+     * Recalculate only when a bill newer than the snapshot exists, so an
+     * unchanged admission is not recalculated on every dashboard open.
+     *
+     * @return the encounter to display (a freshly loaded instance when recalculated)
+     */
+    public PatientEncounter refreshProcessingSnapshotIfStale(PatientEncounter pe) {
+        if (pe == null || pe.getId() == null || pe.getParentEncounter() != null || pe.isPaymentFinalized()) {
+            return pe;
+        }
+        String jpql = "select count(b) from Bill b left join b.patientEncounter e "
+                + " where b.retired=false "
+                + " and (e = :pe or e.parentEncounter = :pe) "
+                + " and b.createdAt > :since";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", pe);
+        params.put("since", pe.getLastProcessAt() != null ? pe.getLastProcessAt() : new Date(0));
+        long newerBills = getBillFacade().findLongByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (newerBills == 0) {
+            return pe;
+        }
+        PatientEncounter fresh = getPatientEncounterFacade().find(pe.getId());
+        if (fresh == null) {
+            fresh = pe;
+        }
+        setPatientEncounter(fresh);
+        childPatientEncouters = null;
+        recalculateTables();
+        return fresh;
+    }
+
+    private void recalculateTables() {
         makeNull();
 
         if (patientEncounter == null) {
@@ -4554,8 +4595,6 @@ public class BhtSummeryController implements Serializable {
 
         createChargeItemTotals();
         updateTotal();
-
-        JsfUtil.addSuccessMessage("Recalculated Successfully");
 
         if (patientEncounter != null && patientEncounter.getDateOfDischarge() != null) {
             date = patientEncounter.getDateOfDischarge();
