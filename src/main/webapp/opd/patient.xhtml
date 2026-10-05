@@ -334,12 +334,14 @@
                                         <h:panelGroup id="pvcCardFront" layout="block">
                                             <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
                                                                  backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
-                                                                 side="front"/>
+                                                                 side="front"
+                                                                 patient="#{patientController.current}"/>
                                         </h:panelGroup>
                                         <h:panelGroup id="pvcCardBack" layout="block">
                                             <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
                                                                  backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
-                                                                 side="back"/>
+                                                                 side="back"
+                                                                 patient="#{patientController.current}"/>
                                         </h:panelGroup>
                                     </div>
 
