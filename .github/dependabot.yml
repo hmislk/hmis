@@ -10,7 +10,8 @@ version: 2
 updates:
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "development"
+    # No target-branch: development is the repo's default branch, and setting
+    # target-branch would stop this entry's groups applying to security updates
     schedule:
       interval: "weekly"
     ignore:
