@@ -21,6 +21,17 @@ public class PvcCardLayout implements Serializable {
     private double widthMm;
     private double heightMm;
     private double marginMm;
+    /**
+     * Optional page the card is placed on (e.g. A4 for the Epson disc/ID card
+     * tray, which prints on an A4 canvas). 0 x 0 = no page: the page is the card.
+     */
+    private double pageWidthMm;
+    private double pageHeightMm;
+    /** Clockwise rotation of the card on the page: 0, 90, 180 or 270. */
+    private int rotationDeg;
+    /** Top-left of the (rotated) card on the page, in mm. */
+    private double cardLeftMm;
+    private double cardTopMm;
     private Map<String, PvcCardSlot> slots = new LinkedHashMap<>();
 
     public static PvcCardLayout defaultLayout() {
@@ -60,6 +71,11 @@ public class PvcCardLayout implements Serializable {
             if (layout.marginMm < 0) {
                 layout.marginMm = defaults.marginMm;
             }
+            layout.pageWidthMm = Math.max(0, root.optDouble("pageWidthMm", 0));
+            layout.pageHeightMm = Math.max(0, root.optDouble("pageHeightMm", 0));
+            layout.rotationDeg = normalizeRotation(root.optInt("rotationDeg", 0));
+            layout.cardLeftMm = Math.max(0, root.optDouble("cardLeftMm", 0));
+            layout.cardTopMm = Math.max(0, root.optDouble("cardTopMm", 0));
             JSONObject slotsJson = root.optJSONObject("slots");
             for (Map.Entry<String, PvcCardSlot> entry : defaults.slots.entrySet()) {
                 JSONObject slotJson = slotsJson == null ? null : slotsJson.optJSONObject(entry.getKey());
@@ -76,6 +92,11 @@ public class PvcCardLayout implements Serializable {
         root.put("widthMm", widthMm);
         root.put("heightMm", heightMm);
         root.put("marginMm", marginMm);
+        root.put("pageWidthMm", pageWidthMm);
+        root.put("pageHeightMm", pageHeightMm);
+        root.put("rotationDeg", rotationDeg);
+        root.put("cardLeftMm", cardLeftMm);
+        root.put("cardTopMm", cardTopMm);
         JSONObject slotsJson = new JSONObject();
         for (Map.Entry<String, PvcCardSlot> entry : slots.entrySet()) {
             slotsJson.put(entry.getKey(), entry.getValue().toJson());
@@ -106,6 +127,66 @@ public class PvcCardLayout implements Serializable {
 
     public void setMarginMm(double marginMm) {
         this.marginMm = marginMm;
+    }
+
+    public double getPageWidthMm() {
+        return pageWidthMm;
+    }
+
+    public void setPageWidthMm(double pageWidthMm) {
+        this.pageWidthMm = pageWidthMm;
+    }
+
+    public double getPageHeightMm() {
+        return pageHeightMm;
+    }
+
+    public void setPageHeightMm(double pageHeightMm) {
+        this.pageHeightMm = pageHeightMm;
+    }
+
+    public int getRotationDeg() {
+        return rotationDeg;
+    }
+
+    public void setRotationDeg(int rotationDeg) {
+        this.rotationDeg = normalizeRotation(rotationDeg);
+    }
+
+    public double getCardLeftMm() {
+        return cardLeftMm;
+    }
+
+    public void setCardLeftMm(double cardLeftMm) {
+        this.cardLeftMm = cardLeftMm;
+    }
+
+    public double getCardTopMm() {
+        return cardTopMm;
+    }
+
+    public void setCardTopMm(double cardTopMm) {
+        this.cardTopMm = cardTopMm;
+    }
+
+    /** True when the card is printed on a larger page instead of being the page. */
+    public boolean isPlacedOnPage() {
+        return pageWidthMm > 0 && pageHeightMm > 0;
+    }
+
+    /** Width of the rotated card's bounding box on the page. */
+    public double getPlacedWidthMm() {
+        return rotationDeg == 90 || rotationDeg == 270 ? heightMm : widthMm;
+    }
+
+    /** Height of the rotated card's bounding box on the page. */
+    public double getPlacedHeightMm() {
+        return rotationDeg == 90 || rotationDeg == 270 ? widthMm : heightMm;
+    }
+
+    private static int normalizeRotation(int degrees) {
+        int d = ((degrees % 360) + 360) % 360;
+        return d == 90 || d == 180 || d == 270 ? d : 0;
     }
 
     public Map<String, PvcCardSlot> getSlots() {

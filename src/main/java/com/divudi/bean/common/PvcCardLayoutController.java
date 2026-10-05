@@ -113,6 +113,19 @@ public class PvcCardLayoutController implements Serializable {
             JsfUtil.addErrorMessage("Margin is too large for the card size");
             return false;
         }
+        if (layout.getPageWidthMm() < 0 || layout.getPageHeightMm() < 0
+                || (layout.getPageWidthMm() > 0) != (layout.getPageHeightMm() > 0)) {
+            JsfUtil.addErrorMessage("Set both page width and page height, or leave both 0 to print the card alone");
+            return false;
+        }
+        if (layout.isPlacedOnPage()) {
+            if (layout.getCardLeftMm() < 0 || layout.getCardTopMm() < 0
+                    || layout.getCardLeftMm() + layout.getPlacedWidthMm() > layout.getPageWidthMm()
+                    || layout.getCardTopMm() + layout.getPlacedHeightMm() > layout.getPageHeightMm()) {
+                JsfUtil.addErrorMessage("The card does not fit on the page at this position and rotation");
+                return false;
+            }
+        }
         for (Map.Entry<String, PvcCardSlot> entry : layout.getSlots().entrySet()) {
             PvcCardSlot slot = entry.getValue();
             if (!slot.isVisible()) {

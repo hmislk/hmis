@@ -37,6 +37,32 @@
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
 
+                                        <!-- Print on a larger page (e.g. A4 for a disc/ID card tray): leave page size 0 to print the card alone -->
+                                        <p:outputLabel for="frontPageWidthInput" value="Page width (mm, 0 = card only)"/>
+                                        <p:inputNumber id="frontPageWidthInput" value="#{pvcCardLayoutController.front.pageWidthMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontPageHeightInput" value="Page height (mm, 0 = card only)"/>
+                                        <p:inputNumber id="frontPageHeightInput" value="#{pvcCardLayoutController.front.pageHeightMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontRotationInput" value="Card rotation on page"/>
+                                        <p:selectOneMenu id="frontRotationInput" value="#{pvcCardLayoutController.front.rotationDeg}">
+                                            <f:selectItem itemLabel="0 (as drawn)" itemValue="0"/>
+                                            <f:selectItem itemLabel="90 clockwise" itemValue="90"/>
+                                            <f:selectItem itemLabel="180" itemValue="180"/>
+                                            <f:selectItem itemLabel="270 clockwise" itemValue="270"/>
+                                            <p:ajax update="@form"/>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel for="frontCardLeftInput" value="Card left on page (mm)"/>
+                                        <p:inputNumber id="frontCardLeftInput" value="#{pvcCardLayoutController.front.cardLeftMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontCardTopInput" value="Card top on page (mm)"/>
+                                        <p:inputNumber id="frontCardTopInput" value="#{pvcCardLayoutController.front.cardTopMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+
                                         <p:dataTable value="#{pvcCardLayoutController.front.slots.entrySet().toArray()}" var="entry"
                                                      id="frontSlotsTable" widgetVar="frontSlotsTable" rowKey="#{entry.key}">
                                             <p:column headerText="Field">
@@ -97,8 +123,8 @@
                                                           update="@form" styleClass="ui-button-success"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="frontPreview" layout="block" style="position:sticky; top:10px; zoom:1.5;">
-                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.front.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                    <h:panelGroup id="frontPreview" layout="block" style="position:sticky; top:10px; zoom:#{pvcCardLayoutController.front.placedOnPage ? 0.8 : 1.5};">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.front.placedOnPage ? 0 : pvcCardLayoutController.front.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
                                             <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
                                                                  backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
                                                                  side="front"
@@ -121,6 +147,32 @@
                                         </p:inputNumber>
                                         <p:outputLabel for="backMarginInput" value="Margin (mm)"/>
                                         <p:inputNumber id="backMarginInput" value="#{pvcCardLayoutController.back.marginMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+
+                                        <!-- Print on a larger page (e.g. A4 for a disc/ID card tray): leave page size 0 to print the card alone -->
+                                        <p:outputLabel for="backPageWidthInput" value="Page width (mm, 0 = card only)"/>
+                                        <p:inputNumber id="backPageWidthInput" value="#{pvcCardLayoutController.back.pageWidthMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backPageHeightInput" value="Page height (mm, 0 = card only)"/>
+                                        <p:inputNumber id="backPageHeightInput" value="#{pvcCardLayoutController.back.pageHeightMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backRotationInput" value="Card rotation on page"/>
+                                        <p:selectOneMenu id="backRotationInput" value="#{pvcCardLayoutController.back.rotationDeg}">
+                                            <f:selectItem itemLabel="0 (as drawn)" itemValue="0"/>
+                                            <f:selectItem itemLabel="90 clockwise" itemValue="90"/>
+                                            <f:selectItem itemLabel="180" itemValue="180"/>
+                                            <f:selectItem itemLabel="270 clockwise" itemValue="270"/>
+                                            <p:ajax update="@form"/>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel for="backCardLeftInput" value="Card left on page (mm)"/>
+                                        <p:inputNumber id="backCardLeftInput" value="#{pvcCardLayoutController.back.cardLeftMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backCardTopInput" value="Card top on page (mm)"/>
+                                        <p:inputNumber id="backCardTopInput" value="#{pvcCardLayoutController.back.cardTopMm}" minValue="0">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
 
@@ -184,8 +236,8 @@
                                                           update="@form" styleClass="ui-button-success"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="backPreview" layout="block" style="position:sticky; top:10px; zoom:1.5;">
-                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.back.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                    <h:panelGroup id="backPreview" layout="block" style="position:sticky; top:10px; zoom:#{pvcCardLayoutController.back.placedOnPage ? 0.8 : 1.5};">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.back.placedOnPage ? 0 : pvcCardLayoutController.back.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
                                             <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
                                                                  backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
                                                                  side="back"
