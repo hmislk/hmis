@@ -215,3 +215,43 @@ the real print path can never drift apart)
    branch (checking for an existing open PR per branch first per project
    convention). Because these are cherry-picks of commits already merged to
    `development`, no separate "mirror into development" step is needed.
+
+## Amendments after first release (#24305, PR #24306)
+
+Found while recording the user videos; all four are in `development`.
+
+| Area | Was | Now |
+|---|---|---|
+| Patient bound to the card | `pvc_card_panel` read `patientController.current`, so the admin preview printed `null` and had no barcode | The component takes a required `patient` attribute. `opd/patient.xhtml` passes `patientController.current`. The admin page passes `pvcCardLayoutController.previewPatient`, a transient (never persisted) sample patient |
+| Barcode size | `p:barcode format="svg"` keeps the SVG's own aspect ratio and centres it in the `<img>`, so `widthMm` never stretched the bars (40 × 8 mm printed about 16 mm wide, centred) | Linear types (`code128`, `code39`, `int2of5`, `codabar`, `ean13`, `ean8`, `upca`, `upce`) are drawn by `PvcCardBarcodeSvg` (Barcode4J) as inline SVG with `preserveAspectRatio="none"`, filling exactly `widthMm` × `heightMm`. Other types (e.g. `qr`), or values a type can't encode, fall back to `p:barcode` |
+| Margin and page count | The `@page` was card-sized with `marginMm`, but the card box was also full card size, and the print iframe's body kept its default margin. Each side overflowed onto a second (Letter) page | `marginMm` is the strip the printer leaves blank. The card box is the printable area (card minus margins) and clips; a full-card layer inside it is shifted by `-marginMm`, so slot positions and the background stay measured from the physical card edge. A print-only rule resets `html, body` margin/padding. Each side prints exactly one card-sized page. `0` = edge to edge. Save rejects a margin that leaves no printable area |
+| Admin page | Every field change re-rendered `@form` and the tab view snapped back to **Front**; the preview scrolled out of view below the field table | `p:tabView activeIndex` is bound to the view-scoped controller (updated on `tabChange`); the preview is `position: sticky` at 1.5× zoom with a dashed card outline padded by the margin |
+
+### Setting the layout without the UI (Config API)
+
+The two layouts are ordinary app-wide `LONG_TEXT` config options, so a deployment can be set up through the Config API (`developer_docs/api/using-apis/API_CONFIG.md`). That needs a key of type **Config**; Finance/Token/FHIR keys get HTTP 401.
+
+```
+POST {base}/api/config/setLongText/PVC%20Card%20Front%20Layout/{url-encoded JSON}
+POST {base}/api/config/setLongText/PVC%20Card%20Back%20Layout/{url-encoded JSON}
+GET  {base}/api/config/search?keyword=PVC%20Card     # read back and compare
+Header: Config: <Config-type key>
+```
+
+JSON shape (`PvcCardLayout.toJson()`; missing slots or fields fall back to defaults):
+
+```json
+{"widthMm":85.6,"heightMm":54,"marginMm":0,
+ "slots":{"name":{"visible":true,"leftMm":5,"topMm":19,"fontSizePt":10,"fontColor":"#000000"},
+          "barcode":{"visible":true,"leftMm":22.8,"topMm":34,"fontSizePt":8,"fontColor":"#000000",
+                     "widthMm":40,"heightMm":10,"type":"code128"}}}
+```
+
+Slot keys: `institutionName`, `departmentName`, `name`, `dob`, `phone`, `gender`, `address`, `barcode`, `phn`.
+
+Background images are `Upload` rows (`PVC_Card_Front_Background` / `PVC_Card_Back_Background`) and have no API. Upload them on the PVC Card Layout page.
+
+### User videos
+
+- Set up the layout: https://youtu.be/_3i6au-1Or0
+- Print a card: https://youtu.be/xvFcELFmhzM
