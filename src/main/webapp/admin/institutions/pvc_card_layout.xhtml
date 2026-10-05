@@ -17,7 +17,9 @@
                 <h:form id="pvcCardLayoutForm">
                     <p:growl id="messages" showDetail="true"/>
                     <p:panel header="PVC Card Layout">
-                        <p:tabView>
+                        <p:tabView activeIndex="#{pvcCardLayoutController.activeTabIndex}">
+                            <!-- remember the open tab: every field change re-renders @form -->
+                            <p:ajax event="tabChange"/>
 
                             <p:tab title="Front">
                                 <p:panelGrid columns="2" styleClass="w-100">

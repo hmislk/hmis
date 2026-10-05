@@ -50,6 +50,7 @@ public class PvcCardLayoutController implements Serializable {
     private String frontExternalUrl;
     private String backExternalUrl;
     private Patient previewPatient;
+    private int activeTabIndex;
 
     @PostConstruct
     public void init() {
@@ -172,6 +173,14 @@ public class PvcCardLayoutController implements Serializable {
             return null;
         }
         return PvcCardBarcodeSvg.render(slot.getType(), value, slot.getWidthMm(), slot.getHeightMm());
+    }
+
+    public int getActiveTabIndex() {
+        return activeTabIndex;
+    }
+
+    public void setActiveTabIndex(int activeTabIndex) {
+        this.activeTabIndex = activeTabIndex;
     }
 
     public String getFrontBackgroundExternalUrl() {
