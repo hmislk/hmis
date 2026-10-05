@@ -3797,6 +3797,29 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow();
     }
 
+    /**
+     * No longer reachable from the UI (#24340 removed the "End Shift (OLD)" button on
+     * cashier/index.xhtml, since it bypassed every handover/float-transfer guard). Kept
+     * in place, unused, in case another institution's deployment still depends on it
+     * directly — do not wire a button back to it without adding the same guards as
+     * {@link #navigateToCreateShiftEndSummaryBillForHandover()}.
+     */
+    public String navigateToCreateShiftEndSummaryBill() {
+        resetClassVariables();
+        findNonClosedShiftStartFundBillIsAvailable();
+        fillPaymentsFromShiftStartToNow();
+        if (nonClosedShiftStartFundBill != null) {
+            currentBill = new Bill();
+            currentBill.setBillType(BillType.ShiftEndFundBill);
+            currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
+            currentBill.setBillClassType(BillClassType.Bill);
+            currentBill.setReferenceBill(nonClosedShiftStartFundBill);
+        } else {
+            currentBill = null;
+        }
+        return "/cashier/shift_end_summery_bill?faces-redirect=true";
+    }
+
     public String navigateToCreateShiftEndSummaryBillForHandover() {
         resetClassVariables();
         Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
