@@ -108,6 +108,10 @@ public class PvcCardLayoutController implements Serializable {
             JsfUtil.addErrorMessage("Margin cannot be negative");
             return false;
         }
+        if (2 * layout.getMarginMm() >= layout.getWidthMm() || 2 * layout.getMarginMm() >= layout.getHeightMm()) {
+            JsfUtil.addErrorMessage("Margin is too large for the card size");
+            return false;
+        }
         for (Map.Entry<String, PvcCardSlot> entry : layout.getSlots().entrySet()) {
             PvcCardSlot slot = entry.getValue();
             if (!slot.isVisible()) {

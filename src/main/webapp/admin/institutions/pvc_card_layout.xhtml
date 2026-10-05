@@ -96,7 +96,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="frontPreview" layout="block">
-                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; outline-offset:0;">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.front.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
                                             <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
                                                                  backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
                                                                  side="front"
@@ -183,7 +183,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup id="backPreview" layout="block">
-                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; outline-offset:0;">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.back.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
                                             <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
                                                                  backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
                                                                  side="back"
