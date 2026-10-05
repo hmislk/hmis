@@ -42,8 +42,7 @@ public class PvcCardBackgroundViewController {
             return new DefaultStreamedContent();
         }
         String side = context.getExternalContext().getRequestParameterMap().get("side");
-        UploadType type = "back".equals(side) ? UploadType.PVC_Card_Back_Background : UploadType.PVC_Card_Front_Background;
-        Upload upload = findUploadByType(type);
+        Upload upload = findUploadByType(typeForSide(side));
         if (upload == null || upload.getBaImage() == null) {
             return new DefaultStreamedContent();
         }
@@ -54,6 +53,20 @@ public class PvcCardBackgroundViewController {
                 .contentType(contentType)
                 .stream(() -> targetStream)
                 .build();
+    }
+
+    /**
+     * Cheap existence check so the composite can skip rendering the
+     * {@code <p:graphicImage>} entirely when there is no uploaded blob for
+     * this side, instead of emitting a broken-image reference.
+     */
+    public boolean hasStream(String side) {
+        Upload upload = findUploadByType(typeForSide(side));
+        return upload != null && upload.getBaImage() != null;
+    }
+
+    private UploadType typeForSide(String side) {
+        return "back".equals(side) ? UploadType.PVC_Card_Back_Background : UploadType.PVC_Card_Front_Background;
     }
 
     private Upload findUploadByType(UploadType type) {

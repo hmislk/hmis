@@ -17,21 +17,23 @@
                 <h:form id="pvcCardLayoutForm">
                     <p:growl id="messages" showDetail="true"/>
                     <p:panel header="PVC Card Layout">
-                        <p:tabView>
+                        <p:tabView activeIndex="#{pvcCardLayoutController.activeTabIndex}">
+                            <!-- remember the open tab: every field change re-renders @form -->
+                            <p:ajax event="tabChange"/>
 
                             <p:tab title="Front">
                                 <p:panelGrid columns="2" styleClass="w-100">
                                     <h:panelGroup layout="block">
-                                        <h:outputText value="Card width (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.front.widthMm}" minValue="1">
+                                        <p:outputLabel for="frontWidthInput" value="Card width (mm)"/>
+                                        <p:inputNumber id="frontWidthInput" value="#{pvcCardLayoutController.front.widthMm}" minValue="1">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
-                                        <h:outputText value="Card height (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.front.heightMm}" minValue="1">
+                                        <p:outputLabel for="frontHeightInput" value="Card height (mm)"/>
+                                        <p:inputNumber id="frontHeightInput" value="#{pvcCardLayoutController.front.heightMm}" minValue="1">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
-                                        <h:outputText value="Margin (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.front.marginMm}" minValue="0">
+                                        <p:outputLabel for="frontMarginInput" value="Margin (mm)"/>
+                                        <p:inputNumber id="frontMarginInput" value="#{pvcCardLayoutController.front.marginMm}" minValue="0">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
 
@@ -84,8 +86,8 @@
                                         <p:fileUpload listener="#{pvcCardLayoutController.uploadFrontBackground}"
                                                       mode="advanced" auto="true" update="@form"
                                                       label="Upload front background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
-                                        <h:outputText value="or external URL:"/>
-                                        <p:inputText value="#{pvcCardLayoutController.frontUrlInput}" style="width:20rem;">
+                                        <p:outputLabel for="frontUrlInputField" value="or external URL:"/>
+                                        <p:inputText id="frontUrlInputField" value="#{pvcCardLayoutController.frontUrlInput}" style="width:20rem;">
                                             <p:ajax update="@form"/>
                                         </p:inputText>
                                         <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveFrontBackgroundUrl}"
@@ -95,10 +97,13 @@
                                                           update="@form" styleClass="ui-button-success"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="frontPreview" layout="block">
-                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
-                                                             backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
-                                                             side="front"/>
+                                    <h:panelGroup id="frontPreview" layout="block" style="position:sticky; top:10px; zoom:1.5;">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.front.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
+                                                                 side="front"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
@@ -106,16 +111,16 @@
                             <p:tab title="Back">
                                 <p:panelGrid columns="2" styleClass="w-100">
                                     <h:panelGroup layout="block">
-                                        <h:outputText value="Card width (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.back.widthMm}" minValue="1">
+                                        <p:outputLabel for="backWidthInput" value="Card width (mm)"/>
+                                        <p:inputNumber id="backWidthInput" value="#{pvcCardLayoutController.back.widthMm}" minValue="1">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
-                                        <h:outputText value="Card height (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.back.heightMm}" minValue="1">
+                                        <p:outputLabel for="backHeightInput" value="Card height (mm)"/>
+                                        <p:inputNumber id="backHeightInput" value="#{pvcCardLayoutController.back.heightMm}" minValue="1">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
-                                        <h:outputText value="Margin (mm)"/>
-                                        <p:inputNumber value="#{pvcCardLayoutController.back.marginMm}" minValue="0">
+                                        <p:outputLabel for="backMarginInput" value="Margin (mm)"/>
+                                        <p:inputNumber id="backMarginInput" value="#{pvcCardLayoutController.back.marginMm}" minValue="0">
                                             <p:ajax update="@form"/>
                                         </p:inputNumber>
 
@@ -168,8 +173,8 @@
                                         <p:fileUpload listener="#{pvcCardLayoutController.uploadBackBackground}"
                                                       mode="advanced" auto="true" update="@form"
                                                       label="Upload back background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
-                                        <h:outputText value="or external URL:"/>
-                                        <p:inputText value="#{pvcCardLayoutController.backUrlInput}" style="width:20rem;">
+                                        <p:outputLabel for="backUrlInputField" value="or external URL:"/>
+                                        <p:inputText id="backUrlInputField" value="#{pvcCardLayoutController.backUrlInput}" style="width:20rem;">
                                             <p:ajax update="@form"/>
                                         </p:inputText>
                                         <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveBackBackgroundUrl}"
@@ -179,10 +184,13 @@
                                                           update="@form" styleClass="ui-button-success"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="backPreview" layout="block">
-                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
-                                                             backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
-                                                             side="back"/>
+                                    <h:panelGroup id="backPreview" layout="block" style="position:sticky; top:10px; zoom:1.5;">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.back.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
+                                                                 side="back"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>

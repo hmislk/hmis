@@ -1,8 +1,13 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.PvcCardBarcodeSvg;
 import com.divudi.core.data.PvcCardLayout;
 import com.divudi.core.data.PvcCardSlot;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 import com.divudi.core.data.UploadType;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import com.divudi.core.util.JsfUtil;
@@ -17,6 +22,7 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +38,8 @@ public class PvcCardLayoutController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
     private UploadFacade uploadFacade;
 
@@ -41,6 +49,8 @@ public class PvcCardLayoutController implements Serializable {
     private String backUrlInput;
     private String frontExternalUrl;
     private String backExternalUrl;
+    private Patient previewPatient;
+    private int activeTabIndex;
 
     @PostConstruct
     public void init() {
@@ -61,6 +71,9 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public void saveFrontLayout() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         if (!isValid(front)) {
             return;
         }
@@ -69,11 +82,22 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public void saveBackLayout() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         if (!isValid(back)) {
             return;
         }
         configOptionApplicationController.setLongTextValueByKey(KEY_BACK_LAYOUT, back.toJson());
         JsfUtil.addSuccessMessage("Back layout saved");
+    }
+
+    private boolean hasWritePrivilege() {
+        if (!webUserController.hasPrivilege("Developers")) {
+            JsfUtil.addErrorMessage("You do not have privilege to modify the PVC card layout");
+            return false;
+        }
+        return true;
     }
 
     private boolean isValid(PvcCardLayout layout) {
@@ -83,6 +107,10 @@ public class PvcCardLayoutController implements Serializable {
         }
         if (layout.getMarginMm() < 0) {
             JsfUtil.addErrorMessage("Margin cannot be negative");
+            return false;
+        }
+        if (2 * layout.getMarginMm() >= layout.getWidthMm() || 2 * layout.getMarginMm() >= layout.getHeightMm()) {
+            JsfUtil.addErrorMessage("Margin is too large for the card size");
             return false;
         }
         for (Map.Entry<String, PvcCardSlot> entry : layout.getSlots().entrySet()) {
@@ -99,8 +127,60 @@ public class PvcCardLayoutController implements Serializable {
                 JsfUtil.addErrorMessage("Position for '" + entry.getKey() + "' is outside the card bounds");
                 return false;
             }
+            if (PvcCardLayout.SLOT_BARCODE.equals(entry.getKey())) {
+                if (slot.getWidthMm() <= 0 || slot.getHeightMm() <= 0) {
+                    JsfUtil.addErrorMessage("Barcode width and height must be greater than zero");
+                    return false;
+                }
+                if (slot.getType() == null || slot.getType().trim().isEmpty()) {
+                    JsfUtil.addErrorMessage("Barcode type cannot be blank");
+                    return false;
+                }
+            }
         }
         return true;
+    }
+
+    /**
+     * Transient, never-persisted patient used only by the layout preview, so
+     * every slot (including the barcode) shows realistic content while the
+     * layout is being edited.
+     */
+    public Patient getPreviewPatient() {
+        if (previewPatient == null) {
+            Person person = new Person();
+            person.setTitle(Title.Mr);
+            person.setName("Sample Patient");
+            Calendar dob = Calendar.getInstance();
+            dob.set(1985, Calendar.JANUARY, 15);
+            person.setDob(dob.getTime());
+            person.setPhone("0771234567");
+            person.setSex(Sex.Male);
+            person.setAddress("No 1, Sample Road");
+            previewPatient = new Patient();
+            previewPatient.setPerson(person);
+            previewPatient.setPhn("PHN0000001");
+        }
+        return previewPatient;
+    }
+
+    /**
+     * Inline SVG barcode sized to the slot, or null when the slot's type is
+     * not a linear Barcode4J type (the panel then falls back to p:barcode).
+     */
+    public String barcodeSvg(PvcCardSlot slot, String value) {
+        if (slot == null) {
+            return null;
+        }
+        return PvcCardBarcodeSvg.render(slot.getType(), value, slot.getWidthMm(), slot.getHeightMm());
+    }
+
+    public int getActiveTabIndex() {
+        return activeTabIndex;
+    }
+
+    public void setActiveTabIndex(int activeTabIndex) {
+        this.activeTabIndex = activeTabIndex;
     }
 
     public String getFrontBackgroundExternalUrl() {
@@ -128,21 +208,33 @@ public class PvcCardLayoutController implements Serializable {
     }
 
     public void saveFrontBackgroundUrl() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUrl(UploadType.PVC_Card_Front_Background, frontUrlInput);
         frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
     }
 
     public void saveBackBackgroundUrl() {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUrl(UploadType.PVC_Card_Back_Background, backUrlInput);
         backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
     }
 
     public void uploadFrontBackground(FileUploadEvent event) {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUpload(UploadType.PVC_Card_Front_Background, event);
         frontExternalUrl = backgroundUrl(UploadType.PVC_Card_Front_Background);
     }
 
     public void uploadBackBackground(FileUploadEvent event) {
+        if (!hasWritePrivilege()) {
+            return;
+        }
         saveBackgroundUpload(UploadType.PVC_Card_Back_Background, event);
         backExternalUrl = backgroundUrl(UploadType.PVC_Card_Back_Background);
     }
