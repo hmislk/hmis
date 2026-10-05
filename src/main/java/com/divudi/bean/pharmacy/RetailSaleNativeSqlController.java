@@ -58,6 +58,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.pharmacy.RetailSaleNativeSqlService;
 
+import java.text.DecimalFormat;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -979,7 +980,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
         if (remainingQty > 0) {
             // Shown in a centred modal dialog (not a growl) so the cashier cannot miss it.
-            stockShortageMessage = "Only " + String.format("%.0f", addedQty)
+            stockShortageMessage = "Only " + new DecimalFormat("0.##").format(addedQty)
                     + " of the requested " + String.format("%.0f", requestedQty)
                     + " is available across all batches.";
             PrimeFaces.current().ajax().addCallbackParam("stockShortage", true);
