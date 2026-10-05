@@ -17,7 +17,9 @@
                 <h:form id="pvcCardLayoutForm">
                     <p:growl id="messages" showDetail="true"/>
                     <p:panel header="PVC Card Layout">
-                        <p:tabView>
+                        <p:tabView activeIndex="#{pvcCardLayoutController.activeTabIndex}">
+                            <!-- remember the open tab: every field change re-renders @form -->
+                            <p:ajax event="tabChange"/>
 
                             <p:tab title="Front">
                                 <p:panelGrid columns="2" styleClass="w-100">
@@ -95,10 +97,13 @@
                                                           update="@form" styleClass="ui-button-success"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="frontPreview" layout="block">
-                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
-                                                             backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
-                                                             side="front"/>
+                                    <h:panelGroup id="frontPreview" layout="block" style="position:sticky; top:10px; zoom:1.5;">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.front.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
+                                                                 side="front"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
@@ -179,10 +184,13 @@
                                                           update="@form" styleClass="ui-button-success"/>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="backPreview" layout="block">
-                                        <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
-                                                             backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
-                                                             side="back"/>
+                                    <h:panelGroup id="backPreview" layout="block" style="position:sticky; top:10px; zoom:1.5;">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.back.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
+                                                                 side="back"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
                                     </h:panelGroup>
                                 </p:panelGrid>
                             </p:tab>
