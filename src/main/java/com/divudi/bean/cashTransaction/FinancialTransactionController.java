@@ -3797,22 +3797,6 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow();
     }
 
-    public String navigateToCreateShiftEndSummaryBill() {
-        resetClassVariables();
-        findNonClosedShiftStartFundBillIsAvailable();
-        fillPaymentsFromShiftStartToNow();
-        if (nonClosedShiftStartFundBill != null) {
-            currentBill = new Bill();
-            currentBill.setBillType(BillType.ShiftEndFundBill);
-            currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_SHIFT_END_BILL);
-            currentBill.setBillClassType(BillClassType.Bill);
-            currentBill.setReferenceBill(nonClosedShiftStartFundBill);
-        } else {
-            currentBill = null;
-        }
-        return "/cashier/shift_end_summery_bill?faces-redirect=true";
-    }
-
     public String navigateToCreateShiftEndSummaryBillForHandover() {
         resetClassVariables();
         Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
@@ -10833,7 +10817,7 @@ public class FinancialTransactionController implements Serializable {
         // Shift Management Tab Configurations
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Legacy Handover is enabled",
-                "When enabled, shows legacy handover options in the Shift Management tab including 'End Shift - OLD', 'Handover (OLD)', and 'Handover Shift (OLD)' buttons.",
+                "When enabled, shows legacy handover options in the Shift Management tab including 'Handover (OLD)' and 'Handover Shift (OLD)' buttons.",
                 OptionScope.APPLICATION
         ));
 
