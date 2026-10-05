@@ -236,10 +236,7 @@ public class InwardServiceRefundController implements Serializable {
 
     public String navigateBackToInpatientProfile() {
         Bill bill = getBill();
-        if (bill != null && bill.getPatientEncounter() instanceof Admission) {
-            admissionController.setCurrent((Admission) bill.getPatientEncounter());
-        }
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(bill == null ? null : bill.getPatientEncounter());
     }
 
     public String navigateToInwardServiceSearch() {
@@ -537,6 +534,9 @@ public class InwardServiceRefundController implements Serializable {
             return "Cannot return \"" + original.getItem().getName() + "\" - the laboratory report has already been entered for this test.";
         }
         if (!enumController.getAvailableStatusforCancel().contains(investigation.getStatus())) {
+            if (investigation.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                return "Cannot return \"" + original.getItem().getName() + "\" - the sample has already been collected for this test.";
+            }
             if (investigation.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
                 return "Cannot return \"" + original.getItem().getName() + "\" - this test has already been sent to the Laboratory.";
             }

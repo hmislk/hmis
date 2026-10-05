@@ -197,13 +197,15 @@ public class ConfigOptionApplicationController implements Serializable {
         // Replaces "Need to check inward bills before discharge", which was read
         // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
         getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
-        // Theatre surgery service bill item list. Three booleans selecting one
+        // Theatre surgery service bill item list. Four booleans selecting one
         // mode, read in a fixed precedence by ItemController.completeTheatreItems
-        // (mapped, then all services, then the default of theatre services only).
+        // (mapped, then all services and investigations, then all services,
+        // then the default of theatre services only).
         // Seeded here so an admin can find and toggle them without first having
         // to open a surgery bill. Overridable per department with the
         // "<Department Name> - <key>" form.
         getBooleanValueByKey(ItemController.THEATRE_LIST_MAPPED_SERVICES, false);
+        getBooleanValueByKey(ItemController.THEATRE_LIST_ALL_SERVICES_AND_INVESTIGATIONS, false);
         getBooleanValueByKey(ItemController.THEATRE_LIST_ALL_SERVICES, false);
         getBooleanValueByKey(ItemController.THEATRE_LIST_THEATRE_SERVICES_ONLY, true);
         // Controls whether the printed pharmacy bill handed to the ward on BHT
@@ -314,6 +316,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        getBooleanValueByKey("Inward Payment Bill Numbers - Omit Year", false);
+        getBooleanValueByKey("Inward Payment Bill Numbers - Omit Admission Type Code", false);
+        getBooleanValueByKey("Inward Payment Bill Numbers - Use Yearly Generator for Post Final Payments", false);
 
         // Bill-type-specific numbering strategies for Purchase Order Requests (POR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);

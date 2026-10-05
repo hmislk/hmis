@@ -40,7 +40,11 @@ button in the HIMS web UI.
    - `PrinterPath` — the exact name of the installed Windows printer to
      print to (`Settings > Printers & scanners`), matching the printer you
      just shared.
-   - `FileGlob` — filename pattern to watch for.
+   - `FileGlob` — filename pattern to watch for. Inward deposit/payment
+     receipts download as `inward-*.prn`; OPD bills (5x5 Custom 3 "Print
+     (Raw Text)", issue #24047) download as `opd-bill-*.prn`. On a PC that
+     prints only OPD bills use `opd-bill-*.prn`; use `*.prn` if one printer
+     handles both.
    - `PollSeconds` — polling interval.
 4. Create a shortcut to `start-agent-hidden.vbs` in
    `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` so it starts

@@ -27,14 +27,18 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 | [API_F15_REPORT.md](API_F15_REPORT.md) | Pharmacy daily stock balance (F15) report | `Finance` |
 | [API_FHIR.md](API_FHIR.md) | FHIR Patient resource endpoints | `FHIR` |
 | [API_FINANCE_LEGACY.md](API_FINANCE_LEGACY.md) | Original `/api/finance` bill query endpoints | `Finance` |
+| [API_INPATIENT_PACKAGES.md](API_INPATIENT_PACKAGES.md) | Fixed-price Inpatient Package headers + component items | `Finance` |
 | [API_INSTITUTION_DEPARTMENT_MANAGEMENT.md](API_INSTITUTION_DEPARTMENT_MANAGEMENT.md) | Institution, department, and site CRUD | `Finance` |
 | [API_INWARD.md](API_INWARD.md) | Inpatient admission data and payment processing | `Finance` |
 | [API_INWARD_ROOM.md](API_INWARD_ROOM.md) | Room categories, rooms, room facility charges | `Finance` |
 | [API_INWARD_PRICE_MATRIX.md](API_INWARD_PRICE_MATRIX.md) | Inward price adjustment (margin/discount) matrix CRUD | `Finance` |
+| [API_INWARD_DISCOUNT_MATRIX.md](API_INWARD_DISCOUNT_MATRIX.md) | Inward discount matrix CRUD, incl. bulk create across categories | `Finance` |
+| [API_INVESTIGATION_SEARCH.md](API_INVESTIGATION_SEARCH.md) | `/api/investigations/search` — search and page through the investigation master | `Finance` |
 | [API_LIMS.md](API_LIMS.md) | Lab middleware, analyzer, and sample management | Custom (URL/JSON/Basic) |
 | [API_LOGIN_HISTORY.md](API_LOGIN_HISTORY.md) | User login history records | `Finance` |
 | [API_MEMBERSHIP.md](API_MEMBERSHIP.md) | Membership scheme registration and payment | none (public) |
 | [API_PHARMACEUTICAL_MANAGEMENT.md](API_PHARMACEUTICAL_MANAGEMENT.md) | VTM/ATM/VMP/AMP/VMPP/AMPP item master CRUD + backfill | `Finance` |
+| [API_PHARMACY_PURCHASE_ORDERS.md](API_PHARMACY_PURCHASE_ORDERS.md) | PO approval status (incl. history) + cancel-approval | `Finance` |
 | [API_PHARMACY_STOCK_ADJUSTMENTS.md](API_PHARMACY_STOCK_ADJUSTMENTS.md) | Search stocks, adjust qty/rates/expiry, create batches | `Finance` |
 | [API_QUICKBOOKS.md](API_QUICKBOOKS.md) | Read-only export of financial data for QuickBooks | `Finance` |
 | [API_REPORT_FORMATS.md](API_REPORT_FORMATS.md) | Lab report common template — patient-details/signature/footer layout | `Finance` |

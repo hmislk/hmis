@@ -13,6 +13,10 @@
         <netbeans.hint.deploy.server>gfv3ee6</netbeans.hint.deploy.server>
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
+        <!-- One version for ALL Jackson artifacts. Never bump a single Jackson artifact on its own:
+             jackson-databind needs jackson-core and jackson-annotations of the same minor version,
+             otherwise it fails at runtime (NoClassDefFoundError) even though compilation passes. -->
+        <jackson.version>2.18.10</jackson.version>
     </properties>
 
     <!-- Dependency Management removed - using explicit versions for better reliability in CI/CD -->
@@ -74,35 +78,40 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Jackson Dependencies - Using 2.15.4 for Java 11 Compatibility -->
+        <!-- Jackson Dependencies - all pinned to ${jackson.version} (Java 8 bytecode, runs on JDK 11) -->
         <!-- CVE-2025-52999: DoS via deeply nested JSON input (fixed in 2.15.0+) -->
-        <!-- Using 2.15.4 for Java 11 compatibility while maintaining security fixes -->
         <!-- Replaced vulnerable org.codehaus.jackson:jackson-jaxrs 1.9.13 -->
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>2.15.4</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.18.9</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.18.8</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.15.4</version>
+            <version>${jackson.version}</version>
         </dependency>
         <!-- Jackson JAXB Annotations Module for JAXB annotation support -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <version>2.15.4</version>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Declared explicitly so hapi-fhir-base does not pull in a mismatched 2.13.x copy -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Commons -->
@@ -137,7 +146,7 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.12.4</version>
+            <version>2.14.4</version>
             <type>jar</type>
         </dependency>
 
@@ -182,7 +191,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.9</version>
+            <version>2.0.20</version>
         </dependency>
 
         <!-- SLF4J Simple implementation - lightweight logging -->
@@ -530,7 +539,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>enforce-banned-dependencies</id>
@@ -544,11 +553,24 @@
                                         <exclude>org.codehaus.jackson:*:*</exclude>
                                     </excludes>
                                 </bannedDependencies>
+                                <!-- Production runs on JDK 11 (Payara 5). Fail the build if any dependency,
+                                     including transitive ones, ships classes compiled for a newer JDK;
+                                     otherwise it only surfaces as UnsupportedClassVersionError after deploy. -->
+                                <enforceBytecodeVersion>
+                                    <maxJdkVersion>11</maxJdkVersion>
+                                </enforceBytecodeVersion>
                             </rules>
                             <fail>true</fail>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>extra-enforcer-rules</artifactId>
+                        <version>1.8.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <!-- Maven WAR Plugin -->

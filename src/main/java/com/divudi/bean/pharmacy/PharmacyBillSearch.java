@@ -65,6 +65,8 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.PharmacySaleSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueSearchDTO;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PharmacyPoCancellationException;
+import com.divudi.service.pharmacy.PharmacyPurchaseOrderApprovalCancellationService;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -138,6 +140,8 @@ public class PharmacyBillSearch implements Serializable {
     private EmailManagerEjb emailManagerEjb;
     @EJB
     private TransferIssueNativeSqlService transferIssueNativeSqlService;
+    @EJB
+    private PharmacyPurchaseOrderApprovalCancellationService pharmacyPurchaseOrderApprovalCancellationService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -315,11 +319,16 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Found");
             return null;
         }
-        // Reload the bill with its billItems. When this is reached from the BHT
-        // Issue Return page, `bill` is a detached entity whose billItems were
-        // never fetched, so the reprint page's Item/QTY table renders empty
-        // (issue #22035). Fetching with items populates that table.
-        Bill reloaded = billBean.fetchBillWithItemsAndFees(bill.getId());
+        // Reload the bill with its billItems, bypassing the JPA L2 cache. When
+        // reached from the BHT Issue Return page, `bill` is a detached entity
+        // whose billItems were never fetched, so the reprint page's Item/QTY
+        // table renders empty (issue #22035) — a cache-aware reload alone isn't
+        // enough for a bill just settled via a native-SQL settle path
+        // (InpatientDirectIssueNativeSqlService): the shared cache can keep
+        // returning an already-built Bill instance (0 items, 0 totals) from
+        // before the native INSERTs/UPDATEs existed, even after the settle
+        // path evicts the cache (issue #24030).
+        Bill reloaded = billBean.fetchBillWithItemsAndFeesBypassingCache(bill.getId());
         if (reloaded != null) {
             bill = reloaded;
         }
@@ -3799,34 +3808,33 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
-            if (pharmacyErrorCheck()) {
-                return;
+            try {
+                pharmacyPurchaseOrderApprovalCancellationService.cancelApproval(
+                        getBill().getId(), getComment(), getSessionController().getLoggedUser());
+                // Refresh the in-memory bill so the reprint page reflects the cancellation.
+                bill = getBillFacade().find(getBill().getId());
+                JsfUtil.addSuccessMessage("Cancelled");
+                printPreview = true;
+            } catch (PharmacyPoCancellationException ex) {
+                switch (ex.getReason()) {
+                    case ALREADY_CANCELLED:
+                        JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+                        break;
+                    case GRN_EXISTS:
+                        JsfUtil.addErrorMessage("Grn already head been Come u can't bill ");
+                        break;
+                    case CONFIG_DISABLED:
+                        JsfUtil.addErrorMessage("Cancelling Pharmacy Purchase Order Bills is disabled");
+                        break;
+                    case NOT_APPROVAL_TYPE:
+                        JsfUtil.addErrorMessage("This bill is not a Pharmacy Purchase Order Approval bill");
+                        break;
+                    case NOT_FOUND:
+                    default:
+                        JsfUtil.addErrorMessage("No Bill to cancel");
+                        break;
+                }
             }
-
-            CancelledBill cb = pharmacyCreateCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.POCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.POCAN));
-            cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_CANCELLED);
-            
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
-            }
-            pharmacyCancelBillItems(cb);
-
-            getBill().getReferenceBill().setReferenceBill(null);
-            getBillFacade().edit(getBill().getReferenceBill());
-
-            getBill().setReferenceBill(null);
-
-            getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit(getBill());
-            JsfUtil.addSuccessMessage("Cancelled");
-
-            //       //System.err.println("Bill : "+getBill().getBillType());
-//            //System.err.println("Reference Bill : "+getBill().getReferenceBill().getBillType());
-            printPreview = true;
-
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
@@ -5347,6 +5355,302 @@ public class PharmacyBillSearch implements Serializable {
         this.saleBillDtos = saleBillDtos;
     }
 
+    // -----------------------------------------------------------------------
+    // Pharmacy Bill Search criteria (issue #24250)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Optional criteria applied by {@link #applyCriteria(String, Map)} to the
+     * fetch*SearchDtos queries. They are only set for the duration of a
+     * {@link #searchPharmacyBills} call, so every other caller of those fetch
+     * methods runs its query unchanged.
+     */
+    private com.divudi.core.data.BillTypeAtomic criteriaBillTypeAtomic;
+    private com.divudi.core.data.BillType criteriaBillType;
+    private com.divudi.core.entity.Item criteriaItem;
+
+    private static final java.util.regex.Pattern BILL_SUBCLASS_FROM
+            = java.util.regex.Pattern.compile("FROM (BilledBill|PreBill|CancelledBill|RefundBill) b ");
+    private static final java.util.regex.Pattern BILL_TYPE_CONDITION
+            = java.util.regex.Pattern.compile("b\\.billType = :(\\w+)");
+    private static final java.util.regex.Pattern BILL_TYPE_ATOMIC_IN_CONDITION
+            = java.util.regex.Pattern.compile("b\\.billTypeAtomic IN :(\\w+)");
+
+    /**
+     * Narrows a bill search query to the current criteria.
+     * <ul>
+     * <li>Bill type atomic: replaces the query's bill type (or atomic list)
+     * condition with {@code b.billTypeAtomic = :criteriaBta} and widens the
+     * entity to {@code Bill}, because cancellation / refund atomics are saved
+     * under several bill types and bill classes.</li>
+     * <li>Item: keeps only bills that contain a non-retired bill item for that
+     * item.</li>
+     * </ul>
+     * With no criteria set the query is returned unchanged.
+     */
+    private String applyCriteria(String sql, Map<String, Object> m) {
+        String typeCondition = null;
+        if (criteriaBillTypeAtomic != null) {
+            typeCondition = "b.billTypeAtomic = :criteriaBta";
+            m.put("criteriaBta", criteriaBillTypeAtomic);
+        } else if (criteriaBillType != null) {
+            typeCondition = "b.billType = :criteriaBt";
+            m.put("criteriaBt", criteriaBillType);
+        }
+        if (typeCondition != null) {
+            sql = BILL_SUBCLASS_FROM.matcher(sql).replaceFirst("FROM Bill b ");
+            java.util.regex.Matcher bt = BILL_TYPE_CONDITION.matcher(sql);
+            java.util.regex.Matcher bta = BILL_TYPE_ATOMIC_IN_CONDITION.matcher(sql);
+            if (bt.find()) {
+                m.remove(bt.group(1));
+                sql = bt.replaceFirst(typeCondition);
+            } else if (bta.find()) {
+                m.remove(bta.group(1));
+                sql = bta.replaceFirst(typeCondition);
+            } else {
+                sql = sql.replaceFirst("WHERE ", "WHERE " + typeCondition + " AND ");
+            }
+        }
+        if (criteriaItem != null) {
+            String itemCondition = " AND b.id IN (SELECT cbi.bill.id FROM BillItem cbi "
+                    + "WHERE cbi.retired = false AND cbi.item = :criteriaItem) ";
+            int orderBy = sql.lastIndexOf(" ORDER BY ");
+            sql = orderBy >= 0
+                    ? sql.substring(0, orderBy) + itemCondition + sql.substring(orderBy)
+                    : sql + itemCondition;
+            m.put("criteriaItem", criteriaItem);
+        }
+        return sql;
+    }
+
+    /**
+     * Which result table the Pharmacy Bill Search pages render for the last
+     * {@link #searchPharmacyBills} call — matches the composites in
+     * {@code resources/pharmacy/search/}.
+     */
+    private String resultView;
+
+    private List<com.divudi.core.data.dto.PharmacyBillSearchGenericDTO> genericSearchDtos;
+
+    /**
+     * Single entry point for the Pharmacy Bill Search pages (by bill type, by
+     * bill type atomic, and by item). Picks the result table for the selected
+     * type and fills its DTO list.
+     *
+     * @param billType bill type (bill type page); ignored when an atomic is given
+     * @param billTypeAtomic bill type atomic (atomic and item pages), may be null
+     * @param item only bills containing this item, may be null
+     * @param maxResult maximum rows; 0 or negative means unlimited
+     */
+    public void searchPharmacyBills(com.divudi.core.data.BillType billType,
+            com.divudi.core.data.BillTypeAtomic billTypeAtomic,
+            com.divudi.core.entity.Item item,
+            int maxResult) {
+        com.divudi.core.data.BillType bt = billTypeAtomic != null ? billTypeAtomic.getBillType() : billType;
+        resultView = resolveResultView(bt, billTypeAtomic);
+        if (resultView == null) {
+            return;
+        }
+        criteriaBillTypeAtomic = billTypeAtomic;
+        // A dedicated table's query may be fixed to a different bill type (e.g. the
+        // GRN payment query uses GrnPaymentPre, the adjustment query an atomic list),
+        // so force the selected bill type when searching by bill type.
+        criteriaBillType = billTypeAtomic == null && !fetchFiltersOnBillType(resultView, bt) ? bt : null;
+        criteriaItem = item;
+        try {
+            switch (resultView) {
+                case "sale":
+                    fetchSaleSearchDtosFromNativeBills(maxResult);
+                    break;
+                case "transferRequest":
+                    fetchTransferRequestSearchDtos(maxResult);
+                    break;
+                case "transferIssue":
+                    fetchTransferIssueSearchDtos(maxResult);
+                    break;
+                case "transferReceive":
+                    fetchTransferReceiveSearchDtos(maxResult);
+                    break;
+                case "preBill":
+                    fetchPreBillSearchDtos(maxResult);
+                    break;
+                case "wholeSale":
+                    fetchWholeSaleSearchDtos(maxResult);
+                    break;
+                case "poRequest":
+                    fetchPoRequestSearchDtos(maxResult);
+                    break;
+                case "poApprove":
+                    fetchPoApproveSearchDtos(maxResult);
+                    break;
+                case "grn":
+                    fetchGrnSearchDtos(maxResult);
+                    break;
+                case "purchase":
+                    fetchPurchaseSearchDtos(maxResult);
+                    break;
+                case "grnReturn":
+                    fetchGrnReturnSearchDtos(maxResult);
+                    break;
+                case "returnWithoutTraising":
+                    fetchReturnWithoutTraisingSearchDtos(maxResult);
+                    break;
+                case "issue":
+                    fetchIssueSearchDtos(maxResult);
+                    break;
+                case "adjustment":
+                    fetchAdjustmentSearchDtos(maxResult);
+                    break;
+                case "grnPayment":
+                    fetchGrnPaymentSearchDtos(maxResult);
+                    break;
+                case "purchaseReturn":
+                    fetchPurchaseReturnSearchDtos(maxResult);
+                    break;
+                default:
+                    fetchGenericSearchDtos(bt, maxResult);
+            }
+        } finally {
+            criteriaBillTypeAtomic = null;
+            criteriaBillType = null;
+            criteriaItem = null;
+        }
+    }
+
+    /**
+     * Whether the fetch behind a result view already filters on the given bill
+     * type by itself. Where it does not (a query fixed to another bill type),
+     * {@link #searchPharmacyBills} narrows it to the selected bill type.
+     */
+    private boolean fetchFiltersOnBillType(String view, com.divudi.core.data.BillType bt) {
+        switch (view) {
+            case "grnPayment":
+                return bt == com.divudi.core.data.BillType.GrnPaymentPre;
+            case "adjustment":
+                return bt == com.divudi.core.data.BillType.PharmacyAdjustment;
+            default:
+                return true;
+        }
+    }
+
+    private String resolveResultView(com.divudi.core.data.BillType bt, com.divudi.core.data.BillTypeAtomic bta) {
+        if (bt == null) {
+            return null;
+        }
+        if (bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            return "generic";
+        }
+        if (bta == com.divudi.core.data.BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+                || bta == com.divudi.core.data.BillTypeAtomic.PHARMACY_ORDER_APPROVAL_CANCELLED) {
+            return "poApprove";
+        }
+        switch (bt) {
+            case PharmacySale:
+                return "sale";
+            case PharmacyTransferRequest:
+                return "transferRequest";
+            case PharmacyTransferIssue:
+                return "transferIssue";
+            case PharmacyTransferReceive:
+                return "transferReceive";
+            case PharmacyPre:
+                return "preBill";
+            case PharmacyWholeSale:
+                return "wholeSale";
+            case PharmacyOrder:
+                return "poRequest";
+            case PharmacyOrderApprove:
+                return "poApprove";
+            case PharmacyGrnBill:
+                return "grn";
+            case PharmacyPurchaseBill:
+                return "purchase";
+            case PharmacyGrnReturn:
+                return "grnReturn";
+            case PharmacyReturnWithoutTraising:
+                return "returnWithoutTraising";
+            case PharmacyIssue:
+                return "issue";
+            case PharmacyAdjustment:
+            case PharmacyStockAdjustmentBill:
+                return "adjustment";
+            case GrnPaymentPre:
+            case GrnPayment:
+                return "grnPayment";
+            case PurchaseReturn:
+                return "purchaseReturn";
+            default:
+                return "generic";
+        }
+    }
+
+    /**
+     * Fetches bills of any type as {@link com.divudi.core.data.dto.PharmacyBillSearchGenericDTO}
+     * for types that have no dedicated result table (issue #24250).
+     */
+    @SuppressWarnings("unchecked")
+    public void fetchGenericSearchDtos(com.divudi.core.data.BillType billType, int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bt", billType);
+        m.put("fd", searchController.getFromDate());
+        m.put("td", searchController.getToDate());
+        m.put("dep", sessionController.getDepartment());
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacyBillSearchGenericDTO("
+                + "b.id, COALESCE(b.deptId, ''), b.billType, b.billTypeAtomic, b.createdAt, "
+                + "COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(fromDep.name, ''), COALESCE(toDep.name, ''), "
+                + "COALESCE(fromIns.name, ''), COALESCE(toIns.name, ''), "
+                + "COALESCE(patientPerson.name, ''), COALESCE(enc.bhtNo, ''), "
+                + "b.netTotal, b.cancelled, b.refunded, COALESCE(b.comments, '')) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson creatorPerson "
+                + "LEFT JOIN b.fromDepartment fromDep "
+                + "LEFT JOIN b.toDepartment toDep "
+                + "LEFT JOIN b.fromInstitution fromIns "
+                + "LEFT JOIN b.toInstitution toIns "
+                + "LEFT JOIN b.patient patient "
+                + "LEFT JOIN patient.person patientPerson "
+                + "LEFT JOIN b.patientEncounter enc "
+                + "WHERE b.billType = :bt "
+                + "AND b.createdAt BETWEEN :fd AND :td "
+                + "AND b.department = :dep "
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
+        if (maxResult > 0) {
+            genericSearchDtos = (List<com.divudi.core.data.dto.PharmacyBillSearchGenericDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            genericSearchDtos = (List<com.divudi.core.data.dto.PharmacyBillSearchGenericDTO>)
+                    billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (genericSearchDtos == null) {
+            genericSearchDtos = new ArrayList<>();
+        }
+    }
+
+    public String getResultView() {
+        return resultView;
+    }
+
+    public void setResultView(String resultView) {
+        this.resultView = resultView;
+    }
+
+    /** Hides the previous result table when the search type changes. */
+    public void clearResultView() {
+        this.resultView = null;
+    }
+
+    public List<com.divudi.core.data.dto.PharmacyBillSearchGenericDTO> getGenericSearchDtos() {
+        return genericSearchDtos;
+    }
+
+    public void setGenericSearchDtos(List<com.divudi.core.data.dto.PharmacyBillSearchGenericDTO> genericSearchDtos) {
+        this.genericSearchDtos = genericSearchDtos;
+    }
+
     /**
      * Fetches PHARMACY_RETAIL_SALE and PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER bills as DTOs.
      * <p>
@@ -5432,6 +5736,7 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             saleBillDtos = (List<PharmacySaleSearchDTO>) billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
         } else {
@@ -5610,6 +5915,7 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             transferRequestSearchDtos = (List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -5692,6 +5998,7 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             transferIssueSearchDtos = (List<PharmacyTransferIssueSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -5772,6 +6079,7 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             transferReceiveSearchDtos = (List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -5836,6 +6144,7 @@ public class PharmacyBillSearch implements Serializable {
 
         sql += " ORDER BY b.createdAt DESC";
 
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             preBillSearchDtos = (List<com.divudi.core.data.dto.PharmacyPreBillSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -5874,6 +6183,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
                 + "AND b.retired = false";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             wholeSaleSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyWholeSaleSearchDTO>)
@@ -5921,6 +6231,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             poRequestSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
@@ -5970,6 +6281,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             poApproveSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO>)
@@ -6020,6 +6332,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             grnSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyGrnSearchDTO>)
@@ -6091,6 +6404,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.retired = false "
                 + "ORDER BY b.createdAt DESC";
 
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             purchaseSearchDtos =
                     (List<com.divudi.core.data.dto.PharmacyDirectPurchaseSearchDTO>)
@@ -6135,6 +6449,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "LEFT JOIN refunder.webUserPerson refunderPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             grnReturnSearchDtos = (List<com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -6177,6 +6492,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "LEFT JOIN refunder.webUserPerson refunderPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             returnWithoutTraisingSearchDtos = (List<com.divudi.core.data.dto.PharmacyReturnWithoutTraisingSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -6235,6 +6551,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
                 + "WHERE b.billTypeAtomic IN :billTypeAtomics AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             adjustmentSearchDtos = (List<com.divudi.core.data.dto.PharmacyAdjustmentSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -6265,6 +6582,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             issueSearchDtos = (List<com.divudi.core.data.dto.PharmacyIssueSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -6367,6 +6685,7 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         sql += " ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             grnPaymentSearchDtos = (List<com.divudi.core.data.dto.PharmacyGrnPaymentSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -6461,6 +6780,7 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         sql += " ORDER BY b.createdAt DESC";
+        sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             purchaseReturnSearchDtos = (List<com.divudi.core.data.dto.PharmacyPurchaseReturnSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);

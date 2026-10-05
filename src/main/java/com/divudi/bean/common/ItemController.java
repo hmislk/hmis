@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +59,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -2742,6 +2744,45 @@ public class ItemController implements Serializable {
 
     }
 
+    public static final String LIST_AMPPS_IN_ITEM_SELECTION = "Pharmacy - List Packs (AMPPs) in Item Selection";
+
+    /**
+     * Whether Packs (AMPPs) are offered in pharmacy item autocompletes (PO,
+     * Direct Purchase, Transfer Request, etc.). Defaults to true; hospitals
+     * that do not use packs turn it off.
+     */
+    public boolean isAmppListedInItemSelection() {
+        return configOptionApplicationController.getBooleanValueByKey(LIST_AMPPS_IN_ITEM_SELECTION, true);
+    }
+
+    /**
+     * Value for the ":ampp" type parameter in item autocompletes. When AMPPs
+     * are not listed it returns Amp.class, so "type(c)=:ampp" matches the same
+     * rows as ":amp" and the query returns AMPs only.
+     */
+    private Class<? extends Item> amppTypeForItemSelection() {
+        return isAmppListedInItemSelection() ? Ampp.class : Amp.class;
+    }
+
+    /**
+     * Drops Packs (AMPPs) from an item list that did not come from an item
+     * autocomplete (e.g. a supplier's distributor items on the Purchase Order
+     * page) when AMPPs are not listed in item selection. Returns the list
+     * unchanged otherwise.
+     */
+    public List<Item> removeAmppsIfNotListed(List<Item> items) {
+        if (items == null || isAmppListedInItemSelection()) {
+            return items;
+        }
+        List<Item> filtered = new ArrayList<>();
+        for (Item i : items) {
+            if (!(i instanceof Ampp)) {
+                filtered.add(i);
+            }
+        }
+        return filtered;
+    }
+
     public List<Item> completeAmpAndAmppItem(String query) {
         List<Item> suggestions;
         String sql;
@@ -2756,7 +2797,7 @@ public class ItemController implements Serializable {
             }
 
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("ampp", amppTypeForItemSelection());
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
@@ -2791,7 +2832,7 @@ public class ItemController implements Serializable {
             }
 
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("ampp", amppTypeForItemSelection());
             tmpMap.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
@@ -2833,7 +2874,7 @@ public class ItemController implements Serializable {
             }
 
             tmpMap.put("amp", Amp.class);
-            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("ampp", amppTypeForItemSelection());
             tmpMap.put("dts", lstDepartmentTypes);
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
@@ -2879,7 +2920,7 @@ public class ItemController implements Serializable {
                 + "ORDER BY i.name";
 
         parameters.put("amp", Amp.class);
-        parameters.put("ampp", Ampp.class);
+        parameters.put("ampp", amppTypeForItemSelection());
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
         parameters.put("q", "%" + q + "%");
@@ -2928,7 +2969,7 @@ public class ItemController implements Serializable {
                 + "ORDER BY i.name";
 
         parameters.put("amp", Amp.class);
-        parameters.put("ampp", Ampp.class);
+        parameters.put("ampp", amppTypeForItemSelection());
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
         parameters.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
@@ -2982,7 +3023,7 @@ public class ItemController implements Serializable {
                 + "ORDER BY i.name";
 
         parameters.put("amp", Amp.class);
-        parameters.put("ampp", Ampp.class);
+        parameters.put("ampp", amppTypeForItemSelection());
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
         if (dept == null) {
@@ -3087,7 +3128,9 @@ public class ItemController implements Serializable {
 
         List<ItemDTO> results = new ArrayList<>();
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(ampJpql, params, TemporalType.TIMESTAMP, maxResults));
-        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
+        if (isAmppListedInItemSelection()) {
+            results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
+        }
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmpJpql, params, TemporalType.TIMESTAMP, maxResults));
         results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmppJpql, params, TemporalType.TIMESTAMP, maxResults));
 
@@ -3357,6 +3400,8 @@ public class ItemController implements Serializable {
      */
     public static final String THEATRE_LIST_MAPPED_SERVICES
             = "Theatre Surgery Bill - List Services Mapped to the Logged Department";
+    public static final String THEATRE_LIST_ALL_SERVICES_AND_INVESTIGATIONS
+            = "Theatre Surgery Bill - List All Services and Investigations";
     public static final String THEATRE_LIST_ALL_SERVICES
             = "Theatre Surgery Bill - List All Services";
     public static final String THEATRE_LIST_THEATRE_SERVICES_ONLY
@@ -3368,7 +3413,8 @@ public class ItemController implements Serializable {
      * Which items qualify is configurable per department: a hospital that
      * maintains a dedicated Theatre Service master keeps the default
      * (theatre services only), while one that bills theatre consumables from
-     * its existing OPD/Inward service master turns on "List All Services", or
+     * its existing OPD/Inward service master turns on "List All Services"
+     * (or "List All Services and Investigations" to include investigations), or
      * maps the items it wants to the theatre department and turns on "List
      * Services Mapped to the Logged Department".
      *
@@ -3383,6 +3429,8 @@ public class ItemController implements Serializable {
 
         boolean listMapped = configOptionController.getBooleanValueByKeyReadOnly(
                 THEATRE_LIST_MAPPED_SERVICES, false);
+        boolean listAllServicesAndInvestigations = configOptionController.getBooleanValueByKeyReadOnly(
+                THEATRE_LIST_ALL_SERVICES_AND_INVESTIGATIONS, false);
         boolean listAllServices = configOptionController.getBooleanValueByKeyReadOnly(
                 THEATRE_LIST_ALL_SERVICES, false);
         boolean listTheatreServicesOnly = configOptionController.getBooleanValueByKeyReadOnly(
@@ -3395,7 +3443,7 @@ public class ItemController implements Serializable {
         // intent is explicit and the key is not silently ignored. This mirrors
         // TransferIssueController's three transfer-rate booleans, which have
         // the same shape.
-        if (!listMapped && !listAllServices && !listTheatreServicesOnly) {
+        if (!listMapped && !listAllServicesAndInvestigations && !listAllServices && !listTheatreServicesOnly) {
             listTheatreServicesOnly = true;
         }
 
@@ -3412,6 +3460,20 @@ public class ItemController implements Serializable {
                     + " and UPPER(im.item.name) like :q"
                     + " order by im.item.name";
             m.put("dept", getSessionController().getDepartment());
+        } else if (listAllServicesAndInvestigations) {
+            // type() matches the exact class only, so Service and its two
+            // subclasses (InwardService, TheatreService) are each listed;
+            // Investigation is a separate Item subtype.
+            sql = "select c from Item c "
+                    + " where c.retired=false "
+                    + " and (c.inactive=false or c.inactive is null) "
+                    + " and (type(c)=:ser or type(c)=:ward or type(c)=:the or type(c)=:inv) "
+                    + " and UPPER(c.name) like :q"
+                    + " order by c.name";
+            m.put("ser", Service.class);
+            m.put("ward", InwardService.class);
+            m.put("the", TheatreService.class);
+            m.put("inv", Investigation.class);
         } else if (listAllServices) {
             // Service is the common superclass of InwardService and
             // TheatreService, so this covers all three in one query.
@@ -4105,6 +4167,132 @@ public class ItemController implements Serializable {
         return existing != null;
     }
 
+    /**
+     * Warns, without blocking the save, when another active item of the same
+     * type has the same name once case, spaces and punctuation are ignored (see
+     * {@link #normalizeItemName(String)}). Users sometimes register an existing
+     * product again instead of selecting it, which splits its stock and billing
+     * across two records. Hospitals also keep identical names on purpose (e.g.
+     * the same service in two departments with different codes), so this is
+     * advisory only and never prevents the save.
+     *
+     * <p>Only items of exactly the same entity type are compared, so an OPD
+     * service is never matched against an inward service, and the sample
+     * component row created alongside each investigation is never matched
+     * against the investigation itself. The item being edited is excluded, so
+     * re-saving an item does not warn about itself.</p>
+     *
+     * <p>Only name and code are fetched, never entities, and the comparison is
+     * done in Java because JPQL cannot strip punctuation. This runs once per
+     * admin save, not per keystroke.</p>
+     *
+     * @param item the item about to be saved
+     */
+    public void warnIfItemNameDuplicated(Item item) {
+        if (item == null || normalizeItemName(item.getName()).isEmpty()) {
+            return;
+        }
+        try {
+            Map<String, Object> m = new HashMap<>();
+            StringBuilder jpql = new StringBuilder(
+                    "select i.name, i.code from Item i where i.retired = false "
+                    + "and (i.inactive = false or i.inactive is null) and type(i) = :t ");
+            m.put("t", item.getClass());
+            if (item.getId() != null) {
+                jpql.append("and i.id <> :id ");
+                m.put("id", item.getId());
+            }
+            List<Object[]> otherItems = getFacade().findObjectArrayByJpql(jpql.toString(), m, null);
+            String warning = buildDuplicateItemNameWarning(item.getName(), otherItems);
+            if (warning != null) {
+                JsfUtil.addWarningMessage(warning);
+            }
+        } catch (RuntimeException e) {
+            // This check is advisory only, so a failure here must never stop the item being saved.
+            Logger.getLogger(ItemController.class.getName()).log(Level.WARNING, "Duplicate item name check failed", e);
+        }
+    }
+
+    /**
+     * Builds the warning shown when other items share a name with the item
+     * being saved.
+     *
+     * @param name name of the item being saved
+     * @param otherItems {@code {name, code}} rows of the other items of the
+     * same type
+     * @return the warning, listing up to three matching items with their codes
+     * (any further matches are only counted, to keep the message readable), or
+     * null when no other item matches
+     */
+    static String buildDuplicateItemNameWarning(String name, List<Object[]> otherItems) {
+        String key = normalizeItemName(name);
+        if (key.isEmpty() || otherItems == null) {
+            return null;
+        }
+        List<String> matches = new ArrayList<>();
+        for (Object[] row : otherItems) {
+            String otherName = (String) row[0];
+            if (key.equals(normalizeItemName(otherName))) {
+                String otherCode = row[1] == null ? "" : row[1].toString().trim();
+                matches.add(otherName.trim() + (otherCode.isEmpty() ? "" : " (code " + otherCode + ")"));
+            }
+        }
+        if (matches.isEmpty()) {
+            return null;
+        }
+        final int maxListed = 3;
+        int listed = Math.min(maxListed, matches.size());
+        StringBuilder warning = new StringBuilder("Possible duplicate - an active item with the same name already exists: ");
+        warning.append(String.join(", ", matches.subList(0, listed)));
+        if (matches.size() > listed) {
+            warning.append(" and ").append(matches.size() - listed).append(" more");
+        }
+        return warning.append(". Please check it is not the same item.").toString();
+    }
+
+    /**
+     * Reduces an item name to the form used to decide whether two names are
+     * the same: Unicode-normalised, lower-cased, and stripped of everything
+     * except letters, digits and combining marks. {@code "Blood Urea"},
+     * {@code "BLOOD  UREA"} and {@code "blood-urea."} all become
+     * {@code "bloodurea"}.
+     *
+     * <p>Letters of every script are kept - a plain a-z filter would make names
+     * that differ only in Greek or Sinhala letters look identical. The decimal
+     * point inside a number is also kept, because it changes the value:
+     * {@code "Methotrexate 2.5mg"} is not {@code "Methotrexate 25mg"}.</p>
+     *
+     * @return the comparison key, or an empty string when the name is null or
+     * has nothing left to compare after stripping
+     */
+    static String normalizeItemName(String name) {
+        if (name == null) {
+            return "";
+        }
+        String folded = Normalizer.normalize(name, Normalizer.Form.NFKC).toLowerCase(Locale.ROOT);
+        StringBuilder key = new StringBuilder(folded.length());
+        int previous = ' ';
+        for (int i = 0; i < folded.length();) {
+            int cp = folded.codePointAt(i);
+            i += Character.charCount(cp);
+            if (Character.isLetterOrDigit(cp) || isCombiningMark(cp)) {
+                key.appendCodePoint(cp);
+            } else if (cp == '.' && Character.isDigit(previous)
+                    && i < folded.length() && Character.isDigit(folded.codePointAt(i))) {
+                key.appendCodePoint(cp);
+            }
+            previous = cp;
+        }
+        return key.toString();
+    }
+
+    private static boolean isCombiningMark(int codePoint) {
+        int type = Character.getType(codePoint);
+        return type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK
+                || type == Character.ENCLOSING_MARK;
+    }
+
     public void saveSelected(Item item) {
         if (item.getId() != null && item.getId() > 0) {
             getFacade().edit(item);
@@ -4534,8 +4722,14 @@ public class ItemController implements Serializable {
 
     public ItemLight findItemLightById(Long id) {
         Optional<ItemLight> itemLightOptional = findItemLightByIdStreaming(id);
-        ItemLight il = itemLightOptional.orElse(null);
-        return il;
+        if (itemLightOptional.isPresent()) {
+            return itemLightOptional.get();
+        }
+        // ItemApplicationController.getItems() only holds Investigation/Service/
+        // MedicalPackage (no InwardService) and can be stale for items created
+        // after it was loaded, which otherwise makes itemLightConverter return
+        // null for a perfectly valid id. Fall back to a direct DB lookup.
+        return findItemLightByIdFromDb(id);
     }
 
     public Optional<ItemLight> findItemLightByIdStreaming(Long id) {
@@ -4545,6 +4739,34 @@ public class ItemController implements Serializable {
         return itemApplicationController.getItems().stream()
                 .filter(itemLight -> id.equals(itemLight.getId()))
                 .findFirst(); // Returns an Optional describing the first matching element, or an empty Optional if no match is found
+    }
+
+    /**
+     * DB fallback for {@link #findItemLightById(Long)} when the id is not in
+     * {@link ItemApplicationController#getItems()}. Uses the same ItemLight
+     * projection as {@code ItemApplicationController.fillAllItems()}, but with
+     * no TYPE(i) filter, so it also resolves InwardService (and any other Item
+     * subtype) ids that the cached list deliberately excludes.
+     */
+    private ItemLight findItemLightByIdFromDb(Long id) {
+        if (id == null) {
+            return null;
+        }
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
+                + "i.id, "
+                + "CASE WHEN d.name IS NULL THEN 'No Department' ELSE d.name END, "
+                + "i.name, i.code, i.total, "
+                + "d.id) "
+                + "FROM Item i "
+                + "LEFT JOIN i.department d "
+                + "WHERE i.id = :id AND i.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        List<?> results = itemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+        return (ItemLight) results.get(0);
     }
 
     public ItemLight getSelectedItemLight() {

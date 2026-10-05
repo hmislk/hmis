@@ -46,10 +46,8 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
-import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
 import org.primefaces.model.DefaultStreamedContent;
@@ -107,9 +105,9 @@ public class InwardSearch implements Serializable {
     @EJB
     PaymentService paymentService;
     @EJB
-    DrawerService drawerService;
-    @EJB
     private com.divudi.service.AuditService auditService;
+    @Inject
+    private NotificationController notificationController;
     @EJB
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
@@ -948,6 +946,7 @@ public class InwardSearch implements Serializable {
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
                 null, b.getId(), sessionController.getLoggedUser(),
                 "Bill", b.getId());
+        notificationController.createInwardFinalBillNotification(b, "FinalBillApproved");
 
         JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
@@ -1521,17 +1520,13 @@ public class InwardSearch implements Serializable {
         
         inwardPaymentController.paymentListener();
         
-        if (sessionController.getPaymentManagementAfterShiftStart()) {
-            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
-                return "/inward/inward_bill_payment?faces-redirect=true";
-            } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/cashier/index?faces-redirect=true";
-            }
-        } else {
-            return "/inward/inward_bill_payment?faces-redirect=true";
+        // Same unconditional shift check as Make a Deposit / Post Final Payment
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addStartShiftFirstMessageForRedirect();
+            return "/cashier/index?faces-redirect=true";
         }
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     public String navigateMakeDeposit() {
@@ -2744,16 +2739,8 @@ public class InwardSearch implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
                 ? getBill().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic()));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic()));
-        }
+        cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
         return cb;
     }
 
@@ -2784,16 +2771,8 @@ public class InwardSearch implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
                 ? getBill().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic()));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic()));
-        }
+        cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
 
         return cb;
     }
@@ -2852,16 +2831,8 @@ public class InwardSearch implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
                 ? getBill().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cancelAtomic, admissionTypeForBillNumber));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cancelAtomic, admissionTypeForBillNumber));
-        } else {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cancelAtomic));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cancelAtomic));
-        }
+        cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cancelAtomic, admissionTypeForBillNumber));
+        cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cancelAtomic, admissionTypeForBillNumber));
 
         cb.invertAndAssignValuesFromOtherBill(getBill());
         return cb;
@@ -3091,21 +3062,12 @@ public class InwardSearch implements Serializable {
             if (errorCheck()) {
                 return;
             }
-            if (paymentMethod == PaymentMethod.Cash) {
-                Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-                if (userDrawer == null) {
-                    JsfUtil.addErrorMessage("Your drawer could not be found. Please contact your administrator.");
-                    return;
-                }
-                double drawerBalance = userDrawer.getCashInHandValue() != null ? userDrawer.getCashInHandValue() : 0.0;
-                double paymentAmount = getBill().getNetTotal();
-                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-                    if (drawerBalance < paymentAmount) {
-                        JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                        return;
-                    }
-                }
-            }
+            // No drawer balance check here on purpose. Cancelling a staff payment
+            // reverses an outgoing payment, so cash moves *into* the drawer - see the
+            // saveBillCashInTransaction() call below. Requiring the drawer to already
+            // hold the bill value is the precondition for paying money out, and it
+            // blocked cancellations whenever the cashier had since handed cash over.
+            // (Issue #23926)
             CancelledBill cb = createCancelBill();
             //Copy & paste
 
@@ -3709,9 +3671,22 @@ public class InwardSearch implements Serializable {
 
     /**
      * Streams the selected (reprint) inward receipt as a raw .prn for dot-matrix
-     * printing. Always a duplicate. Heading derived from the bill type.
+     * printing, marked as a duplicate. Heading derived from the bill type.
      */
     public void streamReprintReceiptAsRawText() {
+        streamReprintRawText(true);
+    }
+
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn without the
+     * duplicate marker, for reprinting the original when the first print
+     * failed (e.g. printer breakdown).
+     */
+    public void streamReprintOriginalReceiptAsRawText() {
+        streamReprintRawText(false);
+    }
+
+    private void streamReprintRawText(boolean duplicate) {
         if (getBill() == null || getBill().getId() == null) {
             JsfUtil.addErrorMessage("Select a bill to reprint first.");
             return;
@@ -3724,24 +3699,28 @@ public class InwardSearch implements Serializable {
         int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
         boolean emitEscP = configOptionApplicationController
                 .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
 
-        String heading = "Receipt";
-        if (getBill().getBillTypeAtomic() != null) {
-            String n = getBill().getBillTypeAtomic().name();
-            if (n.contains("DEPOSIT")) {
-                heading = "Deposit Receipt";
-            } else if (n.contains("PAYMENT")) {
-                heading = "Payment Receipt";
-            }
-        }
+        String heading = com.divudi.core.util.InwardReceiptTextRenderer
+                .headingFor(getBill().getBillTypeAtomic());
 
         java.util.List<com.divudi.core.entity.Payment> multiplePayments =
                 getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP, multiplePayments);
+                duplicate, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
 
-        String fileName = "inward-reprint-"
+        String fileName = (duplicate ? "inward-reprint-" : "inward-reprint-original-")
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
                         : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
                 + ".prn";

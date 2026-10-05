@@ -15,7 +15,10 @@
         <ui:composition template="/resources/template/template_without_menu.xhtml">
             <ui:define name="content">
                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
-                    <ui:include src="/resources/ezcomp/cc_self_billing_not_available.xhtml"/>
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form> 
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}" styleClass="opdPanel">

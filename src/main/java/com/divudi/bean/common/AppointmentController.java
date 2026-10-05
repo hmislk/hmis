@@ -263,6 +263,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(reservation);
         admissionController.setBhtText("");
+        // Clear a stale "Patient Already Admitted" warning left on the session-scoped
+        // AdmissionController by an earlier abandoned attempt. (Issue #24000)
+        admissionController.cancelActiveAdmissionWarning();
         admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
 
         return "/inward/inward_admission?faces-redirect=true";

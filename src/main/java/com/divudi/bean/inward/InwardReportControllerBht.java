@@ -40,6 +40,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.InpatientPharmacySummaryService;
 import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
 import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
 import com.divudi.core.data.dto.InpatientServiceIssueDTO;
@@ -106,6 +107,8 @@ public class InwardReportControllerBht implements Serializable {
     BillFacade billFacade;
     @EJB
     BillService billService;
+    @EJB
+    InpatientPharmacySummaryService inpatientPharmacySummaryService;
     ////
     @Inject
     private SessionController sessionController;
@@ -212,6 +215,8 @@ public class InwardReportControllerBht implements Serializable {
     private Department department;
     private Patient patient;
     private List<Bill> issueBills;
+    private List<RequestIssueRow> requestIssueRows;
+    private List<Bill> requestIssueSummaryBills;
 
     public String navigateToInpatientPharmacyItemList() {
         if (patientEncounter == null) {
@@ -379,24 +384,9 @@ public class InwardReportControllerBht implements Serializable {
         pharmacyNetSummaryDtosToPatientEncounter = new ArrayList<>();
         pharmacyNetSummaryDtosToPatientEncounterNetTotal = 0.0;
         try {
-            List<BillTypeAtomic> issueTypes = new ArrayList<>();
-            issueTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            issueTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            issueTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-            issueTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-
-            List<BillTypeAtomic> returnTypes = new ArrayList<>();
-            returnTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            returnTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-            returnTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-
-            List<BillTypeAtomic> cancellationTypes = new ArrayList<>();
-            cancellationTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-            cancellationTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            cancellationTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-            cancellationTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-
-            pharmacyNetSummaryDtosToPatientEncounter = fetchPharmacyNetSummaryDtos(issueTypes, returnTypes, cancellationTypes);
+            // Same basis as the Medicine lines of the final bill; the previous query
+            // deducted every cancelled issue twice (issue #24097).
+            pharmacyNetSummaryDtosToPatientEncounter = inpatientPharmacySummaryService.fetchNetSummary(patientEncounter);
 
             for (InpatientPharmacyNetSummaryDTO dto : pharmacyNetSummaryDtosToPatientEncounter) {
                 pharmacyNetSummaryDtosToPatientEncounterNetTotal += dto.getNetValue() != null ? dto.getNetValue() : 0.0;
@@ -2130,10 +2120,7 @@ public class InwardReportControllerBht implements Serializable {
             JsfUtil.addErrorMessage("No encounter selected");
             return null;
         }
-        if (patientEncounter instanceof Admission) {
-            admissionController.setCurrent((Admission) patientEncounter);
-        }
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(patientEncounter);
     }
 
     private List<InpatientPharmacyIssueDTO> fetchPharmacyIssueDtos(List<BillTypeAtomic> billTypes) {
@@ -2172,39 +2159,6 @@ public class InwardReportControllerBht implements Serializable {
         return result != null ? result : new ArrayList<>();
     }
 
-    private List<InpatientPharmacyNetSummaryDTO> fetchPharmacyNetSummaryDtos(List<BillTypeAtomic> issueTypes,
-            List<BillTypeAtomic> returnTypes, List<BillTypeAtomic> cancellationTypes) {
-        String jpql = "SELECT new com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO("
-                + "bi.item.id, "
-                + "bi.item.name, "
-                + "SUM(0 - bi.pharmaceuticalBillItem.qty), "
-                + "SUM(bi.grossValue), "
-                + "SUM(bi.discount), "
-                + "SUM(bi.marginValue), "
-                + "SUM(bi.netValue)) "
-                + "FROM BillItem bi "
-                + "WHERE bi.bill.patientEncounter = :patientEncounter "
-                + "AND bi.retired = FALSE "
-                + "AND bi.bill.retired = FALSE "
-                + "AND ("
-                + "  (bi.bill.billTypeAtomic IN :issueTypes AND bi.bill.cancelled = FALSE) "
-                + "  OR bi.bill.billTypeAtomic IN :returnTypes "
-                + "  OR bi.bill.billTypeAtomic IN :cancellationTypes"
-                + ") "
-                + "GROUP BY bi.item.id, bi.item.name "
-                + "ORDER BY bi.item.name";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("patientEncounter", patientEncounter);
-        params.put("issueTypes", issueTypes);
-        params.put("returnTypes", returnTypes);
-        params.put("cancellationTypes", cancellationTypes);
-
-        List<InpatientPharmacyNetSummaryDTO> result = (List<InpatientPharmacyNetSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params);
-
-        return result != null ? result : new ArrayList<>();
-    }
-
     public String madeNull() {
         patientEncounter = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
@@ -2213,6 +2167,7 @@ public class InwardReportControllerBht implements Serializable {
     public String madeNullIssue() {
         patientEncounter = null;
         bill = null;
+        requestIssueRows = null;
         //department = null;
         return "/pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill?faces-redirect=true";
     }
@@ -2274,6 +2229,7 @@ public class InwardReportControllerBht implements Serializable {
         department = sessionController.getLoggedUser().getDepartment();
         patientEncounter = null;
         bill = null;
+        requestIssueRows = null;
         //department = null;
         return "/pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill?faces-redirect=true";
     }
@@ -3170,6 +3126,8 @@ public class InwardReportControllerBht implements Serializable {
 
     public void fetchIssueBill() {
         issueBills = new ArrayList<>();
+        bill = null;
+        requestIssueRows = null;
         if (getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("No Patient Encounter");
             return;
@@ -3219,7 +3177,214 @@ public class InwardReportControllerBht implements Serializable {
         return getBillFacade().findByJpql(sql, hm);
     }
 
+    /**
+     * Lines up a BHT medicine request against what was issued for it, so each
+     * requested item and the item(s) issued for it sit on the same row, in the
+     * request's own order. Issued bill items point at the requested line through
+     * referanceBillItem; return/cancellation bill items point at the issued line
+     * one hop further (the reference chains PharmacySaleBhtController
+     * #getRemainingQuantityForItem also follows). A return that was itself
+     * cancelled is ignored, since its cancellation points at the return, not at
+     * the issue. The bill summary shown above the table is built in the same
+     * pass so the two always agree. Issue #24261.
+     */
+    public void processRequestIssueRows() {
+        requestIssueRows = new ArrayList<>();
+        requestIssueSummaryBills = new ArrayList<>();
+        if (bill == null) {
+            return;
+        }
+        List<BillItem> requestedItems = billService.fetchBillItems(bill);
+
+        String issuedJpql = "select bi from BillItem bi "
+                + " where bi.bill.referenceBill=:ref "
+                + " and bi.bill.billType=:btp "
+                + " and bi.bill.retired=false "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " order by bi.bill.id, bi.id";
+        HashMap<String, Object> issuedParams = new HashMap<>();
+        issuedParams.put("ref", bill);
+        issuedParams.put("btp", BillType.PharmacyBhtPre);
+        List<BillItem> issuedItems = billItemFacade.findByJpql(issuedJpql, issuedParams);
+
+        String reverseJpql = "select bi from BillItem bi "
+                + " where bi.bill.billTypeAtomic in :btas "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.cancelled=false "
+                + " and (bi.retired is null or bi.retired=false) "
+                + " and bi.referanceBillItem.bill.referenceBill=:ref";
+        HashMap<String, Object> reverseParams = new HashMap<>();
+        reverseParams.put("ref", bill);
+        reverseParams.put("btas", Arrays.asList(
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION));
+        List<BillItem> reverseItems = billItemFacade.findByJpql(reverseJpql, reverseParams);
+
+        Map<Long, Double> returnedByIssuedId = new HashMap<>();
+        Map<Long, Double> cancelledByIssuedId = new HashMap<>();
+        for (BillItem ri : reverseItems) {
+            Long issuedId = ri.getReferanceBillItem().getId();
+            if (ri.getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                returnedByIssuedId.merge(issuedId, absQty(ri), Double::sum);
+            } else {
+                cancelledByIssuedId.merge(issuedId, absQty(ri), Double::sum);
+            }
+        }
+
+        Map<Long, List<BillItem>> issuedByRequestedId = new LinkedHashMap<>();
+        for (BillItem req : requestedItems) {
+            issuedByRequestedId.put(req.getId(), new ArrayList<>());
+        }
+        List<BillItem> unlinkedIssuedItems = new ArrayList<>();
+        for (BillItem iss : issuedItems) {
+            BillItem ref = iss.getReferanceBillItem();
+            List<BillItem> group = ref == null ? null : issuedByRequestedId.get(ref.getId());
+            if (group == null) {
+                unlinkedIssuedItems.add(iss);
+            } else {
+                group.add(iss);
+            }
+        }
+
+        int serial = 0;
+        for (BillItem req : requestedItems) {
+            serial++;
+            List<BillItem> group = issuedByRequestedId.get(req.getId());
+            if (group.isEmpty()) {
+                requestIssueRows.add(new RequestIssueRow(serial, req, absQty(req), true, null, 0.0, 0.0, 0.0));
+                continue;
+            }
+            boolean first = true;
+            for (BillItem iss : group) {
+                requestIssueRows.add(new RequestIssueRow(serial, req, absQty(req), first, iss, absQty(iss),
+                        returnedByIssuedId.getOrDefault(iss.getId(), 0.0),
+                        cancelledByIssuedId.getOrDefault(iss.getId(), 0.0)));
+                first = false;
+            }
+        }
+        for (BillItem iss : unlinkedIssuedItems) {
+            requestIssueRows.add(new RequestIssueRow(null, null, null, false, iss, absQty(iss),
+                    returnedByIssuedId.getOrDefault(iss.getId(), 0.0),
+                    cancelledByIssuedId.getOrDefault(iss.getId(), 0.0)));
+        }
+
+        // Issue bills in order, each followed by its own returns/cancellations.
+        Map<Bill, List<Bill>> reverseBillsByIssueBill = new LinkedHashMap<>();
+        for (BillItem iss : issuedItems) {
+            reverseBillsByIssueBill.putIfAbsent(iss.getBill(), new ArrayList<>());
+        }
+        for (BillItem ri : reverseItems) {
+            List<Bill> reverseBills = reverseBillsByIssueBill.get(ri.getReferanceBillItem().getBill());
+            if (reverseBills != null && !reverseBills.contains(ri.getBill())) {
+                reverseBills.add(ri.getBill());
+            }
+        }
+        for (Map.Entry<Bill, List<Bill>> e : reverseBillsByIssueBill.entrySet()) {
+            requestIssueSummaryBills.add(e.getKey());
+            requestIssueSummaryBills.addAll(e.getValue());
+        }
+    }
+
+    private double absQty(BillItem bi) {
+        if (bi.getPharmaceuticalBillItem() != null) {
+            return Math.abs(bi.getPharmaceuticalBillItem().getQty());
+        }
+        return Math.abs(bi.getQty() == null ? 0.0 : bi.getQty());
+    }
+
+    /**
+     * One line of the requested-vs-issued overview. Requested columns are only
+     * shown on the first row of a requested item; further rows for the same
+     * requested item carry additional issued lines (partial issues, several
+     * batches). A row with no requested item is an issued line that is not
+     * linked to any line of this request. Issue #24261.
+     */
+    public static class RequestIssueRow implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private final Integer serialNo;
+        private final BillItem requestedBillItem;
+        private final Double requestedQty;
+        private final boolean firstRowOfRequestedItem;
+        private final BillItem issuedBillItem;
+        private final double issuedQty;
+        private final double returnedQty;
+        private final double cancelledQty;
+
+        public RequestIssueRow(Integer serialNo, BillItem requestedBillItem, Double requestedQty,
+                boolean firstRowOfRequestedItem, BillItem issuedBillItem, double issuedQty,
+                double returnedQty, double cancelledQty) {
+            this.serialNo = serialNo;
+            this.requestedBillItem = requestedBillItem;
+            this.requestedQty = requestedQty;
+            this.firstRowOfRequestedItem = firstRowOfRequestedItem;
+            this.issuedBillItem = issuedBillItem;
+            this.issuedQty = issuedQty;
+            this.returnedQty = returnedQty;
+            this.cancelledQty = cancelledQty;
+        }
+
+        public Integer getSerialNo() {
+            return serialNo;
+        }
+
+        public BillItem getRequestedBillItem() {
+            return requestedBillItem;
+        }
+
+        public Double getRequestedQty() {
+            return requestedQty;
+        }
+
+        public boolean isFirstRowOfRequestedItem() {
+            return firstRowOfRequestedItem;
+        }
+
+        public BillItem getIssuedBillItem() {
+            return issuedBillItem;
+        }
+
+        public double getIssuedQty() {
+            return issuedQty;
+        }
+
+        public double getReturnedQty() {
+            return returnedQty;
+        }
+
+        public double getCancelledQty() {
+            return cancelledQty;
+        }
+
+        public double getNetIssuedQty() {
+            return issuedQty - returnedQty - cancelledQty;
+        }
+
+        public boolean isNotIssued() {
+            return requestedBillItem != null && issuedBillItem == null;
+        }
+
+        public boolean isNotInRequest() {
+            return requestedBillItem == null;
+        }
+
+        public boolean isSubstituted() {
+            return requestedBillItem != null && issuedBillItem != null
+                    && requestedBillItem.getItem() != null && issuedBillItem.getItem() != null
+                    && !requestedBillItem.getItem().equals(issuedBillItem.getItem());
+        }
+    }
+
     ////////////GETTERS AND SETTERS
+    public List<RequestIssueRow> getRequestIssueRows() {
+        return requestIssueRows;
+    }
+
+    public List<Bill> getRequestIssueSummaryBills() {
+        return requestIssueSummaryBills;
+    }
+
     public List<String1Value2> getTimedServices() {
         return timedServices;
     }

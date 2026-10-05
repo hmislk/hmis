@@ -233,6 +233,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
         getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
+        getReturnBill().setDiscount(0 - Math.abs(getReturnBill().getDiscount()));
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -267,6 +268,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setTotal(0 - Math.abs(getReturnBill().getTotal()));
         getReturnBill().setNetTotal(0 - Math.abs(getReturnBill().getNetTotal()));
         getReturnBill().setMargin(0 - Math.abs(getReturnBill().getMargin()));
+        getReturnBill().setDiscount(0 - Math.abs(getReturnBill().getDiscount()));
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
@@ -468,7 +470,12 @@ public class BhtIssueReturnController implements Serializable {
 //        updateMargin(getReturnBill().getBillItems(), getReturnBill(), getReturnBill().getFromDepartment(), getBill().getPatientEncounter().getPaymentMethod());
         getBillFacade().edit(getReturnBill());
 
-        getBill().getReturnBhtIssueBills().add(getReturnBill());
+        // The lazy returnBhtIssueBills list may already hold the just-persisted return
+        // (it loads from the DB on first access); adding it again duplicated the row
+        // in the cached bill and on the BHT issue search page (issue #24109).
+        if (!getBill().getReturnBhtIssueBills().contains(getReturnBill())) {
+            getBill().getReturnBhtIssueBills().add(getReturnBill());
+        }
         getBillFacade().edit(getBill());
 
         /// setOnlyReturnValue();
@@ -575,6 +582,9 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setTotal(grossTotal);
         getReturnBill().setMargin(marginTotal);
         getReturnBill().setNetTotal(netTotal);
+        // Record the reversed inward discount on the return bill too, not only
+        // on its lines, so bill-level discount totals net off correctly (#24029).
+        getReturnBill().setDiscount(discTotal);
         discountTotal = discTotal;
 
         //  return grossTotal;

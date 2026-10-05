@@ -441,15 +441,66 @@
                                 </div>
                             </p:panel>
 
-                            <p:panel id="pBillDetails" class="m-1">
+                            <p:panel id="pBillDetails" class="m-1"
+                                     rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                 <f:facet name="header">
                                     <h:outputText styleClass="fas fa-file-invoice" />
                                     <h:outputLabel class="mx-4" value="Bill Details"/>
                                 </f:facet>
-                                <p:panelGrid columns="2" columnClasses="numberCol, textCol">
-                                    <h:outputLabel value="Total"/>
-                                    <h:outputLabel value="#{surgeryBillController.surgeryBill.total}" class="m-2"/>
-                                </p:panelGrid>
+                                <table class="table table-sm mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td>Services &amp; Investigations</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{surgeryChargeSummaryController.serviceCharges}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Timed Services</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{surgeryChargeSummaryController.timedServiceCharges}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Professional Fees</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{surgeryChargeSummaryController.professionalFees}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Medicines &amp; Store Issues</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{surgeryChargeSummaryController.medicineCharges}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Theatre Charges (estimate)</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{surgeryChargeSummaryController.theatreCharges}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr class="fw-bold">
+                                            <td>Total</td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{surgeryChargeSummaryController.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <h:outputText styleClass="text-muted small"
+                                              value="Theatre charges are estimated up to now; the interim/final bill applies the final calculation."/>
                             </p:panel>
                         </h:panelGroup>
 
@@ -480,13 +531,14 @@
                                             <p:column headerText="Date">
                                                 <h:outputLabel value="#{c.billFee.createdAt}">
                                                     <f:convertDateTime timeZone="Asia/Colombo"
-                                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                                       pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputLabel>
                                                 <br/>
                                                 <h:panelGroup rendered="#{c.billFee.retired}">
                                                     <h:outputLabel style="color: red;" value="Deleted at "/>
                                                     <h:outputLabel style="color: red;" value="#{c.billFee.retiredAt}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </h:panelGroup>
                                             </p:column>
@@ -526,13 +578,14 @@
                                             <p:column headerText="Date">
                                                 <h:outputLabel value="#{ti.billFee.createdAt}">
                                                     <f:convertDateTime timeZone="Asia/Colombo"
-                                                                       pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                                       pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputLabel>
                                                 <br/>
                                                 <h:panelGroup rendered="#{ti.billFee.retired}">
                                                     <h:outputLabel style="color: red;" value="Deleted at "/>
                                                     <h:outputLabel style="color: red;" value="#{ti.billFee.retiredAt}">
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </h:panelGroup>
                                             </p:column>
@@ -547,6 +600,59 @@
                                                 <p:commandButton ajax="false" value="Remove"
                                                                  action="#{surgeryBillController.removeTimeService(ti.billFee.patientItem)}"
                                                                  disabled="#{ti.billFee.patientItem.retired eq true or ti.billFee.bill.forwardReferenceBill.completed eq true}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+
+                                    <p:tab title="Theatre Charges">
+                                        <p:dataTable value="#{surgeryChargeSummaryController.theatreStays}" var="ts"
+                                                     emptyMessage="No theatre stay recorded for this surgery.">
+                                            <p:column headerText="Theatre">
+                                                #{ts.roomName}
+                                            </p:column>
+                                            <p:column headerText="From">
+                                                <h:outputLabel value="#{ts.from}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="To">
+                                                <h:outputLabel value="#{ts.to}" rendered="#{not ts.ongoing}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo"
+                                                                       pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputLabel>
+                                                <p:tag value="In theatre" severity="warning" rendered="#{ts.ongoing}"/>
+                                            </p:column>
+                                            <p:column headerText="Time-based Charge"
+                                                      rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <h:outputText value="#{ts.blocks}">
+                                                    <f:convertNumber pattern="#,##0.##"/>
+                                                </h:outputText>
+                                                <h:outputText value=" × "/>
+                                                <h:outputText value="#{ts.ratePerBlock}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <h:outputText value=" (#{ts.blockUnit}) = " styleClass="text-muted"/>
+                                                <h:outputText value="#{ts.timeBasedCharge}" styleClass="fw-bold">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Fixed / Attached Charges"
+                                                      rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <ui:repeat value="#{ts.items}" var="it">
+                                                    <div>
+                                                        <h:outputText value="#{it.name}: "/>
+                                                        <h:outputText value="#{it.value}" styleClass="fw-bold">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </div>
+                                                </ui:repeat>
+                                            </p:column>
+                                            <p:column headerText="Total" styleClass="text-end"
+                                                      rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <h:outputText value="#{ts.total}" styleClass="fw-bold">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>

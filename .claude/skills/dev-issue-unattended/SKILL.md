@@ -388,8 +388,7 @@ earlier, additional layer, not a replacement.
 
 ## 9. Record learnings
 
-Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
-`developer_docs/testing/playwright-e2e-workflow.md` if any surfaced.
+Same as `dev-issue` step 9.
 
 ## 10. Publish evidence and update the wiki
 
