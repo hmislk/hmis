@@ -168,13 +168,7 @@ public class InwardRefundController implements Serializable {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
-        PatientEncounter pe = getCurrent().getPatientEncounter();
-        bhtSummeryController.setPatientEncounter(pe);
-        if (pe instanceof Admission) {
-            admissionController.setCurrent((Admission) pe);
-        }
-        admissionController.refreshDashboardFinancials();
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(getCurrent().getPatientEncounter());
     }
 
     @Inject

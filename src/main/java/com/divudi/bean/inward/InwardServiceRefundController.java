@@ -236,11 +236,7 @@ public class InwardServiceRefundController implements Serializable {
 
     public String navigateBackToInpatientProfile() {
         Bill bill = getBill();
-        if (bill != null && bill.getPatientEncounter() instanceof Admission) {
-            admissionController.setCurrent((Admission) bill.getPatientEncounter());
-        }
-        admissionController.refreshDashboardFinancials();
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(bill == null ? null : bill.getPatientEncounter());
     }
 
     public String navigateToInwardServiceSearch() {

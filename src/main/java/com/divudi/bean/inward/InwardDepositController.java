@@ -214,8 +214,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     }
 
     public String navigateToInpationDashbord() {
-        admissionController.refreshDashboardFinancials();
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                getCurrent() == null ? null : getCurrent().getPatientEncounter());
     }
 
     public String navigateToPatientRefund() {

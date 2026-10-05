@@ -296,8 +296,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     // </editor-fold>
 
     public String navigateToInpationDashbord() {
-        admissionController.refreshDashboardFinancials();
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                current == null ? null : current.getPatientEncounter());
     }
 
     private boolean errorCheck() {

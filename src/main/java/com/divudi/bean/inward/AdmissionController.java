@@ -1530,6 +1530,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * set here rather than only on BhtSummeryController.
      */
     public String navigateToInpatientDashboard(PatientEncounter pe) {
+        if (pe == null) {
+            pe = current;
+        }
         if (pe instanceof Admission) {
             current = (Admission) pe;
             refreshDashboardFinancials();

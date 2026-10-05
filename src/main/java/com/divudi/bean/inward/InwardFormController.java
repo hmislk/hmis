@@ -546,8 +546,7 @@ public class InwardFormController implements Serializable {
     }
 
     public String navigateBackToAdmissionProfile() {
-        admissionController.refreshDashboardFinancials();
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(patientEncounter);
     }
 
     public PatientEncounter getPatientEncounter() {
