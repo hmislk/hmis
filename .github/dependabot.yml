@@ -21,3 +21,9 @@ updates:
       jackson:
         patterns:
           - "com.fasterxml.jackson*"
+      # Groups apply to version updates only by default; without this, each Jackson
+      # artifact gets its own security-update PR with an identical pom.xml diff
+      jackson-security:
+        applies-to: security-updates
+        patterns:
+          - "com.fasterxml.jackson*"
