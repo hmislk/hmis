@@ -2123,6 +2123,7 @@ public class InwardReportControllerBht implements Serializable {
         if (patientEncounter instanceof Admission) {
             admissionController.setCurrent((Admission) patientEncounter);
         }
+        admissionController.refreshDashboardFinancials();
         return "/inward/admission_profile?faces-redirect=true";
     }
 

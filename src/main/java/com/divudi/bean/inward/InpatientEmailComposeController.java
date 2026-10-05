@@ -62,6 +62,8 @@ public class InpatientEmailComposeController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private AdmissionController admissionController;
+    @Inject
     private InwardDocumentUploadController inwardDocumentUploadController;
     @Inject
     private InpatientClinicalDataController inpatientClinicalDataController;
@@ -399,6 +401,7 @@ public class InpatientEmailComposeController implements Serializable {
                 email.setSentAt(new Date());
                 emailFacade.edit(email);
                 JsfUtil.addSuccessMessage("Email Sent Successfully");
+                admissionController.refreshDashboardFinancials();
                 return "/inward/admission_profile?faces-redirect=true";
             } else {
                 emailFacade.edit(email);

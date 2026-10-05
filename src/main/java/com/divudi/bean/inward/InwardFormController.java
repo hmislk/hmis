@@ -57,6 +57,8 @@ public class InwardFormController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private AdmissionController admissionController;
 
     private PatientEncounter patientEncounter;
     private List<PatientFormEntry> formEntries;
@@ -544,6 +546,7 @@ public class InwardFormController implements Serializable {
     }
 
     public String navigateBackToAdmissionProfile() {
+        admissionController.refreshDashboardFinancials();
         return "/inward/admission_profile?faces-redirect=true";
     }
 

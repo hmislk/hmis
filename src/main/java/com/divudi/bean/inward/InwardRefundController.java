@@ -173,6 +173,7 @@ public class InwardRefundController implements Serializable {
         if (pe instanceof Admission) {
             admissionController.setCurrent((Admission) pe);
         }
+        admissionController.refreshDashboardFinancials();
         return "/inward/admission_profile?faces-redirect=true";
     }
 
