@@ -11,6 +11,7 @@
         <cc:attribute name="layout" type="com.divudi.core.data.PvcCardLayout" required="true"/>
         <cc:attribute name="backgroundExternalUrl" type="java.lang.String"/>
         <cc:attribute name="side" type="java.lang.String" required="true"/>
+        <cc:attribute name="patient" type="com.divudi.core.entity.Patient" required="true"/>
     </cc:interface>
 
     <cc:implementation>
@@ -44,34 +45,39 @@
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['name'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['name'].leftMm}mm; top:#{cc.attrs.layout.slots['name'].topMm}mm; font-size:#{cc.attrs.layout.slots['name'].fontSizePt}pt; color:#{cc.attrs.layout.slots['name'].fontColor};">
-                <h:outputText value="#{patientController.current.person.nameWithTitle}"/>
+                <h:outputText value="#{cc.attrs.patient.person.nameWithTitle}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['dob'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['dob'].leftMm}mm; top:#{cc.attrs.layout.slots['dob'].topMm}mm; font-size:#{cc.attrs.layout.slots['dob'].fontSizePt}pt; color:#{cc.attrs.layout.slots['dob'].fontColor};">
-                <h:outputText value="#{patientController.current.person.dob}">
+                <h:outputText value="#{cc.attrs.patient.person.dob}">
                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['phone'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['phone'].leftMm}mm; top:#{cc.attrs.layout.slots['phone'].topMm}mm; font-size:#{cc.attrs.layout.slots['phone'].fontSizePt}pt; color:#{cc.attrs.layout.slots['phone'].fontColor};">
-                <h:outputText value="#{patientController.current.person.phone}"/>
+                <h:outputText value="#{cc.attrs.patient.person.phone}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['gender'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['gender'].leftMm}mm; top:#{cc.attrs.layout.slots['gender'].topMm}mm; font-size:#{cc.attrs.layout.slots['gender'].fontSizePt}pt; color:#{cc.attrs.layout.slots['gender'].fontColor};">
-                <h:outputText value="#{patientController.current.person.sex}"/>
+                <h:outputText value="#{cc.attrs.patient.person.sex}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['address'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['address'].leftMm}mm; top:#{cc.attrs.layout.slots['address'].topMm}mm; font-size:#{cc.attrs.layout.slots['address'].fontSizePt}pt; color:#{cc.attrs.layout.slots['address'].fontColor};">
-                <h:outputText value="#{patientController.current.person.address}"/>
+                <h:outputText value="#{cc.attrs.patient.person.address}"/>
             </h:panelGroup>
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['barcode'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['barcode'].leftMm}mm; top:#{cc.attrs.layout.slots['barcode'].topMm}mm;">
-                <p:barcode value="#{patientController.current.phn}"
+                <!-- inline SVG stretched to the configured width x height; p:barcode only for types it can't draw (e.g. qr) -->
+                <h:outputText escape="false"
+                              value="#{pvcCardLayoutController.barcodeSvg(cc.attrs.layout.slots['barcode'], cc.attrs.patient.phn)}"
+                              rendered="#{pvcCardLayoutController.barcodeSvg(cc.attrs.layout.slots['barcode'], cc.attrs.patient.phn) ne null}"/>
+                <p:barcode rendered="#{pvcCardLayoutController.barcodeSvg(cc.attrs.layout.slots['barcode'], cc.attrs.patient.phn) eq null}"
+                           value="#{cc.attrs.patient.phn}"
                            type="#{cc.attrs.layout.slots['barcode'].type}"
                            format="svg" hrp="none" cache="false"
                            width="#{cc.attrs.layout.slots['barcode'].widthMm * 3.78}"
@@ -80,7 +86,7 @@
 
             <h:panelGroup layout="block" rendered="#{cc.attrs.layout.slots['phn'].visible}"
                           style="position:absolute; left:#{cc.attrs.layout.slots['phn'].leftMm}mm; top:#{cc.attrs.layout.slots['phn'].topMm}mm; font-size:#{cc.attrs.layout.slots['phn'].fontSizePt}pt; color:#{cc.attrs.layout.slots['phn'].fontColor};">
-                <h:outputText value="#{patientController.current.phn}"/>
+                <h:outputText value="#{cc.attrs.patient.phn}"/>
             </h:panelGroup>
 
         </h:panelGroup>
