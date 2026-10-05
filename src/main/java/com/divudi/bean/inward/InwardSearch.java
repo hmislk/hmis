@@ -3671,9 +3671,22 @@ public class InwardSearch implements Serializable {
 
     /**
      * Streams the selected (reprint) inward receipt as a raw .prn for dot-matrix
-     * printing. Always a duplicate. Heading derived from the bill type.
+     * printing, marked as a duplicate. Heading derived from the bill type.
      */
     public void streamReprintReceiptAsRawText() {
+        streamReprintRawText(true);
+    }
+
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn without the
+     * duplicate marker, for reprinting the original when the first print
+     * failed (e.g. printer breakdown).
+     */
+    public void streamReprintOriginalReceiptAsRawText() {
+        streamReprintRawText(false);
+    }
+
+    private void streamReprintRawText(boolean duplicate) {
         if (getBill() == null || getBill().getId() == null) {
             JsfUtil.addErrorMessage("Select a bill to reprint first.");
             return;
@@ -3704,10 +3717,10 @@ public class InwardSearch implements Serializable {
                 getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP, multiplePayments,
+                duplicate, preprinted, topMargin, emitEscP, multiplePayments,
                 showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
 
-        String fileName = "inward-reprint-"
+        String fileName = (duplicate ? "inward-reprint-" : "inward-reprint-original-")
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
                         : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
                 + ".prn";
