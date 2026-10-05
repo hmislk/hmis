@@ -23,6 +23,20 @@
                             <h:commandButton value="Cancel" action="#{inwardSearch.cancelBillPayment()}"
                                              onclick="return confirm('Are you sure you want to cancel this payment bill? This action cannot be undone.');" >
                             </h:commandButton>
+                            <p:commandButton
+                                id="btnInpatientDashboard"
+                                ajax="false"
+                                immediate="true"
+                                value="Inpatient Dashboard"
+                                icon="fas fa-id-card"
+                                styleClass="ui-button-info ui-button-outlined"
+                                title="Open the Inpatient Dashboard for this admission"
+                                rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                <f:setPropertyActionListener
+                                    value="#{inwardSearch.bill.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
                             <div class="row ">
                                 <div class="col-md-2"></div>
                                 <div class="col-md-8">

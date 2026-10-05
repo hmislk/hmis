@@ -2120,10 +2120,7 @@ public class InwardReportControllerBht implements Serializable {
             JsfUtil.addErrorMessage("No encounter selected");
             return null;
         }
-        if (patientEncounter instanceof Admission) {
-            admissionController.setCurrent((Admission) patientEncounter);
-        }
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(patientEncounter);
     }
 
     private List<InpatientPharmacyIssueDTO> fetchPharmacyIssueDtos(List<BillTypeAtomic> billTypes) {
