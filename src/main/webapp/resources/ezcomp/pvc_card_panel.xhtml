@@ -15,10 +15,18 @@
     </cc:interface>
 
     <cc:implementation>
+        <!-- printable area: the page is card-sized and the printer leaves marginMm on every side,
+             so this box is the card minus the margins; anything under the margin is clipped -->
         <h:panelGroup layout="block"
-                      style="position:relative; overflow:hidden; width:#{cc.attrs.layout.widthMm}mm; height:#{cc.attrs.layout.heightMm}mm; page:#{cc.attrs.side};">
+                      style="position:relative; overflow:hidden; width:#{cc.attrs.layout.widthMm - 2 * cc.attrs.layout.marginMm}mm; height:#{cc.attrs.layout.heightMm - 2 * cc.attrs.layout.marginMm}mm; page:#{cc.attrs.side};">
 
-            <h:outputText escape="false" value="&lt;style&gt;@page #{cc.attrs.side} { size: #{cc.attrs.layout.widthMm}mm #{cc.attrs.layout.heightMm}mm; margin: #{cc.attrs.layout.marginMm}mm; }&lt;/style&gt;"/>
+            <!-- body margin/padding would push the card past the page and spill onto a second, default-size page -->
+            <h:outputText escape="false" value="&lt;style&gt;@page #{cc.attrs.side} { size: #{cc.attrs.layout.widthMm}mm #{cc.attrs.layout.heightMm}mm; margin: #{cc.attrs.layout.marginMm}mm; } @media print { html, body { margin: 0 !important; padding: 0 !important; min-height: 0 !important; height: auto !important; } }&lt;/style&gt;"/>
+
+            <!-- full card, shifted back by the margin so slot positions and the background stay
+                 measured from the physical card edge -->
+            <h:panelGroup layout="block"
+                          style="position:absolute; left:-#{cc.attrs.layout.marginMm}mm; top:-#{cc.attrs.layout.marginMm}mm; width:#{cc.attrs.layout.widthMm}mm; height:#{cc.attrs.layout.heightMm}mm;">
 
             <h:panelGroup layout="block" rendered="#{not empty cc.attrs.backgroundExternalUrl}"
                           style="position:absolute; top:0; left:0; width:100%; height:100%;">
@@ -89,6 +97,7 @@
                 <h:outputText value="#{cc.attrs.patient.phn}"/>
             </h:panelGroup>
 
+            </h:panelGroup>
         </h:panelGroup>
     </cc:implementation>
 </html>
