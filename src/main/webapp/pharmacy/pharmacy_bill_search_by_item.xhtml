@@ -55,7 +55,7 @@
                                     var="vt"
                                     itemLabel="#{vt.name}"
                                     itemValue="#{vt}"
-                                    placeholder="Type at least 3 letters">
+                                    placeholder="Type 3 letters, then pick the item from the list">
                                     <p:column headerText="Item">
                                         <h:outputText value="#{vt.name}"/>
                                     </p:column>
@@ -79,6 +79,8 @@
                                 </p:commandButton>
                             </div>
                         </div>
+
+                        <p:messages id="searchMessages" closable="true" showDetail="false"/>
 
                         <se:bill_search_results id="results"/>
 

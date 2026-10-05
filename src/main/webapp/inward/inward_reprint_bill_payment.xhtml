@@ -54,8 +54,15 @@
                                                      class="ui-button-info" action="#" >
                                         <p:printer target="gpBillPreviewDmx" ></p:printer>
                                     </p:commandButton>
-                                    <p:commandButton value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                    <p:commandButton id="btnPrintOriginalRawText"
+                                                     value="Print Original (Raw Text)" ajax="false" icon="fa fa-file-lines"
                                                      class="ui-button-help"
+                                                     title="Reprint the original receipt on the dot-matrix printer (use when the first print failed)"
+                                                     action="#{inwardSearch.streamReprintOriginalReceiptAsRawText}" />
+                                    <p:commandButton id="btnPrintDuplicateRawText"
+                                                     value="Print Duplicate (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                                     class="ui-button-help"
+                                                     title="Print a duplicate receipt on the dot-matrix printer"
                                                      action="#{inwardSearch.streamReprintReceiptAsRawText}" />
 
                                     <p:commandButton
@@ -76,6 +83,15 @@
                                         class="ui-button-warning"
                                         action="#{inwardSearch.markAsUnChecked()}"
                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        id="btnBackToPayments"
+                                        ajax="false"
+                                        value="Back to Payments"
+                                        icon="fas fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="/payments/pay_index?faces-redirect=true">
                                     </p:commandButton>
 
                                     <p:commandButton

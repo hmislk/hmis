@@ -8,7 +8,7 @@
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill/cc_bill">
     <h:head>
-        <title>Collecting Centre Self Billing - Bill Reprint</title>
+        <title>Collecting Centre Self Billing - Original Bill Print</title>
     </h:head>
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
@@ -25,47 +25,21 @@
                     <div class="cc-bill-page">
                         <h:form id="form">
                             <ez:cc_self_billing_header
-                                pageTitle="Bill Reprint"
+                                pageTitle="Original Bill Print"
                                 highlight="#{collectingCentreSelfSearchController.viewingBill.deptId}"
                                 pageIcon="fa-solid fa-print"
-                                backAction="#{collectingCentreSelfSearchController.navigateBackToSearchBills}"
-                                backLabel="Back to Search"/>
+                                backAction="#{collectingCentreSelfSearchController.navigateBackToReprintBill}"
+                                backLabel="Back to Bill"/>
 
-                            <h:panelGroup layout="block" styleClass="alert alert-warning" rendered="#{collectingCentreSelfSearchController.viewingBill eq null}">
+                            <h:panelGroup layout="block" styleClass="alert alert-danger" rendered="#{not webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}">
+                                <h:outputText value="You are not authorized to print the original bill."/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="alert alert-warning" rendered="#{collectingCentreSelfSearchController.viewingBill eq null and webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}">
                                 <h:outputText value="No bill selected. Go back to Search Bills and pick a bill."/>
                             </h:panelGroup>
 
-                            <h:panelGroup layout="block" styleClass="d-flex justify-content-end mb-3 mx-2" rendered="#{collectingCentreSelfSearchController.viewingBill ne null}">
-                                <p:commandButton
-                                    value="Print Original Bill"
-                                    class="ui-button-info m-1"
-                                    icon="fa fa-print"
-                                    action="#{collectingCentreSelfSearchController.navigateToOriginalBillPrint()}"
-                                    rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}"
-                                    ajax="false"/>
-                                <p:commandButton
-                                    value="To Cancel"
-                                    class="ui-button-danger m-1"
-                                    icon="fa fa-times"
-                                    action="#{collectingCentreSelfSearchController.navigateToCancelBill()}"
-                                    disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or collectingCentreSelfSearchController.viewingBill.refunded}"
-                                    ajax="false"/>
-                                <p:commandButton
-                                    value="To Refund"
-                                    class="ui-button-warning m-1"
-                                    icon="fa fa-money-bill-wave"
-                                    action="#{collectingCentreSelfSearchController.navigateToRefundBill()}"
-                                    disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or not billReturnController.checkCanReturnBill(collectingCentreSelfSearchController.viewingBill)}"
-                                    ajax="false"/>
-                                <p:commandButton
-                                    value="To Sample Management"
-                                    class="ui-button-info m-1"
-                                    icon="fas fa-flask"
-                                    action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(collectingCentreSelfSearchController.viewingBill)}"
-                                    ajax="false"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup layout="block" styleClass="row" rendered="#{collectingCentreSelfSearchController.viewingBill ne null}">
+                            <h:panelGroup layout="block" styleClass="row" rendered="#{collectingCentreSelfSearchController.viewingBill ne null and webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}">
                                 <div class="col-md-6">
                                     <p:panel>
                                         <f:facet name="header">
@@ -82,7 +56,7 @@
 
                                         <h:panelGroup id="centerBillPreview">
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Center(CC) : Size is FiveFiveCustom1 paper',true)}">
-                                                <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="true"/>
+                                                <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="false"/>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </p:panel>
@@ -104,7 +78,7 @@
 
                                         <h:panelGroup id="patientBillPreview">
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Patient : Size is FiveFiveCustom1 paper',true)}">
-                                                <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="true"/>
+                                                <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="false"/>
                                             </h:panelGroup>
                                         </h:panelGroup>
                                     </p:panel>

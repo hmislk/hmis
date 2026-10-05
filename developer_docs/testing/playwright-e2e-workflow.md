@@ -278,6 +278,13 @@ serializes its old internal date, always confirm the intended dates in the
 **result** too (e.g. report rows fall inside the requested window, or the
 server-side query used the right range) before trusting the run.
 
+**Widget API alternative ✅** (verified on `inward_search_deposit.xhtml`, issue
+#23764): calling the PrimeFaces widget's own `setDate()` updates its internal
+date, so the submit uses it. Find the widget by client-id suffix when there is
+no `widgetVar`:
+`Object.values(PrimeFaces.widgets).find(w => w.id && w.id.endsWith('fromDate')).setDate(new Date(2026, 8, 1))`.
+Still confirm the dates in the result rows.
+
 ### Always add `widgetVar`
 
 Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`

@@ -32,14 +32,23 @@
                         overflow: visible;
                     }
 
+                    /* Width is set per render via tableStyle (fixed cols + 328px per category)
+                       so fixed layout gives every metric column the same width as its header. */
                     .room-occupancy-table table {
                         table-layout: fixed;
-                        min-width: max-content;
                     }
 
                     .room-occupancy-table th,
                     .room-occupancy-table td {
                         border-color: #e4e9f1 !important;
+                    }
+
+                    .room-occupancy-table th {
+                        white-space: normal;
+                        word-wrap: break-word;
+                    }
+
+                    .room-occupancy-table td {
                         white-space: nowrap;
                     }
 
@@ -87,7 +96,7 @@
                     .room-occupancy-table .metric-col {
                         width: 82px;
                         min-width: 82px;
-                        text-align: justify !important;
+                        text-align: right !important;
                     }
 
                     .room-occupancy-table .category-header {
@@ -116,7 +125,15 @@
                     .room-occupancy-table .sticky-col {
                         position: sticky;
                         z-index: 13;
-                        background: inherit;
+                        background: #ffffff;
+                    }
+
+                    .room-occupancy-table th.sticky-col {
+                        background: #f7f9fc !important;
+                    }
+
+                    .room-occupancy-table tfoot td.sticky-col {
+                        background: #eef2f7 !important;
                     }
 
                     .room-occupancy-table th.sticky-col {
@@ -294,6 +311,7 @@
                                          currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                          rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                          styleClass="table-sm room-occupancy-table"
+                                         tableStyle="width: #{272 + 328 * inwardReportController.allRoomCategories.size()}px;"
                                          rowStyleClass="#{row.grandTotal ? 'font-weight-bold' : ''}">
 
                             <!-- ═══════════════════════════════════════════════════
@@ -399,34 +417,34 @@
                             ═══════════════════════════════════════════════════ -->
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column colspan="3" styleClass="sticky-col sticky-year">
+                                    <p:column colspan="3" styleClass="text-col sticky-col sticky-year border-1">
                                         <f:facet name="footer"><h:outputText value="Grand Total"/></f:facet>
                                     </p:column>
 
                                     <!-- Dynamic category totals -->
                                     <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
-                                        <p:column>
+                                        <p:column styleClass="metric-col border-1">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfRooms}">
                                                     <f:convertNumber pattern="#,##0"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
-                                        <p:column>
+                                        <p:column styleClass="metric-col border-1">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfDays}">
                                                     <f:convertNumber pattern="#,##0"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
-                                        <p:column>
+                                        <p:column styleClass="metric-col border-1">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).ratio}">
                                                     <f:convertNumber pattern="0.00"/>
                                                 </h:outputText>
                                             </f:facet>
                                         </p:column>
-                                        <p:column>
+                                        <p:column styleClass="metric-col border-1">
                                             <f:facet name="footer">
                                                 <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).avg}">
                                                     <f:convertNumber pattern="0.00"/>
