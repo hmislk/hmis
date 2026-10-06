@@ -363,8 +363,11 @@
                                             <i class="fa fa-receipt me-1"/> Last Processing Summary
                                         </span>
                                         <span class="d-inline-flex align-items-center gap-1">
-                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null}">
-                                                <p:tag value="Snapshot - Not Live" icon="fa fa-clock-rotate-left" severity="warning" class="small"/>
+                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null and not admissionController.current.paymentFinalized}">
+                                                <p:tag value="Updated on Each Bill" icon="fa fa-rotate" severity="success" class="small"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null and admissionController.current.paymentFinalized}">
+                                                <p:tag value="Not Updated - Payment Finalized" icon="fa fa-lock" severity="warning" class="small"/>
                                             </h:panelGroup>
                                             <p:tag value="Developer" icon="fa fa-code" severity="info" class="small"/>
                                         </span>
@@ -372,11 +375,14 @@
 
                                     <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
                                         <div class="d-flex align-items-center py-2 px-3 mb-2 rounded shadow-sm"
-                                             role="alert"
-                                             style="border-left:8px solid #dc3545; background-color:#fdecea; color:#842029;">
-                                            <i class="fa fa-triangle-exclamation fa-lg me-2 text-danger"/>
+                                             role="status"
+                                             style="border-left:8px solid #0d6efd; background-color:#e7f1ff; color:#084298;">
+                                            <i class="fa fa-circle-info fa-lg me-2"/>
                                             <span class="fw-semibold">
-                                                Totals are <span class="fw-bold text-danger text-decoration-underline">NOT current</span> &#8212; snapshot only. Re-process for live values.
+                                                <h:outputText rendered="#{not admissionController.current.paymentFinalized}"
+                                                              value="Totals are updated whenever a bill is added. Room charges keep accruing until the next update."/>
+                                                <h:outputText rendered="#{admissionController.current.paymentFinalized}"
+                                                              value="Payment is finalized, so bills added from now on (such as post-final payments) do not update these totals."/>
                                             </span>
                                         </div>
                                     </h:panelGroup>
