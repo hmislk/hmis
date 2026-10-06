@@ -376,51 +376,107 @@
                                     rowIndexVar="i"
                                     value="#{patientInvestigationController.patientReports}"
                                     var="dpr"
+                                    rowKey="#{dpr.id}"
                                     paginator="true"
                                     rows="15"
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="15,25,50,100"
-                                    emptyMessage="No reports found for the selected criteria">
+                                    rowsPerPageTemplate="15,50,100"
+                                    emptyMessage="No reports found for the selected criteria"
+                                    style="table-layout: fixed; width: 100%;">
 
-                                    <p:column headerText="No" style="width: 3em; padding: 8px;">
+                                    <p:column headerText="#" style="width: 2.5em; vertical-align: top;">
                                         <h:outputText value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill" style="width: 12em; padding: 8px;">
-                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.deptId}"/>
+
+                                    <p:column headerText="Bill Number" style="width: 13em; vertical-align: top;">
+                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.deptId}" class="text-primary"/>
                                         <br/>
-                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.createdAt}" class="text-secondary">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Patient" style="padding: 8px;">
+
+                                    <p:column headerText="Patient" style="vertical-align: top;">
+                                        <i class="fas fa-user text-primary" style="width: 27px;"></i>
                                         <h:outputText value="#{dpr.patientInvestigation.billItem.bill.patient.person.nameWithTitle}"/>
                                         <br/>
-                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.patient.person.ageAsString} / #{dpr.patientInvestigation.billItem.bill.patient.person.sex.label}" class="text-secondary"/>
-                                    </p:column>
-                                    <p:column headerText="Investigation" style="padding: 8px;">
-                                        <h:outputText value="#{dpr.patientInvestigation.investigation.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Status" style="width: 12em; padding: 8px;" class="text-center">
-                                        <p:badge rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}" value="Bill Cancelled" severity="danger"/>
-                                        <h:panelGroup rendered="#{not dpr.patientInvestigation.billItem.bill.cancelled}">
-                                            <p:badge rendered="#{dpr.approved}" value="Approved" severity="success"/>
-                                            <p:badge rendered="#{not dpr.approved}" value="Pending" severity="warning"/>
+                                        <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i>
+                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.patient.person.ageAsString}"/>
+                                        <h:outputText value="/" class="text-center d-inline-block" style="width: 30px;"/>
+                                        <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i>
+                                        <h:outputText value="#{dpr.patientInvestigation.billItem.bill.patient.person.sex.label}"/>
+                                        <h:panelGroup rendered="#{not empty dpr.patientInvestigation.billItem.bill.patient.person.mobile}">
+                                            <br/>
+                                            <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i>
+                                            <h:outputText value="#{dpr.patientInvestigation.billItem.bill.patient.person.mobile}"/>
                                         </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Approved At" style="width: 11em; padding: 8px;">
-                                        <h:outputText value="#{dpr.approveAt}" rendered="#{dpr.approved}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                        </h:outputText>
+
+                                    <p:column headerText="Investigation" style="width: 22em; vertical-align: top;">
+                                        <i class="fas fa-vial text-danger" style="width: 27px;"></i>
+                                        <h:outputText value="#{dpr.patientInvestigation.investigation.name}"/>
+                                        <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.priority ne null}">
+                                            <div class="card p-1 mt-2"
+                                                 style="font-weight: 700; background-color: #{dpr.patientInvestigation.billItem.priority.priorityColor}; text-align: center;"
+                                                 title="#{dpr.patientInvestigation.billItem.priority.description}">
+                                                #{dpr.patientInvestigation.billItem.priority.displayName}
+                                            </div>
+                                        </h:panelGroup>
                                     </p:column>
-                                    <p:column headerText="Action" style="width: 8em; padding: 8px;" class="text-center">
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Print"
-                                            icon="fas fa-print"
-                                            class="ui-button-info"
-                                            rendered="#{dpr.approved and not dpr.patientInvestigation.billItem.bill.cancelled}"
-                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}"/>
+
+                                    <p:column headerText="Sample IDs" style="width: 9em; vertical-align: top;">
+                                        <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(dpr.patientInvestigation.id)}" var="sample">
+                                            <div class="d-flex mb-2">
+                                                <i class="fa fa-vial"></i>
+                                                <h:outputText value="#{sample}" class="mx-2 text-primary"/>
+                                            </div>
+                                        </ui:repeat>
+                                    </p:column>
+
+                                    <p:column headerText="Status" style="width: 11em; vertical-align: top;">
+                                        <h:outputText
+                                            value="#{dpr.patientInvestigation.status.label}"
+                                            rendered="#{not dpr.patientInvestigation.billItem.refunded and not dpr.patientInvestigation.billItem.bill.cancelled}"/>
+                                        <p:badge value="Item Refunded" severity="warning" rendered="#{dpr.patientInvestigation.billItem.refunded}"/>
+                                        <p:badge value="Bill Cancelled" severity="danger" rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" style="width: 30em; vertical-align: top;">
+                                        <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}" class="d-flex justify-content-center">
+                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="w-50"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.refunded and not dpr.patientInvestigation.billItem.bill.cancelled}" class="d-flex justify-content-center">
+                                            <p:badge value="Item Refunded" severity="info" size="large" class="w-50"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{not dpr.patientInvestigation.billItem.bill.cancelled and not dpr.patientInvestigation.billItem.refunded}">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex gap-2 mb-2">
+                                                    <p:commandButton
+                                                        ajax="false"
+                                                        value="Print"
+                                                        icon="fa fa-print"
+                                                        class="ui-button-info"
+                                                        disabled="#{not dpr.approved}"
+                                                        action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}"/>
+                                                    <p:badge value="Approved" severity="success" class="mt-2" rendered="#{dpr.approved}"/>
+                                                    <p:badge value="Pending" severity="warning" class="mt-2" rendered="#{not dpr.approved}"/>
+                                                </div>
+
+                                                <div class="d-flex justify-content-end gap-2">
+                                                    <p:graphicImage library="image" name="print_pending.png" title="Not Printed" rendered="#{not dpr.printComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="print_done.png" title="Report Printed" rendered="#{dpr.printComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="handover_pending.png" title="Not Issued" rendered="#{not dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="handover_done.png" title="Report Issued" rendered="#{dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="sms_send_pending.png" title="SMS Send Pending" rendered="#{not dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="sms_send_complete.png" title="SMS Send Complete" rendered="#{dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="email_sending_pending.png" title="Email Send Pending" rendered="#{not dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
+                                                    <p:graphicImage library="image" name="email_sending_complete.png" title="Email Send Complete" rendered="#{dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
