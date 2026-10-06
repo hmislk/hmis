@@ -17,6 +17,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
 - [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
 - [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
+- [141. Patient phone quick search matches `PATIENT.PATIENTPHONENUMBER`, not `PERSON.PHONE`](#141-patient-phone-quick-search-matches-patientpatientphonenumber-not-personphone)
 
 ---
 
@@ -437,3 +438,10 @@ deployment with a configured gateway).
 Companion to §41 (an empty `TRIGGERSUBSCRIPTION` table silently produces zero
 notifications): check the subscription rows exist *and* the recipient has an
 address on file before concluding anything from a quiet run.
+
+## 141. Patient phone quick search matches `PATIENT.PATIENTPHONENUMBER`, not `PERSON.PHONE`
+
+Symptom: a phone number picked from `person.phone` opens the "new patient" form instead of the patient. `PatientController.quickSearchPatientLongPhoneNumber` searches the numeric `PATIENT.PATIENTPHONENUMBER` (leading 0 dropped). Pick test patients by that column, and check it is unique, or a selection list appears instead of an auto-select:
+```sql
+SELECT patientPhoneNumber FROM patient WHERE retired=0 GROUP BY patientPhoneNumber HAVING COUNT(*)=1 LIMIT 5;
+```
