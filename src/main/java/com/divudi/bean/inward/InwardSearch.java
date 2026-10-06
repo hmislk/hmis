@@ -390,7 +390,10 @@ public class InwardSearch implements Serializable {
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_PAYMENT_REFUND:
-                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
+                // Same page the refund reprint's Cancel opens; cancelBillRefund() works on this bill.
+                paymentMethodData = new PaymentMethodData();
+                printPreview = false;
+                return "inward_cancel_bill_refund?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
