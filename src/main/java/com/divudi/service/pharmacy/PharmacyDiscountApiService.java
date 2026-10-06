@@ -10,6 +10,7 @@ import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.membership.PaymentSchemeDiscount;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemType;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.PaymentSchemeDiscountFacade;
 import com.divudi.core.facade.PaymentSchemeFacade;
@@ -20,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Stateless
 public class PharmacyDiscountApiService {
@@ -134,11 +137,7 @@ public class PharmacyDiscountApiService {
             throw new Exception("Unknown paymentMethod: " + request.getPaymentMethod());
         }
 
-        Map<String, Object> catParams = new HashMap<>();
-        catParams.put("t", PharmaceuticalItemCategory.class);
-        List<Category> categories = categoryFacade.findByJpql(
-                "select c from Category c where c.retired = false and type(c) = :t order by c.name",
-                catParams);
+        List<Category> categories = findPharmacyDiscountCategories();
 
         int created = 0;
         int updated = 0;
@@ -202,6 +201,35 @@ public class PharmacyDiscountApiService {
         d.setRetirer(user);
         d.setRetiredAt(new Date());
         discountFacade.edit(d);
+    }
+
+    // Billing resolves the discount by the item's own category, so cover every active pharmaceutical
+    // category plus any category (even retired, or a PharmaceuticalItemType) that active AMPs still use.
+    private List<Category> findPharmacyDiscountCategories() {
+        Map<String, Object> catParams = new HashMap<>();
+        catParams.put("t", PharmaceuticalItemCategory.class);
+        List<Category> active = categoryFacade.findByJpql(
+                "select c from Category c where c.retired = false and type(c) = :t order by c.name",
+                catParams);
+
+        Map<String, Object> usedParams = new HashMap<>();
+        usedParams.put("t", PharmaceuticalItemCategory.class);
+        usedParams.put("t2", PharmaceuticalItemType.class);
+        List<Category> usedByAmps = categoryFacade.findByJpql(
+                "select distinct a.category from Amp a"
+                + " where a.retired = false"
+                + " and a.category is not null"
+                + " and (type(a.category) = :t or type(a.category) = :t2)",
+                usedParams);
+
+        Set<Category> all = new LinkedHashSet<>();
+        if (active != null) {
+            all.addAll(active);
+        }
+        if (usedByAmps != null) {
+            all.addAll(usedByAmps);
+        }
+        return new ArrayList<>(all);
     }
 
     private PaymentSchemeDiscount findExisting(PaymentScheme scheme, Category cat, PaymentMethod pm) {

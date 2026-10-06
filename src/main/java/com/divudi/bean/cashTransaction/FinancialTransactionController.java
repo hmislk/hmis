@@ -3797,6 +3797,13 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow();
     }
 
+    /**
+     * No longer reachable from the UI (#24340 removed the "End Shift (OLD)" button on
+     * cashier/index.xhtml, since it bypassed every handover/float-transfer guard). Kept
+     * in place, unused, in case another institution's deployment still depends on it
+     * directly — do not wire a button back to it without adding the same guards as
+     * {@link #navigateToCreateShiftEndSummaryBillForHandover()}.
+     */
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -10833,7 +10840,7 @@ public class FinancialTransactionController implements Serializable {
         // Shift Management Tab Configurations
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Legacy Handover is enabled",
-                "When enabled, shows legacy handover options in the Shift Management tab including 'End Shift - OLD', 'Handover (OLD)', and 'Handover Shift (OLD)' buttons.",
+                "When enabled, shows legacy handover options in the Shift Management tab including 'Handover (OLD)' and 'Handover Shift (OLD)' buttons.",
                 OptionScope.APPLICATION
         ));
 

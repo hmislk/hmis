@@ -255,3 +255,21 @@ Background images are `Upload` rows (`PVC_Card_Front_Background` / `PVC_Card_Bac
 
 - Set up the layout: https://youtu.be/_3i6au-1Or0
 - Print a card: https://youtu.be/xvFcELFmhzM
+
+## Printing on a larger page (#24330) — disc/ID card tray
+
+Epson ink-tank printers with a disc/ID card tray (e.g. L8050) treat a card job as an **A4 page**: the driver fixes Document Size at A4, and each card slot is a window at a fixed spot on that page, with the card's long edge along the page's long edge. A bare 85.6 × 54 mm landscape page therefore prints blank, clipped or in the wrong place.
+
+Per side, the layout JSON accepts four optional keys (all default to 0, which keeps the old card-only behaviour):
+
+| Key | Meaning |
+|---|---|
+| `pageWidthMm`, `pageHeightMm` | Page the card is placed on (A4 = 210 × 297). Both 0 = the page is the card |
+| `rotationDeg` | 0, 90, 180 or 270, clockwise, about the card centre. Anything else is read as 0 |
+| `cardLeftMm`, `cardTopMm` | Top-left of the **rotated** card's bounding box on the page |
+
+`pvc_card_panel` always renders page box → holder (the rotated card's bounding box) → card (centred, rotated) → printable area (card minus `marginMm`). With no page it reduces to the earlier output. `@page` is the page size with margin 0 when a page is set.
+
+Tray printing from Chrome: use the browser's own print dialog (not "Print using system dialog"), destination = the card printer, Paper size A4, Margins None, Scale 100 / Default, Background graphics on. The printer's default preferences should already be Paper Source = Disc/ID Card Tray.
+
+Finding the numbers: print an A4 millimetre grid through the tray onto a spare card, photograph it, and read which page coordinates land on the card. Two cards in the tray are about 74 mm apart; use one slot only. A card sits loosely in its slot (about 2–4 mm), so keep important content a few mm inside the edge. After flipping the card for the back side, the back may need a different `rotationDeg`.

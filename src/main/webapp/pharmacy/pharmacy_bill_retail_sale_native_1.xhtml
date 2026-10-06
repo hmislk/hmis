@@ -557,7 +557,7 @@
                                                             title="Quick Search from Phone Number"
                                                             action="#{patientController.quickSearchPatientLongPhoneNumber(retailSaleNativeSqlController1)}"
                                                             process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                                            update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
+                                                            update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails :#{p:resolveFirstComponentWithId('tblBillItem', view).clientId}"
                                                             styleClass="btn-sm mx-1" />
                                                         <p:commandButton
                                                             id="btnAddNewPatient"
@@ -565,7 +565,7 @@
                                                             title="Add New Patient"
                                                             action="#{patientController.quickSearchNewPatient(retailSaleNativeSqlController1)}"
                                                             process="btnAddNewPatient"
-                                                            update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
+                                                            update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails :#{p:resolveFirstComponentWithId('tblBillItem', view).clientId}"
                                                             styleClass="btn-sm mx-1" />
                                                     </h:panelGroup>
                                                 </h:panelGroup>
@@ -582,7 +582,7 @@
                                                                 id="btnSelectPt"
                                                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(retailSaleNativeSqlController1)}"
                                                                 process="btnSelectPt"
-                                                                update=":#{p:resolveFirstComponentWithId('panelPatient', view).clientId} :#{p:resolveFirstComponentWithId('panelPayment', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
+                                                                update=":#{p:resolveFirstComponentWithId('panelPatient', view).clientId} :#{p:resolveFirstComponentWithId('panelPayment', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem', view).clientId}"
                                                                 value="Select">
                                                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                             </p:commandButton>
@@ -726,7 +726,7 @@
                                                                 required="true"
                                                                 requiredMessage="Please select a payment method">
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}" />
-                                                                <p:ajax process="@this cmbPs cmbPaymentScheme" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
+                                                                <p:ajax process="@this cmbPs cmbPaymentScheme" update="panelBillDetails panelPaymentDetails :#{p:resolveFirstComponentWithId('tblBillItem', view).clientId}" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
                                                         </div>
                                                         <div class="col-md-6">
@@ -737,7 +737,7 @@
                                                                 required="true"
                                                                 requiredMessage="Please select a payment scheme">
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
+                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails :#{p:resolveFirstComponentWithId('tblBillItem', view).clientId}" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
 
                                                             <p:selectOneMenu
@@ -747,7 +747,7 @@
                                                                 class="my-1">
                                                                 <f:selectItem itemLabel="Discount Scheme" />
                                                                 <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
+                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails :#{p:resolveFirstComponentWithId('tblBillItem', view).clientId}" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
                                                         </div>
                                                     </div>
