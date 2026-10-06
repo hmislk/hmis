@@ -1758,13 +1758,20 @@ public class PharmacyStockTakeController implements Serializable {
         }
         int added = 0;
         List<String> duplicates = new ArrayList<>();
+        List<String> invalidItems = new ArrayList<>();
         java.util.Iterator<StockTakeUnmatchedRowDTO> it = unmatchedRows.iterator();
         while (it.hasNext()) {
             StockTakeUnmatchedRowDTO r = it.next();
             if (!r.isResolvable() || !r.isAddAsNewBatch()) {
                 continue;
             }
-            Amp amp = (Amp) itemFacade.find(r.getItemId());
+            Item found = itemFacade.find(r.getItemId());
+            if (!(found instanceof Amp) || found.isRetired()) {
+                // The item was retired or removed after the upload.
+                invalidItems.add("row " + r.getRowNo());
+                continue;
+            }
+            Amp amp = (Amp) found;
             ItemBatch batch = pharmacyBatchApiService.findOrCreateItemBatch(amp, r.getBatchNo(), r.getExpiryDate(),
                     r.getRetailRate(), r.getPurchaseRate(), r.getCostRate());
             Stock stock = pharmacyBatchApiService.findOrCreateDepartmentStock(batch, dept);
@@ -1789,6 +1796,9 @@ public class PharmacyStockTakeController implements Serializable {
             physicalCountBill.getBillItems().add(bi);
             it.remove();
             added++;
+        }
+        if (!invalidItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Not added - the item is no longer active: " + String.join(", ", invalidItems));
         }
         if (!duplicates.isEmpty()) {
             JsfUtil.addErrorMessage("Not added - the batch is already a line of this stock take: "
