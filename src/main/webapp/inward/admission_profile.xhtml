@@ -364,7 +364,7 @@
                                         </span>
                                         <span class="d-inline-flex align-items-center gap-1">
                                             <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null}">
-                                                <p:tag value="Snapshot - Not Live" icon="fa fa-clock-rotate-left" severity="warning" class="small"/>
+                                                <p:tag value="Updated on Each Bill" icon="fa fa-rotate" severity="success" class="small"/>
                                             </h:panelGroup>
                                             <p:tag value="Developer" icon="fa fa-code" severity="info" class="small"/>
                                         </span>
@@ -372,11 +372,11 @@
 
                                     <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
                                         <div class="d-flex align-items-center py-2 px-3 mb-2 rounded shadow-sm"
-                                             role="alert"
-                                             style="border-left:8px solid #dc3545; background-color:#fdecea; color:#842029;">
-                                            <i class="fa fa-triangle-exclamation fa-lg me-2 text-danger"/>
+                                             role="status"
+                                             style="border-left:8px solid #0d6efd; background-color:#e7f1ff; color:#084298;">
+                                            <i class="fa fa-circle-info fa-lg me-2"/>
                                             <span class="fw-semibold">
-                                                Totals are <span class="fw-bold text-danger text-decoration-underline">NOT current</span> &#8212; snapshot only. Re-process for live values.
+                                                Totals are updated whenever a bill is added. Room charges keep accruing until the next update.
                                             </span>
                                         </div>
                                     </h:panelGroup>
