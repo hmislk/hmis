@@ -16,464 +16,580 @@
 
                     <p:panel header="BHT Addmission Details" >
 
-                        <div class="container-fluid">
+                        <div class="container-fluid px-0">
+                            <p:panel styleClass="mb-3">
+
+                                <div class="row">
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="From Date" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:calendar value="#{inwardReportController.fromDate}"
+                                                            styleClass="dateTimePicker"
+                                                            navigator="true"
+                                                            pattern="yyyy-MMM-dd hh:mm:ss a" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="To Date" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:calendar value="#{inwardReportController.toDate}"
+                                                            styleClass="dateTimePicker"
+                                                            navigator="true"
+                                                            pattern="yyyy-MMM-dd hh:mm:ss a" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="Admission Type" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                                                    <f:selectItem itemLabel="All Admission Type" />
+                                                    <f:selectItems value="#{inwardReportController.admissionty}"
+                                                                   var="myItem"
+                                                                   itemValue="#{myItem}"
+                                                                   itemLabel="#{myItem.name}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="Date Basis" for="admBookDateBasis" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:selectOneMenu id="admBookDateBasis"
+                                                                 value="#{inwardReportController.dateBasis}">
+                                                    <f:selectItem itemValue="createdAt"
+                                                                  itemLabel="Created Date (default)" />
+                                                    <f:selectItem itemValue="admissionDate"
+                                                                  itemLabel="Admission Date" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="Institution" for="admBookCmbIns" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:selectOneMenu id="admBookCmbIns"
+                                                                 value="#{inwardReportController.institution}"
+                                                                 filter="true">
+                                                    <f:selectItem itemLabel="All Institutions"
+                                                                  itemValue="#{null}" />
+                                                    <f:selectItems value="#{institutionController.companies}"
+                                                                   var="ins"
+                                                                   itemLabel="#{ins.name}"
+                                                                   itemValue="#{ins}" />
+                                                    <p:ajax process="admBookCmbIns"
+                                                            update="admBookCmbDept"
+                                                            listener="#{inwardReportController.clearDepartment()}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="Site" for="admBookSiteMenu" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:selectOneMenu id="admBookSiteMenu"
+                                                                 value="#{inwardReportController.site}"
+                                                                 filter="true">
+                                                    <f:selectItem itemLabel="All Sites"
+                                                                  itemValue="#{null}" />
+                                                    <f:selectItems value="#{institutionController.sites}"
+                                                                   var="site"
+                                                                   itemLabel="#{site.name}"
+                                                                   itemValue="#{site}" />
+                                                    <p:ajax process="admBookSiteMenu"
+                                                            update="admBookCmbDept"
+                                                            listener="#{inwardReportController.clearDepartment()}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="Department" for="admBookCmbDept" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <h:panelGroup id="admBookCmbDept">
+
+                                                    <p:selectOneMenu
+                                                        rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
+                                                        value="#{inwardReportController.department}"
+                                                        filterMatchMode="contains"
+                                                        filter="true">
+                                                        <f:selectItem itemLabel="All Departments"
+                                                                      itemValue="#{null}" />
+                                                        <f:selectItems
+                                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                            var="d"
+                                                            itemLabel="#{d.name}"
+                                                            itemValue="#{d}" />
+                                                    </p:selectOneMenu>
+
+                                                    <p:selectOneMenu
+                                                        rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
+                                                        value="#{inwardReportController.department}"
+                                                        filterMatchMode="contains"
+                                                        filter="true">
+                                                        <f:selectItem itemLabel="All Departments"
+                                                                      itemValue="#{null}" />
+                                                        <f:selectItems
+                                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
+                                                            var="d"
+                                                            itemLabel="#{d.name}"
+                                                            itemValue="#{d}" />
+                                                    </p:selectOneMenu>
+
+                                                    <p:selectOneMenu
+                                                        rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
+                                                        value="#{inwardReportController.department}"
+                                                        filterMatchMode="contains"
+                                                        filter="true">
+                                                        <f:selectItem itemLabel="All Departments"
+                                                                      itemValue="#{null}" />
+                                                        <f:selectItems
+                                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
+                                                            var="d"
+                                                            itemLabel="#{d.name}"
+                                                            itemValue="#{d}" />
+                                                    </p:selectOneMenu>
+
+                                                    <p:selectOneMenu
+                                                        rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
+                                                        value="#{inwardReportController.department}"
+                                                        filterMatchMode="contains"
+                                                        filter="true">
+                                                        <f:selectItem itemLabel="All Departments"
+                                                                      itemValue="#{null}" />
+                                                        <f:selectItems
+                                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
+                                                            var="d"
+                                                            itemLabel="#{d.name}"
+                                                            itemValue="#{d}" />
+                                                    </p:selectOneMenu>
+
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <p:outputLabel value="Without Canceled BHT" />
+                                            </div>
+                                            <div class="col-md-9">
+                                                <p:selectBooleanCheckbox value="#{inwardReportController.withoutCancelBHT}" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-12 mb-2">
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <p:outputLabel value="Selection Method" />
+                                            </div>
+                                            <div class="col-md-10">
+                                                <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}">
+                                                    <f:selectItem itemLabel="All" itemValue="0" />
+                                                    <f:selectItem itemLabel="Not Discharged &amp; Payment Not Finalized"
+                                                                  itemValue="1" />
+                                                    <f:selectItem itemLabel="Discharged &amp; Payment Not Finalized"
+                                                                  itemValue="2" />
+                                                    <f:selectItem itemLabel="Discharged and Payment Finalized"
+                                                                  itemValue="3" />
+                                                    <f:ajax execute="@this" render="@this" />
+                                                </p:selectOneRadio>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </p:panel>
+                        </div>
+
+                        <div class="row mb-3">
+
+                            <div class="col-auto pr-1">
+                                <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
+                            </div>
+
+                            <div class="col-auto px-1">
+                                <p:commandButton value="Print" ajax="false" action="#" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                            </div>
+
+                            <div class="col-auto pl-1">
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
+                                </p:commandButton>
+                            </div>
+
+                        </div>
+                        
+                        <p:panel header="Report Details" styleClass="mb-3">
+
                             <div class="row">
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="From Date" />
-                                    <p:calendar value="#{inwardReportController.fromDate}"
-                                                styleClass="dateTimePicker"
-                                                navigator="true"
-                                                pattern="yyyy-MMM-dd hh:mm:ss a" />
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="BHT No" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="To Date" />
-                                    <p:calendar value="#{inwardReportController.toDate}"
-                                                styleClass="dateTimePicker"
-                                                navigator="true"
-                                                pattern="yyyy-MMM-dd hh:mm:ss a" />
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Payment Method" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.paymentMethord}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="Admission Type" />
-                                    <p:selectOneMenu value="#{inwardReportController.admissionType}">
-                                        <f:selectItem itemLabel="All Admission Type" />
-                                        <f:selectItems value="#{inwardReportController.admissionty}"
-                                                       var="myItem"
-                                                       itemValue="#{myItem}"
-                                                       itemLabel="#{myItem.name}" />
-                                    </p:selectOneMenu>
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Credit Company" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.creditCompany}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="Date Basis" for="admBookDateBasis" />
-                                    <p:selectOneMenu id="admBookDateBasis"
-                                                     value="#{inwardReportController.dateBasis}">
-                                        <f:selectItem itemValue="createdAt"
-                                                      itemLabel="Created Date (default)" />
-                                        <f:selectItem itemValue="admissionDate"
-                                                      itemLabel="Admission Date" />
-                                    </p:selectOneMenu>
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Patient Details" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.person}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="Institution" for="admBookCmbIns" />
-                                    <p:selectOneMenu id="admBookCmbIns"
-                                                     value="#{inwardReportController.institution}"
-                                                     filter="true">
-                                        <f:selectItem itemLabel="All Institutions"
-                                                      itemValue="#{null}" />
-                                        <f:selectItems value="#{institutionController.companies}"
-                                                       var="ins"
-                                                       itemLabel="#{ins.name}"
-                                                       itemValue="#{ins}" />
-                                        <p:ajax process="admBookCmbIns"
-                                                update="admBookCmbDept"
-                                                listener="#{inwardReportController.clearDepartment()}" />
-                                    </p:selectOneMenu>
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Guardian Details" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.guardian}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="Site" for="admBookSiteMenu" />
-                                    <p:selectOneMenu id="admBookSiteMenu"
-                                                     value="#{inwardReportController.site}"
-                                                     filter="true">
-                                        <f:selectItem itemLabel="All Sites"
-                                                      itemValue="#{null}" />
-                                        <f:selectItems value="#{institutionController.sites}"
-                                                       var="site"
-                                                       itemLabel="#{site.name}"
-                                                       itemValue="#{site}" />
-                                        <p:ajax process="admBookSiteMenu"
-                                                update="admBookCmbDept"
-                                                listener="#{inwardReportController.clearDepartment()}" />
-                                    </p:selectOneMenu>
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Room" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.room}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="Department" for="admBookCmbDept" />
-                                    <h:panelGroup id="admBookCmbDept">
-
-                                        <p:selectOneMenu
-                                            rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
-                                            value="#{inwardReportController.department}"
-                                            filterMatchMode="contains"
-                                            filter="true">
-                                            <f:selectItem itemLabel="All Departments"
-                                                          itemValue="#{null}" />
-                                            <f:selectItems
-                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                                var="d"
-                                                itemLabel="#{d.name}"
-                                                itemValue="#{d}" />
-                                        </p:selectOneMenu>
-
-                                        <p:selectOneMenu
-                                            rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
-                                            value="#{inwardReportController.department}"
-                                            filterMatchMode="contains"
-                                            filter="true">
-                                            <f:selectItem itemLabel="All Departments"
-                                                          itemValue="#{null}" />
-                                            <f:selectItems
-                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
-                                                var="d"
-                                                itemLabel="#{d.name}"
-                                                itemValue="#{d}" />
-                                        </p:selectOneMenu>
-
-                                        <p:selectOneMenu
-                                            rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
-                                            value="#{inwardReportController.department}"
-                                            filterMatchMode="contains"
-                                            filter="true">
-                                            <f:selectItem itemLabel="All Departments"
-                                                          itemValue="#{null}" />
-                                            <f:selectItems
-                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
-                                                var="d"
-                                                itemLabel="#{d.name}"
-                                                itemValue="#{d}" />
-                                        </p:selectOneMenu>
-
-                                        <p:selectOneMenu
-                                            rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
-                                            value="#{inwardReportController.department}"
-                                            filterMatchMode="contains"
-                                            filter="true">
-                                            <f:selectItem itemLabel="All Departments"
-                                                          itemValue="#{null}" />
-                                            <f:selectItems
-                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
-                                                var="d"
-                                                itemLabel="#{d.name}"
-                                                itemValue="#{d}" />
-                                        </p:selectOneMenu>
-
-                                    </h:panelGroup>
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Refering Doctor" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.refDoctor}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-6 mb-2">
-                                    <p:outputLabel value="Without Canceled BHT" />
-                                    <p:selectBooleanCheckbox value="#{inwardReportController.withoutCancelBHT}" />
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Admit Date" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.addmitDetails}" />
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="col-md-12 mb-2">
-                                    <p:outputLabel value="Selection Method" />
-                                    <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}">
-                                        <f:selectItem itemLabel="All" itemValue="0" />
-                                        <f:selectItem itemLabel="Not Discharged &amp; Payment Not Finalized"
-                                                      itemValue="1" />
-                                        <f:selectItem itemLabel="Discharged &amp; Payment Not Finalized"
-                                                      itemValue="2" />
-                                        <f:selectItem itemLabel="Discharged and Payment Finalized"
-                                                      itemValue="3" />
-                                        <f:ajax execute="@this" render="@this" />
-                                    </p:selectOneRadio>
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Billed By" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.billedBy}" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 mb-2">
+                                    <div class="row align-items-center">
+                                        <p:outputLabel value="Totals" styleClass="col-6 text-nowrap" />
+                                        <div class="col-6">
+                                            <p:selectBooleanCheckbox value="#{inwardReportController.finalBillTotal}" />
+                                        </div>
+                                    </div>
                                 </div>
 
                             </div>
-                        </div>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
-<!--                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}"  ></p:commandButton>-->
-
-                            <p:commandButton value="Print" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
-                            </p:commandButton>  
-                        </h:panelGrid>
-                        
-                        <div class="row">
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="BHT No" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Payment Methord" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.paymentMethord}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Credit Company" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.creditCompany}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Patient Details" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.person}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Guardian Details" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.guardian}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Room" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.room}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Refering Doctor" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.refDoctor}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Admit Date" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.addmitDetails}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Billed By" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.billedBy}" />
-                            </div>
-
-                            <div class="col-md-3">
-                                <p:outputLabel value="Totals" />
-                                <p:selectBooleanCheckbox value="#{inwardReportController.finalBillTotal}" />
-                            </div>
-
-                        </div>
+                        </p:panel>
 
                         <h:panelGroup id="gpBillPreview">
-                            <div class="table-responsive">
+                            <div class="admission-book-table-container mb-3">
+
                                 <p:dataTable id="tbl"
                                              rowStyleClass="#{i.retired ? 'crossLine':''}"
-                                             styleClass="noBorder normalFont"
+                                             styleClass="noBorder normalFont text-nowrap admission-book-table"
                                              value="#{inwardReportController.patientEncounters}"
                                              var="i"
-                                             rowIndexVar="a">
-                        
-                                <!--                                <p:column headerText="View">
-                                                                    <p:commandButton ajax="false" value="View Detail"
-                                                                                    action="/inward/inward_bill_intrim_finalized"
-                                                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}"  >
-                                                                        <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
-                                                                    </p:commandButton>
-                                                                </p:column>-->
+                                             rowIndexVar="a"
+                                             scrollable="true"
+                                             scrollWidth="100%">
 
-                                <f:facet name="header">
+                                    <!--                                <p:column headerText="View">
+                                                                                <p:commandButton ajax="false" value="View Detail"
+                                                                                                action="/inward/inward_bill_intrim_finalized"
+                                                                                                actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}"  >
+                                                                                    <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
+                                                                                </p:commandButton>
+                                                                            </p:column>-->
 
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <h:outputLabel value="Inward Payment Bill Item" />
-                                        </div>
-                                    </div>
-
-                                    <div class="row border">
-
-                                        <div class="col-md-3 border">
-                                            <h:outputLabel value="From" />
-                                        </div>
-
-                                        <div class="col-md-3 border">
-                                            <h:outputText value="#{inwardReportController.fromDate}">
-                                                <f:convertDateTime
-                                                    timeZone="Asia/Colombo"
-                                                    pattern="dd MMM yyyy HH:mm:ss" />
-                                            </h:outputText>
-                                        </div>
-
-                                        <div class="col-md-3 border">
-                                            <h:outputLabel value="To" />
-                                        </div>
-
-                                        <div class="col-md-3 border">
-                                            <h:outputText value="#{inwardReportController.toDate}">
-                                                <f:convertDateTime
-                                                    timeZone="Asia/Colombo"
-                                                    pattern="dd MMM yyyy HH:mm:ss" />
-                                            </h:outputText>
-                                        </div>
-
-                                    </div>
-
-                                </f:facet>
-                                
-                                <p:column headerText="No">
                                     <f:facet name="header">
-                                        <h:outputLabel value="No"/>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h:outputLabel value="Inward Payment Bill Item - #{inwardReportController.institution != null ? inwardReportController.institution.name : inwardReportController.department != null ? inwardReportController.department.institution.name : 'All Institutions'}" />
+                                            </div>
+                                        </div>
+
+                                        <div class="row border">
+
+                                            <div class="col-md-3 border">
+                                                <h:outputLabel value="From" />
+                                            </div>
+
+                                            <div class="col-md-3 border">
+                                                <h:outputText value="#{inwardReportController.fromDate}">
+                                                    <f:convertDateTime
+                                                        timeZone="Asia/Colombo"
+                                                        pattern="dd MMM yyyy HH:mm:ss" />
+                                                </h:outputText>
+                                            </div>
+
+                                            <div class="col-md-3 border">
+                                                <h:outputLabel value="To" />
+                                            </div>
+
+                                            <div class="col-md-3 border">
+                                                <h:outputText value="#{inwardReportController.toDate}">
+                                                    <f:convertDateTime
+                                                        timeZone="Asia/Colombo"
+                                                        pattern="dd MMM yyyy HH:mm:ss" />
+                                                </h:outputText>
+                                            </div>
+
+                                        </div>
+
                                     </f:facet>
-                                    <h:outputLabel value="#{a+1}" ></h:outputLabel>
-                                </p:column>
 
-                                <p:column headerText="BHT No" rendered="#{inwardReportController.bhtNo}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="BHT No"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.bhtNo}" ></h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="No" width="55px">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="No"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{a+1}" />
+                                    </p:column>
 
-                                <p:column headerText="Room" rendered="#{inwardReportController.room}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Room"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.currentPatientRoom.roomFacilityCharge.room.name}" >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="BHT No" width="90px" rendered="#{inwardReportController.bhtNo}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="BHT No"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.bhtNo}" />
+                                    </p:column>
 
+                                    <p:column headerText="Room" width="90px" rendered="#{inwardReportController.room}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Room"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.currentPatientRoom.roomFacilityCharge.room.name}" />
+                                    </p:column>
 
-                                <p:column headerText="Patient Name" rendered="#{inwardReportController.person}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Patient Name"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.patient.person.name}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Patient Name" width="160px" rendered="#{inwardReportController.person}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Patient Name"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.patient.person.name}" />
+                                    </p:column>
 
-                                <p:column headerText="Referring Consultant" rendered="#{inwardReportController.refDoctor}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Referring Consultant"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.referringDoctor.person.nameWithTitle}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Referring Consultant" width="190px" rendered="#{inwardReportController.refDoctor}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Referring Consultant"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.referringDoctor.person.nameWithTitle}" />
+                                    </p:column>
 
-                                <p:column headerText="Admitted By" rendered="#{inwardReportController.billedBy}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Admited By"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Admitted By" width="150px" rendered="#{inwardReportController.billedBy}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Admitted By"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.creater.webUserPerson.name}" />
+                                    </p:column>
 
-                                <p:column headerText="Admitted Date" rendered="#{inwardReportController.addmitDetails}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Admited Date"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
-                                
-                                <p:column headerText="Admission Created Time" rendered="#{inwardReportController.addmitDetails}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Admission Created Time"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Admitted Date" width="165px" rendered="#{inwardReportController.addmitDetails}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Admitted Date"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.dateOfAdmission}">
+                                            <f:convertDateTime
+                                                timeZone="Asia/Colombo"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                <p:column headerText="Address" rendered="#{inwardReportController.person}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Address"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.patient.person.address}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Admission Created Time" width="200px" rendered="#{inwardReportController.addmitDetails}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Admission Created Time"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.createdAt}">
+                                            <f:convertDateTime
+                                                timeZone="Asia/Colombo"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                    </p:column>
 
-                                <p:column headerText="Phone" rendered="#{inwardReportController.person}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Phone"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.patient.person.phone}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Address" width="220px" rendered="#{inwardReportController.person}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Address"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.patient.person.address}" />
+                                    </p:column>
 
-                                <p:column headerText="Guardian Name" rendered="#{inwardReportController.guardian}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Guardian Name"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.guardian.nameWithTitle}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Phone" width="110px" rendered="#{inwardReportController.person}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Phone"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.patient.person.phone}" />
+                                    </p:column>
 
-                                <p:column headerText="Guardian Address" rendered="#{inwardReportController.guardian}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Guardian Address"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.guardian.address}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Guardian Name" width="170px" rendered="#{inwardReportController.guardian}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Guardian Name"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.guardian.nameWithTitle}" />
+                                    </p:column>
 
-                                <p:column headerText="Guardian Phone" rendered="#{inwardReportController.guardian}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Guardian Phone"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.guardian.phone}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Guardian Address" width="220px" rendered="#{inwardReportController.guardian}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Guardian Address"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.guardian.address}" />
+                                    </p:column>
 
-                                <p:column headerText="Payment Method" rendered="#{inwardReportController.paymentMethord}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Payment Method"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel value="#{i.paymentMethod}"  >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Guardian Phone" width="140px" rendered="#{inwardReportController.guardian}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Guardian Phone"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.guardian.phone}" />
+                                    </p:column>
 
-                                <p:column headerText="MemberShip Scheme" rendered="#{inwardReportController.person}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="MemberShip Scheme"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{i.patient.person.membershipScheme.name}" >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="Payment Method" width="145px" rendered="#{inwardReportController.paymentMethord}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Payment Method"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.paymentMethod}" />
+                                    </p:column>
 
-                                <p:column headerText="Credit Company Name" rendered="#{inwardReportController.creditCompany}">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Credit Company Name"/>
-                                    </f:facet>                                    
-                                    <h:outputLabel  value="#{i.creditCompany.name}" >
-                                    </h:outputLabel>
-                                </p:column>
+                                    <p:column headerText="MemberShip Scheme" width="170px" rendered="#{inwardReportController.person}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="MemberShip Scheme"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.patient.person.membershipScheme.name}" />
+                                    </p:column>
 
+                                    <p:column headerText="Credit Company Name" width="180px" rendered="#{inwardReportController.creditCompany}">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Credit Company Name"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{i.creditCompany.name}" />
+                                    </p:column>
 
-                                <p:column styleClass="averageNumericColumn"  headerText="Total" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.finalBill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.netTotal}">
+                                    <p:column styleClass="averageNumericColumn"
+                                              headerText="Total"
+                                              width="100px"
+                                              rendered="#{inwardReportController.finalBillTotal}">
+                                        <h:outputLabel value="#{i.finalBill.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{inwardReportController.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
 
-                                <p:column styleClass="averageNumericColumn"  headerText="Discount" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.finalBill.discount}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>
-                                
-                                <p:column styleClass="averageNumericColumn"  headerText="Paid" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.paidByCreditCompany+i.finalBill.paidAmount}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.netPaid}">
+                                    <p:column styleClass="averageNumericColumn"
+                                              headerText="Discount"
+                                              width="100px"
+                                              rendered="#{inwardReportController.finalBillTotal}">
+                                        <h:outputLabel value="#{i.finalBill.discount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
+                                    </p:column>
 
-                                <p:column styleClass="averageNumericColumn" headerText="Due" rendered="#{inwardReportController.finalBillTotal}">
-                                    <h:outputLabel value="#{i.finalBill.netTotal-(i.paidByCreditCompany+i.finalBill.paidAmount)}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.netTotal-inwardReportController.netPaid}">
+                                    <p:column styleClass="averageNumericColumn"
+                                              headerText="Paid"
+                                              width="100px"
+                                              rendered="#{inwardReportController.finalBillTotal}">
+                                        <h:outputLabel value="#{i.paidByCreditCompany+i.finalBill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{inwardReportController.netPaid}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+
+                                    <p:column styleClass="averageNumericColumn"
+                                              headerText="Due"
+                                              width="100px"
+                                              rendered="#{inwardReportController.finalBillTotal}">
+                                        <h:outputLabel value="#{i.finalBill.netTotal-(i.paidByCreditCompany+i.finalBill.paidAmount)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <f:facet name="footer">
+                                            <h:outputLabel value="#{inwardReportController.netTotal-inwardReportController.netPaid}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
 
                                 </p:dataTable>
-                            </div>
+
+                            </div>   
+                            
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
