@@ -5839,6 +5839,36 @@ public class PharmacyBillSearch implements Serializable {
         }
     }
 
+    /**
+     * Builds an optional JPQL filter restricting bills to those containing an
+     * item whose name or code matches the Item Name / Item Code entered on
+     * pharmacy_search_by_bill_type_atomic.xhtml. Pack (AMPP) lines also match
+     * on their AMP's name / code. Returns "" when neither filter is entered.
+     *
+     * @param m query parameter map; matching parameters are added to it
+     * @return JPQL fragment starting with "AND ", or "" when no filter applies
+     */
+    private String itemFilterClause(Map<String, Object> m) {
+        String itemName = searchController.getSearchKeyword().getItemName();
+        String itemCode = searchController.getSearchKeyword().getCode();
+        StringBuilder clause = new StringBuilder();
+        if (itemName != null && !itemName.trim().isEmpty()) {
+            clause.append("AND b.id IN (SELECT bi.bill.id FROM BillItem bi "
+                    + "LEFT JOIN bi.item it LEFT JOIN it.amp amp "
+                    + "WHERE bi.retired = false "
+                    + "AND (UPPER(it.name) LIKE :itemName OR UPPER(amp.name) LIKE :itemName)) ");
+            m.put("itemName", "%" + itemName.trim().toUpperCase() + "%");
+        }
+        if (itemCode != null && !itemCode.trim().isEmpty()) {
+            clause.append("AND b.id IN (SELECT bic.bill.id FROM BillItem bic "
+                    + "LEFT JOIN bic.item itc LEFT JOIN itc.amp ampc "
+                    + "WHERE bic.retired = false "
+                    + "AND (UPPER(itc.code) LIKE :itemCode OR UPPER(ampc.code) LIKE :itemCode)) ");
+            m.put("itemCode", "%" + itemCode.trim().toUpperCase() + "%");
+        }
+        return clause.toString();
+    }
+
     public List<com.divudi.core.data.dto.PharmacyPurchaseOrderDTO> getPoRequestSearchDtos() {
         return poRequestSearchDtos;
     }
@@ -5871,6 +5901,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
+                + itemFilterClause(m)
                 + "ORDER BY b.createdAt DESC";
         if (maxResult > 0) {
             poRequestSearchDtos =
@@ -5920,6 +5951,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
+                + itemFilterClause(m)
                 + "ORDER BY b.createdAt DESC";
         if (maxResult > 0) {
             poApproveSearchDtos =
@@ -5970,6 +6002,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
+                + itemFilterClause(m)
                 + "ORDER BY b.createdAt DESC";
         if (maxResult > 0) {
             grnSearchDtos =
@@ -6040,6 +6073,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.createdAt BETWEEN :fd AND :td "
                 + "AND b.department = :dep "
                 + "AND b.retired = false "
+                + itemFilterClause(m)
                 + "ORDER BY b.createdAt DESC";
 
         if (maxResult > 0) {
@@ -6071,21 +6105,31 @@ public class PharmacyBillSearch implements Serializable {
         m.put("fd", searchController.getFromDate());
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getDepartment());
+        // Legacy GRN returns are saved as BilledBill; the GRN Return workflow
+        // (GrnReturnWorkflowController) saves them as RefundBill and marks them
+        // completed only on approval, so unapproved workflow drafts are excluded.
+        // CancelledBill (PHARMACY_GRN_RETURN_CANCELLATION) is excluded by TYPE.
+        m.put("billedClass", com.divudi.core.entity.BilledBill.class);
+        m.put("refundClass", com.divudi.core.entity.RefundBill.class);
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO("
-                + "b.id, COALESCE(b.deptId, ''), COALESCE(b.referenceBill.deptId, ''), "
-                + "COALESCE(b.toInstitution.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
+                + "b.id, COALESCE(b.deptId, ''), COALESCE(refBill.deptId, ''), "
+                + "COALESCE(toIns.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
                 + "b.cancelled, cb.createdAt, COALESCE(cancellerPerson.name, ''), "
                 + "b.refunded, rb.createdAt, COALESCE(refunderPerson.name, ''), "
                 + "COALESCE(cb.comments, rb.comments, ''), b.paymentMethod, "
                 + "b.netTotal, b.saleValue) "
-                + "FROM BilledBill b "
+                + "FROM Bill b "
+                + "LEFT JOIN b.referenceBill refBill LEFT JOIN b.toInstitution toIns "
                 + "LEFT JOIN b.creater creater LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb LEFT JOIN cb.creater canceller "
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
                 + "LEFT JOIN b.refundedBill rb LEFT JOIN rb.creater refunder "
                 + "LEFT JOIN refunder.webUserPerson refunderPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
-                + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+                + "AND b.department = :dep AND b.retired = false "
+                + "AND (TYPE(b) = :billedClass OR (TYPE(b) = :refundClass AND b.completed = true)) "
+                + itemFilterClause(m)
+                + "ORDER BY b.createdAt DESC";
         if (maxResult > 0) {
             grnReturnSearchDtos = (List<com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO>)
                     billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
@@ -6353,22 +6397,29 @@ public class PharmacyBillSearch implements Serializable {
         m.put("fd", searchController.getFromDate());
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getDepartment());
+        // Legacy returns (DirectPurchaseReturnController) are saved as BilledBill; the
+        // Direct Purchase Return workflow (DirectPurchaseReturnWorkflowController) saves
+        // them as RefundBill and marks them completed only on approval, so unapproved
+        // workflow drafts are excluded. CancelledBill rows are excluded by TYPE.
+        m.put("billedClass", com.divudi.core.entity.BilledBill.class);
+        m.put("refundClass", com.divudi.core.entity.RefundBill.class);
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseReturnSearchDTO("
                 + "b.id, refBill.id, COALESCE(b.deptId, ''), COALESCE(refBill.deptId, ''), "
-                + "COALESCE(b.toInstitution.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(toIns.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
                 + "b.cancelled, cb.createdAt, COALESCE(cancellerPerson.name, ''), "
                 + "b.refunded, rb.createdAt, COALESCE(refunderPerson.name, ''), "
                 + "COALESCE(cb.comments, rb.comments, ''), b.paymentMethod, "
                 + "b.netTotal, b.saleValue) "
-                + "FROM BilledBill b "
-                + "LEFT JOIN b.referenceBill refBill "
+                + "FROM Bill b "
+                + "LEFT JOIN b.referenceBill refBill LEFT JOIN b.toInstitution toIns "
                 + "LEFT JOIN b.creater creater LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb LEFT JOIN cb.creater canceller "
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
                 + "LEFT JOIN b.refundedBill rb LEFT JOIN rb.creater refunder "
                 + "LEFT JOIN refunder.webUserPerson refunderPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
-                + "AND b.department = :dep AND b.retired = false";
+                + "AND b.department = :dep AND b.retired = false "
+                + "AND (TYPE(b) = :billedClass OR (TYPE(b) = :refundClass AND b.completed = true))";
 
         // billNo filter ("Return Note No" input) filters the bill's own deptId.
         if (searchController.getSearchKeyword().getBillNo() != null
@@ -6382,10 +6433,10 @@ public class PharmacyBillSearch implements Serializable {
             sql += " AND (refBill.deptId) LIKE :refBillNo";
             m.put("refBillNo", "%" + searchController.getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
         }
-        // toInstitution filter ("Supplier Name" input) filters b.toInstitution.name.
+        // toInstitution filter ("Supplier Name" input) filters the supplier name.
         if (searchController.getSearchKeyword().getToInstitution() != null
                 && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
-            sql += " AND UPPER(b.toInstitution.name) LIKE :toIns";
+            sql += " AND UPPER(toIns.name) LIKE :toIns";
             m.put("toIns", "%" + searchController.getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
@@ -6398,18 +6449,7 @@ public class PharmacyBillSearch implements Serializable {
                 // ignore invalid numeric input, skip filter
             }
         }
-        if (searchController.getSearchKeyword().getItemName() != null
-                && !searchController.getSearchKeyword().getItemName().trim().isEmpty()) {
-            sql += " AND b.id IN (SELECT bItem.bill.id FROM BillItem bItem "
-                    + "WHERE bItem.retired = false AND bItem.item.name LIKE :itm)";
-            m.put("itm", "%" + searchController.getSearchKeyword().getItemName().trim().toUpperCase() + "%");
-        }
-        if (searchController.getSearchKeyword().getCode() != null
-                && !searchController.getSearchKeyword().getCode().trim().isEmpty()) {
-            sql += " AND b.id IN (SELECT bItem.bill.id FROM BillItem bItem "
-                    + "WHERE bItem.retired = false AND bItem.item.code LIKE :cde)";
-            m.put("cde", "%" + searchController.getSearchKeyword().getCode().trim().toUpperCase() + "%");
-        }
+        sql += " " + itemFilterClause(m);
 
         sql += " ORDER BY b.createdAt DESC";
         if (maxResult > 0) {

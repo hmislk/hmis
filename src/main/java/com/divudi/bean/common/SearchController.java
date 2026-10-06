@@ -4765,6 +4765,13 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PurchaseReturn atomics (PHARMACY_DIRECT_PURCHASE_REFUND): redirect to DTO fetch so
+        // purchase_return.xhtml composite (which binds to purchaseReturnSearchDtos) shows results.
+        if (billTypeAtomic.getBillType() == BillType.PurchaseReturn) {
+            pharmacyBillSearch.fetchPurchaseReturnSearchDtos(maxResult);
+            return;
+        }
+
         // PharmacyGrnReturn atomics: redirect to DTO fetch so grn_return.xhtml composite
         // (which binds to grnReturnSearchDtos) shows results from the atomic search path.
         if (billTypeAtomic.getBillType() == BillType.PharmacyGrnReturn) {

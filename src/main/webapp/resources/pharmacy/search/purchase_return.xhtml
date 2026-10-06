@@ -9,6 +9,9 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <!-- false hides the keyword input row; used by pharmacy_search_by_bill_type_atomic.xhtml,
+             which supplies its own Item Name / Item Code inputs and relies on column filters -->
+        <cc:attribute name="showSearchInputs" type="java.lang.Boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -24,7 +27,7 @@
                 </div>
             </f:facet>
 
-            <h:panelGrid columns="6" styleClass="mb-2">
+            <h:panelGrid columns="6" styleClass="mb-2" rendered="#{cc.attrs.showSearchInputs}">
                 <h:outputLabel value="Return Note No"/>
                 <h:outputLabel value="Purchase No"/>
                 <h:outputLabel value="Supplier Name"/>
@@ -41,20 +44,35 @@
 
             <h:panelGroup id="gpBill">
                 <div class="pharma-search-wrapper">
-                    <p:dataTable rowIndexVar="i" id="tblBills" value="#{pharmacyBillSearch.purchaseReturnSearchDtos}" var="dto"
-                                 paginator="true" rows="10"
+                    <p:dataTable rowIndexVar="i"
+                                 id="tblBills"
+                                 widgetVar="tblPurchaseReturn"
+                                 value="#{pharmacyBillSearch.purchaseReturnSearchDtos}"
+                                 var="dto"
+                                 paginator="true"
+                                 rows="10"
                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="10,20,50,100">
+                                 rowsPerPageTemplate="10,20,50,100"
+                                 emptyMessage="No Purchase Return Bills Found">
 
-                        <p:column headerText="Return Note No">
+                        <p:column headerText="Return Note No"
+                                  sortBy="#{dto.deptId}"
+                                  filterBy="#{dto.deptId}"
+                                  filterMatchMode="contains">
                             <h:commandLink action="#{pharmacyBillSearch.navigateToDirectPurchaseReturnById(dto.id)}" value="#{dto.deptId}"/>
                         </p:column>
 
-                        <p:column headerText="Purchase No">
+                        <p:column headerText="Purchase No"
+                                  sortBy="#{dto.referenceBillDeptId}"
+                                  filterBy="#{dto.referenceBillDeptId}"
+                                  filterMatchMode="contains">
                             <h:commandLink action="#{pharmacyBillSearch.navigateToPurchaseById(dto.referenceBillId)}" value="#{dto.referenceBillDeptId}"/>
                         </p:column>
 
-                        <p:column headerText="Supplier Name">
+                        <p:column headerText="Supplier Name"
+                                  sortBy="#{dto.toInstitutionName}"
+                                  filterBy="#{dto.toInstitutionName}"
+                                  filterMatchMode="contains">
                             <h:outputLabel value="#{dto.toInstitutionName}"/>
                         </p:column>
 
@@ -76,7 +94,10 @@
                             </h:panelGroup>
                         </p:column>
 
-                        <p:column headerText="Billed By">
+                        <p:column headerText="Billed By"
+                                  sortBy="#{dto.creatorName}"
+                                  filterBy="#{dto.creatorName}"
+                                  filterMatchMode="contains">
                             <h:outputLabel value="#{dto.creatorName}"/>
                             <h:panelGroup rendered="#{dto.cancelled}">
                                 <h:outputLabel style="color:red;" value="Cancelled By "/>
@@ -88,7 +109,10 @@
                             </h:panelGroup>
                         </p:column>
 
-                        <p:column headerText="Payment Method">
+                        <p:column headerText="Payment Method"
+                                  sortBy="#{dto.paymentMethod}"
+                                  filterBy="#{dto.paymentMethod}"
+                                  filterMatchMode="contains">
                             <h:outputLabel value="#{dto.paymentMethod}"/>
                         </p:column>
 
