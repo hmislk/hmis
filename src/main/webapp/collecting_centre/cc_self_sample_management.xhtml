@@ -43,44 +43,69 @@
                                 </f:facet>
 
                                 <div class="row">
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="From Bill Date" for="fromDate"/>
-                                        <p:calendar
-                                            id="fromDate"
-                                            value="#{patientInvestigationController.fromDate}"
-                                            navigator="false"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            class="w-100"
-                                            inputStyleClass="form-control"
-                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"/>
+                                    <div class="col-md-10">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="From Bill Date" for="fromDate"/>
+                                                <p:calendar
+                                                    id="fromDate"
+                                                    value="#{patientInvestigationController.fromDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"/>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="To Bill Date" for="toDate"/>
+                                                <p:calendar
+                                                    id="toDate"
+                                                    value="#{patientInvestigationController.toDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"/>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="Patient Name" for="txtPatientName"/>
+                                                <p:inputText id="txtPatientName" autocomplete="off" placeholder="Enter patient name" value="#{patientInvestigationController.patientName}" class="w-100"/>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="Sample ID" for="txtSampleId"/>
+                                                <p:inputText id="txtSampleId" autocomplete="off" placeholder="Enter sample ID" value="#{patientInvestigationController.sampleId}" class="w-100"/>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="Status" for="cmbStatus"/>
+                                                <p:selectOneMenu id="cmbStatus" filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.patientInvestigationStatus}">
+                                                    <f:selectItem itemLabel="Any"/>
+                                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="To Bill Date" for="toDate"/>
-                                        <p:calendar
-                                            id="toDate"
-                                            value="#{patientInvestigationController.toDate}"
-                                            navigator="false"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            class="w-100"
-                                            inputStyleClass="form-control"
-                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"/>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="Patient Name" for="txtPatientName"/>
-                                        <p:inputText id="txtPatientName" autocomplete="off" placeholder="Enter patient name" value="#{patientInvestigationController.patientName}" class="w-100"/>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="Sample ID" for="txtSampleId"/>
-                                        <p:inputText id="txtSampleId" autocomplete="off" placeholder="Enter sample ID" value="#{patientInvestigationController.sampleId}" class="w-100"/>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <h:outputLabel value="Status" for="cmbStatus"/>
-                                        <p:selectOneMenu id="cmbStatus" filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.patientInvestigationStatus}">
-                                            <f:selectItem itemLabel="Any"/>
-                                            <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end">
+                                    <div class="col-md-2 d-flex flex-column gap-2">
+                                        <p:commandButton
+                                            id="btnBills"
+                                            ajax="false"
+                                            value="Bills"
+                                            icon="fas fa-file-invoice-dollar"
+                                            class="#{patientInvestigationController.listingEntity eq 'BILLS' or patientInvestigationController.listingEntity eq 'BILL_BARCODES' ? 'ui-button-success w-100' : 'ui-button-outlined ui-button-success w-100'}"
+                                            action="#{collectingCentreSelfCommonController.searchSelfBills}"/>
+                                        <p:commandButton
+                                            id="btnSamples"
+                                            ajax="false"
+                                            value="Samples"
+                                            icon="fas fa-vial"
+                                            class="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES' or patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES_INDIVIDUAL' ? 'ui-button-warning w-100' : 'ui-button-outlined ui-button-warning w-100'}"
+                                            action="#{collectingCentreSelfCommonController.searchSelfSamples}"/>
+                                        <p:commandButton
+                                            id="btnReports"
+                                            ajax="false"
+                                            value="Reports"
+                                            icon="fas fa-file-medical"
+                                            class="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS' ? 'ui-button-danger w-100' : 'ui-button-outlined ui-button-danger w-100'}"
+                                            action="#{collectingCentreSelfCommonController.searchSelfReports}"/>
                                         <p:commandButton
                                             id="btnClear"
                                             ajax="false"
@@ -89,30 +114,6 @@
                                             class="ui-button-secondary w-100"
                                             action="#{collectingCentreSelfCommonController.clearSelfSampleManagementFilters}"/>
                                     </div>
-                                </div>
-
-                                <div class="d-flex gap-2 mt-3">
-                                    <p:commandButton
-                                        id="btnBills"
-                                        ajax="false"
-                                        value="Bills"
-                                        icon="fas fa-file-invoice-dollar"
-                                        class="#{patientInvestigationController.listingEntity eq 'BILLS' or patientInvestigationController.listingEntity eq 'BILL_BARCODES' ? 'ui-button-success' : 'ui-button-outlined ui-button-success'}"
-                                        action="#{collectingCentreSelfCommonController.searchSelfBills}"/>
-                                    <p:commandButton
-                                        id="btnSamples"
-                                        ajax="false"
-                                        value="Samples"
-                                        icon="fas fa-vial"
-                                        class="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES' or patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES_INDIVIDUAL' ? 'ui-button-warning' : 'ui-button-outlined ui-button-warning'}"
-                                        action="#{collectingCentreSelfCommonController.searchSelfSamples}"/>
-                                    <p:commandButton
-                                        id="btnReports"
-                                        ajax="false"
-                                        value="Reports"
-                                        icon="fas fa-file-medical"
-                                        class="#{patientInvestigationController.listingEntity eq 'PATIENT_REPORTS' ? 'ui-button-danger' : 'ui-button-outlined ui-button-danger'}"
-                                        action="#{collectingCentreSelfCommonController.searchSelfReports}"/>
                                 </div>
                             </p:panel>
 
