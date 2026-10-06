@@ -54,6 +54,7 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 ### Printer
 - Printing profiles and templates
 - Per-department printer assignment
+- **🚨 `configOptionController` keys are department-scoped.** It reads `<Department name> - <key>` first and falls back to the global `<key>`. Its `setBooleanValueByKey` writes only the department copy. The receipt pages' **Settings** dialogs (e.g. `Inward Payment Bill ... Paper`) use it, so check the department row (`optionKey like '<Dept> - %'`), not just the global one.
 
 ### Pharmacy Procurement
 - Cross-department PO receiving (institution-wide, opt-in)
