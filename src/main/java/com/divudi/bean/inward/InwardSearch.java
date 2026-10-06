@@ -164,6 +164,7 @@ public class InwardSearch implements Serializable {
      */
     private Long appointmentReceiptBillId;
     private InwardBillReceiptDTO appointmentBillReceipt;
+    private InwardBillReceiptDTO cancelledBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -3210,6 +3211,34 @@ public class InwardSearch implements Serializable {
             appointmentBillReceipt = billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
         }
         return appointmentBillReceipt;
+    }
+
+    /**
+     * DTO of the cancellation bill of {@link #bill}, for the 5x5 and A4
+     * cancellation receipts on the inward deposit/payment cancel pages.
+     * Cached per cancellation bill id, because the receipt templates read it
+     * many times per render.
+     */
+    public InwardBillReceiptDTO getCancelledBillReceipt() {
+        Bill cb = bill == null ? null : bill.getCancelledBill();
+        if (cb == null || cb.getId() == null) {
+            return null;
+        }
+        if (cancelledBillReceipt == null || !cb.getId().equals(cancelledBillReceipt.getBillId())) {
+            cancelledBillReceipt = billFacade.findInwardBillReceiptDTO(cb.getId());
+            if (cancelledBillReceipt != null) {
+                // A cancellation bill points at its original through billedBill, not
+                // referenceBill, and billDate is DATE-only, so the receipt's time
+                // comes from createdAt.
+                if (cancelledBillReceipt.getReferenceBillDeptId() == null && cb.getBilledBill() != null) {
+                    cancelledBillReceipt.setReferenceBillDeptId(cb.getBilledBill().getDeptId());
+                }
+                if (cb.getCreatedAt() != null) {
+                    cancelledBillReceipt.setBillDate(cb.getCreatedAt());
+                }
+            }
+        }
+        return cancelledBillReceipt;
     }
 
     public void markAsChecked() {
