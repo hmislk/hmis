@@ -5368,6 +5368,8 @@ public class PharmacyBillSearch implements Serializable {
     private com.divudi.core.data.BillTypeAtomic criteriaBillTypeAtomic;
     private com.divudi.core.data.BillType criteriaBillType;
     private com.divudi.core.entity.Item criteriaItem;
+    private String criteriaItemName;
+    private String criteriaItemCode;
 
     private static final java.util.regex.Pattern BILL_SUBCLASS_FROM
             = java.util.regex.Pattern.compile("FROM (BilledBill|PreBill|CancelledBill|RefundBill) b ");
@@ -5420,7 +5422,57 @@ public class PharmacyBillSearch implements Serializable {
                     : sql + itemCondition;
             m.put("criteriaItem", criteriaItem);
         }
+        // Free-text item name / code (issue #24366): partial, case-insensitive;
+        // pack (AMPP) lines also match on their AMP's name / code.
+        if (criteriaItemName != null) {
+            sql = insertBeforeOrderBy(sql, " AND b.id IN (SELECT nbi.bill.id FROM BillItem nbi "
+                    + "LEFT JOIN nbi.item nit LEFT JOIN nit.amp namp "
+                    + "WHERE nbi.retired = false "
+                    + "AND (UPPER(nit.name) LIKE :criteriaItemName OR UPPER(namp.name) LIKE :criteriaItemName)) ");
+            m.put("criteriaItemName", "%" + criteriaItemName.toUpperCase() + "%");
+        }
+        if (criteriaItemCode != null) {
+            sql = insertBeforeOrderBy(sql, " AND b.id IN (SELECT kbi.bill.id FROM BillItem kbi "
+                    + "LEFT JOIN kbi.item kit LEFT JOIN kit.amp kamp "
+                    + "WHERE kbi.retired = false "
+                    + "AND (UPPER(kit.code) LIKE :criteriaItemCode OR UPPER(kamp.code) LIKE :criteriaItemCode)) ");
+            m.put("criteriaItemCode", "%" + criteriaItemCode.toUpperCase() + "%");
+        }
         return sql;
+    }
+
+    /**
+     * Bill class condition for the GRN Return and Purchase Return queries
+     * (issue #24366). Legacy returns are saved as BilledBill; the return
+     * workflows (GrnReturnWorkflowController, DirectPurchaseReturnWorkflowController)
+     * save RefundBill and mark it completed only on approval, so unapproved
+     * workflow drafts are always excluded. With no bill type atomic selected the
+     * query is also limited to BilledBill / RefundBill so cancellations
+     * (CancelledBill) are not listed as returns; with an atomic selected,
+     * {@link #applyCriteria} filters on it instead, so a cancellation atomic
+     * still finds its CancelledBill rows.
+     *
+     * @return JPQL fragment ending with a space
+     */
+    private String returnBillClassCondition(Map<String, Object> m) {
+        m.put("refundClass", com.divudi.core.entity.RefundBill.class);
+        String condition = "AND NOT (TYPE(b) = :refundClass AND b.completed = false) ";
+        if (criteriaBillTypeAtomic == null) {
+            m.put("billedClass", com.divudi.core.entity.BilledBill.class);
+            condition += "AND (TYPE(b) = :billedClass OR TYPE(b) = :refundClass) ";
+        }
+        return condition;
+    }
+
+    private String insertBeforeOrderBy(String sql, String condition) {
+        int orderBy = sql.lastIndexOf(" ORDER BY ");
+        return orderBy >= 0
+                ? sql.substring(0, orderBy) + condition + sql.substring(orderBy)
+                : sql + condition;
+    }
+
+    private static String trimToNull(String s) {
+        return s == null || s.trim().isEmpty() ? null : s.trim();
     }
 
     /**
@@ -5446,6 +5498,23 @@ public class PharmacyBillSearch implements Serializable {
             com.divudi.core.data.BillTypeAtomic billTypeAtomic,
             com.divudi.core.entity.Item item,
             int maxResult) {
+        searchPharmacyBills(billType, billTypeAtomic, item, null, null, maxResult);
+    }
+
+    /**
+     * As {@link #searchPharmacyBills(com.divudi.core.data.BillType, com.divudi.core.data.BillTypeAtomic, com.divudi.core.entity.Item, int)},
+     * additionally keeping only bills with an item whose name / code contains
+     * the given text (issue #24366).
+     *
+     * @param itemName partial item name, may be null or blank
+     * @param itemCode partial item code, may be null or blank
+     */
+    public void searchPharmacyBills(com.divudi.core.data.BillType billType,
+            com.divudi.core.data.BillTypeAtomic billTypeAtomic,
+            com.divudi.core.entity.Item item,
+            String itemName,
+            String itemCode,
+            int maxResult) {
         com.divudi.core.data.BillType bt = billTypeAtomic != null ? billTypeAtomic.getBillType() : billType;
         resultView = resolveResultView(bt, billTypeAtomic);
         if (resultView == null) {
@@ -5457,6 +5526,8 @@ public class PharmacyBillSearch implements Serializable {
         // so force the selected bill type when searching by bill type.
         criteriaBillType = billTypeAtomic == null && !fetchFiltersOnBillType(resultView, bt) ? bt : null;
         criteriaItem = item;
+        criteriaItemName = trimToNull(itemName);
+        criteriaItemCode = trimToNull(itemCode);
         try {
             switch (resultView) {
                 case "sale":
@@ -5514,6 +5585,8 @@ public class PharmacyBillSearch implements Serializable {
             criteriaBillTypeAtomic = null;
             criteriaBillType = null;
             criteriaItem = null;
+            criteriaItemName = null;
+            criteriaItemCode = null;
         }
     }
 
@@ -6435,20 +6508,23 @@ public class PharmacyBillSearch implements Serializable {
         m.put("td", searchController.getToDate());
         m.put("dep", sessionController.getDepartment());
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO("
-                + "b.id, COALESCE(b.deptId, ''), COALESCE(b.referenceBill.deptId, ''), "
-                + "COALESCE(b.toInstitution.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
+                + "b.id, COALESCE(b.deptId, ''), COALESCE(refBill.deptId, ''), "
+                + "COALESCE(toIns.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
                 + "b.cancelled, cb.createdAt, COALESCE(cancellerPerson.name, ''), "
                 + "b.refunded, rb.createdAt, COALESCE(refunderPerson.name, ''), "
                 + "COALESCE(cb.comments, rb.comments, ''), b.paymentMethod, "
                 + "b.netTotal, b.saleValue) "
-                + "FROM BilledBill b "
+                + "FROM Bill b "
+                + "LEFT JOIN b.referenceBill refBill LEFT JOIN b.toInstitution toIns "
                 + "LEFT JOIN b.creater creater LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb LEFT JOIN cb.creater canceller "
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
                 + "LEFT JOIN b.refundedBill rb LEFT JOIN rb.creater refunder "
                 + "LEFT JOIN refunder.webUserPerson refunderPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
-                + "AND b.department = :dep AND b.retired = false ORDER BY b.createdAt DESC";
+                + "AND b.department = :dep AND b.retired = false "
+                + returnBillClassCondition(m)
+                + "ORDER BY b.createdAt DESC";
         sql = applyCriteria(sql, m);
         if (maxResult > 0) {
             grnReturnSearchDtos = (List<com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO>)
@@ -6723,20 +6799,21 @@ public class PharmacyBillSearch implements Serializable {
         m.put("dep", sessionController.getDepartment());
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseReturnSearchDTO("
                 + "b.id, refBill.id, COALESCE(b.deptId, ''), COALESCE(refBill.deptId, ''), "
-                + "COALESCE(b.toInstitution.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
+                + "COALESCE(toIns.name, ''), b.createdAt, COALESCE(creatorPerson.name, ''), "
                 + "b.cancelled, cb.createdAt, COALESCE(cancellerPerson.name, ''), "
                 + "b.refunded, rb.createdAt, COALESCE(refunderPerson.name, ''), "
                 + "COALESCE(cb.comments, rb.comments, ''), b.paymentMethod, "
                 + "b.netTotal, b.saleValue) "
-                + "FROM BilledBill b "
-                + "LEFT JOIN b.referenceBill refBill "
+                + "FROM Bill b "
+                + "LEFT JOIN b.referenceBill refBill LEFT JOIN b.toInstitution toIns "
                 + "LEFT JOIN b.creater creater LEFT JOIN creater.webUserPerson creatorPerson "
                 + "LEFT JOIN b.cancelledBill cb LEFT JOIN cb.creater canceller "
                 + "LEFT JOIN canceller.webUserPerson cancellerPerson "
                 + "LEFT JOIN b.refundedBill rb LEFT JOIN rb.creater refunder "
                 + "LEFT JOIN refunder.webUserPerson refunderPerson "
                 + "WHERE b.billType = :bt AND b.createdAt BETWEEN :fd AND :td "
-                + "AND b.department = :dep AND b.retired = false";
+                + "AND b.department = :dep AND b.retired = false "
+                + returnBillClassCondition(m).trim();
 
         // billNo filter ("Return Note No" input) filters the bill's own deptId.
         if (searchController.getSearchKeyword().getBillNo() != null
@@ -6750,10 +6827,10 @@ public class PharmacyBillSearch implements Serializable {
             sql += " AND (refBill.deptId) LIKE :refBillNo";
             m.put("refBillNo", "%" + searchController.getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
         }
-        // toInstitution filter ("Supplier Name" input) filters b.toInstitution.name.
+        // toInstitution filter ("Supplier Name" input) filters the supplier name.
         if (searchController.getSearchKeyword().getToInstitution() != null
                 && !searchController.getSearchKeyword().getToInstitution().trim().isEmpty()) {
-            sql += " AND UPPER(b.toInstitution.name) LIKE :toIns";
+            sql += " AND UPPER(toIns.name) LIKE :toIns";
             m.put("toIns", "%" + searchController.getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
