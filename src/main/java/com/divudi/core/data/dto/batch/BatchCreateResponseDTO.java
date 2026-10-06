@@ -32,6 +32,8 @@ public class BatchCreateResponseDTO implements Serializable {
     private Double requestedRetailRate;
     private Double requestedPurchaseRate;
     private Double requestedCostRate;
+    private Double wholesaleRate;
+    private Double requestedWholesaleRate;
     private Double quantity;
     private Long adjustmentBillId;
     private String adjustmentBillNumber;
@@ -206,6 +208,22 @@ public class BatchCreateResponseDTO implements Serializable {
 
     public void setAdjustmentBillNumber(String adjustmentBillNumber) {
         this.adjustmentBillNumber = adjustmentBillNumber;
+    }
+
+    public Double getWholesaleRate() {
+        return wholesaleRate;
+    }
+
+    public void setWholesaleRate(Double wholesaleRate) {
+        this.wholesaleRate = wholesaleRate;
+    }
+
+    public Double getRequestedWholesaleRate() {
+        return requestedWholesaleRate;
+    }
+
+    public void setRequestedWholesaleRate(Double requestedWholesaleRate) {
+        this.requestedWholesaleRate = requestedWholesaleRate;
     }
 
     @Override

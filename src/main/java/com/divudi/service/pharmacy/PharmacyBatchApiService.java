@@ -140,7 +140,9 @@ public class PharmacyBatchApiService implements Serializable {
         boolean ratesDiffer = !batchCreated
                 && (ratesDiffer(request.getRetailRate(), itemBatch.getRetailsaleRate())
                 || ratesDiffer(purchaseRate, itemBatch.getPurcahseRate())
-                || ratesDiffer(costRate, itemBatch.getCostRate()));
+                || ratesDiffer(costRate, itemBatch.getCostRate())
+                || (request.getWholesaleRate() != null
+                && ratesDiffer(request.getWholesaleRate(), itemBatch.getWholesaleRate())));
 
         StringBuilder message = new StringBuilder(batchCreated ? "Created new batch" : "Used existing batch");
         if (ratesDiffer) {
@@ -149,8 +151,13 @@ public class PharmacyBatchApiService implements Serializable {
         message.append(stockCreated ? "; created department stock" : "; reused existing department stock");
 
         AdjustmentResponseDTO adjustment = null;
+        if (request.getInitialQuantity() != null && stock.getStock() == null) {
+            // Legacy rows can hold a null quantity; the adjustment path needs a number to start from.
+            stock.setStock(0.0);
+            stockFacade.edit(stock);
+        }
         if (request.getInitialQuantity() != null
-                && Math.abs(request.getInitialQuantity() - currentQuantity(stock)) > RATE_TOLERANCE) {
+                && Double.compare(request.getInitialQuantity(), currentQuantity(stock)) != 0) {
             String comment = request.getComment();
             if (comment == null || comment.trim().isEmpty()) {
                 comment = "Initial quantity on batch creation";
@@ -181,7 +188,9 @@ public class PharmacyBatchApiService implements Serializable {
             response.setRequestedRetailRate(request.getRetailRate());
             response.setRequestedPurchaseRate(purchaseRate);
             response.setRequestedCostRate(costRate);
+            response.setRequestedWholesaleRate(request.getWholesaleRate());
         }
+        response.setWholesaleRate(itemBatch.getWholesaleRate());
         response.setQuantity(currentQuantity(stock));
         if (adjustment != null) {
             response.setAdjustmentBillId(adjustment.getBillId());
@@ -274,8 +283,9 @@ public class PharmacyBatchApiService implements Serializable {
         if (expiry.before(today) && !Boolean.TRUE.equals(request.getAllowPastExpiry())) {
             throw new Exception("Expiry date must be today or a future date (set allowPastExpiry=true to record expired stock)");
         }
-        if (request.getInitialQuantity() != null && request.getInitialQuantity() < 0) {
-            throw new Exception("Initial quantity cannot be negative");
+        if (request.getInitialQuantity() != null
+                && (!Double.isFinite(request.getInitialQuantity()) || request.getInitialQuantity() < 0)) {
+            throw new Exception("Initial quantity must be a number zero or above");
         }
     }
 

@@ -87,7 +87,7 @@ Creates (or reuses) an `ItemBatch` and the department's `Stock` row, optionally 
 quantity in the same call.
 
 ```json
-{"itemId":1234,"batchNo":"BATCH001","expiryDate":"2025-12-31","retailRate":100.0,
+{"itemId":1234,"batchNo":"BATCH001","expiryDate":"2027-12-31","retailRate":100.0,
  "purchaseRate":85.0,"costRate":null,"wholesaleRate":90.0,"departmentId":456,
  "comment":"Theatre stock take","initialQuantity":12,"allowPastExpiry":false}
 ```
@@ -97,12 +97,13 @@ quantity in the same call.
 - **Existing batch:** a matching `(itemId, batchNo, expiryDate)` is reused and **keeps its own
   rates**; the request's rates are not applied. When they differ, the response has
   `ratesDiffer: true` and echoes `requestedRetailRate` / `requestedPurchaseRate` /
-  `requestedCostRate` so the caller can run a rate adjustment. `batchCreated` says which happened.
+  `requestedCostRate` / `requestedWholesaleRate` so the caller can run a rate adjustment
+  (wholesale is compared only when the request supplies it). `batchCreated` says which happened.
 - **Existing stock:** if the department already has a `Stock` row for the batch, that row is
   returned (`stockCreated: false`); a second row is never created.
 - `expiryDate` must be today or later unless `allowPastExpiry: true` (to record expired stock
   found in a stock take). The flag needs `PharmacyAdjustmentExpiryDate` for the department.
-- `initialQuantity` (≥ 0) sets the department stock to that quantity through the same path as
+- `initialQuantity` (a number ≥ 0) sets the department stock to that quantity through the same path as
   `stock_quantity`, so a stock-adjustment bill and stock history are written. It is an absolute
   quantity, not an addition; nothing is posted if the stock already holds it. `comment` is used
   as the adjustment comment (default "Initial quantity on batch creation"). Needs
@@ -110,7 +111,7 @@ quantity in the same call.
 - Without either option the call needs no privilege beyond a valid key (unchanged).
 
 Response `data`: `batchId`, `stockId`, `batchNo`, `item`, `departmentName`, `retailRate`,
-`purchaseRate`, `costRate`, `expiryDate` (the batch's actual values), `message`,
+`purchaseRate`, `costRate`, `wholesaleRate`, `expiryDate` (the batch's actual values), `message`,
 `batchCreated`, `stockCreated`, `ratesDiffer`, `requested*Rate` (null unless rates differ),
 `quantity` (stock after the call), `adjustmentBillId` / `adjustmentBillNumber` (null unless
 `initialQuantity` changed the stock).
