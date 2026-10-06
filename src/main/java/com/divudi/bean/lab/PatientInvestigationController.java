@@ -1559,6 +1559,10 @@ public class PatientInvestigationController implements Serializable {
         return items;
     }
 
+    public void setItems(List<PatientInvestigation> items) {
+        this.items = items;
+    }
+
     public List<PatientInvestigation> getLstToSamle() {
         return lstToSamle;
     }
