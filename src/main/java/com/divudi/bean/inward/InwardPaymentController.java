@@ -91,6 +91,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     @Inject
     private InwardBeanController inwardBean;
     @Inject
+    private AdmissionController admissionController;
+    @Inject
     private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
@@ -234,7 +236,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     public String navigateToInpationDashbord() {
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                getCurrent() == null ? null : getCurrent().getPatientEncounter());
     }
 
     public String navigateToPatientRefund() {

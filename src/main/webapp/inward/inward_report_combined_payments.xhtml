@@ -72,7 +72,8 @@
                                                              and inwardCombinedPaymentReportController.summaryView}">
                                     <p:dataExporter type="xlsx"
                                                     target="tblSubtotals"
-                                                    fileName="Combined Inward Payments Summary" />
+                                                    fileName="Combined Inward Payments Summary"
+                                                    postProcessor="#{inwardCombinedPaymentReportController.postProcessExport}" />
                                 </p:commandButton>
 
                                 <p:commandButton ajax="false"
@@ -84,7 +85,7 @@
                                     <p:dataExporter type="xlsx"
                                                     target="tblRows"
                                                     fileName="Combined Inward Payments"
-                                                    postProcessor="#{inwardCombinedPaymentReportController.postProcessRowsExport}" />
+                                                    postProcessor="#{inwardCombinedPaymentReportController.postProcessExport}" />
                                 </p:commandButton>
 
                             </div>
@@ -118,15 +119,20 @@
                                             </p:panel>
                                         </div>
                                         <div class="col-6 col-md-3">
+                                            <p:panel header="Cancelled" styleClass="text-end">
+                                                <h:outputText value="#{inwardCombinedPaymentReportController.totalCancelled}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                                <div class="small text-muted">
+                                                    <h:outputText value="#{inwardCombinedPaymentReportController.cancelledCount} bill(s) cancelled" />
+                                                </div>
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-6 col-md-3">
                                             <p:panel header="Net" styleClass="text-end fw-bold">
                                                 <h:outputText value="#{inwardCombinedPaymentReportController.grandTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
-                                            </p:panel>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <p:panel header="Cancelled Bills" styleClass="text-end">
-                                                <h:outputText value="#{inwardCombinedPaymentReportController.cancelledCount}" />
                                             </p:panel>
                                         </div>
                                     </div>
@@ -154,6 +160,12 @@
 
                                         <p:column headerText="Refunded" styleClass="text-end">
                                             <h:outputText value="#{g.cashOut}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Cancelled" styleClass="text-end">
+                                            <h:outputText value="#{g.cancelled}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </p:column>
@@ -212,7 +224,7 @@
                                         </p:column>
 
                                         <p:column headerText="Status">
-                                            <h:outputText value="#{r.cancelled ? 'Cancelled' : ''}" />
+                                            <h:outputText value="#{r.statusLabel}" />
                                         </p:column>
 
                                     </p:dataTable>
