@@ -10,6 +10,7 @@ import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
@@ -23,7 +24,10 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Backs the self-service home page landed on by a Collecting Centre
@@ -150,12 +154,31 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.searchPatientSamples();
     }
 
+    /**
+     * Lists the centre's patient investigations; the page shows every report
+     * of each investigation in its Action column.
+     */
     public void searchSelfReports() {
         if (!restrictSampleManagementToOwnCollectingCentre()) {
-            patientInvestigationController.setPatientReports(null);
+            patientInvestigationController.setItems(null);
             return;
         }
-        patientInvestigationController.searchPatientReports();
+        patientInvestigationController.searchPatientInvestigations();
+    }
+
+    public List<PatientReport> findSelfReportsOfInvestigation(PatientInvestigation investigation) {
+        if (investigation == null || investigation.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT r "
+                + " FROM PatientReport r "
+                + " WHERE r.retired = :ret "
+                + " AND r.patientInvestigation.id = :piId "
+                + " ORDER BY r.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("piId", investigation.getId());
+        return patientReportFacade.findByJpql(jpql, params);
     }
 
     public void clearSelfSampleManagementFilters() {
@@ -188,7 +211,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
         if (ownBill == null) {
             return;
         }
-        patientInvestigationController.navigateToPatientReportsFromSelectedBill(ownBill);
+        patientInvestigationController.navigateToInvestigationsFromSelectedBill(ownBill);
     }
 
     public void collectSelfSamples() {
