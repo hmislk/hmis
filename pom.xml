@@ -16,7 +16,7 @@
         <!-- One version for ALL Jackson artifacts. Never bump a single Jackson artifact on its own:
              jackson-databind needs jackson-core and jackson-annotations of the same minor version,
              otherwise it fails at runtime (NoClassDefFoundError) even though compilation passes. -->
-        <jackson.version>2.18.10</jackson.version>
+        <jackson.version>2.18.11</jackson.version>
     </properties>
 
     <!-- Dependency Management removed - using explicit versions for better reliability in CI/CD -->

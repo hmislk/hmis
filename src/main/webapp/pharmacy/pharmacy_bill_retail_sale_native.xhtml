@@ -20,6 +20,76 @@
                     <p:growl id="panelError" />
                     <p:defaultCommand target="btnAdd" />
 
+                    <!-- Partial-stock warning: centred modal over a blurred page so it cannot be missed -->
+                    <style>
+                        [id$='stockShortageDlg_modal'] {
+                            backdrop-filter: blur(4px);
+                            -webkit-backdrop-filter: blur(4px);
+                            background-color: rgba(0, 0, 0, 0.35);
+                        }
+                    </style>
+                    <script>
+                        // While the stock-shortage dialog is open, Enter/Space/Esc close it regardless of
+                        // where focus is (p:focus and the dialog's own auto-focus can steal focus from OK).
+                        // Capture phase so it runs before p:defaultCommand and cannot re-trigger Add.
+                        function stockShortageKeyHandler(e) {
+                            if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar' || e.key === 'Escape') {
+                                e.preventDefault();
+                                e.stopImmediatePropagation();
+                                PF('stockShortageDialog').hide();
+                            }
+                        }
+                        function onStockShortageShow() {
+                            document.addEventListener('keydown', stockShortageKeyHandler, true);
+                            setTimeout(function () {
+                                var b = document.getElementById('bill:btnCloseStockShortage');
+                                if (b) { b.focus(); }
+                            }, 300);
+                        }
+                        function onStockShortageHide() {
+                            document.removeEventListener('keydown', stockShortageKeyHandler, true);
+                            // Deferred: the dialog restores focus to the previously focused element right after onHide.
+                            setTimeout(function () {
+                                var ac = document.getElementById('bill:acStockField_input');
+                                if (ac) { ac.focus(); }
+                            }, 100);
+                        }
+                    </script>
+                    <p:dialog
+                        id="stockShortageDlg"
+                        widgetVar="stockShortageDialog"
+                        header="Insufficient Stock"
+                        modal="true"
+                        resizable="false"
+                        draggable="false"
+                        closable="true"
+                        closeOnEscape="true"
+                        width="450"
+                        focus="btnCloseStockShortage"
+                        onShow="onStockShortageShow();"
+                        onHide="onStockShortageHide();">
+                        <h:panelGroup id="stockShortageContent" layout="block" class="text-center p-3">
+                            <i class="fa fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                            <div class="mt-3" style="font-size: 1.2rem; font-weight: bold;">
+                                <h:outputText value="#{retailSaleNativeSqlController.stockShortageMessage}" />
+                            </div>
+                            <div class="mt-2 text-muted">
+                                The available quantity has been added to the bill.
+                            </div>
+                        </h:panelGroup>
+                        <f:facet name="footer">
+                            <div class="text-center">
+                                <p:commandButton
+                                    id="btnCloseStockShortage"
+                                    value="OK"
+                                    icon="fa fa-check"
+                                    type="button"
+                                    styleClass="ui-button-warning"
+                                    onclick="PF('stockShortageDialog').hide();" />
+                            </div>
+                        </f:facet>
+                    </p:dialog>
+
                     <!-- ============================================================
                          ENTRY PANEL (hidden after settle)
                          ============================================================ -->
@@ -268,7 +338,8 @@
                                                             styleClass="ui-button-success"
                                                             action="#{retailSaleNativeSqlController.addBillItem()}"
                                                             process="@this acStock txtQty focusForAcIx"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal', view).clientId} :#{p:resolveFirstComponentWithId('dis', view).clientId} :#{p:resolveFirstComponentWithId('total', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} tblBillItem txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError', view).clientId}" />
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal', view).clientId} :#{p:resolveFirstComponentWithId('dis', view).clientId} :#{p:resolveFirstComponentWithId('total', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} tblBillItem txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError', view).clientId} :bill:stockShortageContent"
+                                                            oncomplete="if (args &amp;&amp; args.stockShortage) { PF('stockShortageDialog').show(); }" />
                                                     </div>
                                                     <div class="col-md-4">
                                                         <p:outputLabel class="w-100" for="txtRate">Rate</p:outputLabel>
