@@ -6,6 +6,7 @@ import com.divudi.bean.lab.PatientReportController;
 import com.divudi.bean.lab.PatientReportUploadController;
 import com.divudi.bean.report.ReportController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
@@ -129,6 +130,42 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setFromDate(CommonFunctions.getStartOfDay());
         patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
         restrictSampleManagementToOwnCollectingCentre();
+        return "/collecting_centre/cc_self_sample_management?faces-redirect=true";
+    }
+
+    public String navigateToSelfSampleManagementFromBill(Bill bill) {
+        List<Bill> bills = new ArrayList<>();
+        if (bill != null) {
+            bills.add(bill);
+        }
+        return navigateToSelfSampleManagementFromBills(bills);
+    }
+
+    /**
+     * Opens the self-service Sample Management page listing only the given
+     * bills, e.g. from the bill print page right after settling or from a
+     * bill opened through Search Bills. Bills of other centres are refused.
+     */
+    public String navigateToSelfSampleManagementFromBills(List<Bill> bills) {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return null;
+        }
+        List<Bill> ownBills = new ArrayList<>();
+        for (Bill b : bills) {
+            Bill ownBill = fetchOwnBill(b);
+            if (ownBill == null) {
+                return null;
+            }
+            ownBills.add(ownBill);
+        }
+        patientInvestigationController.makeNull();
+        patientInvestigationController.setSelectedPatientSamples(null);
+        patientInvestigationController.setFromDate(CommonFunctions.getStartOfDay());
+        patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
+        restrictSampleManagementToOwnCollectingCentre();
+        patientInvestigationController.setListingEntity(ListingEntity.BILLS);
+        patientInvestigationController.setBills(ownBills);
         return "/collecting_centre/cc_self_sample_management?faces-redirect=true";
     }
 
