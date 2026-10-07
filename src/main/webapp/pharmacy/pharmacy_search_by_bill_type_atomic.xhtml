@@ -40,10 +40,28 @@
                                         value="#{searchController.billTypeAtomic}">
                                         <f:selectItem itemLabel="Select Bill Type"/>
                                         <f:selectItems value="#{enumController.allUtilizedBillTypeAtomicsForPharmacy}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
-                                        <f:ajax event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
+                                        <f:ajax event="change" execute="@this" render="detail itemFilters" listener="#{searchController.makeNull}"/>
                                     </p:selectOneMenu>
 
                                     <p:spacer height="1" ></p:spacer>
+
+                                    <h:panelGroup id="itemFilters">
+                                        <h:panelGroup
+                                            layout="block"
+                                            rendered="#{searchController.billTypeAtomic eq 'PHARMACY_ORDER'
+                                                        or searchController.billTypeAtomic eq 'PHARMACY_ORDER_APPROVAL'
+                                                        or searchController.billTypeAtomic.billType eq 'PharmacyGrnBill'
+                                                        or searchController.billTypeAtomic.billType eq 'PharmacyPurchaseBill'
+                                                        or searchController.billTypeAtomic.billType eq 'PharmacyGrnReturn'
+                                                        or searchController.billTypeAtomic.billType eq 'PurchaseReturn'}">
+                                            <h:outputLabel value="Item Name" for="txtItemName"/>
+                                            <p:inputText id="txtItemName" autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="w-100" placeholder="Contains item name" />
+                                            <p:spacer height="1" ></p:spacer>
+                                            <h:outputLabel value="Item Code" for="txtItemCode"/>
+                                            <p:inputText id="txtItemCode" autocomplete="off" value="#{searchController.searchKeyword.code}" class="w-100" placeholder="Contains item code" />
+                                            <p:spacer height="1" ></p:spacer>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
 
                                     <h:outputLabel value="List Count"/>
                                     <p:inputText autocomplete="off" value="#{searchController.maxResult}" class="w-100" />
@@ -99,7 +117,7 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PurchaseReturn'}" >
-                                        <se:purchase_return />
+                                        <se:purchase_return showSearchInputs="false" />
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{searchController.billTypeAtomic.billType eq 'PharmacySale'}" >
