@@ -1321,6 +1321,7 @@ public abstract class AbstractFacade<T> {
         }
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        qry.setMaxResults(maxRecords);
 
         return qry.getResultList();
     }
