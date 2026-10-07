@@ -2303,7 +2303,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (!getBillItems().isEmpty()) {
-            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
+            getPreBill().setReferenceBill(bhtRequestBill);
         }
 
         for (BillItem tbi : tmpBillItems) {

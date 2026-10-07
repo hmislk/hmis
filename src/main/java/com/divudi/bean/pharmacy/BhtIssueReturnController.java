@@ -190,7 +190,11 @@ public class BhtIssueReturnController implements Serializable {
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
-        if (tmp.getQty() > getPharmacyRecieveBean().calQty4(tmp.getReferanceBillItem())) {
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            calTotal();
+            JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+        } else if (tmp.getQty() > getPharmacyRecieveBean().calQty4(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
             calTotal();
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");

@@ -19,7 +19,7 @@ independent gotcha in a topic file. Find it by symptom in that file's heading li
 or by § number below, and read only that section.
 
 - **[PrimeFaces widgets and AJAX in tests](playwright-e2e/primefaces-widgets.md)**: §9, §10, §12, §13, §18, §37, §50, §56, §68, §71, §72, §77, §78, §79, §80, §90, §94, §101, §105, §108, §109, §113, §116, §117, §123, §128, §129, §131, §137, §140
-- **[Menus, navigation, sessions, hung pages](playwright-e2e/navigation-session.md)**: §11, §14, §16, §17, §19, §28, §32, §36, §46, §47, §52, §57, §62, §64, §89, §99, §106, §114b, §127, §136
+- **[Menus, navigation, sessions, hung pages](playwright-e2e/navigation-session.md)**: §11, §14, §16, §17, §19, §28, §32, §36, §46, §47, §52, §57, §62, §64, §89, §99, §106, §114b, §127, §136, §142
 - **[Privileges, departments, ConfigOption and caches](playwright-e2e/privileges-config.md)**: §20, §24, §26, §35, §44, §48, §93, §96, §97, §107b, §114, §124, §135, §138
 - **[Local Payara, asadmin, DB drift and seed data](playwright-e2e/environment-db.md)**: §27, §34, §38, §39, §41, §63, §73, §74, §87, §98, §102, §104, §111, §118, §119, §141
 - **[Screenshots, printing, exports, styling checks](playwright-e2e/evidence-printing.md)**: §43, §83, §84, §110, §115, §120, §133
