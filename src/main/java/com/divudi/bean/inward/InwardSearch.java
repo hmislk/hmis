@@ -3231,13 +3231,9 @@ public class InwardSearch implements Serializable {
             cancelledBillReceipt = billFacade.findInwardBillReceiptDTO(cb.getId());
             if (cancelledBillReceipt != null) {
                 // A cancellation bill points at its original through billedBill, not
-                // referenceBill, and billDate is DATE-only, so the receipt's time
-                // comes from createdAt.
+                // referenceBill.
                 if (cancelledBillReceipt.getReferenceBillDeptId() == null && cb.getBilledBill() != null) {
                     cancelledBillReceipt.setReferenceBillDeptId(cb.getBilledBill().getDeptId());
-                }
-                if (cb.getCreatedAt() != null) {
-                    cancelledBillReceipt.setBillDate(cb.getCreatedAt());
                 }
             }
         }
