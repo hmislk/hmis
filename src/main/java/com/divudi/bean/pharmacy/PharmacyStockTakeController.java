@@ -2784,10 +2784,8 @@ public class PharmacyStockTakeController implements Serializable {
                 byStock.put(key, g);
             }
             g.lastQty = qty;
+            g.lastLineId = lineId;
             g.sumAdjustedValue += adjusted != null ? adjusted : 0.0;
-            if (lineId != null) {
-                g.lineIds.add(lineId);
-            }
         }
         groups.addAll(byStock.values());
         return groups;
@@ -3040,7 +3038,10 @@ public class PharmacyStockTakeController implements Serializable {
         // Batches added during the stock take have no snapshot line (#24350): before = stock
         // before the first count, after = last count; Step 3 overrides both from the posted
         // adjustment lines where those exist.
-        java.util.Set<VarianceDetailedRow> addedRowsWithBefore = new java.util.HashSet<>();
+        // For an added batch only the first count's adjustment may set Before and only the
+        // last count's may set After; a boundary with no adjustment keeps the counted value.
+        java.util.Set<Long> addedFirstLineIds = new java.util.HashSet<>();
+        java.util.Set<Long> addedLastLineIds = new java.util.HashSet<>();
         for (AddedBatchLines g : loadAddedBatchLines(physBillIds)) {
             VarianceDetailedRow vr = new VarianceDetailedRow();
             vr.setAddedDuringStockTake(true);
@@ -3054,8 +3055,13 @@ public class PharmacyStockTakeController implements Serializable {
             vr.setDosageForm(g.dosageForm);
             vr.setQtyBefore(g.initialQty());
             vr.setQtyAfter(g.lastQty != null ? g.lastQty : 0.0);
-            for (Long lineId : g.lineIds) {
-                physToRow.put(lineId, vr);
+            if (g.firstLineId != null) {
+                physToRow.put(g.firstLineId, vr);
+                addedFirstLineIds.add(g.firstLineId);
+            }
+            if (g.lastLineId != null) {
+                physToRow.put(g.lastLineId, vr);
+                addedLastLineIds.add(g.lastLineId);
             }
             varianceDetailedRows.add(vr);
         }
@@ -3100,11 +3106,11 @@ public class PharmacyStockTakeController implements Serializable {
             }
             Double before = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
             Double after = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : null;
-            // An added batch counted in several uploads keeps the stock before its first count.
-            if (before != null && (!vr.isAddedDuringStockTake() || addedRowsWithBefore.add(vr))) {
+            boolean added = vr.isAddedDuringStockTake();
+            if (before != null && (!added || addedFirstLineIds.contains(physId))) {
                 vr.setQtyBefore(before);
             }
-            if (after != null) {
+            if (after != null && (!added || addedLastLineIds.contains(physId))) {
                 vr.setQtyAfter(after);
             }
         }
@@ -5526,11 +5532,11 @@ public class PharmacyStockTakeController implements Serializable {
      */
     private static class AddedBatchLines {
         Long firstLineId;
+        Long lastLineId;
         Double firstQty;
         Double firstAdjustedValue;
         Double lastQty;
         double sumAdjustedValue;
-        final List<Long> lineIds = new ArrayList<>();
         String batchNo;
         Double purchaseRate;
         Double retailRate;
