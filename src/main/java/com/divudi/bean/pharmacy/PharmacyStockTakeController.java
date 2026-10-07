@@ -2732,6 +2732,67 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_stock_take_variance_detailed?faces-redirect=true";
     }
 
+    /**
+     * Loads the lines of the given approved physical-count bills that have no
+     * snapshot line (batches added during the stock take, #24337), grouped per
+     * department stock row in upload order (#24350).
+     */
+    private List<AddedBatchLines> loadAddedBatchLines(List<Long> physBillIds) {
+        List<AddedBatchLines> groups = new ArrayList<>();
+        if (physBillIds == null || physBillIds.isEmpty()) {
+            return groups;
+        }
+        String jpql = "SELECT bi.id, bi.qty, bi.adjustedValue, st.id, "
+                + "ib.batchNo, ib.purcahseRate, ib.retailsaleRate, ib.costRate, "
+                + "it.code, it.name, cat.name, df.name "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN pbi.stock st "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "LEFT JOIN ib.item it "
+                + "LEFT JOIN it.category cat "
+                + "LEFT JOIN it.dosageForm df "
+                + "WHERE bi.bill.id IN :pbs AND bi.referanceBillItem IS NULL AND bi.retired = false "
+                + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pbs", physBillIds);
+        List<Object[]> rows = billItemFacade.findObjectArrayByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        if (rows == null) {
+            return groups;
+        }
+        java.util.Map<Object, AddedBatchLines> byStock = new java.util.LinkedHashMap<>();
+        for (Object[] r : rows) {
+            Long lineId = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+            Double qty = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
+            Double adjusted = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : 0.0;
+            Long stockId = r[3] instanceof Number ? ((Number) r[3]).longValue() : null;
+            Object key = stockId != null ? (Object) ("S" + stockId) : (Object) ("L" + lineId);
+            AddedBatchLines g = byStock.get(key);
+            if (g == null) {
+                g = new AddedBatchLines();
+                g.firstLineId = lineId;
+                g.firstQty = qty;
+                g.firstAdjustedValue = adjusted;
+                g.batchNo = r[4] != null ? r[4].toString() : null;
+                g.purchaseRate = r[5] instanceof Number ? ((Number) r[5]).doubleValue() : null;
+                g.retailRate = r[6] instanceof Number ? ((Number) r[6]).doubleValue() : null;
+                g.costRate = r[7] instanceof Number ? ((Number) r[7]).doubleValue() : null;
+                g.code = r[8] != null ? r[8].toString() : null;
+                g.itemName = r[9] != null ? r[9].toString() : null;
+                g.category = r[10] != null ? r[10].toString() : null;
+                g.dosageForm = r[11] != null ? r[11].toString() : null;
+                byStock.put(key, g);
+            }
+            g.lastQty = qty;
+            g.sumAdjustedValue += adjusted != null ? adjusted : 0.0;
+            if (lineId != null) {
+                g.lineIds.add(lineId);
+            }
+        }
+        groups.addAll(byStock.values());
+        return groups;
+    }
+
     // Build aggregated variance rows for the selected snapshot using scalar JPQL projections
     private void prepareVarianceRows() {
         varianceRows = new java.util.ArrayList<>();
@@ -2842,6 +2903,25 @@ public class PharmacyStockTakeController implements Serializable {
         // with multiple batches to appear twice: once with the real variance, once as a
         // zero-variance ghost row from the un-uploaded batch.
         varianceRows.removeIf(vr -> vr.getLastPhysicalQty() == null);
+
+        // Batches added during the stock take have no snapshot line; list them after the
+        // snapshot rows so the report covers every adjusted line (#24350).
+        for (AddedBatchLines g : loadAddedBatchLines(physBillIds)) {
+            VarianceRow vr = new VarianceRow();
+            vr.setAddedDuringStockTake(true);
+            vr.setItemName(g.itemName);
+            vr.setCode(g.code);
+            vr.setBatchNo(g.batchNo);
+            vr.setCategory(g.category);
+            vr.setDosageForm(g.dosageForm);
+            vr.setPurchaseRate(g.purchaseRate);
+            vr.setRetailRate(g.retailRate);
+            vr.setCostRate(g.costRate);
+            vr.setInitialQty(g.initialQty());
+            vr.setSumVariance(g.sumAdjustedValue);
+            vr.setLastPhysicalQty(g.lastQty);
+            varianceRows.add(vr);
+        }
     }
 
     // Build detailed before/after-adjustment rows for the selected snapshot. Same scope as
@@ -2927,7 +3007,8 @@ public class PharmacyStockTakeController implements Serializable {
         pp.put("pbs", physBillIds);
         List<Object[]> physRows = billItemFacade.findObjectArrayByJpql(jpqlPhys, pp, javax.persistence.TemporalType.TIMESTAMP);
 
-        java.util.Map<Long, Long> physToSnapshot = new java.util.HashMap<>();
+        // physical-count line id -> report row, for the adjustment overlay in Step 3
+        java.util.Map<Long, VarianceDetailedRow> physToRow = new java.util.HashMap<>();
         if (physRows != null) {
             for (Object[] pr : physRows) {
                 Long physId = pr[0] instanceof Number ? ((Number) pr[0]).longValue() : null;
@@ -2943,7 +3024,7 @@ public class PharmacyStockTakeController implements Serializable {
                 vr.setQtyAfter(physQty != null ? physQty : 0.0);
                 uploaded.put(snapId, true);
                 if (physId != null) {
-                    physToSnapshot.put(physId, snapId);
+                    physToRow.put(physId, vr);
                 }
             }
         }
@@ -2954,6 +3035,29 @@ public class PharmacyStockTakeController implements Serializable {
             if (Boolean.TRUE.equals(uploaded.get(e.getKey()))) {
                 varianceDetailedRows.add(e.getValue());
             }
+        }
+
+        // Batches added during the stock take have no snapshot line (#24350): before = stock
+        // before the first count, after = last count; Step 3 overrides both from the posted
+        // adjustment lines where those exist.
+        java.util.Set<VarianceDetailedRow> addedRowsWithBefore = new java.util.HashSet<>();
+        for (AddedBatchLines g : loadAddedBatchLines(physBillIds)) {
+            VarianceDetailedRow vr = new VarianceDetailedRow();
+            vr.setAddedDuringStockTake(true);
+            vr.setPurchaseRate(g.purchaseRate);
+            vr.setRetailRate(g.retailRate);
+            vr.setCostRate(g.costRate);
+            vr.setBatchNo(g.batchNo);
+            vr.setCode(g.code);
+            vr.setItemName(g.itemName);
+            vr.setCategory(g.category);
+            vr.setDosageForm(g.dosageForm);
+            vr.setQtyBefore(g.initialQty());
+            vr.setQtyAfter(g.lastQty != null ? g.lastQty : 0.0);
+            for (Long lineId : g.lineIds) {
+                physToRow.put(lineId, vr);
+            }
+            varianceDetailedRows.add(vr);
         }
 
         // --- Step 3: overlay authoritative before/after from the posted adjustment bill,
@@ -2977,7 +3081,8 @@ public class PharmacyStockTakeController implements Serializable {
         String jpqlAdj = "SELECT abi.referanceBillItem.id, pbi.beforeAdjustmentValue, pbi.afterAdjustmentValue "
                 + "FROM BillItem abi "
                 + "LEFT JOIN abi.pharmaceuticalBillItem pbi "
-                + "WHERE abi.bill.id IN :abs";
+                + "WHERE abi.bill.id IN :abs "
+                + "ORDER BY abi.bill.createdAt ASC, abi.bill.id ASC, abi.id ASC";
         HashMap<String, Object> adp = new HashMap<>();
         adp.put("abs", adjBillIds);
         List<Object[]> adjRows = billItemFacade.findObjectArrayByJpql(jpqlAdj, adp, javax.persistence.TemporalType.TIMESTAMP);
@@ -2989,17 +3094,14 @@ public class PharmacyStockTakeController implements Serializable {
             if (physId == null) {
                 continue;
             }
-            Long snapId = physToSnapshot.get(physId);
-            if (snapId == null) {
-                continue;
-            }
-            VarianceDetailedRow vr = map.get(snapId);
+            VarianceDetailedRow vr = physToRow.get(physId);
             if (vr == null) {
                 continue;
             }
             Double before = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
             Double after = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : null;
-            if (before != null) {
+            // An added batch counted in several uploads keeps the stock before its first count.
+            if (before != null && (!vr.isAddedDuringStockTake() || addedRowsWithBefore.add(vr))) {
                 vr.setQtyBefore(before);
             }
             if (after != null) {
@@ -5305,6 +5407,7 @@ public class PharmacyStockTakeController implements Serializable {
         private Double initialQty;
         private Double sumVariance;
         private Double lastPhysicalQty;
+        private boolean addedDuringStockTake;
 
         public Long getBillItemId() { return billItemId; }
         public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
@@ -5344,6 +5447,11 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Alias used in XHTML column: r.batch
         public String getBatch() { return batchNo; }
+
+        public boolean isAddedDuringStockTake() { return addedDuringStockTake; }
+        public void setAddedDuringStockTake(boolean addedDuringStockTake) { this.addedDuringStockTake = addedDuringStockTake; }
+
+        public String getSource() { return addedDuringStockTake ? SOURCE_ADDED : SOURCE_SNAPSHOT; }
     }
 
     // DTO for variance detailed report — before/after adjustment quantities & values, no entity references
@@ -5359,6 +5467,7 @@ public class PharmacyStockTakeController implements Serializable {
         private Double costRate;
         private Double qtyBefore;
         private Double qtyAfter;
+        private boolean addedDuringStockTake;
 
         public String getCode() { return code; }
         public void setCode(String code) { this.code = code; }
@@ -5401,6 +5510,42 @@ public class PharmacyStockTakeController implements Serializable {
         public Double getValueVarianceAtCostRate() { return getValueAfterAtCostRate() - getValueBeforeAtCostRate(); }
         public Double getValueVarianceAtRetailRate() { return getValueAfterAtRetailRate() - getValueBeforeAtRetailRate(); }
         public Double getValueVarianceAtPurchaseRate() { return getValueAfterAtPurchaseRate() - getValueBeforeAtPurchaseRate(); }
+
+        public boolean isAddedDuringStockTake() { return addedDuringStockTake; }
+        public void setAddedDuringStockTake(boolean addedDuringStockTake) { this.addedDuringStockTake = addedDuringStockTake; }
+
+        public String getSource() { return addedDuringStockTake ? SOURCE_ADDED : SOURCE_SNAPSHOT; }
+    }
+
+    private static final String SOURCE_SNAPSHOT = "Snapshot";
+    private static final String SOURCE_ADDED = "Added (not in snapshot)";
+
+    /**
+     * Physical-count lines of one batch that was not in the snapshot but was
+     * added during the stock take (#24337), in upload order (#24350).
+     */
+    private static class AddedBatchLines {
+        Long firstLineId;
+        Double firstQty;
+        Double firstAdjustedValue;
+        Double lastQty;
+        double sumAdjustedValue;
+        final List<Long> lineIds = new ArrayList<>();
+        String batchNo;
+        Double purchaseRate;
+        Double retailRate;
+        Double costRate;
+        String code;
+        String itemName;
+        String category;
+        String dosageForm;
+
+        /** Stock before the first count: counted qty minus the posted variance. */
+        double initialQty() {
+            double q = firstQty != null ? firstQty : 0.0;
+            double a = firstAdjustedValue != null ? firstAdjustedValue : 0.0;
+            return q - a;
+        }
     }
 
     /** Scalar snapshot reference — replaces full BillItem entity pre-load. */
