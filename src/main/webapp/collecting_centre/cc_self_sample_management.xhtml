@@ -83,6 +83,17 @@
                                                     <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
                                                 </p:selectOneMenu>
                                             </div>
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="Investigation" for="txtInvestigation"/>
+                                                <p:inputText id="txtInvestigation" autocomplete="off" placeholder="Enter investigation name" value="#{patientInvestigationController.investigationName}" class="w-100"/>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <h:outputLabel value="Bill Type" for="cmbBillingType"/>
+                                                <p:selectOneMenu id="cmbBillingType" class="w-100" value="#{patientInvestigationController.collectingCentreBillingType}">
+                                                    <f:selectItem itemLabel="All"/>
+                                                    <f:selectItems value="#{patientInvestigationController.collectingCentreBillingTypes}" var="cbt" itemValue="#{cbt}" itemLabel="#{cbt.label}"/>
+                                                </p:selectOneMenu>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-2 d-flex flex-column gap-2">
