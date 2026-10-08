@@ -93,6 +93,7 @@ public class CollectingCentrePaymentController implements Serializable {
     private double finalEndingBalanseInCC = 0.0;
 
     private double payingBalanceAcodingToCCBalabce = 0.0;
+    private double duePaymentAmount;
     private Bill currentPaymentBill;
 
     private List<CollectingCentrePaymentBillDTO> paymentBills;
@@ -154,6 +155,7 @@ public class CollectingCentrePaymentController implements Serializable {
         startingBalanseInCC = 0.0;
         finalEndingBalanseInCC = 0.0;
         payingBalanceAcodingToCCBalabce = 0.0;
+        duePaymentAmount = 0.0;
         currentPaymentBill = null;
         billNumber = null;
         paymentBills = null;
@@ -201,10 +203,15 @@ public class CollectingCentrePaymentController implements Serializable {
         // silently include activity that was already settled outside the selected date range.
         calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory, periodPaidAmount);
 
-        // The amount charged is always the value of the itemized bills being marked paid.
-        payingBalanceAcodingToCCBalabce = totalCCAmount;
-
         calculateTotalOfPaymentReceive();
+        
+        totalCCAmount = totalCCReceiveAmount - totalHospitalAmount;
+        
+        if(totalCCAmount >= 0.0){
+            duePaymentAmount = totalCCAmount;
+        }else{
+            duePaymentAmount = 0.0;
+        }
     }
 
     public long countUnpaidCCBillsBefore(Institution collectingCentre, Date beforeDate) {
@@ -312,7 +319,7 @@ public class CollectingCentrePaymentController implements Serializable {
         if (startingHistory != null && endingHistory != null) {
             payingBalance = endingHistory.getBalanceAfterTransaction() - (startingHistory.getBalanceBeforeTransaction() - paidCCAmount);
         }
-
+        
         if (payingBalance > 0.0) {
             payingBalanceAcodingToCCBalabce = payingBalance;
         } else {
@@ -662,9 +669,9 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setCollectingCentre(currentCollectingCentre);
 
         ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
-        ccAgentPaymentBill.setNetTotal(payingBalanceAcodingToCCBalabce);
-        ccAgentPaymentBill.setTotal(payingBalanceAcodingToCCBalabce);
-        ccAgentPaymentBill.setPaidAmount(payingBalanceAcodingToCCBalabce);
+        ccAgentPaymentBill.setNetTotal(duePaymentAmount);
+        ccAgentPaymentBill.setTotal(duePaymentAmount);
+        ccAgentPaymentBill.setPaidAmount(duePaymentAmount);
 
         // Record the CC repayment voucher figures so the voucher can be reprinted later.
         ccAgentPaymentBill.setCcBalanceBeforeTransaction(startingBalanseInCC);
@@ -1264,5 +1271,13 @@ public class CollectingCentrePaymentController implements Serializable {
         this.periodPaidAmount = periodPaidAmount;
     }
 // </editor-fold>
+
+    public double getDuePaymentAmount() {
+        return duePaymentAmount;
+    }
+
+    public void setDuePaymentAmount(double duePaymentAmount) {
+        this.duePaymentAmount = duePaymentAmount;
+    }
 
 }
