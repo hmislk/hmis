@@ -209,6 +209,7 @@
                                             rowKey="#{ps.id}"
                                             selectionMode="multiple"
                                             selection="#{patientInvestigationController.selectedPatientSamples}"
+                                            selectionDisabled="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"
                                             paginator="true"
                                             rows="15"
                                             paginatorPosition="bottom"
@@ -240,8 +241,14 @@
                                                 <h:outputText value="#{ps.bill.createdAt}" class="text-secondary">
                                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputText>
-                                                <br/>
-                                                <p:badge value="Self Billing" severity="success" rendered="#{ps.bill.department.departmentType eq 'CollectingCentre'}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Type" style="width: 9em; padding: 8px; vertical-align: top;" class="text-center">
+                                                <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
+                                                    <i class="fa-solid fa-lock me-1"></i>View only
+                                                </h:panelGroup>
                                             </p:column>
 
                                             <p:column headerText="Patient" style="width: 14em; padding: 8px; vertical-align: top;">
