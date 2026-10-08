@@ -247,6 +247,23 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.navigateToSamplesFromSelectedBill(ownBill);
     }
 
+    /**
+     * Shows the barcode sticker of only the clicked sample. Viewing and
+     * printing a sticker changes nothing, so Hospital Billing samples are
+     * allowed too.
+     */
+    public void viewSelfSampleBarcode(PatientSample sample) {
+        if (!restrictSampleManagementToOwnCollectingCentre()) {
+            return;
+        }
+        PatientSample fetched = (sample == null || sample.getId() == null) ? null : patientSampleFacade.find(sample.getId());
+        if (fetched == null || !isOwnBill(fetched.getBill())) {
+            JsfUtil.addErrorMessage("This sample does not belong to your collecting centre");
+            return;
+        }
+        patientInvestigationController.navigateToThePatientSample(fetched);
+    }
+
     public void listSelfReportsOfBill(Bill bill) {
         Bill ownBill = fetchOwnBill(bill);
         if (ownBill == null) {
