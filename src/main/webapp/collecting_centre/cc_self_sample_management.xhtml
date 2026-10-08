@@ -154,7 +154,7 @@
                                         <h:outputText value="#{b.deptId}"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
-                                        <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
                                         <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
                                     </p:column>
                                     <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
@@ -269,7 +269,7 @@
                                             </p:column>
 
                                             <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                                <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
                                                 <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
                                                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
                                                     <i class="fa-solid fa-lock me-1"></i>View only
@@ -423,7 +423,7 @@
                                     </p:column>
 
                                     <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                        <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
                                         <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
                                     </p:column>
 
