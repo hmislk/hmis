@@ -301,6 +301,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
             return;
         }
         patientInvestigationController.reGenerateSampleForRejectSamples();
+        
+       patientInvestigationController.setListingEntity(ListingEntity.PATIENT_SAMPLES);
     }
 
     /**
