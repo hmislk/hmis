@@ -211,8 +211,9 @@
                                 <h:outputText styleClass="fa fa-medkit mr-2"/>
                                 <p:outputLabel value="Discharge Type" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu  filter="true"  class="w-100" value="#{inwardReportController.dischargeType}">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
+                            <p:selectOneMenu  filter="true"  class="w-100" value="#{inwardReportController.dischargeCondition}"
+                                              converter="dischargeConditionConverter">
+                                <f:selectItem itemLabel="All" itemValue="#{null}"></f:selectItem>
                                 <f:selectItems value="#{dischargeConditionController.items}"
                                                var="i" itemLabel="#{i.name}" itemValue="#{i}"
                                                ></f:selectItems>
@@ -264,36 +265,23 @@
                                 <h:outputText styleClass="fa fa-user mr-2"/>
                                 <p:outputLabel value="Admission Status" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.admissionStatus}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Admission Statuses"/>
+                            <p:selectOneMenu value="#{inwardReportController.admissionDischargeStatus}" filter="true" class="w-100">
+                                <f:selectItem itemLabel="All Admission Statuses" itemValue=""/>
                                 <f:selectItems value="#{enumController.admissionStatuses}"
                                                var="status"
-                                               itemValue="#{status}" itemLabel="#{status.label}" />
+                                               itemValue="#{status.name()}" itemLabel="#{status.label}" />
+                                <f:selectItem itemLabel="Cancelled" itemValue="CANCELLED"/>
                             </p:selectOneMenu>
 
-                            <!--Admission Types--> 
+                            <!--Admission Category (AdmissionType)--> 
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-user mr-2"/>
-                                <p:outputLabel value="Admission Types" class="m-3"/>
+                                <p:outputLabel value="Admission Category" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All"/>
                                 <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
 
-                            </p:selectOneMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf2b9;" styleClass="fa m-2"/>
-                                <p:outputLabel value="Admission Category" for="admissionCat" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
-                                id="admissionCat"
-                                class="w-100"
-                                >
-                                <f:selectItem itemLabel="All" itemValue="" />
-                                <f:selectItem itemLabel="Observation" itemValue="Observation" />
-                                <f:selectItem itemLabel="Medical Checkup" itemValue="Medical Checkup" />
-                                <f:selectItem itemLabel="Surgery" itemValue="Surgery" /> 
                             </p:selectOneMenu>
 
                             <!--Payment Mode--> 
@@ -321,24 +309,41 @@
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All" />
+                                value="Print All"
+                                action="#{inwardReportController.navigateToAdmissionDischargeReportPrint()}"/>
 
                             <p:commandButton 
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download" />
+                                value="Download"
+                                action="#{inwardReportController.downloadAdmissionDischargeExcel()}"/>
 
                             <p:commandButton 
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF" />
+                                value="PDF"
+                                action="#{inwardReportController.downloadAdmissionDischargePdf()}"/>
 
                         </div>
 
-                        <!-- Wrapper div for horizontal scroll -->
+                        <!-- Search criteria used for the results below -->
+                        <h:panelGroup layout="block" styleClass="border rounded p-2 mb-3 bg-light"
+                                      rendered="#{inwardReportController.admissionDischargesList ne null}">
+                            <div class="fw-bold mb-1">Search Criteria</div>
+                            <div class="d-flex flex-wrap">
+                                <ui:repeat value="#{inwardReportController.admissionDischargeCriteria}" var="cr">
+                                    <div class="me-4 mb-1">
+                                        <h:outputText value="#{cr[0]}: " styleClass="fw-bold"/>
+                                        <h:outputText value="#{cr[1]}"/>
+                                    </div>
+                                </ui:repeat>
+                            </div>
+                        </h:panelGroup>
 
+                        <!-- Wrapper div for horizontal scroll -->
+                        <div style="overflow-x: auto;">
                         <p:dataTable id="tbl" value="#{inwardReportController.admissionDischargesList}" var="pe" rowIndexVar="row" paginator="false" rows="10" class="w-100">
                             <f:facet name="header">
                                 <h:outputLabel value="Admission Discharge Report" styleClass="font-bold text-2xl"/>
@@ -356,7 +361,7 @@
                             <p:column headerText="Mobile No" style="width: 180px;">
                                 <h:outputText value="#{pe.mobileNumber}" />
                             </p:column>
-                            <p:column headerText="Admission No" style="width: 180px;">
+                            <p:column headerText="IP No" style="width: 180px;">
                                 <h:outputText value="#{pe.bhtNo}" />
                             </p:column>
 
@@ -386,8 +391,8 @@
                                 <h:outputText value="#{pe.pin}" />
                             </p:column>
 
-                            <p:column headerText="Admission Note" style="width: 250px;">
-                                <h:outputText value="#{pe.comments}" />
+                            <p:column headerText="Admission Remarks" style="width: 250px;">
+                                <h:outputText value="#{pe.admissionRemarks}" />
                             </p:column>
                             <p:column headerText="Admission Category" style="width: 180px;">
                                 <h:outputText value="#{pe.admissionTypeName}" />
@@ -422,11 +427,23 @@
                             <p:column headerText="Ward / Bed" style="width: 180px;">
                                 <h:outputText value="#{pe.wardBedName}" />
                             </p:column>
+                            <p:column headerText="Sponsor Bed Type" style="width: 180px;">
+                                <h:outputText value="#{pe.sponsorBedType}" />
+                            </p:column>
                             <p:column headerText="Consultant" style="width: 180px;">
                                 <h:outputText value="#{pe.consultantName}" />
                             </p:column>
+                            <p:column headerText="Referral Hospital" style="width: 200px;">
+                                <h:outputText value="#{pe.referralHospitalName}" />
+                            </p:column>
+                            <p:column headerText="Referral Doctor" style="width: 200px;">
+                                <h:outputText value="#{pe.referralDoctorName}" />
+                            </p:column>
                             <p:column headerText="Sponsor" style="width: 180px;">
                                 <h:outputText value="#{pe.sponsorName}" />
+                            </p:column>
+                            <p:column headerText="Plan" style="width: 220px;">
+                                <h:outputText value="#{pe.plan}" />
                             </p:column>
 
                             <p:column headerText="Sponsor Amount" style="width: 180px;">
@@ -436,6 +453,21 @@
                             </p:column>
                             <p:column headerText="Patient Amount" style="width: 180px;">
                                 <h:outputText value="#{pe.totalPatientPaidAtFinalProcessing}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Hospital Amount" style="width: 180px;">
+                                <h:outputText value="#{pe.hospitalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Professional Fees" style="width: 180px;">
+                                <h:outputText value="#{pe.professionalFee}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Advance" style="width: 180px;">
+                                <h:outputText value="#{pe.advance}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
@@ -460,8 +492,18 @@
                                 </h:outputText>
                             </p:column>
 
+                            <p:column headerText="Admission User" style="width: 180px;">
+                                <h:outputText value="#{pe.admittedByName}" />
+                            </p:column>
                             <p:column headerText="Discharge User" style="width: 180px;">
                                 <h:outputText value="#{pe.clinicalDischargedByName}" />
+                            </p:column>
+                            <p:column headerText="Admission Status" style="width: 220px;">
+                                <h:outputText value="#{pe.admissionStatusLabel}"
+                                              styleClass="#{pe.cancelled ? 'text-danger fw-bold' : ''}"/>
+                            </p:column>
+                            <p:column headerText="Cancel Remarks" style="width: 250px;">
+                                <h:outputText value="#{pe.cancelRemarks}" />
                             </p:column>
 
                             <!-- LOS / TAT / Billing TAT -->
@@ -477,9 +519,6 @@
                                 <h:outputText value="#{pe.billingTatFormatted}" />
                             </p:column>
 
-                            <p:column headerText="Admission Type" style="width: 180px;">
-                                <h:outputText value="#{pe.admissionTypeName}" />
-                            </p:column>
                             <p:column headerText="Final Bill By" style="width: 180px;">
                                 <h:outputText value="#{pe.finalBillCreatorName}" />
                             </p:column>
@@ -488,7 +527,13 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Received Date" style="width: 180px;">
+                                <h:outputText value="#{pe.finalBillCreatedAt}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+                                </h:outputText>
+                            </p:column>
                         </p:dataTable>
+                        </div>
                     </p:panel>
 
                 </h:form>

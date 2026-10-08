@@ -1,6 +1,7 @@
 package com.divudi.core.data.dto;
 
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.inward.AdmissionStatus;
 import java.io.Serializable;
 import java.util.Date;
 import java.time.Duration;
@@ -59,6 +60,20 @@ public class AdmissionDischargeDTO implements Serializable {
     private Double losDays;
     private String tatFormatted;
     private String billingTatFormatted;
+
+    // Added for issue #21582
+    private Long encounterId;
+    private String admittedByName;
+    private Double hospitalFee;
+    private Double professionalFee;
+    private Double advance;
+    private String referralHospitalName;
+    private String referralDoctorName;
+    private String sponsorBedType;
+    private String plan;
+    private boolean cancelled;
+    private boolean discharged;
+    private boolean paymentFinalized;
 
     /**
      * Constructor used by JPQL "SELECT new
@@ -123,6 +138,70 @@ public class AdmissionDischargeDTO implements Serializable {
         calculateLos();
         calculateTat();
         calculateBillingTat();
+    }
+
+    /**
+     * Extended constructor for the Admission &amp; Discharge report (#21582).
+     * The first 25 arguments are identical to the original constructor; the
+     * rest are appended. Wrapper types are used because the trailing values
+     * come from LEFT JOINs and may be null.
+     */
+    public AdmissionDischargeDTO(
+            String phn,
+            String patientName,
+            String mobileNumber,
+            String bhtNo,
+            String rawAddress,
+            String comments,
+            String admissionTypeName,
+            Date dateOfBirth,
+            Sex sex,
+            String departmentName,
+            Date dateOfAdmission,
+            Date dateOfDischarge,
+            String dischargeTypeName,
+            String wardBedName,
+            String consultantName,
+            String sponsorName,
+            double totalCompanyPaidAtFinalProcessing,
+            double totalPatientPaidAtFinalProcessing,
+            double discount,
+            double netTotal,
+            double amountDueAtFinalProcessing,
+            String clinicalDischargedByName,
+            Date clinicalDischargeDateTime,
+            String finalBillCreatorName,
+            Date finalBillCreatedAt,
+            Long encounterId,
+            String admittedByName,
+            Double hospitalFee,
+            Double professionalFee,
+            String referralHospitalName,
+            String referralDoctorName,
+            String sponsorBedType,
+            Boolean retired,
+            Boolean discharged,
+            Boolean paymentFinalized
+    ) {
+        this(phn, patientName, mobileNumber, bhtNo, rawAddress, comments, admissionTypeName,
+                dateOfBirth, sex, departmentName, dateOfAdmission, dateOfDischarge,
+                dischargeTypeName, wardBedName, consultantName, sponsorName,
+                totalCompanyPaidAtFinalProcessing, totalPatientPaidAtFinalProcessing,
+                discount, netTotal, amountDueAtFinalProcessing,
+                clinicalDischargedByName, clinicalDischargeDateTime,
+                finalBillCreatorName, finalBillCreatedAt);
+        this.encounterId = encounterId;
+        this.admittedByName = admittedByName;
+        this.hospitalFee = hospitalFee;
+        this.professionalFee = professionalFee;
+        this.referralHospitalName = referralHospitalName;
+        this.referralDoctorName = referralDoctorName;
+        this.sponsorBedType = sponsorBedType;
+        // The report query only returns retired encounters that were cancelled via
+        // "Cancel Admission" (retireComments = 'BHT Cancel'), so retired == cancelled here.
+        this.cancelled = Boolean.TRUE.equals(retired);
+        this.discharged = Boolean.TRUE.equals(discharged);
+        this.paymentFinalized = Boolean.TRUE.equals(paymentFinalized);
     }
 
     private Integer calculateAge(Date dateOfBirth) {
@@ -400,5 +479,87 @@ public class AdmissionDischargeDTO implements Serializable {
 
     public Date getDateOfBirth() {
         return dateOfBirth;
+    }
+
+    public Long getEncounterId() {
+        return encounterId;
+    }
+
+    public String getAdmittedByName() {
+        return admittedByName;
+    }
+
+    public Double getHospitalFee() {
+        return hospitalFee;
+    }
+
+    public Double getProfessionalFee() {
+        return professionalFee;
+    }
+
+    public Double getAdvance() {
+        return advance;
+    }
+
+    public void setAdvance(Double advance) {
+        this.advance = advance;
+    }
+
+    public String getReferralHospitalName() {
+        return referralHospitalName;
+    }
+
+    public String getReferralDoctorName() {
+        return referralDoctorName;
+    }
+
+    public String getSponsorBedType() {
+        return sponsorBedType;
+    }
+
+    public String getPlan() {
+        return plan;
+    }
+
+    public void setPlan(String plan) {
+        this.plan = plan;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public boolean isDischarged() {
+        return discharged;
+    }
+
+    public boolean isPaymentFinalized() {
+        return paymentFinalized;
+    }
+
+    /**
+     * Cancelling a BHT overwrites {@code comments} with the cancel reason, so
+     * for a cancelled admission the comment is the cancel remark, not the
+     * admission remark.
+     */
+    public String getAdmissionRemarks() {
+        return cancelled ? null : comments;
+    }
+
+    public String getCancelRemarks() {
+        return cancelled ? comments : null;
+    }
+
+    public String getAdmissionStatusLabel() {
+        if (cancelled) {
+            return "Cancelled";
+        }
+        if (!discharged) {
+            return AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED.getLabel();
+        }
+        if (!paymentFinalized) {
+            return AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED.getLabel();
+        }
+        return AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED.getLabel();
     }
 }
