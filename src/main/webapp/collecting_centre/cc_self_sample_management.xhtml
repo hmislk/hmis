@@ -141,8 +141,10 @@
                                     </p:column>
                                     <p:column headerText="Bill No" style="width: 13em; padding: 8px;">
                                         <h:outputText value="#{b.deptId}"/>
-                                        <br/>
-                                        <p:badge value="Self Billing" severity="success" rendered="#{b.department.departmentType eq 'CollectingCentre'}"/>
+                                    </p:column>
+                                    <p:column headerText="Type" style="width: 9em; padding: 8px;" class="text-center">
+                                        <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
                                     </p:column>
                                     <p:column headerText="Billed At" style="width: 11em; padding: 8px;">
                                         <h:outputText value="#{b.createdAt}">
@@ -395,8 +397,11 @@
                                         <h:outputText value="#{pi.billItem.bill.createdAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
-                                        <br/>
-                                        <p:badge value="Self Billing" severity="success" rendered="#{pi.billItem.bill.department.departmentType eq 'CollectingCentre'}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Type" style="width: 9em; vertical-align: top;" class="text-center">
+                                        <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
                                     </p:column>
 
                                     <p:column headerText="Patient" style="vertical-align: top;">
