@@ -229,7 +229,13 @@
                                                     value="#{ps.id}"
                                                     title="View barcode of this sample"
                                                     styleClass="mx-2 fw-bold"
+                                                    rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"
                                                     action="#{collectingCentreSelfCommonController.viewSelfSampleBarcode(ps)}"/>
+                                                <h:outputText
+                                                    value="#{ps.id}"
+                                                    title="Hospital Billing - barcode cannot be printed here"
+                                                    class="mx-2 fw-bold text-secondary"
+                                                    rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
                                                 <br/>
                                                 <h:outputText value="#{ps.tube.name}" class="text-secondary"/>
                                             </p:column>
