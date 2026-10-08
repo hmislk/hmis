@@ -70,7 +70,6 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -2495,7 +2494,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillHandoverStatusReport() {
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpqlBuilder = new StringBuilder("select s from Bill s "
                 + "where (s.retired=false or s.retired is null) "
@@ -7685,7 +7684,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandoverBillsForMeToReceive() {
         String sql;
-        fundTransferBillsToReceive = new ArrayDeque<>();
+        fundTransferBillsToReceive = new ArrayList<>();
         handoverBillsToReceiveCount = 0;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -7713,7 +7712,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillMyHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -7731,7 +7730,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
