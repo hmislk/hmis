@@ -353,30 +353,35 @@ public class CollectingCentrePaymentController implements Serializable {
 
     }
     
+    // Ledger view of the period: every repayment made in the range, less every repayment
+    // cancellation made in the range. Cancelled repayments are not filtered out here, so a
+    // repayment and its cancellation both inside the range net to zero, and a cancellation in
+    // the range of a repayment made before the range is still deducted.
     public double getPaidAgentPaymentsDuringThisPeriod(Institution collectingCentre) {
-        List<HistoryType> types = new ArrayList<>();
-        types.add(HistoryType.RepaymentToCollectingCentre);
+        double totalRepayments = sumPaidAmountToAgency(collectingCentre, HistoryType.RepaymentToCollectingCentre);
+        double totalRepaymentCancellations = sumPaidAmountToAgency(collectingCentre, HistoryType.RepaymentToCollectingCentreCancel);
+        return totalRepayments - totalRepaymentCancellations;
+    }
 
-        String jpql = "select sum(ah.paidAmountToAgency) "
+    // Cancellation histories store a negative paidAmountToAgency (the cancel bill's values are
+    // inverted), so ABS keeps both sums positive and the caller decides the sign.
+    private double sumPaidAmountToAgency(Institution collectingCentre, HistoryType historyType) {
+        String jpql = "select sum(abs(ah.paidAmountToAgency)) "
                 + " from AgentHistory ah "
                 + " where ah.retired=:ret"
                 + " and ah.agency =:cc "
-                + " and ah.historyType in :types "
+                + " and ah.historyType =:type "
                 + " and ah.bill.createdAt between :fromDate and :toDate "
-                + " and ah.bill.retired = false "
-                + " and ah.bill.cancelled = false "
-                + " order by ah.bill.createdAt asc ";
+                + " and ah.bill.retired = false ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("cc", collectingCentre);
-        m.put("types", types);
+        m.put("type", historyType);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
 
-        double total = agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
-        return total;
+        return agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public List<AgentHistory> getAllAgentHistory(Institution collectingCentre) {
