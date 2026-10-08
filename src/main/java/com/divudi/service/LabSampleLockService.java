@@ -26,14 +26,14 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 
 /**
- * Once a lab sample of an investigation on a bill is collected, the bill can
+ * Once a lab sample of an investigation on a bill has been accepted by the laboratory, the bill can
  * be neither cancelled nor refunded/returned. No privilege overrides this; the
  * only switch is the application configuration {@link #CONFIG_KEY}.
  */
 @Stateless
 public class LabSampleLockService {
 
-    public static final String CONFIG_KEY = "Block cancellation and refund of OPD, package and collecting centre bills once a lab sample is collected";
+    public static final String CONFIG_KEY = "Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample";
 
     @EJB
     private BillService billService;
@@ -71,6 +71,62 @@ public class LabSampleLockService {
         for (PatientSample ps : samples) {
             if (!isRejected(ps)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    private static final java.util.EnumSet<PatientInvestigationStatus> ACCEPTED_OR_LATER = java.util.EnumSet.of(
+            PatientInvestigationStatus.SAMPLE_ACCEPTED,
+            PatientInvestigationStatus.SAMPLE_INTERFACED,
+            PatientInvestigationStatus.SAMPLE_APPROVED,
+            PatientInvestigationStatus.SAMPLE_REPEATED,
+            PatientInvestigationStatus.SAMPLE_APPROVED_AND_REPEATED,
+            PatientInvestigationStatus.REPORT_CREATED,
+            PatientInvestigationStatus.REPORT_APPROVED,
+            PatientInvestigationStatus.REPORT_PRINTED,
+            PatientInvestigationStatus.REPORT_DISTRIBUTED,
+            PatientInvestigationStatus.REPORT_REACHED_COLLECTING_CENTRE,
+            PatientInvestigationStatus.REPORT_HANDED_OVER,
+            PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
+
+    /**
+     * The lock starts when the laboratory has accepted a sample of the
+     * investigation (received at the lab, or processed further). A sample that
+     * has only been collected or sent does not lock the bill. If every active
+     * sample of the investigation is rejected, it is not locked.
+     */
+    public boolean isAcceptedByLab(PatientInvestigation pi) {
+        if (pi == null) {
+            return false;
+        }
+        List<PatientSample> samples = fetchActiveSamples(pi);
+        boolean hasSamples = samples != null && !samples.isEmpty();
+        if (hasSamples) {
+            boolean allRejected = true;
+            for (PatientSample ps : samples) {
+                if (!isRejected(ps)) {
+                    allRejected = false;
+                    break;
+                }
+            }
+            if (allRejected) {
+                return false;
+            }
+        }
+        if (Boolean.TRUE.equals(pi.getReceived()) || Boolean.TRUE.equals(pi.getDataEntered())
+                || Boolean.TRUE.equals(pi.getApproved()) || Boolean.TRUE.equals(pi.getPrinted())
+                || ACCEPTED_OR_LATER.contains(pi.getStatus())) {
+            return true;
+        }
+        if (hasSamples) {
+            for (PatientSample ps : samples) {
+                if (isRejected(ps)) {
+                    continue;
+                }
+                if (Boolean.TRUE.equals(ps.getSampleReceivedAtLab()) || ACCEPTED_OR_LATER.contains(ps.getStatus())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -115,7 +171,7 @@ public class LabSampleLockService {
         addCandidates(candidates, fetchPatientInvestigationsOfBill(bill));
         addCandidates(candidates, fetchPatientInvestigationsOfBatchBill(bill));
         for (PatientInvestigation pi : candidates.values()) {
-            if (isCandidate(pi) && isCollected(pi)) {
+            if (isCandidate(pi) && isAcceptedByLab(pi)) {
                 collected.add(pi);
             }
         }
@@ -132,7 +188,7 @@ public class LabSampleLockService {
             return collected;
         }
         for (PatientInvestigation pi : found) {
-            if (isCandidate(pi) && isCollected(pi)) {
+            if (isCandidate(pi) && isAcceptedByLab(pi)) {
                 collected.add(pi);
             }
         }
@@ -190,9 +246,11 @@ public class LabSampleLockService {
             }
             String name = pi.getInvestigation() != null ? pi.getInvestigation().getName() : null;
             names.append(name == null ? "an investigation" : name);
-            if (pi.getSampleCollectedAt() != null) {
-                names.append(" (collected at ")
-                        .append(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(pi.getSampleCollectedAt()))
+            java.util.Date acceptedAt = pi.getReceivedAt() != null ? pi.getReceivedAt() : pi.getSampleCollectedAt();
+            if (acceptedAt != null) {
+                names.append(" (")
+                        .append(pi.getReceivedAt() != null ? "accepted at " : "collected at ")
+                        .append(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(acceptedAt))
                         .append(")");
             }
             shown++;
@@ -200,7 +258,7 @@ public class LabSampleLockService {
         if (collected.size() > shown) {
             names.append(" and ").append(collected.size() - shown).append(" more");
         }
-        return "Cannot " + act + " this bill because the laboratory has already collected the sample for " + names
+        return "Cannot " + act + " this bill because the laboratory has already accepted the sample for " + names
                 + ". Ask a laboratory user with the 'Lab Revert Sample' privilege to cancel the sample collection first (Lab > Sample Management).";
     }
 

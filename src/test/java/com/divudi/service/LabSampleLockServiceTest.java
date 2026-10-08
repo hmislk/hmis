@@ -53,6 +53,49 @@ public class LabSampleLockServiceTest {
     }
 
     @Test
+    public void collectedButNotAcceptedIsNotLocked() {
+        StubService s = new StubService();
+        PatientSample ps = sample(false);
+        ps.setSampleCollected(true);
+        ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+        s.samples.add(ps);
+        PatientInvestigation p = pi(true);
+        p.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+        assertFalse(s.isAcceptedByLab(p));
+    }
+
+    @Test
+    public void sampleReceivedAtLabIsLocked() {
+        StubService s = new StubService();
+        PatientSample ps = sample(false);
+        ps.setSampleReceivedAtLab(true);
+        s.samples.add(ps);
+        assertTrue(s.isAcceptedByLab(pi(true)));
+    }
+
+    @Test
+    public void investigationReceivedOrLaterStatusIsLocked() {
+        StubService s = new StubService();
+        PatientInvestigation received = pi(true);
+        received.setReceived(true);
+        assertTrue(s.isAcceptedByLab(received));
+        PatientInvestigation approved = pi(true);
+        approved.setStatus(PatientInvestigationStatus.REPORT_APPROVED);
+        assertTrue(s.isAcceptedByLab(approved));
+    }
+
+    @Test
+    public void acceptedButAllSamplesRejectedIsNotLocked() {
+        StubService s = new StubService();
+        PatientSample ps = sample(true);
+        ps.setSampleReceivedAtLab(true);
+        s.samples.add(ps);
+        PatientInvestigation p = pi(true);
+        p.setReceived(true);
+        assertFalse(s.isAcceptedByLab(p));
+    }
+
+    @Test
     public void notCollectedIsNotLocked() {
         StubService s = new StubService();
         assertFalse(s.isCollected(pi(false)));
@@ -107,7 +150,7 @@ public class LabSampleLockServiceTest {
         p.setSampleCollectedAt(at);
 
         String msg = s.lockMessage(Collections.singletonList(p), "cancel");
-        assertTrue(msg.startsWith("Cannot cancel this bill because the laboratory has already collected the sample for FBC"));
+        assertTrue(msg.startsWith("Cannot cancel this bill because the laboratory has already accepted the sample for FBC"));
         assertTrue(msg.contains("2026-10-08 09:30"));
         assertTrue(msg.contains("'Lab Revert Sample' privilege"));
 
@@ -133,7 +176,7 @@ public class LabSampleLockServiceTest {
         assertTrue(msg.contains("and 2 more"));
 
         String nullSafe = s.lockMessage(Collections.singletonList(pi(true)), null);
-        assertTrue(nullSafe.startsWith("Cannot cancel this bill because the laboratory has already collected the sample for an investigation"));
+        assertTrue(nullSafe.startsWith("Cannot cancel this bill because the laboratory has already accepted the sample for an investigation"));
     }
 
     private PatientSample collectedSample() {
