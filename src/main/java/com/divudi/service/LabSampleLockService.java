@@ -162,7 +162,27 @@ public class LabSampleLockService {
         return result;
     }
 
-    public List<PatientInvestigation> findCollectedInvestigations(Bill bill) {
+    /**
+     * True if any active investigation on the bill (or its batch) still has a
+     * collected sample, whether or not the laboratory has accepted it. Used to
+     * decide whether the bill status can go back to Barcode Generated.
+     */
+    boolean hasCollectedInvestigation(Bill bill) {
+        if (bill == null) {
+            return false;
+        }
+        Map<Object, PatientInvestigation> candidates = new LinkedHashMap<>();
+        addCandidates(candidates, fetchPatientInvestigationsOfBill(bill));
+        addCandidates(candidates, fetchPatientInvestigationsOfBatchBill(bill));
+        for (PatientInvestigation pi : candidates.values()) {
+            if (isCandidate(pi) && isCollected(pi)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<PatientInvestigation> findLockedInvestigations(Bill bill) {
         List<PatientInvestigation> collected = new ArrayList<>();
         if (bill == null) {
             return collected;
@@ -178,7 +198,7 @@ public class LabSampleLockService {
         return collected;
     }
 
-    public List<PatientInvestigation> findCollectedInvestigations(List<BillItem> items) {
+    public List<PatientInvestigation> findLockedInvestigations(List<BillItem> items) {
         List<PatientInvestigation> collected = new ArrayList<>();
         if (items == null || items.isEmpty()) {
             return collected;
@@ -270,14 +290,14 @@ public class LabSampleLockService {
         if (bill == null || !isLockEnabled()) {
             return null;
         }
-        return lockMessage(findCollectedInvestigations(bill), "cancel");
+        return lockMessage(findLockedInvestigations(bill), "cancel");
     }
 
     public String checkRefundBlocked(Bill bill) {
         if (bill == null || !isLockEnabled()) {
             return null;
         }
-        return lockMessage(findCollectedInvestigations(bill), "refund");
+        return lockMessage(findLockedInvestigations(bill), "refund");
     }
 
     public String checkReturnBlocked(List<BillItem> items) {
@@ -288,7 +308,7 @@ public class LabSampleLockService {
         if (items == null || items.isEmpty() || !isLockEnabled()) {
             return null;
         }
-        return lockMessage(findCollectedInvestigations(items), action);
+        return lockMessage(findLockedInvestigations(items), action);
     }
 
     /**
@@ -482,8 +502,8 @@ public class LabSampleLockService {
             }
         }
         for (Bill b : bills.values()) {
-            if (!findCollectedInvestigations(b).isEmpty()) {
-                // Another investigation on this bill is still collected.
+            if (hasCollectedInvestigation(b)) {
+                // Another investigation on this bill is still collected (accepted or not).
                 continue;
             }
             b.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);

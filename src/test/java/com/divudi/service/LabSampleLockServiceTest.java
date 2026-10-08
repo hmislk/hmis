@@ -34,6 +34,18 @@ public class LabSampleLockServiceTest {
             return reports;
         }
 
+        List<PatientInvestigation> billInvestigations = new ArrayList<>();
+
+        @Override
+        List<PatientInvestigation> fetchPatientInvestigationsOfBill(com.divudi.core.entity.Bill bill) {
+            return billInvestigations;
+        }
+
+        @Override
+        List<PatientInvestigation> fetchPatientInvestigationsOfBatchBill(com.divudi.core.entity.Bill bill) {
+            return new ArrayList<>();
+        }
+
         @Override
         List<PatientSample> fetchActiveSamples(PatientInvestigation pi) {
             return samples;
@@ -50,6 +62,18 @@ public class LabSampleLockServiceTest {
         PatientSample ps = new PatientSample();
         ps.setSampleRejected(rejected);
         return ps;
+    }
+
+    @Test
+    public void billWithCollectedButUnacceptedTestIsNotLockedButStillCollected() {
+        StubService s = new StubService();
+        PatientSample ps = sample(false);
+        ps.setSampleCollected(true);
+        s.samples.add(ps);
+        s.billInvestigations.add(pi(true));
+        com.divudi.core.entity.Bill b = new com.divudi.core.entity.Bill();
+        assertTrue(s.findLockedInvestigations(b).isEmpty());
+        assertTrue(s.hasCollectedInvestigation(b));
     }
 
     @Test
