@@ -168,8 +168,8 @@
                                                 value="Barcode"
                                                 icon="fas fa-barcode"
                                                 class="ui-button-success"
-                                                title="Generate and print sample barcodes"
-                                                disabled="#{b.cancelled}"
+                                                title="#{collectingCentreSelfCommonController.isSelfBill(b) ? 'Generate and print sample barcodes' : 'Hospital Billing - barcodes cannot be generated here'}"
+                                                disabled="#{b.cancelled or not collectingCentreSelfCommonController.isSelfBill(b)}"
                                                 action="#{collectingCentreSelfCommonController.generateSelfBarcodes(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
