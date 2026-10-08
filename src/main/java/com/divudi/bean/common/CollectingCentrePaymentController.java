@@ -544,24 +544,30 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public void calculateTotalOfPaymentReceive() {
+        double totalDeposits = sumAgentHistoryTransactionValue(HistoryType.CollectingCentreDeposit);
+        double totalDepositCancellations = sumAgentHistoryTransactionValue(HistoryType.CollectingCentreDepositCancel);
+        totalCCReceiveAmount = totalDeposits - totalDepositCancellations;
+    }
 
-        String jpql;
-        Map<String, Object> temMap = new HashMap<>();
+    // Deposit histories store a positive transactionValue and cancellation histories a negative one,
+    // so ABS keeps both sums positive and the caller decides the sign.
+    private double sumAgentHistoryTransactionValue(HistoryType historyType) {
+        String jpql = "select sum(abs(ah.transactionValue)) "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.agency =:cc "
+                + " and ah.historyType =:type "
+                + " and ah.bill.createdAt between :fromDate and :toDate "
+                + " and ah.bill.retired = false ";
 
-        jpql = "SELECT SUM(b.netTotal) "
-                + "FROM Bill b "
-                + "WHERE b.billTypeAtomic = :atomic "
-                + "AND b.fromInstitution = :cc "
-                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND b.cancelled = FALSE "
-                + "AND b.retired = FALSE";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("cc", currentCollectingCentre);
+        m.put("type", historyType);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
 
-        temMap.put("atomic", BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        temMap.put("cc", currentCollectingCentre);
-        temMap.put("fromDate", fromDate);
-        temMap.put("toDate", toDate);
-
-        totalCCReceiveAmount = billFacade.findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        return agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void performCalculations() {
