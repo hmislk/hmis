@@ -374,5 +374,14 @@ Step 5 read-back query) and quote what it returns. Never report the board status
 memory of an earlier update call. (Issue #24105 was reported as "In Progress" when the
 board still showed Backlog.)
 Include the issues filed in step 14a.
+
+**Retrospective.** Before Notify, list what cost extra steps or went wrong.
+Grep the docs for each; drop any already documented and say so in one line.
+For each remaining one, show: what happened, why it will recur, the file, and
+the exact text to add. Then ask with `AskUserQuestion` (one question per
+finding, Add / Skip, exact text as preview). Never end a run with a finding
+still undecided. If none: "No retrospective findings." See
+[Retrospective](../../../developer_docs/process/continuous-improvement-retrospective.md).
+
 **Never merge** — that's the user's call.
 Once the user says the PRs are merged, run `cleanup-branches`, so merged local and remote branches are deleted and `development` is fast-forwarded and checked out.

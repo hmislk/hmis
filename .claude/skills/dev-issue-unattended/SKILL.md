@@ -499,3 +499,10 @@ why (from step 3/13), what was verified and how, and links to the
 issue/PR/wiki — same depth as a solo run. For issues that didn't ship, the
 link to the comment is enough; don't re-summarize what's already written
 there. **Never merge.**
+
+**Retrospective.** List what cost extra steps or went wrong. Grep the docs for
+each; drop any already documented and say so in one line. For each remaining
+one, give what happened, why it will recur, the file, and the exact text to
+add, under a `Retrospective proposals` heading for the user to approve on
+return. Never open the doc PR unattended. If none: "No retrospective
+findings."

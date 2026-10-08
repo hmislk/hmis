@@ -18,6 +18,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
 - [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [141. Patient phone quick search matches `PATIENTPHONENUMBER` or `PATIENTMOBILENUMBER`, not `PERSON.PHONE`](#141-patient-phone-quick-search-matches-patientphonenumber-or-patientmobilenumber-not-personphone)
+- [142. Deploy fails with `JNDI lookup failed ${JDBC_DATASOURCE}`: the WAR was built with placeholders](#142-deploy-fails-with-jndi-lookup-failed-jdbc_datasource-the-war-was-built-with-placeholders)
 
 ---
 
@@ -448,3 +449,10 @@ SELECT n FROM (
   UNION SELECT id, patientMobileNumber FROM patient WHERE retired=0 AND patientMobileNumber IS NOT NULL
 ) x GROUP BY n HAVING COUNT(DISTINCT id)=1 LIMIT 5;
 ```
+
+---
+
+## 142. Deploy fails with `JNDI lookup failed ${JDBC_DATASOURCE}`: the WAR was built with placeholders
+
+Build only while `persistence.xml` holds local JNDI (`jdbc/coop` / `jdbc/ruhunuAudit`). A WAR built after a commit swapped in `${JDBC_DATASOURCE}` fails to deploy, and the failed `redeploy` leaves `rh` undeployed. Restore local JNDI, rebuild, then:
+`asadmin --port 9048 deploy --force=true --name rh --contextroot rh target/rh-3.0.0.war`
