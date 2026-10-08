@@ -223,7 +223,13 @@
 
                                             <p:column headerText="Sample" style="width: 9em; vertical-align: top; padding: 6px;">
                                                 <i class="fa-solid fa-vial-virus text-danger"></i>
-                                                <h:outputText value="#{ps.id}" class="mx-2 fw-bold"/>
+                                                <p:commandLink
+                                                    id="lnkSampleBarcode"
+                                                    ajax="false"
+                                                    value="#{ps.id}"
+                                                    title="View barcode of this sample"
+                                                    styleClass="mx-2 fw-bold"
+                                                    action="#{collectingCentreSelfCommonController.viewSelfSampleBarcode(ps)}"/>
                                                 <br/>
                                                 <h:outputText value="#{ps.tube.name}" class="text-secondary"/>
                                             </p:column>
