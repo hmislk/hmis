@@ -2303,7 +2303,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (!getBillItems().isEmpty()) {
-            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
+            getPreBill().setReferenceBill(bhtRequestBill);
         }
 
         for (BillItem tbi : tmpBillItems) {
@@ -3172,6 +3172,13 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
         }
+        // Keep the session-scoped bhtRequestBill in sync with whichever request is
+        // actually being generated here — settleBhtIssueRequestAccept() derives the
+        // settled bill's reference from this field, so a caller that reaches this
+        // method without updating it first (e.g. the legacy issue_for_bht_request_list
+        // page's direct actionListener) would otherwise settle against a stale,
+        // previously-selected request.
+        bhtRequestBill = b;
 
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
