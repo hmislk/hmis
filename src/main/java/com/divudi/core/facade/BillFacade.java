@@ -72,8 +72,9 @@ public class BillFacade extends AbstractFacade<Bill> {
         if (billId == null) {
             return null;
         }
+        // billDate is DATE-only (prints 12:00 AM); the receipt's date and time come from createdAt.
         String jpql = "SELECT NEW com.divudi.core.data.dto.InwardBillReceiptDTO("
-                + "b.id, b.deptId, b.billDate, b.paymentMethod, b.netTotal, b.comments, "
+                + "b.id, b.deptId, b.createdAt, b.paymentMethod, b.netTotal, b.comments, "
                 + "rb.deptId, "
                 + "dept.printingName, dept.address, dept.telephone1, dept.telephone2, dept.fax, dept.email, "
                 + "per.title, COALESCE(per.name, per2.name), per.dob, per.sex, "
