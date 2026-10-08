@@ -470,6 +470,29 @@
 
                                     <hr/>
 
+                                    <p:outputLabel for="txtSampleCollectionCancelReason" value="Reason for cancelling sample collection" />
+                                    <p:inputText
+                                        id="txtSampleCollectionCancelReason"
+                                        class="w-100"
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES' or not webUserController.hasPrivilege('LabRevertSample')}"
+                                        placeholder="Reason for cancelling sample collection"
+                                        value="#{patientInvestigationController.sampleCollectionCancelReason}" >
+                                    </p:inputText>
+
+                                    <p:commandButton
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES' or not webUserController.hasPrivilege('LabRevertSample')}"
+                                        id="btnCancelSampleCollection"
+                                        value="Cancel Sample Collection"
+                                        ajax="false"
+                                        action="#{patientInvestigationController.cancelSampleCollection()}"
+                                        onclick="if (!confirm('Cancel the sample collection for the selected sample(s)? Draft results will be discarded. This is not allowed once a report is approved or printed.')) return false;"
+                                        title="Cancel Sample Collection"
+                                        icon="fa fa-undo"
+                                        styleClass="w-100 ui-button-warning mt-2" >
+                                    </p:commandButton>
+
+                                    <hr/>
+
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnGenerateTestCodes"

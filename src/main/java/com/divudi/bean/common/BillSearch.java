@@ -89,6 +89,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.LabSampleLockService;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -198,6 +199,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private PatientFacade patientFacade;
     @EJB
     BillService billService;
+    @EJB
+    LabSampleLockService labSampleLockService;
     @EJB
     ProfessionalPaymentService professionalPaymentService;
     @EJB
@@ -2024,6 +2027,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return "";
         }
 
+        String labLockMessage = labSampleLockService.checkReturnBlocked(refundingItems, "refund");
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            return "";
+        }
+
         if (!getWebUserController().hasPrivilege("LabBillRefundSpecial")) {
             for (BillItem trbi : refundingItems) {
                 if (patientInvestigationController.sampledForBillItem(trbi)) {
@@ -2087,6 +2096,31 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         }
         if (refundingBill.getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("There are no items to Refund");
+            return "";
+        }
+
+        List<BillItem> itemsBeingRefunded = new ArrayList<>();
+        for (BillItem refundingItem : refundingBill.getBillItems()) {
+            if (refundingItem.getReferanceBillItem() == null) {
+                continue;
+            }
+            // Refund amounts are entered per fee; the item's net value is only totalled later.
+            boolean refundingThisItem = Math.abs(refundingItem.getNetValue()) > 0.0;
+            if (!refundingThisItem && refundingItem.getBillFees() != null) {
+                for (BillFee refundingFee : refundingItem.getBillFees()) {
+                    if (refundingFee != null && Math.abs(refundingFee.getFeeValue()) > 0.0) {
+                        refundingThisItem = true;
+                        break;
+                    }
+                }
+            }
+            if (refundingThisItem) {
+                itemsBeingRefunded.add(refundingItem.getReferanceBillItem());
+            }
+        }
+        String labLockMessage = labSampleLockService.checkReturnBlocked(itemsBeingRefunded, "refund");
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
             return "";
         }
 
@@ -2819,6 +2853,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("No Saved Original Bill");
             return;
         }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            return;
+        }
         if (getBill().getBackwardReferenceBill() == null) {
             JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
@@ -2871,26 +2910,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                return;
-            }
+        if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+            return;
         }
 
         // CRITICAL: Check if batch bill has been settled with credit company
@@ -3000,6 +3022,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             ccBillCancellingStarted.set(false);
             return;
         }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            ccBillCancellingStarted.set(false);
+            return;
+        }
 
         List<PatientInvestigation> investigations = billService.fetchPatientInvestigations(getBill(), PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
 
@@ -3009,7 +3037,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return;
         }
 
-        if (!getWebUserController().hasPrivilege("BillCancel")) {
+        // Report and sample-status checks apply to every user while the lab sample lock is on; no privilege bypasses them.
+        if (labSampleLockService.isLockEnabled()) {
 
             // check have PatientReport
             List<PatientReport> pr = patientReportController.allPatientReportsInBill(getBill());
@@ -3070,29 +3099,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling CC Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    ccBillCancellingStarted.set(false);
-                    return;
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    ccBillCancellingStarted.set(false);
-                    return;
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                ccBillCancellingStarted.set(false);
-                return;
-            }
+        if (!getWebUserController().hasPrivilege("OpdCancel")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+            ccBillCancellingStarted.set(false);
+            return;
         }
 
         CancelledBill cancellationBill = createCollectingCenterCancelBill(bill);
@@ -3308,6 +3318,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return;
         }
         for (Bill b : billsApproving) {
+
+            String labLockMessage = labSampleLockService.checkCancelBlocked(b.getBilledBill());
+            if (labLockMessage != null) {
+                JsfUtil.addErrorMessage(labLockMessage);
+                continue;
+            }
 
             b.setApproveUser(getSessionController().getCurrent());
             b.setApproveAt(Calendar.getInstance().getTime());

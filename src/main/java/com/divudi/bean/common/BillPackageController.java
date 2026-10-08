@@ -62,6 +62,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.LabSampleLockService;
 import com.divudi.service.PaymentService;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.core.data.OptionScope;
@@ -97,6 +98,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillFacade billFacade;
     @EJB
     BillService billService;
+    @EJB
+    LabSampleLockService labSampleLockService;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -557,6 +560,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            batchBillCancellationStarted = false;
+            return "";
+        }
 
         if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
@@ -766,6 +775,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBatchBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
             batchBillCancellationStarted = false;
             return "";
         }

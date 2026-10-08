@@ -50,3 +50,9 @@ This document lists the configuration options used in the application and their 
 | ----------------------------------------------------------------  | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Collecting Centre Agent Payment - Skip Payment Record`         | Boolean   | `true`  | When true, `CollectingCentrePaymentController.createPayment()` does not create a `Payment` record for Collecting Centre Agent Payment / Cancellation bills (`CC_AGENT_PAYMENT`, `CC_AGENT_PAYMENT_CANCELLATION`). These are agent/collecting-centre commission payouts, not cashier cash collections, and should not appear in cashier reports (All Cashier Summary, Cashier Summary, Cashier Details). The `Bill` itself is still created for agent-balance history and printing. See issue #21840. |
 
+
+## Laboratory Sample Lock
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Block cancellation and refund of OPD, package and collecting centre bills once a lab sample is collected` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once a sample of any investigation on the bill is collected (rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |

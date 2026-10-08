@@ -168,6 +168,11 @@ public class PatientInvestigationController implements Serializable {
     LimsMiddlewareController limsMiddlewareController;
     @Inject
     InvestigationController investigationController;
+    @Inject
+    WebUserController webUserController;
+    @javax.ejb.EJB
+    private com.divudi.service.LabSampleLockService labSampleLockService;
+    private String sampleCollectionCancelReason;
 
     /**
      * Class Variables
@@ -2383,6 +2388,53 @@ public class PatientInvestigationController implements Serializable {
         JsfUtil.addSuccessMessage("The selected samples are returned to the logged-in department.");
     }
 
+    public boolean canCancelSampleCollection(PatientSample ps) {
+        return webUserController.hasPrivilege("LabRevertSample")
+                && labSampleLockService.canCancelSampleCollection(ps);
+    }
+
+    /**
+     * Cancels the collection of the selected samples (selectedPatientSamples),
+     * using sampleCollectionCancelReason.
+     */
+    public void cancelSampleCollection() {
+        if (!webUserController.hasPrivilege("LabRevertSample")) {
+            JsfUtil.addErrorMessage("You do not have the 'Lab Revert Sample' privilege.");
+            return;
+        }
+        if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
+            return;
+        }
+        if (sampleCollectionCancelReason == null || sampleCollectionCancelReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a reason for cancelling the sample collection.");
+            return;
+        }
+        int done = 0;
+        for (PatientSample ps : selectedPatientSamples) {
+            PatientSample reloadSample = ps.getId() == null ? ps : patientSampleFacade.find(ps.getId());
+            String error = labSampleLockService.cancelSampleCollection(reloadSample, sessionController.getLoggedUser(), sampleCollectionCancelReason);
+            if (error != null) {
+                JsfUtil.addErrorMessage(error);
+                continue;
+            }
+            done++;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+        if (done > 0) {
+            sampleCollectionCancelReason = null;
+            JsfUtil.addSuccessMessage("Sample collection cancelled for " + done + " sample(s).");
+        }
+    }
+
+    public String getSampleCollectionCancelReason() {
+        return sampleCollectionCancelReason;
+    }
+
+    public void setSampleCollectionCancelReason(String sampleCollectionCancelReason) {
+        this.sampleCollectionCancelReason = sampleCollectionCancelReason;
+    }
+
     public void rejectSamples() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
@@ -2508,6 +2560,14 @@ public class PatientInvestigationController implements Serializable {
         for (Bill tb : affectedBills.values()) {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             billFacade.edit(tb);
+        }
+
+        for (PatientInvestigation rpi : rejectedPtixs.values()) {
+            if (labSampleLockService.allSamplesRejected(rpi)) {
+                rpi.setSampleCollected(false);
+                rpi.setCollected(false);
+                getFacade().edit(rpi);
+            }
         }
 
         sampleRejectionComment = null;
