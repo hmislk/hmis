@@ -263,7 +263,7 @@
                                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                                                     </p:selectOneMenu>
                                                     <h:outputLabel value="Total Payment Completed for this month" ></h:outputLabel>
-                                                    <h:outputLabel   value="#{collectingCentrePaymentController.payingBalanceAcodingToCCBalabce}" style="font-weight: 700; font-size: 22px;">
+                                                    <h:outputLabel   value="#{collectingCentrePaymentController.duePaymentAmount}" style="font-weight: 700; font-size: 22px;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:panelGrid>
