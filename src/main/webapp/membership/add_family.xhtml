@@ -139,7 +139,10 @@
 
                                     </p:column>
                                     <p:column headerText="Actions" >
-                                        <p:commandButton ajax="false" value="Edit" action="patient"   class="ui-button-warning mx-1" icon="fa-solid fa-pen">
+                                        <p:commandButton ajax="false" value="Profile" action="#{patientController.navigateToOpdPatientProfile()}" class="ui-button-warning mx-1" icon="pi pi-user">
+                                            <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="ui-button-warning mx-1" icon="fa-solid fa-pen">
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:commandButton ajax="false" value="Remove" class="ui-button-danger mx-1" icon="fas fa-trash" action="#{patientController.removeFamilyMember()}" >
