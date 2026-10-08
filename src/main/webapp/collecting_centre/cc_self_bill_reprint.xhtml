@@ -49,6 +49,7 @@
                                     icon="fa fa-times"
                                     action="#{collectingCentreSelfSearchController.navigateToCancelBill()}"
                                     disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or collectingCentreSelfSearchController.viewingBill.refunded}"
+                                    rendered="#{collectingCentreSelfSearchController.viewingSelfBill}"
                                     ajax="false"/>
                                 <p:commandButton
                                     value="To Refund"
@@ -56,7 +57,12 @@
                                     icon="fa fa-money-bill-wave"
                                     action="#{collectingCentreSelfSearchController.navigateToRefundBill()}"
                                     disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or not billReturnController.checkCanReturnBill(collectingCentreSelfSearchController.viewingBill)}"
+                                    rendered="#{collectingCentreSelfSearchController.viewingSelfBill}"
                                     ajax="false"/>
+                                <h:panelGroup rendered="#{not collectingCentreSelfSearchController.viewingSelfBill}" styleClass="align-self-center m-1 text-secondary">
+                                    <i class="fa-solid fa-lock me-1"></i>
+                                    <h:outputText value="Hospital Billing - cancel and refund are not allowed"/>
+                                </h:panelGroup>
                                 <p:commandButton
                                     value="To Sample Management"
                                     class="ui-button-info m-1"
