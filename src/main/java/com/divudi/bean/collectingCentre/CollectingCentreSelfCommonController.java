@@ -389,8 +389,27 @@ public class CollectingCentreSelfCommonController implements Serializable {
                 JsfUtil.addErrorMessage("Sample " + ps.getId() + " does not belong to your collecting centre");
                 return false;
             }
+            if (!isSelfBill(fetched.getBill())) {
+                JsfUtil.addErrorMessage("Sample " + ps.getId() + " is a Hospital Billing sample and cannot be updated here");
+                return false;
+            }
         }
         return true;
+    }
+
+    /**
+     * A sample billed by the centre itself (Self Billing) can be updated
+     * here; one billed at the hospital for the centre (Hospital Billing) is
+     * view only.
+     */
+    public boolean isSelfBilledSample(PatientSample sample) {
+        return sample != null && isSelfBill(sample.getBill());
+    }
+
+    private boolean isSelfBill(Bill bill) {
+        return bill != null
+                && bill.getDepartment() != null
+                && bill.getDepartment().getDepartmentType() == DepartmentType.CollectingCentre;
     }
 
     private boolean isOwnReport(PatientReport report) {
