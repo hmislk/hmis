@@ -2008,9 +2008,10 @@ public class LaboratoryManagementController implements Serializable {
                 patientInvestigationController.setSampleRejectionComment(sampleRejectionComment);
                 patientInvestigationController.rejectSamples();
                 sampleRejectionComment = "";
-                selectedSampleDtos = new ArrayList<>();
                 listingEntity = ListingEntity.PATIENT_SAMPLES;
+                // reloadSampleDTOList() refreshes only the selected rows, so clear the selection afterwards.
                 reloadSampleDTOList();
+                selectedSampleDtos = new ArrayList<>();
                 return;
             }
             if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
