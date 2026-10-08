@@ -298,7 +298,25 @@ public class CollectingCentreSelfCommonController implements Serializable {
         if (!areSelectedSamplesOwn()) {
             return;
         }
+        if (!areSelectedSamplesNotSent()) {
+            return;
+        }
         patientInvestigationController.rejectSamples();
+    }
+
+    /**
+     * Once a sample is sent to the lab, the centre can no longer reject it.
+     * Reads the sent flag from the database, not the page copy.
+     */
+    private boolean areSelectedSamplesNotSent() {
+        for (PatientSample ps : patientInvestigationController.getSelectedPatientSamples()) {
+            PatientSample fetched = patientSampleFacade.find(ps.getId());
+            if (fetched != null && Boolean.TRUE.equals(fetched.getSampleSent())) {
+                JsfUtil.addErrorMessage("Sample " + ps.getId() + " has already been sent and cannot be rejected");
+                return false;
+            }
+        }
+        return true;
     }
 
     public void reGenerateSelfSamples() {
