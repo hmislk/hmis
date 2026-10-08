@@ -231,6 +231,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
         if (ownBill == null) {
             return;
         }
+        if (!isSelfBill(ownBill)) {
+            JsfUtil.addErrorMessage("This is a Hospital Billing bill and barcodes cannot be generated here");
+            return;
+        }
         patientInvestigationController.generateBarcodesForSelectedBill(ownBill);
     }
 
@@ -406,7 +410,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
         return sample != null && isSelfBill(sample.getBill());
     }
 
-    private boolean isSelfBill(Bill bill) {
+    public boolean isSelfBill(Bill bill) {
         return bill != null
                 && bill.getDepartment() != null
                 && bill.getDepartment().getDepartmentType() == DepartmentType.CollectingCentre;
