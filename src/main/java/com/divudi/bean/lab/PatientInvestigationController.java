@@ -49,6 +49,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.dto.SampleDTO;
 import com.divudi.core.data.lab.BillBarcode;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.PatientInvestigationWrapper;
@@ -218,6 +219,7 @@ public class PatientInvestigationController implements Serializable {
     private Staff referringDoctor;
     private Investigation investigation;
     private String investigationName;
+    private CollectingCentreBillingType collectingCentreBillingType;
     private String itemName;
     private Department department;
     private SearchDateType searchDateType;
@@ -1563,6 +1565,10 @@ public class PatientInvestigationController implements Serializable {
         return items;
     }
 
+    public void setItems(List<PatientInvestigation> items) {
+        this.items = items;
+    }
+
     public List<PatientInvestigation> getLstToSamle() {
         return lstToSamle;
     }
@@ -2881,6 +2887,7 @@ public class PatientInvestigationController implements Serializable {
         this.printIndividualBarcodes = false;
         this.listingEntity = null;
         this.investigationName = null;
+        this.collectingCentreBillingType = null;
         this.sampleSearchStrategy = null;
         clearReportData();
         clearAlternativeReportData();
@@ -6175,6 +6182,18 @@ public class PatientInvestigationController implements Serializable {
 
     public void setInvestigationName(String investigationName) {
         this.investigationName = investigationName;
+    }
+
+    public CollectingCentreBillingType getCollectingCentreBillingType() {
+        return collectingCentreBillingType;
+    }
+
+    public void setCollectingCentreBillingType(CollectingCentreBillingType collectingCentreBillingType) {
+        this.collectingCentreBillingType = collectingCentreBillingType;
+    }
+
+    public CollectingCentreBillingType[] getCollectingCentreBillingTypes() {
+        return CollectingCentreBillingType.values();
     }
 
     public List<PatientReportItemValue> getColumn1AntibioticList() {

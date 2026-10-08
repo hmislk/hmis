@@ -1,0 +1,609 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:sm="http://xmlns.jcp.org/jsf/composite/ezcomp/sample_management">
+    <h:head>
+        <title>Collecting Centre Self Billing - Sample Management</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <style>
+                        #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                    </style>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Sample Management"
+                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                pageIcon="fa-solid fa-vials"
+                                backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                                backLabel="Back to Dashboard"/>
+
+                            <p:growl id="msg"/>
+
+                            <p:panel styleClass="cc-bill-card cc-c-blue">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-filter"/>
+                                    <h:outputText value="Search Criteria" class="mx-2"/>
+                                </f:facet>
+
+                                <div class="row">
+                                    <div class="col-md-10">
+                                        <div class="row">
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="From Bill Date" for="fromDate"/>
+                                                <p:calendar
+                                                    id="fromDate"
+                                                    value="#{patientInvestigationController.fromDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"/>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="To Bill Date" for="toDate"/>
+                                                <p:calendar
+                                                    id="toDate"
+                                                    value="#{patientInvestigationController.toDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}"/>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="Patient Name" for="txtPatientName"/>
+                                                <p:inputText id="txtPatientName" autocomplete="off" placeholder="Enter patient name" value="#{patientInvestigationController.patientName}" class="w-100"/>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="Sample ID" for="txtSampleId"/>
+                                                <p:inputText id="txtSampleId" autocomplete="off" placeholder="Enter sample ID" value="#{patientInvestigationController.sampleId}" class="w-100"/>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="Status" for="cmbStatus"/>
+                                                <p:selectOneMenu id="cmbStatus" filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.patientInvestigationStatus}">
+                                                    <f:selectItem itemLabel="Any"/>
+                                                    <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="Investigation" for="txtInvestigation"/>
+                                                <p:inputText id="txtInvestigation" autocomplete="off" placeholder="Enter investigation name" value="#{patientInvestigationController.investigationName}" class="w-100"/>
+                                            </div>
+                                            <div class="col-md-3 mb-2">
+                                                <h:outputLabel value="Bill Type" for="cmbBillingType"/>
+                                                <p:selectOneMenu id="cmbBillingType" class="w-100" value="#{patientInvestigationController.collectingCentreBillingType}">
+                                                    <f:selectItem itemLabel="All"/>
+                                                    <f:selectItems value="#{patientInvestigationController.collectingCentreBillingTypes}" var="cbt" itemValue="#{cbt}" itemLabel="#{cbt.label}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 d-flex flex-column gap-2">
+                                        <p:commandButton
+                                            id="btnBills"
+                                            ajax="false"
+                                            value="Bills"
+                                            icon="fas fa-file-invoice-dollar"
+                                            class="#{patientInvestigationController.listingEntity eq 'BILLS' or patientInvestigationController.listingEntity eq 'BILL_BARCODES' ? 'ui-button-success w-100' : 'ui-button-outlined ui-button-success w-100'}"
+                                            action="#{collectingCentreSelfCommonController.searchSelfBills}"/>
+                                        <p:commandButton
+                                            id="btnSamples"
+                                            ajax="false"
+                                            value="Samples"
+                                            icon="fas fa-vial"
+                                            class="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES' or patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES_INDIVIDUAL' ? 'ui-button-warning w-100' : 'ui-button-outlined ui-button-warning w-100'}"
+                                            action="#{collectingCentreSelfCommonController.searchSelfSamples}"/>
+                                        <p:commandButton
+                                            id="btnReports"
+                                            ajax="false"
+                                            value="Reports"
+                                            icon="fas fa-file-medical"
+                                            class="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS' ? 'ui-button-danger w-100' : 'ui-button-outlined ui-button-danger w-100'}"
+                                            action="#{collectingCentreSelfCommonController.searchSelfReports}"/>
+                                        <p:commandButton
+                                            id="btnClear"
+                                            ajax="false"
+                                            value="Clear"
+                                            icon="fas fa-eraser"
+                                            class="ui-button-secondary w-100"
+                                            action="#{collectingCentreSelfCommonController.clearSelfSampleManagementFilters}"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                            <!--BILLS-->
+                            <p:panel styleClass="cc-bill-card cc-c-green" rendered="#{patientInvestigationController.listingEntity eq 'BILLS'}">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-file-invoice-dollar"/>
+                                    <h:outputText value="Bills" class="mx-2"/>
+                                </f:facet>
+                                <p:dataTable
+                                    id="tblBills"
+                                    rowIndexVar="i"
+                                    value="#{patientInvestigationController.bills}"
+                                    var="b"
+                                    paginator="true"
+                                    rows="15"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="15,25,50,100"
+                                    emptyMessage="No bills found for the selected criteria">
+
+                                    <p:column headerText="No" style="width: 3em; padding: 6px;">
+                                        <h:outputText value="#{i+1}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill No" style="width: 13em; padding: 6px;">
+                                        <h:outputText value="#{b.deptId}"/>
+                                    </p:column>
+                                    <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                    </p:column>
+                                    <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
+                                        <h:outputText value="#{b.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient" style="padding: 6px;">
+                                        <h:outputText value="#{b.patient.person.nameWithTitle}"/>
+                                        <br/>
+                                        <h:outputText value="#{b.patient.person.ageAsString} / #{b.patient.person.sex.label}" class="text-secondary"/>
+                                    </p:column>
+                                    <p:column headerText="Patient Phone" style="width: 9em; padding: 6px;">
+                                        <h:outputText value="#{b.patient.person.phone}"/>
+                                    </p:column>
+                                    <p:column headerText="Status" style="width: 12em; padding: 6px;" class="text-center">
+                                        <p:badge rendered="#{b.cancelled}" value="Bill Cancelled" severity="danger"/>
+                                        <p:badge rendered="#{not b.cancelled and b.status ne null}" value="#{b.status.label}" severity="info"/>
+                                    </p:column>
+                                    <p:column headerText="Actions" style="width: 22em; padding: 6px;">
+                                        <div class="d-flex gap-1">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Barcode"
+                                                icon="fas fa-barcode"
+                                                class="ui-button-success"
+                                                title="#{collectingCentreSelfCommonController.isSelfBill(b) ? 'Generate and print sample barcodes' : 'Hospital Billing - barcodes cannot be generated here'}"
+                                                disabled="#{b.cancelled or not collectingCentreSelfCommonController.isSelfBill(b)}"
+                                                action="#{collectingCentreSelfCommonController.generateSelfBarcodes(b)}"/>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Samples"
+                                                icon="fas fa-vial"
+                                                class="ui-button-warning"
+                                                action="#{collectingCentreSelfCommonController.listSelfSamplesOfBill(b)}"/>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Reports"
+                                                icon="fas fa-file-medical"
+                                                class="ui-button-danger"
+                                                action="#{collectingCentreSelfCommonController.listSelfReportsOfBill(b)}"/>
+                                        </div>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <!--BILL_BARCODES-->
+                            <sm:sm_barCodes/>
+
+                            <!--INDIVIDUAL_BARCODES (re-generated samples)-->
+                            <sm:sm_individual_barcode/>
+
+                            <!--SAMPLES-->
+                            <h:panelGroup layout="block" class="row" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+                                <div class="col-md-9">
+                                    <p:panel styleClass="cc-bill-card cc-c-orange">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-vial"/>
+                                            <h:outputText value="Samples" class="mx-2"/>
+                                        </f:facet>
+                                        <p:dataTable
+                                            id="tblSamples"
+                                            value="#{patientInvestigationController.patientSamples}"
+                                            var="ps"
+                                            rowKey="#{ps.id}"
+                                            selectionMode="multiple"
+                                            selection="#{patientInvestigationController.selectedPatientSamples}"
+                                            selectionDisabled="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"
+                                            paginator="true"
+                                            rows="15"
+                                            paginatorPosition="bottom"
+                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                            rowsPerPageTemplate="15,25,50,100"
+                                            emptyMessage="No samples found for the selected criteria">
+
+                                            <p:column selectionBox="true" style="width: 3em; padding: 6px;"/>
+
+                                            <p:column headerText="Sample" style="width: 9em; vertical-align: top; padding: 6px;">
+                                                <i class="fa-solid fa-vial-virus text-danger"></i>
+                                                <p:commandLink
+                                                    id="lnkSampleBarcode"
+                                                    ajax="false"
+                                                    value="#{ps.id}"
+                                                    title="View barcode of this sample"
+                                                    styleClass="mx-2 fw-bold"
+                                                    rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"
+                                                    action="#{collectingCentreSelfCommonController.viewSelfSampleBarcode(ps)}"/>
+                                                <h:outputText
+                                                    value="#{ps.id}"
+                                                    title="Hospital Billing - barcode cannot be printed here"
+                                                    class="mx-2 fw-bold text-secondary"
+                                                    rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <br/>
+                                                <h:outputText value="#{ps.tube.name}" class="text-secondary"/>
+                                            </p:column>
+
+                                            <p:column headerText="Investigations" style="vertical-align: top; padding: 6px;">
+                                                <ui:repeat value="#{patientInvestigationController.getPatientInvestigationsFromSample(ps)}" var="psc">
+                                                    <div>
+                                                        <i class="fa fa-flask text-success"></i>
+                                                        <h:outputText value="#{psc.investigationComponant.name}" class="mx-2"/>
+                                                    </div>
+                                                </ui:repeat>
+                                            </p:column>
+
+                                            <p:column headerText="Bill" style="width: 12em; vertical-align: top; padding: 6px;">
+                                                <h:outputText value="#{ps.bill.deptId}"/>
+                                                <br/>
+                                                <h:outputText value="#{ps.bill.createdAt}" class="text-secondary">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
+                                                    <i class="fa-solid fa-lock me-1"></i>View only
+                                                </h:panelGroup>
+                                            </p:column>
+
+                                            <p:column headerText="Patient" style="width: 14em; vertical-align: top; padding: 6px;">
+                                                <h:outputText value="#{ps.bill.patient.person.nameWithTitle}"/>
+                                                <br/>
+                                                <h:outputText value="#{ps.bill.patient.person.ageAsString} / #{ps.bill.patient.person.sex.label}" class="text-secondary"/>
+                                            </p:column>
+
+                                            <p:column headerText="Status" style="width: 13em; vertical-align: top; padding: 6px;" class="text-center">
+                                                <p:badge rendered="#{ps.bill.cancelled}" value="Bill Cancelled" severity="danger"/>
+                                                <h:panelGroup rendered="#{not ps.bill.cancelled}">
+                                                    <p:badge value="#{ps.status.label}" severity="info"/>
+                                                    <h:panelGroup rendered="#{ps.sampleRejected}" layout="block" class="mt-1">
+                                                        <p:badge value="Rejected" severity="danger"/>
+                                                        <p:badge value="Re-Collect Requested" severity="warning" rendered="#{ps.requestReCollected}" class="mx-1"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.referenceSample ne null}" layout="block" class="mt-1">
+                                                        <p:badge value="Re-Collect of #{ps.referenceSample.id}" severity="secondary"/>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </p:column>
+
+                                            <p:column headerText="Details" style="width: 6em; vertical-align: top; padding: 6px;" class="text-center">
+                                                <p:commandButton
+                                                    id="btnSampleDetails"
+                                                    icon="fa-solid fa-eye"
+                                                    title="View sample details"
+                                                    styleClass="ui-button-info ui-button-outlined"
+                                                    process="@this"
+                                                    update=":form:dlgSampleDetails"
+                                                    oncomplete="PF('dlgSampleDetails').show()">
+                                                    <f:setPropertyActionListener value="#{ps}" target="#{patientInvestigationController.currentPatientSample}"/>
+                                                </p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <p:panel styleClass="cc-bill-card cc-c-purple">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-list-check"/>
+                                            <h:outputText value="Sample Actions" class="mx-2"/>
+                                        </f:facet>
+
+                                        <p:commandButton
+                                            id="btnCollectSamples"
+                                            ajax="false"
+                                            value="Collect Samples"
+                                            icon="pi pi-plus-circle"
+                                            class="ui-button-primary w-100"
+                                            action="#{collectingCentreSelfCommonController.collectSelfSamples}"/>
+
+                                        <hr/>
+
+                                        <h:outputLabel value="Sample Transporter" for="acTransporter"/>
+                                        <p:autoComplete
+                                            id="acTransporter"
+                                            completeMethod="#{staffController.completeStaff}"
+                                            value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
+                                            var="mys"
+                                            class="w-100"
+                                            maxResults="25"
+                                            placeholder="Search transporter"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{mys.person.nameWithTitle}"
+                                            itemValue="#{mys}">
+                                            <p:column headerText="Code" style="padding: 6px;">#{mys.code}</p:column>
+                                            <p:column headerText="Name" style="padding: 6px;">#{mys.person.nameWithTitle}</p:column>
+                                        </p:autoComplete>
+                                        <p:commandButton
+                                            id="btnSendSamples"
+                                            ajax="false"
+                                            value="Send Samples"
+                                            icon="fa fa-paper-plane"
+                                            class="ui-button-warning w-100 mt-2"
+                                            action="#{collectingCentreSelfCommonController.sendSelfSamples}"/>
+
+                                        <hr/>
+
+                                        <h:outputLabel value="Reject Reason" for="txtRejectReason"/>
+                                        <p:inputText
+                                            id="txtRejectReason"
+                                            class="w-100"
+                                            placeholder="Sample reject reason"
+                                            value="#{patientInvestigationController.sampleRejectionComment}"/>
+                                        <div class="d-flex align-items-center gap-2 my-2">
+                                            <p:toggleSwitch
+                                                id="tglReCollect"
+                                                value="#{patientInvestigationController.requestReCollected}"
+                                                onIcon="pi pi-check"
+                                                offIcon="pi pi-times"/>
+                                            <h:outputLabel value="Request Re-Collect Sample" for="tglReCollect"/>
+                                        </div>
+                                        <p:commandButton
+                                            id="btnRejectSamples"
+                                            ajax="false"
+                                            value="Reject Samples"
+                                            icon="pi pi-times-circle"
+                                            class="ui-button-danger w-100"
+                                            action="#{collectingCentreSelfCommonController.rejectSelfSamples}"/>
+
+                                        <hr/>
+
+                                        <p:commandButton
+                                            id="btnReGenerateSamples"
+                                            ajax="false"
+                                            value="Re-Generate Samples"
+                                            icon="pi pi-refresh"
+                                            class="ui-button-success w-100"
+                                            title="Re-generate samples rejected with a re-collect request"
+                                            action="#{collectingCentreSelfCommonController.reGenerateSelfSamples}"/>
+                                    </p:panel>
+                                </div>
+                            </h:panelGroup>
+
+                            <!--REPORTS-->
+                            <p:panel styleClass="cc-bill-card cc-c-red" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-file-medical"/>
+                                    <h:outputText value="Reports" class="mx-2"/>
+                                </f:facet>
+                                <p:dataTable
+                                    id="tblReports"
+                                    rowIndexVar="i"
+                                    value="#{patientInvestigationController.items}"
+                                    var="pi"
+                                    rowKey="#{pi.id}"
+                                    paginator="true"
+                                    rows="15"
+                                    paginatorPosition="bottom"
+                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                    rowsPerPageTemplate="15,50,100"
+                                    emptyMessage="No investigations found for the selected criteria"
+                                    style="table-layout: fixed; width: 100%;">
+
+                                    <p:column headerText="#" style="width: 2.5em; vertical-align: top; padding: 6px;">
+                                        <h:outputText value="#{i+1}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Number" style="width: 13em; vertical-align: top; padding: 6px;">
+                                        <h:outputText value="#{pi.billItem.bill.deptId}" class="text-primary"/>
+                                        <br/>
+                                        <h:outputText value="#{pi.billItem.bill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Patient" style="vertical-align: top; padding: 6px;">
+                                        <i class="fas fa-user text-primary" style="width: 27px;"></i>
+                                        <h:outputText value="#{pi.billItem.bill.patient.person.nameWithTitle}"/>
+                                        <br/>
+                                        <i class="fas fa-birthday-cake text-info" style="width: 27px;"></i>
+                                        <h:outputText value="#{pi.billItem.bill.patient.person.ageAsString}"/>
+                                        <h:outputText value="/" class="text-center d-inline-block" style="width: 30px;"/>
+                                        <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i>
+                                        <h:outputText value="#{pi.billItem.bill.patient.person.sex.label}"/>
+                                        <h:panelGroup rendered="#{not empty pi.billItem.bill.patient.person.mobile}">
+                                            <br/>
+                                            <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i>
+                                            <h:outputText value="#{pi.billItem.bill.patient.person.mobile}"/>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Investigation" style="width: 22em; vertical-align: top; padding: 6px;">
+                                        <i class="fas fa-vial text-danger" style="width: 27px;"></i>
+                                        <h:outputText value="#{pi.investigation.name}"/>
+                                        <h:panelGroup rendered="#{pi.billItem.priority ne null}">
+                                            <div class="card p-1 mt-2"
+                                                 style="font-weight: 700; background-color: #{pi.billItem.priority.priorityColor}; text-align: center;"
+                                                 title="#{pi.billItem.priority.description}">
+                                                #{pi.billItem.priority.displayName}
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column headerText="Sample IDs" style="width: 9em; vertical-align: top; padding: 6px;">
+                                        <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.id)}" var="sample">
+                                            <div class="d-flex mb-2">
+                                                <i class="fa fa-vial"></i>
+                                                <h:outputText value="#{sample}" class="mx-2 text-primary"/>
+                                            </div>
+                                        </ui:repeat>
+                                    </p:column>
+
+                                    <p:column headerText="Status" style="width: 11em; vertical-align: top; padding: 6px;">
+                                        <h:outputText
+                                            value="#{pi.status.label}"
+                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled}"/>
+                                        <p:badge value="Item Refunded" severity="warning" rendered="#{pi.billItem.refunded}"/>
+                                        <p:badge value="Bill Cancelled" severity="danger" rendered="#{pi.billItem.bill.cancelled}"/>
+                                    </p:column>
+
+                                    <p:column headerText="Actions" style="width: 30em; vertical-align: top; padding: 6px;">
+                                        <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
+                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="w-50"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{pi.billItem.refunded and not pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
+                                            <p:badge value="Item Refunded" severity="info" size="large" class="w-50"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{not pi.billItem.bill.cancelled and not pi.billItem.refunded}">
+                                            <h:panelGroup rendered="#{empty collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" class="d-flex justify-content-center">
+                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="w-50"/>
+                                            </h:panelGroup>
+
+                                            <ui:repeat value="#{collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" var="dpr">
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="d-flex gap-2 mb-2">
+                                                        <p:commandButton
+                                                            ajax="false"
+                                                            value="Print"
+                                                            icon="fa fa-print"
+                                                            class="ui-button-info"
+                                                            disabled="#{not dpr.approved}"
+                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}"/>
+                                                        <p:badge value="Approved" severity="success" class="mt-2" rendered="#{dpr.approved}"/>
+                                                        <p:badge value="Pending" severity="warning" class="mt-2" rendered="#{not dpr.approved}"/>
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-end gap-2">
+                                                        <p:graphicImage library="image" name="print_pending.png" title="Not Printed" rendered="#{not dpr.printComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="print_done.png" title="Report Printed" rendered="#{dpr.printComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="handover_pending.png" title="Not Issued" rendered="#{not dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="handover_done.png" title="Report Issued" rendered="#{dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="sms_send_pending.png" title="SMS Send Pending" rendered="#{not dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="sms_send_complete.png" title="SMS Send Complete" rendered="#{dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="email_sending_pending.png" title="Email Send Pending" rendered="#{not dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
+                                                        <p:graphicImage library="image" name="email_sending_complete.png" title="Email Send Complete" rendered="#{dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </h:panelGroup>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+
+                            <!--SAMPLE DETAILS POPUP-->
+                            <p:dialog
+                                id="dlgSampleDetails"
+                                widgetVar="dlgSampleDetails"
+                                header="Sample Details"
+                                modal="true"
+                                closeOnEscape="true"
+                                resizable="false"
+                                width="600"
+                                responsive="true">
+                                <c:set var="sd" value="#{patientInvestigationController.currentPatientSample}"/>
+                                <h:panelGroup rendered="#{sd ne null}" layout="block">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-vial me-2"></i>Sample</th></tr>
+                                        <tr><td style="width: 35%;">Sample ID</td><td><h:outputText value="#{sd.id}" class="fw-bold"/></td></tr>
+                                        <tr><td>Tube</td><td><h:outputText value="#{sd.tube.name}"/></td></tr>
+                                        <tr><td>Status</td><td><h:outputText value="#{sd.status.label}"/></td></tr>
+                                        <tr><td>Bill No</td><td><h:outputText value="#{sd.bill.deptId}"/></td></tr>
+                                        <tr><td>Patient</td><td><h:outputText value="#{sd.bill.patient.person.nameWithTitle}"/></td></tr>
+                                        <h:panelGroup rendered="#{sd.referenceSample ne null}">
+                                            <tr><td>Re-Collect of</td><td><h:outputText value="#{sd.referenceSample.id}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-syringe text-primary me-2"></i>Collection</th></tr>
+                                        <h:panelGroup rendered="#{not sd.sampleCollected}">
+                                            <tr><td colspan="2" class="text-secondary fst-italic">Not collected yet</td></tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sd.sampleCollected}">
+                                            <tr><td>Collected At</td><td>
+                                                    <h:outputText value="#{sd.sampleCollectedAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Collected By</td><td><h:outputText value="#{sd.sampleCollecter.webUserPerson.name}"/></td></tr>
+                                            <tr><td>Department</td><td><h:outputText value="#{sd.sampleCollectedDepartment.name}"/></td></tr>
+                                            <tr><td>Institution</td><td><h:outputText value="#{sd.sampleCollectedInstitution.name}"/></td></tr>
+                                            <tr><td>Comments</td><td><h:outputText value="#{sd.sampleCollectionComments}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-truck-medical text-warning me-2"></i>Sending</th></tr>
+                                        <h:panelGroup rendered="#{not sd.sampleSent}">
+                                            <tr><td colspan="2" class="text-secondary fst-italic">Not sent yet</td></tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sd.sampleSent}">
+                                            <tr><td>Sent At</td><td>
+                                                    <h:outputText value="#{sd.sampleSentAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Sent By</td><td><h:outputText value="#{sd.sampleSentBy.webUserPerson.name}"/></td></tr>
+                                            <tr><td>Transporter</td><td><h:outputText value="#{sd.sampleTransportedToLabByStaff.person.nameWithTitle}"/></td></tr>
+                                            <tr><td>Sent To</td><td>
+                                                    <h:outputText value="#{sd.sampleSentToDepartment.name}"/>
+                                                    <h:outputText value=" (#{sd.sampleSentToInstitution.name})" rendered="#{sd.sampleSentToInstitution ne null}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-flask-vial text-success me-2"></i>Lab Receipt</th></tr>
+                                        <h:panelGroup rendered="#{not sd.sampleReceivedAtLab}">
+                                            <tr><td colspan="2" class="text-secondary fst-italic">Not received at lab yet</td></tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sd.sampleReceivedAtLab}">
+                                            <tr><td>Received At</td><td>
+                                                    <h:outputText value="#{sd.sampleReceivedAtLabAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Department</td><td><h:outputText value="#{sd.sampleReceivedAtLabDepartment.name}"/></td></tr>
+                                            <tr><td>Comments</td><td><h:outputText value="#{sd.sampleReceivedAtLabComments}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sd.sampleRejected}">
+                                            <tr class="table-danger"><th colspan="2"><i class="fa-solid fa-circle-xmark me-2"></i>Rejection</th></tr>
+                                            <tr><td>Rejected At</td><td>
+                                                    <h:outputText value="#{sd.sampleRejectedAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Rejected By</td><td><h:outputText value="#{sd.sampleRejectedBy.webUserPerson.name}"/></td></tr>
+                                            <tr><td>Reason</td><td><h:outputText value="#{sd.sampleRejectionComment}"/></td></tr>
+                                            <tr><td>Re-Collect Requested</td><td><h:outputText value="#{sd.requestReCollected ? 'Yes' : 'No'}"/></td></tr>
+                                        </h:panelGroup>
+                                    </table>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Close" icon="fa-solid fa-xmark" type="button" styleClass="ui-button-secondary" onclick="PF('dlgSampleDetails').hide()"/>
+                                </f:facet>
+                            </p:dialog>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
