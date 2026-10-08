@@ -6,6 +6,7 @@ import com.divudi.bean.lab.PatientReportController;
 import com.divudi.bean.lab.PatientReportUploadController;
 import com.divudi.bean.report.ReportController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.Bill;
@@ -127,8 +128,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
     public String navigateToCollectingCentreSelfSampleManagement() {
         patientInvestigationController.makeNull();
         patientInvestigationController.setSelectedPatientSamples(null);
-        patientInvestigationController.setFromDate(CommonFunctions.getStartOfDay());
-        patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
+        setSelfSampleManagementDefaults();
         restrictSampleManagementToOwnCollectingCentre();
         return "/collecting_centre/cc_self_sample_management?faces-redirect=true";
     }
@@ -161,8 +161,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
         }
         patientInvestigationController.makeNull();
         patientInvestigationController.setSelectedPatientSamples(null);
-        patientInvestigationController.setFromDate(CommonFunctions.getStartOfDay());
-        patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
+        setSelfSampleManagementDefaults();
         restrictSampleManagementToOwnCollectingCentre();
         patientInvestigationController.setListingEntity(ListingEntity.BILLS);
         patientInvestigationController.setBills(ownBills);
@@ -222,8 +221,14 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setPatientName(null);
         patientInvestigationController.setSampleId(null);
         patientInvestigationController.setPatientInvestigationStatus(null);
+        setSelfSampleManagementDefaults();
+    }
+
+    private void setSelfSampleManagementDefaults() {
         patientInvestigationController.setFromDate(CommonFunctions.getStartOfDay());
         patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
+        patientInvestigationController.setInvestigationName(null);
+        patientInvestigationController.setCollectingCentreBillingType(CollectingCentreBillingType.AGENT_BILLING);
     }
 
     public void generateSelfBarcodes(Bill bill) {
