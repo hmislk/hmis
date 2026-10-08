@@ -1646,10 +1646,44 @@ public class GrnReturnWorkflowController implements Serializable {
                 newPharmaceuticalBillItemInReturnBill.setStock(pbiOfBilledBill.getStock());
                 newBillItemInReturnBill.setPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill);
 
-                // Returning quantities start at zero so the user enters them explicitly;
-                // the Remaining Qty columns still show what is available to return.
-                newPharmaceuticalBillItemInReturnBill.setQty(0.0);
-                newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
+                double originalQtyInUnits = pbiOfBilledBill.getQty();
+                double originalFreeQtyInUnits = pbiOfBilledBill.getFreeQty();
+
+                boolean returnByTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
+                boolean prefillReturningQuantities = configOptionApplicationController.getBooleanValueByKey("GRN Return - Prefill Returning Quantities on Create", true);
+
+                if (!prefillReturningQuantities) {
+                    // Returning quantities start at zero so the user enters them explicitly;
+                    // the Remaining Qty columns still show what is available to return.
+                    newPharmaceuticalBillItemInReturnBill.setQty(0.0);
+                    newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
+                } else if (returnByTotalQuantity) {
+                    // Use consistent database query methods
+                    BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantityWhenApproval(pbiOfBilledBill.getBillItem());
+                    BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantityWhenApproval(pbiOfBilledBill.getBillItem());
+                    BigDecimal totalAlreadyReturned = alreadyReturnedQty.add(alreadyReturnedFreeQty);
+
+                    double originalTotal = Math.abs(originalQtyInUnits) + Math.abs(originalFreeQtyInUnits);
+                    double availableToReturn = originalTotal - totalAlreadyReturned.doubleValue();
+
+                    // Ensure we don't show negative quantities
+                    availableToReturn = Math.max(0.0, availableToReturn);
+                    newPharmaceuticalBillItemInReturnBill.setQty(availableToReturn);
+                    newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
+                } else {
+                    // Use consistent database query methods
+                    BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantityWhenApproval(pbiOfBilledBill.getBillItem());
+                    BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantityWhenApproval(pbiOfBilledBill.getBillItem());
+
+                    double availableQty = Math.abs(originalQtyInUnits) - alreadyReturnedQty.doubleValue();
+                    double availableFreeQty = Math.abs(originalFreeQtyInUnits) - alreadyReturnedFreeQty.doubleValue();
+
+                    // Ensure we don't show negative quantities
+                    availableQty = Math.max(0.0, availableQty);
+                    availableFreeQty = Math.max(0.0, availableFreeQty);
+                    newPharmaceuticalBillItemInReturnBill.setQty(availableQty);
+                    newPharmaceuticalBillItemInReturnBill.setFreeQty(availableFreeQty);
+                }
                 BillItemFinanceDetails newBillItemFinanceDetailsInReturnBill = new BillItemFinanceDetails();
                 newBillItemFinanceDetailsInReturnBill.setBillItem(newBillItemInReturnBill);
                 newBillItemInReturnBill.setBillItemFinanceDetails(newBillItemFinanceDetailsInReturnBill);
@@ -1670,6 +1704,9 @@ public class GrnReturnWorkflowController implements Serializable {
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
                 // Seed bi.qty (pack qty) from phi.qty (unit qty) before calculateLineTotal reads it.
+                // phi.qty was set above (available-to-return, or zero when prefill is off); bi.qty
+                // starts at 0.0 and calculateLineTotal reads bi.qty — without seeding, every
+                // prefilled initial line total would be calculated as zero.
                 boolean isAmppItem = newBillItemInReturnBill.getItem() instanceof Ampp;
                 BigDecimal phiQty = BigDecimal.valueOf(newPharmaceuticalBillItemInReturnBill.getQty());
                 BigDecimal initialPackQty = isAmppItem && unitsPerPack.compareTo(BigDecimal.ZERO) > 0
