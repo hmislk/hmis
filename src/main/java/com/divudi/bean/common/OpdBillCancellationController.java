@@ -56,6 +56,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.LabSampleLockService;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -137,6 +138,8 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
     private PatientFacade patientFacade;
     @EJB
     BillService billService;
+    @EJB
+    LabSampleLockService labSampleLockService;
     @EJB
     ProfessionalPaymentService professionalPaymentService;
     @EJB
@@ -702,6 +705,11 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             JsfUtil.addErrorMessage("No Saved Original Bill");
             return;
         }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            return;
+        }
         if (getBill().getBackwardReferenceBill() == null) {
             JsfUtil.addErrorMessage("No Batch Bill found for the Individual Bill which is selected to Cancel");
             return;
@@ -759,26 +767,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    return;
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                return;
-            }
+        if (!getWebUserController().hasPrivilege("OpdIndividualCancel")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+            return;
         }
 
         // CRITICAL: Check if batch bill has been settled with credit company

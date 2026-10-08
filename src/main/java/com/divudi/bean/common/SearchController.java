@@ -412,6 +412,9 @@ public class SearchController implements Serializable {
     private Item item;
     // Item selected on the Pharmacy Bill Search by Item report (issue #24250).
     private Item billSearchItem;
+    // Free-text item name / code entered on Pharmacy Bill Search by Bill Type Atomic (issue #24366).
+    private String billSearchItemName;
+    private String billSearchItemCode;
     private double dueTotal;
     private double doneTotal;
     private double netTotal;
@@ -10562,6 +10565,11 @@ public class SearchController implements Serializable {
     public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
+        billSearchItemName = null;
+        billSearchItemCode = null;
+        // Result tables on this page hide their own keyword inputs, so clear any
+        // keywords left over from other search pages (issue #24366).
+        searchKeyword = null;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
     }
 
@@ -10592,7 +10600,8 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
-        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null, maxResult);
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null,
+                billSearchItemName, billSearchItemCode, maxResult);
     }
 
     /**
@@ -10617,6 +10626,22 @@ public class SearchController implements Serializable {
 
     public void setBillSearchItem(Item billSearchItem) {
         this.billSearchItem = billSearchItem;
+    }
+
+    public String getBillSearchItemName() {
+        return billSearchItemName;
+    }
+
+    public void setBillSearchItemName(String billSearchItemName) {
+        this.billSearchItemName = billSearchItemName;
+    }
+
+    public String getBillSearchItemCode() {
+        return billSearchItemCode;
+    }
+
+    public void setBillSearchItemCode(String billSearchItemCode) {
+        this.billSearchItemCode = billSearchItemCode;
     }
 
     public String navigateToItemizedSaleSummary() {

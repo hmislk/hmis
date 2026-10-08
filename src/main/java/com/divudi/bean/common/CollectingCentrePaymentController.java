@@ -93,6 +93,7 @@ public class CollectingCentrePaymentController implements Serializable {
     private double finalEndingBalanseInCC = 0.0;
 
     private double payingBalanceAcodingToCCBalabce = 0.0;
+    private double duePaymentAmount;
     private Bill currentPaymentBill;
 
     private List<CollectingCentrePaymentBillDTO> paymentBills;
@@ -154,6 +155,7 @@ public class CollectingCentrePaymentController implements Serializable {
         startingBalanseInCC = 0.0;
         finalEndingBalanseInCC = 0.0;
         payingBalanceAcodingToCCBalabce = 0.0;
+        duePaymentAmount = 0.0;
         currentPaymentBill = null;
         billNumber = null;
         paymentBills = null;
@@ -201,10 +203,15 @@ public class CollectingCentrePaymentController implements Serializable {
         // silently include activity that was already settled outside the selected date range.
         calculaPayingBalanceAcodingToCCBalabce(startingHistory, endingHistory, periodPaidAmount);
 
-        // The amount charged is always the value of the itemized bills being marked paid.
-        payingBalanceAcodingToCCBalabce = totalCCAmount;
-
         calculateTotalOfPaymentReceive();
+        
+        totalCCAmount = totalCCReceiveAmount - totalHospitalAmount;
+        
+        if(totalCCAmount >= 0.0){
+            duePaymentAmount = totalCCAmount;
+        }else{
+            duePaymentAmount = 0.0;
+        }
     }
 
     public long countUnpaidCCBillsBefore(Institution collectingCentre, Date beforeDate) {
@@ -312,7 +319,7 @@ public class CollectingCentrePaymentController implements Serializable {
         if (startingHistory != null && endingHistory != null) {
             payingBalance = endingHistory.getBalanceAfterTransaction() - (startingHistory.getBalanceBeforeTransaction() - paidCCAmount);
         }
-
+        
         if (payingBalance > 0.0) {
             payingBalanceAcodingToCCBalabce = payingBalance;
         } else {
@@ -353,30 +360,35 @@ public class CollectingCentrePaymentController implements Serializable {
 
     }
     
+    // Ledger view of the period: every repayment made in the range, less every repayment
+    // cancellation made in the range. Cancelled repayments are not filtered out here, so a
+    // repayment and its cancellation both inside the range net to zero, and a cancellation in
+    // the range of a repayment made before the range is still deducted.
     public double getPaidAgentPaymentsDuringThisPeriod(Institution collectingCentre) {
-        List<HistoryType> types = new ArrayList<>();
-        types.add(HistoryType.RepaymentToCollectingCentre);
+        double totalRepayments = sumPaidAmountToAgency(collectingCentre, HistoryType.RepaymentToCollectingCentre);
+        double totalRepaymentCancellations = sumPaidAmountToAgency(collectingCentre, HistoryType.RepaymentToCollectingCentreCancel);
+        return totalRepayments - totalRepaymentCancellations;
+    }
 
-        String jpql = "select sum(ah.paidAmountToAgency) "
+    // Cancellation histories store a negative paidAmountToAgency (the cancel bill's values are
+    // inverted), so ABS keeps both sums positive and the caller decides the sign.
+    private double sumPaidAmountToAgency(Institution collectingCentre, HistoryType historyType) {
+        String jpql = "select sum(abs(ah.paidAmountToAgency)) "
                 + " from AgentHistory ah "
                 + " where ah.retired=:ret"
                 + " and ah.agency =:cc "
-                + " and ah.historyType in :types "
+                + " and ah.historyType =:type "
                 + " and ah.bill.createdAt between :fromDate and :toDate "
-                + " and ah.bill.retired = false "
-                + " and ah.bill.cancelled = false "
-                + " order by ah.bill.createdAt asc ";
+                + " and ah.bill.retired = false ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("cc", collectingCentre);
-        m.put("types", types);
+        m.put("type", historyType);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
 
-        double total = agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
-        
-        return total;
+        return agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public List<AgentHistory> getAllAgentHistory(Institution collectingCentre) {
@@ -539,24 +551,30 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public void calculateTotalOfPaymentReceive() {
+        double totalDeposits = sumAgentHistoryTransactionValue(HistoryType.CollectingCentreDeposit);
+        double totalDepositCancellations = sumAgentHistoryTransactionValue(HistoryType.CollectingCentreDepositCancel);
+        totalCCReceiveAmount = totalDeposits - totalDepositCancellations;
+    }
 
-        String jpql;
-        Map<String, Object> temMap = new HashMap<>();
+    // Deposit histories store a positive transactionValue and cancellation histories a negative one,
+    // so ABS keeps both sums positive and the caller decides the sign.
+    private double sumAgentHistoryTransactionValue(HistoryType historyType) {
+        String jpql = "select sum(abs(ah.transactionValue)) "
+                + " from AgentHistory ah "
+                + " where ah.retired=:ret"
+                + " and ah.agency =:cc "
+                + " and ah.historyType =:type "
+                + " and ah.bill.createdAt between :fromDate and :toDate "
+                + " and ah.bill.retired = false ";
 
-        jpql = "SELECT SUM(b.netTotal) "
-                + "FROM Bill b "
-                + "WHERE b.billTypeAtomic = :atomic "
-                + "AND b.fromInstitution = :cc "
-                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                + "AND b.cancelled = FALSE "
-                + "AND b.retired = FALSE";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("cc", currentCollectingCentre);
+        m.put("type", historyType);
+        m.put("fromDate", fromDate);
+        m.put("toDate", toDate);
 
-        temMap.put("atomic", BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
-        temMap.put("cc", currentCollectingCentre);
-        temMap.put("fromDate", fromDate);
-        temMap.put("toDate", toDate);
-
-        totalCCReceiveAmount = billFacade.findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+        return agentHistoryFacade.findDoubleByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     public void performCalculations() {
@@ -651,9 +669,9 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setCollectingCentre(currentCollectingCentre);
 
         ccAgentPaymentBill.setBillTypeAtomic(BillTypeAtomic.CC_AGENT_PAYMENT);
-        ccAgentPaymentBill.setNetTotal(payingBalanceAcodingToCCBalabce);
-        ccAgentPaymentBill.setTotal(payingBalanceAcodingToCCBalabce);
-        ccAgentPaymentBill.setPaidAmount(payingBalanceAcodingToCCBalabce);
+        ccAgentPaymentBill.setNetTotal(duePaymentAmount);
+        ccAgentPaymentBill.setTotal(duePaymentAmount);
+        ccAgentPaymentBill.setPaidAmount(duePaymentAmount);
 
         // Record the CC repayment voucher figures so the voucher can be reprinted later.
         ccAgentPaymentBill.setCcBalanceBeforeTransaction(startingBalanseInCC);
@@ -1253,5 +1271,13 @@ public class CollectingCentrePaymentController implements Serializable {
         this.periodPaidAmount = periodPaidAmount;
     }
 // </editor-fold>
+
+    public double getDuePaymentAmount() {
+        return duePaymentAmount;
+    }
+
+    public void setDuePaymentAmount(double duePaymentAmount) {
+        this.duePaymentAmount = duePaymentAmount;
+    }
 
 }
