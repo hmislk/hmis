@@ -5,6 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
       xmlns:sm="http://xmlns.jcp.org/jsf/composite/ezcomp/sample_management">
     <h:head>
@@ -263,29 +264,17 @@
                                                 </h:panelGroup>
                                             </p:column>
 
-                                            <p:column headerText="Details" style="width: 15em; padding: 8px; vertical-align: top;">
-                                                <h:panelGroup rendered="#{ps.sampleCollected}" layout="block">
-                                                    <h:outputText value="Collected: "/>
-                                                    <h:outputText value="#{ps.sampleCollectedAt}">
-                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                    </h:outputText>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ps.sampleSent}" layout="block">
-                                                    <h:outputText value="Sent: "/>
-                                                    <h:outputText value="#{ps.sampleSentAt}">
-                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                    </h:outputText>
-                                                    <h:outputText value=" by #{ps.sampleTransportedToLabByStaff.person.nameWithTitle}" rendered="#{ps.sampleTransportedToLabByStaff ne null}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ps.sampleReceivedAtLab}" layout="block">
-                                                    <h:outputText value="Received at Lab: "/>
-                                                    <h:outputText value="#{ps.sampleReceivedAtLabAt}">
-                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                    </h:outputText>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ps.sampleRejected}" layout="block" class="text-danger">
-                                                    <h:outputText value="Rejected: #{ps.sampleRejectionComment}"/>
-                                                </h:panelGroup>
+                                            <p:column headerText="Details" style="width: 6em; padding: 8px; vertical-align: top;" class="text-center">
+                                                <p:commandButton
+                                                    id="btnSampleDetails"
+                                                    icon="fa-solid fa-eye"
+                                                    title="View sample details"
+                                                    styleClass="ui-button-info ui-button-outlined"
+                                                    process="@this"
+                                                    update=":form:dlgSampleDetails"
+                                                    oncomplete="PF('dlgSampleDetails').show()">
+                                                    <f:setPropertyActionListener value="#{ps}" target="#{patientInvestigationController.currentPatientSample}"/>
+                                                </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
                                     </p:panel>
@@ -492,6 +481,90 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
+
+                            <!--SAMPLE DETAILS POPUP-->
+                            <p:dialog
+                                id="dlgSampleDetails"
+                                widgetVar="dlgSampleDetails"
+                                header="Sample Details"
+                                modal="true"
+                                closeOnEscape="true"
+                                resizable="false"
+                                width="600"
+                                responsive="true">
+                                <c:set var="sd" value="#{patientInvestigationController.currentPatientSample}"/>
+                                <h:panelGroup rendered="#{sd ne null}" layout="block">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-vial me-2"></i>Sample</th></tr>
+                                        <tr><td style="width: 35%;">Sample ID</td><td><h:outputText value="#{sd.id}" class="fw-bold"/></td></tr>
+                                        <tr><td>Tube</td><td><h:outputText value="#{sd.tube.name}"/></td></tr>
+                                        <tr><td>Status</td><td><h:outputText value="#{sd.status.label}"/></td></tr>
+                                        <tr><td>Bill No</td><td><h:outputText value="#{sd.bill.deptId}"/></td></tr>
+                                        <tr><td>Patient</td><td><h:outputText value="#{sd.bill.patient.person.nameWithTitle}"/></td></tr>
+                                        <h:panelGroup rendered="#{sd.referenceSample ne null}">
+                                            <tr><td>Re-Collect of</td><td><h:outputText value="#{sd.referenceSample.id}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-syringe text-primary me-2"></i>Collection</th></tr>
+                                        <h:panelGroup rendered="#{not sd.sampleCollected}">
+                                            <tr><td colspan="2" class="text-secondary fst-italic">Not collected yet</td></tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sd.sampleCollected}">
+                                            <tr><td>Collected At</td><td>
+                                                    <h:outputText value="#{sd.sampleCollectedAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Collected By</td><td><h:outputText value="#{sd.sampleCollecter.webUserPerson.name}"/></td></tr>
+                                            <tr><td>Department</td><td><h:outputText value="#{sd.sampleCollectedDepartment.name}"/></td></tr>
+                                            <tr><td>Institution</td><td><h:outputText value="#{sd.sampleCollectedInstitution.name}"/></td></tr>
+                                            <tr><td>Comments</td><td><h:outputText value="#{sd.sampleCollectionComments}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-truck-medical text-warning me-2"></i>Sending</th></tr>
+                                        <h:panelGroup rendered="#{not sd.sampleSent}">
+                                            <tr><td colspan="2" class="text-secondary fst-italic">Not sent yet</td></tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sd.sampleSent}">
+                                            <tr><td>Sent At</td><td>
+                                                    <h:outputText value="#{sd.sampleSentAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Sent By</td><td><h:outputText value="#{sd.sampleSentBy.webUserPerson.name}"/></td></tr>
+                                            <tr><td>Transporter</td><td><h:outputText value="#{sd.sampleTransportedToLabByStaff.person.nameWithTitle}"/></td></tr>
+                                            <tr><td>Sent To</td><td>
+                                                    <h:outputText value="#{sd.sampleSentToDepartment.name}"/>
+                                                    <h:outputText value=" (#{sd.sampleSentToInstitution.name})" rendered="#{sd.sampleSentToInstitution ne null}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <tr class="table-light"><th colspan="2"><i class="fa-solid fa-flask-vial text-success me-2"></i>Lab Receipt</th></tr>
+                                        <h:panelGroup rendered="#{not sd.sampleReceivedAtLab}">
+                                            <tr><td colspan="2" class="text-secondary fst-italic">Not received at lab yet</td></tr>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{sd.sampleReceivedAtLab}">
+                                            <tr><td>Received At</td><td>
+                                                    <h:outputText value="#{sd.sampleReceivedAtLabAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Department</td><td><h:outputText value="#{sd.sampleReceivedAtLabDepartment.name}"/></td></tr>
+                                            <tr><td>Comments</td><td><h:outputText value="#{sd.sampleReceivedAtLabComments}"/></td></tr>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{sd.sampleRejected}">
+                                            <tr class="table-danger"><th colspan="2"><i class="fa-solid fa-circle-xmark me-2"></i>Rejection</th></tr>
+                                            <tr><td>Rejected At</td><td>
+                                                    <h:outputText value="#{sd.sampleRejectedAt}">
+                                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText></td></tr>
+                                            <tr><td>Rejected By</td><td><h:outputText value="#{sd.sampleRejectedBy.webUserPerson.name}"/></td></tr>
+                                            <tr><td>Reason</td><td><h:outputText value="#{sd.sampleRejectionComment}"/></td></tr>
+                                            <tr><td>Re-Collect Requested</td><td><h:outputText value="#{sd.requestReCollected ? 'Yes' : 'No'}"/></td></tr>
+                                        </h:panelGroup>
+                                    </table>
+                                </h:panelGroup>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Close" icon="fa-solid fa-xmark" type="button" styleClass="ui-button-secondary" onclick="PF('dlgSampleDetails').hide()"/>
+                                </f:facet>
+                            </p:dialog>
                         </h:form>
                     </div>
                 </h:panelGroup>
