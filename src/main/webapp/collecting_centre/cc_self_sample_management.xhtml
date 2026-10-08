@@ -136,34 +136,34 @@
                                     rowsPerPageTemplate="15,25,50,100"
                                     emptyMessage="No bills found for the selected criteria">
 
-                                    <p:column headerText="No" style="width: 3em; padding: 8px;">
+                                    <p:column headerText="No" style="width: 3em; padding: 6px;">
                                         <h:outputText value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" style="width: 13em; padding: 8px;">
+                                    <p:column headerText="Bill No" style="width: 13em; padding: 6px;">
                                         <h:outputText value="#{b.deptId}"/>
                                     </p:column>
-                                    <p:column headerText="Type" style="width: 9em; padding: 8px;" class="text-center">
+                                    <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
                                         <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
                                         <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
                                     </p:column>
-                                    <p:column headerText="Billed At" style="width: 11em; padding: 8px;">
+                                    <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
                                         <h:outputText value="#{b.createdAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Patient" style="padding: 8px;">
+                                    <p:column headerText="Patient" style="padding: 6px;">
                                         <h:outputText value="#{b.patient.person.nameWithTitle}"/>
                                         <br/>
                                         <h:outputText value="#{b.patient.person.ageAsString} / #{b.patient.person.sex.label}" class="text-secondary"/>
                                     </p:column>
-                                    <p:column headerText="Patient Phone" style="width: 9em; padding: 8px;">
+                                    <p:column headerText="Patient Phone" style="width: 9em; padding: 6px;">
                                         <h:outputText value="#{b.patient.person.phone}"/>
                                     </p:column>
-                                    <p:column headerText="Status" style="width: 12em; padding: 8px;" class="text-center">
+                                    <p:column headerText="Status" style="width: 12em; padding: 6px;" class="text-center">
                                         <p:badge rendered="#{b.cancelled}" value="Bill Cancelled" severity="danger"/>
                                         <p:badge rendered="#{not b.cancelled and b.status ne null}" value="#{b.status.label}" severity="info"/>
                                     </p:column>
-                                    <p:column headerText="Actions" style="width: 22em; padding: 8px;">
+                                    <p:column headerText="Actions" style="width: 22em; padding: 6px;">
                                         <div class="d-flex gap-1">
                                             <p:commandButton
                                                 ajax="false"
@@ -219,16 +219,16 @@
                                             rowsPerPageTemplate="15,25,50,100"
                                             emptyMessage="No samples found for the selected criteria">
 
-                                            <p:column selectionBox="true" style="width: 3em;"/>
+                                            <p:column selectionBox="true" style="width: 3em; padding: 6px;"/>
 
-                                            <p:column headerText="Sample" style="width: 9em; padding: 8px; vertical-align: top;">
+                                            <p:column headerText="Sample" style="width: 9em; vertical-align: top; padding: 6px;">
                                                 <i class="fa-solid fa-vial-virus text-danger"></i>
                                                 <h:outputText value="#{ps.id}" class="mx-2 fw-bold"/>
                                                 <br/>
                                                 <h:outputText value="#{ps.tube.name}" class="text-secondary"/>
                                             </p:column>
 
-                                            <p:column headerText="Investigations" style="padding: 8px; vertical-align: top;">
+                                            <p:column headerText="Investigations" style="vertical-align: top; padding: 6px;">
                                                 <ui:repeat value="#{patientInvestigationController.getPatientInvestigationsFromSample(ps)}" var="psc">
                                                     <div>
                                                         <i class="fa fa-flask text-success"></i>
@@ -237,7 +237,7 @@
                                                 </ui:repeat>
                                             </p:column>
 
-                                            <p:column headerText="Bill" style="width: 12em; padding: 8px; vertical-align: top;">
+                                            <p:column headerText="Bill" style="width: 12em; vertical-align: top; padding: 6px;">
                                                 <h:outputText value="#{ps.bill.deptId}"/>
                                                 <br/>
                                                 <h:outputText value="#{ps.bill.createdAt}" class="text-secondary">
@@ -245,7 +245,7 @@
                                                 </h:outputText>
                                             </p:column>
 
-                                            <p:column headerText="Type" style="width: 9em; padding: 8px; vertical-align: top;" class="text-center">
+                                            <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
                                                 <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
                                                 <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
                                                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
@@ -253,13 +253,13 @@
                                                 </h:panelGroup>
                                             </p:column>
 
-                                            <p:column headerText="Patient" style="width: 14em; padding: 8px; vertical-align: top;">
+                                            <p:column headerText="Patient" style="width: 14em; vertical-align: top; padding: 6px;">
                                                 <h:outputText value="#{ps.bill.patient.person.nameWithTitle}"/>
                                                 <br/>
                                                 <h:outputText value="#{ps.bill.patient.person.ageAsString} / #{ps.bill.patient.person.sex.label}" class="text-secondary"/>
                                             </p:column>
 
-                                            <p:column headerText="Status" style="width: 13em; padding: 8px; vertical-align: top;" class="text-center">
+                                            <p:column headerText="Status" style="width: 13em; vertical-align: top; padding: 6px;" class="text-center">
                                                 <p:badge rendered="#{ps.bill.cancelled}" value="Bill Cancelled" severity="danger"/>
                                                 <h:panelGroup rendered="#{not ps.bill.cancelled}">
                                                     <p:badge value="#{ps.status.label}" severity="info"/>
@@ -273,7 +273,7 @@
                                                 </h:panelGroup>
                                             </p:column>
 
-                                            <p:column headerText="Details" style="width: 6em; padding: 8px; vertical-align: top;" class="text-center">
+                                            <p:column headerText="Details" style="width: 6em; vertical-align: top; padding: 6px;" class="text-center">
                                                 <p:commandButton
                                                     id="btnSampleDetails"
                                                     icon="fa-solid fa-eye"
@@ -387,11 +387,11 @@
                                     emptyMessage="No investigations found for the selected criteria"
                                     style="table-layout: fixed; width: 100%;">
 
-                                    <p:column headerText="#" style="width: 2.5em; vertical-align: top;">
+                                    <p:column headerText="#" style="width: 2.5em; vertical-align: top; padding: 6px;">
                                         <h:outputText value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill Number" style="width: 13em; vertical-align: top;">
+                                    <p:column headerText="Bill Number" style="width: 13em; vertical-align: top; padding: 6px;">
                                         <h:outputText value="#{pi.billItem.bill.deptId}" class="text-primary"/>
                                         <br/>
                                         <h:outputText value="#{pi.billItem.bill.createdAt}">
@@ -399,12 +399,12 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Type" style="width: 9em; vertical-align: top;" class="text-center">
+                                    <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
                                         <p:badge value="Self Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
                                         <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
                                     </p:column>
 
-                                    <p:column headerText="Patient" style="vertical-align: top;">
+                                    <p:column headerText="Patient" style="vertical-align: top; padding: 6px;">
                                         <i class="fas fa-user text-primary" style="width: 27px;"></i>
                                         <h:outputText value="#{pi.billItem.bill.patient.person.nameWithTitle}"/>
                                         <br/>
@@ -420,7 +420,7 @@
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Investigation" style="width: 22em; vertical-align: top;">
+                                    <p:column headerText="Investigation" style="width: 22em; vertical-align: top; padding: 6px;">
                                         <i class="fas fa-vial text-danger" style="width: 27px;"></i>
                                         <h:outputText value="#{pi.investigation.name}"/>
                                         <h:panelGroup rendered="#{pi.billItem.priority ne null}">
@@ -432,7 +432,7 @@
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Sample IDs" style="width: 9em; vertical-align: top;">
+                                    <p:column headerText="Sample IDs" style="width: 9em; vertical-align: top; padding: 6px;">
                                         <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.id)}" var="sample">
                                             <div class="d-flex mb-2">
                                                 <i class="fa fa-vial"></i>
@@ -441,7 +441,7 @@
                                         </ui:repeat>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 11em; vertical-align: top;">
+                                    <p:column headerText="Status" style="width: 11em; vertical-align: top; padding: 6px;">
                                         <h:outputText
                                             value="#{pi.status.label}"
                                             rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled}"/>
@@ -449,7 +449,7 @@
                                         <p:badge value="Bill Cancelled" severity="danger" rendered="#{pi.billItem.bill.cancelled}"/>
                                     </p:column>
 
-                                    <p:column headerText="Actions" style="width: 30em; vertical-align: top;">
+                                    <p:column headerText="Actions" style="width: 30em; vertical-align: top; padding: 6px;">
                                         <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
                                             <p:badge value="Bill Cancelled" severity="danger" size="large" class="w-50"/>
                                         </h:panelGroup>
