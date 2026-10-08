@@ -1992,18 +1992,26 @@ public class LaboratoryManagementController implements Serializable {
 
     public void rejectSamples() {
         reportTimerController.trackReportExecution(() -> {
-            boolean selectedFromDtos = false;
             if ((selectedPatientSamples == null || selectedPatientSamples.isEmpty())
                     && selectedSampleDtos != null && !selectedSampleDtos.isEmpty()) {
                 // The dashboard sample table selects SampleDTO rows, not PatientSample entities.
-                selectedPatientSamples = new ArrayList<>();
+                // Delegate to the Sample Management rejection so the same eligibility checks
+                // (cancelled bill, refunded test, report exists, department, reason) apply.
+                List<PatientSample> samples = new ArrayList<>();
                 for (SampleDTO dto : selectedSampleDtos) {
                     PatientSample ps = dto.getSampleId() == null ? null : patientSampleFacade.find(dto.getSampleId());
                     if (ps != null) {
-                        selectedPatientSamples.add(ps);
+                        samples.add(ps);
                     }
                 }
-                selectedFromDtos = true;
+                patientInvestigationController.setSelectedPatientSamples(samples);
+                patientInvestigationController.setSampleRejectionComment(sampleRejectionComment);
+                patientInvestigationController.rejectSamples();
+                sampleRejectionComment = "";
+                selectedSampleDtos = new ArrayList<>();
+                listingEntity = ListingEntity.PATIENT_SAMPLES;
+                reloadSampleDTOList();
+                return;
             }
             if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
                 JsfUtil.addErrorMessage("No samples selected");
@@ -2054,11 +2062,6 @@ public class LaboratoryManagementController implements Serializable {
                 }
             }
 
-            if (selectedFromDtos) {
-                selectedPatientSamples = new ArrayList<>();
-                selectedSampleDtos = new ArrayList<>();
-                reloadSampleDTOList();
-            }
             JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.rejectSamples", sessionController.getLoggedUser());
     }

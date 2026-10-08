@@ -565,7 +565,9 @@
                     </h:panelGroup>
 
                     <h:panelGroup id="sampleCollectionCancel">
+                        <p:outputLabel for="txtSampleCollectionCancelReason" value="Reason for cancelling sample collection" styleClass="mt-2" />
                         <p:inputText
+                            id="txtSampleCollectionCancelReason"
                             class="w-100 mt-2"
                             disabled="#{not webUserController.hasPrivilege('LabRevertSample')}"
                             placeholder="Reason for cancelling sample collection"

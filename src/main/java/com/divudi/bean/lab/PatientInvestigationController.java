@@ -2423,6 +2423,16 @@ public class PatientInvestigationController implements Serializable {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         if (done > 0) {
             sampleCollectionCancelReason = null;
+            selectedPatientSamples = new ArrayList<>();
+            // Refresh the listed rows in place so the table shows the reset status.
+            if (patientSamples != null) {
+                List<PatientSample> refreshed = new ArrayList<>();
+                for (PatientSample listed : patientSamples) {
+                    PatientSample fresh = listed.getId() == null ? null : patientSampleFacade.find(listed.getId());
+                    refreshed.add(fresh != null ? fresh : listed);
+                }
+                patientSamples = refreshed;
+            }
             JsfUtil.addSuccessMessage("Sample collection cancelled for " + done + " sample(s).");
         }
     }

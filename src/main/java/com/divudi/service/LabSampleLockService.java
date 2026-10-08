@@ -424,6 +424,10 @@ public class LabSampleLockService {
             }
         }
         for (Bill b : bills.values()) {
+            if (!findCollectedInvestigations(b).isEmpty()) {
+                // Another investigation on this bill is still collected.
+                continue;
+            }
             b.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
             billFacade.edit(b);
         }

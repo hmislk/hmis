@@ -3037,8 +3037,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return;
         }
 
-        // Report and sample-status checks apply to every user while the lab sample lock is on; no privilege bypasses them.
-        if (labSampleLockService.isLockEnabled()) {
+        // Report and sample-status checks: while the lab sample lock is on they apply to every user;
+        // with the lock off the legacy behaviour applies (skipped only for BillCancel holders).
+        if (labSampleLockService.isLockEnabled() || !getWebUserController().hasPrivilege("BillCancel")) {
 
             // check have PatientReport
             List<PatientReport> pr = patientReportController.allPatientReportsInBill(getBill());
