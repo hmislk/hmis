@@ -32,6 +32,7 @@ import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientSampleComponantFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.LabSampleLockService;
 import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -72,6 +73,8 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     ProfessionalPaymentService professionalPaymentService;
     @EJB
     BillService billService;
+    @EJB
+    LabSampleLockService labSampleLockService;
     @EJB
     InstitutionFacade institutionFacade;
 
@@ -644,6 +647,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             returningStarted.set(false);
             return null;
         }
+        String labLockMessage = labSampleLockService.checkReturnBlocked(originalBillItemsToSelectedToReturn, "return");
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            returningStarted.set(false);
+            return null;
+        }
 
         if (!webUserController.hasPrivilege("OpdReturn")) {
             JsfUtil.addErrorMessage("You have no Privilege to Refund OPD Bills. Please Contact System Administrator.");
@@ -981,6 +990,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
+            returningStarted.set(false);
+            return null;
+        }
+        String labLockMessage = labSampleLockService.checkReturnBlocked(originalBillItemsToSelectedToReturn, "return");
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
             returningStarted.set(false);
             return null;
         }

@@ -72,6 +72,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
+import com.divudi.service.LabSampleLockService;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -140,6 +141,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     PaymentFacade paymentFacade;
     @EJB
     BillService billService;
+    @EJB
+    LabSampleLockService labSampleLockService;
     @EJB
     StaffService staffService;
     @EJB
@@ -2615,6 +2618,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             batchBillCancellationStarted = false;
             return "";
         }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBatchBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
+            batchBillCancellationStarted = false;
+            return "";
+        }
 
         if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
@@ -2626,31 +2635,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling OPD Bills", false)) {
-            for (Bill bill : billBean.validBillsOfBatchBill(getBatchBill())) {
-                if (!checkCancelBill(bill)) {
-                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                    if (getWebUserController().hasPrivilege("BillCancel")) {
-                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                    } else {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                } else {
-                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                batchBillCancellationStarted = false;
-                return "";
-            }
+        if (!getWebUserController().hasPrivilege("OpdCancel")) {
+            JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+            batchBillCancellationStarted = false;
+            return "";
         }
 
         if (errorsPresentOnOpdBatchBillCancellation()) {
@@ -2790,6 +2778,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String labLockMessage = labSampleLockService.checkCancelBlocked(getBatchBill());
+        if (labLockMessage != null) {
+            JsfUtil.addErrorMessage(labLockMessage);
             batchBillCancellationStarted = false;
             return "";
         }
