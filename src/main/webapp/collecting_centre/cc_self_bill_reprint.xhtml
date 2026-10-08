@@ -35,6 +35,13 @@
                                 <h:outputText value="No bill selected. Go back to Search Bills and pick a bill."/>
                             </h:panelGroup>
 
+                            <h:panelGroup layout="block" styleClass="alert alert-warning text-center mx-2 mb-2" rendered="#{collectingCentreSelfSearchController.viewingBill ne null and not collectingCentreSelfSearchController.viewingSelfBill}">
+                                <div>
+                                    <div class="fw-bold fs-3 mb-1"><i class="fa-solid fa-triangle-exclamation me-2"></i>Hospital Billing</div>
+                                    <div>This bill was created by the hospital. Cancel and refund must be done by the hospital.</div>
+                                </div>
+                            </h:panelGroup>
+
                             <h:panelGroup layout="block" styleClass="d-flex justify-content-end mb-3 mx-2" rendered="#{collectingCentreSelfSearchController.viewingBill ne null}">
                                 <p:commandButton
                                     value="Print Original Bill"
@@ -59,10 +66,6 @@
                                     disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or not billReturnController.checkCanReturnBill(collectingCentreSelfSearchController.viewingBill)}"
                                     rendered="#{collectingCentreSelfSearchController.viewingSelfBill}"
                                     ajax="false"/>
-                                <h:panelGroup rendered="#{not collectingCentreSelfSearchController.viewingSelfBill}" styleClass="align-self-center m-1 text-secondary">
-                                    <i class="fa-solid fa-lock me-1"></i>
-                                    <h:outputText value="Hospital Billing - cancel and refund are not allowed"/>
-                                </h:panelGroup>
                                 <p:commandButton
                                     value="To Sample Management"
                                     class="ui-button-info m-1"
