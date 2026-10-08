@@ -26,6 +26,17 @@ public class BatchCreateResponseDTO implements Serializable {
     private Double costRate;
     private Date expiryDate;
     private String message;
+    private Boolean batchCreated;
+    private Boolean stockCreated;
+    private Boolean ratesDiffer;
+    private Double requestedRetailRate;
+    private Double requestedPurchaseRate;
+    private Double requestedCostRate;
+    private Double wholesaleRate;
+    private Double requestedWholesaleRate;
+    private Double quantity;
+    private Long adjustmentBillId;
+    private String adjustmentBillNumber;
 
     public BatchCreateResponseDTO() {
     }
@@ -127,6 +138,94 @@ public class BatchCreateResponseDTO implements Serializable {
         this.message = message;
     }
 
+    public Boolean getBatchCreated() {
+        return batchCreated;
+    }
+
+    public void setBatchCreated(Boolean batchCreated) {
+        this.batchCreated = batchCreated;
+    }
+
+    public Boolean getStockCreated() {
+        return stockCreated;
+    }
+
+    public void setStockCreated(Boolean stockCreated) {
+        this.stockCreated = stockCreated;
+    }
+
+    public Boolean getRatesDiffer() {
+        return ratesDiffer;
+    }
+
+    public void setRatesDiffer(Boolean ratesDiffer) {
+        this.ratesDiffer = ratesDiffer;
+    }
+
+    public Double getRequestedRetailRate() {
+        return requestedRetailRate;
+    }
+
+    public void setRequestedRetailRate(Double requestedRetailRate) {
+        this.requestedRetailRate = requestedRetailRate;
+    }
+
+    public Double getRequestedPurchaseRate() {
+        return requestedPurchaseRate;
+    }
+
+    public void setRequestedPurchaseRate(Double requestedPurchaseRate) {
+        this.requestedPurchaseRate = requestedPurchaseRate;
+    }
+
+    public Double getRequestedCostRate() {
+        return requestedCostRate;
+    }
+
+    public void setRequestedCostRate(Double requestedCostRate) {
+        this.requestedCostRate = requestedCostRate;
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
+
+    public Long getAdjustmentBillId() {
+        return adjustmentBillId;
+    }
+
+    public void setAdjustmentBillId(Long adjustmentBillId) {
+        this.adjustmentBillId = adjustmentBillId;
+    }
+
+    public String getAdjustmentBillNumber() {
+        return adjustmentBillNumber;
+    }
+
+    public void setAdjustmentBillNumber(String adjustmentBillNumber) {
+        this.adjustmentBillNumber = adjustmentBillNumber;
+    }
+
+    public Double getWholesaleRate() {
+        return wholesaleRate;
+    }
+
+    public void setWholesaleRate(Double wholesaleRate) {
+        this.wholesaleRate = wholesaleRate;
+    }
+
+    public Double getRequestedWholesaleRate() {
+        return requestedWholesaleRate;
+    }
+
+    public void setRequestedWholesaleRate(Double requestedWholesaleRate) {
+        this.requestedWholesaleRate = requestedWholesaleRate;
+    }
+
     @Override
     public String toString() {
         return "BatchCreateResponseDTO{" +
@@ -140,6 +239,11 @@ public class BatchCreateResponseDTO implements Serializable {
                 ", costRate=" + costRate +
                 ", expiryDate=" + expiryDate +
                 ", message='" + message + '\'' +
+                ", batchCreated=" + batchCreated +
+                ", stockCreated=" + stockCreated +
+                ", ratesDiffer=" + ratesDiffer +
+                ", quantity=" + quantity +
+                ", adjustmentBillNumber='" + adjustmentBillNumber + '\'' +
                 '}';
     }
 }

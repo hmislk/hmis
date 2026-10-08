@@ -159,7 +159,7 @@
                         <tr>
                             <td><h:outputText value="Total Paying Amount ( According to CC Balance )" /></td>
                             <td style="text-align: right!important; padding-right: 15px;">
-                                <h:outputText value="#{cc.attrs.bill.netTotal}" >
+                                <h:outputText value="#{cc.attrs.bill.ccExcessAmount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
@@ -193,7 +193,7 @@
                         <tr style="font-weight: bold;">
                             <td><h:outputText value="Total Collection Centre Value" /></td>
                             <td style="text-align: right!important; padding-right: 15px;">
-                                <h:outputText value="#{cc.attrs.bill.ccTotalCenterValue}" >
+                                <h:outputText value="#{cc.attrs.bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </td>
