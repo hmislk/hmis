@@ -248,9 +248,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     /**
-     * Shows the barcode sticker of only the clicked sample. Viewing and
-     * printing a sticker changes nothing, so Hospital Billing samples are
-     * allowed too.
+     * Shows the barcode sticker of only the clicked sample. Hospital Billing
+     * samples are refused, like every other barcode action here.
      */
     public void viewSelfSampleBarcode(PatientSample sample) {
         if (!restrictSampleManagementToOwnCollectingCentre()) {
@@ -259,6 +258,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
         PatientSample fetched = (sample == null || sample.getId() == null) ? null : patientSampleFacade.find(sample.getId());
         if (fetched == null || !isOwnBill(fetched.getBill())) {
             JsfUtil.addErrorMessage("This sample does not belong to your collecting centre");
+            return;
+        }
+        if (!isSelfBill(fetched.getBill())) {
+            JsfUtil.addErrorMessage("This is a Hospital Billing sample and its barcode cannot be printed here");
             return;
         }
         patientInvestigationController.navigateToThePatientSample(fetched);
