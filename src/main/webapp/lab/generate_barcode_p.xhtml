@@ -476,7 +476,9 @@
 
                                     <h:panelGroup layout="block" styleClass="w-100">
 
+                                        <p:outputLabel for="txtSampleCollectionCancelReason" value="Reason for cancelling sample collection" styleClass="mt-2" />
                                         <p:inputText
+                                            id="txtSampleCollectionCancelReason"
                                             class="w-100"
                                             disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES' or not webUserController.hasPrivilege('LabRevertSample')}"
                                             placeholder="Reason for cancelling sample collection"
