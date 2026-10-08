@@ -120,7 +120,18 @@
                                                 itemValue="#{rs}" >
                                             </f:selectItems>
                                         </p:selectOneMenu>
-                                        
+
+                                        <p:selectOneMenu
+                                            value="#{requestController.visitType}"
+                                            placeholder="Visit Type"
+                                            class="col-12 mt-2"
+                                            autoWidth="false"
+                                            >
+                                            <f:selectItem itemLabel="Any Visit Type" ></f:selectItem>
+                                            <f:selectItem itemValue="OP" itemLabel="Out Patient (OP)" ></f:selectItem>
+                                            <f:selectItem itemValue="IP" itemLabel="In Patient (IP)" ></f:selectItem>
+                                            <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)" ></f:selectItem>
+                                        </p:selectOneMenu>                             
                                         <hr/>
                                     </h:panelGroup>
                                 </div>

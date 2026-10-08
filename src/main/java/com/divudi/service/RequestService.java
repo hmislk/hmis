@@ -142,13 +142,31 @@ public class RequestService {
             RequestType requestType,
             RequestStatus requestStatus,
             DepartmentType departmentType) {
-        
+        return fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, requestStatus, departmentType, null);
+    }
+
+    public List<Request> fillAllRequest(
+            Date fromDate,
+            Date toDate,
+            String billNo,
+            String bhtNo,
+            String requestNo,
+            RequestType requestType,
+            RequestStatus requestStatus,
+            DepartmentType departmentType,
+            String visitType) {
+
         HashMap params = new HashMap();
 
         String jpql = "Select q from Request q "
                 + " where q.retired =:ret "
                 + " and q.id is not null "
                 + " and q.createdAt between :frm and :to";
+
+        if (visitType != null && !visitType.trim().equals("")) {
+            jpql += " and q.bill.ipOpOrCc = :visitType ";
+            params.put("visitType", visitType.trim());
+        }
 
         if (requestNo != null && !requestNo.trim().equals("")) {
             jpql += " and q.requestNo like :reqNo ";
