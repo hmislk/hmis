@@ -269,8 +269,8 @@
                                             </p:column>
 
                                             <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                                <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
-                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{ps.bill.ccBillingType eq 'AGENT_BILLING'}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{ps.bill.ccBillingType eq 'HOSPITAL_BILLING'}"/>
                                                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
                                                     <i class="fa-solid fa-lock me-1"></i>View only
                                                 </h:panelGroup>
