@@ -493,8 +493,10 @@
                                                 <h:panelGroup rendered="#{dpr.approved}">
                                                     <div class="d-flex justify-content-between">
                                                     <div class="d-flex gap-2 mb-2">
+                                                        <!-- process="@this": a full-form submit re-sets the bill dates, whose setters clear the items behind this table, so the click would be lost -->
                                                         <p:commandButton
-                                                            ajax="false"
+                                                            process="@this"
+                                                            update=":form:msg"
                                                             value="To Print"
                                                             icon="fa fa-print"
                                                             class="ui-button-info"
