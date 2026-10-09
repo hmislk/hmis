@@ -91,6 +91,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     @Inject
     private InwardBeanController inwardBean;
     @Inject
+    private AdmissionController admissionController;
+    @Inject
     private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
@@ -294,7 +296,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     // </editor-fold>
 
     public String navigateToInpationDashbord() {
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                current == null ? null : current.getPatientEncounter());
     }
 
     private boolean errorCheck() {

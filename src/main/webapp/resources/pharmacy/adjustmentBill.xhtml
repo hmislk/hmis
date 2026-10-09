@@ -252,7 +252,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <td class="text-right qty-column">
-                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue eq 0 ? bip.pharmaceuticalBillItem.stock.stock : bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
                                         <f:convertNumber pattern="#,###"/>
                                     </h:outputLabel>
                                 </td>
@@ -262,7 +262,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <td class="text-right qty-column">
-                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}">
                                         <f:convertNumber pattern="#,###.##"/>
                                     </h:outputLabel>
                                 </td>

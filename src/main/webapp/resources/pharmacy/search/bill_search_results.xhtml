@@ -7,6 +7,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <!-- false hides the keyword input row of the Purchase Return table (issue #24366) -->
+        <cc:attribute name="showPurchaseReturnSearchInputs" type="java.lang.Boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -33,7 +35,8 @@
             <se:pharmacy_issue rendered="#{pharmacyBillSearch.resultView eq 'issue'}"/>
             <se:adjustment rendered="#{pharmacyBillSearch.resultView eq 'adjustment'}"/>
             <se:grn_payment rendered="#{pharmacyBillSearch.resultView eq 'grnPayment'}"/>
-            <se:purchase_return rendered="#{pharmacyBillSearch.resultView eq 'purchaseReturn'}"/>
+            <se:purchase_return rendered="#{pharmacyBillSearch.resultView eq 'purchaseReturn'}"
+                                showSearchInputs="#{cc.attrs.showPurchaseReturnSearchInputs}"/>
             <se:generic_bill rendered="#{pharmacyBillSearch.resultView eq 'generic'}"/>
         </h:panelGroup>
     </cc:implementation>

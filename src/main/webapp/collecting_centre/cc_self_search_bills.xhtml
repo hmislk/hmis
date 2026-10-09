@@ -124,6 +124,11 @@
                                                 </h:outputText>
                                             </p:column>
 
+                                            <p:column headerText="Type" style="width: 9em; padding: 8px;" class="text-center">
+                                                <p:badge value="Self Billing" severity="success" rendered="#{bill.department.departmentType eq 'CollectingCentre'}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{bill.department.departmentType ne 'CollectingCentre'}"/>
+                                            </p:column>
+
                                             <p:column headerText="Patient" style="padding: 8px;">
                                                 <h:outputText value="#{bill.patient.person.nameWithTitle}"/>
                                             </p:column>

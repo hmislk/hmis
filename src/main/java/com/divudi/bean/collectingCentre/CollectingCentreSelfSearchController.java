@@ -3,6 +3,7 @@ package com.divudi.bean.collectingCentre;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
@@ -101,7 +102,7 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * for the self-service one.
      */
     public String navigateToCancelBill() {
-        if (!isViewingOwnBill()) {
+        if (!isViewingOwnBill() || !isSelfBillOrError(viewingBill)) {
             return null;
         }
         billSearch.setBill(viewingBill);
@@ -114,7 +115,7 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateToRefundBill() {
-        if (!isViewingOwnBill()) {
+        if (!isViewingOwnBill() || !isSelfBillOrError(viewingBill)) {
             return null;
         }
         billSearch.setBill(viewingBill);
@@ -135,7 +136,7 @@ public class CollectingCentreSelfSearchController implements Serializable {
      */
     public void cancelBill() {
         Bill fetched = fetchSubmittedOwnBill();
-        if (fetched == null) {
+        if (fetched == null || !isSelfBillOrError(fetched)) {
             return;
         }
         if (fetched.isCancelled()) {
@@ -154,7 +155,8 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * refunded bills are allowed, as remaining items can still be refunded.
      */
     public String refundBill() {
-        if (fetchSubmittedOwnBill() == null) {
+        Bill fetched = fetchSubmittedOwnBill();
+        if (fetched == null || !isSelfBillOrError(fetched)) {
             return "";
         }
         return billSearch.refundCollectingCenterBill();
@@ -200,6 +202,29 @@ public class CollectingCentreSelfSearchController implements Serializable {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Only bills raised by the centre itself (Self Billing) can be cancelled
+     * or refunded here; bills raised at the hospital for the centre
+     * (Hospital Billing) are view only.
+     */
+    public boolean isViewingSelfBill() {
+        return isSelfBill(viewingBill);
+    }
+
+    private boolean isSelfBillOrError(Bill bill) {
+        if (!isSelfBill(bill)) {
+            JsfUtil.addErrorMessage("This is a Hospital Billing bill and cannot be cancelled or refunded here");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isSelfBill(Bill bill) {
+        return bill != null
+                && bill.getDepartment() != null
+                && bill.getDepartment().getDepartmentType() == DepartmentType.CollectingCentre;
     }
 
     public void searchBills() {

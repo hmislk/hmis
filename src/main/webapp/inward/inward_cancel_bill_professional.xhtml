@@ -23,6 +23,20 @@
                                         <p:spacer width="20%"></p:spacer>
                                         <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{inwardSearch.cancelProfessional()}" >
                                         </p:commandButton> 
+                                        <p:commandButton
+                                            id="btnInpatientDashboard"
+                                            ajax="false"
+                                            immediate="true"
+                                            value="Inpatient Dashboard"
+                                            icon="fas fa-id-card"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            title="Open the Inpatient Dashboard for this admission"
+                                            rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                                            action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                            <f:setPropertyActionListener
+                                                value="#{inwardSearch.bill.patientEncounter}"
+                                                target="#{admissionController.current}"/>
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>                           
@@ -96,6 +110,7 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <p:outputLabel value="Professional Fee Cancel Receipt" class="mt-2"></p:outputLabel>
+                                <div class="d-flex gap-2">
                                 <p:commandButton 
                                 value="Back to List" 
                                 ajax="false" 
@@ -103,16 +118,25 @@
                                 icon="fa fa-arrow-left"
                                 class="m-1 ui-button-warning">
                             </p:commandButton>
+                                <p:commandButton
+                                    id="btnInpatientDashboardAfterCancel"
+                                    ajax="false"
+                                    immediate="true"
+                                    value="Inpatient Dashboard"
+                                    icon="fas fa-id-card"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    title="Open the Inpatient Dashboard for this admission"
+                                    rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                                    action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                    <f:setPropertyActionListener
+                                        value="#{inwardSearch.bill.patientEncounter}"
+                                        target="#{admissionController.current}"/>
+                                </p:commandButton>
+                                </div>
                             </div>
                         </f:facet>
 
                         <div class="d-flex justify-content-end m-2">
-                            <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.departmentPreference.opdBillPaperType}" class="m-1" style="width: 13em;">
-                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                <f:selectItems value="#{enumController.paperTypes}" />
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
                             <p:commandButton 
                                 value="Print" 
                                 ajax="false" 
@@ -124,9 +148,7 @@
                         </div>
 
                         <h:panelGroup id="gpBillPreview" >
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-                                <bi:cancel_professional_fee_5x5 bill="#{inwardSearch.bill}" />
-                            </h:panelGroup>
+                            <bi:cancel_professional_fee_5x5 bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 
                     </p:panel>

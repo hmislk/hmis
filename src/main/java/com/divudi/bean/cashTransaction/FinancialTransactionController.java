@@ -70,7 +70,6 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -2495,7 +2494,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillHandoverStatusReport() {
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpqlBuilder = new StringBuilder("select s from Bill s "
                 + "where (s.retired=false or s.retired is null) "
@@ -3797,6 +3796,13 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow();
     }
 
+    /**
+     * No longer reachable from the UI (#24340 removed the "End Shift (OLD)" button on
+     * cashier/index.xhtml, since it bypassed every handover/float-transfer guard). Kept
+     * in place, unused, in case another institution's deployment still depends on it
+     * directly — do not wire a button back to it without adding the same guards as
+     * {@link #navigateToCreateShiftEndSummaryBillForHandover()}.
+     */
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -7678,7 +7684,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandoverBillsForMeToReceive() {
         String sql;
-        fundTransferBillsToReceive = new ArrayDeque<>();
+        fundTransferBillsToReceive = new ArrayList<>();
         handoverBillsToReceiveCount = 0;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -7706,7 +7712,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillMyHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -7724,7 +7730,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -10833,7 +10839,7 @@ public class FinancialTransactionController implements Serializable {
         // Shift Management Tab Configurations
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Legacy Handover is enabled",
-                "When enabled, shows legacy handover options in the Shift Management tab including 'End Shift - OLD', 'Handover (OLD)', and 'Handover Shift (OLD)' buttons.",
+                "When enabled, shows legacy handover options in the Shift Management tab including 'Handover (OLD)' and 'Handover Shift (OLD)' buttons.",
                 OptionScope.APPLICATION
         ));
 

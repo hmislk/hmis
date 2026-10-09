@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -74,11 +75,14 @@ public class InwardCombinedPaymentRowDto implements Serializable {
     }
 
     /**
-     * Signed amount: positive for money coming in, negative for a refund going
-     * back out. A cancelled bill contributes nothing.
+     * Signed amount: positive for money coming in, negative for money going
+     * out (a refund, or the cancellation of a deposit or payment). A cancelled
+     * original keeps its own amount; its reversal is a separate cancellation
+     * row with the opposite sign, so the two net to zero over a period that
+     * contains both.
      */
     public double getSignedAmount() {
-        if (cancelled || netTotal == null || billTypeAtomic == null) {
+        if (netTotal == null || billTypeAtomic == null) {
             return 0.0;
         }
         double magnitude = Math.abs(netTotal);
@@ -91,7 +95,26 @@ public class InwardCombinedPaymentRowDto implements Serializable {
      */
     public boolean isRefund() {
         return billTypeAtomic != null
-                && billTypeAtomic.getBillFinanceType() == BillFinanceType.CASH_OUT;
+                && billTypeAtomic.getBillCategory() == BillCategory.REFUND;
+    }
+
+    /**
+     * True when this row is the contra bill that cancels an earlier bill.
+     */
+    public boolean isCancellation() {
+        return billTypeAtomic != null
+                && billTypeAtomic.getBillCategory() == BillCategory.CANCELLATION;
+    }
+
+    /**
+     * Status text for the page: "Cancellation" on the contra bill, "Cancelled"
+     * on the original it reverses, blank otherwise.
+     */
+    public String getStatusLabel() {
+        if (isCancellation()) {
+            return "Cancellation";
+        }
+        return cancelled ? "Cancelled" : "";
     }
 
     public Long getBillId() {
