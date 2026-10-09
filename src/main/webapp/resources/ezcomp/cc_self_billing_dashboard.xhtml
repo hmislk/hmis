@@ -146,13 +146,14 @@
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Statements"/>
                             </h:commandLink>
-                            <div class="cc-action-card cc-c-red">
-                                <span class="cc-action-badge">Soon</span>
+                            <h:commandLink
+                                styleClass="cc-action-card cc-c-red"
+                                action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfSampleManagement()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-vials"/>
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Sample Management"/>
-                            </div>
+                            </h:commandLink>
                         </div>
                     </div>
 
