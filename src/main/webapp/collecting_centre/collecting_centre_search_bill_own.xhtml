@@ -122,6 +122,10 @@
                                             <p:badge value="Agent Billing" severity="warning" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                         
+                                        <h:panelGroup rendered="#{bill.ccBillingType eq 'HOSPITAL_BILLING'}">
+                                            <p:badge value="Hospital Billing" styleClass="mr-2"></p:badge>
+                                        </h:panelGroup>
+                                        
                                         <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
                                         <p:badge rendered="#{bill.refunded}" value="Refunded" severity="warning" styleClass="mr-2"></p:badge>
                                         
