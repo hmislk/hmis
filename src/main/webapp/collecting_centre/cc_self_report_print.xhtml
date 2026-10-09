@@ -8,7 +8,7 @@
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
       xmlns:lab="http://xmlns.jcp.org/jsf/composite/ezcomp/lab">
     <h:head>
-        <title>Collecting Centre Self Billing - Report Print</title>
+        <title>Collecting Centre Self Billing - Report View</title>
     </h:head>
     <h:body>
         <ui:composition template="/resources/template/template_without_menu.xhtml">
@@ -29,7 +29,7 @@
                     <div class="cc-bill-page">
                         <h:form id="form">
                             <ez:cc_self_billing_header
-                                pageTitle="Report Print"
+                                pageTitle="Report View"
                                 highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-file-medical"
                                 backAction="#{collectingCentreSelfCommonController.navigateBackToCollectingCentreSelfSampleManagement}"
@@ -48,30 +48,54 @@
                                     <div class="d-flex justify-content-between align-items-center w-100">
                                         <div>
                                             <h:outputText styleClass="fa-solid fa-file-medical"/>
-                                            <h:outputText value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.name}" class="mx-2"/>
+                                            <h:outputText value="Report View" class="mx-2"/>
+                                            <h:outputText value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.name}" class="text-muted"/>
                                         </div>
                                         <div class="d-flex gap-2">
+                                            <p:remoteCommand
+                                                name="recordExportHistory"
+                                                actionListener="#{patientReportController.reportExport()}"
+                                                async="true"/>
+
+                                            <p:remoteCommand
+                                                name="recordPrintHistory"
+                                                actionListener="#{patientReportController.printPatientReport()}"
+                                                async="true"/>
+
                                             <p:commandButton
                                                 value="Export PDF"
                                                 icon="fas fa-file-pdf"
-                                                class="ui-button-secondary"
+                                                class="ui-button-channelling"
+                                                disabled="#{!patientReportController.currentPatientReport.approved}"
                                                 type="button"
                                                 onclick="downloadPdf()"/>
+
                                             <p:commandButton
                                                 value="Print"
                                                 icon="fas fa-print"
                                                 class="ui-button-info"
                                                 ajax="false"
-                                                actionListener="#{patientReportController.printPatientReport()}">
+                                                onclick="recordPrintHistory();">
                                                 <p:printer target="divPrint"/>
                                             </p:commandButton>
                                         </div>
                                     </div>
                                 </f:facet>
 
-                                <div class="d-flex justify-content-end gap-2">
-                                    <h:outputLabel value="Show Background" class="mt-2" for="btnBackground"/>
-                                    <p:selectBooleanButton id="btnBackground" class="mx-2 my-1" offLabel="No" onLabel="Yes" value="#{patientReportController.showBackground}">
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to record the history of issuing lab reports.',true) and patientReportController.currentPatientReport.approved}">
+                                    <div class="d-flex justify-content-end mb-3">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Handover to Patient"
+                                            icon="fa-solid fa-people-carry-box"
+                                            class="ui-button-stores"
+                                            action="#{laboratoryManagementController.addIssueHistory()}"/>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="d-flex justify-content-end">
+                                    <h:outputLabel value="Show Background" for="btnBackground" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"/>
+                                    <p:selectBooleanButton id="btnBackground" class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes" value="#{patientReportController.showBackground}">
                                         <p:ajax process="@this" update="divPrint" event="change"/>
                                     </p:selectBooleanButton>
                                 </div>
@@ -89,6 +113,7 @@
 
                                 <script>
                                     function downloadPdf() {
+                                        recordExportHistory();
                                         const element = document.getElementById('pdf');
                                         element.classList.remove('print-only');
                                         const opt = {
