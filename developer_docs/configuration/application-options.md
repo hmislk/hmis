@@ -32,6 +32,12 @@ This document lists the configuration options used in the application and their 
 | `Pharmacy Transfer Issue Bill Footer CSS`                        | String    | `''`    | CSS for the footer of the transfer issue bill.                                                            |
 | `Pharmacy Transfer Issue Bill Footer Text`                       | String    | `''`    | Text for the footer of the transfer issue bill.                                                             |
 
+## Pharmacy GRN Return
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `GRN Return - Prefill Returning Quantities on Create`            | Boolean   | `true`  | When `true`, a GRN Return created from a GRN opens with Returning Qty / Returning Free Qty / Returning Total Qty filled with the remaining-to-return quantity of each item. When `false`, those columns start at 0 and the user enters the quantities to return. Lines left at 0 are dropped on finalize. The Remaining Qty columns are shown either way. See issue #24402. |
+
 ## Pharmacy Retail Sale
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -127,4 +133,4 @@ Columns of the added-items table on `pharmacy/pharmacy_grn_costing_native.xhtml`
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Block cancellation and refund of OPD, package and collecting centre bills once a lab sample is collected` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once a sample of any investigation on the bill is collected (rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |
+| `Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once the laboratory has accepted a sample of any investigation on the bill (received at the lab or processed further; a sample that is only collected or sent does not lock; rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |

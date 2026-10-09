@@ -183,7 +183,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                             <f:facet name="footer">
-                                                <h:outputText value="#{collectingCentrePaymentController.totalHospitalAmount}" style="font-weight: 700;">
+                                                <h:outputText value="#{collectingCentrePaymentController.periodCCBillHospitalTotal}" style="font-weight: 700;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </f:facet>
@@ -194,7 +194,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                             <f:facet name="footer">
-                                                <h:outputText value="#{collectingCentrePaymentController.totalCCAmount}" style="font-weight: 700;">
+                                                <h:outputText value="#{collectingCentrePaymentController.periodCCBillCCFeeTotal}" style="font-weight: 700;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>
                                             </f:facet>
@@ -250,7 +250,7 @@
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                     <h:outputLabel value="Transaction Amount" ></h:outputLabel>
-                                                    <h:outputLabel id="lblTrans" value="#{collectingCentrePaymentController.totalHospitalAmount}" >
+                                                    <h:outputLabel id="lblTrans" value="#{collectingCentrePaymentController.periodCCBillHospitalTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                     <h:outputLabel value="Total Due to Collcting Centre" ></h:outputLabel>

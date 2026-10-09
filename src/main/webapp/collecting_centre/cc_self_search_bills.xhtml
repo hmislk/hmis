@@ -124,6 +124,11 @@
                                                 </h:outputText>
                                             </p:column>
 
+                                            <p:column headerText="Type" style="width: 9em; padding: 8px;" class="text-center">
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{bill.ccBillingType eq 'AGENT_BILLING'}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{bill.ccBillingType eq 'HOSPITAL_BILLING' or bill.ccBillingType eq null}"/>
+                                            </p:column>
+
                                             <p:column headerText="Patient" style="padding: 8px;">
                                                 <h:outputText value="#{bill.patient.person.nameWithTitle}"/>
                                             </p:column>

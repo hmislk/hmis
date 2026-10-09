@@ -4293,7 +4293,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
         //     //////
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
 

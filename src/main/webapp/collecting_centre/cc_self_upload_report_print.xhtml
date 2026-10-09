@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - Uploaded Report Print</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Uploaded Report"
+                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                pageIcon="fa-solid fa-file-medical"
+                                backAction="#{collectingCentreSelfCommonController.navigateBackToCollectingCentreSelfSampleManagement}"
+                                backLabel="Back to Sample Management"/>
+
+                            <p:growl id="msg"/>
+
+                            <h:panelGroup rendered="#{not collectingCentreSelfCommonController.selfUploadReportPrintAllowed}">
+                                <div class="alert alert-warning">
+                                    <h:outputText value="No approved report of your collecting centre is selected. Please go back to Sample Management and select a report to print."/>
+                                </div>
+                            </h:panelGroup>
+
+                            <p:panel styleClass="cc-bill-card cc-c-red" rendered="#{collectingCentreSelfCommonController.selfUploadReportPrintAllowed}">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <div>
+                                            <h:outputText styleClass="fa-solid fa-file-medical"/>
+                                            <h:outputText value="Uploaded Report" class="mx-2"/>
+                                        </div>
+                                        <p:commandButton
+                                            value="Print"
+                                            icon="fas fa-print"
+                                            class="ui-button-info"
+                                            ajax="false"
+                                            rendered="#{patientReportUploadController.image}">
+                                            <p:printer target="divPrint"/>
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
+
+                                <div class="d-flex justify-content-center w-100">
+                                    <h:panelGroup id="divPrint">
+                                        <!-- PDF files print from the PDF viewer's own toolbar -->
+                                        <h:panelGroup rendered="#{patientReportUploadController.pdf}">
+                                            <p:media
+                                                cache="false"
+                                                value="#{patientReportUploadController.pdfReportStream}"
+                                                player="pdf"
+                                                style="width: 85vw; height: 85vh;"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{patientReportUploadController.image}">
+                                            <p:graphicImage
+                                                value="#{patientReportUploadController.imageReportStream}"
+                                                stream="true"
+                                                cache="false"
+                                                style="max-width: 100%; height: auto;"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </p:panel>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
