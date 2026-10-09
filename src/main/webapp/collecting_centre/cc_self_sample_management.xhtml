@@ -154,8 +154,8 @@
                                         <h:outputText value="#{b.deptId}"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING'}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{b.ccBillingType eq 'HOSPITAL_BILLING'}"/>
                                     </p:column>
                                     <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
                                         <h:outputText value="#{b.createdAt}">
