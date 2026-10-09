@@ -118,8 +118,8 @@
                                     </p:column>
                                     
                                     <p:column headerText="Status" width="8em;" class="text-center" style="padding: 8px;">
-                                        <h:panelGroup rendered="#{bill.institution eq bill.collectingCentre}">
-                                            <p:badge value="Self Billing" severity="warning" styleClass="mr-2"></p:badge>
+                                        <h:panelGroup rendered="#{bill.ccBillingType eq 'AGENT_BILLING'}">
+                                            <p:badge value="Agent Billing" severity="warning" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                         
                                         <p:badge rendered="#{bill.cancelled}" value="Cancelled" severity="danger" styleClass="mr-2"></p:badge>
