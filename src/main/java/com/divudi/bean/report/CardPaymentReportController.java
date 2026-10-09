@@ -107,7 +107,14 @@ public class CardPaymentReportController implements Serializable {
             params.put("bta", billTypeAtomic);
         }
         jpql.append("order by p.createdAt, p.id");
-        rows = (List<CardPaymentReportDTO>) paymentFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        try {
+            rows = (List<CardPaymentReportDTO>) paymentFacade.findDtosByJpqlOrThrow(jpql.toString(), params, TemporalType.TIMESTAMP);
+        } catch (RuntimeException e) {
+            rows = null;
+            total = 0.0;
+            JsfUtil.addErrorMessage("The report could not be generated: " + e.getMessage());
+            return;
+        }
         if (rows == null) {
             rows = new ArrayList<>();
         }
