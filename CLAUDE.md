@@ -21,6 +21,7 @@
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
 - **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
+- **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
 - **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
 - **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
 
