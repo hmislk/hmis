@@ -3866,6 +3866,11 @@ public class PatientInvestigationController implements Serializable {
             params.put("patientName", "%" + getPatientName().trim() + "%");
         }
 
+        if (collectingCentreBillingType != null) {
+            jpql += " AND i.billItem.bill.ccBillingType = :ccBillingType ";
+            params.put("ccBillingType", collectingCentreBillingType);
+        }
+
         if (type != null && !type.trim().isEmpty()) {
             jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
@@ -4508,6 +4513,11 @@ public class PatientInvestigationController implements Serializable {
         if (patientName != null && !patientName.trim().isEmpty()) {
             jpql += " AND i.billItem.bill.patient.person.name LIKE :patientName ";
             params.put("patientName", "%" + getPatientName().trim() + "%");
+        }
+
+        if (collectingCentreBillingType != null) {
+            jpql += " AND i.billItem.bill.ccBillingType = :ccBillingType ";
+            params.put("ccBillingType", collectingCentreBillingType);
         }
 
         if (type != null && !type.trim().isEmpty()) {
