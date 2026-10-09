@@ -26,7 +26,7 @@ from collections import Counter, defaultdict
 
 CALL = re.compile(
     r"(?P<neg>!\s*|\bnot\s+)?"                      # optional negation right before the call
-    r"(?:[\w.]+\.)?getBooleanValueByKey\(\s*"
+    r"(?:[\w.]+\.)?getBooleanValueByKey(?:ReadOnly)?\(\s*"
     r"(?P<q>[\"'])(?P<key>(?:(?!(?P=q)).)+)(?P=q)"  # key in single or double quotes
     r"(?:\s*,\s*(?P<default>true|false)\b)?"        # optional literal default
 )
@@ -59,7 +59,7 @@ def defaults_by_key(text):
 
 def tree_defaults(ref):
     """Defaults used for each key anywhere in the tree at ref (one git grep)."""
-    out = git("grep", "-h", "-E", "getBooleanValueByKey", ref, "--", "*.java", "*.xhtml", ok=(0, 1))
+    out = git("grep", "-h", "-E", "getBooleanValueByKey(ReadOnly)?", ref, "--", "*.java", "*.xhtml", ok=(0, 1))
     return defaults_by_key(out)
 
 
@@ -97,10 +97,16 @@ def main():
     head = sys.argv[sys.argv.index("--head") + 1] if "--head" in sys.argv else "HEAD"
     findings = []
 
-    # Rule 1: same key on removed and added lines of one hunk, semantics differ.
+    # Rule 1: same key on removed and added lines of one file, semantics differ.
+    # Reads are compared per file (not per hunk) so a removal in one hunk and an
+    # addition in another cannot slip through.
+    changed = {}
     for file, start, removed, added in changed_hunks(base, head):
-        before = Counter(r for line in removed for r in reads(line))
-        after = Counter(r for line in added for r in reads(line))
+        entry = changed.setdefault(file, [start, Counter(), Counter()])
+        entry[1].update(r for line in removed for r in reads(line))
+        entry[2].update(r for line in added for r in reads(line))
+
+    for file, (start, before, after) in changed.items():
         keys = {k for k, _, _ in before} & {k for k, _, _ in after}
         for key in sorted(keys):
             b = Counter({(n, d): c for (k, n, d), c in before.items() if k == key})
