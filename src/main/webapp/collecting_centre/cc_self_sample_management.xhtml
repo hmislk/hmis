@@ -154,8 +154,8 @@
                                         <h:outputText value="#{b.deptId}"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING'}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{b.ccBillingType eq 'HOSPITAL_BILLING'}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING' or (b.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(b))}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{b.ccBillingType eq 'HOSPITAL_BILLING' or (b.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBill(b))}"/>
                                     </p:column>
                                     <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
                                         <h:outputText value="#{b.createdAt}">
@@ -269,8 +269,8 @@
                                             </p:column>
 
                                             <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                                <p:badge value="Agent Billing" severity="success" rendered="#{ps.bill.ccBillingType eq 'AGENT_BILLING'}"/>
-                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{ps.bill.ccBillingType eq 'HOSPITAL_BILLING'}"/>
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{ps.bill.ccBillingType eq 'AGENT_BILLING' or (ps.bill.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBilledSample(ps))}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{ps.bill.ccBillingType eq 'HOSPITAL_BILLING' or (ps.bill.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBilledSample(ps))}"/>
                                                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
                                                     <i class="fa-solid fa-lock me-1"></i>View only
                                                 </h:panelGroup>
@@ -423,8 +423,8 @@
                                     </p:column>
 
                                     <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{pi.billItem.bill.ccBillingType eq 'AGENT_BILLING'}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{pi.billItem.bill.ccBillingType eq 'HOSPITAL_BILLING'}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{pi.billItem.bill.ccBillingType eq 'AGENT_BILLING' or (pi.billItem.bill.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill))}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{pi.billItem.bill.ccBillingType eq 'HOSPITAL_BILLING' or (pi.billItem.bill.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill))}"/>
                                     </p:column>
 
                                     <p:column headerText="Patient" style="vertical-align: top; padding: 6px;">

@@ -118,11 +118,11 @@
                                     </p:column>
                                     
                                     <p:column headerText="Status" width="8em;" class="text-center" style="padding: 8px;">
-                                        <h:panelGroup rendered="#{bill.ccBillingType eq 'AGENT_BILLING'}">
+                                        <h:panelGroup rendered="#{bill.ccBillingType eq 'AGENT_BILLING' or (bill.ccBillingType eq null and bill.institution eq bill.collectingCentre)}">
                                             <p:badge value="Agent Billing" severity="warning" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                         
-                                        <h:panelGroup rendered="#{bill.ccBillingType eq 'HOSPITAL_BILLING'}">
+                                        <h:panelGroup rendered="#{bill.ccBillingType eq 'HOSPITAL_BILLING' or (bill.ccBillingType eq null and bill.institution ne bill.collectingCentre)}">
                                             <p:badge value="Hospital Billing" styleClass="mr-2"></p:badge>
                                         </h:panelGroup>
                                         
