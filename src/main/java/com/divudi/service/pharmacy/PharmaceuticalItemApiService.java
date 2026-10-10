@@ -206,7 +206,8 @@ public class PharmaceuticalItemApiService implements Serializable {
         jpql.append("SELECT new com.divudi.core.data.dto.AmpDto(")
                 .append("i.id, i.name, i.code, i.barcode, i.inactive, ")
                 .append("vmp.id, vmp.name, cat.id, cat.name, ")
-                .append("df.id, df.name) ")
+                .append("df.id, df.name, ")
+                .append("i.discountAllowed, i.allowFractions, i.consumptionAllowed, i.refundsAllowed) ")
                 .append("FROM Amp i ")
                 .append("LEFT JOIN i.vmp vmp ")
                 .append("LEFT JOIN i.category cat ")
@@ -1024,6 +1025,10 @@ public class PharmaceuticalItemApiService implements Serializable {
                 item.getBarcode(), item.isInactive(),
                 vmpId, vmpName, categoryId, categoryName,
                 dosageFormId, dosageFormName);
+        dto.setDiscountAllowed(item.getDiscountAllowed());
+        dto.setAllowFractions(item.isAllowFractions());
+        dto.setConsumptionAllowed(item.isConsumptionAllowed());
+        dto.setRefundsAllowed(item.isRefundsAllowed());
         if (item.getIssueUnit() != null) {
             dto.setIssueUnitId(item.getIssueUnit().getId());
             dto.setIssueUnitName(item.getIssueUnit().getName());
