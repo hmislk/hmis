@@ -1,0 +1,36 @@
+name: Config semantics guard
+
+# Fails a PR that silently changes what an existing boolean configuration option
+# means: a flipped negation or default on a line that reads the same key, or a
+# key newly read with conflicting defaults. Hospitals keep a stored value per
+# key, so such a change makes the same stored value do the opposite.
+# Override only with the PR label 'config-meaning-change' and an explanation of
+# the impact on every hospital in the PR description.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  config-semantics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check that existing config keys keep their meaning
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          ALLOW: ${{ contains(github.event.pull_request.labels.*.name, 'config-meaning-change') }}
+        run: |
+          set -euo pipefail
+          if [ "$ALLOW" = "true" ]; then
+            python3 .github/scripts/check_config_semantics.py "$BASE_SHA" --allow
+          else
+            python3 .github/scripts/check_config_semantics.py "$BASE_SHA"
+          fi
