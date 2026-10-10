@@ -154,8 +154,8 @@
                                         <h:outputText value="#{b.deptId}"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING' or (b.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(b))}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{b.ccBillingType eq 'HOSPITAL_BILLING' or (b.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBill(b))}"/>
                                     </p:column>
                                     <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
                                         <h:outputText value="#{b.createdAt}">
@@ -269,8 +269,8 @@
                                             </p:column>
 
                                             <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                                <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
-                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{ps.bill.ccBillingType eq 'AGENT_BILLING' or (ps.bill.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBilledSample(ps))}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{ps.bill.ccBillingType eq 'HOSPITAL_BILLING' or (ps.bill.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBilledSample(ps))}"/>
                                                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
                                                     <i class="fa-solid fa-lock me-1"></i>View only
                                                 </h:panelGroup>
@@ -423,8 +423,8 @@
                                     </p:column>
 
                                     <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{pi.billItem.bill.ccBillingType eq 'AGENT_BILLING' or (pi.billItem.bill.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill))}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{pi.billItem.bill.ccBillingType eq 'HOSPITAL_BILLING' or (pi.billItem.bill.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill))}"/>
                                     </p:column>
 
                                     <p:column headerText="Patient" style="vertical-align: top; padding: 6px;">
@@ -487,11 +487,17 @@
                                             </h:panelGroup>
 
                                             <ui:repeat value="#{collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" var="dpr">
-                                                <div class="d-flex justify-content-between">
+                                                <h:panelGroup rendered="#{not dpr.approved}" class="d-flex justify-content-center">
+                                                    <p:badge value="Pending Approval.." severity="success" size="large" class="w-50"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{dpr.approved}">
+                                                    <div class="d-flex justify-content-between">
                                                     <div class="d-flex gap-2 mb-2">
+                                                        <!-- process="@this": a full-form submit re-sets the bill dates, whose setters clear the items behind this table, so the click would be lost -->
                                                         <p:commandButton
-                                                            ajax="false"
-                                                            value="Print"
+                                                            process="@this"
+                                                            update=":form:msg"
+                                                            value="To Print"
                                                             icon="fa fa-print"
                                                             class="ui-button-info"
                                                             disabled="#{not dpr.approved}"
@@ -505,12 +511,10 @@
                                                         <p:graphicImage library="image" name="print_done.png" title="Report Printed" rendered="#{dpr.printComplete}" style="height: 40px; width: 40px;"/>
                                                         <p:graphicImage library="image" name="handover_pending.png" title="Not Issued" rendered="#{not dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
                                                         <p:graphicImage library="image" name="handover_done.png" title="Report Issued" rendered="#{dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="sms_send_pending.png" title="SMS Send Pending" rendered="#{not dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="sms_send_complete.png" title="SMS Send Complete" rendered="#{dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="email_sending_pending.png" title="Email Send Pending" rendered="#{not dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="email_sending_complete.png" title="Email Send Complete" rendered="#{dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
                                                     </div>
                                                 </div>
+                                                </h:panelGroup>
+                                                
                                             </ui:repeat>
                                         </h:panelGroup>
                                     </p:column>
