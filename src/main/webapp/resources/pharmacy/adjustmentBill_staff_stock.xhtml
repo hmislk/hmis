@@ -110,7 +110,7 @@
                         <f:facet name="header">                           
                             <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue eq 0 ? bip.pharmaceuticalBillItem.stock.stock : bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
                             <f:convertNumber pattern="#,###"/>
                         </h:outputLabel>
                     </p:column>                  
@@ -128,7 +128,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}">
                             <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>

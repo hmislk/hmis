@@ -296,45 +296,46 @@
 
 
                                         <div class="card p-4">
-                                            <h:panelGrid columns="3" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" style="font-size: 16px;">
+                                            <h:panelGrid columns="3" columnClasses="text-muted,text-muted text-center,text-end"
+                                                         rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" style="font-size: 16px;">
                                                 <h:outputLabel value="Gross Total"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.grossTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Service Charge (Margin)"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
-                                                <h:outputLabel value="#{bhtSummeryController.marginTotal}">
+                                                <h:outputLabel value=":"/>
+                                                <h:outputLabel value="#{bhtSummeryController.marginTotal}" styleClass="text-success fw-semibold">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Item Discounts"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.itemDiscountTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Charge Type Discounts"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.chargeTypeDiscountTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Bill Level Discount"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.billLevelDiscount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Total Discount"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.discount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="VAT"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.vatTotal}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
@@ -342,22 +343,24 @@
 
                                             <hr/>
 
-                                            <h:panelGrid columns="3" style="font-weight: bold; font-size: 22px;">
+                                            <h:panelGrid columns="3" columnClasses="text-dark,text-center,text-end"
+                                                         style="font-weight: bold; font-size: 22px;">
                                                 <h:outputLabel  value="Total Charges"/>
-                                                <h:outputLabel value=":" class="mx-2"/>
-                                                <h:outputLabel value="#{bhtSummeryController.grantTotal}">
+                                                <h:outputLabel value=":"/>
+                                                <h:outputLabel value="#{bhtSummeryController.grantTotal}" styleClass="text-primary">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
-                                                <h:outputLabel value="Paid By Patient   " />
-                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="Paid By Patient" />
+                                                <h:outputLabel value=":"/>
                                                 <h:outputLabel value="#{bhtSummeryController.paid}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
                                                 <h:outputLabel value="Due" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }" />
-                                                <h:outputLabel value=":" class="mx-2" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
-                                                <h:outputLabel value="#{bhtSummeryController.due}" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
+                                                <h:outputLabel value=":" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
+                                                <h:outputLabel value="#{bhtSummeryController.due}" styleClass="text-danger"
+                                                                rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </h:panelGrid>
@@ -424,7 +427,7 @@
                                         <p:outputLabel value="Charges" class="mx-2"/>
                                     </f:facet>
 
-                                    <p:dataTable 
+                                    <p:dataTable
                                         id="sum"
                                         value="#{bhtSummeryController.chargeItemTotals}"
                                         var="c"
@@ -432,37 +435,38 @@
                                         scrollHeight="410"
                                         scrollable="true"
                                         scrollRows="10"
+                                        styleClass="p-datatable-sm"
                                         >
 
-                                        <p:column headerText="Charge Type" rendered="#{c.total > 0}">
+                                        <p:column headerText="Charge Type">
                                             <h:outputLabel value="#{bhtSummeryController.getChargeTypeLabel(c.inwardChargeType)}"/>
                                         </p:column>
-                                        <p:column  sortBy="#{c.total}"  headerText="Total" rendered="#{c.total > 0}" styleClass="text-end">
+                                        <p:column  sortBy="#{c.total}"  headerText="Total" styleClass="text-end">
                                             <h:outputLabel value="#{c.total}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Gross" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
+                                        <p:column headerText="Gross" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
                                             <h:outputLabel value="#{c.gross}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Discount" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
+                                        <p:column headerText="Discount" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
                                             <h:outputLabel value="#{c.discount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Service Charge" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
-                                            <h:outputLabel value="#{c.margin}">
+                                        <p:column headerText="Service Charge" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
+                                            <h:outputLabel value="#{c.margin}" styleClass="text-success fw-semibold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Net" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
-                                            <h:outputLabel value="#{c.netTotal}">
+                                        <p:column headerText="Net" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
+                                            <h:outputLabel value="#{c.netTotal}" style="font-weight: bold">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="VAT" rendered="#{c.total > 0 and webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
+                                        <p:column headerText="VAT" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}" styleClass="text-end">
                                             <h:outputLabel value="#{c.vat}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
@@ -510,7 +514,7 @@
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
-                                        <p:dataTable id="roomCharges" value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;">
+                                        <p:dataTable id="roomCharges" value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
                                             <p:column headerText="Room" styleClass="text-start">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
@@ -613,7 +617,7 @@
                                                             fileName="Timed_Service_Charges" />
                                         </p:commandButton>
                                     </div>
-                                    <p:dataTable id="timedServiceCharges" value="#{bhtSummeryController.patientItems}" var="pt">
+                                    <p:dataTable id="timedServiceCharges" value="#{bhtSummeryController.patientItems}" var="pt" styleClass="p-datatable-sm">
                                         <p:column headerText="Service Name" styleClass="text-start">
                                             <h:outputLabel value="#{pt.item.name}"/>
                                         </p:column>
@@ -774,6 +778,7 @@
                                         </p:commandButton>
                                     </div>
                                     <p:dataTable id="service" scrollable="true" scrollHeight="300"
+                                                 styleClass="p-datatable-sm"
                                                  value="#{bhtSummeryController.departmentBillItems}" var="dep">
                                         <p:columnGroup type="header">
                                             <p:row>
@@ -999,16 +1004,18 @@
                                         </p:commandButton>
                                     </div>
                                     <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false)}">
+                                        <!-- No rowStyleClass row-hiding here (issue #23871): pharmacyIssues is now fetched by
+                                             InwardBeanController.fetchIssueTable() scoped to exactly the BillTypeAtomic set
+                                             that feeds the Medicine charge total, so every row returned belongs on screen -
+                                             including the porter-based ward return, which is a BilledBill rather than the
+                                             PreBill/RefundBill pair this table used to require. -->
                                         <p:dataTable
                                             id="medIssueFlat"
                                             value="#{bhtSummeryController.pharmacyIssues}"
                                             var="iss"
                                             scrollable="true"
                                             scrollHeight="300"
-                                            rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
-                                                             or
-                                                             (iss.billedBill ne null
-                                                             and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                            styleClass="p-datatable-sm">
                                             <p:column headerText="Bill No">
                                                 <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                             </p:column>
@@ -1081,10 +1088,19 @@
                                                     value="View Issue"  >
                                                     <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                                                 </p:commandButton>
-                                                <p:commandButton 
-                                                    ajax="false" 
+                                                <p:commandButton
+                                                    ajax="false"
                                                     action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
                                                     rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
+                                                    value="View Return"  >
+                                                    <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                                                </p:commandButton>
+                                                <!-- Porter-based ward return (issue #23871): a BilledBill, not a RefundBill,
+                                                     but the same generic reprint page works off Bill base fields. -->
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
+                                                    rendered="#{iss.billClass eq 'class com.divudi.core.entity.BilledBill'}"
                                                     value="View Return"  >
                                                     <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
                                                 </p:commandButton>
@@ -1304,6 +1320,7 @@
                                         id="outsideCharges"
                                         scrollable="true"
                                         scrollHeight="300"
+                                        styleClass="p-datatable-sm"
                                         value="#{bhtSummeryController.additionalChargeBill}"
                                         var="bil"
                                         rowStyleClass="#{((bil.billClass eq 'class com.divudi.core.entity.BilledBill')
@@ -1403,12 +1420,17 @@
                                         id="professionalFees"
                                         scrollable="true"
                                         scrollHeight="300"
-                                        value="#{bhtSummeryController.profesionallFee}"
+                                        styleClass="p-datatable-sm"
+                                        value="#{bhtSummeryController.allStaffFees}"
                                         var="pf"
                                         rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
 
                                         <p:column headerText="Name">
                                             #{pf.staff.person.nameWithTitle}
+                                        </p:column>
+
+                                        <p:column headerText="Category">
+                                            <h:outputText value="#{bhtSummeryController.getFeeCategoryLabel(pf)}"/>
                                         </p:column>
 
                                         <p:column headerText="Gross" class="text-end" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
@@ -1511,6 +1533,7 @@
                                         id="assistantCharges"
                                         scrollable="true"
                                         scrollHeight="300"
+                                        styleClass="p-datatable-sm"
                                         value="#{bhtSummeryController.doctorAndNurseFee}"
                                         var="pf"
                                         rowStyleClass="#{pf.bill.billClass eq 'class com.divudi.core.entity.BilledBill' ? '':'noDisplayRow'}">
@@ -1619,6 +1642,7 @@
                                         id="depositsPayments"
                                         scrollable="true"
                                         scrollHeight="300"
+                                        styleClass="p-datatable-sm"
                                         value="#{bhtSummeryController.paymentBill}"
                                         var="p"
                                         rowStyleClass="#{((p.billClass eq 'class com.divudi.core.entity.BilledBill')
@@ -1715,6 +1739,7 @@
                                         id="postFinalPayment"
                                         scrollable="true"
                                         scrollHeight="300"
+                                        styleClass="p-datatable-sm"
                                         value="#{bhtSummeryController.postFinalPaymentBill}"
                                         var="p"
                                         rowStyleClass="#{((p.billClass eq 'class com.divudi.core.entity.BilledBill')

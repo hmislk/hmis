@@ -79,7 +79,7 @@
                                         <h:outputLabel value="Item List" />
                                     </f:facet>
 
-                                    <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
+                                    <p:dataTable rowIndexVar="rowIndex" value="#{billBeanController.fetchBillItems(pharmacyBillSearch.bill)}"  var="bip" rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
 
                                         <p:column width="2%">
                                             <f:facet name="header">

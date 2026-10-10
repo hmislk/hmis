@@ -132,7 +132,7 @@
                                         </f:facet>  
                                         <f:facet name="input">  
                                             <p:autoComplete value="#{bip.staff}"
-                                                            disabled="#{bip.paidValue!=0 or bip.fromPackage or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
+                                                            disabled="#{bip.paidValue!=0 or bip.sourcePackageItem ne null or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
                                                             completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                             var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}"
                                                             maxResults="20"

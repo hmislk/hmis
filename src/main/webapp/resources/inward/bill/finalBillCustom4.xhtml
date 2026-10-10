@@ -90,8 +90,7 @@
                             </div>
 
                             <!-- Address -->
-                            <h:panelGroup layout="block" styleClass="col-12 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowAddress}">
+                            <h:panelGroup layout="block" styleClass="col-12 d-flex mb-1">
                                 <span style="width: 130px;">Address</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2" style="min-width: 0; white-space: normal; word-break: break-word;">
@@ -110,8 +109,7 @@
                             </h:panelGroup>
 
                             <!-- NIC No -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowNic}">
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1">
                                 <span style="width: 130px;">NIC No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -120,8 +118,7 @@
                             </h:panelGroup>
 
                             <!-- Phone No -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowPhone}">
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1">
                                 <span style="width: 130px;">Phone No</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -130,8 +127,7 @@
                             </h:panelGroup>
 
                             <!-- Guardian -->
-                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowGuardian}">
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1">
                                 <span style="width: 130px;">Guardian</span>
                                 <span style="width: 12px; text-align: center;">:</span>
                                 <span class="flex-fill ps-2">
@@ -172,13 +168,17 @@
                                 </span>
                             </div>
 
-                            <!-- Credit Company (Corporate Sponsor) -->
+                            <!-- Credit Company (Corporate Sponsor). An admission can have several
+                                 sponsors; they live in the EncounterCreditCompany collection, not in
+                                 the single Bill.creditCompany field, so all of them are listed here.
+                                 Rendered whenever the admission has a sponsor - the bill's own
+                                 payment method does not decide whether a sponsor exists. -->
                             <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
-                                          rendered="#{bhtSummeryController.custom4ShowCorporateSponsor and cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
+                                          rendered="#{not empty bhtSummeryController.creditCompanyNamesForPrint(cc.attrs.bill)}">
                                 <span style="width: 130px;">Credit Company</span>
                                 <span style="width: 12px; text-align: center;">:</span>
-                                <span class="flex-fill ps-2">
-                                    <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                <span class="flex-fill ps-2" style="min-width: 0; white-space: normal; word-break: break-word;">
+                                    <h:outputLabel value="#{bhtSummeryController.creditCompanyNamesForPrint(cc.attrs.bill)}" />
                                 </span>
                             </h:panelGroup>
 
@@ -208,7 +208,7 @@
                             <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Organized Final Bill Charge Types',false)}" >
                                 <h:panelGroup rendered="#{(bip.adjustedValue!=0 and  bip.inwardChargeType ne 'ProfessionalCharge' )
                                                           or
-                                                          (bip.adjustedValue!=0 and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}"
+                                                          ((bip.adjustedValue!=0 or bip.hasFreeOfChargeProFee) and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}"
                                               style="font-size: 12px;">
                                     <tr style="width: 100%; font-weight: 400; line-height: 18px;" >
                                         <td style="text-align: left; font-size: 13px !important;
@@ -225,7 +225,7 @@
                                                 <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' }">
                                                     <table>
                                                         <ui:repeat value="#{bip.proFees}" var="fe">
-                                                            <h:panelGroup rendered="#{fe.feeAdjusted ne 0
+                                                            <h:panelGroup rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge)
                                                                                       and fe.bill.cancelled eq false
                                                                                       and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}" style="">
                                                                 <tr>
@@ -237,7 +237,8 @@
                                                                     </td>
                                                                     <td  style="text-align: right;font-size: 10px!important; padding-left: 15px;" width="100%">
                                                                         <h:panelGroup>
-                                                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                            <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                            <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                                                 <f:convertNumber pattern="#,##0.00" />
                                                                             </h:outputLabel>
                                                                         </h:panelGroup>
@@ -512,13 +513,14 @@
                                                     <h:panelGroup rendered="#{bip.inwardChargeType ne 'RoomCharges' and bip.inwardChargeType ne 'ProfessionalCharge'}">
                                                         <table>
                                                             <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                                <h:panelGroup rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge) and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                     <tr>
                                                                         <td style="text-align: left; font-size: 10px!important;">
                                                                             <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
                                                                         </td>
                                                                         <td style="text-align: right; font-size: 10px!important;">
-                                                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                            <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                            <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                                                 <f:convertNumber pattern="#,##0.00" />
                                                                             </h:outputLabel>
                                                                         </td>
@@ -655,7 +657,7 @@
 
                                     <!-- Loop through ProfessionalCharge last -->
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
                                                     max-width: 150px; white-space: nowrap;
@@ -670,13 +672,14 @@
                                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                                                             <table>
                                                                 <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                    <h:panelGroup style="line-height: 1.0;" rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                                    <h:panelGroup style="line-height: 1.0;" rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge) and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
                                                                                 <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
                                                                             </td>
                                                                             <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
-                                                                                <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                                <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                                <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                                 </h:outputLabel>
                                                                             </td>
@@ -712,7 +715,7 @@
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <!-- Loop through ProfessionalCharge last -->
                                     <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter)}" var="bip">
-                                        <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
                                                     max-width: 150px; white-space: nowrap;
@@ -727,14 +730,15 @@
                                                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses'}">
                                                             <table>
                                                                 <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                    <h:panelGroup  rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0}">
+                                                                    <h:panelGroup  rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0 or fe.freeOfCharge}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
                                                                                 <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
                                                                             </td>
                                                                             <td>&emsp;</td>
                                                                             <td style="text-align: right; font-size: 10px!important;">
-                                                                                <h:outputLabel value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}">
+                                                                                <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                                <h:outputLabel value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                                 </h:outputLabel>
                                                                             </td>
@@ -852,7 +856,7 @@
                                          fees passes showProfessional=false). -->
                                     <h:panelGroup rendered="#{cc.attrs.showProfessional}">
                                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                                 <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                     <td style="text-align: left; font-size: 13px !important;
                                                                 max-width: 150px; white-space: nowrap;
@@ -862,13 +866,14 @@
                                                     <td style="margin-top: -10px;">
                                                         <table>
                                                             <ui:repeat value="#{bip.proFees}" var="fe">
-                                                                <h:panelGroup style="line-height: 1.0;" rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                                <h:panelGroup style="line-height: 1.0;" rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge) and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                     <tr>
                                                                         <td style="text-align: left; font-size: 10px!important;">
                                                                             <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
                                                                         </td>
                                                                         <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
-                                                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                                            <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                            <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                                                 <f:convertNumber pattern="#,##0.00" />
                                                                             </h:outputLabel>
                                                                         </td>
@@ -900,6 +905,65 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
 
+                                <!-- Technician Fee: same per-staff breakdown as Consultant/Assistant
+                                     Fee above. getBundledFinalBillRows() excludes this charge type
+                                     from the generic bundled rows for the same reason — without a
+                                     dedicated block it printed as a bare total with no staff name
+                                     (issue #24209). Deliberately OUTSIDE both the "disabled" and
+                                     "Display All Doctor Chargers as a One" branches above/below — it
+                                     reads bip.proFees directly off the bill items (not through
+                                     getSummaryOfDoctorChargers, which only aggregates
+                                     ProfessionalCharge/DoctorAndNurses), so it must stay unconditional
+                                     or it silently disappears under the aggregation toggle (caught in
+                                     review: CodeRabbit on PR #24281). -->
+                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                    <h:panelGroup rendered="#{bip.inwardChargeType eq 'TechnicianAndParamedicalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
+                                        <tr style="width: 100%; font-weight: 400; line-height: 18px;">
+                                            <td style="text-align: left; font-size: 13px !important;
+                                                        max-width: 150px; white-space: nowrap;
+                                                        overflow: visible; text-overflow: ellipsis;">
+                                                <h:outputLabel value="#{configOptionApplicationController.getInwardChargeTypeFinalBillLabel(bip.inwardChargeType)}" />
+                                            </td>
+                                            <td style="margin-top: -10px;">
+                                                <table>
+                                                    <ui:repeat value="#{bip.proFees}" var="fe">
+                                                        <h:panelGroup style="line-height: 1.0;" rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge) and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                                            <tr>
+                                                                <td style="text-align: left; font-size: 10px!important;">
+                                                                    <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
+                                                                </td>
+                                                                <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
+                                                                    <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                    <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
+                                                    </ui:repeat>
+                                                        <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                                            <tr>
+                                                                <td style="text-align: left; font-size: 10px!important;">
+                                                                    <h:panelGroup>#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}</h:panelGroup>
+                                                                </td>
+                                                                <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
+                                                                    <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </td>
+                                                            </tr>
+                                                        </h:panelGroup>
+                                                </table>
+                                            </td>
+                                            <td style="width: 30%; text-align: right; font-size: 13px!important;">
+                                                <h:outputLabel value="#{bip.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
                                 <!-- Alternate rendering when the hospital wants every doctor's fees
                                      (DoctorAndNurses + ProfessionalCharge) summed into one row per
                                      doctor instead of one row per fee. Passes showProfessional through
@@ -910,7 +974,7 @@
                                      (found in review). DoctorAndNurses is always included regardless. -->
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter,cc.attrs.showProfessional)}" var="bip">
-                                        <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and bip.adjustedValue != 0}" style="font-size: 12px;">
+                                        <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
                                                             max-width: 150px; white-space: nowrap;
@@ -920,14 +984,15 @@
                                                 <td style="margin-top: -10px;">
                                                     <table>
                                                         <ui:repeat value="#{bip.proFees}" var="fe">
-                                                            <h:panelGroup rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0}">
+                                                            <h:panelGroup rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0 or fe.freeOfCharge}">
                                                                 <tr>
                                                                     <td style="text-align: left; font-size: 10px!important;">
                                                                         <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
                                                                     </td>
                                                                     <td>&emsp;</td>
                                                                     <td style="text-align: right; font-size: 10px!important;">
-                                                                        <h:outputLabel value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}">
+                                                                        <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                                                        <h:outputLabel value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                                             <f:convertNumber pattern="#,##0.00" />
                                                                         </h:outputLabel>
                                                                     </td>
@@ -1100,6 +1165,7 @@
                                                                               and b.refundedBill eq null
                                                                               and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic eq 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
+                                                            <h:outputLabel value="#{b.creditCompany.name}" rendered="#{b.creditCompany ne null}"/>
                                                             <h:outputLabel  value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.netTotal}" style="width: 30px; text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00" />
@@ -1145,7 +1211,25 @@
                                     </tr>
                                 </h:panelGroup>
 
-                                <h:panelGroup >
+                                <h:panelGroup rendered="#{not empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
+                                    <ui:repeat value="#{bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}" var="due">
+                                        <tr>
+                                            <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                                <h:outputLabel value="Due from #{due.companyName}" />
+                                            </td>
+                                            <td>
+                                                &nbsp;
+                                            </td>
+                                            <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                                <h:outputLabel value="#{due.allocatedAmount}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel   value="Due Amount" />
@@ -1160,7 +1244,7 @@
                                         </td>
                                     </tr>
                                 </h:panelGroup>
-                                
+
                             </h:panelGroup>
 
                         </table>

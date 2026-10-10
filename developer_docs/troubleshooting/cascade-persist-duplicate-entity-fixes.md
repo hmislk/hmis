@@ -389,6 +389,18 @@ private List<BillItem> billItems;
 
 **This ensures**: When you clear() the collection, orphaned BillItems are automatically deleted.
 
+> ⚠️ **The flip side — never take a *saved* line you are soft-retiring out of `Bill.billItems`.**
+> Because the mapping already has `orphanRemoval = true`, removing a persisted `BillItem`
+> from the collection makes the next `billFacade.edit(bill)` issue a `DELETE` for it. For
+> pharmacy lines the `PharmaceuticalBillItem` foreign key rejects that
+> (`Cannot delete or update a parent row ... FK_PHARMACEUTICALBILLITEM_BILLITEM_ID`), the
+> transaction is marked rollback-only, and the whole Save fails with
+> `EJBException: Transaction aborted` (HTTP 500). To soft-delete a line, set
+> `retired`/`retirer`/`retiredAt` and **leave it in the collection** — replacing any stale
+> copy with the retired instance so the cascade merge doesn't un-retire it — then filter
+> `retired = false` wherever lines are read. See
+> `TransferRequestController.remove()` (#23817).
+
 #### Fix 4: Avoid Multiple Saves in Same Method
 
 ```java

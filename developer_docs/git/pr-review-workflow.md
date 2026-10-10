@@ -118,7 +118,9 @@ git branch -d <branch-name>
 >
 > 4. **Self-review items go in the commit message and/or PR description**, NOT as new top-level inline comments. If you spot something while reviewing your own PR, fix it (or document the decision to defer) in the commit message and update the PR description checklist. Don't sprinkle review items as new inline comments — that creates manual-resolve noise.
 >
-> 5. **ONE re-review request at the end**, not one per item. After all fixes are pushed and all existing reviewer threads have been replied to, click **"Re-request review"** (or post a single summary comment if no human reviewer is assigned). Do not nag reviewers per-item.
+> 5. **Nothing you post names a hospital's data.** This repo is public, so replies, self-review notes and PR descriptions must carry no production record identifiers, affected-record counts, schema names, or patient/doctor/staff names — see [What May Go Into a GitHub Issue, PR, or Comment](github-public-content-policy.md). Quoting a reviewer's own example back is not an exemption; paraphrase it.
+>
+> 6. **ONE re-review request at the end**, not one per item. After all fixes are pushed and all existing reviewer threads have been replied to, click **"Re-request review"** (or post a single summary comment if no human reviewer is assigned). Do not nag reviewers per-item.
 >
 > The sequence is always: **discuss → fix → push → reply to existing threads → one re-review request**. Never reply before pushing the fix. Never file new top-level inline comments as a substitute for a commit-message note.
 

@@ -16,6 +16,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
@@ -41,8 +42,10 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.inward.InwardProfessionalFeeClassificationService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,6 +83,8 @@ public class InwardProfessionalBillController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     ConfigOptionController configOptionController;
+    @Inject
+    private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -261,11 +266,6 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
 
-        if (encounterComponent.getBillFee().isFromPackage()) {
-            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
-            return;
-        }
-
         retiredEncounterComponent(encounterComponent);
         retiredBillFee(encounterComponent.getBillFee());
 
@@ -430,6 +430,12 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
 
+        if (getProEncounterComponent().getBillFee().getProfessionalFeeCategory() == null) {
+            getProEncounterComponent().getBillFee().setProfessionalFeeCategory(
+                    professionalFeeClassificationService.defaultCategoryFor(getProEncounterComponent().getBillFee().getStaff(),
+                            getProEncounterComponent().getBillFee().getSpeciality()));
+        }
+
         if (getProEncounterComponent().getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By) {
             getBatchBill().setStaff(getProEncounterComponent().getBillFee().getStaff());
         }
@@ -441,6 +447,40 @@ public class InwardProfessionalBillController implements Serializable {
 
         proEncounterComponent = null;
         JsfUtil.addSuccessMessage("Fee added. Click 'Save Bill' to confirm.");
+    }
+
+    public void onSurgeryProfessionalFeeStaffSelect(AjaxBehaviorEvent event) {
+        if (proEncounterComponent != null) {
+            applyDefaultFeeCategory(proEncounterComponent.getBillFee());
+        }
+    }
+
+    /**
+     * Re-applies the default Fee Category when the Speciality is changed on the
+     * theatre form, including after a staff member is already picked (#23983).
+     */
+    public void onSurgeryProfessionalFeeSpecialitySelect(AjaxBehaviorEvent event) {
+        if (proEncounterComponent != null) {
+            applyDefaultFeeCategory(proEncounterComponent.getBillFee());
+        }
+    }
+
+    /**
+     * Presets the fee's category from the selected speciality / staff (see
+     * {@link InwardProfessionalFeeClassificationService#defaultCategoryFor(Staff, Speciality)}).
+     * With no staff yet, only a speciality that has a configured default sets it,
+     * so picking an unconfigured speciality first never guesses a category.
+     */
+    private void applyDefaultFeeCategory(BillFee billFee) {
+        if (billFee == null) {
+            return;
+        }
+        if (billFee.getStaff() == null
+                && (billFee.getSpeciality() == null || billFee.getSpeciality().getDefaultProfessionalFeeCategory() == null)) {
+            return;
+        }
+        billFee.setProfessionalFeeCategory(
+                professionalFeeClassificationService.defaultCategoryFor(billFee.getStaff(), billFee.getSpeciality()));
     }
 
     public void saveProfessionalFeeBill() {
@@ -558,6 +598,23 @@ public class InwardProfessionalBillController implements Serializable {
         if (currentBillFee != null && currentBillFee.getStaff() != null && currentBillFee.getStaff().getSpeciality() != null) {
             currentBillFee.setSpeciality(currentBillFee.getStaff().getSpeciality());
         }
+        applyDefaultFeeCategory(currentBillFee);
+    }
+
+    /**
+     * Re-applies the default Fee Category when the Speciality is changed on the
+     * ward form, including after a staff member is already picked (#23983).
+     */
+    public void onSpecialitySelect(AjaxBehaviorEvent event) {
+        applyDefaultFeeCategory(currentBillFee);
+    }
+
+    /** The 3 Fee Category choices offered on the professional-fee entry forms, in display order. */
+    public List<InwardChargeType> getProfessionalFeeCategoryOptions() {
+        return Arrays.asList(
+                InwardChargeType.ProfessionalCharge,
+                InwardChargeType.DoctorAndNurses,
+                InwardChargeType.TechnicianAndParamedicalCharge);
     }
 
     public boolean isToClearBill() {
@@ -772,7 +829,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void assignStaffToPackageFee(BillFee billFee, Staff staff) {
-        if (billFee == null || !billFee.isFromPackage()) {
+        if (billFee == null || billFee.getSourcePackageItem() == null) {
             JsfUtil.addErrorMessage("This action is only for package-included professional fee roles.");
             return;
         }
@@ -788,6 +845,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
         double lockedFee = billFee.getOverriddenRate() != null ? billFee.getOverriddenRate() : billFee.getFeeValue();
         billFee.setStaff(staff);
+        billFee.setProfessionalFeeCategory(professionalFeeClassificationService.defaultCategoryFor(staff, billFee.getSpeciality()));
         billFee.setFeeValue(lockedFee);
         billFee.setFeeGrossValue(lockedFee);
         getBillFeeFacade().edit(billFee);
@@ -889,6 +947,12 @@ public class InwardProfessionalBillController implements Serializable {
 
         fetchEncounterProfessionalFees();
         fetchSavedEstimatedProfessionalFees();
+        // The Interim Bill (BhtSummeryController) is @SessionScoped and caches its
+        // Professional Fees tab list (profesionallFee) until explicitly invalidated.
+        // Without this call, a fee added here would not show up in the Interim Bill
+        // until some unrelated action happened to reset the cache. Same class of bug
+        // fixed for the surgery/theatre save path under #20146. See issue #24210.
+        bhtSummeryController.refreshProfesionallFee();
 
         printPreview = true;
 
@@ -1301,10 +1365,6 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void remove(BillFee bf) {
-        if (bf.isFromPackage()) {
-            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
-            return;
-        }
         bf.setRetiredAt(new Date());
         bf.setRetired(true);
         bf.setRetirer(getSessionController().getLoggedUser());

@@ -115,6 +115,8 @@ public class SurgeryBillController implements Serializable {
     @Inject
     BhtSummeryController bhtSummeryController;
     @Inject
+    AdmissionController admissionController;
+    @Inject
     AuditEventController auditEventController;
     @Inject
     com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
@@ -187,6 +189,7 @@ public class SurgeryBillController implements Serializable {
     private List<Bill> blockingBillsForDelete;
     private List<BillFee> surgeryProfessionalFees;
     private List<BillFee> surgeryAssistingFees;
+    private List<BillFee> surgeryTechnicianFees;
     private List<DepartmentBillItems> surgeryServiceDepartmentItems;
     private List<Bill> surgeryMedicineIssues;
     private List<Bill> surgeryStoreIssues;
@@ -281,6 +284,27 @@ public class SurgeryBillController implements Serializable {
             surgeryAssistingFees = getBillFeeFacade().findByJpql(jpql, hm);
         }
         return surgeryAssistingFees;
+    }
+
+    /**
+     * Technician/paramedical fees for this surgery — their own bucket in merged
+     * and unmerged mode alike, so neither list above contains them (issue #23982).
+     */
+    public List<BillFee> getSurgeryTechnicianFees() {
+        if (surgeryTechnicianFees == null && getSurgeryBill().getId() != null) {
+            HashMap<String, Object> hm = new HashMap<>();
+            String jpql = "SELECT bt FROM BillFee bt WHERE bt.retired=false "
+                    + professionalFeeClassificationService.staffCondition("bt", InwardChargeType.TechnicianAndParamedicalCharge, hm)
+                    + " and bt.fee.feeType=:ftp "
+                    + " and bt.bill.billType=:btp "
+                    + " and bt.bill.cancelled=false "
+                    + " and bt.bill.forwardReferenceBill=:surg";
+            hm.put("ftp", FeeType.Staff);
+            hm.put("btp", BillType.InwardProfessional);
+            hm.put("surg", getSurgeryBill());
+            surgeryTechnicianFees = getBillFeeFacade().findByJpql(jpql, hm);
+        }
+        return surgeryTechnicianFees;
     }
 
     public List<DepartmentBillItems> getSurgeryServiceDepartmentItems() {
@@ -421,6 +445,13 @@ public class SurgeryBillController implements Serializable {
         // duplicating it, same as retireTimedServiceBill above (#23722).
         PatientEncounter pe = surgeryBill != null ? surgeryBill.getPatientEncounter() : patientItem.getPatientEncounter();
         inwardTimedItemController.logTimedServiceRemovalAudit(patientItem, pe);
+        BillFee timedServiceBillFee = findActiveBillFeeForTimedServicePatientItem(patientItem);
+        if (timedServiceBillFee != null) {
+            timedServiceBillFee.setRetired(true);
+            timedServiceBillFee.setRetiredAt(new Date());
+            timedServiceBillFee.setRetirer(getSessionController().getLoggedUser());
+            getBillFeeFacade().edit(timedServiceBillFee);
+        }
         refreshTimedEncounterComponents();
     }
 
@@ -445,6 +476,15 @@ public class SurgeryBillController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("pi", patientItem);
         return getBillFacade().findFirstByJpql(jpql, params);
+    }
+
+    private BillFee findActiveBillFeeForTimedServicePatientItem(PatientItem patientItem) {
+        String jpql = "SELECT bf FROM BillFee bf "
+                + "WHERE bf.patientItem = :pi AND bf.retired = false "
+                + "ORDER BY bf.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pi", patientItem);
+        return getBillFeeFacade().findFirstByJpql(jpql, params);
     }
 
     public void removeProEncFromList(EncounterComponent encounterComponent) {
@@ -567,6 +607,7 @@ public class SurgeryBillController implements Serializable {
         clinicalSpeciality = null;
         surgeryProfessionalFees = null;
         surgeryAssistingFees = null;
+        surgeryTechnicianFees = null;
         surgeryServiceDepartmentItems = null;
         surgeryMedicineIssues = null;
         surgeryStoreIssues = null;
@@ -1118,37 +1159,16 @@ public class SurgeryBillController implements Serializable {
      * for a surgery is billed on the single TimedService Bill found via
      * {@code fetchByForwardBill}, the same lookup
      * {@code InwardTimedItemController.selectSurgeryBillListener()} uses.
-     * <p>
-     * Joined through {@code EncounterComponent} rather than
-     * {@code PatientItem.billItem} - the surgery Add flow
-     * ({@code InwardTimedItemController.saveTimeServiceBill()}) links a
-     * timed service's BillItem onto its {@code EncounterComponent}, never
-     * onto the {@code PatientItem} itself, so {@code PatientItem.billItem}
-     * is always null here.
-     * <p>
-     * Filters on {@code patientItem.retired} in addition to
-     * {@code ec.retired} - {@link #removeTimeService(PatientItem)} (the
-     * Remove action on the Surgery Dashboard's Timed Services tab) only
-     * retires the {@code PatientItem}, not its {@code EncounterComponent},
-     * so a removed-but-never-stopped service would otherwise still count as
-     * running here and permanently block validation.
+     * The count itself is {@link BillBeanController#countRunningTimedServices(Bill)},
+     * shared with {@code InwardSearch.markAsChecked()} so a running timed
+     * service bill can neither be checked nor validated.
      */
     public long getRunningTimedServiceCount() {
         if (getSurgeryBill().getId() == null) {
             return 0;
         }
         Bill timedServiceBill = getBillBean().fetchByForwardBill(getSurgeryBill(), SurgeryBillType.TimedService);
-        if (timedServiceBill == null) {
-            return 0;
-        }
-        String jpql = "SELECT COUNT(ec) FROM EncounterComponent ec"
-                + " WHERE ec.retired = false"
-                + " AND ec.billItem.bill = :bill"
-                + " AND ec.billFee.patientItem.retired = false"
-                + " AND ec.billFee.patientItem.toTime IS NULL";
-        HashMap<String, Object> hm = new HashMap<>();
-        hm.put("bill", timedServiceBill);
-        return getEncounterComponentFacade().findLongByJpql(jpql, hm);
+        return getBillBean().countRunningTimedServices(timedServiceBill);
     }
 
     public void validateSurgery() {
@@ -1326,9 +1346,8 @@ public class SurgeryBillController implements Serializable {
         getBillBean().updateBatchBill(getSurgeryBill());
         JsfUtil.addSuccessMessage("Surgery Detail Added");
         PatientEncounter pe = getSurgeryBill().getPatientEncounter();
-        bhtSummeryController.setPatientEncounter(pe);
         resetSurgeryBillValues();
-        String outcome = bhtSummeryController.navigateToInpatientProfile();
+        String outcome = admissionController.navigateToInpatientDashboard(pe);
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = outcome.replace("?faces-redirect=true", "");
@@ -1350,9 +1369,9 @@ public class SurgeryBillController implements Serializable {
         }
         getBillBean().updateBatchBill(getSurgeryBill());
         JsfUtil.addSuccessMessage("Surgery Detail Added");
-        bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
+        PatientEncounter pe = getSurgeryBill().getPatientEncounter();
         resetSurgeryBillValues();
-        return bhtSummeryController.navigateToInpatientProfile();
+        return admissionController.navigateToInpatientDashboard(pe);
     }
 
     public boolean isDuplicateConfirmationPending() {

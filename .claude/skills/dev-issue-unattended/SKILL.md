@@ -104,9 +104,15 @@ documented here, and warrants stopping and asking rather than guessing.
   while proving nothing — but locally that is a judgement call, not a hard
   limit, and direct SQL is fine when it is simply the faster route. See
   step 4.
-- Never put institution names, patient/doctor names, or credentials in any
-  GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
-  too since there's no human proofreading before it posts).
+- Never put a specific hospital's data in any GitHub issue, PR, or comment:
+  patient/doctor/staff names, production record identifiers (bill/BHT/PHN
+  numbers, entity IDs), affected-record counts, production schema names,
+  cutover dates, per-staff statistics, data-fix logs, or credentials. Describe
+  the defect, not the deployment — see
+  [What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+  Naming which hospital *reported* the bug is allowed; publishing its data is
+  not. Non-negotiable here especially, since there's no human proofreading
+  before it posts.
 - Never resolve genuinely ambiguous behavior — where the codebase, git
   history, and related issues give no clear signal either way — by picking an
   option silently. That is exactly the "stop and flag" case in steps 3 and 14.
@@ -382,8 +388,7 @@ earlier, additional layer, not a replacement.
 
 ## 9. Record learnings
 
-Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
-`developer_docs/testing/playwright-e2e-workflow.md` if any surfaced.
+Same as `dev-issue` step 9.
 
 ## 10. Publish evidence and update the wiki
 
@@ -466,6 +471,16 @@ Repeat, up to **3 cycles**:
 3 cycles without convergence → stop, summarize the sticking point, end the
 run (same as `dev-issue`).
 
+## 14a. File what you found along the way
+
+The run is not finished while a defect you noticed but did not fix lives only in chat or `tmp/`. From step 2 onward, keep a **Found along the way** list (in the batch's `tmp/` master plan, or `tmp/<issue>/found.md`). Anything outside the issue's scope goes on that list, not into the PR.
+
+Before Notify:
+1. **Confirm each item** against the code, or reproduce it. Drop anything unconfirmed, and say in Notify that you dropped it. A growl you didn't see is not proof of a silent failure.
+2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
+3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
+4. **List the new issue links** in Notify.
+
 ## 15. Notify
 
 Produce one skimmable summary covering **every issue in the batch** (a
@@ -477,9 +492,17 @@ single issue is just a batch of one), one line each:
 - `#N — closed, could not reproduce` (link to the closing comment)
 - `#N — stopped: <short reason>` (link to the blocker comment)
 - `#N — could not resolve issue number/URL`
+- `Found along the way → #K` (one line per issue filed in step 14a)
 
 For issues that shipped, include what was found, every decision made and
 why (from step 3/13), what was verified and how, and links to the
 issue/PR/wiki — same depth as a solo run. For issues that didn't ship, the
 link to the comment is enough; don't re-summarize what's already written
 there. **Never merge.**
+
+**Retrospective.** List what cost extra steps or went wrong. Grep the docs for
+each; drop any already documented and say so in one line. For each remaining
+one, give what happened, why it will recur, the file, and the exact text to
+add, under a `Retrospective proposals` heading for the user to approve on
+return. Never open the doc PR unattended. If none: "No retrospective
+findings."

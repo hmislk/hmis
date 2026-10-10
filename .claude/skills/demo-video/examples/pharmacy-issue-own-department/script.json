@@ -1,0 +1,14 @@
+[
+ {"id":"intro","say":"This video shows how to allow a pharmacy to issue items to its own department. By default, this is not allowed. Let's see that first."},
+ {"id":"pharmMenu","say":"Open the Pharmacy menu, and click Consumption."},
+ {"id":"newIssue","say":"Click New Consumption Issue."},
+ {"id":"pickOwn1","say":"Choose your own department, Main Pharmacy, as the department to issue to. Then click Select."},
+ {"id":"blocked","say":"The system blocks it. The message says your department does not allow issues to the same department."},
+ {"id":"adminMenu","say":"To change this, open the Administration menu, and click Manage Institutions."},
+ {"id":"deptSettings","say":"Under Preferences, click Department Settings."},
+ {"id":"toggle","say":"Settings on this page apply only to the department you are logged in to. Change Allow Disposal Issue to Same Department, to Allowed."},
+ {"id":"save","say":"Click Save. The change takes effect immediately."},
+ {"id":"back","say":"Now go back. Open the Pharmacy menu, click Consumption, and then New Consumption Issue."},
+ {"id":"pickOwn2","say":"Choose Main Pharmacy again, and click Select."},
+ {"id":"allowed","say":"This time the issue screen opens, and you can issue items to your own department. Only administrators can change this setting."}
+]

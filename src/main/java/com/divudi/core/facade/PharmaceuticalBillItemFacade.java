@@ -42,6 +42,7 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
 //        System.out.println("getPharmaceuticalBillItems method bill = " + bill);
         String sql = "Select p "
                 + " from PharmaceuticalBillItem p "
+                + " JOIN FETCH p.billItem bi "
                 + " where p.billItem.bill=:b "
                 + " and p.billItem.retired=false";
         HashMap hm = new HashMap();
