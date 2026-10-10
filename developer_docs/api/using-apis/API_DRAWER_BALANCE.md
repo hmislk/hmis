@@ -17,9 +17,10 @@ UI's one-user-one-method-at-a-time "Adjust Drawer Balance" flow. It exists for Q
 > `DrawerService.applyDrawerAdjustment`). Every non-zero adjustment creates a `DrawerAdjustment` bill
 > (suffix `DRADJ`) and a `DrawerEntry`, and shows up in **My Drawer History** for the target user.
 
-> **Privilege required**: `POST /api/drawer/adjust` requires the API key's resolved user to hold the
-> `DrawerAdjustmentDirect` privilege (directly or via their role) — the same privilege the UI's direct
-> admin-adjustment flow requires. `GET /api/drawer/{webUserId}` is read-only and has no privilege
+> **Privilege required**: `POST /api/drawer/adjust` requires the API key's resolved user to hold a
+> direct `DrawerAdjustmentDirect` grant scoped to their own department (no role-based grant alone is
+> enough) — mirroring `WebUserController.hasPrivilege`'s session-based check, which the UI's direct
+> admin-adjustment flow uses, exactly. `GET /api/drawer/{webUserId}` is read-only and has no privilege
 > check beyond the `Finance` key, matching the `Balance History` API precedent.
 
 > **Resetting "all payment methods"**: when `paymentMethod` is omitted/null on the POST body, every
@@ -138,8 +139,9 @@ and applies it via `DrawerService.applyDrawerAdjustment` — the same method the
 adjustment flow uses.
 
 - **Endpoint**: `POST /api/drawer/adjust`
-- **Authentication**: `Finance: <API_KEY>` header, resolved user must hold the
-  `DrawerAdjustmentDirect` privilege (directly, or via their role).
+- **Authentication**: `Finance: <API_KEY>` header, resolved user must hold a direct
+  `DrawerAdjustmentDirect` grant scoped to their own department (a role-based grant alone is not
+  enough).
 
 ### Request Body
 

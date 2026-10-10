@@ -876,12 +876,15 @@ public class DrawerService {
             Double beforeRaw = getDrawerInHandValue(drawer, pm);
             double before = beforeRaw != null ? beforeRaw : 0.0;
             double delta = targetBalance - before;
-            boolean changed = delta != 0.0;
+            // Half-a-cent tolerance so a stored value like 0.30000000000000004 compared
+            // against a requested 0.3 isn't treated as a real change (double rounding noise,
+            // not an actual balance difference) - see issue #24433 review.
+            boolean changed = Math.abs(delta) >= 0.005;
             if (changed) {
                 Bill bill = createDrawerAdjustmentBill(targetUser, pm, delta, comment, actor);
                 applyDrawerAdjustment(drawer, pm, delta, bill, actor);
             }
-            snapshots.add(new DrawerBalanceSnapshot(pm, before, before + delta, changed));
+            snapshots.add(new DrawerBalanceSnapshot(pm, before, changed ? before + delta : targetBalance, changed));
         }
         return snapshots;
     }
