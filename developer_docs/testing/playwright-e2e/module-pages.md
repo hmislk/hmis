@@ -696,6 +696,6 @@ All under *Cashier → Financial Transaction Manager*. Design: [Handover Float P
 - **OPD Billing** is under *OPD → Billing*; hover "Billing" to open the submenu. The same item can't be added twice to one bill, so build amounts from different items or quantities.
 - **Accept `confirm()` guards** by setting `window.confirm = () => true` before each click (see [§4](../playwright-e2e-workflow.md#4-confirmations-and-double-click-protection)).
 - **Verify three things after every step**, not just the screen you are on:
-  1. *My Drawer History* for **both** users. Each step should add exactly one row per user it moves. An accept adds one row (the counted cash) and no separate float row (#24428).
+  1. *My Drawer History* for **both** users. An accept adds one Cash row (the counted cash, float included) and no separate float row (#24428). Each non-cash payment in the handover (Card, Cheque, …) adds its own row.
   2. The next *Handover Current Shift* screen: Net Float (Cash) must equal the user's own signed floats plus the signed net floats carried in from accepted handovers.
   3. *Record Shift End Cash in Hand*: if the drawer started the shift at 0, expected cash should equal the drawer's cash balance.
