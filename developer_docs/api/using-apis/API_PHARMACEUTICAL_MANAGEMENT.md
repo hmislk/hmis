@@ -211,6 +211,23 @@ curl -X POST "http://localhost:8080/api/pharmaceutical_items/vtm" \
   -d '{"name": "Paracetamol", "descreption": "Analgesic", "departmentType": "Pharmacy"}'
 ```
 
+**Duplicate-by-name detection:** create checks for an existing, non-retired
+row of the same type whose `name` matches case-insensitively before creating
+a new one. If a match is found, no row is created — the endpoint returns
+`409 Conflict` with the existing row instead:
+```json
+{
+  "status": "already_exists",
+  "code": 409,
+  "id": 123,
+  "data": { "id": 123, "name": "Paracetamol", "code": "paracetamol", "retired": false, "inactive": false }
+}
+```
+This applies to all six types (VTM, ATM, VMP, AMP, VMPP, AMPP) and matches
+the same convention used by `ClinicalMetadataApi` and `InvestigationApi`. A
+retired row with the same name does **not** block a new create — the name is
+only unique among non-retired rows of that type.
+
 ### 4. Update Item
 
 **PUT** `/api/pharmaceutical_items/{type}/{id}`
@@ -360,7 +377,7 @@ All responses follow this standard format:
 | 400 | Bad request (validation error, invalid type, missing required field) |
 | 401 | Unauthorized (invalid or missing API key) |
 | 404 | Not found |
-| 409 | Conflict (already retired / not retired) |
+| 409 | Conflict (already retired / not retired / duplicate name on create) |
 | 500 | Internal server error |
 
 ## Response DTO Fields by Type

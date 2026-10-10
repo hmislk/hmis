@@ -93,6 +93,14 @@ public class NotificationController implements Serializable {
             case PHARMACY_TRANSFER_REQUEST:
                 createPharmacyTransferRequestNotifications(bill);
                 break;
+            // The approval (PRE) flow is what pharmacy_transfer_request.xhtml actually
+            // uses: the ward saves a PHARMACY_TRANSFER_REQUEST_PRE bill and only some of
+            // those ever get finalized/approved into a PHARMACY_TRANSFER_REQUEST. Without
+            // this case the PRE bill fell through to the default AssertionError below, so
+            // subscribers were never notified of a request when it was raised.
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+                createPharmacyTransferRequestNotifications(bill);
+                break;
             case PHARMACY_ORDER:
                 createPharmacyOrderRequest(bill);
                 break;
@@ -161,6 +169,84 @@ public class NotificationController implements Serializable {
                 break;
             default:
                 throw new AssertionError();
+        }
+    }
+
+    /**
+     * Notifies subscribers that an inpatient final bill version was created
+     * (action "FinalBillCreated") or approved ("FinalBillApproved"). The
+     * notification is linked to the bill's patient encounter, not the bill, so
+     * it routes and opens exactly like the discharge notifications (ward
+     * department subscribers + application-wide subscribers; click opens the
+     * admission profile).
+     * <p>
+     * Non-blocking: callers invoke this after the final bill / approval has
+     * already been committed, so a notification failure is logged per
+     * trigger (the remaining media still run) and reported as a warning
+     * instead of propagating — otherwise the caller's
+     * success message and print preview are skipped and the user may retry an
+     * action that already succeeded (same treatment as the PDF snapshot
+     * failure in InwardSearch.approveFinalBillVersion).
+     */
+    public void createInwardFinalBillNotification(Bill finalBill, String action) {
+        if (finalBill == null || finalBill.getPatientEncounter() == null || action == null) {
+            return;
+        }
+        TriggerTypeParent parent;
+        String templateKey;
+        String defaultMessage;
+        switch (action) {
+            case "FinalBillCreated":
+                parent = TriggerTypeParent.INWARD_FINAL_BILL_CREATED;
+                templateKey = "Message Template for Inward Final Bill Created Notification";
+                defaultMessage = "Final bill created";
+                break;
+            case "FinalBillApproved":
+                parent = TriggerTypeParent.INWARD_FINAL_BILL_APPROVED;
+                templateKey = "Message Template for Inward Final Bill Approved Notification";
+                defaultMessage = "Final bill approved";
+                break;
+            default:
+                throw new AssertionError();
+        }
+        createInwardFinalBillNotifications(finalBill, parent, templateKey, defaultMessage);
+    }
+
+    private void createInwardFinalBillNotifications(Bill finalBill, TriggerTypeParent parent, String templateKey, String defaultMessage) {
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(NotificationController.class.getName());
+        Date date = new Date();
+        PatientEncounter pe = finalBill.getPatientEncounter();
+        String message;
+        try {
+            message = createDischargeMessage(templateKey, defaultMessage, pe);
+        } catch (RuntimeException ex) {
+            // The template is optional; a failed lookup must not stop the notifications themselves.
+            logger.log(java.util.logging.Level.WARNING, "Message template lookup failed for " + templateKey + "; using default", ex);
+            message = defaultMessage + (pe.getBhtNo() != null ? " (BHT: " + pe.getBhtNo() + ")" : "");
+        }
+        String billNo = finalBill.getDeptId() != null ? finalBill.getDeptId() : finalBill.getInsId();
+        if (billNo != null) {
+            message = message + " (Bill No: " + billNo + ")";
+        }
+        boolean anyFailed = false;
+        for (TriggerType tt : TriggerType.getTriggersByParent(parent)) {
+            // Per-trigger: one medium failing must not stop the remaining media.
+            try {
+                Notification nn = new Notification();
+                nn.setCreatedAt(date);
+                nn.setPatientEncounter(pe);
+                nn.setTriggerType(tt);
+                nn.setCreater(sessionController.getLoggedUser());
+                nn.setMessage(message);
+                getFacade().create(nn);
+                userNotificationController.createUserNotifications(nn);
+            } catch (RuntimeException ex) {
+                anyFailed = true;
+                logger.log(java.util.logging.Level.SEVERE, "Inward final bill notification failed for " + tt, ex);
+            }
+        }
+        if (anyFailed) {
+            JsfUtil.addErrorMessage("Saved, but some subscriber notifications could not be sent.");
         }
     }
 
@@ -383,7 +469,7 @@ public class NotificationController implements Serializable {
             return null;
         }
 
-        if (bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST) {
+        if (bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST || bt == BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE) {
             message = configOptionController.getLongTextValueByKey("Message Template for Pharmacy Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
         }
 

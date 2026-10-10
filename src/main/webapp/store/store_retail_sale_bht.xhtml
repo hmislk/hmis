@@ -20,7 +20,13 @@
                 <h:form id="bill" >
 
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
-                    <p:defaultCommand  target="btnAdd" />  
+                    <!-- btnAdd only renders once a patient/bill is selected AND the bill hasn't been
+                         settled yet (the whole h:panelGrid below is hidden once billPreview is true,
+                         since settleStoreBhtIssue() sets billPreview=true without clearing
+                         patientEncounter). Fall back to the always-rendered no-op button in every
+                         other state so PrimeFaces' client-side defaultCommand init doesn't throw on a
+                         not-yet-rendered target (issue #23490). -->
+                    <p:defaultCommand  target="#{storeSaleBhtController.billPreview or storeSaleBhtController.patientEncounter eq null ? 'nullButton2' : 'btnAdd'}" />
 
                     <h:panelGrid id="sale" columns="1" class="alignTop w-100" >
                         <p:panel rendered="#{!storeSaleBhtController.billPreview}" >

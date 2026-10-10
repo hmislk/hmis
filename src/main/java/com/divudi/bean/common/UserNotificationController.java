@@ -14,8 +14,11 @@ import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.bean.pharmacy.PurchaseOrderController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.data.OptionScope;
+import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.SmsManagerEjb;
+import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.UserNotification;
@@ -26,9 +29,11 @@ import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.EmailFacade;
 import com.divudi.core.facade.NotificationFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.UserNotificationFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.NotificationPushService;
 import java.io.Serializable;
 import java.util.Date;
@@ -75,6 +80,8 @@ public class UserNotificationController implements Serializable {
     NotificationFacade notificationFacade;
     @EJB
     SmsFacade smsFacade;
+    @EJB
+    EmailFacade emailFacade;
     private UserNotification current;
     private List<UserNotification> items = null;
 
@@ -82,6 +89,8 @@ public class UserNotificationController implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     SmsManagerEjb smsManager;
+    @Inject
+    EmailManagerEjb emailManagerEjb;
     @Inject
     NotificationPushService notificationPushService;
     @Inject
@@ -546,17 +555,27 @@ public class UserNotificationController implements Serializable {
                     if (u == null) {
                         continue;
                     }
-                    String number = u.getWebUserPerson().getMobile();
-                    //TODo
+                    String address = resolveEmailAddress(u);
+                    // A subscriber with no usable address on file would otherwise create an
+                    // AppEmail row with a null recipient and hand it to the gateway.
+                    if (address == null) {
+                        continue;
+                    }
+                    sendEmailForUserSubscriptions(address, n);
                 }
                 break;
             case SMS:
                 for (WebUser u : notificationUsers) {
-                    if (u == null) {
+                    if (u == null || u.getWebUserPerson() == null) {
                         continue;
                     }
                     String number = u.getWebUserPerson().getMobile();
-                    sendSmsForUserSubscriptions(number);
+                    // A subscriber with no mobile number on file would otherwise create an
+                    // Sms row with a null recipient and hand it to the gateway.
+                    if (number == null || number.trim().isEmpty()) {
+                        continue;
+                    }
+                    sendSmsForUserSubscriptions(number, n);
                 }
                 break;
             case SYSTEM_NOTIFICATION:
@@ -580,11 +599,15 @@ public class UserNotificationController implements Serializable {
     }
 
     public void sendSmsForUserSubscriptions(String userMobNumber) {
+        sendSmsForUserSubscriptions(userMobNumber, null);
+    }
+
+    public void sendSmsForUserSubscriptions(String userMobNumber, Notification notification) {
         Sms e = new Sms();
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
         e.setReceipientNumber(userMobNumber);
-        e.setSendingMessage(createSmsForUserNotification());
+        e.setSendingMessage(createSmsForUserNotification(notification));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
         e.setPending(false);
@@ -600,21 +623,201 @@ public class UserNotificationController implements Serializable {
     }
 
     public String createSmsForUserNotification() {
-        String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
-        if (template == null || template.isEmpty()) {
-            template = "{patient_name} {appointment_time}";
+        return createSmsForUserNotification(null);
+    }
+
+    /**
+     * Builds the text body of a subscription SMS.
+     *
+     * This used to build a template and then unconditionally {@code return ""},
+     * so every subscription SMS went to the gateway with an empty body. Bill-backed
+     * notifications now describe the bill that triggered them; anything else falls
+     * back to the notification's own message.
+     */
+    public String createSmsForUserNotification(Notification notification) {
+        if (notification != null && notification.getBill() != null) {
+            String billMessage = createSmsBodyForBillNotification(notification.getBill());
+            if (billMessage != null && !billMessage.trim().isEmpty()) {
+                return billMessage;
+            }
         }
-        //TODO: Replace placeholders with actual values
-        template = template.replace("{patient_name}", "")
-                .replace("{doctor}", "")
-                .replace("{appointment_time}", "")
-                .replace("{appointment_date}", "")
-                .replace("{serial_no}", "")
-                .replace("{doc}", "")
-                .replace("{time}", "")
-                .replace("{date}", "")
-                .replace("{No}", "");
-        return "";
+        if (notification != null && notification.getMessage() != null
+                && !notification.getMessage().trim().isEmpty()) {
+            return notification.getMessage().trim();
+        }
+        String template = configOptionController.getLongTextValueByKey("SMS Template for User Notification", OptionScope.APPLICATION, null, null, null);
+        if (template == null || template.trim().isEmpty()) {
+            return "";
+        }
+        return template.trim();
+    }
+
+    /**
+     * "New transfer request PHTRQ-PRE/26/000002 from WARD 4TH FLOOR (7 items) to PHARMACY."
+     * The bill number is what the receiving department needs to find the request, so it
+     * leads; department names and item count let the recipient judge urgency without
+     * logging in.
+     */
+    private String createSmsBodyForBillNotification(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            return null;
+        }
+        String subject;
+        switch (bill.getBillTypeAtomic()) {
+            case PHARMACY_TRANSFER_REQUEST:
+            case PHARMACY_TRANSFER_REQUEST_PRE:
+                subject = "New transfer request";
+                break;
+            default:
+                return null;
+        }
+        StringBuilder sb = new StringBuilder(subject);
+        if (bill.getDeptId() != null && !bill.getDeptId().trim().isEmpty()) {
+            sb.append(" ").append(bill.getDeptId().trim());
+        }
+        if (bill.getFromDepartment() != null && bill.getFromDepartment().getName() != null) {
+            sb.append(" from ").append(bill.getFromDepartment().getName().trim());
+        }
+        int itemCount = bill.getBillItems() == null ? 0 : bill.getBillItems().size();
+        if (itemCount > 0) {
+            sb.append(" (").append(itemCount).append(itemCount == 1 ? " item)" : " items)");
+        }
+        if (bill.getToDepartment() != null && bill.getToDepartment().getName() != null) {
+            sb.append(" to ").append(bill.getToDepartment().getName().trim());
+        }
+        return sb.append(".").toString();
+    }
+
+    /**
+     * Resolves the email address to notify a subscribed user at.
+     *
+     * {@code WebUser.email} is authoritative because it is what the admin
+     * screen edits ({@code admin/users/user.xhtml:125} binds
+     * {@code webUserController.current.email}); the Person address is a
+     * fallback for users whose address was only ever captured there.
+     */
+    private String resolveEmailAddress(WebUser u) {
+        if (u == null) {
+            return null;
+        }
+        String address = u.getEmail();
+        if (address == null || address.trim().isEmpty()) {
+            address = u.getWebUserPerson() != null ? u.getWebUserPerson().getEmail() : null;
+        }
+        if (address == null) {
+            return null;
+        }
+        address = address.trim();
+        if (!CommonFunctions.isValidEmail(address)) {
+            return null;
+        }
+        return address;
+    }
+
+    public void sendEmailForUserSubscriptions(String recipientEmail, Notification notification) {
+        AppEmail email = new AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipientEmail);
+        email.setMessageSubject(createEmailSubjectForUserNotification(notification));
+        email.setMessageBody(createEmailBodyForUserNotification(notification));
+        if (sessionController.getLoggedUser() != null) {
+            email.setDepartment(sessionController.getLoggedUser().getDepartment());
+            email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        }
+        email.setMessageType(MessageType.UserNotification);
+        if (notification != null) {
+            email.setBill(notification.getBill());
+            email.setPatientEncounter(notification.getPatientEncounter());
+        }
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+        emailManagerEjb.sendAppEmailAsync(email);
+    }
+
+    /**
+     * Builds the HTML body of a subscription email. Mirrors {@link
+     * #createSmsForUserNotification(Notification)}: bill-backed notifications
+     * describe the bill that triggered them, a free-text notification message
+     * is used as-is, and everything else falls back to the configured
+     * template.
+     *
+     * Some producers build the EMAIL-medium body as a complete HTML document
+     * on purpose — {@code NotificationController.createOpdBillCancellationNotification()}
+     * and its batch-bill counterpart switch on the medium and store a full
+     * document carrying the signed {@code requests/bill.xhtml} link that the
+     * recipient is meant to click. Escaping that would deliver literal markup
+     * and break the cancellation workflow, so a body that is already a whole
+     * document is passed through untouched; anything else is treated as plain
+     * text, escaped and wrapped, since the email is sent as HTML.
+     */
+    public String createEmailBodyForUserNotification(Notification notification) {
+        String text = null;
+        if (notification != null && notification.getBill() != null) {
+            String billMessage = createSmsBodyForBillNotification(notification.getBill());
+            if (billMessage != null && !billMessage.trim().isEmpty()) {
+                text = billMessage;
+            }
+        }
+        if (text == null && notification != null && notification.getMessage() != null
+                && !notification.getMessage().trim().isEmpty()) {
+            text = notification.getMessage().trim();
+        }
+        if (text == null) {
+            String template = configOptionController.getLongTextValueByKey("Email Template for User Notification", OptionScope.APPLICATION, null, null, null);
+            text = (template == null) ? "" : template.trim();
+        }
+        if (isCompleteHtmlDocument(text)) {
+            return text;
+        }
+        return "<p>" + escapeHtml(text) + "</p>";
+    }
+
+    /**
+     * True only for a body that opens as a whole HTML document. Deliberately
+     * narrow: matching on stray tags anywhere in the text would let an
+     * ordinary message containing a "&lt;" escape escaping, so nothing short
+     * of a document root counts.
+     */
+    private boolean isCompleteHtmlDocument(String text) {
+        if (text == null) {
+            return false;
+        }
+        String start = text.trim().toLowerCase();
+        return start.startsWith("<!doctype html") || start.startsWith("<html");
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    /**
+     * Every EMAIL-medium {@link com.divudi.core.data.TriggerType} label ends
+     * with the literal " - Email" suffix (e.g. "Inward Patient Nursing
+     * Discharge - Email"); this strips it so the subject line reads naturally.
+     */
+    public String createEmailSubjectForUserNotification(Notification notification) {
+        if (notification == null || notification.getTriggerType() == null) {
+            return "Notification";
+        }
+        String label = notification.getTriggerType().getLabel();
+        if (label == null || label.trim().isEmpty()) {
+            return "Notification";
+        }
+        label = label.trim();
+        String suffix = " - Email";
+        if (label.endsWith(suffix)) {
+            label = label.substring(0, label.length() - suffix.length()).trim();
+        }
+        return label.isEmpty() ? "Notification" : label;
     }
 
     public void createAllertMessage(Notification n) {

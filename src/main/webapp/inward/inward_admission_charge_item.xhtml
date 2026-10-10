@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/inward/inward_administration.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardAdministration')}">
+            <na:not_authorize />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdministration')}" layout="block">
+
+            <h:form id="formAdmissionCharges">
+                <p:growl id="growl" showDetail="true"/>
+
+                <p:panel class="mx-1">
+                    <f:facet name="header">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <p:outputLabel value="Automatic Admission Charges" class="mx-2"/>
+                    </f:facet>
+
+                    <p:panel class="mb-3" toggleable="true" collapsed="true">
+                        <f:facet name="header">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <p:outputLabel value="How this works" class="mx-2"/>
+                        </f:facet>
+                        <ul class="mb-0">
+                            <li>Each row here is a routine charge that is billed automatically to every matching admission, on top of the room and service charges - these charges are additive, never a replacement for anything else.</li>
+                            <li>Resolution for one item happens in two steps: first by <strong>Admission Type</strong>, then by <strong>Payment Method</strong>. A blank Admission Type means "applies to every admission type"; a blank Payment Method means "applies to both Cash and Credit".</li>
+                            <li><strong>The trap:</strong> as soon as you add one Admission-Type-specific row for an item, the blank ("Any Admission Type") rows stop applying to that admission type entirely. If you configure a charge for, say, Day Case admissions, you must configure it for <em>both</em> Cash and Credit under Day Case, or one of them will silently get no charge at all for this item.</li>
+                            <li>An item used here must already have a Department, an Institution, an Inward Charge Type and a live Fee configured under Item administration - the Save button checks all four before accepting a row.</li>
+                        </ul>
+                    </p:panel>
+
+                    <div class="row">
+                        <!-- Left sidebar: filters -->
+                        <div class="col-12 col-md-3">
+                            <p:panel header="Filters">
+                                <div class="mb-2">
+                                    <p:outputLabel value="Item" for="acFilterItem"/>
+                                    <p:autoComplete id="acFilterItem"
+                                                     value="#{admissionChargeItemController.filterItem}"
+                                                     completeMethod="#{itemController.completeItem}"
+                                                     var="itm" itemLabel="#{itm.name}" itemValue="#{itm}"
+                                                     forceSelection="true" maxResults="20" class="w-100"/>
+                                </div>
+                                <div class="mb-2">
+                                    <p:outputLabel value="Admission Type" for="selFilterAdmissionType"/>
+                                    <p:selectOneMenu id="selFilterAdmissionType"
+                                                      value="#{admissionChargeItemController.filterAdmissionType}"
+                                                      class="w-100">
+                                        <f:selectItem itemLabel="Any Admission Type" itemValue="#{null}"/>
+                                        <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="mb-3">
+                                    <p:outputLabel value="Payment Method" for="selFilterPaymentMethod"/>
+                                    <p:selectOneMenu id="selFilterPaymentMethod"
+                                                      value="#{admissionChargeItemController.filterPaymentMethod}"
+                                                      class="w-100">
+                                        <f:selectItem itemLabel="Any (Cash and Credit)" itemValue="#{null}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <p:commandButton id="btnSearch"
+                                                      value="Search"
+                                                      icon="fa fa-search"
+                                                      class="ui-button-info ui-button-outlined w-100"
+                                                      action="#{admissionChargeItemController.search()}"
+                                                      process="acFilterItem selFilterAdmissionType selFilterPaymentMethod"
+                                                      update="tblAdmissionCharges"/>
+                                    <p:commandButton id="btnClear"
+                                                      value="Clear"
+                                                      icon="fa fa-eraser"
+                                                      class="ui-button-secondary w-100"
+                                                      action="#{admissionChargeItemController.clearFilters()}"
+                                                      process="@this"
+                                                      update="acFilterItem selFilterAdmissionType selFilterPaymentMethod tblAdmissionCharges"/>
+                                </div>
+                            </p:panel>
+                        </div>
+
+                        <!-- Main content: list + add/edit -->
+                        <div class="col-12 col-md-9">
+                            <p:dataTable id="tblAdmissionCharges"
+                                         var="row"
+                                         value="#{admissionChargeItemController.items}"
+                                         widgetVar="wTblAdmissionCharges"
+                                         rowKey="#{row.id}"
+                                         styleClass="p-datatable-sm"
+                                         stickyHeader="true"
+                                         emptyMessage="No automatic admission charges configured yet.">
+                                <p:column headerText="Item">#{row.item.name}</p:column>
+                                <p:column headerText="Inward Charge Type">#{row.item.inwardChargeType}</p:column>
+                                <p:column headerText="Department">#{row.item.department.name}</p:column>
+                                <p:column headerText="Admission Type">#{row.admissionType != null ? row.admissionType.name : 'Any'}</p:column>
+                                <p:column headerText="Payment Method">#{row.paymentMethod != null ? row.paymentMethod : 'Any'}</p:column>
+                                <p:column headerText="Price">#{row.price}</p:column>
+                                <p:column headerText="Qty">#{row.qty}</p:column>
+                                <p:column headerText="Order">#{row.orderNo}</p:column>
+                                <p:column headerText="Action">
+                                    <p:commandButton
+                                        id="btnEditCharge"
+                                        title="Edit charge #{row.id}"
+                                        icon="fa fa-pen"
+                                        class="ui-button-info ui-button-outlined"
+                                        actionListener="#{admissionChargeItemController.setCurrent(row)}"
+                                        update=":formAdmissionCharges:gpChargeDetail"
+                                        process="@this">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:panel id="gpChargeDetail" class="mt-3">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Add / Edit Charge"/>
+                                    <p:commandButton
+                                        id="btnSaveCharge"
+                                        value="Save"
+                                        icon="fa fa-save"
+                                        class="ui-button-success"
+                                        action="#{admissionChargeItemController.saveSelected()}"
+                                        process="btnSaveCharge gpChargeDetail"
+                                        update="tblAdmissionCharges gpChargeDetail growl"
+                                        style="float: right">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnAddCharge"
+                                        value="New"
+                                        icon="fa fa-plus"
+                                        action="#{admissionChargeItemController.prepareAdd()}"
+                                        process="btnAddCharge"
+                                        update="gpChargeDetail"
+                                        style="float: right"
+                                        class="ui-button-info ui-button-outlined mx-2">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnDeleteCharge"
+                                        value="Delete"
+                                        icon="fa fa-trash"
+                                        onclick="if (!confirm('Retire this admission charge?')) return false;"
+                                        action="#{admissionChargeItemController.delete()}"
+                                        process="btnDeleteCharge"
+                                        update="tblAdmissionCharges gpChargeDetail growl"
+                                        disabled="#{admissionChargeItemController.current.id == null}"
+                                        style="float: right"
+                                        class="mx-2 ui-button-danger">
+                                    </p:commandButton>
+                                </f:facet>
+
+                                <div class="row">
+                                    <div class="col-12 col-md-6 mb-2">
+                                        <p:outputLabel value="Item" for="acChargeItem"/>
+                                        <p:autoComplete id="acChargeItem"
+                                                         value="#{admissionChargeItemController.current.item}"
+                                                         completeMethod="#{itemController.completeItem}"
+                                                         var="itm" itemLabel="#{itm.name}" itemValue="#{itm}"
+                                                         forceSelection="true" maxResults="20" class="w-100"/>
+                                    </div>
+
+                                    <div class="col-12 col-md-6 mb-2">
+                                        <p:outputLabel value="Admission Type" for="selChargeAdmissionType"/>
+                                        <p:selectOneMenu id="selChargeAdmissionType"
+                                                          value="#{admissionChargeItemController.current.admissionType}"
+                                                          class="w-100">
+                                            <f:selectItem itemLabel="Any Admission Type" itemValue="#{null}"/>
+                                            <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+
+                                    <div class="col-12 col-md-6 mb-2">
+                                        <p:outputLabel value="Payment Method" for="selChargePaymentMethod"/>
+                                        <p:selectOneMenu id="selChargePaymentMethod"
+                                                          value="#{admissionChargeItemController.current.paymentMethod}"
+                                                          class="w-100">
+                                            <f:selectItem itemLabel="Any (Cash and Credit)" itemValue="#{null}"/>
+                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 mb-2">
+                                        <p:outputLabel value="Price" for="txtChargePrice"/>
+                                        <p:inputNumber id="txtChargePrice" value="#{admissionChargeItemController.current.price}" class="w-100"/>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 mb-2">
+                                        <p:outputLabel value="Qty" for="txtChargeQty"/>
+                                        <p:inputNumber id="txtChargeQty" value="#{admissionChargeItemController.current.qty}" class="w-100"/>
+                                    </div>
+
+                                    <div class="col-12 col-md-2 mb-2">
+                                        <p:outputLabel value="Order No" for="txtChargeOrderNo"/>
+                                        <p:inputNumber id="txtChargeOrderNo" value="#{admissionChargeItemController.current.orderNo}" decimalPlaces="0" class="w-100"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

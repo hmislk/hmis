@@ -73,6 +73,7 @@ node_modules/
 /*.yml
 /*.yaml
 !mkdocs.yml
+!.coderabbit.yaml
 /*.sql
 /*.py
 /package.json

@@ -15,6 +15,7 @@ import com.divudi.core.data.dto.service.ServiceResponseDTO;
 import com.divudi.core.data.dto.service.ServiceSearchResultDTO;
 import com.divudi.core.data.dto.service.ServiceUpdateRequestDTO;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.CategoryType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -37,10 +38,12 @@ import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.service.AuditService;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -93,6 +96,9 @@ public class ServiceApiService implements Serializable {
     @EJB
     private AuditService auditService;
 
+    @Inject
+    private ItemApplicationController itemApplicationController;
+
     // =========================================================================
     // Service Search
     // =========================================================================
@@ -104,53 +110,106 @@ public class ServiceApiService implements Serializable {
      */
     public List<ServiceSearchResultDTO> searchServices(String query, String serviceType,
             Long categoryId, Boolean inactive, int limit) throws Exception {
+        return searchServices(query, null, serviceType, categoryId, inactive, limit);
+    }
+
+    /**
+     * Search services by name and/or item code.
+     *
+     * The code filter makes a bulk load idempotent: item code is the natural key
+     * a spreadsheet of services carries, and without it a caller cannot tell
+     * "already loaded" from "not loaded yet" except by an inexact name match.
+     */
+    public List<ServiceSearchResultDTO> searchServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive, int limit) throws Exception {
+        return searchServices(query, code, serviceType, categoryId, inactive, limit, 0);
+    }
+
+    /**
+     * Search services, returning one page starting at {@code offset}.
+     *
+     * Rows are ordered by name then id. The id tiebreaker is what makes paging safe:
+     * two services can share a name, and without it the database is free to order
+     * them differently from one page request to the next, so a row could appear on
+     * two pages or on none.
+     */
+    public List<ServiceSearchResultDTO> searchServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive, int limit, int offset) throws Exception {
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + (query != null ? query : "") + "%");
+        String where = buildServiceSearchWhere(params, query, code, serviceType, categoryId, inactive);
 
-        StringBuilder jpql = new StringBuilder();
-        // Query FROM Service covers both Service (OPD) and InwardService (Inward)
-        // since InwardService extends Service. Type filter narrows if needed.
-        jpql.append("SELECT i FROM Service i ")
-            .append("WHERE i.retired = false ");
-
-        // Type filter using DTYPE discriminator
-        if ("OPD".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = Service ");
-        } else if ("Inward".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = InwardService ");
-        } else {
-            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
-            jpql.append("AND (type(i) = Service OR type(i) = InwardService) ");
-        }
-
-        if (query != null && !query.trim().isEmpty()) {
-            jpql.append("AND i.name LIKE :query ");
-        } else {
-            params.remove("query");
-        }
-
-        if (categoryId != null) {
-            jpql.append("AND i.category.id = :categoryId ");
-            params.put("categoryId", categoryId);
-        }
-
-        if (inactive != null) {
-            jpql.append("AND i.inactive = :inactive ");
-            params.put("inactive", inactive);
-        }
-
-        jpql.append("ORDER BY i.name");
-
-        @SuppressWarnings("unchecked")
-        List<Service> results = serviceFacade.findByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP, limit);
+        // Strict: a failed query must surface as an error. Callers use this search to decide
+        // "already loaded?" before creating a service, and a paging client reads a short page
+        // as "end of the list" — an empty list produced by a swallowed error would be
+        // mistaken for "not found" / "no more rows".
+        List<Service> results = serviceFacade.findByJpqlWithRangeStrict(
+                "SELECT i FROM Service i " + where + "ORDER BY i.name, i.id",
+                params, offset, limit);
 
         List<ServiceSearchResultDTO> dtos = new ArrayList<>();
         for (Service item : results) {
             dtos.add(buildSearchResultDTO(item));
         }
         return dtos;
+    }
+
+    /**
+     * Number of services matching the same filters as
+     * {@link #searchServices(String, String, String, Long, Boolean, int, int)},
+     * ignoring limit and offset, so a paging caller knows when it has seen them all.
+     */
+    public long countServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        String where = buildServiceSearchWhere(params, query, code, serviceType, categoryId, inactive);
+        // COUNT returns a Long — findLongByJpql, never findDoubleByJpql (which would
+        // swallow the ClassCastException and report 0 every time).
+        return serviceFacade.findLongByJpql("SELECT COUNT(i) FROM Service i " + where, params);
+    }
+
+    /**
+     * WHERE clause shared by the page query and the count query, so the two can never
+     * disagree about which rows match. Fills {@code params} with the bind values.
+     */
+    private String buildServiceSearchWhere(Map<String, Object> params, String query, String code,
+            String serviceType, Long categoryId, Boolean inactive) {
+
+        // Query FROM Service covers both Service (OPD) and InwardService (Inward)
+        // since InwardService extends Service. Type filter narrows if needed.
+        StringBuilder where = new StringBuilder("WHERE i.retired = false ");
+
+        // Type filter using DTYPE discriminator
+        if ("OPD".equalsIgnoreCase(serviceType)) {
+            where.append("AND type(i) = Service ");
+        } else if ("Inward".equalsIgnoreCase(serviceType)) {
+            where.append("AND type(i) = InwardService ");
+        } else {
+            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
+            where.append("AND (type(i) = Service OR type(i) = InwardService) ");
+        }
+
+        if (query != null && !query.trim().isEmpty()) {
+            where.append("AND i.name LIKE :query ");
+            params.put("query", "%" + query + "%");
+        }
+
+        if (code != null && !code.trim().isEmpty()) {
+            where.append("AND i.code LIKE :code ");
+            params.put("code", "%" + code.trim() + "%");
+        }
+
+        if (categoryId != null) {
+            where.append("AND i.category.id = :categoryId ");
+            params.put("categoryId", categoryId);
+        }
+
+        if (inactive != null) {
+            where.append("AND i.inactive = :inactive ");
+            params.put("inactive", inactive);
+        }
+
+        return where.toString();
     }
 
     // =========================================================================
@@ -184,12 +243,20 @@ public class ServiceApiService implements Serializable {
 
         String svcType = request.getServiceType().trim();
 
-        // Validate inwardChargeType for Inward services
+        // inwardChargeType is required for Inward services, and optional-but-honored
+        // for OPD services (some OPD services are also billed from the inward side
+        // and need the same charge-type classification).
         InwardChargeType inwardChargeType = null;
         if ("Inward".equalsIgnoreCase(svcType)) {
             if (request.getInwardChargeType() == null || request.getInwardChargeType().trim().isEmpty()) {
                 throw new Exception("inwardChargeType is required when serviceType is Inward");
             }
+            try {
+                inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+            }
+        } else if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
             try {
                 inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
             } catch (IllegalArgumentException e) {
@@ -248,6 +315,10 @@ public class ServiceApiService implements Serializable {
             service.setCategory(category);
         }
 
+        if (request.getFinancialCategoryId() != null) {
+            service.setFinancialCategory(loadFinancialCategory(request.getFinancialCategoryId()));
+        }
+
         if (request.getInstitutionId() != null) {
             Institution institution = institutionFacade.find(request.getInstitutionId());
             if (institution == null) {
@@ -269,20 +340,25 @@ public class ServiceApiService implements Serializable {
         service.setCreatedAt(Calendar.getInstance().getTime());
         service.setRetired(false);
 
-        // Persist
+        // Persist. createAndFlush (rather than create) is required here because Item
+        // uses GenerationType.IDENTITY: a plain persist() without a flush leaves the
+        // generated id null until the transaction commits, so the response DTO built
+        // below would come back with no id.
         if ("Inward".equalsIgnoreCase(svcType)) {
-            inwardServiceFacade.create((InwardService) service);
+            inwardServiceFacade.createAndFlush((InwardService) service);
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             inwardServiceFacade.edit((InwardService) service);
         } else {
-            serviceFacade.create(service);
+            serviceFacade.createAndFlush(service);
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             serviceFacade.edit(service);
         }
+
+        itemApplicationController.invalidateItems();
 
         return buildServiceResponseDTO(service, new ArrayList<>(), "Service created successfully");
     }
@@ -364,6 +440,9 @@ public class ServiceApiService implements Serializable {
                 throw new Exception("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
+        }
+        if (request.getFinancialCategoryId() != null) {
+            service.setFinancialCategory(loadFinancialCategory(request.getFinancialCategoryId()));
         }
         if (request.getInstitutionId() != null) {
             Institution institution = institutionFacade.find(request.getInstitutionId());
@@ -537,10 +616,13 @@ public class ServiceApiService implements Serializable {
             itemFee.setStaff(staff);
         }
 
-        itemFeeFacade.create(itemFee);
+        // createAndFlush so the generated id (Item/ItemFee use GenerationType.IDENTITY)
+        // is available immediately in the response DTO.
+        itemFeeFacade.createAndFlush(itemFee);
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee added successfully");
@@ -638,6 +720,7 @@ public class ServiceApiService implements Serializable {
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee updated successfully");
@@ -662,6 +745,7 @@ public class ServiceApiService implements Serializable {
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee removed successfully");
@@ -672,13 +756,45 @@ public class ServiceApiService implements Serializable {
     // =========================================================================
 
     /**
+     * Item subtypes selectable by the bulk-flag endpoints below via itemType.
+     * There is no API to enumerate every Category id in the system (e.g. every
+     * InvestigationCategory), so scoping a bulk update to "every item of this
+     * subtype" is the only reliable way to cover something like "all
+     * investigations" without looping over guessed/incomplete category lists.
+     */
+    private Class<? extends Item> resolveItemType(String itemTypeStr) throws Exception {
+        if (itemTypeStr == null || itemTypeStr.trim().isEmpty()) {
+            return null;
+        }
+        switch (itemTypeStr.trim()) {
+            case "Investigation":
+                return com.divudi.core.entity.lab.Investigation.class;
+            case "Service":
+                return Service.class;
+            case "InwardService":
+                return InwardService.class;
+            default:
+                throw new Exception("Invalid itemType: " + itemTypeStr
+                        + ". Use one of: Investigation, Service, InwardService");
+        }
+    }
+
+    /**
      * Bulk-update marginAllowed and/or discountAllowed on all non-retired fees
-     * for items in a given category with a given feeType.
+     * for items in a given category and/or item subtype, with a given feeType.
+     * At least one of categoryId/itemType is required as a safety guard against
+     * an unscoped update of every fee in the system.
      */
     public Map<String, Object> bulkUpdateMargin(Long categoryId, String feeTypeStr,
             Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
-        if (categoryId == null) {
-            throw new Exception("categoryId is required");
+        return bulkUpdateMargin(categoryId, null, feeTypeStr, marginAllowed, discountAllowed, user);
+    }
+
+    public Map<String, Object> bulkUpdateMargin(Long categoryId, String itemTypeStr, String feeTypeStr,
+            Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
+        Class<? extends Item> itemType = resolveItemType(itemTypeStr);
+        if (categoryId == null && itemType == null) {
+            throw new Exception("At least one of categoryId or itemType is required");
         }
         if (user == null) {
             throw new Exception("User is required for bulk update");
@@ -697,10 +813,16 @@ public class ServiceApiService implements Serializable {
         }
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT f FROM ItemFee f "
-                + "WHERE f.item.category.id = :catId "
-                + "AND f.retired = false");
+                + "WHERE f.retired = false");
         Map<String, Object> params = new HashMap<>();
-        params.put("catId", categoryId);
+        if (categoryId != null) {
+            jpqlBuilder.append(" AND f.item.category.id = :catId");
+            params.put("catId", categoryId);
+        }
+        if (itemType != null) {
+            jpqlBuilder.append(" AND TYPE(f.item) = :itype");
+            params.put("itype", itemType);
+        }
         if (feeType != null) {
             jpqlBuilder.append(" AND f.feeType = :ft");
             params.put("ft", feeType);
@@ -710,6 +832,7 @@ public class ServiceApiService implements Serializable {
         int count = 0;
         Map<String, Object> changes = new HashMap<>();
         changes.put("categoryId", categoryId);
+        changes.put("itemType", itemType != null ? itemType.getSimpleName() : "ALL_TYPES");
         changes.put("feeType", feeType != null ? feeType.name() : "ALL_TYPES");
         if (marginAllowed != null) {
             changes.put("marginAllowed", marginAllowed);
@@ -739,7 +862,72 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Find fees with marginAllowed disabled (false or null) for items in a category.
+     * Bulk-update discountAllowed (item-level, not fee-level) on all non-retired
+     * items in a given category and/or item subtype. Distinct from
+     * {@link #bulkUpdateMargin} above, which only touches ItemFee.discountAllowed
+     * — the inward discount calculation
+     * (InwardBeanController.applyInwardDiscountToBillFee) requires BOTH
+     * Item.discountAllowed and ItemFee.discountAllowed to be true, so both bulk
+     * operations are typically needed together. At least one of categoryId/
+     * itemType is required as a safety guard against an unscoped update of
+     * every item in the system; itemType lets a caller target e.g. "every
+     * Investigation" directly, since there is no API to enumerate every
+     * InvestigationCategory id to loop over instead.
+     */
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, Boolean discountAllowed, WebUser user) throws Exception {
+        return bulkUpdateItemDiscountAllowed(categoryId, null, discountAllowed, user);
+    }
+
+    public Map<String, Object> bulkUpdateItemDiscountAllowed(Long categoryId, String itemTypeStr,
+            Boolean discountAllowed, WebUser user) throws Exception {
+        Class<? extends Item> itemType = resolveItemType(itemTypeStr);
+        if (categoryId == null && itemType == null) {
+            throw new Exception("At least one of categoryId or itemType is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for bulk update");
+        }
+        if (discountAllowed == null) {
+            throw new Exception("discountAllowed is required");
+        }
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT i FROM Item i WHERE i.retired = false");
+        Map<String, Object> params = new HashMap<>();
+        if (categoryId != null) {
+            jpqlBuilder.append(" AND i.category.id = :catId");
+            params.put("catId", categoryId);
+        }
+        if (itemType != null) {
+            jpqlBuilder.append(" AND TYPE(i) = :itype");
+            params.put("itype", itemType);
+        }
+        String jpql = jpqlBuilder.toString();
+
+        List<Item> items = itemFacade.findByJpql(jpql, params);
+        int count = 0;
+        for (Item item : items) {
+            item.setDiscountAllowed(discountAllowed);
+            itemFacade.edit(item);
+            count++;
+        }
+
+        Map<String, Object> changes = new HashMap<>();
+        changes.put("categoryId", categoryId);
+        changes.put("itemType", itemType != null ? itemType.getSimpleName() : "ALL_TYPES");
+        changes.put("discountAllowed", discountAllowed);
+        changes.put("count", count);
+        auditService.logAudit(null, changes, user, "Item", "ITEM_DISCOUNT_ALLOWED_BULK_UPDATED", null);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", count);
+        return result;
+    }
+
+    /**
+     * Find fees with marginAllowed explicitly disabled (false) for items in a
+     * category. Billing (InwardBeanController.setBillFeeMargin) treats a null
+     * marginAllowed as allowed (!Boolean.FALSE.equals(...)), so a null value is
+     * NOT margin-disabled and must not be listed here (issue #24155).
      */
     public List<ItemFeeDTO> findFeesWithMarginDisabled(Long categoryId) throws Exception {
         if (categoryId == null) {
@@ -749,7 +937,7 @@ public class ServiceApiService implements Serializable {
         String jpql = "SELECT f FROM ItemFee f "
                 + "WHERE f.item.category.id = :catId "
                 + "AND f.retired = false "
-                + "AND (f.marginAllowed = false OR f.marginAllowed IS NULL)";
+                + "AND f.marginAllowed = false";
         Map<String, Object> params = new HashMap<>();
         params.put("catId", categoryId);
 
@@ -825,7 +1013,9 @@ public class ServiceApiService implements Serializable {
         category.setCreatedAt(Calendar.getInstance().getTime());
         category.setRetired(false);
 
-        serviceCategoryFacade.create(category);
+        // createAndFlush so the generated id (ServiceCategory uses GenerationType.IDENTITY)
+        // is available immediately in the response DTO.
+        serviceCategoryFacade.createAndFlush(category);
 
         return buildServiceCategoryDTO(category, "Category created successfully");
     }
@@ -976,6 +1166,7 @@ public class ServiceApiService implements Serializable {
         } else {
             serviceFacade.edit(service);
         }
+        itemApplicationController.invalidateItems();
     }
 
     /**
@@ -1024,6 +1215,10 @@ public class ServiceApiService implements Serializable {
             dto.setCategoryId(item.getCategory().getId());
             dto.setCategoryName(item.getCategory().getName());
         }
+        if (item.getFinancialCategory() != null) {
+            dto.setFinancialCategoryId(item.getFinancialCategory().getId());
+            dto.setFinancialCategoryName(item.getFinancialCategory().getName());
+        }
         if (item.getInwardChargeType() != null) {
             dto.setInwardChargeType(item.getInwardChargeType().name());
         }
@@ -1061,6 +1256,10 @@ public class ServiceApiService implements Serializable {
         if (item.getCategory() != null) {
             dto.setCategoryId(item.getCategory().getId());
             dto.setCategoryName(item.getCategory().getName());
+        }
+        if (item.getFinancialCategory() != null) {
+            dto.setFinancialCategoryId(item.getFinancialCategory().getId());
+            dto.setFinancialCategoryName(item.getFinancialCategory().getName());
         }
         if (item.getInstitution() != null) {
             dto.setInstitutionId(item.getInstitution().getId());
@@ -1108,6 +1307,18 @@ public class ServiceApiService implements Serializable {
         dto.setDiscountAllowed(fee.isDiscountAllowed());
         dto.setMarginAllowed(fee.getMarginAllowed());
         dto.setRetired(fee.isRetired());
+        if (fee.getForInstitution() != null) {
+            dto.setForInstitutionId(fee.getForInstitution().getId());
+            dto.setForInstitutionName(fee.getForInstitution().getName());
+        }
+        if (fee.getForDepartment() != null) {
+            dto.setForDepartmentId(fee.getForDepartment().getId());
+            dto.setForDepartmentName(fee.getForDepartment().getName());
+        }
+        if (fee.getForCategory() != null) {
+            dto.setForCategoryId(fee.getForCategory().getId());
+            dto.setForCategoryName(fee.getForCategory().getName());
+        }
         if (fee.getInstitution() != null) {
             dto.setInstitutionId(fee.getInstitution().getId());
             dto.setInstitutionName(fee.getInstitution().getName());
@@ -1131,14 +1342,114 @@ public class ServiceApiService implements Serializable {
      * Build a ServiceCategoryDTO from a ServiceCategory entity.
      */
     private ServiceCategoryDTO buildServiceCategoryDTO(ServiceCategory category, String message) {
+        return buildCategoryDTO(category, message);
+    }
+
+    /**
+     * Build a category DTO from any Category row, not only a ServiceCategory.
+     */
+    private ServiceCategoryDTO buildCategoryDTO(Category category, String message) {
         ServiceCategoryDTO dto = new ServiceCategoryDTO();
         dto.setId(category.getId());
         dto.setName(category.getName());
         dto.setCode(category.getCode());
         dto.setDescription(category.getDescription());
+        dto.setCategoryType(category.getCategoryType() != null ? category.getCategoryType().name() : null);
         dto.setRetired(category.isRetired());
         dto.setCreatedAt(category.getCreatedAt());
         dto.setMessage(message);
         return dto;
+    }
+
+    // =========================================================================
+    // Generic Category lookup
+    // =========================================================================
+
+    /**
+     * Search any Category row, optionally narrowed to one CategoryType.
+     *
+     * {@link #searchServiceCategories(String, int)} only sees rows whose DTYPE is
+     * ServiceCategory, yet a service's category may be any Category subtype and
+     * its financial category is a plain Category of type FINANCIAL_CATEGORY.
+     * Without this a caller can set a categoryId it has no way to look up.
+     *
+     * @param categoryType optional {@link CategoryType} name, e.g. FINANCIAL_CATEGORY
+     */
+    public List<ServiceCategoryDTO> searchCategories(String query, String categoryType, int limit) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT c FROM Category c WHERE c.retired = false ");
+
+        if (query != null && !query.trim().isEmpty()) {
+            jpql.append("AND c.name LIKE :query ");
+            params.put("query", "%" + query.trim() + "%");
+        }
+
+        if (categoryType != null && !categoryType.trim().isEmpty()) {
+            CategoryType type;
+            try {
+                type = CategoryType.valueOf(categoryType.trim());
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid categoryType: " + categoryType);
+            }
+            jpql.append("AND c.categoryType = :type ");
+            params.put("type", type);
+        }
+
+        jpql.append("ORDER BY c.name");
+
+        @SuppressWarnings("unchecked")
+        List<Category> results = (List<Category>) categoryFacade.findByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP, limit);
+
+        List<ServiceCategoryDTO> dtos = new ArrayList<>();
+        if (results != null) {
+            for (Category cat : results) {
+                dtos.add(buildCategoryDTO(cat, null));
+            }
+        }
+        return dtos;
+    }
+
+    /**
+     * Resolve a financial category (income account) by id.
+     */
+    private Category loadFinancialCategory(Long financialCategoryId) throws Exception {
+        Category category = categoryFacade.find(financialCategoryId);
+        if (category == null || category.isRetired()) {
+            throw new Exception("Financial category not found with ID: " + financialCategoryId);
+        }
+        return category;
+    }
+
+    // =========================================================================
+    // Total recalculation
+    // =========================================================================
+
+    /**
+     * Recalculate an item's denormalised total and totalForForeigner from its
+     * current fees and persist them.
+     *
+     * These fields go stale whenever fees are written outside this API (bulk
+     * fee uploads, direct edits), and several list screens and reports read
+     * them rather than summing fees, so a stale 0.00 reads as "this service has
+     * no charge". Until now the recalculation only ran as a side effect of a
+     * fee create/update/delete, so there was no way to repair it without
+     * pointlessly rewriting a fee.
+     */
+    public ServiceResponseDTO recalculateTotals(Long id) throws Exception {
+        if (id == null) {
+            throw new Exception("Item ID is required");
+        }
+        Item item = itemFacade.find(id);
+        if (item == null) {
+            throw new Exception("Item not found with ID: " + id);
+        }
+        if (item.isRetired()) {
+            throw new Exception("Item is retired");
+        }
+        recalculateItemTotal(item);
+        List<ItemFee> fees = fetchFeesForItem(item);
+        return buildServiceResponseDTO(item, fees, "Totals recalculated successfully");
     }
 }

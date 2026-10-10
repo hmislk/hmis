@@ -36,17 +36,22 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.InwardReceiptTextRenderer;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller for the inpatient "Make a Deposit" workflow.
@@ -87,11 +92,15 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     PatientDepositService patientDepositService;
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    private com.divudi.service.BillService billService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private AdmissionController admissionController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -158,7 +167,7 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/inward/inward_bill_deposit?faces-redirect=true";
@@ -205,7 +214,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     }
 
     public String navigateToInpationDashbord() {
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                getCurrent() == null ? null : getCurrent().getPatientEncounter());
     }
 
     public String navigateToPatientRefund() {
@@ -875,16 +885,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
                 ? getCurrent().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic()));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic()));
-        }
+        getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+        getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
@@ -1092,6 +1094,66 @@ public class InwardDepositController implements Serializable, ControllerWithMult
 
     public void setCurrent(BilledBill current) {
         this.current = current;
+    }
+
+    /**
+     * Streams the current deposit receipt as a raw byte file (.prn) for
+     * dot-matrix printing that bypasses the browser rasteriser. A watched-folder
+     * agent on the cashier PC raw-copies the file to the LQ-310. See
+     * tools/client-print-agent/ and the wiki page
+     * "Dot-Matrix-Printing-for-Inward-Deposit-and-Payment-Receipts".
+     */
+    public void streamCurrentDepositReceiptAsRawText() {
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("No saved deposit to print.");
+            return;
+        }
+        com.divudi.core.entity.Department dept = sessionController.getDepartment();
+        boolean preprinted = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
+        Long topMarginRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
+        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
+        boolean emitEscP = configOptionApplicationController
+                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
+
+        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
+                getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
+                        ? billService.fetchBillPayments(getCurrent()) : null;
+        String text = InwardReceiptTextRenderer.render(getCurrent(),
+                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_DEPOSIT),
+                false, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
+
+        String fileName = "inward-deposit-"
+                + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())
+                        : getCurrent().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
+                + ".prn";
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        try (OutputStream os = response.getOutputStream()) {
+            // ISO-8859-1 so ESC/P control bytes (0x1B, 0x0C) pass through unchanged.
+            os.write(text.getBytes(Charset.forName("ISO-8859-1")));
+            os.flush();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            context.responseComplete();
+            return;
+        }
+        context.responseComplete();
     }
 
     public BillNumberGenerator getBillNumberBean() {

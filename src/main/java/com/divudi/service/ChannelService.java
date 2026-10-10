@@ -106,7 +106,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import javax.transaction.Transactional;
 
 import org.eclipse.persistence.internal.helper.Helper;
 
@@ -2472,24 +2471,31 @@ public class ChannelService {
     @EJB
     private ServiceSessionFacade serviceSessionFacade;
 
-    @Transactional
+    /**
+     * Bulk-flips {@code acceptOnlineBookings} on every {@link SessionInstance}
+     * and every {@link ServiceSession}.
+     *
+     * <p>
+     * JPQL bulk updates rather than native SQL: {@code acceptOnlineBookings} is
+     * a plain mapped field on both entities, so there is nothing here that
+     * needs to bypass JPA. The previous native SQL hardcoded the table names as
+     * {@code SessionInstance}/{@code Item} (mixed case), which only matches on
+     * a case-insensitive MySQL - it fails with "Table doesn't exist" on a
+     * case-sensitive deployment (Linux with the default
+     * {@code lower_case_table_names=0}), where the real tables are
+     * {@code SESSIONINSTANCE}/{@code ITEM}. JPQL has no such problem: EclipseLink
+     * resolves the table name from its own metadata, the same as every other
+     * query in the app. Closes #23406.
+     * </p>
+     */
     public void makeAllSessionsAvailableForOnlineBookings(boolean accept) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        params.put("accept", accept);
 
-        String sqlForServiceSession = "";
-        String sqlForSessionInstace = "";
-        if (accept) {
-            sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = true";
-            sqlForServiceSession = "update Item set acceptOnlineBookings = true where Dtype = 'ServiceSession'";
-        } else {
-            sqlForSessionInstace = "update SessionInstance set acceptOnlineBookings = false";
-            sqlForServiceSession = "update Item set acceptOnlineBookings = false where Dtype = 'ServiceSession'";
-        }
-
-        getSessionInstanceFacade().executeNativeSql(sqlForSessionInstace);
-        serviceSessionFacade.executeNativeSql(sqlForServiceSession);
-        getSessionInstanceFacade().flush();
-        serviceSessionFacade.flush();
-
+        getSessionInstanceFacade().updateByJpql(
+                "UPDATE SessionInstance s SET s.acceptOnlineBookings = :accept", params);
+        serviceSessionFacade.updateByJpql(
+                "UPDATE ServiceSession s SET s.acceptOnlineBookings = :accept", params);
     }
 
     public SessionInstance findActiveChannelSession(Long id) {

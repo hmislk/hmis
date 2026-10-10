@@ -114,6 +114,51 @@
 
                         </h:panelGroup>
 
+                        <!-- Pending lab investigations panel -->
+                        <h:panelGroup id="pnlPendingLabInvestigations" layout="block">
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{not empty nursingDischargeController.pendingLabInvestigations}">
+                                <div class="row px-4 pt-2">
+                                    <div class="col-12">
+                                        <div class="alert alert-warning" role="alert">
+                                            <strong><i class="fa fa-exclamation-triangle mr-2"/>Pending Lab Investigations</strong>
+                                            <p class="mb-2">Nursing discharge is blocked until all investigations below have been sent to lab.</p>
+                                            <p:dataTable id="tblPendingLabInvestigations"
+                                                         value="#{nursingDischargeController.pendingLabInvestigations}"
+                                                         var="item"
+                                                         styleClass="w-100">
+                                                <p:column headerText="Investigation" style="width:15%">
+                                                    <h:outputText value="#{item.investigationName}" />
+                                                </p:column>
+                                                <p:column headerText="Ordered At" style="width:15%">
+                                                    <h:outputText value="#{item.orderedAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Status">
+                                                    <h:outputText value="#{item.statusLabel}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="row px-4">
+                                <div class="col-12 d-flex justify-content-end">
+                                    <p:commandButton
+                                        id="btnRefreshPendingLabInvestigations"
+                                        value="Refresh Pending Items"
+                                        action="#{nursingDischargeController.loadPendingLabInvestigations()}"
+                                        update="pnlPendingLabInvestigations pnlActionButtons"
+                                        icon="fa fa-sync"
+                                        class="ui-button-secondary mx-1 mb-2" />
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+
                         <div class="row px-4 py-2">
                             <div class="col-12">
 
@@ -151,7 +196,7 @@
                                             action="#{nursingDischargeController.confirmNursingDischarge()}"
                                             icon="fa fa-check"
                                             class="ui-button-success mx-1"
-                                            disabled="#{nursingDischargeController.hasPendingPharmacyItems()}"
+                                            disabled="#{nursingDischargeController.hasPendingPharmacyItems() or nursingDischargeController.hasPendingLabInvestigations()}"
                                             onclick="return confirm('Are you sure you want to confirm nursing discharge? This will lock the record.')" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{nursingDischargeController.currentEncounter.nursingDischarged}">

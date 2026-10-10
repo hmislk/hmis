@@ -1,0 +1,455 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+    <!--
+        Patient section for Collecting Centre self-service billing pages.
+        A dedicated copy of common:patient_details with its own header
+        markup/CSS (ccpd-* classes, inline flex) so the phone-search box,
+        search button and add-new-patient button reliably right-align,
+        instead of depending on the shared composite's Bootstrap
+        d-flex/justify-content-between classes cascading correctly inside
+        this page's custom panel styling.
+    -->
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="editable" type="java.lang.Boolean"/>
+        <cc:attribute name="searchable" type="java.lang.Boolean" default="true"/>
+        <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
+        <cc:attribute name="focus" type="java.lang.Boolean"/>
+        <cc:attribute name="ageListener" method-signature="void action()"/>
+        <cc:attribute name="additionalUpdateTargets" type="java.lang.String" default=""/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+
+        <p:panel id="ptImp" styleClass="cc-bill-card cc-c-blue w-100 m-1">
+            <p:growl id="msg"/>
+            <f:facet name="header">
+                <h:panelGroup layout="block" styleClass="ccpd-header-row">
+                    <!-- Left aligned content -->
+                    <h:panelGroup id="headerFacet" layout="block" styleClass="ccpd-header-left">
+                        <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
+                        <h:outputText styleClass="fas fa-user"/>
+                        <h:panelGroup
+                            rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                            <h:outputText
+                                rendered="#{cc.attrs.controller.patient.id eq null}"
+                                value="Patient"
+                                class="mx-4"
+                                >
+                            </h:outputText>
+                            <h:outputText
+                                rendered="#{cc.attrs.controller.patient.id ne null}"
+                                value="Searched Patient Details"
+                                class="mx-2"
+                                ></h:outputText>
+                            <h:panelGroup rendered="#{cc.attrs.editable}" id="edit">
+                                <p:selectBooleanButton
+                                    value="#{cc.attrs.controller.patientDetailsEditable}"
+                                    offLabel="Edit"
+                                    onLabel="View"
+                                    offIcon="pi pi-pencil"
+                                    onIcon="pi pi-eye"
+                                    class="mx-2"
+                                    >
+                                    <p:ajax
+                                        process="@this"
+                                        update="viewPatient editPatient btnDone edit"/>
+                                </p:selectBooleanButton>
+                                <p:commandButton id="btnDone" value="Save" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{patientController.saveSelected(cc.attrs.controller.patient)}" rendered="#{cc.attrs.controller.patientDetailsEditable}" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} "/>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.focus}">
+                        <p:focus id="focusIx" for="txtQuickSearchPhoneNumber"/>
+                        <p:focus context="txtQuickSearchPhoneNumber"/>
+                    </h:panelGroup>
+
+                    <!-- Right aligned quick search -->
+                    <h:panelGroup id="quickSearch" layout="block" styleClass="ccpd-header-right">
+                        <h:panelGroup rendered="#{cc.attrs.searchable}" layout="block" styleClass="ccpd-search-group">
+                            <p:focus for="txtQuickSearchPhoneNumber"/>
+                            <p:inputText
+                                autocomplete="off"
+                                id="txtQuickSearchPhoneNumber"
+                                value="#{patientController.quickSearchPhoneNumber}"
+                                placeholder="Phone Number"
+                                styleClass="ccpd-search-input"
+                                onfocus="this.select()"
+                                />
+                            <h:commandLink
+                                id="btnSearchbyPhoneNo"
+                                title="Quick Search from Phone Number"
+                                style="display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;background-color:#1E88E5;color:#ffffff;border-radius:10px;text-decoration:none;cursor:pointer;border:none;box-shadow:0 2px 6px rgba(30,136,229,0.35);"
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}">
+                                <f:ajax execute="btnSearchbyPhoneNo txtQuickSearchPhoneNumber" render="ptImp selectPatient editPatient viewPatient #{cc.attrs.additionalUpdateTargets}"/>
+                                <i class="fa-solid fa-magnifying-glass" style="font-size:1.15rem;line-height:1;color:#ffffff;"></i>
+                            </h:commandLink>
+                            <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                            <h:commandLink
+                                id="btnAddNewPatient"
+                                title="Add New Patient"
+                                style="display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;background-color:#43A047;color:#ffffff;border-radius:10px;text-decoration:none;cursor:pointer;border:none;box-shadow:0 2px 6px rgba(67,160,71,0.35);"
+                                action="#{patientController.quickSearchNewPatient(cc.attrs.controller)}">
+                                <f:ajax execute="btnAddNewPatient" render="ptImp selectPatient editPatient viewPatient"/>
+                                <i class="fa-solid fa-circle-plus" style="font-size:1.15rem;line-height:1;color:#ffffff;"></i>
+                            </h:commandLink>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </f:facet>
+
+            <h:panelGroup id="selectPatient">
+                <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
+                    <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
+                        <p:column headerText="Name">
+                            #{ps.person.name}
+                        </p:column>
+                        <p:column headerText="Phone Number">
+                            #{ps.person.phone}
+                        </p:column>
+                        <p:column headerText="Mobile Number">
+                            #{ps.person.mobile}
+                        </p:column>
+                        <p:column>
+                            <p:commandButton
+                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}"
+                                id="btnSelectPt"
+                                process="btnSelectPt tblPatients"
+                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} #{cc.attrs.additionalUpdateTargets}"
+                                value="select">
+                                <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGroup>
+            </h:panelGroup>
+
+            <h:panelGroup id="editPatient">
+
+                <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}">
+                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                        <h:panelGroup class="mb-1 w-100" id="panelPatient">
+                            <h:panelGroup id="gpPatient">
+                                <div class="row">
+                                    <div class="col-md-3 p-1">
+                                        <p:selectOneMenu
+                                            id="cmbTitle"
+                                            class="form-control w-100"
+                                            requiredMessage="Please enter a title"
+                                            value="#{cc.attrs.controller.patient.person.title}">
+                                            <f:selectItem itemLabel="Select Title"/>
+                                            <f:selectItems value="#{opdBillController.title}" var="i"
+                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                            <p:ajax event="change" process="cmbTitle" update="cmbSex"></p:ajax>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-9 p-1">
+                                        <p:inputText
+
+                                            requiredMessage="Please enter a name for the patient"
+                                            autocomplete="off"
+                                            id="txtNewPtName"
+                                            placeholder="Enter the Name of the patient"
+                                            value="#{cc.attrs.controller.patient.person.name}"
+                                            validatorMessage="Please enter only letters and spaces."
+                                            class="form-control">
+                                            <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
+                                            </c:if>
+
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3 p-1">
+                                        <p:selectOneMenu
+                                            id="cmbSex"
+
+                                            requiredMessage="Please select a gender"
+                                            value="#{cc.attrs.controller.patient.person.sex}"
+                                            class="form-control w-100">
+                                            <f:selectItem itemLabel="Select Gender"/>
+                                            <f:selectItems value="#{opdBillController.sex}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-9 p-1">
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <p:inputText
+                                                    autocomplete="off"
+                                                    id="year"
+                                                    placeholder="Years"
+                                                    onfocus="this.select();"
+                                                    value="#{cc.attrs.controller.patient.person.ageYearsComponent}"
+                                                    class="form-control">
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob"/>
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <p:inputText
+                                                    onfocus="this.select();"
+                                                    autocomplete="off" id="month" placeholder="Months"
+                                                    value="#{cc.attrs.controller.patient.person.ageMonthsComponent}"
+                                                    class="form-control">
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob"/>
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <p:inputText
+                                                    onfocus="this.select();"
+                                                    autocomplete="off" id="day" placeholder="Days"
+                                                    value="#{cc.attrs.controller.patient.person.ageDaysComponent}"
+                                                    class="form-control">
+                                                    <f:ajax event="keyup" execute="@this" render="dpDob"/>
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p:datePicker
+                                                    value="#{cc.attrs.controller.patient.person.dob}"
+                                                    id="dpDob"
+                                                    class="w-100"
+                                                    inputStyleClass="form-control"
+                                                    pattern="dd/MMM/yyyy - hh:mm:ss a"
+                                                    showTime="true"
+                                                    yearNavigator="true"
+                                                    monthNavigator="true"
+                                                    showButtonBar="true"
+                                                    timeInput="true"
+                                                    placeholder="Date of Birth (dd/mm/yyyy - hh:mm:ss a)"
+                                                    >
+                                                    <p:ajax event="dateSelect" process="@this" update="year month day"/>
+                                                </p:datePicker>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3 p-1">
+                                        <p:inputText
+                                            id="txtMobile"
+                                            autocomplete="off"
+                                            placeholder="Mobile Number"
+                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
+                                            class="form-control"
+                                            requiredMessage="Please enter a Mobile Number"
+                                            validatorMessage="Please enter valid Number">
+                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-3 p-1">
+                                        <p:inputText
+                                            id="txtPhone"
+                                            requiredMessage="Please enter a Phone Number"
+                                            autocomplete="off"
+                                            placeholder="Phone Number"
+                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
+                                            class="form-control" validatorMessage="Please enter valid Number">
+                                            <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-3 p-1">
+                                        <p:inputText
+                                            requiredMessage="Please enter a Email"
+                                            autocomplete="off" id="txtEmail" placeholder="Enter Email here"
+                                            value="#{cc.attrs.controller.patient.person.email}"
+                                            class="form-control"
+                                            >
+                                            <c:if test="#{not empty sessionController.applicationPreference.emailRegex}">
+                                                <f:validateRegex pattern="#{sessionController.applicationPreference.emailRegex}"/>
+                                            </c:if>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-3 p-1">
+                                        <p:inputText
+                                            id="txtNic"
+                                            requiredMessage="Please enter a ID"
+                                            autocomplete="off"
+                                            placeholder="National ID Number"
+                                            value="#{cc.attrs.controller.patient.person.nic}"
+                                            class="form-control"/>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-7 p-1">
+                                        <p:inputText
+                                            id="txtAddress"
+                                            autocomplete="off"
+                                            requiredMessage="Please enter an Address"
+                                            placeholder="Address"
+                                            value="#{cc.attrs.controller.patient.person.address}"
+                                            class="form-control"/>
+                                    </div>
+
+                                    <h:panelGroup class="col-md-2 p-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                        <p:selectBooleanButton
+                                            id="scbforigner"
+                                            value="#{cc.attrs.controller.patient.person.foreigner}"
+                                            offLabel="Patient is Local"
+                                            class="w-100"
+                                            onLabel="Patient is Forigner">
+                                        </p:selectBooleanButton>
+                                    </h:panelGroup>
+
+                                    <div class="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')?'col-md-3 p-1':'col-md-5 p-1'}">
+                                        <p:autoComplete
+                                            id="acNewPtArea"
+                                            requiredMessage="Please select an Area"
+                                            placeholder="Search &amp; Select Area"
+                                            completeMethod="#{areaController.completeArea}"
+                                            var="pta" itemLabel="#{pta.name}"
+                                            itemValue="#{pta}" forceSelection="true"
+                                            value="#{cc.attrs.controller.patient.person.area}"
+                                            inputStyleClass="form-control"
+                                            class="w-100"/>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 p-1">
+
+                                        <div class="input-group">
+                                            <p:selectOneMenu title="Patient Specific Status" class="w-100" id="specificStatus" value="#{cc.attrs.controller.patient.specificStatus}">
+                                                <f:selectItems value="#{patientController.getAllPatientSpecificLabels()}"/>
+                                            </p:selectOneMenu>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 p-1">
+                                        <div class="input-group">
+                                            <p:inputText placeholder="Comment for Patient Specific Status" value="#{cc.attrs.controller.patient.specificStatusComment}" style="width: 100%;" class="form-control"/>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p:tooltip for="txtNewPtName" value="Patient Name" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtNic" value="NIC / Passport No" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="dpDob" value="Date Of Birth" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtAddress" value="Address" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtMobile" value="Mobile Number" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtPhone" value="Home Phone Number" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="cmbSex" value="Sex" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="cmbTitle" value="Title" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="acNewPtArea" value="Area" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="txtEmail" value="Email" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="scbforigner" value="Mark Status" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="year" value="Age- Years Component" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="month" value="Age- Month Component" showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="day" value="Age- Days Component" showDelay="0" hideDelay="0"></p:tooltip>
+
+
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </h:panelGroup>
+            <h:panelGroup id="viewPatient">
+
+                <h:panelGroup rendered="#{not cc.attrs.controller.patientDetailsEditable}">
+                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null}">
+                        <h:panelGroup layout="block" styleClass="ccpd-info-grid" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient.id ne null}">
+
+                            <div class="ccpd-info-item ccpd-info-item-wide">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-id-badge"/> Name</span>
+                                <span class="ccpd-info-value">
+                                    <p:badge style="background-color: #{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
+                                        <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}"/>
+                                    </p:badge>
+                                    <p:badge style="background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                    </p:badge>
+                                </span>
+                            </div>
+
+                            <div class="ccpd-info-item">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-venus-mars"/> Gender</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.sex}"/>
+                            </div>
+
+                            <div class="ccpd-info-item">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-cake-candles"/> Date of Birth</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.dob}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                                </h:outputText>
+                            </div>
+
+                            <div class="ccpd-info-item">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-hourglass-half"/> Age</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.ageAsString}"/>
+                            </div>
+
+                            <div class="ccpd-info-item">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-mobile-screen"/> Mobile No.</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.mobile}"/>
+                            </div>
+
+                            <div class="ccpd-info-item">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-phone"/> Phone No.</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.phone}"/>
+                            </div>
+
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{not empty cc.attrs.controller.patient.person.email}">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-envelope"/> Email</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.email}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{not empty cc.attrs.controller.patient.person.nic}">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-address-card"/> National ID No.</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.nic}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item ccpd-info-item-wide" rendered="#{not empty cc.attrs.controller.patient.person.address}">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-location-dot"/> Address</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.address}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-flag"/> Patient Status</span>
+                                <span class="ccpd-info-value">
+                                    <p:badge
+                                        value="#{cc.attrs.controller.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}"
+                                        severity="#{cc.attrs.controller.patient.person.foreigner?'warning':'success'}"
+                                        styleClass="mr-2">
+                                    </p:badge>
+                                </span>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{cc.attrs.controller.patient.hasAnAccount}">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-wallet"/> Account Balance (PD)</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(cc.attrs.controller.patient, sessionController.loggedUser.department)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="ccpd-info-item" rendered="#{cc.attrs.controller.patient.person.area ne null}">
+                                <span class="ccpd-info-label"><h:outputText styleClass="fas fa-map"/> Area</span>
+                                <h:outputText styleClass="ccpd-info-value" value="#{cc.attrs.controller.patient.person.area.name}"/>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+            </h:panelGroup>
+
+        </p:panel>
+    </cc:implementation>
+</html>

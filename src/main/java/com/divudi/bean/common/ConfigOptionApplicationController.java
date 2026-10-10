@@ -113,6 +113,32 @@ public class ConfigOptionApplicationController implements Serializable {
         return option;
     }
 
+    /**
+     * Runs {@code seeding} with the same reentrancy guard {@link #loadApplicationOptions()}
+     * uses internally, so any {@code getXxxValueByKey}/{@code createApplicationOptionIfAbsent}
+     * calls inside it that lazily create a missing row do NOT each trigger their own
+     * synchronized full cache reload — at most one reload happens, after {@code seeding}
+     * finishes. Use this around any loop that may touch many keys that could all be
+     * missing at once (e.g. seeding every {@code InwardChargeType}'s rows on a hospital's
+     * first visit to an admin/discovery page) — without it, such a loop could trigger one
+     * full, synchronized, application-wide cache reload per missing key (found in review
+     * of issue #23340's charge-type ordering/grouping follow-up).
+     */
+    public void seedInBatch(Runnable seeding) {
+        boolean alreadyBatching = isLoadingApplicationOptions;
+        if (!alreadyBatching) {
+            isLoadingApplicationOptions = true;
+        }
+        try {
+            seeding.run();
+        } finally {
+            if (!alreadyBatching) {
+                isLoadingApplicationOptions = false;
+                loadApplicationOptions();
+            }
+        }
+    }
+
     @PostConstruct
     public void init() {
         loadApplicationOptions();
@@ -147,6 +173,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
             loadSapIntegrationConfigurationDefaults();
+            loadInwardConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -156,6 +183,42 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+    }
+
+    private void loadInwardConfigurationDefaults() {
+        // Reservation admission window: admission is allowed from this many hours before
+        // reservedFrom until this many hours after the reservation end (reservedTo, or
+        // reservedFrom when reservedTo is null). Consumed by AppointmentController.navigatePatientAdmit().
+        getLongValueByKey("Inward - Reservation Admission Early Window (Hours)", 24L);
+        getLongValueByKey("Inward - Reservation Admission Grace Period (Hours)", 24L);
+        // Settlement gate: unchecked inward service / professional / pharmacy /
+        // store / payment bills block the final bill. Seeded here so an admin
+        // can find and toggle it without first having to settle a bill.
+        // Replaces "Need to check inward bills before discharge", which was read
+        // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
+        getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
+        // Theatre surgery service bill item list. Four booleans selecting one
+        // mode, read in a fixed precedence by ItemController.completeTheatreItems
+        // (mapped, then all services and investigations, then all services,
+        // then the default of theatre services only).
+        // Seeded here so an admin can find and toggle them without first having
+        // to open a surgery bill. Overridable per department with the
+        // "<Department Name> - <key>" form.
+        getBooleanValueByKey(ItemController.THEATRE_LIST_MAPPED_SERVICES, false);
+        getBooleanValueByKey(ItemController.THEATRE_LIST_ALL_SERVICES_AND_INVESTIGATIONS, false);
+        getBooleanValueByKey(ItemController.THEATRE_LIST_ALL_SERVICES, false);
+        getBooleanValueByKey(ItemController.THEATRE_LIST_THEATRE_SERVICES_ONLY, true);
+        // Controls whether the printed pharmacy bill handed to the ward on BHT
+        // issue shows any monetary field: item rate/value columns and totals
+        // (still requires NursingIPBillingViewRates, same as the on-screen
+        // 'Nursing IP Billing - Show Rate and Value' table) and the discount
+        // line (still requires IPBillingViewDiscount). A user without the
+        // relevant privilege never sees that field, on screen or on the
+        // printout - this key only controls the separate institution-level
+        // choice of whether a *privileged* user's printout includes it.
+        // Default true = print (issue #23834; Coop wants these details,
+        // Ruhunu does not - toggle off per-hospital as needed).
+        getBooleanValueByKey("Pharmacy Bill Sent to Ward - Show Rate and Value", true);
     }
 
     private void loadPettyCashBillingConfigurationDefaults() {
@@ -253,6 +316,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Bill Number Generation Strategy for Department ID is Prefix Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy for Institution ID is Prefix Ins Year Count", false);
         getBooleanValueByKey("Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
+        getBooleanValueByKey("Inward Payment Bill Numbers - Omit Year", false);
+        getBooleanValueByKey("Inward Payment Bill Numbers - Omit Admission Type Code", false);
+        getBooleanValueByKey("Inward Payment Bill Numbers - Use Yearly Generator for Post Final Payments", false);
 
         // Bill-type-specific numbering strategies for Purchase Order Requests (POR)
         getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Purchase Order Request - Prefix + Department Code + Institution Code + Year + Yearly Number", false);
@@ -1245,6 +1311,50 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    /**
+     * Create-or-update a SHORT_TEXT option by key — the text-value sibling of
+     * {@link #setLongTextValueByKey(String, String)}/{@link #setLongValueByKey(String, Long)}.
+     * Added for issue #23678 so callers reaching for the same
+     * "set{Type}ValueByKey" naming used by every other value type (e.g. for
+     * {@code POST /api/config/setShortText/...}) find a same-shaped method,
+     * without having to know the older {@link #saveShortTextOption(String, String)}
+     * name. Unlike that older method, this one also retags an existing row
+     * to SHORT_TEXT if it was created under a different type — CodeRabbit
+     * review of this PR noted that silently keeping the old type while
+     * writing a new value lets a later read return the wrong type or
+     * silently null.
+     */
+    public void setShortTextValueByKey(String key, String value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
+        }
+        option.setValueType(OptionValueType.SHORT_TEXT);
+        option.setOptionValue(value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
+    /**
+     * Create-or-update a DOUBLE option by key — same shape as
+     * {@link #setLongValueByKey(String, Long)}, added for issue #23678 so a
+     * brand-new DOUBLE key has a create-capable setter (previously only
+     * {@link #getDoubleValueByKey(String, Double)} could seed one, and only
+     * as a side effect of a read). Also retags an existing row to DOUBLE if
+     * it was created under a different type — see
+     * {@link #setShortTextValueByKey(String, String)}'s note on why.
+     */
+    public void setDoubleValueByKey(String key, Double value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, String.valueOf(value));
+        }
+        option.setValueType(OptionValueType.DOUBLE);
+        option.setOptionValue(String.valueOf(value));
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
@@ -1289,6 +1399,20 @@ public class ConfigOptionApplicationController implements Serializable {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * Returns a list of {@code count} zero-based Integers, for {@code ui:repeat}
+     * loops that just need to render N copies of something (e.g. blank leading
+     * lines above a pre-printed dot-matrix letterhead). Clamps to [0, 40].
+     */
+    public java.util.List<Integer> integerList(Integer count) {
+        int n = count == null ? 0 : Math.max(0, Math.min(40, count));
+        java.util.List<Integer> out = new java.util.ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            out.add(i);
+        }
+        return out;
     }
 
     public Double getDoubleValueByKey(String key) {
@@ -1391,6 +1515,35 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
+    /**
+     * Read-only variant of {@link #getShortTextValueByKey(String, String)} —
+     * the text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist. Use this for {@code rendered="..."}/
+     * output-value reads that must not silently create configuration rows
+     * just because a page was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
+            return defaultValue;
+        }
+        return option.getOptionValue();
+    }
+
+    /**
+     * Read-only variant of {@link #getLongTextValueByKey(String, String)} —
+     * returns {@code defaultValue} without persisting a new ConfigOption row
+     * when the key does not yet exist.
+     */
+    public String getLongTextValueByKeyReadOnly(String key, String defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            return defaultValue;
+        }
+        return option.getOptionValue();
+    }
+
     public String getInwardChargeTypeLabel(InwardChargeType type) {
         String key = "Inward Charge Type Label - " + type.name();
         String custom = getShortTextValueByKey(key, "");
@@ -1400,9 +1553,91 @@ public class ConfigOptionApplicationController implements Serializable {
         return custom;
     }
 
+    /**
+     * Display name for an inward charge type <b>on the Final Bill print only</b>.
+     * <p>
+     * Two naming mechanisms exist side by side:
+     * <ul>
+     * <li>legacy — {@code "Inward Charge Type - Name For <default label>"},
+     * loaded onto the enum's mutable {@code name} field at login by
+     * {@code SessionController#init()}. This is what the Final Bill has always
+     * printed, via {@code #{bip.inwardChargeType.name}}.</li>
+     * <li>current — {@code "Inward Charge Type Label - <EnumName>"}, read by
+     * {@link #getInwardChargeTypeLabel(InwardChargeType)} and used by the
+     * interim bill, the charge-type breakdown/detail reports, the invoice
+     * journal and the config API.</li>
+     * </ul>
+     * The bundled Final Bill row builder resolved labels through the current
+     * key, so switching on "Inward Final Bill - Bundle Grouped Charge Types"
+     * silently renamed rows: COOP has 22 legacy names ("Resident Medical
+     * Officer Charges", "Radiology &amp; Imaging", "Theatre Surgical
+     * Consumables &amp; Drugs" …) and would have lost all of them just by
+     * enabling bundling.
+     * <p>
+     * Legacy therefore wins here, so enabling bundling changes only how rows
+     * are <em>grouped</em>, never what they are <em>called</em>. This resolver
+     * is deliberately separate from
+     * {@link #getInwardChargeTypeLabel(InwardChargeType)} so nothing outside
+     * the Final Bill changes.
+     * <p>
+     * The legacy read is read-only: {@code SessionController#init()} already
+     * creates all of those rows at login, so this never needs to create one —
+     * and must not create a full set from a session-less context.
+     */
+    public String getInwardChargeTypeFinalBillLabel(InwardChargeType type) {
+        String legacy = getLongTextValueByKeyReadOnly(
+                "Inward Charge Type - Name For " + type.getLabel(), "");
+        if (legacy != null && !legacy.trim().isEmpty()) {
+            return legacy;
+        }
+        String custom = getShortTextValueByKeyReadOnly(
+                "Inward Charge Type Label - " + type.name(), "");
+        if (custom != null && !custom.trim().isEmpty()) {
+            return custom;
+        }
+        return type.getLabel();
+    }
+
     public void saveInwardChargeTypeLabel(InwardChargeType type, String customLabel) {
         String key = "Inward Charge Type Label - " + type.name();
         saveShortTextOption(key, customLabel == null ? "" : customLabel.trim());
+    }
+
+    public int getInwardChargeTypeReportOrder(InwardChargeType type) {
+        String key = "Inward Charge Type Report Order - " + type.name();
+        Integer v = getIntegerValueByKey(key, (type.ordinal() + 1) * 10);
+        return v == null ? (type.ordinal() + 1) * 10 : v;
+    }
+
+    public void saveInwardChargeTypeReportOrder(InwardChargeType type, int order) {
+        setIntegerValueByKey("Inward Charge Type Report Order - " + type.name(), order);
+    }
+
+    public int getInwardChargeTypeFinalBillOrder(InwardChargeType type) {
+        String key = "Inward Charge Type Final Bill Order - " + type.name();
+        Integer v = getIntegerValueByKey(key, (type.ordinal() + 1) * 10);
+        return v == null ? (type.ordinal() + 1) * 10 : v;
+    }
+
+    public void saveInwardChargeTypeFinalBillOrder(InwardChargeType type, int order) {
+        setIntegerValueByKey("Inward Charge Type Final Bill Order - " + type.name(), order);
+    }
+
+    /**
+     * Free-text grouping key for the "Bundled Custom 1" Final Bill print
+     * format: charge types sharing the same non-blank group text print as
+     * one summed line (see BhtSummeryController#buildBundledRows). Default
+     * empty — every charge type prints on its own line until an admin sets
+     * this, so no hospital is affected until it opts in.
+     */
+    public String getInwardChargeTypeFinalBillGroup(InwardChargeType type) {
+        String key = "Inward Charge Type Final Bill Group - " + type.name();
+        return getShortTextValueByKey(key, "");
+    }
+
+    public void saveInwardChargeTypeFinalBillGroup(InwardChargeType type, String group) {
+        String key = "Inward Charge Type Final Bill Group - " + type.name();
+        saveShortTextOption(key, group == null ? "" : group.trim());
     }
 
     public String getColorValueByKey(String key) {
@@ -1497,6 +1732,27 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, dv);
         }
         return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    /**
+     * Key of the option that makes a hospital treat assisting (non-Consultant)
+     * professional fees as ordinary professional charges.
+     */
+    public static final String PROFESSIONAL_AND_ASSISTING_FEES_MERGED
+            = "Professional Fee and Assisting Fees are shown as one charge type on the final bill.";
+
+    /**
+     * True when professional and assisting fees are a single professional
+     * charge for this hospital, i.e. {@code InwardChargeType.DoctorAndNurses}
+     * should not appear anywhere — not as a bill row, a report column, or a
+     * selectable charge type.
+     *
+     * <p>Read-only on purpose: this is consulted from {@code rendered="..."}
+     * gates and from charge-type list building, neither of which should create
+     * a ConfigOption row just because a page was viewed.
+     */
+    public boolean isProfessionalAndAssistingFeesMerged() {
+        return getBooleanValueByKeyReadOnly(PROFESSIONAL_AND_ASSISTING_FEES_MERGED, false);
     }
 
     /**

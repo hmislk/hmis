@@ -79,8 +79,9 @@
         font-family: sans-serif!important;
         font-size: 11px!important;
         /*        position: relative!important;  */
-        margin: 0px!important;
-        width: 100%;
+        margin-top: 1%;
+        margin-left: 12%;
+        width: 88%;
         height: 100%;
         /*        width: 95%;
                 height: 95%;*/
@@ -142,6 +143,20 @@
     .billTable td:last-child{
         width:25%;
         text-align:right;
+    }
+
+    .a4billFixedFooter{
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        min-height: calc(100vh - 6mm);
+        border: 1.5px solid #000;   /* the box */
+        padding: 4mm;               /* space between the border and the content */
+    }
+
+    /* flex + align-items:center would shrink each section to its content; keep them full width as before */
+    .a4billFixedFooter > div{
+        width: 100%;
     }
 
 }
@@ -235,7 +250,9 @@
         page-break-after:always!important;
 
     }
-
+    .a4bill1{
+        width: 221mm;
+    }
     .a4bill{
 
         font-family: sans-serif!important;

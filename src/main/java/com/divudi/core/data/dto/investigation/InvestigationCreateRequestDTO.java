@@ -17,6 +17,7 @@ public class InvestigationCreateRequestDTO {
     private String containerName;
     private Long analyzerId;
     private String analyzerName;
+    private Boolean discountAllowed;
 
     public boolean isValid() { return name != null && !name.trim().isEmpty(); }
     public String getName() { return name; }
@@ -51,4 +52,6 @@ public class InvestigationCreateRequestDTO {
     public void setAnalyzerId(Long analyzerId) { this.analyzerId = analyzerId; }
     public String getAnalyzerName() { return analyzerName; }
     public void setAnalyzerName(String analyzerName) { this.analyzerName = analyzerName; }
+    public Boolean getDiscountAllowed() { return discountAllowed; }
+    public void setDiscountAllowed(Boolean discountAllowed) { this.discountAllowed = discountAllowed; }
 }

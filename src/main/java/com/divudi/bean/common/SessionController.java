@@ -13,6 +13,7 @@ import com.divudi.bean.cashTransaction.DenominationController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.collectingCentre.CollectingCentreSelfCommonController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.lab.LaboratoryDoctorDashboardController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -26,6 +27,7 @@ import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
 import static com.divudi.core.data.LoginPage.COURIER_LANDING_PAGE;
 import static com.divudi.core.data.LoginPage.HOME;
+import static com.divudi.core.data.LoginPage.LABORATORY_DOCTER_DASHBOARD;
 import static com.divudi.core.data.LoginPage.OPD_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.OPD_TOKEN_DISPLAY;
 import static com.divudi.core.data.LoginPage.PHARMACY_TOKEN_DISPLAY;
@@ -176,6 +178,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
+    @Inject
+    private CollectingCentreSelfCommonController collectingCentreSelfCommonController;
     @Inject
     private UserSettingsController userSettingsController;
     // </editor-fold>
@@ -584,8 +588,30 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    public void acceptOnlineBookingForAllSessions(boolean accept) throws Exception {
-        channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+    /**
+     * Bulk-accepts or bulk-rejects online bookings for every channelling session,
+     * via {@link ChannelService#makeAllSessionsAvailableForOnlineBookings}.
+     *
+     * <p>
+     * Was previously {@code throws Exception} with no catch anywhere in the call
+     * chain, so a failure here (e.g. #23406) failed with zero UI feedback - the
+     * button appeared to do nothing. Reported to the user instead of swallowed.
+     * </p>
+     *
+     * @param accept {@code true} to accept online bookings on every session,
+     *               {@code false} to reject them
+     */
+    public void acceptOnlineBookingForAllSessions(boolean accept) {
+        try {
+            channelService.makeAllSessionsAvailableForOnlineBookings(accept);
+        } catch (Exception e) {
+            // Log server-side only - don't show the raw exception text to the user
+            // (CWE-209: it can carry internal details like table/column names or
+            // driver info). A fixed message is enough to explain nothing was saved.
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Failed to update online booking availability. No changes were saved.");
+            return;
+        }
         if (accept) {
             JsfUtil.addSuccessMessage("Accept Online Bookings from now.");
         } else if (!accept) {
@@ -1912,6 +1938,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return courierController.navigateToCourierIndex();
             case LABORATORY_DOCTER_DASHBOARD:
                 return laboratoryDoctorDashboardController.navigateToDoctorDashboard();
+            case COLLECTING_CENTRE_SELF_BILLING_HOME:
+                return collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome();
             case HOME:
             default:
                 return "/home?faces-redirect=true";

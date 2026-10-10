@@ -10,7 +10,45 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form>
+                <h:form id="tatHourlyReportForm">
+
+                    <style type="text/css">
+                        @media print {
+
+                            body * {
+                                visibility: hidden !important;
+                            }
+
+                            .tat-hourly-print,
+                            .tat-hourly-print * {
+                                visibility: visible !important;
+                            }
+
+                            .tat-hourly-print {
+                                position: absolute !important;
+                                top: 0 !important;
+                                left: 0 !important;
+                                width: 100% !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                border: none !important;
+                            }
+
+                            .tat-hourly-print .ui-paginator {
+                                display: none !important;
+                            }
+
+                            .no-print {
+                                display: none !important;
+                            }
+
+                            @page {
+                                size: A4 landscape;
+                                margin: 8mm;
+                            }
+                        }
+                    </style>
+
                     <p:panel header="Turn Around Time (Hourly) Report">
 
                         <!-- Filter Fields -->
@@ -23,6 +61,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpFrom"
+                                                  value="#{tatHourlyReport.fromDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
                                                   showTime="true" 
@@ -39,6 +78,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpTo"
+                                                  value="#{tatHourlyReport.toDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
                                                   showTime="true" 
@@ -58,7 +98,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInstitution"
-                                                     value="#{reportController.institution}"
+                                                     value="#{tatHourlyReport.institution}"
                                                      style="width:100%"
                                                      title="Filter by institution"
                                                      filter="true">
@@ -80,7 +120,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdSite"
-                                        value="#{reportController.site}"
+                                        value="#{tatHourlyReport.site}"
                                         style="width:100%"
                                         title="Filter by institution or branch"
                                         filter="true">
@@ -100,7 +140,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdDepartment"
-                                        value="#{reportController.department}"
+                                        value="#{tatHourlyReport.department}"
                                         style="width:100%"
                                         title="Filter by department"
                                         filter="true">
@@ -118,7 +158,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdCCName"
-                                                     value="#{reportsController.collectingCentre}"
+                                                     value="#{tatHourlyReport.collectingCentre}"
                                                      filter="true"
                                                      style="width:100%"
                                                      title="Filter by CCName">
@@ -139,7 +179,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdCCRoute"
-                                                     value="#{reportsController.route}"
+                                                     value="#{tatHourlyReport.route}"
                                                      filter="true"
                                                      style="width:100%"
                                                      title="Filter by CC Route">
@@ -158,7 +198,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInvestigation"
-                                                     value="#{reportController.investigation}"
+                                                     value="#{tatHourlyReport.investigation}"
                                                      style="width:100%"
                                                      title="Filter by investigation"
                                                      filter="true">
@@ -176,7 +216,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdLaboratoryDepartment"
-                                        value="#{patientInvestigationController.department}"
+                                        value="#{tatHourlyReport.laboratoryDepartment}"
                                         style="width:100%"
                                         title="Filter by Laboratory Department"
                                         filter="true">
@@ -195,7 +235,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdReferingDoctor"
-                                                     value="#{reportController.referingDoctor}"
+                                                     value="#{tatHourlyReport.referingDoctor}"
                                                      style="width:100%"
                                                      title="Filter by referring doctor"
                                                      filter="true">
@@ -214,7 +254,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdResultStatus"
-                                        value=""
+                                        value="#{tatHourlyReport.resultStatus}"
                                         style="width:100%"
                                         title="Filter by Result Status"
                                         filter="true">
@@ -230,7 +270,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdVisitingType"
-                                                     value=""
+                                                     value="#{tatHourlyReport.visitType}"
                                                      style="width:100%"
                                                      title="Filter by visit type"
                                                      filter="true">
@@ -251,59 +291,43 @@
                                         id="btnProcess"
                                         class="ui-button-warning my-4 mx-2"
                                         style="width: 100px"
-                                        action="#{reportsController.turnAroundTimeHourlyReport}"
-                                        ajax="false"
+                                        action="#{tatHourlyReport.process}"
+                                        process="@form"
+                                        update=":growl reportPanel"
+                                        ajax="true"
                                         value="Process"
                                         icon="fas fa-cogs"/>
 
                                     <p:commandButton
                                         id="btnPrint"
-                                        class="ui-button-info my-4 mx-2"
+                                        styleClass="ui-button-info my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-print"
-                                        ajax="false"
+                                        type="button"
                                         value="Print"
-                                        onclick="hidePaginatorBeforePrint()"/>
-
-                                    <h:outputScript>
-                                        function hidePaginatorBeforePrint() {
-                                        let paginators = document.querySelectorAll('.ui-paginator');
-                                        paginators.forEach(el => el.style.display = 'none');
-                                        }
-
-                                        function restorePaginatorAfterPrint() {
-                                        let paginators = document.querySelectorAll('.ui-paginator');
-                                        paginators.forEach(el => el.style.display = '');
-                                        }
-
-                                        window.onafterprint = function () {
-                                        restorePaginatorAfterPrint();
-                                        };
-                                    </h:outputScript>
+                                        onclick="printTatHourlyReport(); return false;"/>
 
                                     <p:commandButton
                                         id="btnExcel"
-                                        class="ui-button-success my-4 mx-2"
+                                        styleClass="ui-button-success my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-excel"
                                         ajax="false"
+                                        immediate="true"
+                                        process="@this"
+                                        action="#{tatHourlyReport.exportExcel}"
                                         value="Excel"/>
-                                    <!-- <p:dataExporter 
-                                         type="xlsx"
-                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                         fileName="organism_antibioti_sensitivity.xlsx"/>-->
 
                                     <p:commandButton
                                         id="btnPdf"
-                                        class="ui-button-danger my-4 mx-2"
+                                        styleClass="ui-button-danger my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-pdf"
                                         ajax="false"
-                                        value="PDF"/>
-                                    <!-- <p:dataExporter 
-                                         type="pdf"
-                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                         fileName="organism_antibiotic_sensitivity.pdf"/>-->
+                                        immediate="true"
+                                        process="@this"
+                                        value="PDF"
+                                        action="#{tatHourlyReport.exportPdf}"/>
                                 </div>
                             </div>
 
@@ -311,35 +335,33 @@
 
                     </p:panel>
 
-                    <p:panel header="Turn Around Time (Hourly) Report" styleClass="mt-3">
+                    <p:panel id="reportPanel" header="Turn Around Time (Hourly) Report" styleClass="mt-3 tat-hourly-print">
 
                         <h:panelGrid columns="2"
                                      styleClass="table table-bordered table-sm table-striped w-50"
                                      columnClasses="font-weight-bold w-25,w-75">
                             <h:outputLabel value="Institution"/>
-                            <h:outputLabel value="#{reportController.institution}"></h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.institution.name}"/>
 
                             <h:outputLabel value="Site"/>
-                            <h:outputLabel value="#{reportController.site}"></h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.site.name}"/>
 
                             <h:outputLabel value="Department"/>
-                            <h:outputLabel value="#{reportController.department}"></h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.department.name}"/>
 
                             <h:outputLabel value="Investigation"/>
-                            <h:outputLabel value="">
-                            </h:outputLabel>
-                            
+                            <h:outputLabel value="#{tatHourlyReport.investigation.name}"/>
+
                             <h:outputLabel value="Service Center"/>
-                            <h:outputLabel value="">
-                            </h:outputLabel>
+                            <h:outputLabel value="#{tatHourlyReport.collectingCentre.name}"/>
 
                             <h:outputLabel value="From Date"/>
-                            <h:outputLabel value="#{reportController.fromDate}">
+                            <h:outputLabel value="#{tatHourlyReport.fromDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
                             <h:outputLabel value="To Date"/>
-                            <h:outputLabel value="#{reportController.toDate}">
+                            <h:outputLabel value="#{tatHourlyReport.toDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
@@ -351,7 +373,7 @@
                             scrollable="true"
                             scrollWidth="100%"
                             style="width:150%; table-layout:auto;"
-                            value="" 
+                            value="#{tatHourlyReport.reportData}"
                             var="c"
                             rowIndexVar="n"
                             paginator="true"
@@ -367,7 +389,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.investigationName}" />
                             </p:column>
 
                             <p:column>
@@ -376,16 +398,16 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.departmentName}" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hr)"
+                                    <h:outputText value="0 - 1(hr)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket0_1}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -394,7 +416,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket1_2}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -403,7 +425,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket2_3}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -412,7 +434,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket3_4}" style="text-align:right;" />
                             </p:column>
 
 
@@ -422,7 +444,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket4_5}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -431,7 +453,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket5_6}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -440,34 +462,34 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket6_7}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hrs)"
+                                    <h:outputText value="7 - 8(hrs)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket7_8}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hrs)"
+                                    <h:outputText value="8 - 9(hrs)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket8_9}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
                                 <f:facet name="header">
-                                    <h:outputText value="(hrs)"
+                                    <h:outputText value="9 - 10(hrs)"
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket9_10}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -476,7 +498,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.bucket10Plus}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -485,7 +507,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.processedCount}" style="text-align:right;" />
                             </p:column>
 
                             <p:column>
@@ -494,7 +516,7 @@
                                                   style="font-weight:bold;" />
                                 </f:facet>
 
-                                <h:outputText value="" />
+                                <h:outputText value="#{c.pendingCount}" style="text-align:right;" />
                             </p:column>
 
                             <f:facet name="footer">
@@ -505,7 +527,7 @@
                                     </div>
                                     <div>
                                         <span class="font-weight-bold mr-1">Generated On : </span>
-                                        <h:outputText value="#{reportController.toDate}">
+                                        <h:outputText value="#{tatHourlyReport.currentDate}">
                                             <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputText>
@@ -518,6 +540,13 @@
 
 
                 </h:form>
+
+                <h:outputScript target="body">
+                    function printTatHourlyReport() {
+                    window.print();
+                    return false;
+                    }
+                </h:outputScript> 
 
             </ui:define>
         </ui:composition>

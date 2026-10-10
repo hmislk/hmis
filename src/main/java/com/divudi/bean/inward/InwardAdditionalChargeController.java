@@ -80,6 +80,8 @@ public class InwardAdditionalChargeController implements Serializable {
     private ConfigOptionController configOptionController;
     @Inject
     private BillBeanController billBeanController;
+    @Inject
+    private com.divudi.bean.common.ItemFeeManager itemFeeManager;
     //////////////
     private BilledBill current;
     private Institution institution;
@@ -242,6 +244,15 @@ public class InwardAdditionalChargeController implements Serializable {
     }
 
     public void clearFromInstitution() {
+        // All charges on a bill must come from the same Outside Institution
+        // (BillFee.institution is stamped per charge in saveBillFee()) — once
+        // a charge has been added, block the change here too (the "Change"
+        // button is already hidden client-side once billItemList is
+        // non-empty). Start a New Bill to pick a different institution.
+        if (!getBillItemList().isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot change Outside Institution after a charge has been added. Click New Bill to start over.");
+            return;
+        }
         getCurrent().setFromInstitution(null);
     }
 
@@ -296,8 +307,34 @@ public class InwardAdditionalChargeController implements Serializable {
         return temBi;
     }
 
+    /**
+     * Resolves the fee(s) to bill for the selected outside-charge item,
+     * scoped to the logged department's site (issue #23311).
+     * {@link BillBeanController#fillFees(Item)} returns every non-retired
+     * {@code ItemFee} for the item with no institution/department
+     * filtering, so a site-level fee and a department-level fee for the
+     * same item were both being summed onto the bill. Outside Charge items
+     * are only offered by {@link #completeItem(String)} when their
+     * eligible fee is scoped to the logged department's site
+     * ({@code forInstitution = site}), so resolution here uses the same
+     * site scope. Departments without a configured site keep the previous
+     * unscoped lookup, matching {@link #completeItem(String)}'s existing
+     * fallback.
+     */
+    private List<ItemFee> resolveOutsideChargeFees(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        Department department = getSessionController().getDepartment();
+        Institution site = department != null ? department.getSite() : null;
+        if (site != null) {
+            return itemFeeManager.fillFees(item, site, null);
+        }
+        return billBeanController.fillFees(item);
+    }
+
     private void saveBillFee(BillItem bt) {
-        List<ItemFee> itemFees = (selectedItem != null) ? billBeanController.fillFees(selectedItem) : new ArrayList<>();
+        List<ItemFee> itemFees = (selectedItem != null) ? resolveOutsideChargeFees(selectedItem) : new ArrayList<>();
 
         if (!itemFees.isEmpty()) {
             List<BillFee> created = new ArrayList<>();
@@ -311,6 +348,7 @@ public class InwardAdditionalChargeController implements Serializable {
                 bf.setCreater(getSessionController().getLoggedUser());
                 bf.setPatienEncounter(getCurrent().getPatientEncounter());
                 bf.setPatient(getCurrent().getPatient());
+                bf.setInstitution(getCurrent().getFromInstitution());
                 bf.setFeeValue(f.getFee());
                 bf.setFeeGrossValue(f.getFee());
                 bf.setFeeDiscount(0.0);
@@ -329,6 +367,7 @@ public class InwardAdditionalChargeController implements Serializable {
             bf.setBillItem(bt);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
+            bf.setInstitution(getCurrent().getFromInstitution());
             bf.setFeeGrossValue(getCurrent().getTotal());
             bf.setFeeValue(getCurrent().getTotal());
             getBillFeeFacade().create(bf);
@@ -397,11 +436,29 @@ public class InwardAdditionalChargeController implements Serializable {
         return itemFacade.findByJpql(jpql, params);
     }
 
+    /**
+     * Pre-fills the Amount field when an item is picked. Sums the same
+     * site-scoped {@link ItemFee} list {@link #saveBillFee(BillItem)} will
+     * persist, rather than {@code Item.getTotal()} — a legacy denormalized
+     * column ({@code ItemFeeController.calTot()}) that sums every fee for
+     * the item with no site/department scoping. Before this fix an item
+     * with both a Site Fee (1000) and a Department Fee (1000) pre-filled
+     * Amount as 2000, disagreeing with the Fee Breakdown grid's scoped
+     * total (1000) for the same bill item (issue #23311 follow-up).
+     */
     public void onItemSelect() {
-        if (selectedItem != null && selectedItem.getTotal() != null && selectedItem.getTotal() > 0) {
-            getCurrent().setTotal(selectedItem.getTotal());
-        }
         if (selectedItem != null) {
+            List<ItemFee> itemFees = resolveOutsideChargeFees(selectedItem);
+            if (!itemFees.isEmpty()) {
+                double scopedFeeTotal = 0.0;
+                for (ItemFee f : itemFees) {
+                    scopedFeeTotal += f.getFee();
+                }
+                getCurrent().setTotal(scopedFeeTotal);
+            } else {
+                Double itemTotal = selectedItem.getTotal();
+                getCurrent().setTotal(itemTotal == null ? 0.0 : itemTotal);
+            }
             inwardChargeType = selectedItem.getInwardChargeType();
         }
     }

@@ -15,6 +15,7 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import java.util.ArrayList;
@@ -111,9 +112,8 @@ public class InpatientDirectIssueNativeSqlService {
                 + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
                 + " rate, marginValue, discount, discountRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
-                + " consideredForCosting, inwardChargeType, referanceBillItem_ID,"
-                + " overriddenRate, fromPackage, sourcePackageItem_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?,?,?,?)")
+                + " consideredForCosting, inwardChargeType, referanceBillItem_ID)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
@@ -128,9 +128,6 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(12, new Timestamp(createdAt.getTime()))
                 .setParameter(13, d.getCreaterId())
                 .setParameter(14, d.getSourceRequestBillItemId())
-                .setParameter(15, d.getOverriddenRate())
-                .setParameter(16, d.isFromPackage() ? 1 : 0)
-                .setParameter(17, d.getSourcePackageItemId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -187,11 +184,12 @@ public class InpatientDirectIssueNativeSqlService {
 
         // Step 5: Update bill-level totals natively.
         em.createNativeQuery(
-                "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
+                "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=?, margin=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
                 .setParameter(2, billTotals[1])   // netTotal
                 .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
-                .setParameter(4, billId)
+                .setParameter(4, billTotals[2])   // marginTotal
+                .setParameter(5, billId)
                 .executeUpdate();
 
         // Reconcile the JPA caches with the natively-written state WITHOUT the
@@ -207,10 +205,22 @@ public class InpatientDirectIssueNativeSqlService {
         // L2 cache this fanned out into a ~30s recursive load — the "first issue of
         // a batch is slow, later issues of the same batch are fast" symptom (#21888).
         //
-        // Instead: detach the managed Bill so its stale (billFinanceDetails=null)
-        // state is NOT merged into L2 at commit, and evict Bill from L2 so the next
-        // read reloads the correct FK straight from the database. Same correctness
-        // guarantee as the refresh, none of the EAGER-graph cost.
+        // A per-class evict list was tried here (and briefly widened to a blanket
+        // evictAll()) but on its own neither fixes the "0 lines / gross 0 right
+        // after settle" symptom (#24030) — live-reproduced even with evictAll() AND
+        // a Payara connection-pool flush; only a full Payara restart cleared it,
+        // meaning the staleness survives both the JPA L2 cache and the JDBC
+        // connection pool. The actual fix for #24030 lives on the READ side instead:
+        // PharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill() now
+        // reloads via BillBeanController.fetchBillWithItemsAndFeesBypassingCache(),
+        // which uses javax.persistence.cache.retrieveMode=BYPASS / storeMode=REFRESH
+        // (the same pattern as BillService.reloadBill()) instead of a cache-aware
+        // JPQL read — that's what actually forces a fresh Bill instance with a
+        // correctly re-resolved billItems collection. Kept the eviction here scoped
+        // to the entities this method natively writes (rather than evictAll(), which
+        // would also evict unrelated, deliberately long-lived reference-data caches —
+        // see the eclipselink.cache.size.default tuning note in persistence.xml) as
+        // defense-in-depth for any other reader that doesn't use the bypass path.
         long tReconcile = System.currentTimeMillis();
         em.detach(bill);
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
@@ -218,6 +228,7 @@ public class InpatientDirectIssueNativeSqlService {
         cache.evict(StockHistory.class);
         cache.evict(Stock.class);
         cache.evict(BillItem.class);
+        cache.evict(PharmaceuticalBillItem.class);
         cache.evict(BillFinanceDetails.class);
         cache.evict(BillItemFinanceDetails.class);
         LOGGER.log(Level.INFO, "[NativeSettle] cache reconcile done ms={0} reconcileMs={1}",
@@ -422,7 +433,7 @@ public class InpatientDirectIssueNativeSqlService {
 
     /**
      * Inserts one BillItemFinanceDetails row per item and one BillFinanceDetails row for the bill.
-     * Returns double[]{billGrossTotal, billNetTotal}.
+     * Returns double[]{billGrossTotal, billNetTotal, billMarginTotal}.
      *
      * Previously used em.persist() which triggered EclipseLink class descriptor
      * initialisation for BillItemFinanceDetails (4 EAGER associations: PharmaceuticalBillItem,
@@ -439,6 +450,7 @@ public class InpatientDirectIssueNativeSqlService {
         BigDecimal totalFreeQuantity = BigDecimal.ZERO;
         BigDecimal billGrossTotal = BigDecimal.ZERO;
         BigDecimal billNetTotal = BigDecimal.ZERO;
+        BigDecimal billMarginTotal = BigDecimal.ZERO;
 
         for (int i = 0; i < items.size(); i++) {
             BillItemData item = items.get(i);
@@ -534,6 +546,7 @@ public class InpatientDirectIssueNativeSqlService {
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
             billGrossTotal = billGrossTotal.add(grossValue);
             billNetTotal = billNetTotal.add(netValue);
+            billMarginTotal = billMarginTotal.add(BigDecimal.valueOf(Math.abs(item.getMarginValue())));
 
             LOGGER.log(Level.INFO, "[financeDetails] item {0} inserted bifdId={1} ms={2}",
                     new Object[]{i, bifdId, System.currentTimeMillis() - fdT0});
@@ -570,7 +583,7 @@ public class InpatientDirectIssueNativeSqlService {
         LOGGER.log(Level.INFO, "[financeDetails] DONE bfdId={0} ms={1}",
                 new Object[]{bfdId, System.currentTimeMillis() - fdT0});
 
-        return new double[]{billGrossTotal.doubleValue(), billNetTotal.doubleValue()};
+        return new double[]{billGrossTotal.doubleValue(), billNetTotal.doubleValue(), billMarginTotal.doubleValue()};
     }
 
     // -----------------------------------------------------------------------

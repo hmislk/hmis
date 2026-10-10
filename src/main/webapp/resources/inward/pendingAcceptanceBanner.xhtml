@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- "Not yet accepted" warning banner (#24150) for a single admission.
+         One row per PENDING transfer request — admission handover, room
+         transfer, send-to-theatre or return-to-ward. When the request is for
+         the logged-in department the matching Accept action is offered
+         (subject to the existing privileges); otherwise the user is told
+         which department has to accept it. Must be placed inside the host
+         page's h:form. -->
+    <cc:interface>
+        <cc:attribute name="admission" type="com.divudi.core.entity.inward.Admission" required="true"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <ui:repeat value="#{patientTransferController.pendingAcceptancesForAdmission(cc.attrs.admission)}" var="req">
+            <ui:param name="kind" value="#{patientTransferController.pendingAcceptanceKind(req)}"/>
+            <ui:param name="forMyDept" value="#{patientTransferController.isPendingAcceptanceForLoggedDepartment(req)}"/>
+            <ui:param name="targetDept" value="#{patientTransferController.pendingAcceptanceDepartment(req)}"/>
+            <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" role="alert">
+                <div>
+                    <h:outputText styleClass="fas fa-triangle-exclamation me-2"/>
+                    <strong><h:outputText value="Not yet accepted — #{patientTransferController.pendingAcceptanceLabel(req)}"/></strong>
+                    <h:outputText value=": #{req.toRoomFacilityCharge.name}"
+                                  rendered="#{req.toRoomFacilityCharge ne null}"/>
+                    <h:outputText value=" (#{targetDept.name})" rendered="#{targetDept ne null}"/>
+                    <h:outputText value=", initiated "/>
+                    <h:outputText value="#{req.initiatedAt}">
+                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    </h:outputText>
+                    <h:outputText value=" by #{req.initiatedBy.webUserPerson.name}"
+                                  rendered="#{req.initiatedBy.webUserPerson ne null}"/>
+                    <h:outputText value="."/>
+                    <br/>
+                    <h:outputText value="Please accept the patient."
+                                  rendered="#{forMyDept}"/>
+                    <h:outputText value="This must be accepted by #{targetDept.name}. Please ask a user from #{targetDept.name} to accept the patient."
+                                  rendered="#{not forMyDept and targetDept ne null}"/>
+                    <h:outputText value="The receiving department is not set on this request."
+                                  rendered="#{targetDept eq null}"/>
+                </div>
+                <div class="d-flex gap-2">
+                    <p:commandButton
+                        value="Accept Patient"
+                        ajax="false"
+                        icon="fa fa-check-circle"
+                        class="ui-button-success"
+                        rendered="#{forMyDept and (kind eq 'ADMISSION' or kind eq 'ROOM_TRANSFER') and webUserController.hasPrivilege('InwardRoomPatientAccept')}"
+                        action="#{patientTransferController.navigateToPatientAcceptForAdmission(cc.attrs.admission)}"/>
+                    <p:commandButton
+                        value="Accept in Theatre"
+                        ajax="false"
+                        icon="fa fa-hospital"
+                        class="ui-button-success"
+                        rendered="#{forMyDept and kind eq 'SEND_TO_THEATRE' and webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                        action="#{patientTransferController.navigateToTheatreStatusForRequest(req)}"/>
+                    <p:commandButton
+                        value="Accept Return from Theatre"
+                        ajax="false"
+                        icon="fa fa-undo"
+                        class="ui-button-success"
+                        rendered="#{forMyDept and kind eq 'RETURN_TO_WARD' and webUserController.hasPrivilege('WardAcceptTheatreReturn')}"
+                        onclick="if (!confirm('Accept this patient back from theatre?')) return false;"
+                        action="#{patientTransferController.acceptReturnToWardForRequest(req)}"/>
+                </div>
+            </div>
+        </ui:repeat>
+    </cc:implementation>
+</html>

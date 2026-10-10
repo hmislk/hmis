@@ -1,0 +1,92 @@
+/* Dot-matrix / impact-printer profile for inward Deposit & Payment 5x5 receipts.
+   One fixed-width font, pt sizing, no text-transform, character rules only.
+   Target: Epson LQ-310 at 10 CPI / 6 LPI, 40-column body (~4in) inside a 5in form.
+   All selectors are prefixed dmx- / .dmxbill so this cannot affect other 5x5 bills. */
+
+.dmxbill {
+    font-family: "Courier New", "Courier", monospace;
+    font-size: 12pt;
+    line-height: 1;
+    color: #000;
+    width: 40ch;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0;
+    /* NO text-transform. NO % / px font sizes. */
+}
+
+.dmxbill .dmx-header,
+.dmxbill .dmx-heading {
+    text-align: center;
+    white-space: pre;
+}
+
+.dmxbill .dmx-heading {
+    font-size: 13pt;
+    font-weight: bold;
+}
+
+.dmxbill .dmx-rule {
+    white-space: pre;
+    overflow: hidden;
+    letter-spacing: 0;
+}
+
+.dmxbill .dmx-row {
+    display: flex;
+    width: 40ch;
+}
+
+.dmxbill .dmx-label {
+    flex: 0 0 16ch;
+    white-space: pre;
+}
+
+.dmxbill .dmx-value {
+    flex: 1 1 auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.dmxbill .dmx-amount-row {
+    display: flex;
+    width: 40ch;
+    font-size: 13pt;
+    font-weight: bold;
+}
+
+.dmxbill .dmx-amount-label { flex: 1 1 auto; white-space: pre; }
+.dmxbill .dmx-amount-value { flex: 0 0 14ch; text-align: right; white-space: pre; }
+
+.dmxbill .dmx-cashier,
+.dmxbill .dmx-footer {
+    white-space: pre-wrap;
+    text-align: left;
+}
+
+.dmxbill .dmx-footer { text-align: center; }
+
+.dmxbill .dmx-pre {
+    white-space: pre;
+    font-family: "Courier New", "Courier", monospace;
+    font-size: 12pt;
+}
+
+@media print {
+    .dmxbill {
+        width: 40ch;
+    }
+    /* Page/form geometry is left to the printer driver (custom 5x5, tractor feed).
+       Do NOT set negative margins or fixed cm boxes here. */
+}
+
+@media screen {
+    .dmxbill {
+        width: 40ch;
+        border: 1px dashed #999;
+        background: #fff;
+        padding: 4px;
+    }
+
+    .dmx-print-only { display: none; }
+}

@@ -228,6 +228,53 @@
                             </div>
                         </f:facet>
 
+                        <!-- Column Visibility Settings - Subtle placement, same pattern as pharmacy_grn_return_request.xhtml -->
+                        <div class="mb-2 pb-1" style="border-bottom: 1px solid #e9ecef;">
+                            <p:panel id="panelColumnToggler" toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1" style="font-size: 0.75rem;"></i>
+                                        Configure Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-2" style="font-size: 0.8rem">
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalBhtNoVisible}" itemLabel="BHT No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalPatientNameVisible}" itemLabel="Patient Name">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalAdmittedVisible}" itemLabel="Admitted">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalDischargedVisible}" itemLabel="Discharged">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalFinalBillNoVisible}" itemLabel="Final Bill No">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalAdmissionTypeVisible}" itemLabel="Admission Type">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalTotalFinalPaymentVisible}" itemLabel="Total Final Payment">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalTotalDepositVisible}" itemLabel="Total Deposit">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalCreditSettlementVisible}" itemLabel="Credit Settlement">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalCreditCompanyDueVisible}" itemLabel="Credit Company Due">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox value="#{userSettingsController.inwardInvoiceJournalCreditCompanyNameVisible}" itemLabel="Credit Company">
+                                        <p:ajax update="tblReport panelColumnToggler" />
+                                    </p:selectBooleanCheckbox>
+                                </div>
+                            </p:panel>
+                        </div>
+
                         <!--
                             PrimeFaces' theme forces table-layout:fixed and width:100% on
                             .ui-datatable table via a class rule, which silently defeats plain
@@ -263,31 +310,37 @@
                             rowsPerPageTemplate="10,20,50,{ShowAll|'All'}">
 
                             <!-- ===== Patient / admission details ===== -->
-                            <p:column headerText="BHT No" style="white-space:nowrap;">
+                            <p:column headerText="BHT No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalBhtNoVisible}">
                                 <h:outputText value="#{row.bhtNo}" />
                             </p:column>
 
-                            <p:column headerText="Patient Name" style="white-space:nowrap;">
+                            <p:column headerText="Patient Name" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalPatientNameVisible}">
                                 <h:outputText value="#{row.patientName}" />
                             </p:column>
 
-                            <p:column headerText="Admitted" style="white-space:nowrap;">
+                            <p:column headerText="Admitted" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalAdmittedVisible}">
                                 <h:outputText value="#{row.dateOfAdmission}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Discharged" style="white-space:nowrap;">
+                            <p:column headerText="Discharged" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalDischargedVisible}">
                                 <h:outputText value="#{row.dateOfDischarge}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Final Bill No" style="white-space:nowrap;">
+                            <p:column headerText="Final Bill No" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalFinalBillNoVisible}">
                                 <h:outputText value="#{row.finalBillNo}" />
                             </p:column>
 
-                            <p:column headerText="Admission Type" style="white-space:nowrap;">
+                            <p:column headerText="Admission Type" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalAdmissionTypeVisible}">
                                 <h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" />
                             </p:column>
 
@@ -363,14 +416,29 @@
                                 </f:facet>
                             </p:column>
 
-                            <!-- ===== Deposit total ===== -->
-                            <p:column headerText="Total Deposits"
-                                      style="text-align:right; white-space:nowrap;">
-                                <h:outputText value="#{row.totalDeposits}">
+                            <!-- ===== Final payment total (formerly mislabeled "Total Deposits") ===== -->
+                            <p:column headerText="Total Final Payment"
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalTotalFinalPaymentVisible}">
+                                <h:outputText value="#{row.totalFinalPayment}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposits}">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalFinalPayment}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <!-- ===== Deposit total (genuine "Make a Deposit" totals) ===== -->
+                            <p:column headerText="Total Deposit"
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalTotalDepositVisible}">
+                                <h:outputText value="#{row.totalDeposit}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposit}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </f:facet>
@@ -378,7 +446,8 @@
 
                             <!-- ===== Credit settlement ===== -->
                             <p:column headerText="Credit Settlement"
-                                      style="text-align:right; white-space:nowrap;">
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalCreditSettlementVisible}">
                                 <h:outputText value="#{row.creditSettlementTotal}">
                                     <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                 </h:outputText>
@@ -389,41 +458,66 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Credit Company" style="white-space:nowrap;">
+                            <!-- ===== Credit company outstanding due ===== -->
+                            <p:column headerText="Credit Company Due"
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalCreditCompanyDueVisible}">
+                                <h:outputText value="#{row.creditCompanyDue}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditCompanyDue}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Credit Company" style="white-space:nowrap;"
+                                      rendered="#{userSettingsController.inwardInvoiceJournalCreditCompanyNameVisible}">
                                 <h:outputText value="#{row.creditCompanyName}" />
                             </p:column>
 
                             <f:facet name="footer">
                                 <div class="text-end">
                                     <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Inpatient Reports - Show Gross Value, Discount and Service Charge', true)}">
-                                        <strong>Grand Total Gross: </strong>
+                                        <h:outputText value="Grand Total Gross: " styleClass="fw-bold" />
                                         <h:outputText value="#{inwardInvoiceJournalController.grandTotalGross}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
-                                        <strong>Grand Total Discount: </strong>
+                                        <h:outputText value="Grand Total Discount: " styleClass="fw-bold" />
                                         <h:outputText value="#{inwardInvoiceJournalController.grandTotalDiscount}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
-                                        <strong>Grand Total Service Charge: </strong>
+                                        <h:outputText value="Grand Total Service Charge: " styleClass="fw-bold" />
                                         <h:outputText value="#{inwardInvoiceJournalController.grandTotalServiceCharge}">
                                             <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                         </h:outputText>
                                         &#160;&#160;&#160;
                                     </ui:fragment>
-                                    <strong>Grand Total Net Charges: </strong>
+                                    <h:outputText value="Grand Total Net Charges: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCharges}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Deposits: </strong>
-                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposits}">
+                                    <h:outputText value="Grand Total Final Payment: " styleClass="fw-bold" />
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalFinalPayment}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                     &#160;&#160;&#160;
-                                    <strong>Grand Total Credit Settlements: </strong>
+                                    <h:outputText value="Grand Total Deposit: " styleClass="fw-bold" />
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalDeposit}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <h:outputText value="Grand Total Credit Settlements: " styleClass="fw-bold" />
                                     <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditSettlement}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                    &#160;&#160;&#160;
+                                    <h:outputText value="Grand Total Credit Company Due: " styleClass="fw-bold" />
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalCreditCompanyDue}">
                                         <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                     </h:outputText>
                                 </div>

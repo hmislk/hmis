@@ -116,8 +116,17 @@
                                                 ajax="false"
                                                 styleClass="ui-button-danger ui-button-lg"
                                                 icon="fas fa-calculator"
+                                                rendered="#{!pharmacyAdjustmentController.requiresApproval or pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
                                                 action="#{pharmacyAdjustmentController.adjustCostRates()}" />
-                                            <p:defaultCommand target="btnAdjust"/>
+                                            <p:commandButton
+                                                id="btnSendForApproval"
+                                                value="Send for Approval"
+                                                ajax="false"
+                                                styleClass="ui-button-danger ui-button-lg"
+                                                icon="fa fa-paper-plane"
+                                                rendered="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}"
+                                                action="#{pharmacyAdjustmentController.adjustCostRates()}" />
+                                            <p:defaultCommand target="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null ? 'btnSendForApproval' : 'btnAdjust'}"/>
                                         </div>
                                     </div>
                                 </p:panel>
@@ -183,7 +192,8 @@
                             </p:column>
 
                             <p:column headerText="New Cost Rate" styleClass="text-end">
-                                <p:inputText value="#{i.newCostRate}" styleClass="cost-rate-input w-100" placeholder="Enter new cost rate..."/>
+                                <p:inputText value="#{i.newCostRate}" styleClass="cost-rate-input w-100" placeholder="Enter new cost rate..."
+                                             readonly="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"/>
                             </p:column>
 
                             <p:column

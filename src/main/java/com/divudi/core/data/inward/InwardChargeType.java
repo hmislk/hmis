@@ -26,12 +26,13 @@ public enum InwardChargeType {
     MedicinesAndSurgicalSupplies("Medicines and Surgical Supplies", true),//For Surgery Bill Medicines
     MOCharges("MO Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     MaintainCharges("Maintain Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
-    DoctorAndNurses("Assisting Charge", CalculationMethod.BILL_FEE, true),//Set Doctor && Nurse Fees
+    DoctorAndNurses("Assistant Fee", CalculationMethod.BILL_FEE, true),//Set Doctor && Nurse Fees
     NursingCharges("Nursing Care", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     OxygenCharges("Oxygen Charges", true),
     OtherCharges("Other Charges", true),
     OperationTheatreCharges("Operation Theatre Charges", true),
-    ProfessionalCharge("Professional Charge", CalculationMethod.BILL_FEE, true),//Only for Consultant Fees
+    ProfessionalCharge("Consultant Fee", CalculationMethod.BILL_FEE, true),//Only for Consultant Fees
+    TechnicianAndParamedicalCharge("Technician Fee", CalculationMethod.BILL_FEE, true),//Nurses, technicians, other paramedical staff — never suppressed, independent of the merge toggle
     ReimbursementCharges("Reimbursement Charges", true),
     RoomCharges("Room Charges", CalculationMethod.PATIENT_ROOM, true),//GOES WITH PATIENT ROOM
     physiotherapy("Physiotherapy Charges", true),
@@ -57,6 +58,18 @@ public enum InwardChargeType {
     LensFee("Lense Fee", true),
     @Deprecated
     PackageFee("PackageFee", true),
+
+    /**
+     * Computed at final-bill time only: the amount a package admission's real usage exceeds the package's
+     * total price. Never assigned to an Item, never entered by an admin —
+     * allowToSetItems=false keeps it out of both the Inpatient Package
+     * "Charge Type Amounts" admin screen and the automatic
+     * getInwardChargeTypesForSetting() seeding loop that final-bill totals
+     * are built from; BhtSummeryController.applyPackagePricingIfApplicable()
+     * appends it to chargeItemTotals directly when needed, the same way the
+     * existing CancelledReturnedMedicine value is computed outside that loop.
+     */
+    PackageExcessCharges("Package Excess Charges", false),
     HospitalSupportService("Hospital Support Service Charges", true),
     ExtraMedicine("Extra Medicine Charges", true),
     DialysisTreatment("Dialysis Treatment Charges", true),

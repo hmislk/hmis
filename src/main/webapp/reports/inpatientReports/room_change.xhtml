@@ -117,18 +117,21 @@
                                 <p:outputLabel value="From Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:autoComplete 
-                                forceSelection="true"
-                                id="frwrd"
-                                inputStyleClass="w-100"
-                                class="m-1 w-100"
-                                value="#{roomChangeReportController.fromWard}" 
-                                completeMethod="#{roomFacilityChargeController.completeRoom}"
-                                maxResults="10"
-                                var="rf"
-                                itemLabel="#{rf.name}"
-                                itemValue="#{rf}"
-                                size="30" />
+                             <p:autoComplete id="fwdbd"
+                                            value="#{roomChangeReportController.fromWard}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="From Ward"
+                                            completeMethod="#{departmentController.completeInwardDepartments}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                <p:column headerText="Ward Name">
+                                    <h:outputText value="#{dept.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:spacer width="20"/>
                             <!-- To ward -->
@@ -137,18 +140,21 @@
                                 <p:outputLabel value="To Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:autoComplete 
-                                forceSelection="true"
-                                id="towrd"
-                                inputStyleClass="w-100"
-                                class="m-1 w-100"
-                                value="#{roomChangeReportController.toWard}" 
-                                completeMethod="#{roomFacilityChargeController.completeRoom}"
-                                maxResults="10"
-                                var="rf"
-                                itemLabel="#{rf.name}"
-                                itemValue="#{rf}"
-                                size="30" />
+                            <p:autoComplete id="twdbdSelect"
+                                            value="#{roomChangeReportController.toWard}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="To Ward"
+                                            completeMethod="#{departmentController.completeInwardDepartments}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                <p:column headerText="Ward Name">
+                                    <h:outputText value="#{dept.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                         </h:panelGrid>
 
@@ -177,8 +183,8 @@
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download">
-                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail"/>
+                                value="Download"
+                                action="#{roomChangeReportController.downloadRoomChangeReportExcel()}">
                             </p:commandButton>
 
                             <p:commandButton
@@ -220,7 +226,7 @@
                                                 <p:column rowspan="2" headerText="Patient Name" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Age" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Gender" styleClass="border"/>
-                                                <p:column rowspan="2" headerText="Visit" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Visit" styleClass="border" style="width:200px; min-width:200px;"/>
                                                 <p:column rowspan="2" headerText="Admission Date" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Admission Time" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Transfer Request No." styleClass="border"/>
@@ -252,7 +258,9 @@
                                         <p:column><h:outputLabel value="#{detail.patientName}" /></p:column>
                                         <p:column><h:outputLabel value="#{detail.patientAge}" /></p:column>
                                         <p:column><h:outputLabel value="#{detail.patientSex}" /></p:column>
-                                        <p:column><h:outputLabel value="#{detail.bhtNo}" /></p:column>
+                                        <p:column style="width:200px; min-width:200px; white-space:nowrap;">
+                                            <h:outputLabel value="#{detail.bhtNo}" />
+                                        </p:column>
                                         <p:column><h:outputLabel value="#{detail.dateOfAdmission}"><f:convertDateTime pattern="M/d/yyyy" /></h:outputLabel></p:column>
                                         <p:column><h:outputLabel value="#{detail.dateOfAdmission}"><f:convertDateTime pattern="HH:mm" /></h:outputLabel></p:column>
                                         <p:column><h:outputLabel value="#{detail.transferRequestId}" /></p:column>

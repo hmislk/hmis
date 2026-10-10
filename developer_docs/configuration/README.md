@@ -5,3 +5,4 @@ Centralized references for runtime configuration. Start here before introducing 
 - [Application Options](application-options.md) – catalogue of feature toggles and usage guidance.
 - [Bill Number Configuration](bill-number-config-options.md) – instructions for enabling the prefix/year counting strategies.
 - [Printer Configuration System](printer-configuration-system.md) – setup for printing profiles, templates, and troubleshooting.
+- [Institution-Specific Behavior](institution-specific-behavior.md) – why `applicationInstitution eq 'HospitalName'` checks are highly discouraged, and the `ConfigOption` pattern to use instead.

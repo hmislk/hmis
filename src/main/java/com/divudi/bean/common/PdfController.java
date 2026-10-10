@@ -33,15 +33,24 @@ import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.ReportItemType;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.lab.CommonReportItem;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.PatientReportItemValue;
@@ -80,6 +89,9 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 
 import java.util.function.Supplier;
+import com.itextpdf.kernel.colors.DeviceGray;
+import com.itextpdf.layout.borders.SolidBorder;
+import com.itextpdf.layout.element.Div;
 
 /**
  *
@@ -110,6 +122,336 @@ public class PdfController {
      */
     public PdfController() {
     }
+    /**
+     * Builds the immutable, full-replacement Final Bill PDF snapshot for an
+     * approved Inward Final Bill (issue #23848). Content mirrors, in a single
+     * document, everything that used to be spread across the live "Final
+     * Bill", "Professional Bill", Custom Bill 2/3/4, Bundled Custom 1, Green
+     * Sheet, and Credit Company Letter tabs on inward_reprint_bill_final.xhtml
+     * (see also inward_final_bill_approve.xhtml, which now shows this same
+     * frozen snapshot instead of a live re-render once a bill is approved).
+     *
+     * Built as an HTML string converted via iText html2pdf's
+     * {@link HtmlConverter#convertToPdf(String, java.io.OutputStream)} rather
+     * than low-level iText layout objects (Document/Table/Cell) - the same
+     * technique the now-deleted InwardSearch.buildFinalBillPdf/buildFinalBillHtml
+     * used - because it lets this much markup be written as near-literal HTML
+     * instead of hand-built layout objects.
+     *
+     * Every field pulled from {@code bill}/{@code categoryTotals}/
+     * {@code paymentBills} (and the {@code PatientEncounter} reached through
+     * {@code bill}) is null-guarded: a missing relationship renders "N/A" or
+     * is simply omitted, it never throws. Signature is unchanged from the
+     * original thinner implementation so {@link com.divudi.service.FinalBillPdfSnapshotService#getOrCreateSnapshot(Bill)}
+     * does not need to change.
+     */
+    public byte[] createFinalBillSnapshotPdf(Bill bill, List<Map.Entry<String, Double>> categoryTotals, List<Bill> paymentBills) throws IOException {
+        String html = buildFinalBillSnapshotHtml(bill, categoryTotals, paymentBills);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        com.itextpdf.html2pdf.ConverterProperties converterProperties = new com.itextpdf.html2pdf.ConverterProperties();
+        converterProperties.setFontProvider(buildFinalBillSnapshotFontProvider());
+        HtmlConverter.convertToPdf(html, outputStream, converterProperties);
+        return outputStream.toByteArray();
+    }
+
+    /**
+     * A plain {@code HtmlConverter.convertToPdf(html, outputStream)} call
+     * (no {@link com.itextpdf.html2pdf.ConverterProperties}) only has
+     * iText's built-in standard PDF fonts available, none of which cover
+     * non-Latin scripts (Sinhala, Tamil, etc.) - a patient, doctor, or
+     * institution name in one of those scripts would silently render blank
+     * or as missing-glyph boxes in the frozen, permanently-archived
+     * snapshot. This repo does not bundle a dedicated Unicode font (no
+     * Noto Sans Sinhala/Tamil or similar under
+     * {@code src/main/webapp/resources/fonts}), so the best available fix
+     * without adding new binary font assets is to also register whatever
+     * Unicode-capable fonts are installed on the deployment host's OS
+     * (e.g. a {@code fonts-noto}-family package on Linux) via
+     * {@link com.itextpdf.layout.font.FontProvider#addSystemFonts()},
+     * alongside iText's own standard fonts as a fallback. This is a real
+     * improvement over the previous unconfigured default, but is only as
+     * good as the fonts actually installed on the server - deployments
+     * expecting non-Latin patient/doctor/institution names should verify a
+     * suitable Unicode font package is installed on the host, or a
+     * dedicated font should be bundled with the app and registered here via
+     * {@link com.itextpdf.layout.font.FontProvider#addDirectory(String)}
+     * instead.
+     */
+    private com.itextpdf.layout.font.FontProvider buildFinalBillSnapshotFontProvider() {
+        com.itextpdf.layout.font.FontProvider fontProvider = new com.itextpdf.layout.font.FontProvider();
+        fontProvider.addStandardPdfFonts();
+        fontProvider.addSystemFonts();
+        return fontProvider;
+    }
+
+    private String buildFinalBillSnapshotHtml(Bill bill, List<Map.Entry<String, Double>> categoryTotals, List<Bill> paymentBills) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        SimpleDateFormat dtf = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><style>")
+                .append("body{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#111;}")
+                .append("h1,h2,h3{margin:4px 0;}")
+                .append("table{width:100%;border-collapse:collapse;margin-bottom:10px;}")
+                .append("th,td{border:1px solid #999;padding:3px 6px;text-align:left;font-size:11px;}")
+                .append("th{background:#eee;}")
+                .append(".txt-right{text-align:right;}")
+                .append(".section{margin-top:14px;}")
+                .append(".muted{color:#555;}")
+                .append(".center{text-align:center;}")
+                .append("</style></head><body>");
+
+        appendFinalBillSnapshotLetterhead(sb, bill);
+        appendFinalBillSnapshotIdentity(sb, bill, dtf);
+        appendFinalBillSnapshotPatientInfo(sb, bill, dtf);
+        appendFinalBillSnapshotFinancialSummary(sb, bill, df);
+        appendFinalBillSnapshotCategoryTotals(sb, categoryTotals, df);
+        appendFinalBillSnapshotPayments(sb, paymentBills, df, dtf);
+        appendFinalBillSnapshotProfessionalFees(sb, bill, df);
+        appendFinalBillSnapshotCreditCompanyLetter(sb, bill, df);
+
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private void appendFinalBillSnapshotLetterhead(StringBuilder sb, Bill bill) {
+        Institution institution = bill != null ? bill.getInstitution() : null;
+        sb.append("<div class='center' style='margin-bottom:8px;'>");
+        if (institution != null && institution.getName() != null) {
+            sb.append("<div style='font-size:16px;font-weight:bold;'>").append(escapeHtml(institution.getName())).append("</div>");
+        } else {
+            sb.append("<div style='font-size:16px;font-weight:bold;'>Final Bill</div>");
+        }
+        if (institution != null) {
+            List<String> contactParts = new ArrayList<>();
+            addIfNotBlank(contactParts, institution.getAddress());
+            addIfNotBlank(contactParts, institution.getPhone());
+            addIfNotBlank(contactParts, institution.getFax());
+            addIfNotBlank(contactParts, institution.getEmail());
+            addIfNotBlank(contactParts, institution.getWeb());
+            if (!contactParts.isEmpty()) {
+                sb.append("<div class='muted' style='font-size:10px;'>")
+                        .append(escapeHtml(String.join("  |  ", contactParts)))
+                        .append("</div>");
+            }
+        }
+        sb.append("</div><hr/>");
+    }
+
+    private void appendFinalBillSnapshotIdentity(StringBuilder sb, Bill bill, SimpleDateFormat dtf) {
+        sb.append("<h2>Final Bill - ").append(escapeHtml(bill != null ? bill.getDeptId() : "N/A")).append("</h2>");
+        sb.append("<table><tr>");
+        Integer version = bill != null ? bill.getFinalBillVersionSerial() : null;
+        sb.append("<td><b>Version</b></td><td>").append(version != null ? version : "N/A").append("</td>");
+        sb.append("<td><b>Approved by</b></td><td>")
+                .append(bill != null && bill.getApproveUser() != null ? escapeHtml(bill.getApproveUser().getName()) : "N/A")
+                .append("</td>");
+        sb.append("</tr><tr>");
+        sb.append("<td><b>Approved on</b></td><td>")
+                .append(bill != null && bill.getApproveAt() != null ? dtf.format(bill.getApproveAt()) : "N/A")
+                .append("</td>");
+        sb.append("<td><b>Generated on</b></td><td>").append(dtf.format(new Date())).append("</td>");
+        sb.append("</tr></table>");
+    }
+
+    private void appendFinalBillSnapshotPatientInfo(StringBuilder sb, Bill bill, SimpleDateFormat dtf) {
+        PatientEncounter pe = bill != null ? bill.getPatientEncounter() : null;
+
+        String patientName = "N/A";
+        if (pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null) {
+            Person person = pe.getPatient().getPerson();
+            patientName = person.getNameWithTitle() != null ? person.getNameWithTitle() : person.getName();
+        }
+
+        String bhtNo = pe != null && pe.getBhtNo() != null ? pe.getBhtNo() : "N/A";
+
+        Date admissionDate = null;
+        Date dischargeDate = null;
+        String admissionTypeName = "N/A";
+        String wardName = "N/A";
+        if (pe != null) {
+            admissionDate = pe.getPrintingAdmissionTime() != null ? pe.getPrintingAdmissionTime() : pe.getDateOfAdmission();
+            dischargeDate = pe.getPrintingDischargeTime() != null ? pe.getPrintingDischargeTime() : pe.getDateOfDischarge();
+            AdmissionType admissionType = pe.getAdmissionType();
+            if (admissionType != null && admissionType.getName() != null) {
+                admissionTypeName = admissionType.getName();
+            }
+            PatientRoom currentRoom = pe.getCurrentPatientRoom();
+            if (currentRoom != null) {
+                RoomFacilityCharge rfc = currentRoom.getRoomFacilityCharge();
+                if (rfc != null && rfc.getName() != null) {
+                    wardName = rfc.getName();
+                }
+            }
+        }
+
+        sb.append("<div class='section'><h3>Patient / Admission Details</h3><table>");
+        sb.append("<tr><td><b>Patient</b></td><td>").append(escapeHtml(patientName)).append("</td>");
+        sb.append("<td><b>BHT No</b></td><td>").append(escapeHtml(bhtNo)).append("</td></tr>");
+        sb.append("<tr><td><b>Admission Date</b></td><td>").append(admissionDate != null ? dtf.format(admissionDate) : "N/A").append("</td>");
+        sb.append("<td><b>Discharge Date</b></td><td>").append(dischargeDate != null ? dtf.format(dischargeDate) : "N/A").append("</td></tr>");
+        sb.append("<tr><td><b>Admission Type</b></td><td>").append(escapeHtml(admissionTypeName)).append("</td>");
+        sb.append("<td><b>Ward / Room</b></td><td>").append(escapeHtml(wardName)).append("</td></tr>");
+        sb.append("</table></div>");
+    }
+
+    private void appendFinalBillSnapshotFinancialSummary(StringBuilder sb, Bill bill, DecimalFormat df) {
+        double grantTotal = bill != null ? bill.getGrantTotal() : 0.0;
+        double discount = bill != null ? bill.getDiscount() : 0.0;
+        double claimableTotal = bill != null ? bill.getClaimableTotal() : 0.0;
+        double netTotal = bill != null ? bill.getNetTotal() : 0.0;
+        double paidAmount = bill != null ? bill.getPaidAmount() : 0.0;
+        double due = netTotal - paidAmount;
+
+        sb.append("<div class='section'><h3>Financial Summary</h3><table>");
+        sb.append("<tr><td>Gross Total</td><td class='txt-right'>").append(df.format(grantTotal)).append("</td></tr>");
+        sb.append("<tr><td>Discount</td><td class='txt-right'>").append(df.format(discount)).append("</td></tr>");
+        sb.append("<tr><td>Claimable Total</td><td class='txt-right'>").append(df.format(claimableTotal)).append("</td></tr>");
+        sb.append("<tr><td><b>Net Total</b></td><td class='txt-right'><b>").append(df.format(netTotal)).append("</b></td></tr>");
+        sb.append("<tr><td>Paid Amount</td><td class='txt-right'>").append(df.format(paidAmount)).append("</td></tr>");
+        sb.append("<tr><td><b>Due</b></td><td class='txt-right'><b>").append(df.format(due)).append("</b></td></tr>");
+        sb.append("</table></div>");
+    }
+
+    private void appendFinalBillSnapshotCategoryTotals(StringBuilder sb, List<Map.Entry<String, Double>> categoryTotals, DecimalFormat df) {
+        sb.append("<div class='section'><h3>Charge Category Totals</h3><table>");
+        sb.append("<tr><th>Charge Category</th><th>Amount</th></tr>");
+        if (categoryTotals != null) {
+            for (Map.Entry<String, Double> entry : categoryTotals) {
+                if (entry == null) {
+                    continue;
+                }
+                double amount = entry.getValue() != null ? entry.getValue() : 0.0;
+                sb.append("<tr><td>").append(escapeHtml(entry.getKey())).append("</td><td class='txt-right'>")
+                        .append(df.format(amount)).append("</td></tr>");
+            }
+        }
+        sb.append("</table></div>");
+    }
+
+    private void appendFinalBillSnapshotPayments(StringBuilder sb, List<Bill> paymentBills, DecimalFormat df, SimpleDateFormat dtf) {
+        sb.append("<div class='section'><h3>Payments / Deposits / Refunds</h3><table>");
+        sb.append("<tr><th>Date</th><th>Type</th><th>Amount</th></tr>");
+        if (paymentBills != null) {
+            for (Bill paymentBill : paymentBills) {
+                if (paymentBill == null) {
+                    continue;
+                }
+                String date = paymentBill.getCreatedAt() != null ? dtf.format(paymentBill.getCreatedAt()) : "N/A";
+                String type = paymentBill.getBillTypeAtomic() != null ? String.valueOf(paymentBill.getBillTypeAtomic()) : "N/A";
+                sb.append("<tr><td>").append(escapeHtml(date)).append("</td><td>").append(escapeHtml(type))
+                        .append("</td><td class='txt-right'>").append(df.format(paymentBill.getNetTotal())).append("</td></tr>");
+            }
+        }
+        sb.append("</table></div>");
+    }
+
+    private void appendFinalBillSnapshotProfessionalFees(StringBuilder sb, Bill bill, DecimalFormat df) {
+        if (bill == null || bill.getBillItems() == null) {
+            return;
+        }
+
+        StringBuilder rows = new StringBuilder();
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem == null || billItem.getInwardChargeType() != InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
+            if (billItem.getProFees() != null) {
+                for (BillFee billFee : billItem.getProFees()) {
+                    if (billFee == null) {
+                        continue;
+                    }
+                    String doctorName = "N/A";
+                    Staff staff = billFee.getStaff();
+                    if (staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null) {
+                        doctorName = staff.getPerson().getNameWithTitle();
+                    }
+                    double feeAdjusted = billFee.getFeeAdjusted();
+                    String amountDisplay = feeAdjusted == 0.0 ? "Free of Charge" : df.format(feeAdjusted);
+                    rows.append("<tr><td>").append(escapeHtml(doctorName)).append("</td><td class='txt-right'>")
+                            .append(escapeHtml(amountDisplay)).append("</td></tr>");
+                }
+            }
+            double unattributed = billItem.getUnattributedProfessionalFeeValue();
+            if (unattributed != 0.0) {
+                rows.append("<tr><td>Other Professional Charges</td><td class='txt-right'>")
+                        .append(df.format(unattributed)).append("</td></tr>");
+            }
+            double itemNetValue = billItem.getNetValue();
+            if (itemNetValue != 0.0) {
+                rows.append("<tr><td><b>Total</b></td><td class='txt-right'><b>")
+                        .append(df.format(itemNetValue)).append("</b></td></tr>");
+            }
+        }
+
+        if (rows.length() == 0) {
+            return;
+        }
+
+        sb.append("<div class='section'><h3>Professional Fee Breakdown</h3><table>");
+        sb.append("<tr><th>Doctor</th><th>Amount</th></tr>");
+        sb.append(rows);
+        sb.append("</table></div>");
+    }
+
+    private void appendFinalBillSnapshotCreditCompanyLetter(StringBuilder sb, Bill bill, DecimalFormat df) {
+        PatientEncounter pe = bill != null ? bill.getPatientEncounter() : null;
+        Institution creditCompany = pe != null ? pe.getCreditCompany() : null;
+        if (creditCompany == null) {
+            return;
+        }
+
+        List<String> addressLines = new ArrayList<>();
+        addIfNotBlank(addressLines, creditCompany.getTransAddress1());
+        addIfNotBlank(addressLines, creditCompany.getTransAddress2());
+        addIfNotBlank(addressLines, creditCompany.getTransAddress3());
+        addIfNotBlank(addressLines, creditCompany.getTransAddress4());
+        addIfNotBlank(addressLines, creditCompany.getTransAddress5());
+        addIfNotBlank(addressLines, creditCompany.getTransAddress6());
+        addIfNotBlank(addressLines, creditCompany.getTransAddress7());
+
+        String patientName = "N/A";
+        if (pe.getPatient() != null && pe.getPatient().getPerson() != null && pe.getPatient().getPerson().getNameWithTitle() != null) {
+            patientName = pe.getPatient().getPerson().getNameWithTitle();
+        }
+
+        double netTotal = bill.getNetTotal();
+        double paidAmount = bill.getPaidAmount();
+        double paidByCreditCompany = pe.getPaidByCreditCompany();
+        double dueForCreditCompany = netTotal - paidAmount - paidByCreditCompany;
+
+        sb.append("<div class='section' style='page-break-inside:avoid;'><h3>Credit Company Letter</h3>");
+        if (creditCompany.getName() != null) {
+            sb.append("<div><b>").append(escapeHtml(creditCompany.getName())).append("</b></div>");
+        }
+        for (String line : addressLines) {
+            sb.append("<div>").append(escapeHtml(line)).append("</div>");
+        }
+        sb.append("<p>Settlement of Hospital Charges Against Bill No: <b>")
+                .append(escapeHtml(bill.getDeptId())).append("</b></p>");
+        sb.append("<p>Patient: <b>").append(escapeHtml(patientName)).append("</b></p>");
+        if (pe.getPolicyNo() != null && !pe.getPolicyNo().trim().isEmpty()) {
+            sb.append("<p>Policy/Membership No: <b>").append(escapeHtml(pe.getPolicyNo())).append("</b></p>");
+        }
+        sb.append("<p>We wish to inform you that the above-named patient has received treatment at this Hospital. ")
+                .append("Enclosed please find our bill total for the amount stated above, being Hospital and Professional Charges.</p>");
+        sb.append("<p>Amount Due: <b>").append(df.format(dueForCreditCompany)).append("</b></p>");
+        sb.append("</div>");
+    }
+
+    private void addIfNotBlank(List<String> parts, String value) {
+        if (value != null && !value.trim().isEmpty()) {
+            parts.add(value.trim());
+        }
+    }
+
+    private String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     public StreamedContent createPdfForBundle(ReportTemplateRowBundle rootBundle) throws IOException {
         return createPdfForBundle(rootBundle, null);
     }
@@ -2063,42 +2405,116 @@ public class PdfController {
         document.add(lineSeparator);
     }
 
-    private void addReportHeader(Document document, ReportTemplateRowBundle rootBundle) {
-        String institutionName = "";
-        if (sessionController != null && sessionController.getLoggedUser() != null
-                && sessionController.getLoggedUser().getInstitution() != null) {
-            institutionName = sessionController.getLoggedUser().getInstitution().getName();
-        }
+    private void addReportHeader(Document document, ReportTemplateRowBundle bundle) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
 
-        if (!institutionName.isEmpty()) {
-            Paragraph instPara = new Paragraph(institutionName)
-                    .setBold()
-                    .setFontSize(16)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(2);
-            document.add(instPara);
-        }
+        String institutionName = sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName()
+                : "Institution";
 
-        Paragraph titlePara = new Paragraph(rootBundle.getName())
+        // ===== Main Title =====
+        Paragraph hospitalPara = new Paragraph(institutionName)
                 .setBold()
-                .setFontSize(14)
+                .setFontSize(16)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginBottom(2);
-        document.add(titlePara);
+        document.add(hospitalPara);
 
-        if (rootBundle.getDescription() != null && !rootBundle.getDescription().isEmpty()) {
-            Paragraph descPara = new Paragraph(rootBundle.getDescription())
+        Paragraph reportTitlePara = new Paragraph(bundle.getPrintableName() != null ? bundle.getPrintableName() : "Report")
+                .setFontSize(12)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(12);
+        document.add(reportTitlePara);
+
+        if (bundle.getDescription() != null && !bundle.getDescription().isEmpty()) {
+            Paragraph descPara = new Paragraph(bundle.getDescription())
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(10);
             document.add(descPara);
         }
 
-        SolidLine headerLine = new SolidLine(1.5f);
-        LineSeparator headerSeparator = new LineSeparator(headerLine);
-        headerSeparator.setStrokeColor(ColorConstants.BLACK);
-        document.add(headerSeparator);
-        document.add(new Paragraph("").setMarginBottom(5));
+        // This header is shared by every bundle PDF, not just the cashier
+        // reports. Only draw the filter box for a bundle whose generator
+        // actually snapshotted its filters - otherwise every field reads null
+        // and the box would claim "All Institutions / All Users" on a report
+        // that never had those filters.
+        if (!bundle.hasFilterSummary()) {
+            SolidLine headerLine = new SolidLine(1.5f);
+            LineSeparator headerSeparator = new LineSeparator(headerLine);
+            headerSeparator.setStrokeColor(ColorConstants.BLACK);
+            document.add(headerSeparator);
+            document.add(new Paragraph("").setMarginBottom(5));
+            return;
+        }
+
+        // ===== Filter Box (2 columns x 3 rows) =====
+        Table filterTable = new Table(UnitValue.createPercentArray(new float[]{50f, 50f}))
+                .useAllAvailableWidth();
+
+        filterTable.addCell(createFilterCell(
+                "FROM DATE",
+                bundle.getFromDate() != null ? sdf.format(bundle.getFromDate()) : ""
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "TO DATE",
+                bundle.getToDate() != null ? sdf.format(bundle.getToDate()) : ""
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "INSTITUTION",
+                bundle.getFilterInstitution() != null
+                        ? bundle.getFilterInstitution().getName()
+                        : "All Institutions"
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "SITE",
+                bundle.getFilterSite() != null
+                        ? bundle.getFilterSite().getName()
+                        : "All Sites"
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "DEPARTMENT",
+                bundle.getFilterDepartment() != null
+                        ? bundle.getFilterDepartment().getName()
+                        : "All Departments"
+        ));
+
+        filterTable.addCell(createFilterCell(
+                "CASHIER / USER",
+                bundle.getFilterWebUser() != null
+                        ? bundle.getFilterWebUserDisplayName()
+                        : "All Users"
+        ));
+
+        document.add(filterTable);
+        document.add(new Paragraph(" ").setMarginBottom(8));
+    }
+    
+    private Cell createFilterCell(String label, String value) {
+        Paragraph labelPara = new Paragraph(label)
+                .setBold()
+                .setFontSize(9)
+                .setMarginBottom(4);
+
+        Paragraph valuePara = new Paragraph(value != null ? value : "")
+                .setFontSize(11)
+                .setMarginBottom(0);
+
+        Div content = new Div();
+        content.add(labelPara);
+        content.add(valuePara);
+
+        return new Cell()
+                .add(content)
+                .setPaddingTop(10)
+                .setPaddingBottom(10)
+                .setPaddingLeft(12)
+                .setPaddingRight(12)
+                .setBorder(new SolidBorder(new DeviceGray(0.85f), 1));
     }
 
     private void addDtoReportHeader(Document document, com.divudi.core.data.dto.DailyReturnBundleDTO rootBundle) {
@@ -2140,34 +2556,26 @@ public class PdfController {
     }
 
     private void addReportFooter(Document document) {
-        String userName = "";
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            userName = sessionController.getLoggedUser().getName();
-        }
-        String printedTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String userName = sessionController.getLoggedUser() != null
+                ? sessionController.getLoggedUser().getName()
+                : "";
+        String printedTime = new SimpleDateFormat("dd MMM yyyy HH:mm:ss").format(new Date());
 
-        document.add(new Paragraph("").setMarginTop(15));
+        document.add(new Paragraph(" "));
 
-        SolidLine footerLine = new SolidLine(0.5f);
-        LineSeparator footerSeparator = new LineSeparator(footerLine);
-        footerSeparator.setStrokeColor(ColorConstants.GRAY);
-        document.add(footerSeparator);
+        Table footerTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
+                .useAllAvailableWidth();
 
-        float[] columnWidths = {1, 1};
-        Table footerTable = new Table(columnWidths).useAllAvailableWidth();
-        footerTable.setBorder(Border.NO_BORDER);
+        footerTable.addCell(new Cell()
+                .add(new Paragraph("Printed By : " + userName).setFontSize(9))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.LEFT));
 
-        Cell userCell = new Cell()
-                .add(new Paragraph("Printed by: " + userName).setFontSize(9).setTextAlignment(TextAlignment.LEFT))
-                .setBorder(Border.NO_BORDER);
-        footerTable.addCell(userCell);
+        footerTable.addCell(new Cell()
+                .add(new Paragraph("Printed On : " + printedTime).setFontSize(9))
+                .setBorder(Border.NO_BORDER)
+                .setTextAlignment(TextAlignment.RIGHT));
 
-        Cell timeCell = new Cell()
-                .add(new Paragraph("Printed on: " + printedTime).setFontSize(9).setTextAlignment(TextAlignment.RIGHT))
-                .setBorder(Border.NO_BORDER);
-        footerTable.addCell(timeCell);
-
-        footerTable.setMarginTop(5);
         document.add(footerTable);
     }
 
@@ -2683,6 +3091,7 @@ public class PdfController {
         if (bundle.getBundleType() != null) {
             switch (bundle.getBundleType()) {
                 case "whtIndividualReceipts":
+                case "opdProfessionalPayments":
                     populateTableForWhtIndividualReceipts(document, bundle);
                     break;
                 case "whtMonthlySummary":
@@ -2758,7 +3167,7 @@ public class PdfController {
                 table.addCell(new Cell().add(new Paragraph(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
-                table.addCell(new Cell().add(new Paragraph(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null ? bill.getToStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTax())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
@@ -2799,7 +3208,7 @@ public class PdfController {
                 table.addCell(new Cell().add(new Paragraph(bill.getDeptId() != null ? (bill.isCancelled() ? bill.getDeptId() + " (Cancelled)" : bill.isRefunded() ? bill.getDeptId() + " (Refunded)" : bill.getDeptId()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getCreater() != null && bill.getCreater().getWebUserPerson() != null && bill.getCreater().getWebUserPerson().getName() != null ? bill.getCreater().getName() != null ? bill.getCreater().getWebUserPerson().getName() + " (" + bill.getCreater().getName()+ ")" : bill.getCreater().getWebUserPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getSpeciality() != null && bill.getToStaff().getSpeciality().getName() != null ? bill.getToStaff().getSpeciality().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
-                table.addCell(new Cell().add(new Paragraph(bill.getStaff() != null && bill.getStaff().getPerson() != null && bill.getStaff().getPerson().getName() != null ? bill.getStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
+                table.addCell(new Cell().add(new Paragraph(bill.getToStaff() != null && bill.getToStaff().getPerson() != null && bill.getToStaff().getPerson().getName() != null ? bill.getToStaff().getPerson().getName() : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getTax())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                 table.addCell(new Cell().add(new Paragraph(String.format("%,.2f", bill.getNetTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));

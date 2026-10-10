@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!--
+        Prints a configurable "UNAPPROVED" heading on top of an inpatient final
+        bill that has not been approved yet (Bill.approveAt == null).
+
+        Must be placed INSIDE each <h:panelGroup id="...Priview"> that a
+        <p:printer target="..."> points at - p:printer only prints the subtree
+        of its target, so a heading placed outside the target never reaches paper.
+
+        Wording comes from the application config option
+        'Inward Final Bill - Unapproved Bill Print Heading' (default "UNAPPROVED").
+        Setting that option to blank suppresses the heading entirely; the
+        on-screen warning on inward_reprint_bill_final.xhtml is independent of
+        this option and always shows.
+    -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:panelGroup
+            layout="block"
+            rendered="#{cc.attrs.bill ne null
+                        and cc.attrs.bill.approveAt eq null
+                        and not empty configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Unapproved Bill Print Heading', 'UNAPPROVED')}"
+            style="text-align: center;
+                   font-family: verdana;
+                   font-weight: bold;
+                   font-size: 1.4em;
+                   letter-spacing: 0.3em;
+                   border: 2px solid #000;
+                   padding: 4px;
+                   margin-bottom: 6px;">
+            <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Unapproved Bill Print Heading', 'UNAPPROVED')}"/>
+        </h:panelGroup>
+    </cc:implementation>
+
+</html>

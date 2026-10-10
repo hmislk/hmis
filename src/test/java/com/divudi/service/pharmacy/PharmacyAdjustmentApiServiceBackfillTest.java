@@ -1,22 +1,26 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.core.data.BillTypeAtomic;
-import com.divudi.core.data.dto.adjustment.BackfillResultDTO;
-import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
-import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFinanceDetailsFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.service.pharmacy.PharmacyBfdBackfillService.BackfillStatus;
+import com.divudi.service.pharmacy.PharmacyBfdBackfillService.BillBackfillResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,6 +29,15 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Covers the per-bill backfill computation.
+ *
+ * <p>The derivation moved out of {@code PharmacyAdjustmentApiService} into
+ * {@link PharmacyBfdBackfillService} for #23411, so that the admin buttons, the adjustment
+ * API and {@code POST /api/pharmacy/backfill_bfd} all compute the same figures. These tests
+ * follow it there; the date-boundary helper still belongs to the API service and is still
+ * tested against it.</p>
+ */
 public class PharmacyAdjustmentApiServiceBackfillTest {
 
     private static class DummyBillFacade extends BillFacade {
@@ -33,29 +46,47 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         @Override public void edit(Bill entity) { edited.add(entity); }
     }
 
-    private static class DummyStockHistoryFacade extends com.divudi.core.facade.StockHistoryFacade {
-        @Override public com.divudi.core.entity.pharmacy.StockHistory findByPharmaceuticalBillItem(
-                com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+    private static class DummyBfdFacade extends BillFinanceDetailsFacade {
+        @Override protected EntityManager getEntityManager() { return null; }
+        @Override public void create(com.divudi.core.entity.BillFinanceDetails entity) { }
+        @Override public void edit(com.divudi.core.entity.BillFinanceDetails entity) { }
+    }
+
+    private static class NoSnapshotStockHistoryFacade extends StockHistoryFacade {
+        @Override public StockHistory findByPharmaceuticalBillItem(PharmaceuticalBillItem pbItem) {
             return null;
         }
     }
 
-    private PharmacyAdjustmentApiService service;
+    private PharmacyBfdBackfillService service;
+    private PharmacyAdjustmentApiService apiService;
     private DummyBillFacade billFacade;
 
     @BeforeEach
     public void setUp() throws Exception {
-        service = new PharmacyAdjustmentApiService();
+        service = new PharmacyBfdBackfillService();
         billFacade = new DummyBillFacade();
-        Field f = PharmacyAdjustmentApiService.class.getDeclaredField("billFacade");
-        f.setAccessible(true);
-        f.set(service, billFacade);
+        inject(service, "billFacade", billFacade);
+        inject(service, "billFinanceDetailsFacade", new DummyBfdFacade());
+        inject(service, "stockHistoryFacade", new NoSnapshotStockHistoryFacade());
 
-        Field shf = PharmacyAdjustmentApiService.class.getDeclaredField("stockHistoryFacade");
-        shf.setAccessible(true);
-        shf.set(service, new DummyStockHistoryFacade());
+        apiService = new PharmacyAdjustmentApiService();
     }
 
+    private static void inject(Object target, String fieldName, Object value) throws Exception {
+        Field f = target.getClass().getDeclaredField(fieldName);
+        f.setAccessible(true);
+        f.set(target, value);
+    }
+
+    private BillBackfillResult run(Bill bill, boolean apply) {
+        return service.applyToBill(bill, apply, "unit test", "unit test", null);
+    }
+
+    /**
+     * A stock-quantity adjustment as the save path writes it: before/after hold quantities,
+     * {@code pbi.qty} the signed delta, and the retail rate of the moment is on the bill item.
+     */
     private Bill buildHistoricalQuantityAdjustmentBill(double beforeQty, double afterQty, double netRate) {
         Bill bill = new Bill();
         bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
@@ -81,6 +112,7 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         phItem.setItemBatch(itemBatch);
         phItem.setBeforeAdjustmentValue(beforeQty);
         phItem.setAfterAdjustmentValue(afterQty);
+        phItem.setQty(afterQty - beforeQty);
         billItem.setPharmaceuticalBillItem(phItem);
         phItem.setBillItem(billItem);
 
@@ -92,38 +124,59 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
     @DisplayName("Backfill prefers the StockHistory rate snapshot at adjustment time over the item batch's "
             + "current rate, and does not disclose an approximation when a snapshot is found")
     public void testBackfillUsesHistoricalStockHistoryRateNotCurrentRate() throws Exception {
-        // Item batch's CURRENT rates (e.g. changed by a later rate adjustment, after this bill was created).
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta qty = 15
         PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
-        // Current cost/purchase rates from buildHistoricalQuantityAdjustmentBill: 60.0 / 70.0.
-        // Historical snapshot at adjustment time was actually 55.0 / 65.0 - simulating a rate
-        // change that happened AFTER this bill was created but BEFORE the backfill runs.
-        com.divudi.core.entity.pharmacy.StockHistory snapshot = new com.divudi.core.entity.pharmacy.StockHistory();
+        // Current item batch rates are 60.0 / 70.0. The snapshot taken at adjustment time
+        // says 55.0 / 65.0 — simulating a rate change made after this bill but before the
+        // backfill runs. Using the current rate would silently value the bill wrongly.
+        StockHistory snapshot = new StockHistory();
         snapshot.setCostRate(55.0);
         snapshot.setPurchaseRate(65.0);
 
-        Field shf = PharmacyAdjustmentApiService.class.getDeclaredField("stockHistoryFacade");
-        shf.setAccessible(true);
-        shf.set(service, new com.divudi.core.facade.StockHistoryFacade() {
-            @Override public com.divudi.core.entity.pharmacy.StockHistory findByPharmaceuticalBillItem(
-                    com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+        inject(service, "stockHistoryFacade", new StockHistoryFacade() {
+            @Override public StockHistory findByPharmaceuticalBillItem(PharmaceuticalBillItem pbItem) {
                 return pbItem == ph ? snapshot : null;
             }
         });
 
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
+        BillBackfillResult result = run(bill, true);
 
-        assertTrue(result.isApplied());
-        // Historical: 15 * 55.0 = 825.0 (NOT 15 * 60.0 = 900.0, the current rate)
-        assertEquals(0, java.math.BigDecimal.valueOf(825.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()),
-                "Expected cost value computed from the historical StockHistory snapshot (55.0), not the current item batch rate (60.0)");
-        // Historical: 15 * 65.0 = 975.0 (NOT 15 * 70.0 = 1050.0, the current rate)
-        assertEquals(0, java.math.BigDecimal.valueOf(975.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
-                "Expected purchase value computed from the historical StockHistory snapshot (65.0), not the current item batch rate (70.0)");
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        // Cost: 15 * 55.0 = 825.0 from the snapshot, not 15 * 60.0 = 900.0 from the item
+        // batch's current rate. PharmaceuticalBillItem carries no cost rate of its own here,
+        // so this is what proves the snapshot beats the current rate.
+        assertEquals(0, BigDecimal.valueOf(825.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()),
+                "Expected cost value from the historical StockHistory snapshot (55.0), not the current rate (60.0)");
+        // Purchase: 15 * 70.0 = 1050.0 from the LINE's own rate, which outranks the snapshot.
+        // PharmaceuticalBillItem.setItemBatch() copies the batch's purchase rate onto the line
+        // when the adjustment is saved, so on a real bill that field already holds the rate as
+        // it stood at the time — a better source than any later reconstruction.
+        assertEquals(0, BigDecimal.valueOf(1050.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
+                "Expected purchase value from the line's own point-in-time rate (70.0)");
 
         assertNotNull(result.getNote());
         assertFalse(result.getNote().contains("approximated using current item batch rates"),
-                "A real historical snapshot was found, so no approximation disclosure should be added, got: " + result.getNote());
+                "Every rate came from a point-in-time source, so nothing should be disclosed: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("With no purchase rate on the line, the snapshot still outranks the current batch rate")
+    public void testSnapshotPurchaseRateBeatsCurrentBatchRateWhenLineHasNone() throws Exception {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta qty = 15
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // Model a line that never recorded a purchase rate, so the fallback chain is exercised.
+        ph.setPurchaseRate(0.0);
+
+        StockHistory snapshot = new StockHistory();
+        snapshot.setPurchaseRate(65.0);
+        setSnapshot(ph, snapshot);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        // 15 * 65.0 = 975.0 from the snapshot, not 15 * 70.0 = 1050.0 from the current rate.
+        assertEquals(0, BigDecimal.valueOf(975.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
+                "Expected purchase value from the historical snapshot (65.0), not the current rate (70.0)");
     }
 
     @Test
@@ -131,30 +184,77 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
     public void testBackfillPopulatesFinanceDetailsFromStoredAuditFields() {
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta = 15 * 100 = 1500
 
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
+        BillBackfillResult result = run(bill, true);
 
-        assertTrue(result.isApplied());
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
         assertEquals(1500.0, bill.getNetTotal(), 0.001);
         assertNotNull(bill.getBillFinanceDetails());
-        assertEquals(0, java.math.BigDecimal.valueOf(1500.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
+        assertEquals(0, BigDecimal.valueOf(1500.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
         assertEquals(1, billFacade.edited.size());
 
-        // Finding 2: totalBeforeAdjustmentValue/totalAfterAdjustmentValue must be populated,
-        // computed as quantity * netRate (before=10*100=1000, after=25*100=2500).
+        // before/after totals are quantity * rate: 10*100 = 1000, 25*100 = 2500.
         assertNotNull(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue());
         assertNotNull(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue());
-        assertEquals(0, java.math.BigDecimal.valueOf(1000.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
-        assertEquals(0, java.math.BigDecimal.valueOf(2500.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
+        assertEquals(0, BigDecimal.valueOf(1000.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
+        assertEquals(0, BigDecimal.valueOf(2500.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
 
-        // Finding 1: cost-value approximation must be disclosed via the note field for this bill type.
+        // No StockHistory snapshot exists here, so the cost/purchase estimate must be disclosed.
         assertNotNull(result.getNote());
         assertTrue(result.getNote().contains("Cost and purchase values approximated using current item batch rates"),
-                "Expected note to disclose cost/purchase-value approximation, got: " + result.getNote());
+                "Expected the cost/purchase approximation to be disclosed, got: " + result.getNote());
     }
 
     @Test
-    @DisplayName("Backfill for retail-rate adjustment bills uses stored before/after values directly and does not add the cost-approximation note")
+    @DisplayName("A retail-rate bill written by the API is read as extended values, and carries no cost note")
     public void testBackfillRetailRateAdjustmentPopulatesBeforeAfterTotalsWithoutApproximationNote() {
+        // The API writer stored before/after as qty * rate and the signed change in netValue.
+        Bill bill = buildRetailRateBill(50.0, 50.0 * 10.0, 50.0 * 12.0, 100.0);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertNotNull(bill.getBillFinanceDetails());
+        assertEquals(0, BigDecimal.valueOf(500.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
+        assertEquals(0, BigDecimal.valueOf(600.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
+        assertEquals(0, BigDecimal.valueOf(100.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
+
+        // A rate change moves no quantity, so there is no cost estimate to disclose.
+        assertNotNull(result.getNote());
+        assertFalse(result.getNote().contains("approximated using current item batch rates"),
+                "A retail-rate backfill should carry no cost approximation note, got: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("A retail-rate bill written by the UI page is read as unit rates over the same line")
+    public void testBackfillRetailRateAdjustmentReadsUnitRates() {
+        // Same economic event as the test above — 50 units moving from 10.00 to 12.00 — but
+        // recorded by the UI writer, which stores unit rates. The BFD must come out identical.
+        Bill bill = buildRetailRateBill(50.0, 10.0, 12.0, 100.0);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(500.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
+        assertEquals(0, BigDecimal.valueOf(600.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
+        assertEquals(0, BigDecimal.valueOf(100.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
+    }
+
+    @Test
+    @DisplayName("A retail-rate line matching neither reading is reported, not valued")
+    public void testUnreadableRetailRateBillIsReportedNotGuessed() {
+        // The legacy single-item page shape: qty never set, netValue holding a total.
+        Bill bill = buildRetailRateBill(0.0, 100.0, 120.0, 6000.0);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UNRESOLVED, result.getStatus());
+        // hasBillFinanceDetails(), not getBillFinanceDetails() — the getter auto-creates one.
+        assertFalse(bill.hasBillFinanceDetails(), "An unreadable bill must be left untouched");
+        assertTrue(billFacade.edited.isEmpty());
+        assertTrue(result.getNote().contains("Neither reading"), "got: " + result.getNote());
+    }
+
+    private Bill buildRetailRateBill(double qty, double before, double after, double signedChange) {
         Bill bill = new Bill();
         bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
         bill.setBillFinanceDetails(null);
@@ -169,30 +269,20 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         billItem.setBill(bill);
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setCreatedAt(Calendar.getInstance().getTime());
-        billItem.setQty(50.0);
+        billItem.setQty(qty);
+        billItem.setNetValue(signedChange);
+        billItem.setGrossValue(Math.abs(signedChange));
 
         PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
         phItem.setStock(stock);
         phItem.setItemBatch(itemBatch);
-        // before/after are already total values (qty * rate) for this bill type.
-        phItem.setBeforeAdjustmentValue(50.0 * 10.0); // 500
-        phItem.setAfterAdjustmentValue(50.0 * 12.0);  // 600
+        phItem.setBeforeAdjustmentValue(before);
+        phItem.setAfterAdjustmentValue(after);
         billItem.setPharmaceuticalBillItem(phItem);
         phItem.setBillItem(billItem);
 
         bill.getBillItems().add(billItem);
-
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
-
-        assertTrue(result.isApplied());
-        assertNotNull(bill.getBillFinanceDetails());
-        assertEquals(0, java.math.BigDecimal.valueOf(500.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
-        assertEquals(0, java.math.BigDecimal.valueOf(600.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
-
-        // Cost/purchase-value approximation disclosure only applies to PHARMACY_STOCK_ADJUSTMENT bills.
-        assertNotNull(result.getNote());
-        assertFalse(result.getNote().contains("approximated using current item batch rates"),
-                "Retail-rate adjustment backfill should not carry the cost/purchase-approximation note, got: " + result.getNote());
+        return bill;
     }
 
     @Test
@@ -201,15 +291,15 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
     public void testBackfillStockAdjustmentPopulatesPurchaseValueWithoutDoubleCountingNetTotal() {
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta qty = 15, purcahseRate = 70.0
 
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
+        BillBackfillResult result = run(bill, true);
 
-        assertTrue(result.isApplied());
-        // totalPurchaseValue = 15 * 70.0 = 1050.0 (F15 report's "Stock Value (Purchase)" column)
-        assertEquals(0, java.math.BigDecimal.valueOf(1050.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
-        // netTotal/computedNetTotal stay scoped to the retail dimension (1500.0) - must NOT
-        // become 1500.0 + 1050.0, which would double-count the same quantity change twice.
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        // totalPurchaseValue = 15 * 70.0 = 1050.0 (F15's "Stock Value (Purchase)" column)
+        assertEquals(0, BigDecimal.valueOf(1050.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
+        // netTotal stays scoped to the retail dimension (1500.0) — it must NOT become
+        // 1500.0 + 1050.0, which would count the same quantity change twice.
         assertEquals(1500.0, bill.getNetTotal(), 0.001);
-        assertEquals(1500.0, result.getComputedNetTotal(), 0.001);
+        assertEquals(0, BigDecimal.valueOf(1500.0).compareTo(result.getComputedNetTotal()));
     }
 
     @Test
@@ -217,25 +307,50 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
     public void testDryRunDoesNotPersist() {
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
 
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, false /* dry run */);
+        BillBackfillResult result = run(bill, false);
 
-        assertFalse(result.isApplied());
-        assertEquals(1500.0, result.getComputedNetTotal(), 0.001);
+        assertEquals(BackfillStatus.WOULD_UPDATE, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(1500.0).compareTo(result.getComputedNetTotal()));
         assertTrue(billFacade.edited.isEmpty(), "Dry run must not persist changes");
+        assertFalse(bill.hasBillFinanceDetails(), "Dry run must not attach a BFD to the bill");
     }
 
     @Test
-    @DisplayName("Bills that already have BillFinanceDetails are skipped, not overwritten")
+    @DisplayName("Bills with a populated BillFinanceDetails are skipped, not overwritten")
     public void testAlreadyBackfilledBillIsSkipped() {
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
-        bill.setBillFinanceDetails(new com.divudi.core.entity.BillFinanceDetails(bill));
-        bill.setNetTotal(999.0); // pretend it was already correctly fixed once
+        // "Already fixed" means a BFD carrying a real value and a non-zero bill total. A BFD
+        // row with null/zero values is the broken state the backfill exists to repair, so it
+        // does not count as already fixed.
+        com.divudi.core.entity.BillFinanceDetails bfd = new com.divudi.core.entity.BillFinanceDetails(bill);
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(999.0));
+        bfd.setNetTotal(BigDecimal.valueOf(999.0));
+        bfd.setGrossTotal(BigDecimal.valueOf(999.0));
+        bill.setBillFinanceDetails(bfd);
+        bill.setTotal(999.0);
+        bill.setNetTotal(999.0);
 
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, true);
+        BillBackfillResult result = run(bill, true);
 
-        assertFalse(result.isApplied());
-        assertEquals(999.0, bill.getNetTotal(), 0.001, "Existing BFD must not be recomputed/overwritten");
+        assertEquals(BackfillStatus.SKIPPED, result.getStatus());
+        assertEquals(999.0, bill.getNetTotal(), 0.001, "An already-populated BFD must not be recomputed");
         assertTrue(billFacade.edited.isEmpty());
+    }
+
+    @Test
+    @DisplayName("A BFD row that exists but carries no value is repaired, not treated as done")
+    public void testEmptyBillFinanceDetailsIsRepaired() {
+        // This is the coop production shape: 26 of 27 retail-rate bills had a BFD row and a
+        // bill.total of 0, so an "IS NULL"-only backfill never touched them.
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
+        bill.setBillFinanceDetails(new com.divudi.core.entity.BillFinanceDetails(bill));
+
+        assertTrue(service.needsCorrection(bill));
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertEquals(1500.0, bill.getNetTotal(), 0.001);
     }
 
     @Test
@@ -243,18 +358,166 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
     public void testDryRunStockAdjustmentIncludesCostApproximationDisclosure() {
         Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
 
-        BackfillResultDTO result = service.backfillFinanceDetails(bill, false /* dry run */);
+        BillBackfillResult result = run(bill, false);
 
-        assertFalse(result.isApplied());
-        assertEquals(1500.0, result.getComputedNetTotal(), 0.001);
+        assertEquals(BackfillStatus.WOULD_UPDATE, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(1500.0).compareTo(result.getComputedNetTotal()));
         assertTrue(billFacade.edited.isEmpty(), "Dry run must not persist changes");
 
-        // Verify that dry-run note includes the same cost-approximation disclosure as apply path.
         assertNotNull(result.getNote());
         assertTrue(result.getNote().contains("Dry run: not persisted"),
-                "Expected dry-run base message, got: " + result.getNote());
+                "Expected the dry-run base message, got: " + result.getNote());
         assertTrue(result.getNote().contains("Cost and purchase values approximated using current item batch rates"),
-                "Expected dry-run note to disclose cost/purchase-value approximation, got: " + result.getNote());
+                "Expected the dry run to disclose the same approximation as the apply path, got: " + result.getNote());
+    }
+
+    // ------------------------------------------------------------------
+    // Purchase rate adjustments — the dimension that is NOT retail
+    // ------------------------------------------------------------------
+
+    private Bill buildPurchaseRateBill(double qty, double before, double after, double signedChange) {
+        Bill bill = new Bill();
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+        bill.setBillFinanceDetails(null);
+
+        ItemBatch itemBatch = new ItemBatch();
+        itemBatch.setItem(new Item());
+
+        Stock stock = new Stock();
+        stock.setItemBatch(itemBatch);
+
+        BillItem billItem = new BillItem();
+        billItem.setBill(bill);
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+        billItem.setCreatedAt(Calendar.getInstance().getTime());
+        billItem.setQty(qty);
+        billItem.setNetValue(signedChange);
+        billItem.setGrossValue(Math.abs(signedChange));
+
+        PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
+        phItem.setStock(stock);
+        phItem.setItemBatch(itemBatch);
+        phItem.setBeforeAdjustmentValue(before);
+        phItem.setAfterAdjustmentValue(after);
+        billItem.setPharmaceuticalBillItem(phItem);
+        phItem.setBillItem(billItem);
+
+        bill.getBillItems().add(billItem);
+        return bill;
+    }
+
+    @Test
+    @DisplayName("A purchase rate change lands in the purchase column only, never the retail one")
+    public void testPurchaseRateChangeDoesNotTouchRetailValue() {
+        // 100 units, purchase rate 50.00 -> 45.00, so the change is -500.00.
+        Bill bill = buildPurchaseRateBill(100.0, 50.0, 45.0, -500.0);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(-500.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
+        // A purchase rate move does not change what the stock sells for. Writing the same
+        // figure into the retail column would report one movement as two, and would
+        // contradict what the save path stores (an explicit retail value of zero).
+        assertEquals(0, BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()),
+                "A purchase rate adjustment must leave the retail column at zero");
+        // The bill's headline value still comes from the dimension that actually moved.
+        assertEquals(-500.0, bill.getNetTotal(), 0.001);
+        assertEquals(500.0, bill.getTotal(), 0.001);
+        assertEquals(0, BigDecimal.valueOf(-500.0).compareTo(result.getComputedNetTotal()));
+    }
+
+    @Test
+    @DisplayName("A correctly written purchase rate bill is not a backfill candidate, so re-runs cannot corrupt it")
+    public void testCorrectPurchaseRateBillIsNotSelectedForRepair() {
+        // As the save path writes it: the change in the purchase column, retail explicitly
+        // zero, and the same change mirrored into netTotal / bill totals.
+        Bill bill = buildPurchaseRateBill(100.0, 50.0, 45.0, -500.0);
+        com.divudi.core.entity.BillFinanceDetails bfd = new com.divudi.core.entity.BillFinanceDetails(bill);
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(-500.0));
+        bfd.setTotalRetailSaleValue(BigDecimal.ZERO);
+        bfd.setNetTotal(BigDecimal.valueOf(-500.0));
+        bfd.setGrossTotal(BigDecimal.valueOf(500.0));
+        bill.setBillFinanceDetails(bfd);
+        bill.setTotal(500.0);
+        bill.setNetTotal(-500.0);
+
+        assertFalse(service.needsCorrection(bill),
+                "A purchase rate bill's retail value is legitimately zero — that must not read as broken");
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.SKIPPED, result.getStatus());
+        assertEquals(0, BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()),
+                "Re-running the backfill must not write the purchase change into the retail column");
+        assertTrue(billFacade.edited.isEmpty());
+    }
+
+    @Test
+    @DisplayName("A purchase rate bill with no finance details at all is still repaired")
+    public void testMissingBfdOnPurchaseRateBillIsStillRepaired() {
+        Bill bill = buildPurchaseRateBill(100.0, 50.0, 45.0, -500.0);
+
+        assertTrue(service.needsCorrection(bill));
+        assertEquals(BackfillStatus.UPDATED, run(bill, true).getStatus());
+    }
+
+    // ------------------------------------------------------------------
+    // Rate-source disclosure
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("A point-in-time cost rate on the bill item is not reported as an approximation")
+    public void testPointInTimeCostRateIsNotDisclosedAsApproximate() {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // A real cost rate recorded on the line at the time — the first source in the chain.
+        ph.setCostRate(58.0);
+        // The purchase rate still has to fall back, so provide a snapshot for it.
+        StockHistory snapshot = new StockHistory();
+        snapshot.setPurchaseRate(65.0);
+        setSnapshot(ph, snapshot);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        assertEquals(0, BigDecimal.valueOf(870.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()),
+                "15 * 58.0 from the line's own recorded cost rate");
+        assertFalse(result.getNote().contains("approximated using current item batch rates"),
+                "Every rate came from a point-in-time source, so nothing should be disclosed: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("A snapshot that carries no cost rate still falls back to the current rate, and says so")
+    public void testSnapshotWithoutCostRateStillDisclosesApproximation() {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // A snapshot exists, but its cost rate was never recorded. Testing only for the
+        // snapshot's presence would call the resulting figure exact when it is not.
+        StockHistory snapshot = new StockHistory();
+        snapshot.setPurchaseRate(65.0);
+        snapshot.setCostRate(0.0);
+        setSnapshot(ph, snapshot);
+
+        BillBackfillResult result = run(bill, true);
+
+        assertEquals(BackfillStatus.UPDATED, result.getStatus());
+        // Fell through to the item batch's current cost rate of 60.0: 15 * 60.0.
+        assertEquals(0, BigDecimal.valueOf(900.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()));
+        assertTrue(result.getNote().contains("approximated using current item batch rates"),
+                "The cost rate came from the current batch rate and must be disclosed: " + result.getNote());
+    }
+
+    private void setSnapshot(PharmaceuticalBillItem target, StockHistory snapshot) {
+        try {
+            inject(service, "stockHistoryFacade", new StockHistoryFacade() {
+                @Override public StockHistory findByPharmaceuticalBillItem(PharmaceuticalBillItem pbItem) {
+                    return pbItem == target ? snapshot : null;
+                }
+            });
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Test
@@ -265,7 +528,7 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         SimpleDateFormat dayTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         Date parsedToDate = dayFormat.parse("2026-07-04"); // midnight, as parseDate() produces
-        Date normalizedToDate = service.endOfDay(parsedToDate);
+        Date normalizedToDate = apiService.endOfDay(parsedToDate);
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(normalizedToDate);

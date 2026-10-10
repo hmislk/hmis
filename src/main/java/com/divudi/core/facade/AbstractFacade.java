@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.persistence.CacheRetrieveMode;
 import javax.persistence.CacheStoreMode;
@@ -34,6 +36,8 @@ import org.eclipse.persistence.jpa.JpaHelper;
  * @param <T>
  */
 public abstract class AbstractFacade<T> {
+
+    private static final Logger logger = Logger.getLogger(AbstractFacade.class.getName());
 
     private Class<T> entityClass;
 
@@ -622,6 +626,32 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Same paging as {@link #findByJpqlWithRange(String, Map, int, int)}, but a query
+     * failure propagates instead of being turned into an empty list.
+     *
+     * <p>Use this where an empty page is read as "nothing there" — an API that callers
+     * poll to decide whether a record already exists, or a listing a client pages through
+     * until it runs dry — so a database error surfaces as an error rather than as the end
+     * of the data.
+     */
+    public List<T> findByJpqlWithRangeStrict(String jpql, Map<String, Object> parameters,
+            int startPosition, int maxResults) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                if (entry.getValue() instanceof Date) {
+                    qry.setParameter(entry.getKey(), (Date) entry.getValue(), TemporalType.TIMESTAMP);
+                } else {
+                    qry.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        qry.setFirstResult(Math.max(startPosition, 0));
+        qry.setMaxResults(Math.max(maxResults, 1));
+        return qry.getResultList();
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
@@ -682,6 +712,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -711,6 +742,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -1289,6 +1321,9 @@ public abstract class AbstractFacade<T> {
         }
         qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        if (maxRecords >= 0) {
+            qry.setMaxResults(maxRecords);
+        }
 
         return qry.getResultList();
     }
@@ -1656,6 +1691,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "findAggregates failed for JPQL: " + jpql, e);
             return null;
         }
     }

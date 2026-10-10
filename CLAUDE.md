@@ -1,77 +1,57 @@
-# Claude Code Configuration for HMIS Project
+# HMIS — Claude Code Rules
 
-## Repository Information
-- **GitHub Repository**: https://github.com/hmislk/hmis (not buddhika75/hmis)
-- **Issues URL**: https://github.com/hmislk/hmis/issues
-- **Project tmp Folder**: `tmp/` directory **inside the project root** (i.e., `<project-root>/tmp/`) for project-specific temporary files. Do NOT use the system `/tmp/` directory.
+## Repository
+- Repo: https://github.com/hmislk/hmis (not buddhika75/hmis). It is **public**.
+- Temp files go in `<project-root>/tmp/`, never system `/tmp/`.
 
-## Essential Rules (Always Apply)
+## Essential Rules
 
-### Working Directory
-- **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory. Do NOT use `isolation: "worktree"` when spawning agents. If you find yourself in a path like `.claude/worktrees/*`, stop and perform all file edits in the main project directory instead. Worktrees cause the developer's local branch to go out of sync with remote commits, leading to confusing stale-file compilation errors. (Issue: hmislk/hmis#19944)
+### Working
+- **🚨 No worktrees.** Never use `isolation: "worktree"`; edit in the main checkout. If you are under `.claude/worktrees/*`, stop and move there. (Worktrees desync the developer's branch.)
+- **🚨 No Artifact tool for deliverables.** Recipients can't open them without a Claude account. Write `.md` in `tmp/` (working), `developer_docs/` (tracked) or `../hmis.wiki/` (wiki; never inside this repo).
+- **🚨 Discuss uncertainties** about the implementation approach with the user before coding.
+- **🚨 Live config: apply agreed values exactly**, check the deployed branch has the code, then verify a newly created record, not the config row. See [app-configuration skill](.claude/skills/app-configuration/SKILL.md).
+- **🚨 Retrospect after nontrivial work.** If a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix and ask before opening a PR. Write it as a short rule, not a story. See [Retrospective](developer_docs/process/continuous-improvement-retrospective.md).
 
-### Code Integrity
-- **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
-- **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach
-- **🚨 BACKWARD COMPATIBILITY**: Never "fix" intentional typos (e.g., `purcahseRate`) - database compatibility
-- **🚨 COMPONENT NAMING**: Never rename composite components without checking ALL usage
-- **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only ADD new constructors. Changing or removing existing constructor signatures breaks other callers. New constructors should delegate to the existing one via `this(...)` when possible. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md)
-- **🚨 JPQL FIRST, NATIVE SQL LAST**: Always use JPQL for database queries. Native SQL (`nativeScalarQuery`, `executeNativeSql`) is only permitted when there is a significant, demonstrated performance constraint that JPQL cannot address. Never reach for native SQL just because JPQL is harder to write.
-- **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
-- **🚨 WIRE NEW REPORT BUTTONS INTO REPORT FAVORITES**: Any report/analytics index page that has adopted the self-service Favorites mechanism (star toggle + pinned ⭐ Favorites tab — currently `reports/index.xhtml`, being rolled out to other Analytics pages) MUST have every new report button added to BOTH its home category tab AND the Favorites tab. Read [Report Favorites Implementation Guide](developer_docs/feature/report-favorites.md) first — it covers the mandatory `reportKey` global-uniqueness rule, the exact markup pattern (`h:panelGroup`, never a raw `<div>`, for the Favorites-tab row), and the per-page empty-state gotcha.
+### Code
+- **🚨 No mock data** or temporary workarounds in business logic.
+- **🚨 Never "fix" intentional typos** (e.g. `purcahseRate`); they are DB column names.
+- **🚨 Never rename composite components** without checking every usage.
+- **🚨 Never modify or remove existing constructors.** Only add new ones, delegating via `this(...)`. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md).
+- **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
+- **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
+- **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
+- **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
+- **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
+- **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
 
-### persistence.xml — Local JNDI Lifecycle
-- **🚨 RESTORE LOCAL JNDI AFTER EVERY PUSH**: Immediately after every `git push`, replace the CI/CD placeholders in `persistence.xml` back to the local JNDI names — `${JDBC_DATASOURCE}` → `jdbc/coop` and `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`. Leave the change **unstaged**. Do this without being asked. The developer needs local Payara to connect right away for testing.
+### persistence.xml
+- **🚨 After every `git push`**, without being asked, restore local JNDI and leave it unstaged: `${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`.
 
-### Security — Credentials & Sensitive Data
-- **🚨 NEVER COMMIT CREDENTIALS OR SENSITIVE DATA**: Do NOT write passwords, API keys, database usernames, IP addresses, hostnames, or SSH connection strings into any file inside the project folder — including `developer_docs/`, `tmp/`, `wiki-docs/`, migration scripts, or any other tracked or untracked file. These belong exclusively in secure storage **outside** the project directory (e.g. `C:\Credentials\`). If a doc needs to reference how to connect to a database, write a generic description and point to the external credentials file — never inline the actual values.
+### Security
+- **🚨 No hospital data in GitHub** (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine. See [Public Content Policy](developer_docs/git/github-public-content-policy.md).
+- **🚨 Never write credentials** (passwords, API keys, DB users, IPs, hostnames, SSH strings) into any file in the project folder, tracked or not. Point to the external credentials file instead.
 
 ### Deployment
-- **🚨 NEVER DEPLOY MANUALLY AS ROOT**: NEVER use `sudo` or root to copy WARs, run `asadmin`, or touch Payara's application/log directories directly. Root-owned files in `/opt/payara5/glassfish/domains/domain1/` (applications, generated, logs) block all future CI/CD deployments — `asadmin undeploy` and `deploy` will fail with permission errors. **All deployments MUST go through GitHub Actions CI/CD.** If a manual fix is absolutely needed, use `appuser` only. See [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md).
+- **🚨 Never deploy manually as root.** Deploy only through GitHub Actions CI/CD; if a manual fix is unavoidable, use `appuser`. See [Deployment Recovery](developer_docs/deployment/deployment-recovery-guide.md).
 
 ### Testing
-- **JSF-only changes** (XHTML only, no Java) do not require compilation or testing
+- XHTML-only changes need no compile or test.
+- **🚨 Never navigate to an inner page by URL.** Open only the app root, then click through the menus. A URL-loaded page shows artifacts, not defects; a page with no menu path is itself the finding. Record the menu path in the issue/PR. See [Playwright E2E §2](developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url).
+- **🚨 Never clean up test data unasked.** Leave records in place and list what you created. Never write test data to production without confirming the environment. See [§15a](developer_docs/testing/playwright-e2e-workflow.md#15a-leave-test-data-where-it-is--never-clean-up-unasked).
 
-### Git & Branching
-- **Include issue closing keywords** (`Closes #N`) in commit messages
-- **🚨 ALWAYS BASE FEATURE BRANCHES ON `development`**: When creating a new local branch for feature development, ALWAYS branch from `origin/development`, NEVER from `master`. The `master` branch is managed exclusively by system admins. Use: `git checkout -b <branch-name> origin/development`
-- **🚨 `development` IS THE DEFAULT BRANCH**: All PRs MUST target `development`, NOT `master`. When checking what already exists in the codebase (to avoid duplicate fields/methods), ALWAYS compare against `origin/development`, not `origin/master`. The CI validates against `development`. Never reference or merge into `master` during feature development.
-- **🚨 HOTFIX BRANCHES MUST END WITH `-hotfix`**: When creating a branch targeting a production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`), the branch name **MUST** end with `-hotfix`. CI merge validation will block PRs from branches that do not end with `-hotfix`. Format: `<description>-hotfix` (e.g., `sequence-preallocation-hotfix`, `critical-billing-fix-hotfix`). See the `/hotfix-deploy` skill.
+### Git
+- Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
+- **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
+- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI blocks others). Use the `/hotfix-deploy` skill.
+- **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch and update its title/body.
+- **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
+- **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).
 
-## Situational Guidelines (Reference When Needed)
-
-### When Working on Persistence/Deployment
-- [Persistence Configuration Guide](developer_docs/deployment/persistence-verification.md) - JNDI settings for dev vs production
-- [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md) - How to recover when root-owned files break CI/CD deployment
-- [Windows Remote Access Tips](developer_docs/deployment/windows-remote-access-tips.md) - SSH agent gotchas, Payara admin console over a tunnel, driving remote `asadmin` from a Windows dev machine
-
-### When Working on Database
-- [Migration Development Guide § Cross-deployment case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must) - Migration scripts must detect actual table-name case via `INFORMATION_SCHEMA` + prepared statements; hardcoding either `UPPER` or `lower` breaks half the customer DBs. Reference: `v2.1.12/migration-universal.sql`, `v2.1.17/migration.sql`.
-
-### When Adding Excel Export to a Report
-- [Excel Export for HTML Tables](developer_docs/feature/excel-export-html-table.md) - Pattern for exporting HTML-based (non-DataTable) report tables to Excel using Apache POI via `HttpServletResponse`
-
-### When Creating User Documentation
-- **Wiki Location**: `../hmis.wiki` sibling directory (NEVER inside the main project repo)
-- **Target Audience**: End users (pharmacy staff, nurses, doctors, administrators)
-
-### When Working on Inward / Inpatient Module
-- [Inward Navigation & Reference](developer_docs/navigation/inward_navigation.md) - Pages, controllers, workflow, open issues
-- [Inward CC Settlement Tracking](developer_docs/billing/inward-cc-settlement-tracking.md) - Data model, settlement paths, cancellation flows, and debtor report pattern for inpatient credit company payments
-
-### When Reviewing a PR
-- **🚨 AFTER APPLYING ANY CODERABBIT/CODEX FIX**: Always verify method names exist on the actual entity before pushing. Automated tools frequently generate wrong getter names (e.g., `getCompleted()` instead of `isCompleted()` for primitive `boolean` fields). See [PR Review Workflow §4a](developer_docs/git/pr-review-workflow.md).
-
-### When Committing Code
-- [Commit Conventions](developer_docs/git/commit-conventions.md) - Message format
-
-### When Creating a Hotfix for a Production Branch
-- **Branch name MUST end with `-hotfix`** (see § Git & Branching above) — CI blocks merges otherwise
-- Use the `/hotfix-deploy` skill to run the full workflow: branch from prod → fix → commit → push → PR targeting prod branch
-- [Commit Conventions — Hotfix Branches](developer_docs/git/commit-conventions.md#hotfix-branches) - naming format and examples
-
-## Common Abbreviations & Terms
-- **TIA**: Thanks In Advance
-
----
-This behavior should persist across all Claude Code sessions for this project.
+## Reference (read when relevant)
+- Persistence/deployment: [JNDI dev vs prod](developer_docs/deployment/persistence-verification.md) · [Windows remote access](developer_docs/deployment/windows-remote-access-tips.md) · [Migrating a stale hospital DB](developer_docs/deployment/migrating-a-stale-hospital-to-development.md) (always E2E-test a real OPD bill settle)
+- Migrations must detect table-name case: [Migration Guide § case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must)
+- Excel export of HTML tables: [guide](developer_docs/feature/excel-export-html-table.md)
+- Inward: [navigation](developer_docs/navigation/inward_navigation.md) · [CC settlement](developer_docs/billing/inward-cc-settlement-tracking.md)
+- User docs go to `../hmis.wiki`, written for end users (pharmacy staff, nurses, doctors, admins).
+- "TIA" = Thanks In Advance.

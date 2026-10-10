@@ -23,9 +23,9 @@
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Admission Items and Fees"
+                                                value="Automatic Admission Charges"
                                                 class="w-100"
-                                                action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
+                                                action="#{admissionChargeItemController.navigateToManageAdmissionCharges()}"  ></p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
                                                 value="BHT Number Management"
@@ -52,6 +52,17 @@
                                             <p:commandButton ajax="false" value="Facility Categories" class="w-100" action="inward_room_category?faces-redirect=true"  ></p:commandButton>
                                             <p:commandButton ajax="false" value="Rooms" class="w-100" action="inward_room?faces-redirect=true"  ></p:commandButton>
                                             <p:commandButton ajax="false" value="Room Fees" class="w-100" action="inward_room_facility?faces-redirect=true"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Packages">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Manage Inpatient Packages"
+                                                class="w-100"
+                                                action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}">
+                                            </p:commandButton>
                                         </div>
                                     </p:tab>
 

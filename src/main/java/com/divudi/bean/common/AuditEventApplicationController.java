@@ -79,6 +79,12 @@ public class AuditEventApplicationController {
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+            } catch (RuntimeException e) {
+                // A single failed audit write (e.g. an EJBException surfacing
+                // the REQUIRES_NEW audit transaction's RollbackException) must
+                // not kill the queue worker and stop every later audit event
+                // from being processed.
+                LOGGER.log(Level.SEVERE, "Failed to persist queued AuditEvent: {0}", e.getMessage());
             }
         }
     }
@@ -87,11 +93,15 @@ public class AuditEventApplicationController {
         if (auditEvent == null) {
             return;
         }
-
-        if (auditEvent.getId() == null) {
-            auditEventFacade.create(auditEvent);
-        } else {
-            auditEventFacade.edit(auditEvent);
+        try {
+            if (auditEvent.getId() == null) {
+                auditEventFacade.create(auditEvent);
+            } else {
+                auditEventFacade.edit(auditEvent);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to persist queued AuditEvent id={0}: {1}",
+                    new Object[]{auditEvent.getId(), e.getMessage()});
         }
     }
 }

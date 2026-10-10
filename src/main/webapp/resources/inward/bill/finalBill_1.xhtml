@@ -174,15 +174,8 @@
                                 </td>
                                 <td>
                                     <table>
-                                        <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
-                                            <h:panelGroup  rendered="#{(b.netTotal ne 0 )
-                                                                       and
-                                                                       ((b.cancelled eq false
-                                                                       and b.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                                       or
-                                                                       (b.cancelled eq false
-                                                                       and b.refundedBill eq null
-                                                                       and b.billClass eq 'class com.divudi.core.entity.RefundBill'))}" >
+                                        <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
+                                            <h:panelGroup  rendered="#{b.netTotal ne 0}" >
                                                 <tr>
                                                     <td>
                                                         #{b.deptId}

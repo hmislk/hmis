@@ -12,6 +12,7 @@ import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
@@ -490,6 +491,8 @@ public class Bill implements Serializable, RetirableEntity {
     private Bill tmpRefBill;
     @Transient
     private String tmpComments;
+    @Transient
+    private Date transLastSettlementDate;
 
     private String agentRefNo;
     private boolean billClosed;
@@ -548,6 +551,9 @@ public class Bill implements Serializable, RetirableEntity {
     private double ccTransactionAmount;
     private double ccTotalCenterValue;
     private double ccExcessAmount;
+
+    @Enumerated(EnumType.STRING)
+    private CollectingCentreBillingType ccBillingType;
 
     public Bill() {
         if (status == null) {
@@ -2205,7 +2211,8 @@ public class Bill implements Serializable, RetirableEntity {
 //            System.err.println("1 " + b);
 //            System.err.println("2 " + b.getBillClass());
 //            System.err.println("3 " + b.getBillType());
-            if (b instanceof RefundBill && (b.getBillType() == BillType.PharmacyBhtPre || b.getBillType() == BillType.StoreBhtPre)) {
+            // Skip duplicates: a list already holding a return could have it appended again (issue #24109).
+            if (b instanceof RefundBill && (b.getBillType() == BillType.PharmacyBhtPre || b.getBillType() == BillType.StoreBhtPre) && !bills.contains(b)) {
                 bills.add(b);
             }
         }
@@ -3081,6 +3088,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.tmpComments = tmpComments;
     }
 
+    public Date getTransLastSettlementDate() {
+        return transLastSettlementDate;
+    }
+
+    public void setTransLastSettlementDate(Date transLastSettlementDate) {
+        this.transLastSettlementDate = transLastSettlementDate;
+    }
+
     public static Map<String, String> toMap(Bill b) {
         Map<String, String> m = new HashMap<>();
         if (b == null) {
@@ -3293,6 +3308,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setCcExcessAmount(double ccExcessAmount) {
         this.ccExcessAmount = ccExcessAmount;
+    }
+
+    public CollectingCentreBillingType getCcBillingType() {
+        return ccBillingType;
+    }
+
+    public void setCcBillingType(CollectingCentreBillingType ccBillingType) {
+        this.ccBillingType = ccBillingType;
     }
 
 }

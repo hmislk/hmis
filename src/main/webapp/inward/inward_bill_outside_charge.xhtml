@@ -199,7 +199,10 @@
                                     <p:outputLabel value="Add Outside Charges" class="m-2"/>
                                 </div>
 
-                                <!-- Centre: print actions (print preview only) -->
+                                <!-- Centre: entity navigation buttons (issue #23311 — moved out of
+                                     the right/action zone per the three-zone header guideline).
+                                     Print actions (print preview only) stay here too, out of scope
+                                     for #23311 (print formats are handled separately). -->
                                 <div class="d-flex gap-2 align-items-center">
                                     <h:panelGroup rendered="#{inwardAdditionalChargeController.printPreview}">
                                         <div class="d-flex gap-2">
@@ -222,88 +225,51 @@
                                                 class="ui-button-success"
                                                 icon="fa fa-plus"
                                                 ajax="false"
+                                                immediate="true"
                                                 action="#{inwardAdditionalChargeController.makeNull()}" />
                                         </div>
                                     </h:panelGroup>
-                                </div>
-
-                                <!-- Right: navigation buttons -->
-                                <div class="d-flex gap-2">
 
                                     <p:commandButton
                                         value="Inpatient Dashboard"
                                         ajax="false"
+                                        immediate="true"
                                         icon="fa fa-id-card"
-                                        class="ui-button-secondary"
+                                        class="ui-button-info ui-button-outlined"
                                         action="#{admissionController.navigateToAdmissionProfilePage}">
                                         <f:setPropertyActionListener
                                             value="#{inwardAdditionalChargeController.current.patientEncounter}"
                                             target="#{admissionController.current}" />
                                     </p:commandButton>
 
-                                    <p:commandButton
-                                        class="ui-button-info"
-                                        id="btnSettle"
-                                        icon="fa fa-check"
-                                        value="Settle"
-                                        ajax="false"
-                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
-                                        onclick="return confirm('Are you sure you want to settle this bill?');"
-                                        action="#{inwardAdditionalChargeController.settle()}">
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="ui-button-success"
-                                        id="btnNew"
-                                        icon="fa fa-plus"
-                                        value="New Bill"
-                                        ajax="false"
-                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
-                                        action="#{inwardAdditionalChargeController.makeNull()}">
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="ui-button-danger"
-                                        value="Clear"
-                                        icon="fa fa-ban"
-                                        ajax="false"
-                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
-                                        action="#{inwardAdditionalChargeController.reset()}" >
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="ui-button-warning "
-                                        value="To Add Services"
-                                        icon ="fa fa-wrench"
-                                        ajax="false"
-                                        action="/inward/inward_bill_service?faces-redirect=true" >
-                                    </p:commandButton>
-
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 ajax="false"
+                                                immediate="true"
                                                 icon="fa fa-search"
-                                                class="ui-button-warning " 
+                                                class="ui-button-info ui-button-outlined"
                                                 action="#{patientController.navigateToSearchPatients()}">
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
+                                                immediate="true"
                                                 icon="fa fa-user"
-                                                class="ui-button-warning " 
+                                                class="ui-button-info ui-button-outlined"
                                                 action="#{patientController.navigateToOpdPatientProfile()}">
-                                                <f:setPropertyActionListener 
-                                                    value="#{admissionController.current.patient}" 
+                                                <f:setPropertyActionListener
+                                                    value="#{admissionController.current.patient}"
                                                     target="#{patientController.current}" >
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
+                                                immediate="true"
                                                 icon="fa fa-id-card"
-                                                class="ui-button-secondary " 
+                                                class="ui-button-info ui-button-outlined"
                                                 action="#{bhtSummeryController.navigateToInpatientProfile()}">
-                                                <f:setPropertyActionListener 
-                                                    target="#{admissionController.current}" 
+                                                <f:setPropertyActionListener
+                                                    target="#{admissionController.current}"
                                                     value="#{inwardAdditionalChargeController.current.patientEncounter}" >
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
@@ -311,14 +277,62 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                        <p:commandButton 
-                                            value="Nursing WorkBench" 
-                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
-                                            class="ui-button-operating-theatre"
+                                            immediate="true"
+                                            class="ui-button-info ui-button-outlined"
                                             icon="fa fa-arrow-left">
                                         </p:commandButton>
                                     </h:panelGroup>
+                                </div>
+
+                                <!-- Right: page actions, ascending importance, primary (Settle)
+                                     rightmost — issue #23311 -->
+                                <div class="d-flex gap-2">
+
+                                    <p:commandButton
+                                        class="ui-button-secondary"
+                                        value="Clear"
+                                        icon="fa fa-ban"
+                                        ajax="false"
+                                        immediate="true"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
+                                        action="#{inwardAdditionalChargeController.reset()}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-warning"
+                                        id="btnNew"
+                                        icon="fa fa-plus"
+                                        value="New Bill"
+                                        ajax="false"
+                                        immediate="true"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
+                                        action="#{inwardAdditionalChargeController.makeNull()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-warning"
+                                        value="To Add Services"
+                                        icon ="fa fa-wrench"
+                                        ajax="false"
+                                        immediate="true"
+                                        action="/inward/inward_bill_service?faces-redirect=true" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        id="btnSettle"
+                                        icon="fa fa-check"
+                                        value="Settle"
+                                        ajax="false"
+                                        style="min-width:120px"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
+                                        onclick="return confirm('Are you sure you want to settle this bill?');"
+                                        action="#{inwardAdditionalChargeController.settle()}">
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
@@ -347,9 +361,12 @@
                                                         itemLabel="#{ins.name}"
                                                         forceSelection="true"
                                                         minQueryLength="2"
+                                                        required="true"
+                                                        requiredMessage="Please select the Outside Institution"
                                                         placeholder="Type institution name...">
                                             <p:column>#{ins.name}</p:column>
                                         </p:autoComplete>
+                                        <p:message for="acFromIns" display="text" styleClass="text-danger d-block mt-1"/>
                                     </div>
                                 </div>
                             </p:panel>
@@ -363,8 +380,12 @@
                                     <h:outputText value=" #{inwardAdditionalChargeController.current.fromInstitution.name}" class="mx-2 fw-bold"/>
                                     <p:commandButton value="Change" icon="fa fa-pencil"
                                                      class="ui-button-secondary ui-button-sm ms-3"
+                                                     rendered="#{empty inwardAdditionalChargeController.billItemList}"
                                                      ajax="false"
                                                      action="#{inwardAdditionalChargeController.clearFromInstitution}"/>
+                                    <h:panelGroup rendered="#{not empty inwardAdditionalChargeController.billItemList}" styleClass="text-muted ms-3" style="font-size:0.875em;">
+                                        (Click New Bill to use a different institution)
+                                    </h:panelGroup>
                                 </f:facet>
                                 <div class="row m-1">
                                     <div class="col-3 d-flex align-items-center">
@@ -481,13 +502,17 @@
                                             <p:column style="width:2.5rem">
                                                 <p:rowToggler/>
                                             </p:column>
-                                            <p:column>
+                                            <p:column style="width:3rem;">
                                                 <f:facet name="header">No</f:facet>
                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">Item</f:facet>
                                                 <h:outputLabel value="#{bif.item.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Inward Charge Type</f:facet>
+                                                <h:outputText value="#{bif.inwardChargeType.label}"/>
                                             </p:column>
                                             <p:column>
                                                 <f:facet name="header">Amount</f:facet>

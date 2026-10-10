@@ -902,10 +902,29 @@ public class PharmacyIssueController implements Serializable {
     @Inject
     private BillBeanController billBean;
 
+    /**
+     * A disposal issue always removes stock, so {@code BillItem.qty} must be
+     * persisted with the same negative sign that {@code PharmaceuticalBillItem.qty}
+     * already carries (it is set via {@code 0 - Math.abs(qty)} upstream). The
+     * editing UI deliberately works with a positive qty for its bounds checks
+     * ({@code qty > stock}, {@code qty <= 0}); this normaliser is applied at every
+     * persist point so the two quantities can never disagree in sign on a saved
+     * row. Historically both were negative; a regression left {@code BillItem.qty}
+     * positive from 2025-05-28, which silently broke the Consumption reports that
+     * group on {@code SUM(bi.qty)}.
+     */
+    private void normaliseDisposalIssueQtySign(BillItem tbi) {
+        if (tbi == null || tbi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        tbi.setQty(0 - Math.abs(tbi.getQty()));
+    }
+
     private void savePreBillItemsFinally(List<BillItem> list) {
         for (BillItem tbi : list) {
             tbi.setInwardChargeType(InwardChargeType.Medicine);
             tbi.setBill(getPreBill());
+            normaliseDisposalIssueQtySign(tbi);
 
             if (tbi.getId() == null) {
                 tbi.setCreatedAt(Calendar.getInstance().getTime());
@@ -936,6 +955,16 @@ public class PharmacyIssueController implements Serializable {
             return true;
         }
         for (BillItem b : getActiveBillItems()) {
+            // onEdit()/onEditCalculation() assume BillItem.qty is still in its
+            // positive, pre-normalization form (as it is right after a fresh
+            // Add). A prior Save already normalized it negative via
+            // normaliseDisposalIssueQtySign(), so restore the positive
+            // magnitude here before delegating — otherwise onEdit's
+            // `qty <= 0` check misreads the intentional negative disposal
+            // quantity as invalid input and zeroes the item out.
+            if (b.getQty() != null && b.getQty() < 0) {
+                b.setQty(-b.getQty());
+            }
             if (onEdit(b)) {
                 return true;
             }
@@ -1100,6 +1129,7 @@ public class PharmacyIssueController implements Serializable {
                 tbi.setBill(getPreBill());
                 tbi.setCreatedAt(new Date());
                 tbi.setCreater(sessionController.getLoggedUser());
+                normaliseDisposalIssueQtySign(tbi);
                 getBillItemFacade().createAndFlush(tbi);
             }
             getPreBill().setBillItems(tmpBillItems);
@@ -1126,6 +1156,7 @@ public class PharmacyIssueController implements Serializable {
             for (BillItem tbi : getActiveBillItems()) {
                 tbi.setInwardChargeType(InwardChargeType.Medicine);
                 tbi.setBill(getPreBill());
+                normaliseDisposalIssueQtySign(tbi);
                 if (tbi.getId() == null) {
                     tbi.setCreatedAt(new Date());
                     tbi.setCreater(sessionController.getLoggedUser());
@@ -1149,12 +1180,14 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Department first.");
             return null;
         }
-        boolean canIssueToSameDept = configOptionApplicationController
-                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
-        if (!canIssueToSameDept
-                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
-            return null;
+        if (Objects.equals(toDepartment, sessionController.getDepartment())) {
+            // Check if department preference allows same-department issues
+            boolean allowSameDept = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Pharmacy - Allow Issue to Same Department", sessionController.getDepartment(), false);
+            if (!allowSameDept) {
+                JsfUtil.addErrorMessage("Your department does not allow pharmacy disposal issues to the same department. Contact your department administrator to enable this feature.");
+                return null;
+            }
         }
         if (getActiveBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add at least one item before finalizing.");

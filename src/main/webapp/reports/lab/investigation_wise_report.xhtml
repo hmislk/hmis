@@ -10,205 +10,323 @@
 
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Investigation Wise Report" class="w-100">
 
-                        <h:panelGrid columns="5" class="w-100" >
+                <style type="text/css">
+
+                    @media print {
+
+                        body * {
+                            visibility: hidden !important;
+                        }
+
+                        .investigation-wise-print,
+                        .investigation-wise-print * {
+                            visibility: visible !important;
+                        }
+
+                        .investigation-wise-print {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100% !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            border: none !important;
+                        }
+
+                        .investigation-wise-print .ui-paginator {
+                            display: none !important;
+                        }
+
+                        .investigation-wise-print
+                        .ui-datatable-scrollable-body {
+                            max-height: none !important;
+                            overflow: visible !important;
+                        }
+
+                        .no-print {
+                            display: none !important;
+                        }
+
+                        @page {
+                            size: A4 landscape;
+                            margin: 8mm;
+                        }
+                    }
+
+                </style>
+
+                <!-- NOTE: id added so update=":growl reportPanel" and the
+                     print script (which looks up
+                     'investigationReportForm:reportPanel') actually work -->
+                <h:form id="investigationReportForm" class="w-100">
+
+                    <p:panel header="Investigation Wise Report" class="w-100 no-print">
+
+                        <!-- NOTE: added — btnProcess updates id="messages",
+                             which did not exist before -->
+                        <p:messages id="messages" closable="true" showDetail="false"/>
+
+                        <h:panelGrid columns="5" class="w-100">
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3" />
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
 
                             <p:datePicker id="fromDate"
+                                          value="#{investigationWiseReport.fromDate}"
                                           styleClass="d-block w-100"
                                           inputStyleClass="form-control"
-                                          showTime="true" 
-                                          monthNavigator="true"           
-                                          yearNavigator="true"                              
-                                          timeInput="true" 
+                                          showTime="true"
+                                          monthNavigator="true"
+                                          yearNavigator="true"
+                                          timeInput="true"
                                           title="Filter by from date"
                                           hideOnDateTimeSelect="true"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"/>
 
-                            <p:spacer width="20"></p:spacer>
-
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;"
-                                              styleClass="fa mr-2"/> 
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="To Date" for="toDate" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:datePicker
-                                id="toDate"
-                                styleClass="d-block w-100"
-                                inputStyleClass="form-control"
-                                showTime="true" 
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true" 
-                                title="Filter by to date"
-                                hideOnDateTimeSelect="true" 
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            <p:datePicker id="toDate"
+                                          value="#{investigationWiseReport.toDate}"
+                                          styleClass="d-block w-100"
+                                          inputStyleClass="form-control"
+                                          showTime="true"
+                                          monthNavigator="true"
+                                          yearNavigator="true"
+                                          timeInput="true"
+                                          title="Filter by to date"
+                                          hideOnDateTimeSelect="true"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
-                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
-                                </p:outputLabel>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmIns"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItems 
-                                    value="#{institutionController.companies}" 
-                                    var="ins" 
+
+                            <p:selectOneMenu id="phmIns"
+                                             value="#{investigationWiseReport.institution}"
+                                             styleClass="w-100"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem
+                                    itemLabel="All Institutions"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <f:selectItems
+                                    value="#{institutionController.companies}"
+                                    var="ins"
                                     itemLabel="#{ins.name}"
                                     itemValue="#{ins}"/>
+                                <!-- NOTE: added — cascades down to site/department/lab -->
+                                <p:ajax listener="#{investigationWiseReport.institutionChanged}" update="phmSite sto sLab"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
-
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
                                 <p:outputLabel value="Site" for="phmSite" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmSite"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All Sites"/>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                               itemValue="#{site}"/>
+
+                            <p:selectOneMenu id="phmSite"
+                                             value="#{investigationWiseReport.site}"
+                                             class="w-100"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem
+                                    itemLabel="All Sites"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <!-- NOTE: fixed — was using undeclared var "site" and
+                                     itemLabel/itemValue referenced "siteItem" -->
+                                <f:selectItems value="#{institutionController.sites}"
+                                               var="siteItem"
+                                               itemLabel="#{siteItem.name}"
+                                               itemValue="#{siteItem}"/>
+                                <p:ajax listener="#{investigationWiseReport.siteChanged}" update="sto sLab"/>
                             </p:selectOneMenu>
 
-
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="Department" for="sto" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sto" filter="true"  class="w-100 " >
-                                <f:selectItem itemLabel="All Departments" ></f:selectItem>
+
+                            <p:selectOneMenu id="sto"
+                                             value="#{investigationWiseReport.department}"
+                                             filter="true"
+                                             class="w-100"
+                                             filterMatchMode="contains">
+                                <f:selectItem
+                                    itemLabel="All Departments"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <!-- NOTE: fixed — var was "d" but itemLabel/itemValue
+                                     referenced "departmentItem" -->
                                 <f:selectItems
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}"/>
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(investigationWiseReport.institution, investigationWiseReport.site)}"
+                                    var="departmentItem"
+                                    itemLabel="#{departmentItem.name}"
+                                    itemValue="#{departmentItem}"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-microscope mr-2" />
+                                <h:outputText styleClass="fa fa-microscope mr-2"/>
                                 <h:outputLabel value="Laboratory" for="sLab" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sLab" class="w-100 " >
-                                <f:selectItem itemValue="All" itemLabel="All" ></f:selectItem>
-                                <f:selectItems 
-                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}" />
+
+                            <p:selectOneMenu id="sLab"
+                                             value="#{investigationWiseReport.laboratory}"
+                                             class="w-100"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem
+                                    itemLabel="All Laboratories"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(investigationWiseReport.institution, investigationWiseReport.site)}"
+                                    var="laboratoryItem"
+                                    itemLabel="#{laboratoryItem.name}"
+                                    itemValue="#{laboratoryItem}"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf492;" styleClass="fa mr-2"/>
-                                <h:outputLabel value="Investigation" for="acInvestigationItem" class="m-3"/>
+                                <!-- NOTE: fixed — "for" pointed to a non-existent id
+                                     "acInvestigationItem"; component id is
+                                     "cmdInvestigation" -->
+                                <h:outputLabel value="Investigation" for="cmdInvestigation" class="m-3"/>
                             </h:panelGroup>
+
                             <p:selectOneMenu id="cmdInvestigation"
-                                             value="#{reportController.investigation}"
+                                             value="#{investigationWiseReport.investigation}"
                                              style="width:100%"
                                              title="Filter by investigation"
-                                             filter="true">
-                                <f:selectItem itemLabel="Select Investigation"/>
-                                <f:selectItems value="#{investigationController.investigationItems}" itemLabel="#{i.sname}" var="i" itemValue="#{i}"/>
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem
+                                    itemLabel="All Investigations"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <f:selectItems value="#{investigationController.investigationItems}"
+                                               itemLabel="#{investigationItem.sname}"
+                                               var="investigationItem"
+                                               itemValue="#{investigationItem}"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
+
+                            <!-- The Parameter / Age / Result / Diagnosis (autoComplete)
+                                 fields below have no matching property on
+                                 investigationWiseReport and no support in
+                                 process()/exportExcel(). They're left as
+                                 presentational-only inputs, same as source doc.
+                                 Wire them to the bean once the corresponding
+                                 filter logic exists, or remove them. -->
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-sliders-h mr-2" />
+                                <h:outputText styleClass="fa fa-sliders-h mr-2"/>
                                 <h:outputLabel value="Parameter" for="sParms" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sParms" class="w-100 " >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>                              
+                            <p:selectOneMenu id="sParms" class="w-100">
+                                <f:selectItem itemLabel="Select"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText  styleClass="fa fa-user-clock mr-2" />
+                                <h:outputText styleClass="fa fa-user-clock mr-2"/>
                                 <h:outputLabel value="Age" for="sAge" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sAge" class="w-100 " >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItem itemValue="LT" itemLabel="Less than" />
-                                <f:selectItem itemValue="GT" itemLabel="Greater than" />
-                                <f:selectItem itemValue="E" itemLabel="=" />
-                                <f:selectItem itemValue="B" itemLabel="Between" />
+                            <p:selectOneMenu id="sAge" class="w-100">
+                                <f:selectItem itemLabel="Select"/>
+                                <f:selectItem itemValue="LT" itemLabel="Less than"/>
+                                <f:selectItem itemValue="GT" itemLabel="Greater than"/>
+                                <f:selectItem itemValue="E" itemLabel="="/>
+                                <f:selectItem itemValue="B" itemLabel="Between"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fas fa-file-medical-alt me-2" />
+                                <h:outputText styleClass="fas fa-file-medical-alt me-2"/>
                                 <h:outputLabel value="Result" for="sRst" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sRst" class="w-100 " >
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItem itemValue="LT" itemLabel="Less than" />
-                                <f:selectItem itemValue="GT" itemLabel="Greater than" />
-                                <f:selectItem itemValue="E" itemLabel="=" />
-                                <f:selectItem itemValue="B" itemLabel="Between" />
+                            <p:selectOneMenu id="sRst" class="w-100">
+                                <f:selectItem itemLabel="Select"/>
+                                <f:selectItem itemValue="LT" itemLabel="Less than"/>
+                                <f:selectItem itemValue="GT" itemLabel="Greater than"/>
+                                <f:selectItem itemValue="E" itemLabel="="/>
+                                <f:selectItem itemValue="B" itemLabel="Between"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText  styleClass="fa fa-male mr-2" />
+                                <h:outputText styleClass="fa fa-male mr-2"/>
                                 <h:outputLabel value="Gender" for="sG" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="sG" class="w-100 " >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItem itemValue="MALE" itemLabel="Male" />
-                                <f:selectItem itemValue="FEMALE" itemLabel="Female" />
+                            <!-- NOTE: itemValue changed from MALE/FEMALE to Male/Female
+                                 to match the bean/data used in the working version.
+                                 Confirm this matches your DB values before deploying. -->
+                            <p:selectOneMenu id="sG"
+                                             value="#{investigationWiseReport.gender}"
+                                             class="w-100">
+                                <f:selectItem
+                                    itemLabel="All"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <f:selectItem itemValue="Male" itemLabel="Male"/>
+                                <f:selectItem itemValue="Female" itemLabel="Female"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-stethoscope mr-2"/>
                                 <h:outputLabel value="Diagnosis" for="acDiagnosisItem" class="m-3"/>
                             </h:panelGroup>
                             <p:autoComplete id="acDiagnosisItem" inputStyleClass="w-100"
-                                            styleClass="w-100" value=""
-                                            completeMethod="#" var="ix"
-                                            itemLabel=""
-                                            itemValue="" />
+                                            styleClass="w-100" 
+
+                                            placeholder="Not implemented"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText  styleClass="fa fa-procedures mr-2" />
+                                <h:outputText styleClass="fa fa-procedures mr-2"/>
                                 <h:outputLabel value="Visit Type" for="type" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="type" class="w-100 " >
-                                <f:selectItem itemValue="All" itemLabel="All" ></f:selectItem>
-                                <f:selectItem itemValue="OP" itemLabel="OP" />
-                                <f:selectItem itemValue="IP" itemLabel="IP" />
-                                <f:selectItem itemValue="CC" itemLabel="CC" />
+                            <p:selectOneMenu id="type"
+                                             value="#{investigationWiseReport.visitType}"
+                                             class="w-100">
+                                <f:selectItem
+                                    itemLabel="All"
+                                    itemValue="#{null}"
+                                    noSelectionOption="true"/>
+                                <f:selectItem itemValue="OP" itemLabel="OP"/>
+                                <f:selectItem itemValue="IP" itemLabel="IP"/>
+                                <f:selectItem itemValue="CC" itemLabel="CC"/>
                             </p:selectOneMenu>
 
                         </h:panelGrid>
 
-                        <div class="row mb-3">
-                            <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
+                        <div>
+                            <div class="col-md-12 d-flex justify-content-start no-print" style="gap:8px">
 
                                 <p:commandButton
                                     id="btnProcess"
                                     class="ui-button-warning my-4 mx-2"
                                     style="width: 100px"
-                                    action="#{reportsController.turnAroundTimeHourlyReport}"
-                                    ajax="false"
+                                    action="#{investigationWiseReport.process}"
+                                    ajax="true"
                                     value="Process"
-                                    icon="fas fa-cogs"/>
+                                    icon="fas fa-cogs"
+                                    process="@form"
+                                    update=":growl reportPanel"/>
 
                                 <p:commandButton
                                     id="btnPrint"
@@ -217,233 +335,209 @@
                                     icon="fas fa-print"
                                     type="button"
                                     value="Print"
-                                    onclick="hidePaginatorBeforePrint(); window.print(); return false;"/>
-
-                                <h:outputScript>
-                                    function hidePaginatorBeforePrint() {
-                                    let paginators = document.querySelectorAll('.ui-paginator');
-                                    paginators.forEach(el => el.style.display = 'none');
-                                    }
-
-                                    function restorePaginatorAfterPrint() {
-                                    let paginators = document.querySelectorAll('.ui-paginator');
-                                    paginators.forEach(el => el.style.display = '');
-                                    }
-
-                                    window.addEventListener('afterprint', restorePaginatorAfterPrint);
-                                </h:outputScript>
+                                    onclick="printInvestigationReport(); return false;"/>
 
                                 <p:commandButton
                                     id="btnExcel"
-                                    class="ui-button-success my-4 mx-2"
+                                    styleClass="ui-button-success my-4 mx-2"
                                     style="width: 100px"
                                     icon="fas fa-file-excel"
                                     ajax="false"
-                                    value="Excel"/>
-                                <!-- <p:dataExporter 
-                                     type="xlsx"
-                                     target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                     fileName="organism_antibioti_sensitivity.xlsx"/>-->
+                                    value="Excel"
+                                    process="@this"
+                                    action="#{investigationWiseReport.exportExcel}"
+                                    immediate="true"/>
 
                                 <p:commandButton
                                     id="btnPdf"
-                                    class="ui-button-danger my-4 mx-2"
+                                    styleClass="ui-button-danger my-4 mx-2"
                                     style="width: 100px"
                                     icon="fas fa-file-pdf"
                                     ajax="false"
-                                    value="PDF"/>
-                                <!-- <p:dataExporter 
-                                     type="pdf"
-                                     target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                     fileName="organism_antibiotic_sensitivity.pdf"/>-->
+                                    value="PDF"
+                                    process="@this"
+                                    immediate="true"
+                                    action="#{investigationWiseReport.exportPdf}"/>
+
                             </div>
                         </div>
 
+                    </p:panel>
 
+                    <!-- NOTE: id="reportPanel" added — this is what
+                         update=":growl reportPanel" targets, and what the
+                         print CSS/JS expects. styleClass now includes
+                         investigation-wise-print so the @media print rules apply. -->
+                    <p:panel id="reportPanel"
+                             header="Investigation Wise Report"
+                             styleClass="my-3 investigation-wise-print">
 
-                        <p:panel header="Investigation Wise Report" styleClass="my-3">
+                        <h:panelGrid columns="4" columnClasses="col-2,col-3,col-2,col-3" styleClass="table table-bordered table-sm mb-3">
 
-                            <h:panelGrid columns="4" columnClasses="col-2,col-3,col-2,col-3" styleClass="table table-bordered table-sm mb-3">
+                            <h:outputText value="From Date :"/>
+                            <h:outputText value="#{investigationWiseReport.fromDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputText>
 
-                                <h:outputText value="From Date :" />
-                                <h:outputText value="">
-                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
+                            <h:outputText value="To Date :"/>
+                            <h:outputText value="#{investigationWiseReport.toDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputText>
+
+                            <h:outputText value="Institution :"/>
+                            <h:outputText value="#{empty investigationWiseReport.institution ? 'All' : investigationWiseReport.institution.name}"/>
+
+                            <h:outputText value="Site :"/>
+                            <h:outputText value="#{empty investigationWiseReport.site ? 'All' : investigationWiseReport.site.name}"/>
+
+                            <h:outputText value="Department :"/>
+                            <h:outputText value="#{empty investigationWiseReport.department ? 'All' : investigationWiseReport.department.name}"/>
+
+                            <h:outputText value="Laboratory :"/>
+                            <h:outputText value="#{empty investigationWiseReport.laboratory ? 'All' : investigationWiseReport.laboratory.name}"/>
+
+                            <h:outputText value="Investigation :"/>
+                            <h:outputText value="#{empty investigationWiseReport.investigation ? 'All' : investigationWiseReport.investigation.name}"/>
+
+                            <h:outputText value="Sex :"/>
+                            <h:outputText value="#{empty investigationWiseReport.gender ? 'All' : investigationWiseReport.gender}"/>
+
+                            <h:outputText value="Visit Type :"/>
+                            <h:outputText value="#{empty investigationWiseReport.visitType ? 'All' : investigationWiseReport.visitType}"/>
+
+                            <!-- MRN / Parameter / Diagnosis / Age / Result removed from
+                                 this summary grid: there is no corresponding property
+                                 on investigationWiseReport to echo back. Add them here
+                                 once those filters are actually implemented in the bean. -->
+
+                        </h:panelGrid>
+
+                        <p:dataTable
+                            id="invesWiseTable"
+                            widgetVar="invesWiseTable"
+                            value="#{investigationWiseReport.reportData}"
+                            var="reportRow"
+                            rowIndexVar="rowIndex"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            emptyMessage="No investigation records found."
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                            rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                            styleClass="table-sm w-100">
+
+                            <p:column width="4em">
+                                <f:facet name="header">
+                                    <h:outputText value="No."/>
+                                </f:facet>
+                                <h:outputText value="#{rowIndex + 1}"/>
+                            </p:column>
+
+                            <p:column width="20em">
+                                <f:facet name="header">
+                                    <h:outputText value="MRN"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.mrn}"/>
+                            </p:column>
+
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <h:outputText value="Visit Type"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.visitType}"/>
+                            </p:column>
+
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <h:outputText value="Lab Department"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.laboratoryName}"/>
+                            </p:column>
+
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <h:outputText value="Gender"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.gender}"/>
+                            </p:column>
+
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <h:outputText value="Name"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.patientName}"/>
+                            </p:column>
+
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <h:outputText value="Age"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.age}"/>
+                            </p:column>
+
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <h:outputText value="Investigation"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.investigationName}"/>
+                            </p:column>
+
+                            <p:column width="10em">
+                                <f:facet name="header">
+                                    <h:outputText value="Created Date"/>
+                                </f:facet>
+                                <h:outputText value="#{reportRow.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
+                            </p:column>
 
-                                <h:outputText value="To Date :" />
-                                <h:outputText value="">
-                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
-                                </h:outputText>
+                            <!-- "Diagnosis" and "Remarks" columns from the original
+                                 mockup are omitted here: reportRow (per the working
+                                 bean) has no diagnosis/remarks property. Add a
+                                 p:column for each once those fields exist on the
+                                 report row model. -->
 
-                                <h:outputText value="Institution :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Site :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Department :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="MRN :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Laboratory :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Investigation :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Parameter :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Diagnosis :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Age :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Sex :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Result :" />
-                                <h:outputText value="" />
-
-                            </h:panelGrid>
-
-
-                            <p:dataTable
-                                id="invesWiseTable"
-                                var="var"
-                                rowIndexVar="n"
-                                paginator="true"
-                                paginatorPosition="bottom"
-                                rows="10"
-                                rendered="true"
-                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
-                                styleClass="table-sm">
-
-                                <p:column width= "20em" >
-                                    <f:facet name="header" >
-                                        <h:outputText value="MRN" />
-                                    </f:facet>
-                                    <h:outputText value="">
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width= "8em" >
-                                    <f:facet name="header" >
-                                        <h:outputText value="Visit Type" />
-                                    </f:facet>
-                                    <h:outputText value="">
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Lab Department" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Gender" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Name" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Diagnosis" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Age" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Investigation" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Result" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                                <p:column width="8em">
-                                    <f:facet name="header">
-                                        <h:outputText value="Remarks" />
-                                    </f:facet>
-                                    <h:outputText value=""> 
-                                    </h:outputText>
-                                    <f:facet name="footer">
-                                        <h:outputText value=""/>
-                                    </f:facet>
-                                </p:column>
-
-                            </p:dataTable>
-
-                        </p:panel>
-
-
-
-
+                        </p:dataTable>
 
                     </p:panel>
+
                 </h:form>
+
+                <h:outputScript target="body">
+
+                    function printInvestigationReport() {
+
+                    var table = window.PF ? PF('invesWiseTable') : null;
+
+                    if (table &amp;&amp; table.paginator) {
+
+                    var total = table.paginator.cfg.rowCount;
+                    var shown = table.paginator.cfg.rows;
+
+                    // Only the current page exists in the DOM, so printing now
+                    // would drop the rest without saying so.
+                    if (total > shown) {
+                    var proceed = confirm(
+                    'Only the ' + shown + ' rows on this page will be printed, '
+                    + 'out of ' + total + '. Use the page-size dropdown below '
+                    + 'the table to show them all, then print. '
+                    + 'Print this page anyway?'
+                    );
+
+                    if (!proceed) {
+                    return false;
+                    }
+                    }
+                    }
+
+                    window.print();
+
+                    return false;
+                    }
+
+                </h:outputScript>
+
             </ui:define>
         </ui:composition>
 

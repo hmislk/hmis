@@ -13,6 +13,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
@@ -87,6 +88,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
     @Inject
     com.divudi.bean.common.PatientController patientController;
+    /** Reuses the inward service bill reversal when an admission is cancelled. (Issue #23594) */
+    @Inject
+    private InwardSearch inwardSearch;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -360,6 +364,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
+        // The automatic admission charges (issue #23594) are not staff-added bills
+        // the user has to clear first - cancelBht() reverses them itself. Leaving
+        // them in would mean every admission at a hospital that configures this
+        // feature could never be cancelled.
+        if (current != null && current.getAdmissionChargeBatchBill() != null) {
+            sql += " and (b.backwardReferenceBill is null or b.backwardReferenceBill<>:acb) ";
+            hm.put("acb", current.getAdmissionChargeBatchBill());
+        }
         List<Bill> bills = getBillFacade().findByJpql(sql, hm);
         if (bills.isEmpty()) {
             return flag;
@@ -396,6 +408,61 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 //
 //        return false;
 //    }
+    /**
+     * Reverses the automatic admission charges billed at admission
+     * (issue #23594) with the same contra-bill machinery the manual
+     * <i>Cancel Inward Service Bill</i> screen uses.
+     *
+     * <p>Charges are billed on every admission at a hospital that configures
+     * them, so requiring staff to clear them by hand before cancelling a wrongly
+     * created admission would make cancellation impractical. A charge bill that
+     * genuinely may not be reversed - checked, already returned, or with a
+     * doctor payment against it - still blocks the cancellation, and says why.</p>
+     *
+     * @return the bills reversed, or {@code null} when the cancellation must not
+     * proceed
+     */
+    private List<Bill> reverseAutomaticAdmissionCharges() {
+        List<Bill> reversed = new ArrayList<>();
+        if (current == null || current.getAdmissionChargeBatchBill() == null) {
+            return reversed;
+        }
+
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("acb", current.getAdmissionChargeBatchBill());
+        List<Bill> chargeBills = getBillFacade().findByJpql(
+                "select b from BilledBill b "
+                + " where b.retired=false "
+                + " and b.backwardReferenceBill=:acb ", hm);
+
+        if (chargeBills == null || chargeBills.isEmpty()) {
+            return reversed;
+        }
+
+        for (Bill chargeBill : chargeBills) {
+            String blocked = inwardSearch.inwardServiceBillReversalBlockedReason(chargeBill);
+            if (blocked != null) {
+                JsfUtil.addErrorMessage("This admission's automatic charges cannot be reversed: " + blocked
+                        + ". Resolve that first, then cancel the admission.");
+                return null;
+            }
+        }
+
+        for (Bill chargeBill : chargeBills) {
+            if (chargeBill.isCancelled()) {
+                continue;
+            }
+            inwardSearch.reverseInwardServiceBill(chargeBill,
+                    "Automatic admission charges reversed - admission cancelled",
+                    BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            reversed.add(chargeBill);
+        }
+
+        getBillBean().updateBatchBill(current.getAdmissionChargeBatchBill());
+
+        return reversed;
+    }
+
     public String cancelBht() {
         if (current == null) {
             return "";
@@ -410,6 +477,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("A cancellation reason is required. Please enter the reason before proceeding.");
+            return "";
+        }
+
+        // Reverse the automatic admission charges before retiring the admission.
+        // Done after every other check has passed, so a cancellation that is going
+        // to be refused does not leave the charges already reversed. (Issue #23594)
+        List<Bill> reversedChargeBills = reverseAutomaticAdmissionCharges();
+        if (reversedChargeBills == null) {
             return "";
         }
 
@@ -438,6 +513,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         afterCancel.put("retired", current.isRetired());
         afterCancel.put("cancellationReason", comment);
         afterCancel.put("retiredRoomCount", retiredRoomCount);
+        afterCancel.put("reversedAdmissionChargeBills", reversedChargeBills.size());
         auditService.logEncounterAudit(current, "Admission Cancelled",
                 beforeCancel, afterCancel, sessionController.getLoggedUser());
 

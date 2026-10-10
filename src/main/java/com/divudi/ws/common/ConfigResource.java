@@ -5,6 +5,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.ApiKeyType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
@@ -75,12 +76,7 @@ public class ConfigResource {
     public Response setBooleanValue(@PathParam("key") String key,
             @PathParam("value") boolean value,
             @Context HttpHeaders headers) {
-        System.out.println("setBooleanValue" );
-        System.out.println("headers = " + headers);
-        System.out.println("key = " + key);
-        System.out.println("value = " + value);
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setBooleanValueByKey(key, value);
@@ -93,8 +89,7 @@ public class ConfigResource {
     public Response setLongTextValue(@PathParam("key") String key,
             @PathParam("value") String value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setLongTextValueByKey(key, value);
@@ -107,11 +102,94 @@ public class ConfigResource {
     public Response setIntegerValue(@PathParam("key") String key,
             @PathParam("value") int value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setIntegerValueByKey(key, value);
+        return successResponse();
+    }
+
+    /**
+     * Create-or-update a SHORT_TEXT config option. Added for issue #23678 —
+     * previously there was no API path to create a brand-new SHORT_TEXT key
+     * at all (only Boolean/LongText/Integer had a create-capable {@code setX}
+     * endpoint); {@code PUT /api/config/{key}} deliberately requires the key
+     * to already exist. Takes the value in the request body rather than as a
+     * path segment (unlike the legacy {@code setBoolean}/{@code setLongText}/
+     * {@code setInteger} endpoints above) because a SHORT_TEXT value may
+     * contain spaces or slashes (e.g. a registration number like
+     * "PHSRC/ MC/357" from the case that surfaced this issue), which a raw
+     * path segment cannot safely carry.
+     *
+     * POST /api/config/setShortText/{key}
+     * Body: {"value":"..."}
+     */
+    @POST
+    @Path("setShortText/{key}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response setShortTextValue(@PathParam("key") String key,
+            String requestBody,
+            @Context HttpHeaders headers) {
+        if (validateConfigKey(headers) == null) {
+            return unauthorizedResponse();
+        }
+        String value;
+        try {
+            if (requestBody == null || requestBody.trim().isEmpty()) {
+                return badRequestResponse("Request body with a \"value\" field is required");
+            }
+            JsonReader reader = Json.createReader(new StringReader(requestBody));
+            JsonObject body = reader.readObject();
+            if (!body.containsKey("value") || body.isNull("value")) {
+                return badRequestResponse("\"value\" field is required");
+            }
+            value = body.getString("value");
+        } catch (JsonException | IllegalStateException e) {
+            return badRequestResponse("Invalid JSON body: " + e.getMessage());
+        }
+        configOptionApplicationController.setShortTextValueByKey(key, value);
+        return successResponse();
+    }
+
+    /**
+     * Create-or-update a DOUBLE config option. Same rationale as
+     * {@link #setShortTextValue(String, String, HttpHeaders)} — added for
+     * issue #23678 so a brand-new DOUBLE key can be created via the API, not
+     * only via the admin UI or raw SQL. Body-based for consistency with the
+     * new SHORT_TEXT endpoint above.
+     *
+     * POST /api/config/setDouble/{key}
+     * Body: {"value":"1.08"}
+     */
+    @POST
+    @Path("setDouble/{key}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response setDoubleValue(@PathParam("key") String key,
+            String requestBody,
+            @Context HttpHeaders headers) {
+        if (validateConfigKey(headers) == null) {
+            return unauthorizedResponse();
+        }
+        Double value;
+        try {
+            if (requestBody == null || requestBody.trim().isEmpty()) {
+                return badRequestResponse("Request body with a \"value\" field is required");
+            }
+            JsonReader reader = Json.createReader(new StringReader(requestBody));
+            JsonObject body = reader.readObject();
+            if (!body.containsKey("value") || body.isNull("value")) {
+                return badRequestResponse("\"value\" field is required");
+            }
+            javax.json.JsonValue jv = body.get("value");
+            String rawValue = jv.getValueType() == javax.json.JsonValue.ValueType.STRING
+                    ? body.getString("value") : jv.toString();
+            value = Double.valueOf(rawValue);
+        } catch (JsonException | IllegalStateException | NumberFormatException e) {
+            return badRequestResponse("Invalid JSON body: " + e.getMessage());
+        }
+        configOptionApplicationController.setDoubleValueByKey(key, value);
         return successResponse();
     }
 
@@ -184,6 +262,47 @@ public class ConfigResource {
         for (ConfigOption opt : options) {
             arrayBuilder.add(toJson(opt));
         }
+        return Response.ok(arrayBuilder.build().toString()).build();
+    }
+
+    /**
+     * Discovery endpoint for the InwardChargeType enum: for every value,
+     * returns its default/custom label, the two admin-configurable ordering
+     * numbers (Report Order, Final Bill Order) introduced in issue #23340,
+     * and the Final Bill Group text (configurable charge-type grouping,
+     * #23340 follow-up). Reading each value here also lazily seeds any of their
+     * ConfigOption rows that don't exist yet (same lazy-create behavior as
+     * the dedicated inward_charge_type_labels.xhtml admin page), so a caller
+     * can immediately follow up with PUT /api/config/{key} or
+     * POST /api/config/setInteger/{key}/{value} for any charge type even if
+     * the admin page was never opened.
+     *
+     * GET /api/config/inward-charge-types
+     */
+    @GET
+    @Path("inward-charge-types")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listInwardChargeTypes(@Context HttpHeaders headers) {
+        if (validateConfigKey(headers) == null) {
+            return unauthorizedResponse();
+        }
+
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        // Batched: same reasoning as InwardChargeTypeLabelController.init() — this
+        // endpoint's whole purpose is seeding every missing row in one call, so
+        // suppress the per-key cache reload and do it once at the end instead.
+        configOptionApplicationController.seedInBatch(() -> {
+            for (InwardChargeType type : InwardChargeType.values()) {
+                JsonObjectBuilder obj = Json.createObjectBuilder()
+                        .add("name", type.name())
+                        .add("defaultLabel", type.getLabel() != null ? type.getLabel() : "")
+                        .add("label", configOptionApplicationController.getInwardChargeTypeLabel(type))
+                        .add("reportOrder", configOptionApplicationController.getInwardChargeTypeReportOrder(type))
+                        .add("finalBillOrder", configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type))
+                        .add("finalBillGroup", configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+                arrayBuilder.add(obj);
+            }
+        });
         return Response.ok(arrayBuilder.build().toString()).build();
     }
 
@@ -302,6 +421,11 @@ public class ConfigResource {
     /**
      * Validate the Config API key from the request headers, returning the
      * ApiKey when valid (active, Config type, not expired) or null otherwise.
+     * Every endpoint in this resource — reads and writes alike — must use this
+     * check. The legacy setBoolean/setLongText/setInteger endpoints previously
+     * used {@code ApiKeyController.isValidKey()}, which accepts any key type
+     * (e.g. a Finance key), so a caller could change a value it could not read
+     * back (issue #24198).
      */
     private ApiKey validateConfigKey(HttpHeaders headers) {
         String apiKeyValue = headers.getHeaderString("Config");

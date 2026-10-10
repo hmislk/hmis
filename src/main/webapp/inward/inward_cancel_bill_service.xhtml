@@ -41,13 +41,29 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <p:outputLabel value="Service Cancellation"
                                                    styleClass="fs-5 fw-semibold m-0"/>
-                                    <p:commandButton
-                                        ajax="false"
-                                        value="Back to List"
-                                        icon="fa fa-long-arrow-left"
-                                        action="/lab/inward_search_service?faces-redirect=true"
-                                        title="Return to the inward bill search list"
-                                        styleClass="ui-button-warning"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to List"
+                                            icon="fa fa-long-arrow-left"
+                                            action="/lab/inward_search_service?faces-redirect=true"
+                                            title="Return to the inward bill search list"
+                                            styleClass="ui-button-warning"/>
+                        <p:commandButton
+                            id="btnInpatientDashboard"
+                            ajax="false"
+                            immediate="true"
+                            value="Inpatient Dashboard"
+                            icon="fas fa-id-card"
+                            styleClass="ui-button-info ui-button-outlined"
+                            title="Open the Inpatient Dashboard for this admission"
+                            rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                            action="#{admissionController.navigateToAdmissionProfilePage()}">
+                            <f:setPropertyActionListener
+                                value="#{inwardSearch.bill.patientEncounter}"
+                                target="#{admissionController.current}"/>
+                        </p:commandButton>
+                                    </div>
                                 </div>
                             </f:facet>
 
@@ -202,6 +218,20 @@
                                             action="/lab/inward_search_service?faces-redirect=true"
                                             title="Return to the inward bill search list"
                                             styleClass="ui-button-warning"/>
+                                            <p:commandButton
+                                                id="btnInpatientDashboardAfterCancel"
+                                                ajax="false"
+                                                immediate="true"
+                                                value="Inpatient Dashboard"
+                                                icon="fas fa-id-card"
+                                                styleClass="ui-button-info ui-button-outlined"
+                                                title="Open the Inpatient Dashboard for this admission"
+                                                rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                                                action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                                <f:setPropertyActionListener
+                                                    value="#{inwardSearch.bill.patientEncounter}"
+                                                    target="#{admissionController.current}"/>
+                                            </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>

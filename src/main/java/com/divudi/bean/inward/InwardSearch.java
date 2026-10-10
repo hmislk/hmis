@@ -19,6 +19,7 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.dto.InwardBillReceiptDTO;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.EmailAttachment;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -40,17 +41,19 @@ import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
-import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.DrawerService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
-import java.io.ByteArrayOutputStream;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -102,13 +105,17 @@ public class InwardSearch implements Serializable {
     @EJB
     PaymentService paymentService;
     @EJB
-    DrawerService drawerService;
-    @EJB
     private com.divudi.service.AuditService auditService;
+    @Inject
+    private NotificationController notificationController;
     @EJB
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
     private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
+    @EJB
+    private com.divudi.service.BillService billService;
+    @Inject
+    private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
 
     /**
      * JSF Controllers
@@ -157,6 +164,7 @@ public class InwardSearch implements Serializable {
      */
     private Long appointmentReceiptBillId;
     private InwardBillReceiptDTO appointmentBillReceipt;
+    private InwardBillReceiptDTO cancelledBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -172,6 +180,32 @@ public class InwardSearch implements Serializable {
     private List<Bill> bills;
     private List<BillItem> tempbillItems;
     private List<Bill> finalBillVersions;
+    /**
+     * Cached PDF snapshot (bill id + bytes, as one atomic pair - see
+     * {@link FinalBillPdfSnapshotCacheEntry}) for the currently loaded final
+     * bill ({@link #bill}), populated by
+     * {@code refreshFinalBillPdfSnapshot()} in whichever navigation method
+     * routed into {@code inward_reprint_bill_final.xhtml}. Served as-is
+     * (pure read, no DB writes) by {@link #getFinalBillPdfSnapshotStream()}.
+     * Must be refreshed (to a freshly-fetched entry, or explicitly to null)
+     * on every such navigation, since this bean is {@code @SessionScoped}
+     * and a stale value here would leak a previously-viewed bill's PDF into
+     * a later view. Several places in this class also assign {@link #bill}
+     * directly rather than through {@link #setBill(Bill)} (which clears
+     * this field), so the cache cannot be trusted to have been invalidated
+     * on every possible {@code bill} reassignment; checking this entry's
+     * {@code billId} against {@code bill.getId()} in
+     * {@link #getFinalBillPdfSnapshotStream()} makes the cache
+     * self-correcting for any current or future direct {@code bill = ...}
+     * assignment site, without needing to find and patch each one. Always
+     * assigned in a single statement from a single freshly-constructed
+     * {@link FinalBillPdfSnapshotCacheEntry} - never updated by mutating an
+     * existing entry or by separately assigning a bytes field and an id
+     * field - so a concurrent request refreshing this same session-scoped
+     * field for a different bill can only ever leave either the old or the
+     * new (billId, bytes) pair here, never a mix of the two.
+     */
+    private FinalBillPdfSnapshotCacheEntry finalBillPdfSnapshotCacheEntry;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -357,7 +391,10 @@ public class InwardSearch implements Serializable {
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_PAYMENT_REFUND:
-                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
+                // Same page the refund reprint's Cancel opens; cancelBillRefund() works on this bill.
+                paymentMethodData = new PaymentMethodData();
+                printPreview = false;
+                return "inward_cancel_bill_refund?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
@@ -399,6 +436,11 @@ public class InwardSearch implements Serializable {
         }
         if (bill.getCheckeAt() != null) {
             JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
             return "";
         }
         return "/inward/inward_cancel_bill_service?faces-redirect=true";
@@ -500,6 +542,12 @@ public class InwardSearch implements Serializable {
 
         if (bill.getCheckeAt() != null) {
             JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+
+        if (bill.getPatientEncounter() != null && bill.getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
             return "";
         }
 
@@ -640,10 +688,39 @@ public class InwardSearch implements Serializable {
         }
     }
 
-    public String fromBhtFinalBillSearchToBillReprint() {
+    /**
+     * ActionListener chokepoint for the two remaining entry routes into
+     * {@code inward_reprint_bill_final.xhtml} that select a bill from a row
+     * in a search results table rather than through a dedicated navigation
+     * method: {@code inward_search_final.xhtml} and
+     * {@code inward_search_final_check.xhtml} (see the routes listed in that
+     * page's header comment). Takes the selected bill directly as a
+     * parameter instead of relying on a sibling
+     * {@code f:setPropertyActionListener} (target={@link #bill}) on the same
+     * command component to have already run first: that ordering is NOT
+     * guaranteed — observed live, {@link #bill} was still null here when
+     * invoked from {@code inward_search_final.xhtml}'s non-ajax
+     * {@code p:commandLink}, so the caller must pass the bill explicitly.
+     * Deliberately not merged into
+     * {@link #refreshFinalBillBackwordReferenceBills()}, which is also used
+     * by {@code inward_search_provisional.xhtml} to navigate to an unrelated
+     * page ({@code inward_provisional_bill_edit}) where snapshot generation
+     * would be pointless.
+     */
+    public void prepareFinalBillReprintFromSearch(Bill selectedBill) {
+        // Takes the bill directly rather than relying on a sibling
+        // f:setPropertyActionListener (target=#{inwardSearch.bill}) on the
+        // same command component to have already run first: PrimeFaces does
+        // not reliably fire this actionListener attribute after nested
+        // f:setPropertyActionListener children for every command/ajax
+        // combination (observed live: bill was still null here on
+        // inward_search_final.xhtml's non-ajax p:commandLink, contradicting
+        // the plain-JSF UICommand.broadcast() bytecode order). Setting it
+        // here first makes this method self-contained regardless of
+        // listener ordering.
+        this.bill = selectedBill;
         refreshFinalBillBackwordReferenceBills();
-        bhtSummeryFinalizedController.setPatientEncounter(bill.getPatientEncounter());
-        return "/inward/inward_reprint_bill_final";
+        refreshFinalBillPdfSnapshot();
     }
 
     public void makeNull() {
@@ -661,6 +738,7 @@ public class InwardSearch implements Serializable {
         bills = null;
         tempbillItems = null;
         sentEmailsForBill = null;
+        finalBillPdfSnapshotCacheEntry = null;
     }
 
     public WebUser getUser() {
@@ -696,10 +774,7 @@ public class InwardSearch implements Serializable {
         }
 
         if (versions.size() == 1) {
-            bill = versions.get(0);
-            billItems = null;
-            withProfessionalFee = false;
-            return "/inward/inward_reprint_bill_final?faces-redirect=true";
+            return navigateToReprintFinalBill(versions.get(0));
         }
 
         return "/inward/inward_final_bill_list?faces-redirect=true";
@@ -720,6 +795,26 @@ public class InwardSearch implements Serializable {
         }
 
         return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    /**
+     * Shared reprint navigation into inward_reprint_bill_final.xhtml, used both
+     * by the Manage Final Bills version list ("View / Print") and by the
+     * single-version auto-navigate from {@link #navigateToFinalBillForAdmission()}.
+     * Forces {@link #withProfessionalFee} to true so the Final Bill / Custom Bill
+     * previews render the stored {@code bill.netTotal} rather than the derived
+     * hospital-only figure. Every other route into that page already sets this
+     * flag; these two were leaving it at its stale session value (issue #23652).
+     */
+    public String navigateToReprintFinalBill(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return "";
+        }
+        setBill(b);
+        withProfessionalFee = true;
+        refreshFinalBillPdfSnapshot();
+        return "/inward/inward_reprint_bill_final?faces-redirect=true";
     }
 
     /**
@@ -782,6 +877,16 @@ public class InwardSearch implements Serializable {
      * Navigates to the approval page for the given final bill version,
      * mirroring {@link #prepareEmailFinalBillVersion(Bill)}'s use of the
      * shared {@link #bill} session field for the target page.
+     *
+     * Also refreshes the frozen PDF snapshot cache ({@link #refreshFinalBillPdfSnapshot()})
+     * so that when this route lands on an already-approved bill (the row is
+     * still reachable from inward_final_bill_list.xhtml after approval, and
+     * inward_final_bill_approve.xhtml shows a "This bill has already been
+     * approved" panel in that case), the page can render the same frozen
+     * snapshot PDF instead of the live, recomputable {@code bi:finalBill}
+     * composite (issue #23848 I4). refreshFinalBillPdfSnapshot() itself is a
+     * no-op for an unapproved bill, so this is safe to call unconditionally
+     * here, same as every other navigation route into the reprint page.
      */
     public String navigateToApproveFinalBill(Bill b) {
         if (b == null) {
@@ -789,6 +894,7 @@ public class InwardSearch implements Serializable {
             return "";
         }
         bill = b;
+        refreshFinalBillPdfSnapshot();
         return "/inward/inward_final_bill_approve?faces-redirect=true";
     }
 
@@ -817,12 +923,212 @@ public class InwardSearch implements Serializable {
         b.setApproveAt(new Date());
         getBillFacade().edit(b);
 
+        try {
+            byte[] snapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);
+            // Only cache into the session-scoped field if b is the same bill
+            // instance currently loaded into the session; approveFinalBillVersion
+            // could theoretically be called with a different Bill than whatever
+            // this session's `bill` field currently holds, and we must not
+            // cross-contaminate the cache with a snapshot for a different bill.
+            if (b == bill) {
+                finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(b.getId(), snapshotBytes);
+            }
+        } catch (Exception ex) {
+            // Widened from IOException: the snapshot call can also throw an
+            // unchecked PersistenceException/EJBException (e.g. the
+            // FINALBILLPDFSNAPSHOT table not yet existing if the WAR is
+            // deployed before DDL is applied). The bill approval above has
+            // already been committed via getBillFacade().edit(b), so any
+            // snapshot failure here must degrade gracefully rather than
+            // propagate and give the user a scary error page for an
+            // approval that actually succeeded.
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill PDF snapshot generation failed on approval", ex);
+            JsfUtil.addErrorMessage("Final bill approved, but the PDF snapshot could not be generated: " + ex.getMessage());
+        }
+
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Approved",
                 null, b.getId(), sessionController.getLoggedUser(),
                 "Bill", b.getId());
+        notificationController.createInwardFinalBillNotification(b, "FinalBillApproved");
 
         JsfUtil.addSuccessMessage("Final Bill Approved");
         finalBillVersions = null;
+    }
+
+    /**
+     * Pure read: serves the PDF bytes already fetched/generated by whichever
+     * navigation method routed into this reprint page (see
+     * {@link #refreshFinalBillPdfSnapshot()}). A JSF getter is evaluated
+     * multiple times per render (and again separately by PrimeFaces' dynamic
+     * content resource request), so it must never itself call a service
+     * method that can PERSIST a new snapshot row — that both violates the
+     * "getters are pure reads" rule and caused a documented concurrency race
+     * where two near-simultaneous evaluations could both see "no snapshot
+     * yet" and both try to create one.
+     *
+     * <p>Resolved the PR #23848 review finding #1 cross-tab/cross-session
+     * leak: {@code p:media} is wired with {@code cache="false"}, which makes
+     * PrimeFaces re-invoke this whole getter completely fresh - guard
+     * included - on the actual async dynamic-resource fetch request, which
+     * is a genuinely separate, later HTTP request from the page's initial
+     * render. If this session's {@link #bill} / cache fields had since moved
+     * on to a different bill (a second tab, or a fast subsequent
+     * navigation), reading only session state here would legitimately (and
+     * wrongly) serve that other bill's bytes. The XHTML pages now nest
+     * {@code <f:param name="finalBillId" value="#{inwardSearch.bill.id}" />}
+     * inside the {@code p:media}, which PrimeFaces appends to the generated
+     * resource URL, making the fetch self-describing: this getter reads that
+     * id from the request parameter map first and, when present, resolves
+     * the response for THAT id independently of whatever the session's
+     * mutable fields currently hold (see
+     * {@link #buildFinalBillPdfSnapshotStreamForBillId(Long)}). Only when no
+     * such parameter is present (e.g. a direct getter invocation from some
+     * other code path) does it fall back to the previous session-cache-based
+     * behavior below, as a safety net.
+     */
+    public StreamedContent getFinalBillPdfSnapshotStream() {
+        Long requestedBillId = readFinalBillIdRequestParam();
+        if (requestedBillId != null) {
+            return buildFinalBillPdfSnapshotStreamForBillId(requestedBillId);
+        }
+
+        // Fallback: no request-scoped bill id was supplied (e.g. a direct
+        // getter invocation outside the p:media dynamic-resource fetch).
+        // Capture the single cache entry as a local, right at entry, before
+        // doing the guard check against it, so everything below - the guard
+        // AND the lambda passed to the builder - reads only this local,
+        // never the instance field again.
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry == null || entry.getBytes() == null) {
+            return null;
+        }
+        if (bill == null || bill.getId() == null || !bill.getId().equals(entry.getBillId())) {
+            return null;
+        }
+        byte[] bytes = entry.getBytes();
+        String fileName = sanitizedFinalBillPdfFileName(bill.getDeptId(), bill.getId());
+        return DefaultStreamedContent.builder()
+                .name(fileName)
+                .contentType("application/pdf")
+                .stream(() -> new ByteArrayInputStream(bytes))
+                .build();
+    }
+
+    /**
+     * Same sanitization {@code streamReprintReceiptAsRawText()} already
+     * applies to {@code deptId} before using it in a downloaded file name:
+     * a raw {@code deptId} like {@code "Inward/INWFINAL/192/1"} contains
+     * {@code /}, which is not valid inside a file name and would otherwise
+     * truncate or corrupt the browser's saved/displayed name.
+     */
+    private String sanitizedFinalBillPdfFileName(String deptId, Long billId) {
+        String safeName = deptId == null ? String.valueOf(billId) : deptId.replaceAll("[^A-Za-z0-9._-]", "_");
+        return safeName + ".pdf";
+    }
+
+    /**
+     * Reads the {@code finalBillId} request parameter that {@code p:media}
+     * appends to its dynamic-resource fetch URL (via the nested
+     * {@code f:param} in the XHTML), if present and parseable. Returns
+     * {@code null} when absent or malformed so callers can fall back to the
+     * legacy session-cache-based behavior.
+     */
+    private Long readFinalBillIdRequestParam() {
+        try {
+            String param = javax.faces.context.FacesContext.getCurrentInstance()
+                    .getExternalContext().getRequestParameterMap().get("finalBillId");
+            if (param == null || param.isEmpty()) {
+                return null;
+            }
+            return Long.valueOf(param);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves the PDF stream for a specific, explicitly-requested bill id,
+     * independent of this session's mutable {@link #bill} /
+     * {@link #finalBillPdfSnapshotCacheEntry} fields. Serves the session cache
+     * only when it happens to already match the requested id (the common,
+     * non-racing case); otherwise returns {@code null} rather than looking
+     * the requested id up independently.
+     *
+     * <p>{@code finalBillId} is a plain, client-editable URL query parameter
+     * (PrimeFaces' {@code DynamicContentSrcBuilder} just string-concatenates
+     * it onto the generated resource URL; the URL's other component,
+     * {@code pfdrid}, is a hash of the fixed EL expression string and is
+     * constant across all sessions/bills, not a per-render secret). An
+     * earlier version of this method treated a mismatch as "resolve the
+     * requested id directly" - {@code getBillFacade().find(requestedBillId)}
+     * followed by serving that bill's PDF once approved - which let any
+     * authenticated user download any other patient's approved final bill by
+     * hand-editing the id in the URL (no ownership/authorization check
+     * beyond "is it approved"). Returning {@code null} on mismatch still
+     * closes the original cross-tab/cross-session race (a mismatched request
+     * never gets served the WRONG bill's data - it just gets nothing, which
+     * the page already renders as its existing "could not be loaded"
+     * fallback panel) without that unauthorized lookup-and-serve path.
+     */
+    private StreamedContent buildFinalBillPdfSnapshotStreamForBillId(Long requestedBillId) {
+        FinalBillPdfSnapshotCacheEntry entry = this.finalBillPdfSnapshotCacheEntry;
+        if (entry != null && entry.getBytes() != null && requestedBillId.equals(entry.getBillId())) {
+            byte[] cachedBytes = entry.getBytes();
+            String fileName = (bill != null && requestedBillId.equals(bill.getId()))
+                    ? sanitizedFinalBillPdfFileName(bill.getDeptId(), bill.getId())
+                    : sanitizedFinalBillPdfFileName(null, requestedBillId);
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType("application/pdf")
+                    .stream(() -> new ByteArrayInputStream(cachedBytes))
+                    .build();
+        }
+
+        // Session cache is absent or belongs to a different bill than the
+        // one this resource request was generated for. Do NOT perform an
+        // independent, unauthorized lookup of the requested id - that would
+        // let a client-edited finalBillId serve any other patient's PDF.
+        return null;
+    }
+
+    /**
+     * Generates/fetches the final bill PDF snapshot for the currently loaded
+     * {@link #bill} and caches it in {@link #finalBillPdfSnapshotCacheEntry}
+     * for {@link #getFinalBillPdfSnapshotStream()} to serve as a pure read.
+     * Must be called by every navigation method that routes into
+     * {@code inward_reprint_bill_final.xhtml} right after {@code bill} is
+     * set, so the cached bytes always reflect whichever bill is currently
+     * loaded — this bean is {@code @SessionScoped}, so failing to refresh
+     * this field on every such navigation could leak a stale PDF from a
+     * previously-viewed bill into a later view.
+     *
+     * <p>Captures {@link #bill} into a local at entry and uses only that
+     * local for every check, the service call, and the cache entry's id -
+     * never re-reading the {@link #bill} field partway through. Without
+     * this, a concurrent request in the same {@code @SessionScoped} bean
+     * reassigning {@link #bill} to a different bill between the service
+     * call and the cache-entry construction could still produce a
+     * mismatched (billId, bytes) pair even with
+     * {@link FinalBillPdfSnapshotCacheEntry} making each individual
+     * assignment atomic.
+     */
+    private void refreshFinalBillPdfSnapshot() {
+        Bill snapshotBill = bill;
+        finalBillPdfSnapshotCacheEntry = null;
+        if (snapshotBill == null || snapshotBill.getApproveAt() == null) {
+            return;
+        }
+        try {
+            byte[] bytes = finalBillPdfSnapshotService.getOrCreateSnapshot(snapshotBill);
+            finalBillPdfSnapshotCacheEntry = new FinalBillPdfSnapshotCacheEntry(snapshotBill.getId(), bytes);
+        } catch (Exception ex) {
+            // Degrade gracefully (widened from IOException, same rationale
+            // as approveFinalBillVersion): a snapshot failure must not block
+            // navigation to the reprint page.
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill PDF snapshot fetch/generation failed", ex);
+        }
     }
 
     /**
@@ -852,9 +1158,49 @@ public class InwardSearch implements Serializable {
         pe.setNetTotal(newConfirmed.getNetTotal());
         getPatientEncounterFacade().edit(pe);
 
+        relinkPaymentBillsToConfirmedVersion(pe, newConfirmed);
+
         auditService.logEncounterAudit(pe, "Final Bill Version Confirmed",
                 previousFinalBillId, newConfirmed.getId(), sessionController.getLoggedUser(),
                 "Bill", newConfirmed.getId());
+    }
+
+    /**
+     * Re-points the admission's payment receipts at {@code newConfirmed}.
+     * <p>
+     * Every final bill print lists the "Paid By Patient" / "Paid By Company"
+     * breakdown from {@code pe.finalBill.backwardReferenceBills} — the receipts
+     * whose {@code forwardReferenceBill} is the confirmed version. Settle keeps
+     * that in step via {@code BhtSummeryController#updatePaymentBillList()},
+     * but confirming a different version only moved {@code pe.finalBill}: the
+     * receipts stayed on whichever version was settled last, and the newly
+     * confirmed version printed the paid total with no breakdown lines.
+     * <p>
+     * Uses the same receipt set as settle (the admission's and its child
+     * admissions' {@code InwardPaymentBill}s) so both paths agree. The previous
+     * holder's in-memory collection is trimmed and merged too, so the shared
+     * cache does not keep listing a receipt against a version it has left.
+     */
+    private void relinkPaymentBillsToConfirmedVersion(PatientEncounter pe, Bill newConfirmed) {
+        List<PatientEncounter> childEncounters = getInwardBean().fetchChildPatientEncounter(pe);
+        List<Bill> paymentBills = getInwardBean().fetchPaymentBill(pe, childEncounters);
+        if (paymentBills == null || paymentBills.isEmpty()) {
+            return;
+        }
+        for (Bill payment : paymentBills) {
+            Bill previousHolder = payment.getForwardReferenceBill();
+            if (previousHolder == null || !previousHolder.getId().equals(newConfirmed.getId())) {
+                payment.setForwardReferenceBill(newConfirmed);
+                getBillFacade().edit(payment);
+                if (previousHolder != null && previousHolder.getBackwardReferenceBills().remove(payment)) {
+                    getBillFacade().edit(previousHolder);
+                }
+            }
+            if (!newConfirmed.getBackwardReferenceBills().contains(payment)) {
+                newConfirmed.getBackwardReferenceBills().add(payment);
+            }
+        }
+        getBillFacade().edit(newConfirmed);
     }
 
     /**
@@ -1078,7 +1424,11 @@ public class InwardSearch implements Serializable {
 
         boolean success = false;
         try {
-            byte[] pdfBytes = buildFinalBillPdf(b);
+            // Use the same frozen snapshot bytes served on the reprint page
+            // (issue #23848 I5) instead of a second, divergent PDF generator -
+            // b is already confirmed approved above, which is exactly
+            // getOrCreateSnapshot's contract.
+            byte[] pdfBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);
             EmailAttachment attachment = new EmailAttachment(
                     "FinalBill_" + b.getFinalBillVersionSerial() + ".pdf",
                     "application/pdf",
@@ -1119,51 +1469,6 @@ public class InwardSearch implements Serializable {
 
         sentEmailsForBill = null;
         return success;
-    }
-
-    private byte[] buildFinalBillPdf(Bill b) throws Exception {
-        String html = buildFinalBillHtml(b);
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter(out);
-            com.itextpdf.kernel.pdf.PdfDocument pdfDoc = new com.itextpdf.kernel.pdf.PdfDocument(writer);
-            pdfDoc.setDefaultPageSize(com.itextpdf.kernel.geom.PageSize.A4);
-            com.itextpdf.html2pdf.HtmlConverter.convertToPdf(html, pdfDoc, new com.itextpdf.html2pdf.ConverterProperties());
-            return out.toByteArray();
-        }
-    }
-
-    private String buildFinalBillHtml(Bill b) {
-        PatientEncounter pe = b.getPatientEncounter();
-        String patientName = pe != null && pe.getPatient() != null && pe.getPatient().getPerson() != null
-                ? pe.getPatient().getPerson().getNameWithTitle() : "";
-        String bhtNo = pe != null ? pe.getBhtNo() : "";
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><body style='font-family:sans-serif;font-size:12px;'>");
-        sb.append("<h2>Final Bill</h2>");
-        sb.append("<table style='width:100%;margin-bottom:10px;'>");
-        sb.append("<tr><td><b>Bill Number</b></td><td>").append(escapeHtml(b.getDeptId())).append("</td></tr>");
-        sb.append("<tr><td><b>Version</b></td><td>").append(b.getFinalBillVersionSerial()).append("</td></tr>");
-        sb.append("<tr><td><b>Patient</b></td><td>").append(escapeHtml(patientName)).append("</td></tr>");
-        sb.append("<tr><td><b>BHT No</b></td><td>").append(escapeHtml(bhtNo)).append("</td></tr>");
-        sb.append("</table>");
-        sb.append("<table style='width:100%;border-collapse:collapse;' border='1' cellpadding='4'>");
-        sb.append("<tr><th style='text-align:left;'>Description</th><th style='text-align:right;'>Amount</th></tr>");
-        sb.append("<tr><td>Gross Total</td><td style='text-align:right;'>").append(df.format(b.getGrantTotal())).append("</td></tr>");
-        sb.append("<tr><td>Discount</td><td style='text-align:right;'>").append(df.format(b.getDiscount())).append("</td></tr>");
-        sb.append("<tr><td>Net Total</td><td style='text-align:right;'>").append(df.format(b.getNetTotal())).append("</td></tr>");
-        sb.append("<tr><td>Claimable Total</td><td style='text-align:right;'>").append(df.format(b.getClaimableTotal())).append("</td></tr>");
-        sb.append("</table>");
-        sb.append("</body></html>");
-        return sb.toString();
-    }
-
-    private String escapeHtml(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     public List<AppEmail> getSentEmailsForBill() {
@@ -1219,17 +1524,13 @@ public class InwardSearch implements Serializable {
         
         inwardPaymentController.paymentListener();
         
-        if (sessionController.getPaymentManagementAfterShiftStart()) {
-            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
-                return "/inward/inward_bill_payment?faces-redirect=true";
-            } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/cashier/index?faces-redirect=true";
-            }
-        } else {
-            return "/inward/inward_bill_payment?faces-redirect=true";
+        // Same unconditional shift check as Make a Deposit / Post Final Payment
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            JsfUtil.addStartShiftFirstMessageForRedirect();
+            return "/cashier/index?faces-redirect=true";
         }
+        return "/inward/inward_bill_payment?faces-redirect=true";
     }
 
     public String navigateMakeDeposit() {
@@ -1303,11 +1604,6 @@ public class InwardSearch implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public String inwardReprintBillFinal() {
-
-        return "inward/inward_reprint_bill_final";
     }
 
     public List<BillItem> getRefundingItems() {
@@ -1386,7 +1682,11 @@ public class InwardSearch implements Serializable {
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {
-        for (BillComponent nB : getBillComponents()) {
+        cancelBillComponents(can, bt, getBillComponents());
+    }
+
+    private void cancelBillComponents(Bill can, BillItem bt, List<BillComponent> sourceComponents) {
+        for (BillComponent nB : sourceComponents) {
             BillComponent bC = new BillComponent();
             bC.setCatId(nB.getCatId());
             bC.setDeptId(nB.getDeptId());
@@ -1427,9 +1727,14 @@ public class InwardSearch implements Serializable {
     }
 
     private boolean checkPaid() {
+        return checkPaid(getBill());
+    }
+
+    /** Whether any fee on this bill has already been paid out. */
+    private boolean checkPaid(Bill bill) {
         HashMap hm = new HashMap();
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill=:b ";
-        hm.put("b", getBill());
+        hm.put("b", bill);
         List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql, hm);
 
         for (BillFee f : tempFe) {
@@ -1584,36 +1889,36 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().getPatientEncounter().isNursingDischarged()
+                    && !getWebUserController().hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+                JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
+                return;
+            }
+
             if (checkPaid()) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
             }
 
-            if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
+            if (!checkCancelBill(getBill())) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                return;
+            }
 
-                if (!checkCancelBill(getBill())) {
-                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                    return;
-                }
+            if (checkInvestigation()) {
+                JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
+                return;
+            }
 
-                if (checkInvestigation()) {
-                    JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
-                    return;
-                }
-            } else {
+            if (configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Inward Service Bills", false)) {
                 if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
                     JsfUtil.addErrorMessage("You have no privilege to cancel This Bill");
+                    return;
                 }
             }
 
-            CancelledBill cb = createCancelBill();
-            //Copy & paste
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
-            }
-            cancelBillItems(cb);
-            getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
+            // Same reversal the admission-cancel path runs, so the two cannot drift.
+            CancelledBill cb = reverseInwardServiceBill(getBill(), comment, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 
             try {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
@@ -1624,15 +1929,7 @@ public class InwardSearch implements Serializable {
             } catch (Exception e) {
             }
 
-            //To null payment methord
-            getBill().setPaymentMethod(null);
-            cb.setPaymentMethod(null);
-
-            getBillFacade().edit(cb);
-            getBillFacade().edit((BilledBill) getBill());
             JsfUtil.addSuccessMessage("Cancelled");
-
-            getBillBean().updateBatchBill(getBill().getForwardReferenceBill());
 
             if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
                 Request billRequest = requestService.findRequest(getBill());
@@ -2289,6 +2586,17 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (getBill().isCompleted()) {
+                JsfUtil.addErrorMessage("This surgery has been validated and is locked. Cannot cancel.");
+                return;
+            }
+
+            if (getBill().getPatientEncounter() != null && getBill().getPatientEncounter().isNursingDischarged()
+                    && !webUserController.hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
+                JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
+                return;
+            }
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -2312,28 +2620,99 @@ public class InwardSearch implements Serializable {
     }
 
     private CancelledBill createCancelBill() {
+        return createCancelBill(getBill(), comment, paymentMethod, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+    }
+
+    /**
+     * The contra-bill for {@code source}, driven by parameters rather than page
+     * state so the same construction serves both the cancel screens and the
+     * programmatic reversal in
+     * {@link #reverseInwardServiceBill(Bill, String, BillTypeAtomic)}.
+     */
+    private CancelledBill createCancelBill(Bill source, String comments, PaymentMethod cancelPaymentMethod, BillTypeAtomic cancellationAtomic) {
         CancelledBill cb = new CancelledBill();
-        cb.copy(getBill());
-        cb.invertAndAssignValuesFromOtherBill(getBill());
-        cb.setBilledBill(getBill());
+        cb.copy(source);
+        cb.invertAndAssignValuesFromOtherBill(source);
+        cb.setBilledBill(source);
 
         ////////////
         cb.setBillDate(new Date());
         cb.setBillTime(new Date());
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
-        cb.setComments(comment);
-        cb.setPaymentMethod(paymentMethod);
+        cb.setComments(comments);
+        cb.setPaymentMethod(cancelPaymentMethod);
         //TODO: Find null Point Exception
 
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getBill().getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
-        cb.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        cb.setBillTypeAtomic(cancellationAtomic);
         return cb;
+    }
+
+    /**
+     * Reverses one already-validated inward service bill with an exact-opposite
+     * contra-bill, without touching this bean's page state.
+     *
+     * <p>Same machinery as {@link #cancelBillService()} - that method keeps every
+     * one of its guards and delegates the reversal here - so a programmatic
+     * caller cannot drift from what the cancel screen produces. Used when an
+     * admission carrying automatic admission charges is itself cancelled
+     * (issue #23594), stamped with
+     * {@code INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION}.</p>
+     *
+     * <p>The caller is responsible for the eligibility checks: this method
+     * assumes the bill may be reversed.</p>
+     */
+    public CancelledBill reverseInwardServiceBill(Bill source, String comments, BillTypeAtomic cancellationAtomic) {
+        CancelledBill cb = createCancelBill(source, comments, null, cancellationAtomic);
+        if (cb.getId() == null) {
+            getBillFacade().create(cb);
+        }
+
+        cancelBillItems(cb, source);
+
+        source.setCancelled(true);
+        source.setCancelledBill(cb);
+        //To null payment methord
+        source.setPaymentMethod(null);
+        cb.setPaymentMethod(null);
+
+        getBillFacade().edit(cb);
+        getBillFacade().edit(source);
+
+        getBillBean().updateBatchBill(source.getForwardReferenceBill());
+
+        return cb;
+    }
+
+    /**
+     * Whether {@code bill} can be reversed at all. Mirrors the blocking checks
+     * {@link #cancelBillService()} applies to the bill itself.
+     *
+     * @return null when it can, otherwise the reason it cannot
+     */
+    public String inwardServiceBillReversalBlockedReason(Bill bill) {
+        if (bill == null) {
+            return "No bill to cancel";
+        }
+        if (bill.getCheckedBy() != null) {
+            return "Bill " + bill.getDeptId() + " has been checked and cannot be cancelled";
+        }
+        if (bill.isCancelled()) {
+            return null;
+        }
+        if (bill.isRefunded()) {
+            return "Bill " + bill.getDeptId() + " has already been returned and cannot be cancelled";
+        }
+        if (checkPaid(bill)) {
+            return "A doctor payment has already been made against bill " + bill.getDeptId();
+        }
+        return null;
     }
 
     private CancelledBill createCancelDepositBill() {
@@ -2364,16 +2743,8 @@ public class InwardSearch implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
                 ? getBill().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic()));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic()));
-        }
+        cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
         return cb;
     }
 
@@ -2404,16 +2775,8 @@ public class InwardSearch implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
                 ? getBill().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cb.getBillTypeAtomic()));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cb.getBillTypeAtomic()));
-        }
+        cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
+        cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cb.getBillTypeAtomic(), admissionTypeForBillNumber));
 
         return cb;
     }
@@ -2472,16 +2835,8 @@ public class InwardSearch implements Serializable {
 
         AdmissionType admissionTypeForBillNumber = getBill().getPatientEncounter() != null
                 ? getBill().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cancelAtomic, admissionTypeForBillNumber));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cancelAtomic, admissionTypeForBillNumber));
-        } else {
-            cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), cancelAtomic));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), cancelAtomic));
-        }
+        cb.setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), cancelAtomic, admissionTypeForBillNumber));
+        cb.setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), cancelAtomic, admissionTypeForBillNumber));
 
         cb.invertAndAssignValuesFromOtherBill(getBill());
         return cb;
@@ -2601,26 +2956,55 @@ public class InwardSearch implements Serializable {
 
     private void cancelBillItems(Bill can) {
         for (BillItem nB : getBillItems()) {
-            BillItem b = new BillItem();
-            b.setBill(can);
-            b.copy(nB);
-            b.invertValue(nB);
-
-            b.setCreatedAt(new Date());
-            b.setCreater(getSessionController().getLoggedUser());
-
-            if (b.getId() == null) {
-                getBillItemFacede().create(b);
-            }
-
-            cancelBillComponents(can, b);
-
-            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
-
-            cancelBillFee(can, b, tmp);
-
+            copyCancelledBillItem(can, nB, getBillComponents());
         }
+    }
+
+    /**
+     * Same as {@link #cancelBillItems(Bill)} but reading the rows to reverse
+     * from an explicit source bill instead of this bean's page state, so
+     * {@link #reverseInwardServiceBill(Bill, String, BillTypeAtomic)} can run
+     * without a bill being selected on screen.
+     */
+    private void cancelBillItems(Bill can, Bill source) {
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("b", source);
+        List<BillItem> sourceItems = getBillItemFacede().findByJpql(
+                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm);
+        List<BillComponent> sourceComponents = getBillCommponentFacade().findByJpql(
+                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm);
+        if (sourceItems == null) {
+            return;
+        }
+        for (BillItem nB : sourceItems) {
+            copyCancelledBillItem(can, nB, sourceComponents == null ? new ArrayList<>() : sourceComponents);
+        }
+    }
+
+    /**
+     * Writes the inverted BillItem, its components and its fees onto the
+     * contra-bill. The fees are the half that matters: a reversal that copies
+     * only bill items cancels as zero, since the totals are summed from fees.
+     */
+    private void copyCancelledBillItem(Bill can, BillItem nB, List<BillComponent> sourceComponents) {
+        BillItem b = new BillItem();
+        b.setBill(can);
+        b.copy(nB);
+        b.invertValue(nB);
+
+        b.setCreatedAt(new Date());
+        b.setCreater(getSessionController().getLoggedUser());
+
+        if (b.getId() == null) {
+            getBillItemFacede().create(b);
+        }
+
+        cancelBillComponents(can, b, sourceComponents);
+
+        String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
+        List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
+
+        cancelBillFee(can, b, tmp);
     }
 
     private boolean errorCheck() {
@@ -2682,17 +3066,12 @@ public class InwardSearch implements Serializable {
             if (errorCheck()) {
                 return;
             }
-            if (paymentMethod == PaymentMethod.Cash) {
-                Drawer userDrawer = drawerService.getUsersDrawer(sessionController.getLoggedUser());
-                double drawerBalance = userDrawer.getCashInHandValue();
-                double paymentAmount = getBill().getNetTotal();
-                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-                    if (drawerBalance < paymentAmount) {
-                        JsfUtil.addErrorMessage("Not enough cash in your drawer to make this payment");
-                        return;
-                    }
-                }
-            }
+            // No drawer balance check here on purpose. Cancelling a staff payment
+            // reverses an outgoing payment, so cash moves *into* the drawer - see the
+            // saveBillCashInTransaction() call below. Requiring the drawer to already
+            // hold the bill value is the precondition for paying money out, and it
+            // blocked cancellations whenever the cashier had since handed cash over.
+            // (Issue #23926)
             CancelledBill cb = createCancelBill();
             //Copy & paste
 
@@ -2837,6 +3216,30 @@ public class InwardSearch implements Serializable {
         return appointmentBillReceipt;
     }
 
+    /**
+     * DTO of the cancellation bill of {@link #bill}, for the 5x5 and A4
+     * cancellation receipts on the inward deposit/payment cancel pages.
+     * Cached per cancellation bill id, because the receipt templates read it
+     * many times per render.
+     */
+    public InwardBillReceiptDTO getCancelledBillReceipt() {
+        Bill cb = bill == null ? null : bill.getCancelledBill();
+        if (cb == null || cb.getId() == null) {
+            return null;
+        }
+        if (cancelledBillReceipt == null || !cb.getId().equals(cancelledBillReceipt.getBillId())) {
+            cancelledBillReceipt = billFacade.findInwardBillReceiptDTO(cb.getId());
+            if (cancelledBillReceipt != null) {
+                // A cancellation bill points at its original through billedBill, not
+                // referenceBill.
+                if (cancelledBillReceipt.getReferenceBillDeptId() == null && cb.getBilledBill() != null) {
+                    cancelledBillReceipt.setReferenceBillDeptId(cb.getBilledBill().getDeptId());
+                }
+            }
+        }
+        return cancelledBillReceipt;
+    }
+
     public void markAsChecked() {
         Bill b = bill;
         if (b == null) {
@@ -2849,6 +3252,18 @@ public class InwardSearch implements Serializable {
 
         if (b.getPatientEncounter().isPaymentFinalized()) {
             return;
+        }
+
+        // A running timed service has no final amount yet, so checking its
+        // bill would verify a figure that is still growing - the same rule
+        // BhtSummeryController.markTimedServiceAsChecked applies per service.
+        if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
+            long runningTimedServices = getBillBean().countRunningTimedServices(b);
+            if (runningTimedServices > 0) {
+                JsfUtil.addErrorMessage("Cannot check: " + runningTimedServices
+                        + " timed service(s) on this bill are still running. Enter an End Time and press Update first.");
+                return;
+            }
         }
 
         b.setCheckeAt(new Date());
@@ -2897,6 +3312,7 @@ public class InwardSearch implements Serializable {
 
     public void setBill(Bill bill) {
         recreateModel();
+        finalBillPdfSnapshotCacheEntry = null;
         if (bill == null) {
             return;
         }
@@ -3279,6 +3695,78 @@ public class InwardSearch implements Serializable {
 
     public void setOriginalBillPaymentMethodData(PaymentMethodData originalBillPaymentMethodData) {
         this.originalBillPaymentMethodData = originalBillPaymentMethodData;
+    }
+
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn for dot-matrix
+     * printing, marked as a duplicate. Heading derived from the bill type.
+     */
+    public void streamReprintReceiptAsRawText() {
+        streamReprintRawText(true);
+    }
+
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn without the
+     * duplicate marker, for reprinting the original when the first print
+     * failed (e.g. printer breakdown).
+     */
+    public void streamReprintOriginalReceiptAsRawText() {
+        streamReprintRawText(false);
+    }
+
+    private void streamReprintRawText(boolean duplicate) {
+        if (getBill() == null || getBill().getId() == null) {
+            JsfUtil.addErrorMessage("Select a bill to reprint first.");
+            return;
+        }
+        com.divudi.core.entity.Department dept = getBill().getDepartment();
+        boolean preprinted = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
+        Long topMarginRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
+        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
+        boolean emitEscP = configOptionApplicationController
+                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
+        Long lineWidthRaw = configOptionApplicationController
+                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
+        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
+                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
+        boolean showAdmissionType = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
+        boolean showPatientAddress = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
+        boolean showPatientPhone = configOptionApplicationController
+                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
+
+        String heading = com.divudi.core.util.InwardReceiptTextRenderer
+                .headingFor(getBill().getBillTypeAtomic());
+
+        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
+                getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
+                        ? billService.fetchBillPayments(getBill()) : null;
+        String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
+                duplicate, preprinted, topMargin, emitEscP, multiplePayments,
+                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
+
+        String fileName = (duplicate ? "inward-reprint-" : "inward-reprint-original-")
+                + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
+                        : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
+                + ".prn";
+
+        javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();
+        javax.servlet.http.HttpServletResponse response =
+                (javax.servlet.http.HttpServletResponse) context.getExternalContext().getResponse();
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        try (java.io.OutputStream os = response.getOutputStream()) {
+            os.write(text.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
+            os.flush();
+        } catch (java.io.IOException e) {
+            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
+            context.responseComplete();
+            return;
+        }
+        context.responseComplete();
     }
 
 }

@@ -104,6 +104,15 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     AdmissionType admissionType;
     @javax.persistence.ManyToOne
     private com.divudi.core.entity.inward.InpatientPackage inpatientPackage;
+    /**
+     * The INWARD_SERVICE_BATCH_BILL holding the automatic admission charges
+     * generated for this encounter (issue #23594). Null until they are
+     * generated, and the idempotency key that stops a re-save from charging
+     * twice - the batch bill itself carries only a patient, never an encounter,
+     * so there is nothing else to key off.
+     */
+    @javax.persistence.ManyToOne
+    private Bill admissionChargeBatchBill;
     Boolean discharged = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date timeOfDischarge;
@@ -731,6 +740,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setInpatientPackage(com.divudi.core.entity.inward.InpatientPackage inpatientPackage) {
         this.inpatientPackage = inpatientPackage;
+    }
+
+    public Bill getAdmissionChargeBatchBill() {
+        return admissionChargeBatchBill;
+    }
+
+    public void setAdmissionChargeBatchBill(Bill admissionChargeBatchBill) {
+        this.admissionChargeBatchBill = admissionChargeBatchBill;
     }
 
     public Boolean isDischarged() {

@@ -294,6 +294,11 @@
                                 <h:panelGroup rendered="#{ti.billFee.retired}">
                                     <h:outputLabel style="color: red;" value="Deleted by "/>
                                     <h:outputLabel style="color: red;" value="#{ti.billFee.retirer.webUserPerson.name}"/>
+                                    <h:outputLabel style="color: red;" value=" at "/>
+                                    <h:outputLabel style="color: red;" value="#{ti.billFee.retiredAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
                             <p:column headerText="Action">
@@ -305,7 +310,7 @@
                                         icon="fa fa-pencil"
                                         ajax="false"
                                         action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
-                                        disabled="#{ti.billFee.id eq null or ti.billFee.retired or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
+                                        disabled="#{ti.billFee.id eq null or ti.billFee.retired or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
                                     <p:commandButton
                                         id="btnRemoveFromList"
                                         icon="fa-solid fa-trash"
@@ -314,7 +319,7 @@
                                         value="Remove"
                                         rendered="#{ti.billFee.id eq null}"
                                         action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
-                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
+                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
                                     <p:commandButton
                                         id="btnRemoveFromDbase"
                                         icon="fa-solid fa-trash"
@@ -323,7 +328,7 @@
                                         value="Remove"
                                         rendered="#{ti.billFee.id ne null and not ti.billFee.retired}"
                                         action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
-                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
+                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
                                 </div>
                             </p:column>
                         </p:dataTable>

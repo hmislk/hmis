@@ -104,9 +104,15 @@ documented here, and warrants stopping and asking rather than guessing.
   while proving nothing — but locally that is a judgement call, not a hard
   limit, and direct SQL is fine when it is simply the faster route. See
   step 4.
-- Never put institution names, patient/doctor names, or credentials in any
-  GitHub issue, PR, or comment (same rule as `dev-issue`, non-negotiable here
-  too since there's no human proofreading before it posts).
+- Never put a specific hospital's data in any GitHub issue, PR, or comment:
+  patient/doctor/staff names, production record identifiers (bill/BHT/PHN
+  numbers, entity IDs), affected-record counts, production schema names,
+  cutover dates, per-staff statistics, data-fix logs, or credentials. Describe
+  the defect, not the deployment — see
+  [What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+  Naming which hospital *reported* the bug is allowed; publishing its data is
+  not. Non-negotiable here especially, since there's no human proofreading
+  before it posts.
 - Never resolve genuinely ambiguous behavior — where the codebase, git
   history, and related issues give no clear signal either way — by picking an
   option silently. That is exactly the "stop and flag" case in steps 3 and 14.
@@ -324,6 +330,11 @@ Check the server log for deploy errors before moving on.
 
 Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
+**Reach every page through the menus, never by URL** — a URL-loaded page renders
+against uninitialised session state and produces false findings
+(`playwright-e2e` §2). Record the menu path in the PR. With no user to correct
+you, an unreachable-by-menu page is itself the finding — do not work around it
+with a URL.
 If step 4 generated new records through the app, this is also where you
 confirm the fix's actual effect on them (e.g. confirm a bypassed guard left
 a pending record untouched rather than silently resolving it).
@@ -335,10 +346,49 @@ If 3+ fix attempts don't converge, that's the systematic-debugging
 architecture-question trigger, not a reason to keep guessing: stop, post
 findings, end the run.
 
+## 8a. Claude self-review before first push
+
+The only review this skill otherwise gets is step 14's CodeRabbit/Codex loop
+— and both bots can be unavailable at once (rate-limited, usage-exhausted)
+with no fallback, leaving a PR that ships with zero substantive review. This
+step adds an earlier, Claude-driven pass so a caught bug becomes part of the
+initial push instead of a second commit reacting to a bot (or a human) after
+the fact. It runs once step 8's Iterate loop passes end-to-end, before
+step 9/11.
+
+1. **Pick an effort level.** Default `medium`. Bump to `high` if the diff
+   touches billing, pharmacy, API (`ws/`), or security/privilege code — the
+   same shared/core risk areas `merge-gate` already flags ("touches
+   shared/core code (API, billing, pharmacy) where a regression could
+   silently break unrelated functions"), extended here to security/privilege
+   code given this skill's existing hard limit against writing such changes
+   at all.
+2. **Run `/code-review`** at that effort level against the working diff —
+   the uncommitted changes on the branch, before the first commit/push, not
+   against an already-open PR.
+3. **Triage each finding into one of three buckets:**
+   - **In-scope, confirmed bug** → fix it, rebuild/redeploy, re-run the
+     relevant Playwright/DB verification from step 7, and fold the fix into
+     the same commit as the original change.
+   - **Valid but outside the issue's named files/screens** → leave this PR's
+     diff alone; file a separate GitHub issue describing the pattern (same
+     shape as issue #23385, filed from this exact gap), and reference it in
+     this PR's description under a short "Follow-up" note. This is filing an
+     issue, which step 0's blanket authorization already covers — no
+     separate confirmation needed.
+   - **Low-confidence / stylistic / reuse-nitpick** → no fix, no new issue;
+     note it under the PR's "Decisions made without approval" section (step
+     13) so a human can look later.
+4. **Document the pass** in that same PR section — which findings came up,
+   which bucket each landed in, and why — the same judgment-call-logging
+   convention already used for steps 3 and 13.
+
+Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
+earlier, additional layer, not a replacement.
+
 ## 9. Record learnings
 
-Same as `dev-issue` step 9 — append new Playwright/dev gotchas to
-`developer_docs/testing/playwright-e2e-workflow.md` if any surfaced.
+Same as `dev-issue` step 9.
 
 ## 10. Publish evidence and update the wiki
 
@@ -421,6 +471,16 @@ Repeat, up to **3 cycles**:
 3 cycles without convergence → stop, summarize the sticking point, end the
 run (same as `dev-issue`).
 
+## 14a. File what you found along the way
+
+The run is not finished while a defect you noticed but did not fix lives only in chat or `tmp/`. From step 2 onward, keep a **Found along the way** list (in the batch's `tmp/` master plan, or `tmp/<issue>/found.md`). Anything outside the issue's scope goes on that list, not into the PR.
+
+Before Notify:
+1. **Confirm each item** against the code, or reproduce it. Drop anything unconfirmed, and say in Notify that you dropped it. A growl you didn't see is not proof of a silent failure.
+2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
+3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
+4. **List the new issue links** in Notify.
+
 ## 15. Notify
 
 Produce one skimmable summary covering **every issue in the batch** (a
@@ -432,9 +492,17 @@ single issue is just a batch of one), one line each:
 - `#N — closed, could not reproduce` (link to the closing comment)
 - `#N — stopped: <short reason>` (link to the blocker comment)
 - `#N — could not resolve issue number/URL`
+- `Found along the way → #K` (one line per issue filed in step 14a)
 
 For issues that shipped, include what was found, every decision made and
 why (from step 3/13), what was verified and how, and links to the
 issue/PR/wiki — same depth as a solo run. For issues that didn't ship, the
 link to the comment is enough; don't re-summarize what's already written
 there. **Never merge.**
+
+**Retrospective.** List what cost extra steps or went wrong. Grep the docs for
+each; drop any already documented and say so in one line. For each remaining
+one, give what happened, why it will recur, the file, and the exact text to
+add, under a `Retrospective proposals` heading for the user to approve on
+return. Never open the doc PR unattended. If none: "No retrospective
+findings."

@@ -20,6 +20,12 @@ public class PurchaseOrderPrintDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // ---- Approval bill fields ----
+    // The resolved PHARMACY_ORDER_APPROVAL bill id - always the approval, even
+    // when the caller viewed this print by its PHARMACY_ORDER *request* bill
+    // id (loadPrintDtoByBillId() accepts either). Cancel actions must target
+    // this, not whatever id was originally passed to view the page (#23988
+    // review).
+    private Long approvalBillId;
     private String poNumber;
     private String paymentMethod;
     private int creditDuration;
@@ -92,6 +98,9 @@ public class PurchaseOrderPrintDto implements Serializable {
 
     public boolean isCancelled() { return cancelled; }
     public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
+
+    public Long getApprovalBillId() { return approvalBillId; }
+    public void setApprovalBillId(Long approvalBillId) { this.approvalBillId = approvalBillId; }
 
     public Date getPoDate() { return poDate; }
     public void setPoDate(Date poDate) { this.poDate = poDate; }

@@ -9,14 +9,15 @@
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
                 xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
-                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+                xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
+                xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
 
 
     <ui:define name="content">
         <f:event type="preRenderView" listener="#{financialTransactionController.redirectIfShiftNotStarted()}"/>
         <h:panelGroup rendered="#{postFinalBillInwardPaymentController.current.patientEncounter eq null}">
-            <h:form>
+            <h:form id="frmPostFinalPayment">
                 <p:panel>
                     <f:facet name="header">
                         <h:outputText styleClass="fa-solid fa-address-card fa-lg" />
@@ -26,42 +27,15 @@
                     <div class="d-flex gap-4">
                         <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
 
-                        <p:autoComplete
+                        <admcc:admission_search
                             widgetVar="aPt"
-                            id="acPt"
-                            forceSelection="true"
+                            inputId="acPt"
                             value="#{postFinalBillInwardPaymentController.current.patientEncounter}"
                             completeMethod="#{admissionController.completePatientAll}"
-                            var="myItem"
-                            size="60"
-                            maxResults="20"
-                            itemValue="#{myItem}"
-                            itemLabel="#{myItem.bhtNo}"
-                            style="width: 550px;"
-                            class="mx-2">
-
-                            <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                <h:outputLabel value="#{myItem.bhtNo}"/>
-                            </p:column>
-                            <p:column headerText="Patient" style="padding: 6px; width: 15em;">
-                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                            </p:column>
-                            <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                            </p:column>
-                            <p:column headerText="Status" style="padding: 6px; width: 12em;">
-                                <div class="d-flex justify-content-center">
-                                    <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                        #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
-                                    </span>
-                                </div>
-                            </p:column>
-                            <p:column headerText="Payment" style="padding: 6px; width: 12em;">
-                                <h:outputLabel value="Payment Finalized"  rendered="#{myItem.paymentFinalized}"/>
-                            </p:column>
-                        </p:autoComplete>
+                            continueClientId="frmPostFinalPayment:btnSelect" />
 
                         <p:commandButton
+                            id="btnSelect"
                             value="select"
                             ajax="false"
                             action="#{postFinalBillInwardPaymentController.bhtListener}" >
@@ -298,6 +272,57 @@
                             </p:panel>
                         </div>
                     </div>
+
+                    <p:panel
+                        id="pnlPreviousPostFinalPayments"
+                        class="mt-2"
+                        rendered="#{not empty postFinalBillInwardPaymentController.postFinalPaymentBillsForCurrentEncounter}">
+                        <f:facet name="header">
+                            <h:outputText styleClass="fas fa-history"/>
+                            <h:outputLabel value="Previous Post Final Payments" class="mx-2"/>
+                        </f:facet>
+                        <p:dataTable
+                            id="tblPreviousPostFinalPayments"
+                            value="#{postFinalBillInwardPaymentController.postFinalPaymentBillsForCurrentEncounter}"
+                            var="pfp"
+                            styleClass="p-datatable-sm"
+                            rowKey="#{pfp.id}">
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{pfp.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Paid At">
+                                <h:outputText value="#{pfp.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Paid By">
+                                <h:outputText value="#{pfp.creater.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method">
+                                <h:outputText value="#{pfp.paymentMethod}"/>
+                            </p:column>
+                            <p:column headerText="Amount" class="text-end">
+                                <h:outputText value="#{pfp.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="Cancelled" class="badge bg-danger" rendered="#{pfp.cancelled}"/>
+                                <h:outputText value="Refunded" class="badge bg-warning text-dark" rendered="#{not pfp.cancelled and pfp.refunded}"/>
+                                <h:outputText value="Active" class="badge bg-success" rendered="#{not pfp.cancelled and not pfp.refunded}"/>
+                            </p:column>
+                            <p:column headerText="Action" width="8em">
+                                <p:commandButton
+                                    id="btnViewPostFinalPayment"
+                                    ajax="false"
+                                    value="View"
+                                    icon="fa fa-eye"
+                                    class="ui-button-info"
+                                    title="View, print, cancel or refund this payment"
+                                    action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(pfp)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
                 </p:panel>
 
                 <p:panel rendered="#{postFinalBillInwardPaymentController.printPreview}">
@@ -320,6 +345,14 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton
+                                id="btnViewCancelPostFinalPayment"
+                                value="View / Cancel"
+                                ajax="false"
+                                icon="fa fa-eye"
+                                class="ui-button-warning"
+                                title="Open this payment to cancel or refund it"
+                                action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(postFinalBillInwardPaymentController.current)}"/>
+                            <p:commandButton
                                 rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                 value="Settings"
                                 icon="fas fa-cog"
@@ -331,7 +364,7 @@
                                 icon="fas fa-file-invoice-dollar"
                                 value="Interim Bill"
                                 class="ui-button-info mx-1"
-                                action="#{bhtSummeryController.navigateToIntrimBillRefresh()}"
+                                action="#{bhtSummeryController.navigateToIntrimBillRefreshFromPostFinalPayment()}"
                                 />
                             <p:commandButton
                                 ajax="false"

@@ -64,15 +64,7 @@ public class TheatreRoomCard {
         if (status == null) {
             return "In Transit";
         }
-        switch (status) {
-            case SENT_TO_THEATRE: return "Sent — Awaiting Acceptance";
-            case RECEIVED_IN_THEATRE: return "Received in Theatre";
-            case IN_THEATRE: return "In Theatre";
-            case PROCEDURE_COMPLETED: return "Procedure Completed";
-            case IN_RECOVERY: return "In Recovery";
-            case RETURNED_TO_WARD: return "Returned to Ward";
-            default: return status.name();
-        }
+        return status.getLabel();
     }
 
     public String getCardStyleClass() {

@@ -15,9 +15,7 @@ import com.divudi.ejb.PharmacyBean;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.enterprise.context.Dependent;
 import javax.inject.Named;
-import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +35,6 @@ import javax.persistence.TemporalType;
  */
 @Named
 @Stateless
-@Dependent
-@Transactional
 public class DirectIssueBatchService implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(DirectIssueBatchService.class.getName());

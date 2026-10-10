@@ -61,8 +61,8 @@
                             <td>#{item.itemName}</td>
                             <td style="text-align: right"><h:outputLabel value="#{item.qty}"><f:convertNumber integerOnly="true"/></h:outputLabel></td>
                             <td style="text-align: right"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.grossValue lt 0 ? -item.grossValue : item.grossValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
-                            <td style="text-align: right"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.marginValue lt 0 ? -item.marginValue : item.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
-                            <td style="text-align: right"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.discountValue lt 0 ? -item.discountValue : item.discountValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
+                            <td style="text-align: right"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}" value="#{item.marginValue lt 0 ? -item.marginValue : item.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
+                            <td style="text-align: right"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}" value="#{item.discountValue lt 0 ? -item.discountValue : item.discountValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
                             <td style="text-align: right"><h:outputLabel rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.netValue lt 0 ? -item.netValue : item.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td>
                         </tr>
                     </ui:repeat>
@@ -73,8 +73,12 @@
             <table class="total-table">
                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                     <tr><td>Gross:</td><td style="text-align: right;"><h:outputLabel value="#{cc.attrs.bill.total}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates') and webUserController.hasPrivilege('IPBillingViewDiscount')}">
                     <tr><td>Service Charge:</td><td style="text-align: right;"><h:outputLabel value="#{cc.attrs.bill.margin}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
                     <tr><td>Discount:</td><td style="text-align: right;"><h:outputLabel value="#{cc.attrs.bill.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                     <tr><td>Net Total:</td><td style="text-align: right;"><h:outputLabel value="#{cc.attrs.bill.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel></td></tr>
                 </h:panelGroup>
                 <tr><td>No of Items:</td><td><h:outputLabel value="#{cc.attrs.items.size()}"><f:convertNumber integerOnly="true"/></h:outputLabel></td></tr>

@@ -131,6 +131,63 @@ the rest are absent from the DOM entirely (`h:panelGroup rendered="..."`),
 not merely hidden.
 
 
+### Inward Service Bill - Print Format Settings
+
+**Page:** `inward/inward_bill_service.xhtml` (print preview section)
+**Controller:** `BillBhtController`
+**Dialog:** `inwardServiceBillPrintConfigDialog`
+
+The Settings gear sits next to **Print** in the print-preview toolbar, so a
+department can switch print formats on or off without leaving the page.
+
+Every format switched on here prints **in addition to** the format chosen in
+the page's `Paper Format` list - same additive semantics as the Inward Final
+Bill sample above, not a single-choice selector.
+
+| Dialog label | Config key | Scope | Default |
+|---|---|---|---|
+| 5x5 Custom 1 | `Inward Service Bill - Show Custom 1 Format` | department (`configOptionController`) | `false` |
+| 5x5 Pre-printed Paper | `Inward Servise Bill size is FiveFivePrinted paper` | application | `true` |
+| POS Paper | `Inward Servise Bill size is POS Paper` | application | `false` |
+| A4 Paper | `Inward Servise Bill size is A4 Paper` | application | `false` |
+| A4 Pre-printed Paper | `Inward Servise Bill size is A4Printed Paper` | application | `false` |
+| 5x5 Custom 3 | `Inward Servise Bill size is FiveFiveCustom3 Paper` | application | `false` |
+| 5x8 inch Paper | `Inward Servise Bill size is 5x8 inch Paper` | application | `false` |
+
+⚠️ **"Servise" is a live misspelling, not a typo to fix.** The six
+application-wide keys predate this dialog, are already in customer
+`CONFIGOPTION` tables, and are read by the page's existing `rendered`
+conditions. Renaming them would silently reset every department's print
+format. The dialog reads and writes them exactly as the page does - through
+`configOptionApplicationController`, application-wide - so opening and
+applying the dialog cannot change behaviour for a department that has not
+touched it. Only the new Custom 1 key is department-scoped and correctly
+spelled.
+
+### Inward Service Bill Refund - Print Format Settings
+
+**Page:** `inward/inward_bill_service_refund.xhtml` (print preview section)
+**Controller:** `InwardServiceRefundController`
+**Dialog:** `inwardServiceRefundPrintConfigDialog`
+
+Same gear-button placement and additive semantics. This page had no config
+keys at all before - the paper format came only from the deprecated
+`departmentPreference` selector - so every key here is new and
+department-scoped.
+
+| Dialog label | Config key | Default |
+|---|---|---|
+| 5x5 Custom 1 | `Inward Service Bill Refund - Show Custom 1 Format` | `false` |
+| 5x5 With Headings | `Inward Service Bill Refund - Show 5x5 Format` | `false` |
+| 5x5 Pre-printed Paper | `Inward Service Bill Refund - Show 5x5 Pre-printed Format` | `false` |
+| POS Paper | `Inward Service Bill Refund - Show POS Format` | `false` |
+| A4 Paper | `Inward Service Bill Refund - Show A4 Format` | `false` |
+| A4 Pre-printed Paper | `Inward Service Bill Refund - Show A4 Pre-printed Format` | `false` |
+
+All default `false`, so a department that has never opened the dialog keeps
+printing exactly what its `departmentPreference` says.
+
+
 ## Implementation Guide
 
 ### Adding Settings to a New Page
