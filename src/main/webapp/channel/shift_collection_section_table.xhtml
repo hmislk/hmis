@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+    One section (Cash / Card / Agent / Other) of the Cashier Shift End
+    Collection Summary (issue #24248).
+    Params:
+      section - ChannelShiftCollectionSectionDTO
+      mode    - 'Cash', 'Card', 'Agent' or 'Other'
+      label   - text used in subtotal labels, e.g. 'Cash', 'Credit Card'
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <div class="shift-section">
+        <div class="shift-section-title">
+            <h:outputText value="#{section.title}"/>
+        </div>
+
+        <p:dataTable value="#{section.rows}" var="row" rowIndexVar="n"
+                     styleClass="shift-section-table"
+                     emptyMessage="No transactions"
+                     rowStyleClass="#{row.reversal ? 'shift-reversal-row' : ''}">
+
+            <p:column headerText="No" style="width: 3em; text-align: center;">
+                <h:outputText value="#{n+1}"/>
+            </p:column>
+
+            <!-- Cash / Card / Other columns -->
+            <p:column headerText="Bill No" rendered="#{mode ne 'Agent'}">
+                <h:outputText value="#{row.billNo}"/>
+            </p:column>
+            <p:column headerText="Appointment Date" rendered="#{mode ne 'Agent'}">
+                <h:outputText value="#{row.appointmentDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Created Date / Time" rendered="#{mode ne 'Agent'}">
+                <h:outputText value="#{row.createdAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Doctor / Consultant" rendered="#{mode ne 'Agent'}">
+                <h:outputText value="#{row.doctorName}"/>
+            </p:column>
+            <p:column headerText="Patient Name" rendered="#{mode ne 'Agent'}">
+                <h:outputText value="#{row.patientName}"/>
+            </p:column>
+            <p:column headerText="Card / Payment Remark" rendered="#{mode eq 'Card'}">
+                <h:outputText value="#{row.paymentRemark}"/>
+            </p:column>
+            <p:column headerText="Payment Method" rendered="#{mode eq 'Other'}">
+                <h:outputText value="#{row.paymentMethod.label}"/>
+            </p:column>
+
+            <!-- Agent columns -->
+            <p:column headerText="Agent Name &amp; Code" rendered="#{mode eq 'Agent'}">
+                <h:outputText value="#{row.agentNameAndCode}"/>
+            </p:column>
+            <p:column headerText="Agent Ref No / Bill No" rendered="#{mode eq 'Agent'}">
+                <h:outputText value="#{row.agentRefNo}"/>
+                <br/>
+                <h:outputText value="#{row.billNo}" style="font-size: 0.85em;"/>
+            </p:column>
+            <p:column headerText="Appt. No" rendered="#{mode eq 'Agent'}" style="text-align: center;">
+                <h:outputText value="#{row.appointmentNo}"/>
+            </p:column>
+            <p:column headerText="Doctor / Consultant" rendered="#{mode eq 'Agent'}">
+                <h:outputText value="#{row.doctorName}"/>
+            </p:column>
+            <p:column headerText="Transaction Date / Time" rendered="#{mode eq 'Agent'}">
+                <h:outputText value="#{row.createdAt}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Appointment Date" rendered="#{mode eq 'Agent'}">
+                <h:outputText value="#{row.appointmentDate}">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                </h:outputText>
+            </p:column>
+
+            <!-- Amount columns -->
+            <p:column headerText="Doctor Fee" style="text-align: right;">
+                <h:outputText value="#{row.doctorFee}">
+                    <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Hospital Fee" style="text-align: right;">
+                <h:outputText value="#{row.hospitalFee}">
+                    <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Total Amount" style="text-align: right; font-weight: bold;">
+                <h:outputText value="#{row.totalAmount}">
+                    <f:convertNumber pattern="#,##0.00;(#,##0.00)"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Status">
+                <h:outputText value="#{row.status}"/>
+                <h:panelGroup rendered="#{mode eq 'Cash' and row.agentName ne null}">
+                    <br/>
+                    <h:outputText value="Agent: #{row.agentNameAndCode}" style="font-size: 0.85em;"/>
+                </h:panelGroup>
+            </p:column>
+
+            <p:columnGroup type="footer">
+                <p:row>
+                    <p:column colspan="#{mode eq 'Cash' ? 6 : 7}" style="text-align: right;" footerText="Total #{label} Collection"/>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.collectionDoctorFee}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.collectionHospitalFee}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.collectionTotal}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column/>
+                </p:row>
+                <p:row>
+                    <p:column colspan="#{mode eq 'Cash' ? 6 : 7}" style="text-align: right;" footerText="#{label} Cancellations / Refunds"/>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.reversalDoctorFee}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.reversalHospitalFee}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.reversalTotal}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column/>
+                </p:row>
+                <p:row>
+                    <p:column colspan="#{mode eq 'Cash' ? 6 : 7}" style="text-align: right; font-weight: bold;" footerText="Net Total #{label} Collection"/>
+                    <p:column style="text-align: right; font-weight: bold;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.netDoctorFee}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right; font-weight: bold;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.netHospitalFee}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column style="text-align: right; font-weight: bold;">
+                        <f:facet name="footer">
+                            <h:outputText value="#{section.netTotal}"><f:convertNumber pattern="#,##0.00;(#,##0.00)"/></h:outputText>
+                        </f:facet>
+                    </p:column>
+                    <p:column/>
+                </p:row>
+            </p:columnGroup>
+        </p:dataTable>
+    </div>
+</ui:composition>
