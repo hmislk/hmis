@@ -84,7 +84,11 @@ public class DrawerApi {
             // a user who was never adjusted is reported as all-zero balances.
             Drawer drawer = drawerService.findUsersDrawerWithoutCreate(targetUser);
 
-            if (paymentMethodParam != null && !paymentMethodParam.trim().isEmpty()) {
+            if (paymentMethodParam != null && paymentMethodParam.trim().isEmpty()) {
+                return errorResponse("paymentMethod cannot be blank; omit it to read every supported payment method", 400);
+            }
+
+            if (paymentMethodParam != null) {
                 PaymentMethod pm;
                 try {
                     pm = PaymentMethod.valueOf(paymentMethodParam.trim());
@@ -158,7 +162,10 @@ public class DrawerApi {
 
             PaymentMethod paymentMethod = null;
             String paymentMethodParam = request.getPaymentMethod();
-            if (paymentMethodParam != null && !paymentMethodParam.trim().isEmpty()) {
+            if (paymentMethodParam != null && paymentMethodParam.trim().isEmpty()) {
+                return errorResponse("paymentMethod cannot be blank; omit it to reset every supported payment method", 400);
+            }
+            if (paymentMethodParam != null) {
                 try {
                     paymentMethod = PaymentMethod.valueOf(paymentMethodParam.trim());
                 } catch (IllegalArgumentException ex) {
@@ -169,6 +176,9 @@ public class DrawerApi {
                 }
             }
 
+            if (request.getTargetBalance() != null && !Double.isFinite(request.getTargetBalance())) {
+                return errorResponse("targetBalance must be a finite number", 400);
+            }
             double targetBalance = request.getTargetBalance() != null ? request.getTargetBalance() : 0.0;
 
             List<DrawerService.DrawerBalanceSnapshot> snapshots = drawerService.resetDrawerBalance(
