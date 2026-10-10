@@ -2248,6 +2248,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        if (!refreshPendingHandoverBill()) {
+            return null;
+        }
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
@@ -2306,6 +2309,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        if (!refreshPendingHandoverBill()) {
+            return null;
+        }
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
@@ -2349,6 +2355,29 @@ public class FinancialTransactionController implements Serializable {
         resetFloatPaymentsOfHandover(selectedBill);
 
         return navigateToMyHandovers();
+    }
+
+    /**
+     * Re-reads the selected handover from the database (bypassing the cache) and refuses
+     * to continue if it was already recalled, rejected or accepted. A page left open can
+     * still submit Recall, Reject or Accept after another user finished the handover (#24435).
+     */
+    private boolean refreshPendingHandoverBill() {
+        Bill fresh = billFacade.findWithoutCache(selectedBill.getId());
+        if (fresh == null) {
+            JsfUtil.addErrorMessage("Handover bill not found.");
+            return false;
+        }
+        if (fresh.isCancelled()) {
+            JsfUtil.addErrorMessage("This handover has already been recalled or rejected.");
+            return false;
+        }
+        if (fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This handover has already been accepted.");
+            return false;
+        }
+        selectedBill = fresh;
+        return true;
     }
 
     /**
@@ -8095,6 +8124,13 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String acceptHandoverBillAndWriteToCashbook() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill.");
+            return null;
+        }
+        if (!refreshPendingHandoverBill()) {
+            return null;
+        }
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
             return null;
