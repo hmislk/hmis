@@ -543,9 +543,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
      */
     public void onEventSelectCal(SelectEvent<ScheduleEvent<?>> selectEvent) {
         sEvent = selectEvent.getObject();
+        if (sEvent != null && sEvent.getData() instanceof SessionInstance) {
+            selectedSessionInstance = (SessionInstance) sEvent.getData();
+        } else {
+            selectedSessionInstance = null;
+        }
     }
 
     public void onDateSelect(SelectEvent<LocalDateTime> selectEvent) {
+        sEvent = null;
+        selectedSessionInstance = null;
         event = (ChannelScheduleEvent) DefaultScheduleEvent.builder()
                 .startDate(selectEvent.getObject())
                 .endDate(selectEvent.getObject().plusHours(1))
