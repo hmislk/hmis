@@ -5405,11 +5405,16 @@ public class FinancialTransactionController implements Serializable {
                                 countedFundTransferPayments.add(p);
                             }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                            // Float in received by this user
+                            // Float in received by this user. A net float carried in by an
+                            // accepted handover keeps its sign — negative when the sender's
+                            // shift sent more float out than it received (#24428).
+                            double floatInValue = isNetFloatFromHandoverAccept(p)
+                                    ? p.getPaidValue()
+                                    : Math.abs(p.getPaidValue());
                             countedFundTransferPayments.add(p);
-                            floatInAcc += Math.abs(p.getPaidValue());
+                            floatInAcc += floatInValue;
                             if (p.getPaymentMethod() == PaymentMethod.Cash) {
-                                cashFloatInAcc += Math.abs(p.getPaidValue());
+                                cashFloatInAcc += floatInValue;
                             }
                         }
                         // Cancelled, declined, or pending — no drawer effect, skip
@@ -7534,6 +7539,22 @@ public class FinancialTransactionController implements Serializable {
                 || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED;
     }
 
+    /**
+     * True for the receiver-side net float payment that
+     * acceptHandoverBillAndWriteToCashbook() creates: a FUND_TRANSFER_RECEIVED_BILL
+     * whose reference bill is the handover accept bill. Unlike an ordinary float
+     * receipt, its paid value is signed.
+     */
+    private boolean isNetFloatFromHandoverAccept(Payment payment) {
+        if (payment == null || payment.getBill() == null) {
+            return false;
+        }
+        Bill bill = payment.getBill();
+        return bill.getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+                && bill.getReferenceBill() != null
+                && bill.getReferenceBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT;
+    }
+
     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
@@ -8214,8 +8235,9 @@ public class FinancialTransactionController implements Serializable {
         // floatRecipient was never set for shift-handover floats). Without this, the receiver's
         // Shift Handover Create page shows no float row and a missing "Net To Handover" line.
         // The payment's paidValue preserves the signed net (positive = receiver gains cash,
-        // negative = receiver transfers cash out); we use updateDrawer (sign-preserving)
-        // instead of updateDrawerForIns (which takes Math.abs).
+        // negative = receiver transfers cash out). It is a record only: the drawer was
+        // already credited with the counted denomination total above, which includes the
+        // float, so moving the drawer again would double-count it (#24428).
         double cashFloatNet = bundle.getCashFloatNetTotal();
         if (Math.abs(cashFloatNet) > 0.001) {
             Bill floatReceivedBill = new Bill();
@@ -8256,7 +8278,6 @@ public class FinancialTransactionController implements Serializable {
             floatPayment.setInstitution(null);
             floatPayment.setCreatedAt(new Date());
             paymentController.save(floatPayment);
-            drawerController.updateDrawer(floatPayment, cashFloatNet, reciver);
         }
 
         billController.save(currentBill);
