@@ -113,12 +113,12 @@ public class InpatientPackageController implements Serializable {
         current.setTotalPrice(InpatientPackagePricing.calculateTotalPrice(parsedAmounts, components));
         if (current.getId() != null) {
             ejbFacade.edit(current);
-            JsfUtil.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Inpatient Package updated successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(sessionController.getLoggedUser());
             ejbFacade.create(current);
-            JsfUtil.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Inpatient Package saved successfully.");
         }
         items = null;
         amountInputMap = null;
