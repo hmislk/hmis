@@ -74,3 +74,35 @@
     }
 
 }
+
+@media print {
+    [id$="printAdmissions"] .ui-datatable table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 8pt !important;
+    }
+
+    [id$="printAdmissions"] .ui-datatable th,
+    [id$="printAdmissions"] .ui-datatable td {
+        border: none !important;
+        border-bottom: 1px solid #ccc !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        padding: 2pt !important;
+    }
+
+    [id$="printAdmissions"] .ui-badge {
+        white-space: normal !important;
+        height: auto !important;
+    }
+}
+
+@media print {
+    .bht-screen {
+        display: none !important;
+    }
+
+    .bht-print.d-none {
+        display: inline !important;
+    }
+}
