@@ -1,14 +1,26 @@
 package com.divudi.service;
 
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.entity.cashTransaction.DrawerEntry;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.DrawerEntryFacade;
 import com.divudi.core.facade.DrawerFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.ejb.BillNumberGenerator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,9 +40,39 @@ public class DrawerService {
     DrawerEntryFacade ejbFacade;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     DrawerEntry drawerEntry;
+
+    /**
+     * The PaymentMethod values actually handled by applyDrawerAdjustment/drawerEntryUpdate's
+     * switch statements. OnlineBookingAgent is intentionally excluded — it is not handled
+     * anywhere in Drawer/DrawerService.
+     */
+    private static final List<PaymentMethod> ADJUSTABLE_PAYMENT_METHODS = Collections.unmodifiableList(Arrays.asList(
+            PaymentMethod.OnCall,
+            PaymentMethod.Cash,
+            PaymentMethod.Card,
+            PaymentMethod.MultiplePaymentMethods,
+            PaymentMethod.Staff,
+            PaymentMethod.Credit,
+            PaymentMethod.Staff_Welfare,
+            PaymentMethod.Voucher,
+            PaymentMethod.IOU,
+            PaymentMethod.Agent,
+            PaymentMethod.Cheque,
+            PaymentMethod.Slip,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit,
+            PaymentMethod.PatientPoints,
+            PaymentMethod.OnlineSettlement,
+            PaymentMethod.None,
+            PaymentMethod.YouOweMe
+    ));
 
     // <editor-fold defaultstate="collapsed" desc="UP">
     public void updateDrawerForIns(List<Payment> payments, WebUser webUser) {
@@ -688,6 +730,193 @@ public class DrawerService {
             }
             drawerFacade.editAndCommit(drawer);
         }
+    }
+
+    /**
+     * Returns the full list of PaymentMethod values supported by drawer
+     * adjustments (read or write). OnlineBookingAgent is excluded — see
+     * ADJUSTABLE_PAYMENT_METHODS.
+     *
+     * @return an unmodifiable list of the 18 adjustable payment methods
+     */
+    public List<PaymentMethod> getAdjustablePaymentMethods() {
+        return ADJUSTABLE_PAYMENT_METHODS;
+    }
+
+    /**
+     * Read-only lookup of a drawer's current in-hand value for a payment
+     * method, mirroring the beforeInHandValue switch in drawerEntryUpdate.
+     *
+     * @param drawer the drawer to read from
+     * @param paymentMethod the payment method column to read
+     * @return the raw (possibly null) in-hand value for that payment method,
+     * or null if drawer/paymentMethod is null or the method is unsupported
+     */
+    public Double getDrawerInHandValue(Drawer drawer, PaymentMethod paymentMethod) {
+        if (drawer == null || paymentMethod == null) {
+            return null;
+        }
+        switch (paymentMethod) {
+            case OnCall:
+                return drawer.getOnCallInHandValue();
+            case Cash:
+                return drawer.getCashInHandValue();
+            case Card:
+                return drawer.getCardInHandValue();
+            case MultiplePaymentMethods:
+                return drawer.getMultiplePaymentMethodsInHandValue();
+            case Staff:
+                return drawer.getStaffInHandValue();
+            case Credit:
+                return drawer.getCreditInHandValue();
+            case Staff_Welfare:
+                return drawer.getStaffWelfareInHandValue();
+            case Voucher:
+                return drawer.getVoucherInHandValue();
+            case IOU:
+                return drawer.getIouInHandValue();
+            case Agent:
+                return drawer.getAgentInHandValue();
+            case Cheque:
+                return drawer.getChequeInHandValue();
+            case Slip:
+                return drawer.getSlipInHandValue();
+            case ewallet:
+                return drawer.getEwalletInHandValue();
+            case PatientDeposit:
+                return drawer.getPatientDepositInHandValue();
+            case PatientPoints:
+                return drawer.getPatientPointsInHandValue();
+            case OnlineSettlement:
+                return drawer.getOnlineSettlementInHandValue();
+            case None:
+                return drawer.getNoneInHandValue();
+            case YouOweMe:
+                return drawer.getYouOweMeInHandValue();
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Simple data holder describing a single payment method's balance before
+     * and after a resetDrawerBalance() call.
+     */
+    public static class DrawerBalanceSnapshot {
+
+        private final PaymentMethod paymentMethod;
+        private final double before;
+        private final double after;
+        private final boolean changed;
+
+        public DrawerBalanceSnapshot(PaymentMethod paymentMethod, double before, double after, boolean changed) {
+            this.paymentMethod = paymentMethod;
+            this.before = before;
+            this.after = after;
+            this.changed = changed;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public double getBefore() {
+            return before;
+        }
+
+        public double getAfter() {
+            return after;
+        }
+
+        public boolean isChanged() {
+            return changed;
+        }
+    }
+
+    /**
+     * Resets (or sets) a target user's drawer balance to targetBalance, for
+     * one payment method or, when paymentMethod is null, for every
+     * adjustable payment method. Reuses applyDrawerAdjustment for the
+     * actual Drawer/DrawerEntry mutation, so this goes through the same
+     * audit trail as the "Adjust Drawer Balance -> Admin" UI flow
+     * (issue #24433 - QA/E2E test setup).
+     *
+     * Only payment methods whose balance actually changes get a Bill +
+     * DrawerEntry written, so idempotent re-runs do not flood the drawer
+     * history with zero-value entries (methods already at the target value
+     * are still reported in the result, with changed=false).
+     *
+     * @param targetUser the user whose drawer is being reset
+     * @param paymentMethod a single payment method to reset, or null to
+     * reset every adjustable payment method
+     * @param targetBalance the balance each selected payment method should
+     * end up at
+     * @param comment optional caller-supplied comment; falls back to a
+     * default QA/E2E placeholder when blank
+     * @param actor the API/user performing the reset (recorded as the
+     * creator of each adjustment bill and drawer entry)
+     * @return one DrawerBalanceSnapshot per affected payment method
+     */
+    public List<DrawerBalanceSnapshot> resetDrawerBalance(WebUser targetUser, PaymentMethod paymentMethod, double targetBalance, String comment, WebUser actor) {
+        if (targetUser == null || actor == null) {
+            throw new IllegalArgumentException("targetUser and actor are required");
+        }
+        if (targetUser.getDepartment() == null || targetUser.getInstitution() == null) {
+            throw new IllegalArgumentException("Target user has no department/institution set; cannot generate an adjustment bill number");
+        }
+
+        Drawer drawer = getUsersDrawer(targetUser);
+
+        List<PaymentMethod> methods = paymentMethod != null
+                ? Collections.singletonList(paymentMethod)
+                : getAdjustablePaymentMethods();
+
+        List<DrawerBalanceSnapshot> snapshots = new ArrayList<>();
+        for (PaymentMethod pm : methods) {
+            Double beforeRaw = getDrawerInHandValue(drawer, pm);
+            double before = beforeRaw != null ? beforeRaw : 0.0;
+            double delta = targetBalance - before;
+            boolean changed = delta != 0.0;
+            if (changed) {
+                Bill bill = createDrawerAdjustmentBill(targetUser, pm, delta, comment, actor);
+                applyDrawerAdjustment(drawer, pm, delta, bill, actor);
+            }
+            snapshots.add(new DrawerBalanceSnapshot(pm, before, before + delta, changed));
+        }
+        return snapshots;
+    }
+
+    /**
+     * Creates and persists a DrawerAdjustment bill for resetDrawerBalance(),
+     * mirroring DrawerAdjustmentController.createAndPersistAdjustmentBill but
+     * using the target drawer user's department/institution (there is no
+     * admin session here) and recording the actor (not the target user) as
+     * the bill's creator (issue #24433, decisions D5/D7).
+     */
+    private Bill createDrawerAdjustmentBill(WebUser targetUser, PaymentMethod paymentMethod, double delta, String comment, WebUser actor) {
+        Department department = targetUser.getDepartment();
+        Institution institution = targetUser.getInstitution();
+
+        BilledBill bill = new BilledBill();
+        bill.setBillType(BillType.DrawerAdjustment);
+        bill.setBillTypeAtomic(BillTypeAtomic.DRAWER_ADJUSTMENT);
+        bill.setCreatedAt(new Date());
+        bill.setCreater(actor);
+        bill.setDeptId(billNumberBean.institutionBillNumberGenerator(
+                department, BillType.DrawerAdjustment, BillClassType.BilledBill, BillNumberSuffix.DRADJ));
+        bill.setInsId(billNumberBean.institutionBillNumberGenerator(
+                institution, BillType.DrawerAdjustment, BillClassType.BilledBill, BillNumberSuffix.DRADJ));
+        bill.setDepartment(department);
+        bill.setInstitution(institution);
+        bill.setFromDepartment(department);
+        bill.setFromInstitution(institution);
+        bill.setNetTotal(delta);
+        String baseComment = (comment != null && !comment.trim().isEmpty())
+                ? comment.trim()
+                : "QA/E2E drawer balance reset via API";
+        bill.setComments(baseComment + " [" + paymentMethod + "]");
+        billFacade.create(bill);
+        return bill;
     }
 
     /**
