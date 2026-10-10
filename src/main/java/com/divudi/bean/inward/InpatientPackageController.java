@@ -79,16 +79,24 @@ public class InpatientPackageController implements Serializable {
             JsfUtil.addErrorMessage("You are not authorized to manage Inpatient Packages.");
             return;
         }
-        if (current == null || current.getName() == null || current.getName().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please enter a package name");
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please click Add to create a new package, or select a package to edit");
             return;
+        }
+        boolean missingRequired = false;
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a package name");
+            missingRequired = true;
         }
         if (current.getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select an Admission Type");
-            return;
+            missingRequired = true;
         }
         if (current.getRoomCategory() == null) {
             JsfUtil.addErrorMessage("Please select a Room Category");
+            missingRequired = true;
+        }
+        if (missingRequired) {
             return;
         }
         List<InpatientPackageItem> components = new ArrayList<>();
