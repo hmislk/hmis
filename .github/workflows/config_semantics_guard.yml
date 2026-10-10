@@ -25,10 +25,21 @@ jobs:
 
       - name: Check that existing config keys keep their meaning
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           ALLOW: ${{ contains(github.event.pull_request.labels.*.name, 'config-meaning-change') }}
         run: |
           set -euo pipefail
+          # The checkout is GitHub's merge commit of the PR into the CURRENT base
+          # branch. Compare against its first parent (the current base tip), not
+          # pull_request.base.sha, which is the base recorded when the PR was last
+          # updated and can be weeks old - that would count every change merged to
+          # the base branch since then as part of this PR.
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            BASE_SHA=$(git rev-parse HEAD^1)
+          else
+            BASE_SHA="$EVENT_BASE_SHA"
+          fi
+          echo "Comparing against base $BASE_SHA"
           if [ "$ALLOW" = "true" ]; then
             python3 .github/scripts/check_config_semantics.py "$BASE_SHA" --allow
           else
