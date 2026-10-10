@@ -30,6 +30,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action](#107-inward_lab_dashboardxhtmls-send-to-lab-has-no-pmessagespgrowl-at-all--a-missing-transporter-silently-no-ops-the-whole-action)
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [130. A failed `errorCheck()` can look exactly like a dead Settle button](#130-a-failed-errorcheck-can-look-exactly-like-a-dead-settle-button)
+- [143. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify](#143-cashier-float--handover--shift-end-flows-menu-paths-required-fields-and-what-to-verify)
 
 ---
 
@@ -670,3 +671,31 @@ means the action ran and bailed, not that the click was lost.
 Corollary for scraping messages: `.ui-growl-item` is transient. Capture messages
 immediately after the click (or screenshot right away) rather than after the
 several-second settle wait, or a real validation error reads as silence.
+
+
+## 143. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify
+
+All under *Cashier → Financial Transaction Manager*. Design: [Handover Float Propagation](../../billing/handover-float-propagation.md).
+
+| Action | Menu path |
+|---|---|
+| Send float | Float Management → Float Transfer |
+| Receive float | Float Management → Float Transfers to Receive |
+| Cancel a sent float (only before it is received) | Float Management → My Float Outs → Cancel |
+| Hand over | Shift → Handover Current Shift |
+| Recall a handover (sender, only before accept) | Handover → My Handovers → Recall |
+| Accept or reject a handover | Handover → Shift Handovers to Accept → To Accept |
+| Record excess / shortage | Shift → Record Shift Excess / Record Shift Shortage |
+| Shift-end cash, end shift | Shift → Record Shift End Cash in Hand, then End Shift |
+| Drawer history | Drawer → My Drawer History |
+| Reset a drawer (no API yet, #24433) | Admin → Adjust Drawer Balance (needs `DrawerAdjustmentDirect`) |
+
+- **Float receive needs a comment and a denomination count.** Fill both before clicking Receive.
+- **A handover's counted denominations must equal expected cash.** Record any excess or shortage bill first; never test a "handover with a difference".
+- **An accepted handover cannot be cancelled.** "Handover cancel" means Recall (sender) or Reject (receiver) while it is still pending.
+- **OPD Billing** is under *OPD → Billing*; hover "Billing" to open the submenu. The same item can't be added twice to one bill, so build amounts from different items or quantities.
+- **Accept `confirm()` guards** by setting `window.confirm = () => true` before each click (see [§4](../playwright-e2e-workflow.md#4-confirmations-and-double-click-protection)).
+- **Verify three things after every step**, not just the screen you are on:
+  1. *My Drawer History* for **both** users. Each step should add exactly one row per user it moves. An accept adds one row (the counted cash) and no separate float row (#24428).
+  2. The next *Handover Current Shift* screen: Net Float (Cash) must equal the user's own signed floats plus the signed net floats carried in from accepted handovers.
+  3. *Record Shift End Cash in Hand*: if the drawer started the shift at 0, expected cash should equal the drawer's cash balance.

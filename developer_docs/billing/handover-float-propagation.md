@@ -102,7 +102,8 @@ the net float — don't "fix" them to match.
 
 ## Cancellation
 
-Handovers cannot be cancelled once accepted (only rejected before accept).
+Handovers cannot be cancelled once accepted. Before accept, the sender can Recall
+(`recallMyHandoverBill`) and the receiver can Reject (`rejectToReceiveHandoverBill`).
 The receiver-side float payment therefore has no cancel path today.
 If a future requirement arises, cancel should:
 
