@@ -42,6 +42,7 @@ import com.divudi.core.data.dataStructure.WebUserBillsTotal;
 import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.dto.channel.ChannelAbsentPatientsDTO;
 import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.channel.ChannelShiftCollectionReportDTO;
 import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
 import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
@@ -495,10 +496,61 @@ public class ChannelReportController implements Serializable {
             return;
         }
         bookingsByShiftDto  = channelService.updateChannelBookingBillsForShitEnd(bookingsByShiftDto.getShiftStartBillId(), bookingsByShiftDto.getShiftEndBillId(), bookingsByShiftDto.getCashierId(), bookingsByShiftDto.getHospital(), categoryList, paymentMethods, bookingsByShiftDto.getShiftStartAt(), bookingsByShiftDto.getShiftEndAt(), bookingsByShiftDto.getCashierUserName());
+        if (bookingsByShiftDto != null) {
+            bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+        }
 
     }
     
     
+    /**
+     * Update action of the Summary Collection Report (issue #24248). Reloads
+     * the Cash / Card / Agent sections for the shift already on screen with
+     * the current Category and Payment Method filters, and tells the user
+     * when the shift has no channelling transactions.
+     */
+    public void refreshShiftCollectionReport() {
+        if (bookingsByShiftDto == null || bookingsByShiftDto.getShiftStartBillId() == null) {
+            JsfUtil.addErrorMessage("Please select a shift and click Summary Collection Report first.");
+            return;
+        }
+        String processedBy = sessionController.getLoggedUser().getWebUserPerson().getName();
+        bookingsByShiftDto = reloadShiftCollection(bookingsByShiftDto, categoryList, paymentMethods, processedBy);
+
+        ChannelShiftCollectionReportDTO report = bookingsByShiftDto.getShiftCollection();
+        if (report == null || !report.isHasTransactions()) {
+            JsfUtil.addErrorMessage("No channelling transactions by " + bookingsByShiftDto.getCashierUserName()
+                    + " in this shift for the selected Category / Payment Method.");
+        } else {
+            JsfUtil.addSuccessMessage("Report updated.");
+        }
+    }
+
+    /**
+     * Re-queries the shift collection keeping the shift context (shift
+     * start/end, cashier, hospital) of the report currently shown.
+     */
+    WrapperDtoForChannelFutureIncome reloadShiftCollection(WrapperDtoForChannelFutureIncome current, List<Category> categories,
+            List<PaymentMethod> methods, String processedBy) {
+        WrapperDtoForChannelFutureIncome reloaded = channelService.fetchChannelBookingBillsForShiftEnd(
+                current.getShiftStartBillId(), current.getShiftEndBillId(), current.getCashierId(),
+                current.getHospital(), categories, methods);
+        if (reloaded == null) {
+            reloaded = new WrapperDtoForChannelFutureIncome();
+            reloaded.setShiftCollection(new ChannelShiftCollectionReportDTO());
+            reloaded.setProcessDate(new Date());
+        }
+        reloaded.setShiftStartAt(current.getShiftStartAt());
+        reloaded.setShiftEndAt(current.getShiftEndAt());
+        reloaded.setCashierUserName(current.getCashierUserName());
+        reloaded.setCashierId(current.getCashierId());
+        reloaded.setShiftStartBillId(current.getShiftStartBillId());
+        reloaded.setShiftEndBillId(current.getShiftEndBillId());
+        reloaded.setHospital(current.getHospital());
+        reloaded.setProcessedBy(processedBy);
+        return reloaded;
+    }
+
     public void listShiftStartBills() {
         
         categorywiseDetailsWrapperDTO = null;
@@ -906,6 +958,9 @@ public class ChannelReportController implements Serializable {
         private double allDoctorFeeTotal;
         private double allTotalAmount;
 
+        // Segregated Cash / Card / Agent shift end collection (issue #24248)
+        private ChannelShiftCollectionReportDTO shiftCollection;
+
         public double getAllCashTotal() {
             return allCashTotal;
         }
@@ -1080,7 +1135,15 @@ public class ChannelReportController implements Serializable {
 
         public void setCashierId(Long cashierId) {
             this.cashierId = cashierId;
-        }        
+        }
+
+        public ChannelShiftCollectionReportDTO getShiftCollection() {
+            return shiftCollection;
+        }
+
+        public void setShiftCollection(ChannelShiftCollectionReportDTO shiftCollection) {
+            this.shiftCollection = shiftCollection;
+        }
 
     }
 
@@ -5700,7 +5763,7 @@ public class ChannelReportController implements Serializable {
 
     // Excel Export: Channel Summary Collection Report
     public StreamedContent getChannelSummaryCollectionReportAsExcel() {
-        if (bookingsByShiftDto == null || bookingsByShiftDto.getIncomeDtos() == null || bookingsByShiftDto.getIncomeDtos().isEmpty()) {
+        if (bookingsByShiftDto == null || bookingsByShiftDto.getShiftCollection() == null) {
             JsfUtil.addErrorMessage("Please generate the Summary Collection report before exporting.");
             return null;
         }
