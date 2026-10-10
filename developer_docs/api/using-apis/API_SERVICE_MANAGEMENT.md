@@ -8,7 +8,22 @@
 
 ## Overview
 
-This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService` DTYPE), their fee structures (`ItemFee`), and service categories (`ServiceCategory`). It enables AI agents to programmatically create and manage services that appear in the inpatient billing autocomplete (`inward_bill_service.xhtml`).
+This API manages OPD Services (`Service` DTYPE), Inward Services (`InwardService` DTYPE), their fee structures (`ItemFee`), and service categories (`ServiceCategory`). It enables AI agents to programmatically create and manage services for inpatient billing (`inward_bill_service.xhtml`).
+
+> **Creating a service is not always enough for it to be billable.** Whether a service is listed
+> on *Inward → Services & Items → Add Services & Investigations* depends on the logged-in
+> department's **Inward Item Listing Strategy** (department preference):
+>
+> | Strategy | What is listed | Extra step after creating the service |
+> |---|---|---|
+> | `ALL_ITEMS` | Every active investigation and service | None |
+> | `ITEMS_MAPPED_TO_LOGGED_DEPARTMENT` | Items mapped to the logged department | Map it with `POST /api/item-mappings` (`departmentId`) — see [API_ITEM_MAPPINGS.md](API_ITEM_MAPPINGS.md) |
+> | `ITEMS_MAPPED_TO_LOGGED_INSTITUTION` | Items mapped to the logged institution | Map it with `POST /api/item-mappings` (`institutionId`) |
+> | `ITEMS_OF_LOGGED_DEPARTMENT` / `ITEMS_OF_LOGGED_INSTITUTION` | Items whose own department / institution is the logged one | Set `departmentId` / `institutionId` on the service |
+> | `SITE_FEE_ITEMS` | Items with a fee scoped to the department's site (`ItemFee.forInstitution`) | Add a site fee on the admin pricing screens — `POST /api/services/{id}/fees` cannot set the site scope (`institutionId` there is the fee's payee, not `forInstitution`) |
+>
+> On that page items are grouped under buttons by the department that **owns** the service
+> (`departmentId`), not by the department it is mapped to.
 
 ---
 
@@ -36,10 +51,16 @@ GET /api/services/search
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `query` | string | No | Name substring (case-insensitive) |
+| `code` | string | No | Item code substring. Use this to make a bulk load idempotent — item code is the natural key a spreadsheet of services carries |
 | `serviceType` | string | No | `OPD`, `Inward`, or omit for both |
 | `categoryId` | long | No | Filter by ServiceCategory ID |
 | `inactive` | boolean | No | `true` = inactive only, `false` = active only |
-| `limit` | int | No | Max results (default 30, max 100) |
+| `limit` | int | No | Page size (default 30, max 100; larger values are clamped to 100) |
+| `offset` | int | No | Rows to skip, for paging (default 0; negative is treated as 0; non-numeric → 400) |
+| `includeTotal` | boolean | No | `true` adds `totalCount`, `offset` and `limit` beside `data` (see [Listing the whole master](#listing-the-whole-master)). `false`/omitted = response unchanged. Anything else → 400 |
+
+Results are always ordered by `name`, then `id`. The `id` tiebreaker keeps pages stable when two
+services share a name, so paging never repeats or skips a row.
 
 **Example:**
 ```bash
@@ -65,10 +86,66 @@ curl -H "Finance: <key>" \
       "inactive": false,
       "categoryId": 5,
       "categoryName": "Surgical",
+      "financialCategoryId": 88,
+      "financialCategoryName": "INCOME ACCOUNTS:Operation Theatre Charges",
       "inwardChargeType": "WardProcedures"
     }
   ]
 }
+```
+
+Look a service up by its code before creating it:
+
+```bash
+curl -H "Finance: <key>" "https://host/hmis/api/services/search?code=SM-RH-0122&limit=5"
+```
+
+##### Listing the whole master
+
+One request returns at most 100 rows, so list the full service master by paging with `offset`
+instead of firing many substring queries. Add `includeTotal=true` to learn how many rows match:
+
+```bash
+curl -H "Finance: <key>" \
+  "https://host/hmis/api/services/search?limit=100&offset=0&includeTotal=true"
+```
+
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [ { "id": 101, "name": "Ward Procedure", "...": "..." } ],
+  "totalCount": 1234,
+  "offset": 0,
+  "limit": 100
+}
+```
+
+- `data` is still a plain array, so existing callers are unaffected. `totalCount` is the number of
+  rows matching the filters, ignoring `limit` and `offset`. The envelope field is named `totalCount`
+  (not `total`) because every row in `data` already has a `total` — its price.
+- `limit` in the response is the **effective** page size after clamping to 100. Advance `offset`
+  by the number of rows you actually received (`data.length`), never by the `limit` you asked for.
+- Stop at the first page that returns fewer rows than the `limit` you sent (an empty page is the
+  limiting case). A failed query comes back as an HTTP error, never as an empty page, so a short
+  page really is the end of the list. `totalCount` is for progress and for cross-checking that you
+  collected everything; callers that do not ask for it pay nothing for it.
+- Paging combines with every filter (`query`, `code`, `serviceType`, `categoryId`, `inactive`),
+  so the same loop can walk just the Inward services, for example.
+- Without `includeTotal=true` no count query runs and the response is exactly what it was before
+  paging existed.
+
+```bash
+# Walk the whole service master, 100 at a time
+offset=0; limit=100
+while :; do
+  page=$(curl -sf -H "Finance: <key>" \
+    "https://host/hmis/api/services/search?limit=$limit&offset=$offset") || { echo "request failed" >&2; exit 1; }
+  count=$(echo "$page" | jq '.data | length')
+  echo "$page" | jq -c '.data[] | {id, name}'
+  offset=$((offset + count))
+  [ "$count" -lt "$limit" ] && break
+done
 ```
 
 ---
@@ -117,7 +194,13 @@ curl -H "Finance: <key>" "https://host/hmis/api/services/101"
         "discountAllowed": false,
         "retired": false,
         "institutionId": 1,
-        "institutionName": "General Hospital"
+        "institutionName": "General Hospital",
+        "forInstitutionId": null,
+        "forInstitutionName": null,
+        "forDepartmentId": null,
+        "forDepartmentName": null,
+        "forCategoryId": null,
+        "forCategoryName": null
       }
     ],
     "message": "Service found successfully"
@@ -142,7 +225,8 @@ Content-Type: application/json
 | `code` | string | No | Auto-generated from name if omitted |
 | `printName` | string | No | Display name for printing |
 | `fullName` | string | No | Full descriptive name |
-| `categoryId` | long | No | ServiceCategory ID |
+| `categoryId` | long | No | Category ID (any Category subtype, not only `ServiceCategory`) |
+| `financialCategoryId` | long | No | Financial category / income account — a `Category` whose `categoryType` is `FINANCIAL_CATEGORY`. Look one up with [`/item-categories/search`](#search-any-category) |
 | `institutionId` | long | No | Institution ID |
 | `departmentId` | long | No | Department ID |
 | `inwardChargeType` | string | Req. for Inward | Enum value from [InwardChargeType reference](#inwardchargetype-reference) |
@@ -183,7 +267,11 @@ curl -X POST \
   "https://host/hmis/api/services"
 ```
 
-**Response:** HTTP 201 with full `ServiceResponseDTO`.
+**Response:** HTTP 201 with full `ServiceResponseDTO`, including the new service's `id`.
+
+`inwardChargeType` is required for `Inward` services and optional for `OPD` services — when
+supplied for an OPD service it is stored too (many hospitals bill inward charges through
+OPD-type services, and the inward final bill groups lines by this value).
 
 ---
 
@@ -193,7 +281,8 @@ PUT /api/services/{id}
 Content-Type: application/json
 ```
 
-Only provided (non-null) fields are updated.
+Only provided (non-null) fields are updated. Accepts the same fields as create, including
+`financialCategoryId`.
 
 **Example:**
 ```bash
@@ -272,6 +361,13 @@ Content-Type: application/json
 
 After adding a fee, the service's `total` and `totalForForeigner` are automatically recalculated.
 
+Every fee in a response also carries `forInstitutionId`/`forInstitutionName`,
+`forDepartmentId`/`forDepartmentName` and `forCategoryId`/`forCategoryName`. These are the
+scoping keys: a **base** fee has all three null, a **site or collecting-centre** fee carries
+`forInstitution`, and a **category-specific** fee carries `forCategory`. Note that `institutionId`
+is a different field — it is who the fee is payable to, not what scopes it — so without the `for*`
+keys a base fee cannot be told apart from a scoped one.
+
 **Example:**
 ```bash
 curl -X POST \
@@ -311,7 +407,79 @@ Soft-deletes the fee (sets `retired=true`). Service totals are recalculated.
 
 ---
 
-### C. Service Category CRUD
+#### Recalculate Totals
+```
+POST /api/services/{id}/recalculate-totals
+```
+
+Recomputes the item's `total` and `totalForForeigner` by summing its current non-retired fees,
+and persists them.
+
+These two fields are denormalised. They go stale whenever fees are written outside this API
+(bulk fee uploads, direct edits), and several list screens and reports read them rather than
+summing fees — so a stale `0.00` reads as "this service has no charge" even though its fees are
+correct. Until this endpoint existed the recalculation only ran as a side effect of a fee
+create/update/delete, so the only way to repair a total was to pointlessly rewrite a fee.
+
+Works for any `Item` subtype, not only services.
+
+```bash
+curl -X POST -H "Finance: <key>"   "https://host/hmis/api/services/101/recalculate-totals"
+```
+
+**Response:** the full `ServiceResponseDTO` with the refreshed totals.
+
+> **Caution:** the recalculation sums *every* non-retired fee on the item, including
+> site-, department- and collecting-centre-specific ones. If an item carries duplicate fee rows
+> (the same charge recorded once as a base fee and once scoped to an institution), the recalculated
+> total will be the sum of both. Check `forInstitution`/`forDepartment`/`forCategory` on
+> `GET /api/services/{id}/fees` first.
+
+---
+
+### C. Category Lookup
+
+#### Search Any Category
+```
+GET /api/services/item-categories/search?query=theatre&categoryType=FINANCIAL_CATEGORY&limit=20
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | No | Name substring |
+| `categoryType` | string | No | A `CategoryType` name, e.g. `FINANCIAL_CATEGORY`, `SERVICE_CATEGORY` |
+| `limit` | int | No | Max results (default 30, max 100) |
+
+`/categories/search` (below) only sees rows whose DTYPE is `ServiceCategory`, yet a service's
+`categoryId` may point at any `Category` subtype and its `financialCategoryId` is a plain
+`Category` of type `FINANCIAL_CATEGORY`. Without this endpoint a caller can set a `categoryId`
+it has no way to look up.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": [
+    {
+      "id": 88,
+      "name": "INCOME ACCOUNTS:Operation Theatre Charges",
+      "code": "income_accounts_operation_theatre_charges",
+      "categoryType": "FINANCIAL_CATEGORY",
+      "retired": false
+    }
+  ]
+}
+```
+
+An invalid `categoryType` returns `400`. Rows created before the `categoryType` column was
+populated return `"categoryType": null` and are only reachable without the filter.
+
+---
+
+#### ServiceCategory CRUD
 
 #### Search Categories
 ```
@@ -459,7 +627,12 @@ curl -X PATCH -H "Finance: <key>" \
 curl -H "Finance: <key>" \
   "https://host/hmis/api/services/search?query=endoscopy&serviceType=Inward"
 
-# The service should have inactive=false and appear in inward_bill_service.xhtml autocomplete
+# The service should have inactive=false. Whether it is listed in inward_bill_service.xhtml
+# depends on the department's Inward Item Listing Strategy — if the department lists mapped
+# items, map it first:
+curl -X POST -H "Finance: <key>" -H "Content-Type: application/json" \
+  -d '{"itemId": 205, "departmentId": 12}' \
+  "https://host/hmis/api/item-mappings"
 ```
 
 ---

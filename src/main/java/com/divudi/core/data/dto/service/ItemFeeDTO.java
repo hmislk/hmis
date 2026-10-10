@@ -29,6 +29,16 @@ public class ItemFeeDTO {
     private Long staffId;
     private String staffName;
 
+    // Scoping keys. A base fee has all three null; a site or collecting-centre
+    // fee carries forInstitution, a category-specific fee carries forCategory.
+    // Without these a caller cannot tell a base fee from a scoped one.
+    private Long forInstitutionId;
+    private String forInstitutionName;
+    private Long forDepartmentId;
+    private String forDepartmentName;
+    private Long forCategoryId;
+    private String forCategoryName;
+
     public ItemFeeDTO() {
     }
 
@@ -158,5 +168,53 @@ public class ItemFeeDTO {
 
     public void setStaffName(String staffName) {
         this.staffName = staffName;
+    }
+
+    public Long getForInstitutionId() {
+        return forInstitutionId;
+    }
+
+    public void setForInstitutionId(Long forInstitutionId) {
+        this.forInstitutionId = forInstitutionId;
+    }
+
+    public String getForInstitutionName() {
+        return forInstitutionName;
+    }
+
+    public void setForInstitutionName(String forInstitutionName) {
+        this.forInstitutionName = forInstitutionName;
+    }
+
+    public Long getForDepartmentId() {
+        return forDepartmentId;
+    }
+
+    public void setForDepartmentId(Long forDepartmentId) {
+        this.forDepartmentId = forDepartmentId;
+    }
+
+    public String getForDepartmentName() {
+        return forDepartmentName;
+    }
+
+    public void setForDepartmentName(String forDepartmentName) {
+        this.forDepartmentName = forDepartmentName;
+    }
+
+    public Long getForCategoryId() {
+        return forCategoryId;
+    }
+
+    public void setForCategoryId(Long forCategoryId) {
+        this.forCategoryId = forCategoryId;
+    }
+
+    public String getForCategoryName() {
+        return forCategoryName;
+    }
+
+    public void setForCategoryName(String forCategoryName) {
+        this.forCategoryName = forCategoryName;
     }
 }

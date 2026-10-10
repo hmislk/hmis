@@ -336,7 +336,7 @@
                                 </div>
                             </div>
 
-                            <p:tabView rendered="true">
+                            <p:tabView rendered="#{inwardSearch.bill.approveAt eq null}">
                                 <p:tab title="Final Bill"  >
 
                                     <div class="row">
@@ -757,9 +757,10 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
                                                 <h:panelGroup id="originalCustom4BillPriview">
-                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -780,9 +781,10 @@
                                                         </div>
                                                     </div>
                                                 </f:facet>
+                                                
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
                                                 <h:panelGroup id="duplicateCustom4BillPriview">
-                                                    <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -854,7 +856,7 @@
 
                                         <p:ajax event="open" listener="#{bhtSummeryController.loadCustom2Config}" update="custom2ConfigForm" />
 
-                                        <h:form id="custom2ConfigForm" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                                        <h:panelGroup id="custom2ConfigForm" layout="block" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
                                             <div class="card-body">
                                                 <h6>Which formats print</h6>
                                                 <div class="mb-3">
@@ -897,31 +899,6 @@
                                                 </div>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Custom Bill 4 Format', false)}">
-                                                <hr/>
-                                                <h6>Custom Bill 3 (Letterhead) Settings</h6>
-                                                <div class="mb-3">
-                                                    <h:selectBooleanCheckbox id="custom4ShowAddress" value="#{bhtSummeryController.custom4ShowAddress}" />
-                                                    <h:outputLabel for="custom4ShowAddress" value="Show Patient Address" class="ms-2" />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <h:selectBooleanCheckbox id="custom4ShowNic" value="#{bhtSummeryController.custom4ShowNic}" />
-                                                    <h:outputLabel for="custom4ShowNic" value="Show Patient NIC" class="ms-2" />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <h:selectBooleanCheckbox id="custom4ShowPhone" value="#{bhtSummeryController.custom4ShowPhone}" />
-                                                    <h:outputLabel for="custom4ShowPhone" value="Show Patient Phone" class="ms-2" />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <h:selectBooleanCheckbox id="custom4ShowGuardian" value="#{bhtSummeryController.custom4ShowGuardian}" />
-                                                    <h:outputLabel for="custom4ShowGuardian" value="Show Guardian" class="ms-2" />
-                                                </div>
-                                                <div class="mb-3">
-                                                    <h:selectBooleanCheckbox id="custom4ShowCorporateSponsor" value="#{bhtSummeryController.custom4ShowCorporateSponsor}" />
-                                                    <h:outputLabel for="custom4ShowCorporateSponsor" value="Show Corporate Sponsor" class="ms-2" />
-                                                </div>
-                                                </h:panelGroup>
-
                                                 <p:messages id="custom2ConfigMessages" showDetail="true" closable="true" />
 
                                                 <div class="d-flex gap-2">
@@ -939,10 +916,20 @@
                                                         type="button" />
                                                 </div>
                                             </div>
-                                        </h:form>
+                                        </h:panelGroup>
                                     </p:dialog>
                                 </p:tab>
                             </p:tabView>
+
+                            <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream ne null}" header="Final Bill (Approved - Frozen Copy)">
+                                <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;">
+                                    <f:param name="finalBillId" value="#{inwardSearch.bill.id}" />
+                                </p:media>
+                            </p:panel>
+
+                            <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream eq null}" header="Final Bill (Approved - Frozen Copy)">
+                                <h:outputText value="The approved PDF could not be loaded. Please try reprinting from the Final Bill list." styleClass="text-danger" />
+                            </p:panel>
 
                         </p:panel>
 

@@ -13,6 +13,20 @@ This guide captures the failure modes seen doing this for **Suwani** on
 2026-09-03 (issue history in that session; see also
 `memory/project_suwani_cicd_migration_2026_09_03.md`).
 
+**This is not a one-time-only procedure.** The "Database Migration Pending"
+gate this guide exists to clear can reappear on an **already-migrated**
+hospital after any later, completely ordinary deploy — see issue #23679. It
+happens whenever a merged PR adds a persisted entity field/table without a
+matching `generate-ddl` run + wiki DDL-version bump for that hospital's
+schema: the gate is a genuine version-staleness check (the DB's stored
+`DATABASE_DDL_VERSION` `ConfigOption` vs. the wiki's current "Last Update"
+version, compared in `DatabaseMigrationVersionCheckService.isStoredVersionOlderThanWiki`),
+not a marker that gets permanently set once a hospital has been brought
+current. If it reappears, §8's step 2 (`mf.xhtml` → "Load Latest DDL from
+Wiki and Update Both Databases" → "Mark Schema as Current") is the same fix —
+you do not need to repeat the rest of this guide's one-time catch-up steps
+(§1, §3–§7) unless the hospital is *also* stale in those other ways.
+
 ---
 
 ## 0. Before you start

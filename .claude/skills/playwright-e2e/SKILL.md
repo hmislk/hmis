@@ -116,15 +116,21 @@ risk the user should know about upfront.
    to locate elements, real key events for PrimeFaces inputs (§3), and
    `browser_handle_dialog` for `confirm()` guards (§4). Wait on the expected
    result (`browser_wait_for`) rather than fixed sleeps (§5a). Watch for
-   [§12](../../../developer_docs/testing/playwright-e2e-workflow.md#12-jsf-form-validation-blocks-navigation-buttons)
+   [§12](../../../developer_docs/testing/playwright-e2e/primefaces-widgets.md#12-jsf-form-validation-blocks-navigation-buttons)
    (required-field validation blocking unrelated nav buttons),
-   [§13](../../../developer_docs/testing/playwright-e2e-workflow.md#13-primefaces-pselectonemenu-is-not-a-native-select)
+   [§13](../../../developer_docs/testing/playwright-e2e/primefaces-widgets.md#13-primefaces-pselectonemenu-is-not-a-native-select)
    (`p:selectOneMenu` click-option pattern), and
-   [§14](../../../developer_docs/testing/playwright-e2e-workflow.md#14-non-ajax-search-buttons-can-timeout-on-click)
+   [§14](../../../developer_docs/testing/playwright-e2e/navigation-session.md#14-non-ajax-search-buttons-can-timeout-on-click)
    (non-AJAX search clicks that time out but still succeed).
 5. **If the DB lacks suitable test data, generate it through the app** — see
    [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification).
    Never fall back to "code looks correct" as evidence.
+   **Then leave it there.** Test records are not litter — do not clean up, and
+   do not offer to, unless explicitly asked; just say what you created. A
+   request to test is also never a request to test in production: if a
+   verification step is about to write to a production environment, stop and
+   confirm the target. See
+   [§15a](../../../developer_docs/testing/playwright-e2e-workflow.md#15a-leave-test-data-where-it-is--never-clean-up-unasked).
 6. **Verify in the database** — read-only `mysql` queries against the local
    DB per [§6](../../../developer_docs/testing/playwright-e2e-workflow.md#6-verify-against-the-database).
    Credentials come from `C:\Credentials\` (outside the repo).

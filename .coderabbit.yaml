@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Project-specific review instructions. Only path instructions are set here;
+# everything else keeps the settings configured in the CodeRabbit UI.
+reviews:
+  path_instructions:
+    - path: "src/main/java/**/*.java"
+      instructions: |
+        Configuration options are read with configOptionApplicationController /
+        configOptionController getBooleanValueByKey("Key", default) and similar
+        getters. Every hospital already has a stored value for each existing key.
+        Treat ANY of the following as a CRITICAL finding and ask the author to
+        justify it in the PR description:
+        - adding or removing a `!` around a call that reads an existing key;
+        - changing the default value of an existing key (true <-> false, or any
+          other literal);
+        - reading the same key with a different default from other places;
+        - moving a key's read into the opposite branch of an if/else, or otherwise
+          inverting what true/false does for that key.
+        These silently reverse behaviour for hospitals that already store the
+        value. The correct fix is a NEW key whose name states exactly what `true`
+        does (e.g. "Block X once Y"), with the old key no longer read.
+        Also flag new key names that do not say what they control and which
+        value is the safe one (avoid vague names like "Enable the Special
+        Privilege of ...").
+    - path: "src/main/webapp/**/*.xhtml"
+      instructions: |
+        Apply the same rule to EL expressions such as
+        `#{configOptionApplicationController.getBooleanValueByKey('Key', true)}`:
+        adding/removing `not`/`!`, changing the default, or reading an existing
+        key with a different default is a CRITICAL finding; a behaviour change
+        needs a new, clearly named key instead.

@@ -386,6 +386,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Patient NIC Required for Credit Admissions",
+                "Refuse a Credit admission when the patient's National ID Number is blank; any value, even '-', is accepted. Baby and Rapid / Temp A&E admissions are exempt. Independent of 'Patient Details Required in Patient Admission' (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Restirct Inward Admission Search to Logged Department of the User",
                 "Restrict admission search results to the user's logged department (default false)",
                 "inward/inward_admission",
@@ -870,6 +877,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         roomChangeController.createPatientRoom();
         roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change?faces-redirect=true";
+    }
+
+    public String navigateToPackageChange() {
+        return "/inward/inward_package_change?faces-redirect=true";
     }
 
     public String navigateToAddRoom() {
@@ -1498,6 +1509,39 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * Brings the stored financial snapshot shown on the Inpatient Dashboard up to
+     * date when bills were added since it was last calculated. Call before
+     * navigating to admission_profile.
+     */
+    public void refreshDashboardFinancials() {
+        if (current == null) {
+            return;
+        }
+        PatientEncounter refreshed = bhtSummeryController.refreshProcessingSnapshotIfStale(current);
+        if (refreshed instanceof Admission) {
+            current = (Admission) refreshed;
+        }
+    }
+
+    /**
+     * Opens the Inpatient Dashboard for an encounter selected outside this bean
+     * (bed board, surgery bill). The dashboard renders {@code current}, so it is
+     * set here rather than only on BhtSummeryController.
+     */
+    public String navigateToInpatientDashboard(PatientEncounter pe) {
+        if (pe == null) {
+            pe = current;
+        }
+        if (pe instanceof Admission) {
+            current = (Admission) pe;
+            refreshDashboardFinancials();
+            pe = current;
+        }
+        bhtSummeryController.setPatientEncounter(pe);
+        return bhtSummeryController.navigateToInpatientProfile();
+    }
+
     public String navigateToAdmissionProfilePage() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -1508,6 +1552,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
 
+        refreshDashboardFinancials();
         patientDetailsEditable = false;
         fetchChildAdmissions();
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
@@ -2281,6 +2326,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
                     return true;
                 }
+            }
+        }
+
+        // Credit admissions need a patient NIC on record. Deliberately kept outside
+        // the "Patient Details Required" block above, and on its own inward-only
+        // option, so enabling it neither drags in the other patient-detail checks
+        // nor affects OPD/channelling. Any non-blank value (even "-") is accepted.
+        // Baby and Rapid / Temp A&E admissions are exempt, matching the existing
+        // NIC check. (Issue #23978)
+        if (!isRapidTempAe() && !isBabyAdmission()
+                && getCurrent().getPaymentMethod() == PaymentMethod.Credit
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Patient NIC Required for Credit Admissions", false)) {
+            Person person = getCurrent().getPatient().getPerson();
+            if (person == null || person.getNic() == null || person.getNic().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("National ID Number is required for credit admissions. Enter the NIC, or '-' if not available.");
+                return true;
             }
         }
 

@@ -140,6 +140,17 @@ import org.primefaces.model.ScheduleModel;
 @ViewScoped
 public class BookingControllerViewScope implements Serializable, ControllerWithPatientViewScope, ControllerWithMultiplePayments {
 
+    // Striped JVM-wide locks for settleCredit(), keyed by the booking bill id.
+    // Static so a double-submit, a second tab and a second cashier all contend on
+    // the same lock; striped so the set stays bounded (issue #23776).
+    private static final Object[] SETTLE_LOCKS = new Object[64];
+
+    static {
+        for (int i = 0; i < SETTLE_LOCKS.length; i++) {
+            SETTLE_LOCKS[i] = new Object();
+        }
+    }
+
     /**
      * EJBs
      */
@@ -2284,7 +2295,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2319,7 +2330,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2362,7 +2373,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -7969,6 +7980,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return true;
         }
 
+        // Fresh DB read; runs inside settleCredit()'s per-bill lock, so a concurrent
+        // settle of the same booking has either fully saved its paid bill or not started.
+        Bill currentBookingBill = getBillFacade().findWithoutCache(getBillSession().getBill().getId());
+        if (currentBookingBill != null && (currentBookingBill.getPaidAmount() != 0 || currentBookingBill.getPaidBill() != null)) {
+            JsfUtil.addErrorMessage("Payment Already Settled.");
+            return true;
+        }
+
         if (settlePaymentMethod == paymentMethod.OnCall) {
             JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
             return true;
@@ -7997,6 +8016,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void settleCredit() {
+        if (getBillSession() == null || getBillSession().getBill() == null || getBillSession().getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No booking selected to settle.");
+            return;
+        }
+        // Hold the lock across the already-paid check AND every settlement write,
+        // otherwise two submits can both pass the check before either saves (#23776).
+        Long bookingBillId = getBillSession().getBill().getId();
+        synchronized (SETTLE_LOCKS[(int) Math.floorMod(bookingBillId, (long) SETTLE_LOCKS.length)]) {
+            settleCreditUnderLock();
+        }
+    }
+
+    private void settleCreditUnderLock() {
         if (errorCheckForSettle()) {
             return;
         }

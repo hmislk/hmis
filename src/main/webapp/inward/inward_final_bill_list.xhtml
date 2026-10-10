@@ -115,14 +115,10 @@
                                         class="#{b.approveAt eq null ? 'ui-button-warning me-1' : 'ui-button-info me-1'}"
                                         value="#{b.approveAt eq null ? 'View / Print (Unapproved)' : 'View / Print'}"
                                         title="View #{b.deptId}"
-                                        action="/inward/inward_reprint_bill_final?faces-redirect=true"
+                                        action="#{inwardSearch.navigateToReprintFinalBill(b)}"
                                         rendered="#{b.approveAt ne null
                                                     or webUserController.hasPrivilege('InwardFinalBillViewUnapproved')
                                                     or webUserController.hasPrivilege('InwardFinalBillApprove')}">
-                                        <f:setPropertyActionListener
-                                            value="#{b}"
-                                            target="#{inwardSearch.bill}">
-                                        </f:setPropertyActionListener>
                                     </p:commandButton>
 
                                     <p:commandButton

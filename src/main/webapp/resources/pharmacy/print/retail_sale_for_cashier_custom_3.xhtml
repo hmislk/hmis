@@ -26,6 +26,7 @@
 
 
             <div class="receipt-container">
+
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
@@ -41,22 +42,30 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px;">Name :</td>
-                            <td style="padding: 2px;" >
+                            <td style="padding: 2px;" colspan="4">
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
                             </td>
-                            <td style="padding: 2px;" class="spacer"></td>
-                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
-                                <td  style="padding: 2px;">Age/Sex :</td>
-                                <td style="padding: 2px;" >
-                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
-                                </td>
-                            </h:panelGroup>
                         </tr>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="false" >
-                        #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
+                        #{pharmacySaleController.printBill.patient.person.mobile}
                     </h:panelGroup>
+
+                    <tr>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                            <td  style="padding: 2px;">Age/Sex :</td>
+                            <td style="padding: 2px;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                            </td>
+                        </h:panelGroup>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Mobile :</td>
+                        <td style="padding: 2px;" >
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.mobile}"/>
+                        </td>
+
+                    </tr>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -199,7 +208,7 @@
                     </tr>
 
                     <tr> 
-                      
+
                         <td style="width: 6cm">
                             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Staff_Welfare'}">
                                 <h:outputText style="font-size: 8pt;"  value="(Staff :"/>

@@ -4,11 +4,18 @@ import com.divudi.core.entity.RetirableEntity;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -32,6 +39,12 @@ public class InpatientPackage implements Serializable, RetirableEntity {
     private Double includedRoomDurationHours = 0.0;
 
     private Double fixedRoomCharge = 0.0;
+
+    @ElementCollection
+    @CollectionTable(name = "INPATIENTPACKAGE_CHARGETYPE_AMOUNT", joinColumns = @JoinColumn(name = "INPATIENTPACKAGE_ID"))
+    @MapKeyColumn(name = "CHARGE_TYPE")
+    @Column(name = "AMOUNT")
+    private Map<String, Double> chargeTypeAmounts = new HashMap<>();
 
     private Double totalPrice = 0.0;
 
@@ -93,6 +106,14 @@ public class InpatientPackage implements Serializable, RetirableEntity {
 
     public void setFixedRoomCharge(Double fixedRoomCharge) {
         this.fixedRoomCharge = fixedRoomCharge;
+    }
+
+    public Map<String, Double> getChargeTypeAmounts() {
+        return chargeTypeAmounts;
+    }
+
+    public void setChargeTypeAmounts(Map<String, Double> chargeTypeAmounts) {
+        this.chargeTypeAmounts = chargeTypeAmounts;
     }
 
     public Double getTotalPrice() {

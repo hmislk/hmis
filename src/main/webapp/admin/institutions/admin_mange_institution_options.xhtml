@@ -9,10 +9,27 @@
     <h:body>
         <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
             <ui:define name="admin">
+                <style>
+                    .badge-info {
+                        background-color: #17a2b8;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+                    .ui-button-sm {
+                        padding: 0.25rem 0.5rem;
+                        font-size: 0.875rem;
+                    }
+                    .mt-3 {
+                        margin-top: 1rem !important;
+                    }
+                </style>
                 <h:form >
                     <p:panel>
                         <p:outputLabel  value="Institution" ></p:outputLabel>
-                        <p:selectOneMenu 
+                        <p:selectOneMenu
                             id="cmbDepartment"
                             placeholder="Institution"
                             value="#{configOptionController.institution}"
@@ -22,29 +39,267 @@
                                            var="d"
                                            itemLabel="#{d.name}"
                                            itemValue="#{d}" ></f:selectItems>
+                            <p:ajax update="btnAddNewInstitutionOption" />
                         </p:selectOneMenu>
-                        <p:commandButton id="btnSave" 
-                                         ajax="false" 
-                                         value="Save" 
+                        <p:commandButton id="btnSave"
+                                         ajax="false"
+                                         value="Save"
                                          icon="fas fa-save"
                                          class="ui-button-warning mx-2"
                                          action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
 
                         <p:commandButton value="List Options"
-                                         process="cmbInstitution cmbDepartment"
+                                         process="@this cmbDepartment"
                                          icon="fas fa-list"
                                          class="ui-button-success"
-                                         ajax="false"
-                                         action="#{configOptionController.listInstitutionOptions()}"></p:commandButton>
+                                         action="#{configOptionController.listInstitutionOptions()}"
+                                         update="institutionOptionsForm:optionsTable"></p:commandButton>
 
+                        <p:commandButton id="btnAddNewInstitutionOption"
+                                         value="Add New Option"
+                                         icon="fas fa-plus"
+                                         class="ui-button-primary mx-2"
+                                         disabled="#{configOptionController.institution eq null}"
+                                         actionListener="#{configOptionController.prepareNewOption()}"
+                                         oncomplete="PF('addOptionDialog').show()"
+                                         update=":addOptionForm"
+                                         title="Select an Institution above first"></p:commandButton>
 
                     </p:panel>
                 </h:form>
 
+                <!-- Institution Options Data Table -->
+                <h:form id="institutionOptionsForm">
+                    <p:panel header="Institution Configuration Options" styleClass="mt-3">
+                        <p:dataTable id="optionsTable"
+                                     value="#{configOptionController.options}"
+                                     var="option"
+                                     emptyMessage="No institution options found. Please select an institution and click 'List Options'."
+                                     styleClass="table table-striped"
+                                     paginator="true"
+                                     rows="20"
+                                     widgetVar="institutionOptionsTableWidget">
 
+                            <f:facet name="header">
+                                <h:outputText value="Institution: #{configOptionController.institution.name}"
+                                              styleClass="fw-bold"
+                                              rendered="#{configOptionController.institution ne null}"/>
+                            </f:facet>
 
+                            <p:column headerText="Option Key" filterBy="#{option.optionKey}" style="width: 40%">
+                                <h:outputText value="#{option.optionKey}" styleClass="fw-bold"/>
+                            </p:column>
 
+                            <p:column headerText="Value Type" filterBy="#{option.valueType}" style="width: 15%">
+                                <h:panelGroup styleClass="badge badge-info px-2 py-1">
+                                    <h:outputText value="#{option.valueType}"/>
+                                </h:panelGroup>
+                            </p:column>
 
+                            <p:column headerText="Current Value" filterBy="#{option.optionValue}" style="width: 35%">
+                                <h:outputText value="#{option.optionValue}"
+                                              title="#{option.optionValue}"/>
+                            </p:column>
+
+                            <p:column headerText="Actions" style="width: 10%">
+                                <p:commandButton icon="fas fa-edit"
+                                                 styleClass="ui-button-info ui-button-sm"
+                                                 title="Edit Option"
+                                                 oncomplete="PF('optionEditDialog').show()"
+                                                 update=":editForm">
+                                    <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+
+                <!-- Edit Option Dialog (same shape as Application/Department Options) -->
+                <p:dialog
+                    header="Edit Option" widgetVar="optionEditDialog" modal="true"
+                    style="min-width: 60%; min-height: 400px;">
+                    <h:form id="editForm" class="w-100" >
+                        <p:panel
+                            class="w-100">
+                            <f:facet name="header">
+                                <p:outputPanel styleClass="header-style">Option Details</p:outputPanel>
+                            </f:facet>
+
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="keyInput" value="Option Key"  class="w-100" />
+                                </div>
+                                <div class="col-9">
+                                    <h:outputText class="w-100" id="keyInput" value="#{configOptionController.option.optionKey}"/>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Key Value" />
+                                </div>
+                                <div class="col-9">
+                                    <p:inputText
+                                        class="w-100"
+                                        id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
+
+                                    <p:inputText
+                                        class="w-100"
+                                        id="valueInputLong"
+                                        value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG'}" />
+
+                                    <p:inputTextarea
+                                        class="w-100"
+                                        rows="5"
+                                        id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}"
+                                        autoResize="false"/>
+
+                                    <p:inputText
+                                        class="w-100"
+                                        id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                        rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
+
+                                    <p:toggleSwitch
+                                        value="#{configOptionController.option.optionValue}"
+                                        onIcon="pi pi-check"
+                                        offIcon="pi pi-times"
+                                        rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}">
+                                    </p:toggleSwitch>
+
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-4">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <p:commandButton
+                                        icon="pi pi-save"
+                                        value="Save"
+                                        style="width: 250px; background-color: #da8545; float: right;"
+                                        action="#{configOptionController.saveOption(configOptionController.option)}"
+                                        process="@this @form"
+                                        oncomplete="PF('optionEditDialog').hide();" update=":institutionOptionsForm:optionsTable" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                    </h:form>
+                </p:dialog>
+
+                <!-- Add New Option Dialog, scoped to the selected Institution -->
+                <p:dialog
+                    header="Add New Option" widgetVar="addOptionDialog" modal="true"
+                    style="min-width: 60%; min-height: 300px;">
+                    <h:form id="addOptionForm" class="w-100">
+                        <p:panel class="w-100">
+                            <f:facet name="header">
+                                <p:outputPanel styleClass="header-style">
+                                    New Option Details (Institution: #{configOptionController.institution.name})
+                                </p:outputPanel>
+                            </f:facet>
+
+                            <div class="d-flex">
+                                <div class="col-3">
+                                    <p:outputLabel for="newOptionKeyInput" value="Option Key" class="w-100" />
+                                </div>
+                                <div class="col-9">
+                                    <p:inputText
+                                        class="w-100"
+                                        id="newOptionKeyInput"
+                                        value="#{configOptionController.newOptionKeySuffix}"
+                                        placeholder="e.g. Enable Something" />
+                                    <h:outputText
+                                        value="Will be saved as &quot;#{configOptionController.institution.name} - &lt;key&gt;&quot;"
+                                        class="text-muted" />
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Value Type" />
+                                </div>
+                                <div class="col-9">
+                                    <p:selectOneMenu
+                                        class="w-100"
+                                        value="#{configOptionController.optionValueType}">
+                                        <f:selectItem itemLabel="Select Value Type" noSelectionOption="true" />
+                                        <f:selectItems
+                                            value="#{configOptionController.newOptionValueTypes}"
+                                            var="t"
+                                            itemLabel="#{t}"
+                                            itemValue="#{t}" />
+                                        <p:ajax update=":addOptionForm:newOptionInitialValue" />
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-3">
+                                <div class="col-3">
+                                    <p:outputLabel value="Initial Value" />
+                                </div>
+                                <h:panelGroup layout="block" styleClass="col-9" id="newOptionInitialValue">
+                                    <p:inputText
+                                        class="w-100"
+                                        value="#{configOptionController.value}"
+                                        rendered="#{configOptionController.optionValueType eq 'SHORT_TEXT' or configOptionController.optionValueType eq 'LONG'}" />
+
+                                    <p:inputTextarea
+                                        class="w-100"
+                                        rows="5"
+                                        value="#{configOptionController.value}"
+                                        rendered="#{configOptionController.optionValueType eq 'LONG_TEXT'}"
+                                        autoResize="false"/>
+
+                                    <p:inputText
+                                        class="w-100"
+                                        value="#{configOptionController.value}"
+                                        rendered="#{configOptionController.optionValueType eq 'DOUBLE'}" />
+
+                                    <p:toggleSwitch
+                                        value="#{configOptionController.value}"
+                                        onIcon="pi pi-check"
+                                        offIcon="pi pi-times"
+                                        rendered="#{configOptionController.optionValueType eq 'BOOLEAN'}">
+                                    </p:toggleSwitch>
+
+                                    <h:outputText
+                                        value="Select a Value Type above to enter an initial value."
+                                        class="text-muted"
+                                        rendered="#{configOptionController.optionValueType eq null}" />
+                                </h:panelGroup>
+                            </div>
+
+                            <hr/>
+
+                            <div class="d-flex mt-4">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <p:commandButton
+                                        icon="pi pi-save"
+                                        value="Create"
+                                        style="width: 250px; background-color: #da8545; float: right;"
+                                        action="#{configOptionController.saveNewOption(configOptionController.institution)}"
+                                        process="@this @form"
+                                        oncomplete="if (args &amp;&amp; args.newOptionSaved) { PF('addOptionDialog').hide(); }"
+                                        update=":institutionOptionsForm:optionsTable :addOptionForm">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </p:dialog>
             </ui:define>
 
 

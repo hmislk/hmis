@@ -175,6 +175,7 @@ public class PharmacyConfigController implements Serializable {
     private boolean inwardPaymentFiveFivePaper;
     private boolean inwardPaymentFiveFiveCustom3Paper;
     private boolean inwardPaymentA4Paper;
+    private boolean inwardPaymentDotMatrixPaper;
 
     // Petty Cash Settings
     private boolean pettyCashPosPaper;
@@ -386,6 +387,7 @@ public class PharmacyConfigController implements Serializable {
         inwardPaymentFiveFivePaper = configOptionController.getBooleanValueByKey("Inward Payment Bill Five Five Paper", false);
         inwardPaymentFiveFiveCustom3Paper = configOptionController.getBooleanValueByKey("Inward Payment Bill Five Five Custom 3 Paper", false);
         inwardPaymentA4Paper = configOptionController.getBooleanValueByKey("Inward Payment Bill A4 Paper", false);
+        inwardPaymentDotMatrixPaper = configOptionController.getBooleanValueByKey("Inward Payment Bill Dot Matrix Paper", false);
 
         // Petty Cash Settings
         pettyCashPosPaper = configOptionController.getBooleanValueByKey("Petty Cash Receipt POS Paper", true);
@@ -854,6 +856,7 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Inward Payment Bill Five Five Paper", inwardPaymentFiveFivePaper);
             configOptionController.setBooleanValueByKey("Inward Payment Bill Five Five Custom 3 Paper", inwardPaymentFiveFiveCustom3Paper);
             configOptionController.setBooleanValueByKey("Inward Payment Bill A4 Paper", inwardPaymentA4Paper);
+            configOptionController.setBooleanValueByKey("Inward Payment Bill Dot Matrix Paper", inwardPaymentDotMatrixPaper);
             JsfUtil.addSuccessMessage("Inward Payment Bill configuration saved successfully");
             loadCurrentConfig();
         } catch (Exception e) {
@@ -1820,6 +1823,14 @@ public class PharmacyConfigController implements Serializable {
 
     public void setInwardPaymentA4Paper(boolean inwardPaymentA4Paper) {
         this.inwardPaymentA4Paper = inwardPaymentA4Paper;
+    }
+
+    public boolean isInwardPaymentDotMatrixPaper() {
+        return inwardPaymentDotMatrixPaper;
+    }
+
+    public void setInwardPaymentDotMatrixPaper(boolean inwardPaymentDotMatrixPaper) {
+        this.inwardPaymentDotMatrixPaper = inwardPaymentDotMatrixPaper;
     }
 
     // Patient Deposit Getters and Setters

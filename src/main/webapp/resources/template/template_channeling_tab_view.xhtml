@@ -35,6 +35,7 @@
     <h:body >
         <style>
             body {
+                padding-bottom: 70px; /* keep page content scrollable above the fixed watermarks */
                 background-color: var(--surface-a); /* Adjust the variable as needed */
             }
             .no-padding-margin-border > .ui-panel-content,
@@ -45,6 +46,7 @@
             }
 
             .companyWaterMark {
+                pointer-events: none; /* watermark only - never intercept clicks on content underneath */
                 position: fixed; /* Use absolute if you're positioning inside a specific container */
                 right: 0;
                 bottom: 0;
@@ -56,6 +58,7 @@
             }
 
             .deptAndUser{
+                pointer-events: none; /* watermark only - never intercept clicks on content underneath */
                 position: fixed; /* Use absolute if you're positioning inside a specific container */
                 left:0;
                 bottom: 0;

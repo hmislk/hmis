@@ -910,6 +910,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToInpatientDashboard() {
         navigatedFromAdmissionProfile = false;
+        admissionController.refreshDashboardFinancials();
         return "/inward/admission_profile?faces-redirect=true";
     }
 
@@ -946,7 +947,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
-        
+        // AdmissionController is session-scoped: clear a "Patient Already Admitted"
+        // warning left over from an earlier abandoned attempt so it does not
+        // reappear over this fresh, blank form. (Issue #24000)
+        admissionController.cancelActiveAdmissionWarning();
+
         admissionController.setPatientForiegner(false);
         return "/inward/inward_admission?faces-redirect=true";
 
@@ -3400,7 +3405,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Patient pt = new Patient();
         person.setName(ptName);
         pt.setPerson(person);
-        getPersonFacade().create(person);
+        // Person is persisted by the cascade from Patient.person (cascade = ALL). Persisting
+        // it separately here leaves an unreferenced duplicate PERSON row (#23887).
         getFacade().create(pt);
     }
 
@@ -3718,11 +3724,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
             p.getPerson().setName(updatedPatientName);
         }
 
-        // Save Person first (no flush yet)
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(p.getPerson());
+            if (p.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                getPersonFacade().create(p.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in the createAndFlush below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23887).
         } else {
             getPersonFacade().edit(p.getPerson());
         }
@@ -3848,7 +3860,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(p.getPerson());
+            if (p.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                getPersonFacade().create(p.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in the createAndFlush below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23887).
         } else {
             getPersonFacade().edit(p.getPerson());
         }
@@ -3883,7 +3902,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (current.getPerson().getId() == null) {
             current.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(current.getPerson());
+            if (current.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                getPersonFacade().create(current.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in the create below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23887).
         } else {
             getPersonFacade().edit(current.getPerson());
         }
@@ -3915,7 +3941,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
-            getPersonFacade().create(getCurrent().getPerson());
+            if (getCurrent().getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                getPersonFacade().create(getCurrent().getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in the create below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23887).
         } else {
             getPersonFacade().edit(getCurrent().getPerson());
         }

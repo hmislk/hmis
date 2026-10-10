@@ -35,6 +35,9 @@
                         <h:outputLabel value=" — #{surgeryBillController.uncheckedSurgeryBillCount} bill(s) not yet checked"
                                        rendered="#{not surgeryBillController.surgeryBill.completed and surgeryBillController.uncheckedSurgeryBillCount gt 0}"
                                        style="color:#b45309; margin-left:0.5rem;"/>
+                        <h:outputLabel value=" — #{surgeryBillController.runningTimedServiceCount} timed service(s) still running (enter an End Time)"
+                                       rendered="#{not surgeryBillController.surgeryBill.completed and surgeryBillController.runningTimedServiceCount gt 0}"
+                                       style="color:#b45309; margin-left:0.5rem;"/>
                     </div>
                     <div class="col-6 text-end">
                         <p:commandButton
@@ -44,7 +47,7 @@
                             class="ui-button-success"
                             action="#{surgeryBillController.validateSurgery()}"
                             rendered="#{webUserController.hasPrivilege('InwardSurgeryValidate') and not surgeryBillController.surgeryBill.completed}"
-                            disabled="#{not surgeryBillController.allSurgeryBillsChecked}"
+                            disabled="#{not surgeryBillController.allSurgeryBillsChecked or surgeryBillController.runningTimedServiceCount gt 0}"
                             onclick="if (!confirm('Validate this surgery? Further additions will be locked.')) return false;"/>
 
                         <p:commandButton
@@ -219,6 +222,29 @@
                     <p:tab title="Assisting Fees">
                         <p:dataTable value="#{surgeryBillController.surgeryAssistingFees}" var="pf"
                                      emptyMessage="No assisting fees recorded.">
+                            <p:column headerText="Name">#{pf.staff.person.nameWithTitle}</p:column>
+                            <p:column headerText="Fee Value">
+                                <h:outputLabel value="#{pf.feeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Checked By">
+                                <h:outputLabel value="#{pf.bill.checkedBy.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Checked At">
+                                <h:outputLabel value="#{pf.bill.checkeAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Action">
+                                <p:commandButton ajax="false" action="/inward/inward_reprint_bill_professional?faces-redirect=true" value="View Bill">
+                                    <f:setPropertyActionListener value="#{pf.bill}" target="#{inwardSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:tab>
+
+                    <p:tab title="Technician Fees">
+                        <p:dataTable value="#{surgeryBillController.surgeryTechnicianFees}" var="pf"
+                                     emptyMessage="No technician fees recorded.">
                             <p:column headerText="Name">#{pf.staff.person.nameWithTitle}</p:column>
                             <p:column headerText="Fee Value">
                                 <h:outputLabel value="#{pf.feeValue}"><f:convertNumber pattern="#,##0.00"/></h:outputLabel>

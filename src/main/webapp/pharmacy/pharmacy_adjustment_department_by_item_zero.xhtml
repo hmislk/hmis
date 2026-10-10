@@ -64,7 +64,8 @@
                                         <h:outputLabel value="Comment" />
                                         <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" class="w-100"/>
                                         <h:outputLabel value="Manual Adjustment" />
-                                        <p:selectBooleanCheckbox value="#{pharmacyAdjustmentController.manualAdjust}" >
+                                        <p:selectBooleanCheckbox value="#{pharmacyAdjustmentController.manualAdjust}"
+                                                                 disabled="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}" >
                                             <f:ajax event="change" execute="@this" render="det input" />
                                         </p:selectBooleanCheckbox>
                                     </h:panelGrid>
@@ -78,6 +79,12 @@
                                             <p:commandButton id="btnAdjust" value="Zero Adjustments" style="color: red;" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust to Zero this record?'))
                                                         return false;"
                                                              class="w-100 justify-content-end d-flex ui-button-warning" icon="fa-solid fa-sliders"
+                                                             rendered="#{!pharmacyAdjustmentController.requiresApproval or pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
+                                                             action="#{pharmacyAdjustmentController.adjustDepartmentStockAllZero()}" ></p:commandButton>
+                                            <p:commandButton id="btnSendForApproval" value="Send for Approval" style="color: red;" ajax="false" onclick="if (!confirm('Are you sure you want to Adjust to Zero this record?'))
+                                                        return false;"
+                                                             class="w-100 justify-content-end d-flex ui-button-warning" icon="fa fa-paper-plane"
+                                                             rendered="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}"
                                                              action="#{pharmacyAdjustmentController.adjustDepartmentStockAllZero()}" ></p:commandButton>
 
 
@@ -167,7 +174,7 @@
                                             </p:cellEditor>
                                         </p:column>
                                         <p:column>
-                                            <p:rowEditor rendered="#{pharmacyAdjustmentController.manualAdjust}" >
+                                            <p:rowEditor rendered="#{pharmacyAdjustmentController.manualAdjust and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}" >
                                             </p:rowEditor>
                                         </p:column>
                                     </p:dataTable>

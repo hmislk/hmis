@@ -1,0 +1,332 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- Public, unauthenticated Purchase Order print view.
+         Reached only via a tokenized link (e.g. from an SMS/email sent to a
+         supplier) - no sessionController / webUserController / loggedUser /
+         configOptionController usage allowed here, since there is no login.
+         Backed by the request-scoped publicPurchaseOrderController:
+           - token (bound to the "id" view param)
+           - loadFromToken() resolves the token into printDto / valid
+    -->
+    <f:metadata>
+        <f:viewParam name="id" value="#{publicPurchaseOrderController.token}"/>
+        <f:viewAction action="#{publicPurchaseOrderController.loadFromToken()}"/>
+    </f:metadata>
+
+    <head>
+        <title>Purchase Order</title>
+    </head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template_contents_only.xhtml">
+            <ui:define name="content">
+
+                <style type="text/css">
+                    .po-public-wrapper {
+                        max-width: 210mm;
+                        margin: 20px auto;
+                        padding: 0 10px;
+                    }
+                    .po-public-card {
+                        background: #ffffff;
+                        border: 1px solid #dee2e6;
+                        border-radius: 6px;
+                        padding: 24px;
+                        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                    }
+                    .po-public-header {
+                        text-align: center;
+                        border-bottom: 2px solid #333333;
+                        padding-bottom: 10px;
+                        margin-bottom: 15px;
+                    }
+                    .po-public-institution-name {
+                        font-size: 1.4rem;
+                        font-weight: 700;
+                    }
+                    .po-public-institution-contact {
+                        font-size: 0.85rem;
+                        color: #555555;
+                    }
+                    .po-public-title {
+                        text-align: center;
+                        font-size: 1.2rem;
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                        text-decoration: underline;
+                        margin: 12px 0;
+                    }
+                    .po-public-cancelled-badge {
+                        display: inline-block;
+                        background: #d9534f;
+                        color: #ffffff;
+                        font-weight: 700;
+                        padding: 3px 12px;
+                        border-radius: 4px;
+                        margin-left: 10px;
+                        font-size: 0.9rem;
+                        vertical-align: middle;
+                    }
+                    .po-public-info-row {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 20px;
+                        margin-bottom: 15px;
+                    }
+                    .po-public-info-col {
+                        flex: 1 1 280px;
+                        min-width: 250px;
+                    }
+                    .po-public-info-col table {
+                        width: 100%;
+                        font-size: 0.9rem;
+                    }
+                    .po-public-info-col td {
+                        padding: 2px 4px;
+                        vertical-align: top;
+                    }
+                    .po-public-info-label {
+                        color: #555555;
+                        white-space: nowrap;
+                        width: 40%;
+                    }
+                    .po-public-dept {
+                        font-size: 0.9rem;
+                        margin-bottom: 15px;
+                    }
+                    table.po-public-items {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 0.85rem;
+                    }
+                    table.po-public-items th,
+                    table.po-public-items td {
+                        border: 1px solid #999999;
+                        padding: 5px 6px;
+                    }
+                    table.po-public-items th {
+                        background: #f2f2f2;
+                        text-align: center;
+                    }
+                    table.po-public-items td.num {
+                        text-align: right;
+                    }
+                    table.po-public-items tfoot td {
+                        font-weight: 700;
+                    }
+                    .po-public-comments {
+                        margin-top: 15px;
+                        font-size: 0.9rem;
+                    }
+                    .po-public-footer {
+                        margin-top: 20px;
+                        font-size: 0.9rem;
+                        text-align: right;
+                    }
+                    .po-public-print-bar {
+                        text-align: right;
+                        margin-bottom: 10px;
+                    }
+                    .po-public-print-btn {
+                        background: #2196F3;
+                        color: #ffffff;
+                        border: none;
+                        border-radius: 4px;
+                        padding: 8px 18px;
+                        font-size: 0.9rem;
+                        cursor: pointer;
+                    }
+                    .po-public-print-btn:hover {
+                        background: #1976D2;
+                    }
+                    .po-public-not-available {
+                        max-width: 420px;
+                        margin: 60px auto;
+                        text-align: center;
+                        background: #ffffff;
+                        border: 1px solid #dee2e6;
+                        border-radius: 6px;
+                        padding: 40px 24px;
+                        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                    }
+
+                    @media print {
+                        .po-public-print-bar {
+                            display: none !important;
+                        }
+                        body {
+                            background: #ffffff !important;
+                        }
+                    }
+
+                    @media (max-width: 576px) {
+                        .po-public-card {
+                            padding: 12px;
+                        }
+                        .po-public-institution-name {
+                            font-size: 1.1rem;
+                        }
+                        table.po-public-items {
+                            font-size: 0.75rem;
+                        }
+                    }
+                </style>
+
+                <h:panelGroup rendered="#{!publicPurchaseOrderController.valid}">
+                    <div class="po-public-not-available">
+                        <h:outputText value="Purchase order not available" style="display:block; font-size:1.2rem; font-weight:700; margin-bottom:8px;"/>
+                        <h:outputText value="This link is invalid or has expired." style="display:block; color:#555555;"/>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{publicPurchaseOrderController.valid}">
+                    <div class="po-public-wrapper">
+
+                        <div class="po-public-print-bar">
+                            <button type="button" class="po-public-print-btn" onclick="window.print(); return false;">
+                                <i class="fas fa-print"/> Print
+                            </button>
+                        </div>
+
+                        <div class="po-public-card">
+
+                            <div class="po-public-header">
+                                <div class="po-public-institution-name">
+                                    <h:outputText value="#{publicPurchaseOrderController.printDto.institutionName}"/>
+                                </div>
+                                <div class="po-public-institution-contact">
+                                    <h:outputText value="Tel: #{publicPurchaseOrderController.printDto.institutionPhone}" rendered="#{not empty publicPurchaseOrderController.printDto.institutionPhone}"/>
+                                    <h:outputText value=" | " rendered="#{not empty publicPurchaseOrderController.printDto.institutionPhone and not empty publicPurchaseOrderController.printDto.departmentEmail}"/>
+                                    <h:outputText value="Email: #{publicPurchaseOrderController.printDto.departmentEmail}" rendered="#{not empty publicPurchaseOrderController.printDto.departmentEmail}"/>
+                                </div>
+                            </div>
+
+                            <div class="po-public-title">
+                                <h:outputText value="PURCHASE ORDER"/>
+                                <h:outputText value="CANCELLED" styleClass="po-public-cancelled-badge" rendered="#{publicPurchaseOrderController.printDto.cancelled}"/>
+                            </div>
+
+                            <div class="po-public-info-row">
+                                <div class="po-public-info-col">
+                                    <table>
+                                        <tr>
+                                            <td class="po-public-info-label">Supplier Name</td>
+                                            <td>
+                                                <h:outputText value="#{publicPurchaseOrderController.printDto.supplierName}"/>
+                                                <h:outputText value=" (#{publicPurchaseOrderController.printDto.supplierCode})" rendered="#{not empty publicPurchaseOrderController.printDto.supplierCode}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="po-public-info-col">
+                                    <table>
+                                        <tr>
+                                            <td class="po-public-info-label">P.O. No</td>
+                                            <td><h:outputText value="#{publicPurchaseOrderController.printDto.poNumber}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="po-public-info-label">Date</td>
+                                            <td>
+                                                <h:outputText value="#{publicPurchaseOrderController.printDto.approvedAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="po-public-info-label">Payment Method</td>
+                                            <td><h:outputText value="#{publicPurchaseOrderController.printDto.paymentMethod}"/></td>
+                                        </tr>
+                                        <h:panelGroup rendered="#{publicPurchaseOrderController.printDto.paymentMethod eq 'Credit'}">
+                                            <tr>
+                                                <td class="po-public-info-label">Credit Days</td>
+                                                <td><h:outputText value="#{publicPurchaseOrderController.printDto.creditDuration}"/></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="po-public-dept">
+                                <h:outputText value="Order Department: "/>
+                                <h:outputText value="#{publicPurchaseOrderController.printDto.orderDepartmentName}" style="font-weight:600;"/>
+                                <h:outputText value=", #{publicPurchaseOrderController.printDto.orderDepartmentAddress}" rendered="#{not empty publicPurchaseOrderController.printDto.orderDepartmentAddress}"/>
+                            </div>
+
+                            <table class="po-public-items">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30px;">#</th>
+                                        <th>Item</th>
+                                        <th style="width: 80px;">Code</th>
+                                        <th style="width: 70px;">Unit</th>
+                                        <th style="width: 70px;">Qty</th>
+                                        <th style="width: 70px;">Free Qty</th>
+                                        <th style="width: 90px;">Rate</th>
+                                        <th style="width: 100px;">Line Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{publicPurchaseOrderController.printDto.items}" var="lineItem" varStatus="status">
+                                        <tr>
+                                            <td class="num">#{status.index + 1}</td>
+                                            <td><h:outputText value="#{lineItem.itemName}"/></td>
+                                            <td><h:outputText value="#{lineItem.itemCode}"/></td>
+                                            <td><h:outputText value="#{lineItem.issueUnitName}"/></td>
+                                            <td class="num">
+                                                <h:outputText value="#{lineItem.quantity}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="num">
+                                                <h:outputText value="#{lineItem.freeQuantity}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="num">
+                                                <h:outputText value="#{lineItem.purchaseRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="num">
+                                                <h:outputText value="#{lineItem.lineTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="7" style="text-align:right;">Net Total</td>
+                                        <td class="num">
+                                            <h:outputText value="#{publicPurchaseOrderController.printDto.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <h:panelGroup layout="block" styleClass="po-public-comments" rendered="#{not empty publicPurchaseOrderController.printDto.approveComments}">
+                                <h:outputText value="Approve Comments: "/>
+                                <h:outputText value="#{publicPurchaseOrderController.printDto.approveComments}"/>
+                            </h:panelGroup>
+
+                            <div class="po-public-footer">
+                                <h:outputText value="Approved by #{publicPurchaseOrderController.printDto.approvedByName}"/>
+                            </div>
+
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

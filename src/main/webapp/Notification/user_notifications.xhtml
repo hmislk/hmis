@@ -182,7 +182,7 @@
                                         <div class="col-4 p-2" style="background: linear-gradient(90deg, rgba(46,125,50,1) 0%, rgba(27,94,32,1) 100%);">
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <h:outputText styleClass="fa-solid fa-hospital-user mx-4 text-white" />
-                                                <h5 class="text-white">Patient Discharge</h5>
+                                                <h5 class="text-white">#{un.notification.triggerType.parent eq 'INWARD_FINAL_BILL_CREATED' or un.notification.triggerType.parent eq 'INWARD_FINAL_BILL_APPROVED' ? 'Final Bill' : 'Patient Discharge'}</h5>
                                                 <h6 style="border:1px solid white;padding:10px;color:white;font-weight:bold;margin-right:10px">#{un.notification.patientEncounter.bhtNo}</h6>
                                             </div>
                                         </div>

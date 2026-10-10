@@ -171,4 +171,37 @@ class BhtSummeryControllerBundledRowsTest {
 
         assertTrue(rows.isEmpty());
     }
+
+    @Test
+    void mergesUngroupedChargeTypeWhoseLabelMatchesAGroupName() {
+        // COOP: AdministrationCharge and MaintainCharges grouped as "Room Charges",
+        // RoomCharges itself left ungrouped — its own label already reads
+        // "Room Charges", so it must not print as a second identical line.
+        List<BillItem> items = new ArrayList<>();
+        items.add(chargeItem(InwardChargeType.RoomCharges, 3200.0));
+        items.add(chargeItem(InwardChargeType.AdministrationCharge, 800.0));
+        items.add(chargeItem(InwardChargeType.MaintainCharges, 1800.0));
+
+        Map<InwardChargeType, String> groups = emptyGroups(
+                InwardChargeType.RoomCharges,
+                InwardChargeType.AdministrationCharge,
+                InwardChargeType.MaintainCharges);
+        groups.put(InwardChargeType.AdministrationCharge, "Room Charges");
+        groups.put(InwardChargeType.MaintainCharges, "Room Charges");
+
+        List<FinalBillPrintRowDTO> rows = BhtSummeryController.buildBundledRows(
+                items,
+                groups,
+                sequentialOrders(InwardChargeType.RoomCharges,
+                        InwardChargeType.AdministrationCharge,
+                        InwardChargeType.MaintainCharges),
+                defaultLabels(InwardChargeType.RoomCharges,
+                        InwardChargeType.AdministrationCharge,
+                        InwardChargeType.MaintainCharges));
+
+        assertEquals(1, rows.size());
+        assertEquals("Room Charges", rows.get(0).getLabel());
+        assertEquals(5800.0, rows.get(0).getAmount());
+    }
+
 }
