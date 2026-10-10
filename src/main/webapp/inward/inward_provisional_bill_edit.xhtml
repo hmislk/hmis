@@ -255,11 +255,12 @@
                                             </p:column>
                                         </p:dataTable>
                                         <ui:repeat value="#{inwardSearch.bill.billItems}" var="bip">
-                                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses'}">
+                                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses' or bip.inwardChargeType eq 'TechnicianAndParamedicalCharge'}">
                                                 <p:dataTable value="#{bip.proFees}" var="fe" class="my-2" rendered="#{bip.proFees.size() ne 0 or not empty bip.proFees}">
                                                     <f:facet name="header">
                                                         <h:outputLabel value="Professional Charges" rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}"/>
                                                         <h:outputLabel value="Doctor Charges" rendered="#{bip.inwardChargeType eq 'DoctorAndNurses'}"/>
+                                                        <h:outputLabel value="Technician Charges" rendered="#{bip.inwardChargeType eq 'TechnicianAndParamedicalCharge'}"/>
                                                     </f:facet>
                                                     <p:column>
                                                         <f:facet name="header">

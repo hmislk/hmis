@@ -402,6 +402,12 @@
 
                                                             </div>
                                                         </div>
+                                                        <div class="row mt-1 mb-2 mx-1">
+                                                            <div class="col-3"></div>
+                                                            <div class="col-9">
+                                                                <h:outputText value="Services are grouped by the department that owns them." styleClass="text-muted small" />
+                                                            </div>
+                                                        </div>
                                                     </h:panelGroup>
 
                                                     <div class="row mt-1 mb-2 mx-1">
@@ -539,7 +545,7 @@
                                                             <f:facet name="header">No</f:facet>
                                                             <h:outputLabel value="#{rowIndex+1}"/>
                                                         </p:column>
-                                                        <p:column style="min-width: 16em;">
+                                                        <p:column width="16em">
                                                             <f:facet name="header">Item</f:facet>
                                                             <h:outputLabel value="#{bi.billItem.item.name}"/>
                                                         </p:column>

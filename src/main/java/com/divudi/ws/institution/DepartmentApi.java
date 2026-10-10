@@ -380,7 +380,11 @@ public class DepartmentApi {
     }
 
     /**
-     * Update department configuration option value
+     * Update department configuration option value, creating it if it
+     * doesn't exist yet for this department. Body: {configKey, configValue,
+     * configValueType?} — configValueType (an OptionValueType name, e.g.
+     * "BOOLEAN") is only used when creating a new key; when omitted it is
+     * inferred from configValue ("true"/"false" -> BOOLEAN, else SHORT_TEXT).
      * PUT /api/departments/{id}/config
      */
     @PUT
@@ -428,6 +432,9 @@ public class DepartmentApi {
         } catch (Exception e) {
             if (e.getMessage().contains("not found")) {
                 return errorResponse(e.getMessage(), 404);
+            }
+            if (e.getMessage() != null && e.getMessage().startsWith("Invalid ")) {
+                return errorResponse(e.getMessage(), 400);
             }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }

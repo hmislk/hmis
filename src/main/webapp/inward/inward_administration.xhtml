@@ -55,6 +55,17 @@
                                         </div>
                                     </p:tab>
 
+                                    <p:tab title="Packages">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Manage Inpatient Packages"
+                                                class="w-100"
+                                                action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Services">
                                         <div class="d-grid gap-2">
                                             <p:commandButton value="Time-based Service Categories" class="w-100" action="inward_timed_item_category?faces-redirect=true"   style="alignment-adjust: auto"></p:commandButton>

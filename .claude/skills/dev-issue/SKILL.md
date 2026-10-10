@@ -39,6 +39,19 @@ Handoff question, if that chain gets invoked anywhere in this flow (e.g.
 during step 5): auto-select **option 1, Subagent-Driven** without asking —
 do not stop for it as an additional discussion gate.
 
+## 0. Anything you write to GitHub is public
+
+`hmislk/hmis` is a public repo. Before every `gh issue create`,
+`gh issue comment`, `gh pr create` or `gh pr comment` in the steps below,
+apply
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md):
+no patient/doctor/staff names, production record identifiers (bill/BHT/PHN
+numbers, entity IDs), affected-record counts, production schema names, cutover
+dates, per-staff statistics, data-fix logs or credentials. Describe the defect
+and the local test evidence; keep hospital-specific numbers in `tmp/`. This
+applies to the issue body as much as to the PR — including an issue *you* file
+mid-run for a bug you found yourself.
+
 ## 1. Setup
 
 Run the `start-issue` skill for `$0`: creates the branch from
@@ -198,10 +211,11 @@ retest (step 7). Repeat until the flow passes end-to-end.
 
 ## 9. Record learnings
 
-If this pass surfaced a new Playwright/dev gotcha (a new PrimeFaces timing
-quirk, a new accessibility gap, a new verification pattern), append it to
-`developer_docs/testing/playwright-e2e-workflow.md` — same pattern as the
-§0a/§5a additions from issue #21499. Don't force this if nothing new came up.
+If a new Playwright/dev gotcha surfaced, add it to the matching topic file in
+`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use,
+and list it in the main guide's Contents. Write it as a symptom heading plus
+1–3 lines of fix. Leave the story, dates and issue history out; they belong in
+the PR. Skip this step if nothing new came up.
 
 ## 10. Publish evidence and update the wiki
 
@@ -341,8 +355,33 @@ If 3 cycles pass without convergence (flaky CI, unresolved disagreement with
 a reviewer, etc.), stop and ask the user how to proceed rather than looping
 indefinitely.
 
+## 14a. File what you found along the way
+
+The run is not finished while a defect you noticed but did not fix lives only in chat or `tmp/`. From step 2 onward, keep a **Found along the way** list (in the batch's `tmp/` master plan, or `tmp/<issue>/found.md`). Anything outside the issue's scope goes on that list, not into the PR.
+
+Before Notify:
+1. **Confirm each item** against the code, or reproduce it. Drop anything unconfirmed, and say in Notify that you dropped it. A growl you didn't see is not proof of a silent failure.
+2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
+3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
+4. **List the new issue links** in Notify.
+
 ## 15. Notify
 
 Report the PR link, the issue comment from step 10, a short summary of what
 changed, and what was verified (including the published screenshots).
+If you mention the project board status, re-read it from GitHub first (the `start-issue`
+Step 5 read-back query) and quote what it returns. Never report the board status from
+memory of an earlier update call. (Issue #24105 was reported as "In Progress" when the
+board still showed Backlog.)
+Include the issues filed in step 14a.
+
+**Retrospective.** Before Notify, list what cost extra steps or went wrong.
+Grep the docs for each; drop any already documented and say so in one line.
+For each remaining one, show: what happened, why it will recur, the file, and
+the exact text to add. Then ask with `AskUserQuestion` (one question per
+finding, Add / Skip, exact text as preview). Never end a run with a finding
+still undecided. If none: "No retrospective findings." See
+[Retrospective](../../../developer_docs/process/continuous-improvement-retrospective.md).
+
 **Never merge** — that's the user's call.
+Once the user says the PRs are merged, run `cleanup-branches`, so merged local and remote branches are deleted and `development` is fast-forwarded and checked out.

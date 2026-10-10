@@ -2,6 +2,16 @@
 
 This document lists the configuration options used in the application and their purpose.
 
+## Changing existing options
+
+Every hospital already has a stored value for each existing key (the row is created with the code default the first time the key is read). So:
+
+- **Never change what an existing key means.** Do not add or remove a `!` / `not` around its read, change its default, or move it into the opposite branch. The same stored value would then do the opposite at every hospital. If behaviour must change, create a **new key** and stop reading the old one.
+- **Name a key after what `true` does**, including the condition, so the safe value is obvious, e.g. "Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample". Avoid vague names like "Enable the Special Privilege of ...".
+- **Use one default everywhere** a key is read.
+
+The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -31,6 +41,12 @@ This document lists the configuration options used in the application and their 
 | `Pharmacy Transfer Issue - Show Rate and Value`                  | Boolean   | `false` | Used in combination with `PharmacyTransferViewRates` to control visibility of rate and value columns. |
 | `Pharmacy Transfer Issue Bill Footer CSS`                        | String    | `''`    | CSS for the footer of the transfer issue bill.                                                            |
 | `Pharmacy Transfer Issue Bill Footer Text`                       | String    | `''`    | Text for the footer of the transfer issue bill.                                                             |
+
+## Pharmacy GRN Return
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `GRN Return - Prefill Returning Quantities on Create`            | Boolean   | `true`  | When `true`, a GRN Return created from a GRN opens with Returning Qty / Returning Free Qty / Returning Total Qty filled with the remaining-to-return quantity of each item. When `false`, those columns start at 0 and the user enters the quantities to return. Lines left at 0 are dropped on finalize. The Remaining Qty columns are shown either way. See issue #24402. |
 
 ## Pharmacy Retail Sale
 
@@ -62,16 +78,17 @@ They are read in a **fixed precedence, most restrictive first**, by
 result:
 
 1. `Theatre Surgery Bill - List Services Mapped to the Logged Department`
-2. `Theatre Surgery Bill - List All Services`
-3. `Theatre Surgery Bill - List Theatre Services Only` — the default mode
+2. `Theatre Surgery Bill - List All Services and Investigations`
+3. `Theatre Surgery Bill - List All Services`
+4. `Theatre Surgery Bill - List Theatre Services Only` — the default mode
 
 `List Theatre Services Only` is a **declarative marker for the default mode, not a live switch**.
 It names what the final branch does, but since that branch is the default, unticking it does not
 change the item list — the bill still falls back to theatre services only. It is read alongside the
-other two, with an all-disabled guard, so the key is not silently ignored.
+others, with an all-disabled guard, so the key is not silently ignored.
 `TransferIssueController`'s three transfer-rate booleans have the same shape.
 
-All three resolve **department-scoped key first, then application-wide**, via
+All four resolve **department-scoped key first, then application-wide**, via
 `ConfigOptionController.getBooleanValueByKeyReadOnly`. To override for one department only, set
 `<Department Name> - <key>`, e.g. `Operation Theatre - Theatre Surgery Bill - List All Services`.
 The read-only accessor is deliberate: this runs on every autocomplete keystroke and must not
@@ -79,17 +96,35 @@ persist a ConfigOption row just because someone typed.
 
 | Key                                                              | Type      | Default | Description                                                                                             |
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `Theatre Surgery Bill - List Services Mapped to the Logged Department` | Boolean | `false` | Lists only items mapped to the logged department via `ItemMapping`. Highest precedence. Use when the theatre needs a curated subset. Note there is no API for creating these mappings yet (issue #23748) — use Administration → Manage Items → Item Mapping. |
+| `Theatre Surgery Bill - List Services Mapped to the Logged Department` | Boolean | `false` | Lists only items mapped to the logged department via `ItemMapping`. Highest precedence. Use when the theatre needs a curated subset. Create the mappings under Administration → Manage Items → Item Mapping, or in bulk with `POST /api/item-mappings/bulk` (see `developer_docs/api/using-apis/API_ITEM_MAPPINGS.md`). Items created later must be mapped too, or they will not appear. |
+| `Theatre Surgery Bill - List All Services and Investigations`    | Boolean   | `false` | Lists every `Service`, `InwardService`, `TheatreService` and `Investigation`. Use when theatre staff bill both services and investigations; unlike the mapped mode, it needs no per-item mappings and picks up newly created items automatically. |
 | `Theatre Surgery Bill - List All Services`                       | Boolean   | `false` | Lists `Service`, `InwardService` and `TheatreService` (one polymorphic query — the latter two extend `Service`). Use when the hospital bills theatre consumables from its ordinary service master rather than a dedicated Theatre Service master. |
 | `Theatre Surgery Bill - List Theatre Services Only`              | Boolean   | `true`  | The default mode: only items whose DTYPE is `TheatreService`. This was the hardcoded behaviour before the setting existed, so a hospital that changes nothing sees no change. Note that most deployments have an **empty** Theatre Service master, in which case this mode lists nothing — see issue #23743. |
 
-Inactive items are excluded in all three modes.
+Inactive items are excluded in all four modes.
 
 ## Pharmacy Procurement
 
 | Key                                                              | Type      | Default | Description                                                                                             |
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Pharmacy - Allow Cross-Department PO Receiving`                | Boolean   | `false` | Institution-wide toggle. When `true`, the Purchase Orders for Receiving list (and its wholesale/with-approval/DTO variants) drops the same-department restriction, so a PO created in one department (e.g. Pharmacy) can be received/GRN'd from any other department in the same institution (e.g. Store). Institution isolation is unaffected — POs from a different institution never appear. Added for RMH Hambantota, which creates POs in Pharmacy but receives into Store. See issue #21848. |
+| `Pharmacy - List Packs (AMPPs) in Item Selection`               | Boolean   | `true`  | When `false`, Packs (AMPPs) are excluded from every pharmacy item autocomplete that offers them — Purchase Order Request (JPA and native), Direct Purchase, Purchase, Donation, Batch Create and Transfer Request — so only AMPs (plus VMPs/VMPPs on Transfer Request) can be chosen. On the Purchase Order page the supplier-item dropdown and the *Add All Supplier Items* / *Below ROL* buttons also drop AMPPs from the supplier's item list (`ItemController.removeAmppsIfNotListed()`). GRN, Issue and Transfer Issue have no AMPP picker of their own (they take items from the PO, the request or stock), so they follow automatically. Bills that already contain AMPPs are unaffected. Implemented in `ItemController.isAmppListedInItemSelection()`. See issue #24164. |
+
+### GRN Item Table Columns (native GRN page)
+
+Columns of the added-items table on `pharmacy/pharmacy_grn_costing_native.xhtml` (Pharmacy → Procurement → Create GRN from PO). Every option defaults to `true`, so hospitals that set nothing see every column. Hiding a column only stops it rendering; the line keeps the value it was created with (see each row) and nothing else about saving changes. Item Name, Receiving Qty, Purchase Rate, Retail Rate, Date Of Expiry, Batch No and Actions are always shown because a GRN cannot be completed correctly without them. See issue #24171.
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Medicine Identification Codes Used`                            | Boolean   | `true`  | Shows the Code column (shared with other pharmacy pages). |
+| `GRN - Show Ordered Qty Column`                                 | Boolean   | `true`  | Shows the Ordered Qty column. |
+| `GRN - Show Ordered Free Qty Column`                            | Boolean   | `true`  | Shows the Ordered Free Qty column. |
+| `GRN - Show Received Free Qty Column`                           | Boolean   | `true`  | Shows the Received Free Qty input. When hidden, the line receives the free quantity still outstanding on the PO. |
+| `GRN - Show Discount Rate Column`                               | Boolean   | `true`  | Shows the Discount Rate input. When hidden, no line discount is applied (a GRN line starts at 0). |
+| `GRN - Show Wholesale Rate Column`                              | Boolean   | `true`  | Shows the Wholesale Rate input. When hidden, the wholesale rate stays 0 (a GRN line starts at 0). |
+| `GRN - Show Line Net Total Column`                              | Boolean   | `true`  | Shows the Line Net Total column. |
+| `GRN - Show Comments Column`                                    | Boolean   | `true`  | Shows the Comments input. |
+| `Show Profit Percentage in GRN`                                 | Boolean   | `true`  | Shows the Profit % column. |
 
 ## Inventory Reports
 
@@ -103,3 +138,9 @@ Inactive items are excluded in all three modes.
 | ----------------------------------------------------------------  | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Collecting Centre Agent Payment - Skip Payment Record`         | Boolean   | `true`  | When true, `CollectingCentrePaymentController.createPayment()` does not create a `Payment` record for Collecting Centre Agent Payment / Cancellation bills (`CC_AGENT_PAYMENT`, `CC_AGENT_PAYMENT_CANCELLATION`). These are agent/collecting-centre commission payouts, not cashier cash collections, and should not appear in cashier reports (All Cashier Summary, Cashier Summary, Cashier Details). The `Bill` itself is still created for agent-balance history and printing. See issue #21840. |
 
+
+## Laboratory Sample Lock
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once the laboratory has accepted a sample of any investigation on the bill (received at the lab or processed further; a sample that is only collected or sent does not lock; rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |

@@ -79,8 +79,7 @@
                                     class="m-1 w-100"
                                     >
                                     <p:column>
-                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}"  >
-                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" actionListener="#{inwardSearch.prepareFinalBillReprintFromSearch(bb)}"  >
                                         </p:commandButton>
                                     </p:column>
 

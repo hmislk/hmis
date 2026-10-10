@@ -9,6 +9,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.TheatreRoom;
@@ -377,12 +378,14 @@ public class PatientTransferController implements Serializable {
 
         if (persisted.getFromPatientRoom() == null) {
             // Admission handover. When the admission-time room selection already
-            // created and set this same room as current (Issue #23145), there is
-            // nothing to do here beyond confirming roomAdmitted — this request only
-            // exists as a nursing acknowledgement. Otherwise (e.g. the room was
-            // assigned later via a manually initiated transfer with no prior room),
-            // no PatientRoom has ever been created for this admission, so
-            // currentPatientRoom must be set here or it stays null forever and the
+            // created and set this same room as current (Issue #23145), the room's
+            // admittedAt is still stamped with the admission's dateOfAdmission from
+            // that earlier save — before this accept step ran. Room-charge billing
+            // (BhtSummeryController.getCharge()) reads admittedAt as the start of the
+            // billing clock, so correct it here to the real accept time. Otherwise
+            // (e.g. the room was assigned later via a manually initiated transfer with
+            // no prior room), no PatientRoom has ever been created for this admission,
+            // so currentPatientRoom must be set here or it stays null forever and the
             // "Current Department" search (#22382) can never find the patient. (#23377)
             Admission admission = persisted.getAdmission();
             PatientRoom existingCurrentRoom = admission.getCurrentPatientRoom();
@@ -401,6 +404,9 @@ public class PatientTransferController implements Serializable {
                         effectiveAt,
                         sessionController.getLoggedUser());
                 admission.setCurrentPatientRoom(newPatientRoom);
+            } else if (alreadyInTargetRoom) {
+                stampAcceptedRoomTiming(existingCurrentRoom, effectiveAt, sessionController.getLoggedUser());
+                patientRoomFacade.edit(existingCurrentRoom);
             }
             admission.setRoomAdmitted(true);
             admissionFacade.edit(admission);
@@ -432,6 +438,19 @@ public class PatientTransferController implements Serializable {
 
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Patient accepted successfully.");
+    }
+
+    /**
+     * Corrects a PatientRoom's admittedAt/addmittedBy to the real accept time.
+     *
+     * <p>Room-charge billing (BhtSummeryController.getCharge()) reads admittedAt as the
+     * start of the billing clock. AdmissionController stamps admittedAt with the
+     * admission's dateOfAdmission at admission-save time, before any accept step, so this
+     * corrects it to when the patient was actually accepted into the room.
+     */
+    static void stampAcceptedRoomTiming(PatientRoom room, Date acceptedAt, WebUser acceptedBy) {
+        room.setAdmittedAt(acceptedAt);
+        room.setAddmittedBy(acceptedBy);
     }
 
     public void cancelTransfer(PatientTransferRequest req) {
@@ -774,13 +793,18 @@ public class PatientTransferController implements Serializable {
                     && persisted.getSurgeryBill().getProcedure() != null)
                     ? persisted.getSurgeryBill().getProcedure()
                     : persisted.getAdmission();
+            // Theatre charges (BhtSummeryController.getCharge()) read admittedAt as the
+            // start of the billing clock, same as ward rooms. Use the real theatre-accept
+            // time (just stamped above) rather than initiatedAt (the "Send to Theatre"
+            // click), or theatre charges would accrue from send time instead of accept
+            // time. See developer_docs/billing/room-charge-accept-time.md.
             TheatreRoom theatreRoom = new TheatreRoom();
             theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
                     theatreRoom,
                     null,
                     persisted.getToRoomFacilityCharge(),
                     theatreRoomEncounter,
-                    persisted.getInitiatedAt(),
+                    persisted.getAcceptedAt(),
                     sessionController.getLoggedUser());
             persisted.setTheatreRoom(theatreRoom);
         }
@@ -1120,6 +1144,27 @@ public class PatientTransferController implements Serializable {
      * department-wide theatre worklists (#23166, mirrors the
      * navigateToPatientAcceptForAdmission pattern from #22420).
      */
+    /**
+     * Opens the per-patient theatre status view on one specific
+     * SEND_TO_THEATRE request — used by the pending-acceptance banner
+     * (#24150). navigateToTheatreStatus(admission) shows only the most recent
+     * active theatre transfer, which on a multi-surgery admission can be a
+     * different surgery than the pending row the user clicked.
+     */
+    public String navigateToTheatreStatusForRequest(PatientTransferRequest selected) {
+        PatientTransferRequest req = (selected == null || selected.getId() == null)
+                ? null : patientTransferRequestFacade.find(selected.getId());
+        if (req == null || req.getTheatreTransferType() != TheatreTransferType.SEND_TO_THEATRE
+                || req.getAdmission() == null) {
+            JsfUtil.addErrorMessage("Theatre transfer request not found.");
+            return "";
+        }
+        current = req.getAdmission();
+        currentTheatreRequest = req;
+        currentTheatreReturnRequest = findPendingReturnRequestForAdmission(req.getAdmission());
+        return "/inward/inward_theatre_status?faces-redirect=true";
+    }
+
     public String navigateToTheatreStatus(Admission admission) {
         if (admission == null) {
             JsfUtil.addErrorMessage("No patient selected.");
@@ -1180,6 +1225,88 @@ public class PatientTransferController implements Serializable {
     }
 
     /**
+     * Every PENDING transfer request for a single admission, of any kind —
+     * admission handover, room transfer, send-to-theatre or return-to-ward —
+     * for the "not yet accepted" banner on the Inpatient Dashboard and
+     * Nursing WorkBench (#24150). Unlike isHasPendingRequestsForDepartment()
+     * this is scoped to the admission, not to the logged-in department.
+     */
+    public List<PatientTransferRequest> pendingAcceptancesForAdmission(Admission admission) {
+        if (admission == null || admission.getId() == null) {
+            return new ArrayList<>();
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("status", TransferRequestStatus.PENDING);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.status = :status "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params);
+        return results != null ? results : new ArrayList<>();
+    }
+
+    /**
+     * Kind of a pending request, for choosing the banner text and the accept
+     * action: ADMISSION (handover — no source room), ROOM_TRANSFER,
+     * SEND_TO_THEATRE or RETURN_TO_WARD. The theatre type is checked first
+     * because a return-to-ward request also carries a source room.
+     */
+    public String pendingAcceptanceKind(PatientTransferRequest req) {
+        if (req == null) {
+            return "";
+        }
+        if (req.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
+            return "SEND_TO_THEATRE";
+        }
+        if (req.getTheatreTransferType() == TheatreTransferType.RETURN_TO_WARD) {
+            return "RETURN_TO_WARD";
+        }
+        return req.getFromPatientRoom() == null ? "ADMISSION" : "ROOM_TRANSFER";
+    }
+
+    public String pendingAcceptanceLabel(PatientTransferRequest req) {
+        switch (pendingAcceptanceKind(req)) {
+            case "SEND_TO_THEATRE":
+                return "Sent to theatre";
+            case "RETURN_TO_WARD":
+                return "Returning from theatre";
+            case "ADMISSION":
+                return "New admission";
+            case "ROOM_TRANSFER":
+                return "Room transfer";
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * True when the request is to be accepted by the logged-in department
+     * (the target room's department). Drives whether the banner offers the
+     * Accept button or asks the user to contact the other department.
+     */
+    public boolean isPendingAcceptanceForLoggedDepartment(PatientTransferRequest req) {
+        // Same fallback as acceptReturnToWardForAdmission(): sessions started via
+        // loginForRequests() set loggedUser but never a session department.
+        Department userDept = sessionController.getDepartment();
+        if (userDept == null && sessionController.getLoggedUser() != null) {
+            userDept = sessionController.getLoggedUser().getDepartment();
+        }
+        Department targetDept = pendingAcceptanceDepartment(req);
+        return userDept != null && userDept.getId() != null
+                && targetDept != null && targetDept.getId() != null
+                && userDept.getId().equals(targetDept.getId());
+    }
+
+    public Department pendingAcceptanceDepartment(PatientTransferRequest req) {
+        if (req == null || req.getToRoomFacilityCharge() == null) {
+            return null;
+        }
+        return req.getToRoomFacilityCharge().getDepartment();
+    }
+
+    /**
      * Accept from the single-admission focused theatre status view (#23166)
      * — delegates to acceptInTheatre() then refreshes the admission-scoped
      * theatre status instead of the department-wide worklists.
@@ -1236,6 +1363,24 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("No pending theatre return found for this patient.");
             return;
         }
+        acceptReturnToWardForRequest(req);
+    }
+
+    /**
+     * Accepts one specific PENDING return-to-ward request — used by the
+     * pending-acceptance banner (#24150), where an admission with several
+     * surgeries can list more than one return and each row's button must act
+     * on its own request rather than on the most recent one.
+     */
+    public void acceptReturnToWardForRequest(PatientTransferRequest selected) {
+        PatientTransferRequest req = (selected == null || selected.getId() == null)
+                ? null : patientTransferRequestFacade.find(selected.getId());
+        if (req == null || req.getTheatreTransferType() != TheatreTransferType.RETURN_TO_WARD
+                || req.getStatus() != TransferRequestStatus.PENDING) {
+            JsfUtil.addErrorMessage("This theatre return is no longer pending.");
+            return;
+        }
+        Admission admission = req.getAdmission();
         // Same target-department constraint as loadPendingReturnsForWard() —
         // without it, a user with WardAcceptTheatreReturn could accept a
         // return bound for a different ward's department (CodeRabbit #23175).

@@ -65,6 +65,7 @@
                                         style="width:150px;"
                                         ajax="false"
                                         disabled="#{!inwardPaymentController.current.patientEncounter.paymentFinalized or inwardPaymentController.due le 0}"
+                                        onclick="if (!confirm('Are you sure?')) return false"
                                         action="#{inwardPaymentController.pay()}"/>
                                     <p:commandButton
                                         value="New"

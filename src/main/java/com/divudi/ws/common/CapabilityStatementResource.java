@@ -85,6 +85,17 @@ public class CapabilityStatementResource {
                         + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Categories", "/api/categories",
+                        "Search and create generic Category master-data rows (the single-table-inheritance "
+                        + "base for DosageForm, PharmaceuticalItemCategory, RoomCategory, InvestigationCategory, ...). "
+                        + "GET supports type (a CategoryType enum name, e.g. DOSAGE_FORM) and query (name substring); "
+                        + "omitting type searches across every category type. "
+                        + "POST creates a category with the correct concrete subtype stamped (required: name, categoryType; "
+                        + "optional: description, code); only pharmacy-relevant categoryTypes can be created this way "
+                        + "(DOSAGE_FORM, PHARMACEUTICAL_CATEGORY, PHARMACEUTICAL_ITEM_CATEGORY, PHARMACEUTICAL_ITEM_TYPE, "
+                        + "STORE_ITEM_CATEGORY); returns already_exists/409 when a non-retired row with the same name+type exists.",
+                        "API Key",
+                        "GET", "POST"))
                 .add(resource("Membership", "/api/apiMembership",
                         "Membership-related operations",
                         "API Key",
@@ -114,6 +125,10 @@ public class CapabilityStatementResource {
                         "Cost accounting data",
                         "API Key",
                         "GET"))
+                .add(resource("Pharmacy Purchase Orders", "/api/pharmacy_purchase_orders",
+                        "Pharmacy PO approval status and cancellation",
+                        "API Key",
+                        "GET", "POST"))
                 .add(resource("QuickBooks", "/api/qb",
                         "QuickBooks integration",
                         "API Key",
@@ -123,7 +138,13 @@ public class CapabilityStatementResource {
                         + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
                         + "Dedicated sub-resource: GET/PUT /api/departments/{id}/svg "
                         + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
-                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board. "
+                        + "GET/PUT /api/departments/{id}/config manages department-scoped ConfigOption "
+                        + "key/value pairs (body { configKey, configValue, configValueType? } — "
+                        + "creates the key if it doesn't exist yet for that department, inferring "
+                        + "BOOLEAN from a \"true\"/\"false\" value or defaulting to SHORT_TEXT when "
+                        + "configValueType is omitted). GET/PUT /api/departments/{id}/preferences "
+                        + "manages the department-scoped UserPreference record.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Institutions", "/api/institutions",
@@ -170,6 +191,23 @@ public class CapabilityStatementResource {
                 .add(resource("Admission Number Counters", "/api/admission-numbers",
                         "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
                         "API Key (Finance header)", "GET", "PUT"))
+                .add(resource("Inpatient Packages", "/api/inpatient-packages",
+                        "Manage InpatientPackage master data — fixed-price package headers (per AdmissionType + "
+                        + "RoomCategory) and their InpatientPackageItem components (services, timed items, "
+                        + "professional-fee roles, outside charges, pharmacy items). Distinct from Admission "
+                        + "Charges, which are additive routine charges rather than a bundled package price. "
+                        + "POST creates a full package (header + items[] in one call). "
+                        + "GET lists non-retired packages, optionally filtered by admissionTypeId/roomCategoryId; "
+                        + "GET /{id} fetches one with its items. "
+                        + "PUT /{id} always overwrites header fields; items[] is only replaced when the request "
+                        + "includes an \"items\" key — entries with an id update that component, entries without "
+                        + "an id create a new one, and any existing component missing from the array is "
+                        + "soft-retired; omitting \"items\" entirely leaves existing components untouched. "
+                        + "totalPrice and fixedRoomCharge (derived from chargeTypeAmounts[\"RoomCharges\"]) are "
+                        + "always server-computed and ignored on input. "
+                        + "POST /{id}/retire soft-retires the whole package (body: {retireComments}).",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT"))
                 .add(resource("Admission Search", "/api/inward/admissions",
                         "General-purpose admission search — list all currently active (not-discharged) "
                         + "admissions, or search past or current admissions by BHT no, patient name, "
@@ -187,7 +225,12 @@ public class CapabilityStatementResource {
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
                         + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
-                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "Bulk POST: pass categoryIds (array) instead of categoryId to create one row per category; "
+                        + "identical existing rows are skipped and returned under 'skipped'. "
+                        + "scope=room manages room charge discounts: inwardChargeType(s) (RoomCharges, LinenCharges, MaintainCharges, "
+                        + "NursingCharges, MOCharges, AdministrationCharge, MedicalCareICU) x optional roomCategoryId(s); "
+                        + "a row for a room's own category wins over an all-rooms row.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",
@@ -209,7 +252,13 @@ public class CapabilityStatementResource {
                         + "Supports discountPercent, admissionTypeId, and creditCompanyId. "
                         + "All create/update/retire actions are audit-logged (PRICE_MATRIX_CREATED/UPDATED/RETIRED). "
                         + "Query params: categoryId, departmentId, paymentMethod, limit. "
-                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "POST /bulk-retire soft-retires many entries at once: either {\"ids\":[...]} (executes "
+                        + "immediately, max 2000/call), or a filter body {departmentId, categoryId, roomCategoryId, "
+                        + "paymentMethod} which only previews matchedCount + a sample unless \"confirm\": true is "
+                        + "also sent — at least one filter or an ids list is required, an unfiltered retire-everything "
+                        + "call is rejected. Each row is retired independently; a failure on one row is reported in "
+                        + "failedIds rather than aborting the rest of the batch.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Categories", "/api/inward/room-categories",
@@ -447,7 +496,9 @@ public class CapabilityStatementResource {
                         + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists). "
                         + "discountAllowed (Item-level flag) is readable/writable on all of GET /search, GET /{id}, POST, PUT — "
                         + "note this is distinct from the fee-level discountAllowed on /fees below; the inward discount calculation "
-                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category).",
+                        + "requires BOTH to be true (see Services /items/bulk-discount-allowed for bulk-setting this one by category). "
+                        + "POST /copy-legacy-category copies the deprecated investigationCategory into category where category is blank "
+                        + "(dry run by default; ?apply=true to update). While category is blank the entity falls back to investigationCategory.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
@@ -517,7 +568,8 @@ public class CapabilityStatementResource {
                         + "— at least one is required. itemType targets every item of that subtype directly (e.g. every "
                         + "Investigation) since there is no API to enumerate every category id to loop over instead; "
                         + "categoryId alone still works and is not InvestigationCategory-restricted. "
-                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null). "
+                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false; "
+                        + "null is treated as allowed, matching billing). "
                         + "GET /search also filters on code (item code, substring), so a bulk load can be made idempotent on "
                         + "the natural key rather than on an inexact name match. "
                         + "financialCategoryId (a Category of type FINANCIAL_CATEGORY — the income account) is settable on "

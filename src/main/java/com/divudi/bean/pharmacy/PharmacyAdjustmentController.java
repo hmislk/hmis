@@ -628,6 +628,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustment);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -637,6 +638,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setComments(comment);
         if (stock != null && stock.getItemBatch() != null) {
             applyOrValidateDepartmentType(stock.getItemBatch().getItem());
+        }
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
+            getDeptAdjustmentPreBill().setBillFinanceDetails(new BillFinanceDetails(getDeptAdjustmentPreBill()));
         }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
@@ -735,6 +739,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyAdjustment, BillClassType.BilledBill, BillNumberSuffix.NONE));
         getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentDepartmentSingleStock);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         getDeptAdjustmentPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setToDepartment(null);
@@ -744,6 +749,9 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setComments(comment);
         if (stock != null && stock.getItemBatch() != null) {
             applyOrValidateDepartmentType(stock.getItemBatch().getItem());
+        }
+        if (!getDeptAdjustmentPreBill().hasBillFinanceDetails()) {
+            getDeptAdjustmentPreBill().setBillFinanceDetails(new BillFinanceDetails(getDeptAdjustmentPreBill()));
         }
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
@@ -988,11 +996,21 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
 
-        // Populate BillFinanceDetails with stock change values for the F15 report.
-        // changingQty is the signed quantity change (positive = increase, negative = decrease).
-        double retailsaleRate = getStock().getItemBatch().getRetailsaleRate();
-        Double costRateObj = getStock().getItemBatch().getCostRate();
-        double costRate = (costRateObj != null) ? costRateObj : getStock().getItemBatch().getPurcahseRate();
+        accumulateQtyAdjustmentFinanceDetails(getStock().getItemBatch(), stockQty, changingQty, qty);
+
+        getBillFacade().edit(getDeptAdjustmentPreBill());
+        return getBillItem().getPharmaceuticalBillItem();
+    }
+
+    /**
+     * Adds one quantity-adjustment line's stock value change to the bill's
+     * BillFinanceDetails and totals, for the F15 report. changingQty is the
+     * signed quantity change (positive = increase, negative = decrease).
+     */
+    private void accumulateQtyAdjustmentFinanceDetails(ItemBatch batch, double stockQty, double changingQty, double newQty) {
+        double retailsaleRate = batch.getRetailsaleRate();
+        Double costRateObj = batch.getCostRate();
+        double costRate = (costRateObj != null) ? costRateObj : batch.getPurcahseRate();
 
         BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
         if (bfd == null) {
@@ -1020,7 +1038,7 @@ public class PharmacyAdjustmentController implements Serializable {
         bfd.setTotalQuantity(prevQty.add(java.math.BigDecimal.valueOf(Math.abs(changingQty))));
 
         java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(stockQty * retailsaleRate);
-        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(qty * retailsaleRate);
+        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newQty * retailsaleRate);
         java.math.BigDecimal prevBefore = bfd.getTotalBeforeAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalBeforeAdjustmentValue();
         java.math.BigDecimal prevAfter = bfd.getTotalAfterAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalAfterAdjustmentValue();
         bfd.setTotalBeforeAdjustmentValue(prevBefore.add(beforeVal));
@@ -1036,9 +1054,6 @@ public class PharmacyAdjustmentController implements Serializable {
         // Update bill.total and bill.netTotal for consistent reporting
         getDeptAdjustmentPreBill().setTotal(getDeptAdjustmentPreBill().getTotal() + Math.abs(changingQty * retailsaleRate));
         getDeptAdjustmentPreBill().setNetTotal(getDeptAdjustmentPreBill().getNetTotal() + (changingQty * retailsaleRate));
-
-        getBillFacade().edit(getDeptAdjustmentPreBill());
-        return getBillItem().getPharmaceuticalBillItem();
     }
 
     private PharmaceuticalBillItem saveDeptAdjustmentBillItems(Stock s) {
@@ -1065,6 +1080,8 @@ public class PharmacyAdjustmentController implements Serializable {
         changingQty = s.getCalculated() - stockQty;
 
         ph.setQty(changingQty);
+        ph.setBeforeAdjustmentValue(stockQty);
+        ph.setAfterAdjustmentValue(stockQty + changingQty);
 
         //Rates
         //Values
@@ -1094,6 +1111,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getPharmaceuticalBillItemFacade().edit(ph);
 
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
+        accumulateQtyAdjustmentFinanceDetails(s.getItemBatch(), stockQty, changingQty, s.getCalculated());
         getBillFacade().edit(getDeptAdjustmentPreBill());
 
         return ph;
@@ -2233,6 +2251,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         fulfillingApprovedRequest = approvedRequest;
         stock = getStockFacade().find(pbi.getStock().getId());
+        selectedStockDto = buildStockDtoFromLiveStock(stock);
         qty = pbi.getAfterAdjustmentValue();
         comment = approvedRequest.getComments();
         return "/pharmacy/adjustments/pharmacy_adjustment_department?faces-redirect=true";
@@ -2285,6 +2304,32 @@ public class PharmacyAdjustmentController implements Serializable {
         comment = approvedRequest.getComments();
         selectedStaff = stock != null ? stock.getStaff() : null;
         return "/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true";
+    }
+
+    /**
+     * Builds the Item Details DTO a fulfilment page's "Item Details" panel
+     * reads (pharmacy_adjustment_department.xhtml, pharmacy_adjustment_expiry_date.xhtml
+     * bind to selectedStockDto, not to the stock entity) from a live Stock.
+     */
+    private StockDTO buildStockDtoFromLiveStock(Stock liveStock) {
+        if (liveStock == null || liveStock.getItemBatch() == null) {
+            return null;
+        }
+        ItemBatch ib = liveStock.getItemBatch();
+        StockDTO dto = new StockDTO();
+        dto.setStockId(liveStock.getId());
+        dto.setItemBatchId(ib.getId());
+        dto.setItemId(ib.getItem() != null ? ib.getItem().getId() : null);
+        dto.setItemName(ib.getItem() != null ? ib.getItem().getName() : null);
+        dto.setCode(ib.getItem() != null ? ib.getItem().getCode() : null);
+        dto.setStockQty(liveStock.getStock());
+        dto.setPurchaseRate(ib.getPurcahseRate());
+        dto.setCostRate(ib.getCostRate());
+        dto.setRetailRate(ib.getRetailsaleRate());
+        dto.setWholesaleRate(ib.getWholesaleRate());
+        dto.setDateOfExpire(ib.getDateOfExpire());
+        dto.setBatchNo(ib.getBatchNo());
+        return dto;
     }
 
     /**
@@ -2425,6 +2470,7 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         fulfillingApprovedRequest = approvedRequest;
         stock = getStockFacade().find(pbi.getStock().getId());
+        selectedStockDto = buildStockDtoFromLiveStock(stock);
         exDate = pbi.getAfterAdjustmentExpiry();
         comment = approvedRequest.getComments();
         return "/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true";

@@ -386,11 +386,27 @@ public class LabVtmController implements Serializable {
 
     public void setSelectedVtmDto(VtmDto selectedVtmDto) {
         this.selectedVtmDto = selectedVtmDto;
+
+        // Re-check scope here because this setter (and the converters below) round-trip
+        // on every postback, not just the initial search - without this, a submitted ID
+        // for a retired or out-of-scope VTM would load straight into `current` and become
+        // editable/deletable. Mirrors VtmController.isInPharmacyScope, issue #23062/#23487.
         if (selectedVtmDto != null && selectedVtmDto.getId() != null) {
-            this.current = getFacade().find(selectedVtmDto.getId());
+            Vtm loaded = getFacade().find(selectedVtmDto.getId());
+            this.current = isInLabScope(loaded) ? loaded : null;
         } else {
             this.current = null;
         }
+    }
+
+    /**
+     * Same scope condition the list/search query enforces, re-applied here because
+     * setSelectedVtmDto() and the converters below resolve a client-submitted ID
+     * directly via facade lookup, with no other server-side check that the ID actually
+     * came from this page's own scoped results. Issue #23487.
+     */
+    private static boolean isInLabScope(Vtm vtm) {
+        return vtm != null && !vtm.isRetired() && vtm.getDepartmentType() == DepartmentType.Lab;
     }
 
     // ===================== Filter Methods =====================
@@ -726,8 +742,12 @@ public class LabVtmController implements Serializable {
                     return null;
                 }
 
+                // Re-checked against the same scope condition the list/search query
+                // enforces - the converter round-trips on every postback, so without this
+                // check a submitted ID for a retired or out-of-scope VTM would silently
+                // resolve. Issue #23487.
                 Vtm entity = controller.getFacade().find(id);
-                if (entity != null) {
+                if (isInLabScope(entity)) {
                     return controller.createVtmDto(entity);
                 }
                 return null;
@@ -759,7 +779,10 @@ public class LabVtmController implements Serializable {
             }
             LabVtmController controller = (LabVtmController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "labVtmController");
-            return controller.getEjbFacade().find(Long.valueOf(value));
+            // Same scope re-check as LabVtmDtoConverter above - this entity converter
+            // resolves a client-submitted ID directly too. Issue #23487.
+            Vtm found = controller.getEjbFacade().find(Long.valueOf(value));
+            return isInLabScope(found) ? found : null;
         }
 
         @Override

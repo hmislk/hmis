@@ -56,7 +56,7 @@ public class BillDataCorrectionService {
     private ItemFacade itemFacade;
 
     private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments", "retired", "retireComments", "departmentType"));
-    private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
+    private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount", "retired", "retireComments"));
     private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal", "billExpensesConsideredForCosting", "billExpensesNotConsideredForCosting", "totalBillValue"));
     private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue"));
     private static final Set<String> BILL_ITEM_FINANCE_FIELDS = new HashSet<>(Arrays.asList("valueAtRetailRate", "valueAtCostRate", "costRate", "retailSaleRate"));
@@ -90,7 +90,7 @@ public class BillDataCorrectionService {
                 parentBill = updateBill(targetId, fields, previousValues, newValues, apiUser);
                 break;
             case "BILL_ITEM":
-                parentBill = updateBillItem(targetId, fields, previousValues, newValues);
+                parentBill = updateBillItem(targetId, fields, previousValues, newValues, apiUser);
                 break;
             case "BILL_FINANCE_DETAILS":
                 parentBill = updateBillFinanceDetails(targetId, fields, previousValues, newValues);
@@ -438,7 +438,7 @@ public class BillDataCorrectionService {
         }
     }
 
-    private Bill updateBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
+    private Bill updateBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues, WebUser apiUser) {
         BillItem entity = billItemFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("BillItem not found for id " + id);
@@ -474,6 +474,34 @@ public class BillDataCorrectionService {
             double value = toDouble(fields.get("discount"), "discount");
             entity.setDiscount(value);
             newValues.put("discount", entity.getDiscount());
+        }
+        if (fields.containsKey("retireComments")
+                && (!fields.containsKey("retired") || !toBooleanValue(fields.get("retired"), "retired"))) {
+            // Covers both 'retired' absent and 'retired: false' explicitly - either
+            // way retireComments would otherwise be silently dropped with no error
+            // (#23988 review).
+            throw new IllegalArgumentException("'retireComments' requires 'retired: true' in the same request");
+        }
+        if (fields.containsKey("retired")) {
+            boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");
+            if (requestedRetire) {
+                if (entity.isRetired()) {
+                    throw new IllegalStateException("BillItem " + id + " is already retired - resubmitting would overwrite the original retirement attribution");
+                }
+                previousValues.put("retired", entity.isRetired());
+                previousValues.put("retiredAt", entity.getRetiredAt());
+                previousValues.put("retireComments", entity.getRetireComments());
+                String retireComments = fields.containsKey("retireComments")
+                        ? toStringValue(fields.get("retireComments")) : null;
+                Date retiredAt = new Date();
+                entity.setRetired(true);
+                entity.setRetiredAt(retiredAt);
+                entity.setRetireComments(retireComments);
+                entity.setRetirer(apiUser);
+                newValues.put("retired", true);
+                newValues.put("retiredAt", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(retiredAt));
+                newValues.put("retireComments", retireComments);
+            }
         }
 
         billItemFacade.edit(entity);

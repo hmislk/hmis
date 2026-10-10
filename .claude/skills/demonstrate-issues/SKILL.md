@@ -106,7 +106,7 @@ picture of each one is understood.
   local credentials file for this machine (`C:\Credentials\credentials.txt`
   or equivalent) — never assume the defaults (4848 / 8080). Multiple Payara
   installs can coexist on one box on non-default ports (see
-  [playwright-e2e-workflow §27](../../../developer_docs/testing/playwright-e2e-workflow.md#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)).
+  [playwright-e2e-workflow §27](../../../developer_docs/testing/playwright-e2e/environment-db.md#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)).
   **Don't `Read` the whole credentials file into context** — it may hold
   passwords/tokens alongside the ports. Extract just the port line(s) (e.g.
   `grep`/`findstr` for the admin-port/http-port keys) and use only those
@@ -328,6 +328,14 @@ following a standard template:
   URLs (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`)
   in the issue body — see
   [playwright-e2e-workflow §8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence).
+
+Before filing, re-read the assembled body against
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md)
+— the repo is public, so the body must carry no patient/doctor/staff names,
+production record identifiers (bill/BHT/PHN numbers, entity IDs),
+affected-record counts, production schema names, cutover dates or per-staff
+statistics. A demo session collects exactly those things, so this pass is not
+a formality.
 
 File with `gh issue create --repo hmislk/hmis --title "<title>" --body-file
 <file>` (use `--body-file` for the multiline body assembled above). Verify

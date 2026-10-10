@@ -45,6 +45,31 @@
                             .drs-filter-row .ui-selectcheckboxmenu-label-container {
                                 width: 100% !important;
                             }
+                            /* PrimeFaces 14 renders ui-* classes, so the p-* rules above never
+                               matched. Without these, a dropdown grew to its longest department
+                               name and pushed Service/Billed Department off the page. */
+                            .drs-filter-grid > div,
+                            .drs-filter-row > * {
+                                min-width: 0;
+                            }
+                            .drs-filter-row .ui-selectonemenu,
+                            .drs-filter-row .ui-selectcheckboxmenu {
+                                width: 100% !important;
+                                max-width: 100%;
+                                min-width: 0 !important;
+                                box-sizing: border-box;
+                            }
+                            .drs-filter-row .ui-selectonemenu-label {
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+                            .drs-dept-panel {
+                                max-width: 40em;
+                            }
+                            .drs-dept-panel .ui-selectonemenu-item {
+                                white-space: normal;
+                            }
                         </style>
 
                         <div class="drs-filter-grid">
@@ -117,7 +142,8 @@
                                         <h:outputText styleClass="fa fa-hotel"/>
                                         <h:outputText value="Billed Department"/>
                                     </span>
-                                    <p:selectOneMenu value="#{reportController.billedDepartment}" styleClass="w-100" filter="true">
+                                    <p:selectOneMenu value="#{reportController.billedDepartment}" styleClass="w-100" filter="true"
+                                                     filterMatchMode="contains" autoWidth="false" panelStyleClass="drs-dept-panel">
                                         <f:selectItem itemLabel="All Billed Departments" itemValue="#{null}"/>
                                         <f:selectItems value="#{departmentController.items}" var="d"
                                                        itemLabel="#{d.name}" itemValue="#{d}"/>
@@ -129,7 +155,16 @@
                                         <h:outputText styleClass="fa fa-hotel"/>
                                         <h:outputText value="Service Group"/>
                                     </span>
-                                    <p:inputText value="#{reportController.serviceGroup}" styleClass="w-100"/>
+                                    <!-- Service Group is the timed item's category (the report matches
+                                         timedItem.category.name). A free-text box gave no list to pick from;
+                                         offer the categories themselves, keeping the same String value. -->
+                                    <p:selectOneMenu value="#{reportController.serviceGroup}" styleClass="w-100"
+                                                     filter="true" filterMatchMode="contains"
+                                                     autoWidth="false" panelStyleClass="drs-dept-panel">
+                                        <f:selectItem itemLabel="All Service Groups" itemValue="#{null}"/>
+                                        <f:selectItems value="#{timedItemCategoryController.items}" var="sg"
+                                                       itemLabel="#{sg.name}" itemValue="#{sg.name}"/>
+                                    </p:selectOneMenu>
                                 </div>
                             </div>
 
@@ -173,7 +208,8 @@
                                         <h:outputText styleClass="fa fa-hotel"/>
                                         <h:outputText value="Service Department"/>
                                     </span>
-                                    <p:selectOneMenu value="#{reportController.serviceDepartment}" styleClass="w-100" filter="true">
+                                    <p:selectOneMenu value="#{reportController.serviceDepartment}" styleClass="w-100" filter="true"
+                                                     filterMatchMode="contains" autoWidth="false" panelStyleClass="drs-dept-panel">
                                         <f:selectItem itemLabel="All Service Departments" itemValue="#{null}"/>
                                         <f:selectItems value="#{departmentController.items}" var="d"
                                                        itemLabel="#{d.name}" itemValue="#{d}"/>

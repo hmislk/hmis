@@ -294,6 +294,11 @@
                                 <h:panelGroup rendered="#{ti.billFee.retired}">
                                     <h:outputLabel style="color: red;" value="Deleted by "/>
                                     <h:outputLabel style="color: red;" value="#{ti.billFee.retirer.webUserPerson.name}"/>
+                                    <h:outputLabel style="color: red;" value=" at "/>
+                                    <h:outputLabel style="color: red;" value="#{ti.billFee.retiredAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
                             <p:column headerText="Action">
