@@ -1,212 +1,158 @@
-# CI/CD Pipeline Documentation - HMIS Project
+# HMIS Deployment Map — Branches, Pipelines and Servers
 
-## Overview
+*Last updated: 2026-10-11 (after the move to the India South Central Azure estate).*
 
-The HMIS (Health Management Information System) project utilizes an extensive GitHub Actions-based CI/CD pipeline with 37+ active workflows supporting multiple healthcare clients across development, staging, and production environments.
+This is the single reference for **which branch deploys what, where**. It is
+meant for developers, the server management team and QA. It contains no
+passwords, IP addresses or database details; those stay in the
+infrastructure sheet held by server management.
 
-## Branch Strategy
+## 1. The short version
 
-### Primary Branches
-- **Development**: `development` (default branch)
-- **Main**: Used for pull requests and general development work
+- Code is written on feature branches and merged into **`development`**.
+- QA tests on the **home-hosted QA instances** (`home-qa1` … `home-qa4`).
+- Each pipeline-managed hospital app is deployed from its own branch:
+  **`<hospital>-production`** or **`<hospital>-staging`**. Merging into that
+  branch deploys it. Apps marked *manual WAR deploy*, *none* or *not live* in
+  the table below are **not** deployed by any branch merge.
+- Changes reach a hospital branch only through a PR from a **`*-hotfix`**
+  branch (see [Hotfix branches](../git/commit-conventions.md#hotfix-branches)).
+  Note: the `-hotfix` suffix is a team rule, **not yet enforced by CI** for `*-production` / `*-staging` targets (`check-branch` still only matches the retired `*-prod` names; tracked in #24453).
+- The old `*-prod`, `*-stg`, `*-dev`, `*-prod-migrated` and `*-stg-migrated`
+  branches and their pipelines were **retired on 2026-10-11**. Each was kept as
+  a git tag `archive/2026-10-11/<old-branch>` in case it is ever needed.
 
-### Environment-Specific Branches
-- **Development Branches**: 
-  - `ruhunu-dev` → dev.carecode.org
-  - `coop-dev` → Custom development environment
+## 2. Production and staging pipelines
 
-- **Staging Branches**:
-  - `rh-stg` → stg.carecode.org
-  - `coop-stg` → Cooperative staging environment
-  - `southernlanka-stg` → Southern Lanka staging
-  - `mp-stg` → Matara Pharmacy staging
+All production apps run on Payara 5 on five Azure VMs in the
+`rg-hmis-prod-indiasouthcentral` resource group.
 
-- **Production Branches**:
-  - `ruhunu-prod` → rh.carecode.org
-  - `coop-prod` → Cooperative production
-  - `digasiri-prod` → Digasiri production
-  - `horizon-prod` → Horizon production
-  - `kml-prod` → KML production
-  - `mp-prod` → Matara Pharmacy production
-  - `rmh-prod` → RMH production
-  - `southernlanka-prod` → Southern Lanka production
-  - `asiripharmacy-prod` → Asiri Pharmacy production
+| Hospital / app | Branch | Workflow file | VM | URL | Notes |
+|---|---|---|---|---|---|
+| COOP (pharmacy) | `coop-production` | `coop_production_ci_cd.yml` | shared3 | https://coop.carecode.org/coop | |
+| COOP (inward) | `coop-staging` | `coop_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/coop | **Live users.** Uses the production database. |
+| Ruhunu | `rh-production` | `rh_production_ci_cd.yml` | shared2 | https://rh.carecode.org/rh | |
+| Ruhunu (staging) | `rh-staging` | `rh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rh | Uses the production database. |
+| RMH | `rmh-production` | `rmh_production_ci_cd.yml` | shared2 | https://rmh.carecode.org/rmh | |
+| RMH (staging) | `rmh-staging` | `rmh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rmh | Uses the production database. |
+| Southern Lanka | `southernlanka-staging` | `southernlanka_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/southernlanka | **Live users are here.** Uses the production database. |
+| Southern Lanka (prod) | `southernlanka-production` | `southernlanka_production_ci_cd.yml` | shared1 | https://southernlanka.carecode.org/southernlanka | App is **disabled** in Payara; deploys keep it disabled. |
+| Suwani | `suwani-production` | `suwani_production_ci_cd.yml` | shared1 | https://suwani.carecode.org/suwani | |
+| Asiri Pharmacy | `asiripharmacy-production` | `asiripharmacy_production_ci_cd.yml` | shared1 | https://asiripharmacy.carecode.org/asiripharmacy | |
+| Digasiri | `digasiri-production` | `digasiri_production_ci_cd.yml` | shared1 | https://digasiri.carecode.org/digasiri | |
+| Horizon | `horizon-production` | `horizon_production_ci_cd.yml` | shared1 | https://horizon.carecode.org/horizon | |
+| Matara Pharmacy | `mp-production` | `mp_production_ci_cd.yml` | shared2 | https://mp.carecode.org/mp | |
+| Matara Pharmacy (old) | `mpold-production` | `mpold_production_ci_cd.yml` | shared3 | https://mpold.carecode.org/mpold | |
+| Roseth | `roseth-production` | `roseth_production_ci_cd.yml` | shared3 | https://roseth.carecode.org/roseth | |
+| Engage Wellness Centre | `ewc-production` | `ewc_production_ci_cd.yml` | shared4 | https://ewc.carecode.org/ewc | |
+| BMS | `bms-production` | — none | shared4 | https://bms.carecode.org/bms | App disabled; branch only keeps the deployed code. No pipeline. |
+| RH HRT | — | — manual WAR deploy | shared1 | https://rh-hrt.carecode.org/rh-hrt | |
+| RH Drawer | — | — manual WAR deploy | shared3 | https://rhdrawer.carecode.org/drawer | |
+| Messenger | — | — | shared2 | messenger.carecode.org | **Not live yet**: being set up on shared2 by server management. |
 
-## Deployment Environments
+Each pipeline's workflow file lives **only on its own branch**, not on
+`development`.
 
-### Server Infrastructure
-- **Development Server**: <DEV_SERVER_IP>
-- **QA Servers**: 
-  - QA1: <QA1_IP>
-  - Multiple QA environments (QA1, QA2, QA3)
-- **Shared Servers**:
-  - Shared01: <SHARED01_IP>
-  - Shared02: <SHARED02_IP>
-- **Dedicated Servers**: 
-  - D01: <D01_IP>
+### VM names
 
-### Application Stack
-- **Application Server**: Payara 5
-- **Java Version**: JDK 11 (Temurin distribution)
-- **Build Tool**: Maven
-- **Database**: JDBC with environment-specific datasources
-- **Web Server**: NGINX (reverse proxy)
-- **OS**: Linux (Ubuntu)
+| Short name | Azure VM |
+|---|---|
+| shared1 | `vm-hmis-shared1-prod` |
+| shared2 | `vm-hmis-shared2-prod` |
+| shared3 | `vm-hmis-shared3-prod` |
+| shared4 | `vm-hmis-shared4-prod` |
+| staging | `vm-hmis-staging-prod` |
 
-## CI/CD Workflow Details
+"Staging" apps on the staging VM are **not** test environments: they read
+and write the same production databases as the hospital's production app.
+Treat a staging deploy as a production deploy.
 
-### Build Process
-1. **Code Checkout**: Uses `actions/checkout@v4`
-2. **Java Setup**: JDK 11 with Temurin distribution
-3. **Maven Caching**: Caches `~/.m2` for faster builds
-4. **Database Configuration**: 
-   - Replaces environment variables in `persistence.xml`
-   - Maps `${JDBC_DATASOURCE}` to client-specific JNDI names
-   - Example: `jdbc/ruhunu` for Ruhunu client
-5. **Build Execution**: `mvn clean verify`
-   - Use `-DskipTests` only for emergency deployments; see “Troubleshooting → Build Failures”.
-6. **Artifact Storage**: Uploads WAR files as build artifacts
-### Deployment Process
-1. **Artifact Download**: Retrieves WAR file from build job
-2. **SSH Key Setup**: Configures private key for server access
-3. **Backup Strategy**: 
-   - Backs up existing WAR as `.old` file
-   - Removes previous backup before creating new one
-4. **File Transfer**: Uses `rsync` for efficient WAR deployment
-5. **Payara Deployment**:
-   - Undeploys existing application
-   - Deploys new WAR with force flag
-   - Sets appropriate context root
-6. **Health Validation**:
-   - Checks application deployment status via `asadmin`
-   - Performs HTTP health checks (5 retries with 10s intervals)
-   - Validates specific endpoint: `/faces/index1.xhtml`
+## 3. QA environments (home-hosted)
 
-### Security Configuration
-- **SSH Keys**: Environment-specific private keys stored as GitHub secrets
-- **Admin Passwords**: Payara admin passwords secured as secrets
-- **Server Access**: Uses dedicated service accounts (`appuser`)
-- **File Permissions**: Ensures proper ownership and permissions
+| QA | Branch | Workflow | URL |
+|---|---|---|---|
+| QA1 | `home-qa1` | `hims_qa1_home_ci_cd.yml` | https://qa1.carecode.org/qa1 |
+| QA2 | `home-qa2` | `hims_qa2_home_ci_cd.yml` | https://qa2.carecode.org/qa2 |
+| QA3 | `home-qa3` | `hims_qa3_home_ci_cd.yml` | https://qa3.carecode.org/qa3 |
+| QA4 | `home-qa4` | `hims_qa4_home_ci_cd.yml` | https://qa4.carecode.org/qa4 |
+| Ruhunu local staging | `rh-local-staging` | `ruhunu_local_server_ci_cd.yml` | on the hospital's own server |
 
-## Server Management Actions
+There are no Azure QA environments any more. Details:
+[QA Deployment Guide](qa-deployment-guide.md).
 
-### Restart All Servers Workflow
-**File**: `.github/workflows/restart_all_servers.yml`
-- **Trigger**: Manual dispatch only (`workflow_dispatch`)
-- **Selective Restart**: Allows exclusion of specific servers
-- **Server Options**:
-  - Development (<DEV_SERVER_IP>)
-  - QA (<QA1_IP>)
-  - Shared01 (<SHARED01_IP>)
-  - Shared02 (<SHARED02_IP>)
-  - D01 (<D01_IP>)
-- **Remote Execution**: Calls `/home/azureuser/utils/server_utils/restart_all_servers.sh`
+## 4. How a deployment runs
 
-### Restart Individual Servers Workflow
-**File**: `.github/workflows/restart_individual_servers.yml`
-- **Trigger**: Manual dispatch only
-- **Available Actions**:
-  - Reload NGINX
-  - Restart Payara Service
-  - Restart VM
-- **Server Selection**: Same server pool as restart all
-- **Remote Execution**: Calls `/home/azureuser/utils/server_utils/restart_individual_servers.sh`
+Every production/staging pipeline has the same two jobs:
 
-### Observability Server
-- **Management Server IP**: Stored as `OBSERVABILITY_SERVER_IP` secret
-- **SSH Access**: Uses `OBSERVABILITY_SSH_PRIVATE_KEY`
-- **User Account**: `azureuser`
-- **Utility Scripts**: Located in `/home/azureuser/utils/server_utils/`
+1. **Build** (GitHub-hosted runner): substitute the JNDI placeholders
+   `${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` in `persistence.xml` with
+   the app's datasource names, then `mvn clean package -DskipTests`.
+2. **Deploy** (only from the pipeline's own branch):
+   - copy the WAR to the VM;
+   - check that both datasources exist and their connection pools answer
+     **before** touching the running app, so a bad pool leaves the hospital up;
+   - keep the previous WAR as `<app>.war.previous`;
+   - undeploy and deploy, **keeping the app's current enabled/disabled state**;
+   - health-check `https://<host>/<app>/faces/index1.xhtml` for up to 10
+     minutes (skipped if the app is disabled).
 
-## Validation Workflows
+Deploys to the same VM queue behind each other (one concurrency group per VM)
+so two deploys never hit one Payara domain at once.
 
-### Branch Merge Validation
-- **File**: `.github/workflows/branch_merge_validation.yml`
-- **Purpose**: Validates merges between branches
+### What CI needs (for server management)
 
-### Development PR Validation
-- **File**: `.github/workflows/development_pr_validation.yml`
-- **Purpose**: Validates pull requests to development branch
+| Setting | Kind | Used for |
+|---|---|---|
+| `PROD_MIGRATED_SSH_PRIVATE_KEY` | secret | CI SSH key, authorised for the deploy user on every India VM |
+| `PROD_MIGRATED_SERVER_USER` | secret | SSH user on the VMs |
+| `<APP>_PRODUCTION_SERVER_IP` / `<APP>_STAGING_SERVER_IP` | repository variable | target VM of each pipeline |
+| `ISC_SHARED1_IP` … `ISC_SHARED4_IP`, `ISC_STAGING_IP` | repository variable | the restart workflow |
 
-### Production Merge Validation
-- **Purpose**: Additional validation for production deployments
+On each VM the pipelines expect Payara at `/opt/payara5`, an admin password
+file at `/opt/payara5/.asadminpass`, and the WAR directory
+`/home/appuser/app/latest/`. **If a VM is rebuilt or its IP changes, update
+the repository variables above**; nothing else in the pipelines needs editing.
 
-## Database Management
+## 5. Day-to-day procedures
 
-### Export/Import Scheduler
-- **File**: `.github/workflows/database_export_import_scheduler.yml`
-- **Purpose**: Automated database backup and migration tasks
+**Ship a fix to a hospital** — use the `hotfix-deploy` skill, or by hand:
 
-## Client-Specific Configurations
+```bash
+git fetch origin
+git checkout -b <short-description>-hotfix origin/<hospital-branch>
+# make the minimal fix, commit with "Closes #N"
+git push origin <short-description>-hotfix
+gh pr create --base <hospital-branch> --head <short-description>-hotfix
+```
 
-Each client has dedicated CI/CD pipelines with environment-specific configurations:
+Merging the PR deploys it. Keep **one open PR per hospital branch**. If the fix
+was written on the hotfix branch rather than cherry-picked from `development`,
+mirror it into `development` with a normal PR.
 
-### Example: Ruhunu Hospital (RH)
-- **Development**: `ruhunu-dev` → dev.carecode.org/rh
-- **Staging**: `rh-stg` → stg.carecode.org/rh
-- **Production**: `ruhunu-prod` → rh.carecode.org/rh
-- **JNDI Resources**: `jdbc/ruhunu`, `jdbc/ruhunuAudit`
+**Redeploy without a code change** — the pipeline files live only on their
+hospital branches, not on the default branch, so GitHub does not offer *Run
+workflow* for them. Re-run the branch's latest deploy instead (Actions → the
+pipeline's last run → *Re-run all jobs*), or:
 
-### Example: Cooperative (COOP)
-- **Development**: `coop-dev`
-- **Staging**: `coop-stg`
-- **Production**: `coop-prod`
-- **Special**: Combined staging-production workflow available
+```bash
+gh run list --branch <hospital-branch> --limit 1      # find the last run id
+gh run rerun <run-id>                                 # runs older than 30 days cannot be re-run; merge a hotfix instead
+```
 
-## Monitoring and Quality Assurance
+**Restart an app, Payara, or a VM** — Actions → *Restart a service (India
+South Central)* → choose the target and type its name again to confirm.
 
-### Code Quality
-- **CodeQL Analysis**: Automated security and quality scanning
-- **Dependency Management**: Dependabot for dependency updates
+**Update a QA instance** — open a `development → home-qaN` PR and merge it, or
+use the `deploy-qa` skill.
 
-### Testing Strategy
-- **Unit Tests**: Available but currently skipped (`-DskipTests`)
-- **Integration Tests**: Commented out in most workflows
-- **Health Checks**: Post-deployment HTTP validation
+**Roll back** — on the VM, `<app>.war.previous` is the build before the last
+deploy. Ask server management to redeploy it, then fix forward with a hotfix PR.
 
-## Best Practices
+## 6. Who to ask
 
-### Deployment Safety
-1. **Blue-Green Deployment**: Available for critical production environments
-2. **Rollback Strategy**: Previous WAR files backed up as `.old`
-3. **Health Validation**: Mandatory health checks before marking deployment successful
-4. **Gradual Rollout**: Manual approval workflows for production
-
-### Environment Management
-1. **Environment Variables**: Used for database connections
-2. **Secrets Management**: All sensitive data stored as GitHub secrets
-3. **Environment Isolation**: Separate branches and servers per environment
-4. **Client Isolation**: Dedicated pipelines prevent cross-client interference
-
-### Maintenance
-1. **Server Restart Capabilities**: Both bulk and individual server management
-2. **Database Maintenance**: Scheduled export/import workflows
-3. **Artifact Management**: Automatic cleanup and archival
-4. **Monitoring**: Health check integration for proactive issue detection
-
-## Troubleshooting
-
-### Common Issues
-1. **Build Failures**: Check Maven dependencies and Java version compatibility
-2. **Deployment Failures**: Verify SSH keys and server connectivity
-3. **Health Check Failures**: Validate application startup and database connections
-4. **Permission Issues**: Ensure proper file ownership (`appuser:appuser`)
-
-### Workflow Debugging
-1. **View Workflow Runs**: `gh run list --workflow=workflow-name`
-2. **Check Logs**: `gh run view run-id --log`
-3. **Manual Deployment**: Use custom deployment workflow for troubleshooting
-
-## Future Enhancements
-
-### Recommendations
-1. **Enable Unit Testing**: Remove `-DskipTests` flag and implement comprehensive test suite
-2. **Container Strategy**: Consider containerization for improved deployment consistency
-3. **Infrastructure as Code**: Implement Terraform or similar for infrastructure management
-4. **Enhanced Monitoring**: Integrate application performance monitoring (APM)
-5. **Automated Rollback**: Implement automatic rollback on health check failures
-
----
-
-*Last Updated: 2025-01-27*
-*This documentation reflects the current state of CI/CD pipelines as of the analysis date.*
+| Topic | Team |
+|---|---|
+| Which branch to target, failing builds, pipeline changes | Development |
+| VM access, Payara domains, datasources/pools, DNS, new VMs, IP changes | Server management |
+| Which QA instance has which data, QA refreshes | Development (QA instance owner) |
+| What is deployed where | This document, then GitHub Actions run history |
