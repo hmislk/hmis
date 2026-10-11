@@ -3308,7 +3308,10 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             //to create payments for cancel bill
-            Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+            Payment p = null;
+            if (configOptionApplicationController.getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false)) {
+                p = pharmacySaleController.createPayment(cb, paymentMethod);
+            }
 
 //            pharmacyCancelBillItemsReduceStock(cb); //for create billfees ,billfee payments
             pharmacyCancelBillItemsReduceStock(cb, p);
@@ -3514,7 +3517,10 @@ public class PharmacyBillSearch implements Serializable {
                 getBillFacade().create(cb);
             }
 
-            Payment p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
+            Payment p = null;
+            if (configOptionApplicationController.getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false)) {
+                p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
+            }
 
             pharmacyCancelBillItemsReduceStock(cb, p);
             calculateCancelledDirectPurchaseFinancials(cb, getBill());
@@ -3563,7 +3569,10 @@ public class PharmacyBillSearch implements Serializable {
                 getBillFacade().create(cb);
             }
             //create Billfee Payments
-            Payment p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
+            Payment p = null;
+            if (configOptionApplicationController.getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false)) {
+                p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
+            }
             pharmacyCancelBillItemsAddStock(cb, p);
 
             //        List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
