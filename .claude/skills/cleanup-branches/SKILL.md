@@ -50,7 +50,7 @@ For each branch, determine whether it is safe to delete.
 ### Protected branches — never delete, never classify
 
 Before the feature/hotfix split, skip any branch that is `master` or ends with
-`-prod` (the local mirrors of admin-managed / production branches — see Notes
+`-production` or `-staging` (the local mirrors of admin-managed / production branches — see Notes
 for the full list). They diverge from `development` by design, so a naïve
 patch-equivalence check could still misfire on them; the explicit skip is the
 guarantee. List them in the report under their own "Protected — not touched"
@@ -220,7 +220,7 @@ Print a summary:
   ...
 
 • Protected — not touched:
-  - master, <name>-prod
+  - master, <name>-production, <name>-staging
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
@@ -235,10 +235,10 @@ any section with no entries. If nothing was stashed, replace the last line with:
 
 ## Notes
 
-- Never delete `development`, `master`, or any `*-prod` branch.
-- The known production branches are:
-  `coop-prod`, `ruhunu-prod`, `southernlanka-prod`, `rmh-prod`,
-  `digasiri-prod`, `mp-prod`, `roseth-prod`, `horizon-prod`,
-  `asiripharmacy-prod`, `engagewellness-prod`
+- Never delete `development`, `master`, any `*-production` / `*-staging`
+  branch, `home-qa*` or `rh-local-staging`.
+- The deploy branches are listed in
+  `developer_docs/deployment/ci-cd-pipeline-overview.md`. The old `*-prod`,
+  `*-prod-migrated` and `*-stg-migrated` branches were retired on 2026-10-11.
 - After this skill completes the developer is on `development`, up to date,
   with only unmerged feature branches remaining locally.
