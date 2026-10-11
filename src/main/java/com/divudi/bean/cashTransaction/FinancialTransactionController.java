@@ -2248,6 +2248,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        if (!claimPendingHandoverBill()) {
+            return null;
+        }
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
@@ -2306,6 +2309,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        if (!claimPendingHandoverBill()) {
+            return null;
+        }
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
@@ -2349,6 +2355,33 @@ public class FinancialTransactionController implements Serializable {
         resetFloatPaymentsOfHandover(selectedBill);
 
         return navigateToMyHandovers();
+    }
+
+    /**
+     * Atomically claims the selected handover for Recall, Reject or Accept: a single
+     * conditional UPDATE marks it completed only if it is still pending, so only one
+     * request can win. A page left open, or two overlapping requests, can otherwise
+     * cancel an accepted handover or accept one twice (#24435). Call it after the
+     * caller's own validation, because a claimed handover is no longer pending.
+     */
+    private boolean claimPendingHandoverBill() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", selectedBill.getId());
+        int claimed = billFacade.updateByJpql("UPDATE Bill b SET b.completed = true "
+                + "WHERE b.id = :id AND b.completed = false AND b.cancelled = false", params);
+        Bill fresh = billFacade.findWithoutCache(selectedBill.getId());
+        if (claimed != 1 || fresh == null) {
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("Handover bill not found.");
+            } else if (fresh.isCancelled()) {
+                JsfUtil.addErrorMessage("This handover has already been recalled or rejected.");
+            } else {
+                JsfUtil.addErrorMessage("This handover has already been accepted.");
+            }
+            return false;
+        }
+        selectedBill = fresh;
+        return true;
     }
 
     /**
@@ -8095,6 +8128,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String acceptHandoverBillAndWriteToCashbook() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill.");
+            return null;
+        }
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
             return null;
@@ -8105,6 +8142,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (bundle.getBundles().isEmpty()) {
             JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
+        }
+        if (!claimPendingHandoverBill()) {
             return null;
         }
         currentBill = new Bill();
