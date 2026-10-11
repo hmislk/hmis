@@ -1,0 +1,196 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  mpold — Matara Pharmacy (old) production
+#  VM: shared3 on the India South Central estate
+#
+#  Branch:  mpold-production
+#  Serves:  https://mpold.carecode.org/mpold
+#
+#  Generated from rh_production_ci_cd.yml (2026-10-11). Only the branch, app,
+#  JNDI names, target host and concurrency group differ. The target host is
+#  the repository variable MPOLD_PRODUCTION_SERVER_IP; the SSH key, user and Payara password
+#  secrets are the shared PROD_MIGRATED_* ones (the CI key is authorised on
+#  every India VM). Deploy = PR into mpold-production from a *-hotfix branch, then merge.
+# ═══════════════════════════════════════════════════════════════════════════
+name: "mpold-production CI/CD"
+
+on:
+  push:
+    branches: [mpold-production]
+  workflow_dispatch:
+
+# Least privilege: only reads the repo and talks to the VM over SSH.
+permissions:
+  contents: read
+
+concurrency:
+  # One Payara domain per VM. Two asadmin deploys at once against the same
+  # domain gives you a half-deployed app and a confusing 404.
+  group: payara-shared3-isc
+  cancel-in-progress: false
+
+env:
+  APP:        mpold
+  JNDI_MAIN:  jdbc/mpOld
+  JNDI_AUDIT: jdbc/mpOldAudit
+  HEALTH_URL: https://mpold.carecode.org/mpold/faces/index1.xhtml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      # JDBC pools live in Payara, not in the WAR. These names must match
+      # the Payara resources on vm-hmis-shared3-prod exactly.
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved ---"; grep -E 'jta-data-source' "$PU"
+
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted placeholder remains"; exit 1; fi
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want} — branch may have a hardcoded datasource"
+              grep -E 'jta-data-source' "$PU"; exit 1; }
+          done
+
+      - name: Build
+        run: mvn -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP}.war"; ls -la "target/${APP}.war"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mpold-war
+          path: target/mpold.war
+          retention-days: 7
+
+  deploy:
+    needs: build
+    # Only ever deploy from this pipeline's own branch; a manual dispatch from
+    # any other ref must not reach this hospital.
+    if: github.ref == 'refs/heads/mpold-production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: mpold-production        # add a required reviewer here to gate it
+    env:
+      APP:        mpold
+      JNDI_MAIN:  jdbc/mpOld
+      JNDI_AUDIT: jdbc/mpOldAudit
+      HEALTH_URL: https://mpold.carecode.org/mpold/faces/index1.xhtml
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mpold-war
+          path: ./artifact
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ vars.MPOLD_PRODUCTION_SERVER_IP }}" >> ~/.ssh/known_hosts
+
+      - name: Upload WAR
+        run: |
+          set -euo pipefail
+          rsync -az -e "ssh -i ~/.ssh/id_deploy" "./artifact/mpold.war" \
+            "${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ vars.MPOLD_PRODUCTION_SERVER_IP }}:/home/appuser/app/latest/"
+
+      - name: Deploy to Payara
+        id: deploy
+        env:
+          TARGET: ${{ secrets.PROD_MIGRATED_SERVER_USER }}@${{ vars.MPOLD_PRODUCTION_SERVER_IP }}
+        run: |
+          set -euo pipefail
+          ssh -o ConnectTimeout=15 -o ServerAliveInterval=15 -i ~/.ssh/id_deploy "$TARGET" \
+              APP="mpold" JNDI_MAIN="jdbc/mpOld" JNDI_AUDIT="jdbc/mpOldAudit" \
+              'bash -euo pipefail -s' <<'REMOTE' | tee deploy.log
+          PAYARA=/opt/payara5
+          WAR="/home/appuser/app/latest/${APP}.war"
+          ASADMIN="sudo -u appuser $PAYARA/glassfish/bin/asadmin --user admin --passwordfile $PAYARA/.asadminpass"
+
+          # A first deploy runs EclipseLink metadata build and schema migration
+          # against a large production schema. asadmin gives up after 600 s by
+          # default and the job goes red while the server carries on deploying.
+          export AS_ADMIN_READTIMEOUT=1800000
+
+          test -f "$WAR" || { echo "WAR missing: $WAR"; exit 1; }
+
+          if [ -f "/home/appuser/app/latest/${APP}.war.deployed" ]; then
+            sudo cp "/home/appuser/app/latest/${APP}.war.deployed" \
+                    "/home/appuser/app/latest/${APP}.war.previous"
+          fi
+
+          # Verify the datasources resolve BEFORE undeploying the working copy.
+          # Failing here leaves the hospital running.
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            $ASADMIN list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "JNDI resource $j not found."
+              echo "Run: ansible-playbook site.yml -i inventory/prod.yml --limit <vm> --tags payara_datasources"
+              exit 1; }
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$($ASADMIN get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "could not resolve the pool behind $j"; exit 1; }
+            $ASADMIN ping-connection-pool "$pool" || {
+              echo "pool $pool (behind $j) is not reachable"; exit 1; }
+          done
+
+          # Keep the app's current enabled/disabled state. A plain deploy enables
+          # the app, which would start a deliberately disabled instance (e.g. a
+          # second app on a shared production DB, with its timers running).
+          WAS_ENABLED=true
+          if $ASADMIN list-applications --long | tr -d '\r' | awk -v a="$APP" '$1==a' | grep -qw disabled; then
+            WAS_ENABLED=false
+          fi
+          echo "app ${APP} enabled before deploy: ${WAS_ENABLED}"
+
+          $ASADMIN undeploy "$APP" 2>/dev/null || echo "not previously deployed"
+          $ASADMIN deploy --contextroot "$APP" --name "$APP" --force=true --enabled="$WAS_ENABLED" "$WAR"
+          echo "APP_ENABLED=${WAS_ENABLED}"
+
+          sudo cp "$WAR" "/home/appuser/app/latest/${APP}.war.deployed"
+          $ASADMIN list-applications
+          REMOTE
+          if grep -qx 'APP_ENABLED=false' deploy.log; then
+            echo "skip_health=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::${APP} is disabled in Payara; deployed but left disabled, health check skipped"
+          fi
+
+      - name: Health check
+        if: steps.deploy.outputs.skip_health != 'true'
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { echo "healthy"; exit 0; }
+            sleep 10
+          done
+          echo "::error::mpold did not become healthy at $HEALTH_URL"; exit 1
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy
