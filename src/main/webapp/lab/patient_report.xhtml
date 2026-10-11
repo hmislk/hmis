@@ -173,7 +173,7 @@
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
-                           
+
                                             <p:commandButton
                                                 id="btnDraftExportPdf"
                                                 value="Draft Export PDF"
@@ -1039,7 +1039,7 @@
                                                         </p:inputText>
                                                     </div>
                                                 </div>
-                                               
+
                                                 <div class="row my-2">
                                                     <div class="col-md-5">
                                                         <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" class="mt-2"></p:outputLabel>
