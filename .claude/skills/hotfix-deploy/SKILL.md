@@ -212,6 +212,8 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 
 The old `*-prod`, `*-prod-migrated` and `*-stg-migrated` branches were retired on
 2026-10-11 (archived as `archive/2026-10-11/<branch>` tags). Never target them.
+CI's `-hotfix` head check does not yet run for these new targets (#24453) — follow
+the naming rule anyway.
 Full map: [Deployment map](../../../developer_docs/deployment/ci-cd-pipeline-overview.md).
 
 If a hospital has more than one candidate branch and it is not obvious which

@@ -122,7 +122,8 @@ git branch -d $1-hotfix
 | Ruhunu hospital      | `rh-production`   |
 | Southern Lanka (live)| `southernlanka-staging` |
 
-Full map: `developer_docs/deployment/ci-cd-pipeline-overview.md`.
+Full map: `developer_docs/deployment/ci-cd-pipeline-overview.md`. CI's `-hotfix`
+head check does not yet run for these targets (#24453); follow the naming rule anyway.
 
 ## Reference
 

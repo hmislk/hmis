@@ -36,10 +36,14 @@ gh workflow run hims_qa3_home_ci_cd.yml --repo hmislk/hmis --ref home-qa3
 ## Refreshing QA data
 
 A QA database is refreshed from a production copy by the developer who
-manages that machine (see the `restore-local-db` skill). Users, passwords and
-configuration then match production, so QA testers may need production
-logins afterwards. Data entered by testers before a refresh is lost from the
-QA instance (a rollback copy is kept by whoever ran the refresh).
+manages that machine (see the `restore-local-db` skill). Data entered by
+testers before a refresh is lost from the QA instance.
+
+A refreshed QA database **contains real patient data**. Handle it, its dump
+files and any rollback copy with the same care as production data: keep them
+on the QA machine owner's disk only, never share or upload them, and delete
+them once the refresh is confirmed. Testers get their QA logins from the QA
+instance owner, not from production staff.
 
 ## persistence.xml
 

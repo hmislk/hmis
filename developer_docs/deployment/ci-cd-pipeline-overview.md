@@ -11,10 +11,13 @@ infrastructure sheet held by server management.
 
 - Code is written on feature branches and merged into **`development`**.
 - QA tests on the **home-hosted QA instances** (`home-qa1` … `home-qa4`).
-- Each hospital is deployed from its own branch: **`<hospital>-production`**
-  or **`<hospital>-staging`**. Merging into that branch deploys it.
+- Each pipeline-managed hospital app is deployed from its own branch:
+  **`<hospital>-production`** or **`<hospital>-staging`**. Merging into that
+  branch deploys it. Apps marked *manual WAR deploy*, *none* or *not live* in
+  the table below are **not** deployed by any branch merge.
 - Changes reach a hospital branch only through a PR from a **`*-hotfix`**
   branch (see [Hotfix branches](../git/commit-conventions.md#hotfix-branches)).
+  Note: the `-hotfix` suffix is a team rule, **not yet enforced by CI** for `*-production` / `*-staging` targets (`check-branch` still only matches the retired `*-prod` names; tracked in #24453).
 - The old `*-prod`, `*-stg`, `*-dev`, `*-prod-migrated` and `*-stg-migrated`
   branches and their pipelines were **retired on 2026-10-11**. Each was kept as
   a git tag `archive/2026-10-11/<old-branch>` in case it is ever needed.
@@ -126,11 +129,14 @@ Merging the PR deploys it. Keep **one open PR per hospital branch**. If the fix
 was written on the hotfix branch rather than cherry-picked from `development`,
 mirror it into `development` with a normal PR.
 
-**Redeploy without a code change** — Actions → the pipeline → *Run workflow*
-on the pipeline's own branch, or:
+**Redeploy without a code change** — the pipeline files live only on their
+hospital branches, not on the default branch, so GitHub does not offer *Run
+workflow* for them. Re-run the branch's latest deploy instead (Actions → the
+pipeline's last run → *Re-run all jobs*), or:
 
 ```bash
-gh workflow run <workflow-file> --ref <hospital-branch>
+gh run list --branch <hospital-branch> --limit 1      # find the last run id
+gh run rerun <run-id>                                 # runs older than 30 days cannot be re-run; merge a hotfix instead
 ```
 
 **Restart an app, Payara, or a VM** — Actions → *Restart a service (India
