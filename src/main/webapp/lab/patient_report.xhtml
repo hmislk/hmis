@@ -173,7 +173,7 @@
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
-                           
+
                                             <p:commandButton
                                                 id="btnDraftExportPdf"
                                                 value="Draft Export PDF"
@@ -349,9 +349,49 @@
                                                             value="#{pvv.lobValue}" 
                                                             queryDelay="0" 
                                                             disabled="#{patientReportController.currentPatientReport.approved}"
-                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo'}" >
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo' and patientReportController.currentPatientReport.transInvestigation.reportType ne 'HtmlTemplate'}" >
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:inputTextarea>
+
+
+                                                        <p:textEditor
+                                                            rendered="#{pvv.investigationItem.ixItemValueType eq 'Memo' and patientReportController.currentPatientReport.transInvestigation.reportType eq 'HtmlTemplate'}"
+                                                            id="txtMicMemoVal"
+                                                            class="w-100 mt-1 micMemoEditor"
+                                                            secure="false"
+                                                            allowFormatting="true"
+                                                            allowBlocks="true"
+                                                            allowStyles="true"
+                                                            disabled="#{patientReportController.currentPatientReport.approved}"
+                                                            value="#{pvv.lobValue}" >
+                                                            <f:facet name="toolbar">
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-bold"></button>
+                                                                    <button class="ql-italic"></button>
+                                                                    <button class="ql-underline"></button>
+                                                                    <button class="ql-strike"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-script" value="sub"></button>
+                                                                    <button class="ql-script" value="super"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-list" value="ordered"></button>
+                                                                    <button class="ql-list" value="bullet"></button>
+                                                                    <button class="ql-indent" value="-1"></button>
+                                                                    <button class="ql-indent" value="+1"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <select class="ql-align"></select>
+                                                                </span>
+
+                                                            </f:facet>
+                                                            <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
+                                                        </p:textEditor>
+
                                                     </td>
                                                 </tr>
                                             </h:panelGroup>
@@ -999,7 +1039,7 @@
                                                         </p:inputText>
                                                     </div>
                                                 </div>
-                                               
+
                                                 <div class="row my-2">
                                                     <div class="col-md-5">
                                                         <p:outputLabel for="PatientAge" value="Patient Age (for Bill Date)" class="mt-2"></p:outputLabel>
