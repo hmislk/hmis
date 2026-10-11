@@ -44,7 +44,7 @@
 - Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
 - **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`** (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11. See [Deployment map](developer_docs/deployment/ci-cd-pipeline-overview.md).
-- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI blocks others). Use the `/hotfix-deploy` skill.
+- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI enforces this only for the retired `*-prod` names until #24453). Use the `/hotfix-deploy` skill.
 - **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch and update its title/body.
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).

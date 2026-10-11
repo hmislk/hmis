@@ -41,8 +41,9 @@ testers before a refresh is lost from the QA instance.
 
 A refreshed QA database **contains real patient data**. Handle it, its dump
 files and any rollback copy with the same care as production data: keep them
-on the QA machine owner's disk only, never share or upload them, and delete
-them once the refresh is confirmed. Testers get their QA logins from the QA
+on the QA machine owner's disk only and never share or upload them. Once
+testers confirm the refreshed instance works, delete the temporary dump and
+rollback files (not the live QA database). Testers get their QA logins from the QA
 instance owner, not from production staff.
 
 ## persistence.xml
