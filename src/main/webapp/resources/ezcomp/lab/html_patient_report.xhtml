@@ -13,6 +13,38 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+
+        <style>
+            /* Collapse the default paragraph/list margins that the rich-text
+               (Quill) editor adds, so multi-line memo values are not spaced
+               out - same as microbiology_patient_report.xhtml. The value is
+               wrapped in .htmlMemoValue by PatientReportController. */
+            .htmlMemoValue p,
+            .htmlMemoValue ol,
+            .htmlMemoValue ul {
+                margin: 0;
+                padding: 0;
+            }
+            .htmlMemoValue {
+                /* Preserve consecutive spaces and legacy plain-text line
+                   breaks while still wrapping long lines. */
+                white-space: pre-wrap;
+            }
+            /* Quill's indent padding is scoped to .ql-editor, so reproduce
+               it here (3em per level, Quill's default). */
+            .htmlMemoValue .ql-indent-1 { padding-left: 3em; }
+            .htmlMemoValue .ql-indent-2 { padding-left: 6em; }
+            .htmlMemoValue .ql-indent-3 { padding-left: 9em; }
+            .htmlMemoValue .ql-indent-4 { padding-left: 12em; }
+            .htmlMemoValue .ql-indent-5 { padding-left: 15em; }
+            .htmlMemoValue .ql-indent-6 { padding-left: 18em; }
+            .htmlMemoValue .ql-indent-7 { padding-left: 21em; }
+            .htmlMemoValue .ql-indent-8 { padding-left: 24em; }
+            .htmlMemoValue .ql-align-center { text-align: center; }
+            .htmlMemoValue .ql-align-right { text-align: right; }
+            .htmlMemoValue .ql-align-justify { text-align: justify; }
+        </style>
+
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'HtmlTemplate'}"  >
             <div id="divReport"  class="labReport" style="height: 297mm;">
                 <ez:common_report
