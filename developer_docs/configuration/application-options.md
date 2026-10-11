@@ -2,6 +2,16 @@
 
 This document lists the configuration options used in the application and their purpose.
 
+## Changing existing options
+
+Every hospital already has a stored value for each existing key (the row is created with the code default the first time the key is read). So:
+
+- **Never change what an existing key means.** Do not add or remove a `!` / `not` around its read, change its default, or move it into the opposite branch. The same stored value would then do the opposite at every hospital. If behaviour must change, create a **new key** and stop reading the old one.
+- **Name a key after what `true` does**, including the condition, so the safe value is obvious, e.g. "Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample". Avoid vague names like "Enable the Special Privilege of ...".
+- **Use one default everywhere** a key is read.
+
+The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
