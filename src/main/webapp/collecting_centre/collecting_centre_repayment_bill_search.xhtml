@@ -107,55 +107,67 @@
                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="20,50,100">
 
-                                        <p:column headerText="No" width="3em">
+                                        <p:column headerText="No" width="3em" style="padding: 6px;">
                                             <h:outputLabel  value="#{i+1}"></h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Bill No" width="12em">
-                                            <h:commandLink 
-                                                action="#{collectingCentrePaymentController.navigateToViewCCPaymentBill(bill)}" 
+                                        <p:column headerText="Bill No" width="12em" style="padding: 6px;">
+                                            <h:commandLink
+                                                action="#{collectingCentrePaymentController.navigateToViewCCPaymentBill(bill.id)}"
                                                 value="#{bill.deptId}">
                                             </h:commandLink>
                                         </p:column>
 
-                                        <p:column headerText="Billed at" width="12em" >
+                                        <p:column headerText="From" width="8em" style="padding: 6px;">
+                                            <h:outputLabel value="#{bill.fromDate}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="To" width="8em" style="padding: 6px;">
+                                            <h:outputLabel value="#{bill.toDate}" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Billed at" width="12em" style="padding: 6px;">
                                             <h:outputLabel value="#{bill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
                                             <h:panelGroup rendered="#{bill.cancelled}" >
-                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
+                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledAt}" >
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
-                                        </p:column>  
+                                        </p:column>
 
-                                        <p:column headerText="Billed by" width="10em">
-                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" ></h:outputLabel>
+                                        <p:column headerText="Billed by" width="13em" style="padding: 6px;">
+                                            <h:outputLabel value="#{bill.createdByName}" ></h:outputLabel>
                                             <br/>
                                             <h:panelGroup rendered="#{bill.cancelled}" >
-                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledByName}" >
                                                 </h:outputLabel>
-                                            </h:panelGroup>                               
-                                        </p:column>    
+                                            </h:panelGroup>
+                                        </p:column>
 
-                                        <p:column headerText="CC Code" width="6em">
-                                            <h:outputLabel value="#{bill.toInstitution.institutionCode}" ></h:outputLabel>
-                                        </p:column>  
+                                        <p:column headerText="CC Code" width="6em" style="padding: 6px;">
+                                            <h:outputLabel value="#{bill.toInstitutionCode}" ></h:outputLabel>
+                                        </p:column>
 
-                                        <p:column headerText="CC Name">
-                                            <h:outputLabel value="#{bill.toInstitution.name}" ></h:outputLabel>
-                                        </p:column>  
-                                        
-                                        <p:column headerText="Status" width="10em">
+                                        <p:column headerText="CC Name" style="width: 450px; padding: 6px;">
+                                            <h:outputLabel value="#{bill.toInstitutionName}" ></h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Status" width="10em" style="padding: 6px;">
                                             <p:badge value="Cancelled" styleClass="ui-badge-danger" rendered="#{bill.cancelled}" />
                                         </p:column>
 
-                                        <p:column headerText="Net Value" width="8em" style="text-align: end;">
+                                        <p:column headerText="Net Value" width="8em" style="padding: 6px; text-align: end;">
                                             <h:outputLabel value="#{bill.netTotal}" >
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                        </p:column>  
+                                        </p:column>
 
                                     </p:dataTable>
                                 </div>
