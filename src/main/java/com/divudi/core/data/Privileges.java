@@ -962,6 +962,7 @@ public enum Privileges {
     PharmacyAnalyticsPurcharseBillWithSupplier("Pharmacy Analytics - Purcharse Bill with Supplier"),
     PharmacyAnalyticsPharmacyGRNReport("Pharmacy Analytics - Pharmacy GRN Report"),
     PharmacyAnalyticsPharmacyGRNAndPurchaseReport("Pharmacy Analytics - Pharmacy GRN and purchase Report"),
+    PharmacyAnalyticsBillSearchByItem("Pharmacy Analytics - Pharmacy Bill Search by Item"),
     PharmacyAnalyticsGRNPurchaseItemsBySupplier("Pharmacy Analytics - GRN Purchase Items by Supplier"),
     PharmacyAnalyticsGRNSummaryBySupplier("Pharmacy Analytics - GRN Summary By Supplier"),
     PharmacyAnalyticsGRNBillItemReport("Pharmacy Analytics - GRN Bill Item Report"),
@@ -1847,6 +1848,7 @@ public enum Privileges {
             case PharmacyAnalyticsPurcharseBillWithSupplier:
             case PharmacyAnalyticsPharmacyGRNReport:
             case PharmacyAnalyticsPharmacyGRNAndPurchaseReport:
+            case PharmacyAnalyticsBillSearchByItem:
             case PharmacyAnalyticsGRNPurchaseItemsBySupplier:
             case PharmacyAnalyticsGRNSummaryBySupplier:
             case PharmacyAnalyticsGRNBillItemReport:

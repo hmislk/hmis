@@ -48,8 +48,13 @@ Supply `paymentSchemeId` or `paymentSchemeName` to identify the scheme.
 
 ### POST `/api/pharmacy/discounts/bulk`
 
-**Primary use case.** Idempotent bulk upsert: sets the same `discountPercent` across **all**
-non-retired `PharmaceuticalItemCategory` rows for the given payment scheme.
+**Primary use case.** Idempotent bulk upsert: sets the same `discountPercent` for the given payment
+scheme across every category a pharmacy item can be billed under:
+
+- all non-retired `PharmaceuticalItemCategory` rows, and
+- any category used by a non-retired AMP, even if it is retired or is a `PharmaceuticalItemType`.
+  Billing looks up the discount by the item's own category, so a category left out here means no
+  discount for its items.
 
 - If a matching non-retired row already exists for `(category, paymentScheme, paymentMethod)`,
   its `discountPercent` is updated. (`billType` is stored on the row but the runtime billing lookup

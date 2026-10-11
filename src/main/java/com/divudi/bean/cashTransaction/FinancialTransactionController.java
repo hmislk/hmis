@@ -70,7 +70,6 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -2495,7 +2494,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillHandoverStatusReport() {
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpqlBuilder = new StringBuilder("select s from Bill s "
                 + "where (s.retired=false or s.retired is null) "
@@ -3797,6 +3796,13 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow();
     }
 
+    /**
+     * No longer reachable from the UI (#24340 removed the "End Shift (OLD)" button on
+     * cashier/index.xhtml, since it bypassed every handover/float-transfer guard). Kept
+     * in place, unused, in case another institution's deployment still depends on it
+     * directly — do not wire a button back to it without adding the same guards as
+     * {@link #navigateToCreateShiftEndSummaryBillForHandover()}.
+     */
     public String navigateToCreateShiftEndSummaryBill() {
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
@@ -5399,11 +5405,16 @@ public class FinancialTransactionController implements Serializable {
                                 countedFundTransferPayments.add(p);
                             }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                            // Float in received by this user
+                            // Float in received by this user. A net float carried in by an
+                            // accepted handover keeps its sign — negative when the sender's
+                            // shift sent more float out than it received (#24428).
+                            double floatInValue = isNetFloatFromHandoverAccept(p)
+                                    ? p.getPaidValue()
+                                    : Math.abs(p.getPaidValue());
                             countedFundTransferPayments.add(p);
-                            floatInAcc += Math.abs(p.getPaidValue());
+                            floatInAcc += floatInValue;
                             if (p.getPaymentMethod() == PaymentMethod.Cash) {
-                                cashFloatInAcc += Math.abs(p.getPaidValue());
+                                cashFloatInAcc += floatInValue;
                             }
                         }
                         // Cancelled, declined, or pending — no drawer effect, skip
@@ -7528,6 +7539,22 @@ public class FinancialTransactionController implements Serializable {
                 || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED;
     }
 
+    /**
+     * True for the receiver-side net float payment that
+     * acceptHandoverBillAndWriteToCashbook() creates: a FUND_TRANSFER_RECEIVED_BILL
+     * whose reference bill is the handover accept bill. Unlike an ordinary float
+     * receipt, its paid value is signed.
+     */
+    private boolean isNetFloatFromHandoverAccept(Payment payment) {
+        if (payment == null || payment.getBill() == null) {
+            return false;
+        }
+        Bill bill = payment.getBill();
+        return bill.getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+                && bill.getReferenceBill() != null
+                && bill.getReferenceBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT;
+    }
+
     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
@@ -7678,7 +7705,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandoverBillsForMeToReceive() {
         String sql;
-        fundTransferBillsToReceive = new ArrayDeque<>();
+        fundTransferBillsToReceive = new ArrayList<>();
         handoverBillsToReceiveCount = 0;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -7706,7 +7733,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillMyHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -7724,7 +7751,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -8208,8 +8235,9 @@ public class FinancialTransactionController implements Serializable {
         // floatRecipient was never set for shift-handover floats). Without this, the receiver's
         // Shift Handover Create page shows no float row and a missing "Net To Handover" line.
         // The payment's paidValue preserves the signed net (positive = receiver gains cash,
-        // negative = receiver transfers cash out); we use updateDrawer (sign-preserving)
-        // instead of updateDrawerForIns (which takes Math.abs).
+        // negative = receiver transfers cash out). It is a record only: the drawer was
+        // already credited with the counted denomination total above, which includes the
+        // float, so moving the drawer again would double-count it (#24428).
         double cashFloatNet = bundle.getCashFloatNetTotal();
         if (Math.abs(cashFloatNet) > 0.001) {
             Bill floatReceivedBill = new Bill();
@@ -8250,7 +8278,6 @@ public class FinancialTransactionController implements Serializable {
             floatPayment.setInstitution(null);
             floatPayment.setCreatedAt(new Date());
             paymentController.save(floatPayment);
-            drawerController.updateDrawer(floatPayment, cashFloatNet, reciver);
         }
 
         billController.save(currentBill);
@@ -10833,7 +10860,7 @@ public class FinancialTransactionController implements Serializable {
         // Shift Management Tab Configurations
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Legacy Handover is enabled",
-                "When enabled, shows legacy handover options in the Shift Management tab including 'End Shift - OLD', 'Handover (OLD)', and 'Handover Shift (OLD)' buttons.",
+                "When enabled, shows legacy handover options in the Shift Management tab including 'Handover (OLD)' and 'Handover Shift (OLD)' buttons.",
                 OptionScope.APPLICATION
         ));
 

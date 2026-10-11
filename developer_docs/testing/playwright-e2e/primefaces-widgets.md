@@ -31,6 +31,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [129. Pressing Enter to accept a *loaded* autocomplete suggestion also fires the page's `p:defaultCommand` — the action runs before you click its button](#129-pressing-enter-to-accept-a-loaded-autocomplete-suggestion-also-fires-the-pages-pdefaultcommand--the-action-runs-before-you-click-its-button)
 - [131. `p:autoComplete` gives no suggestions to `fill`/`pressSequentially` — drive the widget's `search()`, and pick the right widget id](#131-pautocomplete-gives-no-suggestions-to-fillpresssequentially--drive-the-widgets-search-and-pick-the-right-widget-id)
 - [137. `button[title="…"]` locator works once, then finds nothing](#137-buttontitle-locator-works-once-then-finds-nothing)
+- [140. A `confirm()` raised inside `browser_run_code` is left pending, then dismissed — the action silently never runs](#140-a-confirm-raised-inside-browser_run_code-is-left-pending-then-dismissed--the-action-silently-never-runs)
 
 ---
 
@@ -737,3 +738,7 @@ re-closes the dialog with only a transient growl error.
 ## 137. `button[title="…"]` locator works once, then finds nothing
 
 PrimeFaces' global tooltip removes a button's `title` on its first hover. Locate icon-only row buttons by icon class (`button:has(.fa-pills)`) or `id`, never by `title`. Give new row buttons a stable `id`.
+
+## 140. A `confirm()` raised inside `browser_run_code` is left pending, then dismissed — the action silently never runs
+
+A `page.once('dialog', d => d.accept())` handler inside `browser_run_code` does not reliably accept an `onclick="return confirm(...)"` guard. The MCP can hold the dialog as modal state instead, and the next tool call dismisses it, so the cancel/settle never posts and no error appears. Click guarded buttons with `browser_click`, then call `browser_handle_dialog` in the next step, and confirm the result in the DB.

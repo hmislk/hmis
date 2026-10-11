@@ -1509,6 +1509,39 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * Brings the stored financial snapshot shown on the Inpatient Dashboard up to
+     * date when bills were added since it was last calculated. Call before
+     * navigating to admission_profile.
+     */
+    public void refreshDashboardFinancials() {
+        if (current == null) {
+            return;
+        }
+        PatientEncounter refreshed = bhtSummeryController.refreshProcessingSnapshotIfStale(current);
+        if (refreshed instanceof Admission) {
+            current = (Admission) refreshed;
+        }
+    }
+
+    /**
+     * Opens the Inpatient Dashboard for an encounter selected outside this bean
+     * (bed board, surgery bill). The dashboard renders {@code current}, so it is
+     * set here rather than only on BhtSummeryController.
+     */
+    public String navigateToInpatientDashboard(PatientEncounter pe) {
+        if (pe == null) {
+            pe = current;
+        }
+        if (pe instanceof Admission) {
+            current = (Admission) pe;
+            refreshDashboardFinancials();
+            pe = current;
+        }
+        bhtSummeryController.setPatientEncounter(pe);
+        return bhtSummeryController.navigateToInpatientProfile();
+    }
+
     public String navigateToAdmissionProfilePage() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -1519,6 +1552,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
 
+        refreshDashboardFinancials();
         patientDetailsEditable = false;
         fetchChildAdmissions();
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {

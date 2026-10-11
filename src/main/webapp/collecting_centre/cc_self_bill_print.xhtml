@@ -36,6 +36,14 @@
                                 action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
                                 class="ui-button-warning mx-1">
                             </p:commandButton>
+                            <p:commandButton
+                                value="To Sample Management"
+                                icon="fas fa-flask"
+                                ajax="false"
+                                style="width: 200px;"
+                                action="#{collectingCentreSelfCommonController.navigateToSelfSampleManagementFromBills(collectingCentreBillController.bills)}"
+                                class="ui-button-info mx-1">
+                            </p:commandButton>
                         </div>
 
                         <div class="row">

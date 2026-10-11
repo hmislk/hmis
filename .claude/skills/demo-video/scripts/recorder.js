@@ -25,12 +25,18 @@ async function login(page, dept = DEPT) {
   await page.fill('[id$=txtUserName]', c.user);
   await page.fill('[id$=pwd]', c.pass);
   await Promise.all([page.waitForLoadState('networkidle'), page.click('button:has-text("Login")')]);
-  // department picker: filterable selectOneMenu whose items are table rows
-  await page.click('[id$=formDept] .ui-selectonemenu');
-  await page.locator('.ui-selectonemenu-filter:visible').pressSequentially(dept, { delay: 40 });
-  await sleep(400);
-  await page.locator(`tr.ui-selectonemenu-row:visible:has(td:text-is("${dept}")), tr.ui-selectonemenu-item:visible:has(td:text-is("${dept}"))`).first().click();
-  await Promise.all([page.waitForLoadState('networkidle'), page.click('[id$="formDept:btnSelect"]')]);
+  // department picker: filterable selectOneMenu whose items are table rows.
+  // A WebUser with only one department skips the picker and lands straight on the
+  // app, so don't hang forever waiting for an element that will never appear.
+  const pickerShown = await page.locator('[id$=formDept] .ui-selectonemenu')
+    .waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+  if (pickerShown) {
+    await page.click('[id$=formDept] .ui-selectonemenu');
+    await page.locator('.ui-selectonemenu-filter:visible').pressSequentially(dept, { delay: 40 });
+    await sleep(400);
+    await page.locator(`tr.ui-selectonemenu-row:visible:has(td:text-is("${dept}")), tr.ui-selectonemenu-item:visible:has(td:text-is("${dept}"))`).first().click();
+    await Promise.all([page.waitForLoadState('networkidle'), page.click('[id$="formDept:btnSelect"]')]);
+  }
   await sleep(800);
 }
 
@@ -133,7 +139,10 @@ async function run(chromium, { setup, flow, workDir = process.cwd(), manualLogin
     async pinGrowl() {
       const kept = await p.evaluate(() => document.getElementById('__keep')?.innerText.trim() || null);
       if (kept) return kept;
-      await p.locator('.ui-growl-item-container').first().waitFor({ timeout: 5000 }).catch(() => {});
+      // wait for the message text, not just the container: PrimeFaces adds the container first
+      // and fades the text in, so reading it too early returns ''
+      await p.locator('.ui-growl-item-container .ui-growl-message').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+      await sleep(300);
       return p.evaluate(() => {
         const g = document.querySelector('.ui-growl-item-container'); if (!g) return null;
         const b = g.getBoundingClientRect(); const c = g.cloneNode(true);
@@ -144,7 +153,7 @@ async function run(chromium, { setup, flow, workDir = process.cwd(), manualLogin
         c.querySelectorAll('*').forEach(e => { e.style.color = fg; e.style.background = 'transparent'; });
         document.querySelectorAll('.ui-growl').forEach(e => e.style.visibility = 'hidden');
         document.body.appendChild(c);
-        return g.innerText.trim();
+        return (g.innerText.trim() || g.textContent.replace(/\s+/g, ' ').trim());
       });
     },
     // drop the pinned copy and dismiss the original growl (as a user closing it would) -

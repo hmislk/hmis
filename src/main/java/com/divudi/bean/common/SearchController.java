@@ -410,6 +410,11 @@ public class SearchController implements Serializable {
     private PatientEncounter patientEncounter;
     private Staff staff;
     private Item item;
+    // Item selected on the Pharmacy Bill Search by Item report (issue #24250).
+    private Item billSearchItem;
+    // Free-text item name / code entered on Pharmacy Bill Search by Bill Type Atomic (issue #24366).
+    private String billSearchItemName;
+    private String billSearchItemCode;
     private double dueTotal;
     private double doneTotal;
     private double netTotal;
@@ -4288,7 +4293,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
         //     //////
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -10560,7 +10565,83 @@ public class SearchController implements Serializable {
     public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
+        billSearchItemName = null;
+        billSearchItemCode = null;
+        // Result tables on this page hide their own keyword inputs, so clear any
+        // keywords left over from other search pages (issue #24366).
+        searchKeyword = null;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBillSearchByItem() {
+        printPreview = true;
+        duplicateBillView = true;
+        billSearchItem = null;
+        pharmacyBillSearch.setResultView(null);
+        return "/pharmacy/pharmacy_bill_search_by_item?faces-redirect=true";
+    }
+
+    /**
+     * Pharmacy Bill Search by Bill Type page (issue #24250).
+     */
+    public void searchPharmacyBillsByBillType() {
+        if (billType == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(billType, null, null, maxResult);
+    }
+
+    /**
+     * Pharmacy Bill Search by Bill Type Atomic page (issue #24250).
+     */
+    public void searchPharmacyBillsByBillTypeAtomic() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null,
+                billSearchItemName, billSearchItemCode, maxResult);
+    }
+
+    /**
+     * Pharmacy Bill Search by Item report (issue #24250): bills of the selected
+     * bill type atomic that contain the selected item.
+     */
+    public void searchPharmacyBillsByItem() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        if (billSearchItem == null) {
+            JsfUtil.addErrorMessage("Please Select an Item");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, billSearchItem, maxResult);
+    }
+
+    public Item getBillSearchItem() {
+        return billSearchItem;
+    }
+
+    public void setBillSearchItem(Item billSearchItem) {
+        this.billSearchItem = billSearchItem;
+    }
+
+    public String getBillSearchItemName() {
+        return billSearchItemName;
+    }
+
+    public void setBillSearchItemName(String billSearchItemName) {
+        this.billSearchItemName = billSearchItemName;
+    }
+
+    public String getBillSearchItemCode() {
+        return billSearchItemCode;
+    }
+
+    public void setBillSearchItemCode(String billSearchItemCode) {
+        this.billSearchItemCode = billSearchItemCode;
     }
 
     public String navigateToItemizedSaleSummary() {

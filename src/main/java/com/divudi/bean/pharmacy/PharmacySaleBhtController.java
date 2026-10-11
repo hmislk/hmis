@@ -2303,7 +2303,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (!getBillItems().isEmpty()) {
-            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
+            getPreBill().setReferenceBill(bhtRequestBill);
         }
 
         for (BillItem tbi : tmpBillItems) {
@@ -2976,7 +2976,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         quantity = bi.getQty();
         originalRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
-        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate * quantity;
+        // The matrix price band is a per-unit price band (issue #24245), the same
+        // value issue-on-request uses — not the line value (rate x quantity).
+        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate;
 
         PaymentMethod paymentMethod = null;
         if (getPatientEncounter() != null) {
@@ -3033,7 +3035,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department matrixDept = resolveMatrixDepartment();
         double quantity = bi.getQty();
-        double estimatedValue = retailRate * quantity;
+        // Per-unit price band, not line value (issue #24245).
+        double estimatedValue = retailRate;
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
         PriceMatrix priceMatrix = null;
@@ -3169,6 +3172,13 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
         }
+        // Keep the session-scoped bhtRequestBill in sync with whichever request is
+        // actually being generated here — settleBhtIssueRequestAccept() derives the
+        // settled bill's reference from this field, so a caller that reaches this
+        // method without updating it first (e.g. the legacy issue_for_bht_request_list
+        // page's direct actionListener) would otherwise settle against a stale,
+        // previously-selected request.
+        bhtRequestBill = b;
 
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 

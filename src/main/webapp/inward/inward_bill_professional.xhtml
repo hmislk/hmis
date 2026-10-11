@@ -462,7 +462,7 @@
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Assign Staff">
-                                                <h:panelGroup rendered="#{bif.fromPackage}" layout="block">
+                                                <h:panelGroup rendered="#{bif.sourcePackageItem ne null}" layout="block">
                                                     <p:autoComplete
                                                         id="acAssignPackageStaff"
                                                         styleClass="w-100"

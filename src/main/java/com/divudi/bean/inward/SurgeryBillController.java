@@ -115,6 +115,8 @@ public class SurgeryBillController implements Serializable {
     @Inject
     BhtSummeryController bhtSummeryController;
     @Inject
+    AdmissionController admissionController;
+    @Inject
     AuditEventController auditEventController;
     @Inject
     com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
@@ -1344,9 +1346,8 @@ public class SurgeryBillController implements Serializable {
         getBillBean().updateBatchBill(getSurgeryBill());
         JsfUtil.addSuccessMessage("Surgery Detail Added");
         PatientEncounter pe = getSurgeryBill().getPatientEncounter();
-        bhtSummeryController.setPatientEncounter(pe);
         resetSurgeryBillValues();
-        String outcome = bhtSummeryController.navigateToInpatientProfile();
+        String outcome = admissionController.navigateToInpatientDashboard(pe);
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
             String viewId = outcome.replace("?faces-redirect=true", "");
@@ -1368,9 +1369,9 @@ public class SurgeryBillController implements Serializable {
         }
         getBillBean().updateBatchBill(getSurgeryBill());
         JsfUtil.addSuccessMessage("Surgery Detail Added");
-        bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
+        PatientEncounter pe = getSurgeryBill().getPatientEncounter();
         resetSurgeryBillValues();
-        return bhtSummeryController.navigateToInpatientProfile();
+        return admissionController.navigateToInpatientDashboard(pe);
     }
 
     public boolean isDuplicateConfirmationPending() {

@@ -147,6 +147,17 @@
     border-radius: 8px;
 }
 
+/* Horizontal criteria bar: inputs and action buttons share one height so
+   the buttons line up with the text boxes on the same row */
+.cc-bill-page .cc-criteria-row .ui-inputtext,
+.cc-bill-page .cc-criteria-row .ui-button {
+    height: 2.5rem;
+}
+.cc-bill-page .cc-criteria-row label,
+.cc-bill-page .cc-criteria-row .cc-criteria-spacer {
+    line-height: 1.5;
+}
+
 /* Data tables */
 .cc-bill-page .ui-datatable thead th {
     background: var(--surface-b, #f8f9fa);

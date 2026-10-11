@@ -61,6 +61,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FeeValue;
 import com.divudi.core.entity.lab.Investigation;
@@ -1185,6 +1186,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         ccBill.setDepartment(sessionController.getDepartment());
 
         ccBill.setCollectingCentre(collectingCentre);
+
+        if (sessionController.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+            ccBill.setCcBillingType(CollectingCentreBillingType.AGENT_BILLING);
+        } else {
+            ccBill.setCcBillingType(CollectingCentreBillingType.HOSPITAL_BILLING);
+        }
 
         ccBill.setToDepartment(bt);
         ccBill.setToInstitution(bt.getInstitution());

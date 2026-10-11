@@ -355,6 +355,16 @@ If 3 cycles pass without convergence (flaky CI, unresolved disagreement with
 a reviewer, etc.), stop and ask the user how to proceed rather than looping
 indefinitely.
 
+## 14a. File what you found along the way
+
+The run is not finished while a defect you noticed but did not fix lives only in chat or `tmp/`. From step 2 onward, keep a **Found along the way** list (in the batch's `tmp/` master plan, or `tmp/<issue>/found.md`). Anything outside the issue's scope goes on that list, not into the PR.
+
+Before Notify:
+1. **Confirm each item** against the code, or reproduce it. Drop anything unconfirmed, and say in Notify that you dropped it. A growl you didn't see is not proof of a silent failure.
+2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
+3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
+4. **List the new issue links** in Notify.
+
 ## 15. Notify
 
 Report the PR link, the issue comment from step 10, a short summary of what
@@ -363,4 +373,15 @@ If you mention the project board status, re-read it from GitHub first (the `star
 Step 5 read-back query) and quote what it returns. Never report the board status from
 memory of an earlier update call. (Issue #24105 was reported as "In Progress" when the
 board still showed Backlog.)
+Include the issues filed in step 14a.
+
+**Retrospective.** Before Notify, list what cost extra steps or went wrong.
+Grep the docs for each; drop any already documented and say so in one line.
+For each remaining one, show: what happened, why it will recur, the file, and
+the exact text to add. Then ask with `AskUserQuestion` (one question per
+finding, Add / Skip, exact text as preview). Never end a run with a finding
+still undecided. If none: "No retrospective findings." See
+[Retrospective](../../../developer_docs/process/continuous-improvement-retrospective.md).
+
 **Never merge** — that's the user's call.
+Once the user says the PRs are merged, run `cleanup-branches`, so merged local and remote branches are deleted and `development` is fast-forwarded and checked out.

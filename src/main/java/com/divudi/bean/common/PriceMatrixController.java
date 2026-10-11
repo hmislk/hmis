@@ -30,6 +30,8 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.core.facade.PaymentSchemeDiscountFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -294,11 +296,11 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category is null "
                 + " and a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)");
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)");
         HashMap hm = new HashMap();
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
 
         if (paymentMethod != null) {
             sql.append(" and a.paymentMethod=:pm");
@@ -353,17 +355,35 @@ public class PriceMatrixController implements Serializable {
     @Inject
     SessionController sessionController;
 
+    /**
+     * Price bands are matched inclusively on both ends (issue #24245). Bands
+     * are configured as closed ranges such as 10.01-50 and 50.01-100, so a
+     * strict comparison left a price exactly on an edge (50, 100, 500 ...)
+     * matching no row and getting 0% margin. When two rows share an edge
+     * (e.g. 0-50 and 50-100), the higher band wins.
+     */
+    private static final String BAND_TIE_BREAK_ORDER = " order by a.fromPrice desc";
+
+    /**
+     * Rounds the value used to pick a price band to 2 decimals so a rate such
+     * as 50.004 cannot fall into the 0.01 gap between closed bands (50 / 50.01).
+     */
+    public static double toBandValue(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
+
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category) {
         String sql = "select a from InwardPriceAdjustment a "
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
-                + " and a.creditCompany is null";
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
+                + " and a.creditCompany is null"
+                + BAND_TIE_BREAK_ORDER;
         HashMap hm = new HashMap();
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
 
         return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
@@ -374,16 +394,17 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
                 + " and a.paymentMethod=:pm"
-                + " and a.creditCompany is null";
+                + " and a.creditCompany is null"
+                + BAND_TIE_BREAK_ORDER;
 
         HashMap hm = new HashMap();
 
         hm.put("pm", paymentMethod);
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
 
         return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
@@ -397,12 +418,13 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and a.department=:dep"
-                + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
-                + " and a.creditCompany=:cc";
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
+                + " and a.creditCompany=:cc"
+                + BAND_TIE_BREAK_ORDER;
         HashMap hm = new HashMap();
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
         hm.put("cc", creditCompany);
         return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
@@ -416,14 +438,15 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and a.department=:dep"
-                + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
                 + " and a.paymentMethod=:pm"
-                + " and a.creditCompany=:cc";
+                + " and a.creditCompany=:cc"
+                + BAND_TIE_BREAK_ORDER;
         HashMap hm = new HashMap();
         hm.put("pm", paymentMethod);
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
         hm.put("cc", creditCompany);
         return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
@@ -476,10 +499,10 @@ public class PriceMatrixController implements Serializable {
      */
     private String admissionTypePredicate(AdmissionType admissionType) {
         if (admissionType == null) {
-            return " and a.admissionType is null";
+            return " and a.admissionType is null" + BAND_TIE_BREAK_ORDER;
         }
         return " and (a.admissionType=:at or a.admissionType is null)"
-                + " order by case when a.admissionType is null then 1 else 0 end";
+                + " order by case when a.admissionType is null then 1 else 0 end, a.fromPrice desc";
     }
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, AdmissionType admissionType) {
@@ -487,13 +510,13 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
                 + " and a.creditCompany is null"
                 + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
         if (admissionType != null) {
             hm.put("at", admissionType);
@@ -506,15 +529,15 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
                 + " and a.paymentMethod=:pm"
                 + " and a.creditCompany is null"
                 + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("pm", paymentMethod);
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
         if (admissionType != null) {
             hm.put("at", admissionType);
@@ -530,13 +553,13 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and a.department=:dep"
-                + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
                 + " and a.creditCompany=:cc"
                 + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
         hm.put("cc", creditCompany);
         if (admissionType != null) {
@@ -553,15 +576,15 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and a.department=:dep"
-                + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)"
                 + " and a.paymentMethod=:pm"
                 + " and a.creditCompany=:cc"
                 + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("pm", paymentMethod);
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
         hm.put("cc", creditCompany);
         if (admissionType != null) {
@@ -609,7 +632,7 @@ public class PriceMatrixController implements Serializable {
      */
     private String inwardMatrixOrderBy(boolean admissionTypeSupplied, boolean roomCategorySupplied) {
         if (!admissionTypeSupplied && !roomCategorySupplied) {
-            return "";
+            return BAND_TIE_BREAK_ORDER;
         }
         String roomRank = roomCategorySupplied
                 ? "case when a.roomCategory is null then 1 else 0 end" : null;
@@ -623,6 +646,7 @@ public class PriceMatrixController implements Serializable {
         } else {
             order.append(roomRank != null ? roomRank : admRank);
         }
+        order.append(", a.fromPrice desc");
         return order.toString();
     }
 
@@ -651,11 +675,11 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)");
+                + " and (a.fromPrice <= :frPrice and a.toPrice >= :tPrice)");
         HashMap hm = new HashMap();
         hm.put("dep", department);
-        hm.put("frPrice", dbl);
-        hm.put("tPrice", dbl);
+        hm.put("frPrice", toBandValue(dbl));
+        hm.put("tPrice", toBandValue(dbl));
         hm.put("cat", category);
 
         if (paymentMethod == null) {

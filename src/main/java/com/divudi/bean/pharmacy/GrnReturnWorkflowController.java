@@ -1650,8 +1650,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 double originalFreeQtyInUnits = pbiOfBilledBill.getFreeQty();
 
                 boolean returnByTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
+                boolean prefillReturningQuantities = configOptionApplicationController.getBooleanValueByKey("GRN Return - Prefill Returning Quantities on Create", true);
 
-                if (returnByTotalQuantity) {
+                if (!prefillReturningQuantities) {
+                    // Returning quantities start at zero so the user enters them explicitly;
+                    // the Remaining Qty columns still show what is available to return.
+                    newPharmaceuticalBillItemInReturnBill.setQty(0.0);
+                    newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
+                } else if (returnByTotalQuantity) {
                     // Use consistent database query methods
                     BigDecimal alreadyReturnedQty = getAlreadyReturnedQuantityWhenApproval(pbiOfBilledBill.getBillItem());
                     BigDecimal alreadyReturnedFreeQty = getAlreadyReturnedFreeQuantityWhenApproval(pbiOfBilledBill.getBillItem());
@@ -1698,9 +1704,9 @@ public class GrnReturnWorkflowController implements Serializable {
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
                 // Seed bi.qty (pack qty) from phi.qty (unit qty) before calculateLineTotal reads it.
-                // phi.qty was set to the available-to-return quantity in units above; bi.qty starts
-                // at 0.0 and calculateLineTotal reads bi.qty — without seeding, every
-                // initial line total would be calculated as zero.
+                // phi.qty was set above (available-to-return, or zero when prefill is off); bi.qty
+                // starts at 0.0 and calculateLineTotal reads bi.qty — without seeding, every
+                // prefilled initial line total would be calculated as zero.
                 boolean isAmppItem = newBillItemInReturnBill.getItem() instanceof Ampp;
                 BigDecimal phiQty = BigDecimal.valueOf(newPharmaceuticalBillItemInReturnBill.getQty());
                 BigDecimal initialPackQty = isAmppItem && unitsPerPack.compareTo(BigDecimal.ZERO) > 0

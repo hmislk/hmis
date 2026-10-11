@@ -13,6 +13,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [96. A `@SessionScoped` controller's already-loaded entity field does not pick up a sibling controller's later edit to the same row, even when that edit goes through the app's own JPA facade](#96-a-sessionscoped-controllers-already-loaded-entity-field-does-not-pick-up-a-sibling-controllers-later-edit-to-the-same-row-even-when-that-edit-goes-through-the-apps-own-jpa-facade)
 - [107b. A bug that "does not reproduce" locally may be gated by a `ConfigOption` whose default hides it — flip the option before concluding the report is wrong](#107b-a-bug-that-does-not-reproduce-locally-may-be-gated-by-a-configoption-whose-default-hides-it--flip-the-option-before-concluding-the-report-is-wrong)
 - [114. To make a SQL-inserted `ConfigOption` visible without a redeploy, click **Reload Config** on the Application Options page](#114-to-make-a-sql-inserted-configoption-visible-without-a-redeploy-click-reload-config-on-the-application-options-page)
+- [139. A `ConfigOption` key can live in two unrelated rows — a `DEPARTMENT_ID`-scoped row and a department-name-prefixed row — only one is read by any given call site](#139-a-configoption-key-can-live-in-two-unrelated-rows--a-department_id-scoped-row-and-a-department-name-prefixed-row--only-one-is-read-by-any-given-call-site)
 - [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
 - [135. A brand-new `Privileges` enum value is invisible in Manage Users → Manage Privileges until it's also registered in `UserPrivilageController`'s hand-built tree — and a mid-session grant needs a fresh login to take effect](#135-a-brand-new-privileges-enum-value-is-invisible-in-manage-users--manage-privileges-until-its-also-registered-in-userprivilagecontrollers-hand-built-tree--and-a-mid-session-grant-needs-a-fresh-login-to-take-effect)
 - [138. Menu shows only Home and Request Manager after login on an older branch](#138-menu-shows-only-home-and-request-manager-after-login-on-an-older-branch)
@@ -360,6 +361,29 @@ Note the department-scoped-key-first resolution (`feedback_config_option_scope_r
 `"<Dept> - X"` before the plain `"X"`, so an admin who saved the toggle from a
 department context produces a `"Inward - X"` row, not `"X"`. Insert whichever
 one matches how it will really be set (the plain global key is usually right).
+
+
+## 139. A `ConfigOption` key can live in two unrelated rows — a `DEPARTMENT_ID`-scoped row and a department-name-prefixed row — only one is read by any given call site
+
+`ConfigOptionApplicationController.getBooleanValueByKeyForDepartment(key, dept, default)`
+reads/writes a real `DEPARTMENT_ID` FK row (`OptionScope.DEPARTMENT`, bare key).
+A same-named but different method on a different bean,
+`ConfigOptionController.getBooleanValueByKey(key, default)` (the one most
+`requiresApproval()`-style checks use), instead reads/writes
+`"<sessionController.getDepartment().getName()> - " + key` with `DEPARTMENT_ID`
+NULL (`OptionScope.APPLICATION`) — the same department-scoped-key-first
+resolution §114 notes. (`ConfigOptionApplicationController`'s own
+`getBooleanValueByKey(key, default)` does neither — it is a plain bare-key
+lookup with no department prefixing at all, so don't confuse it with
+`ConfigOptionController`'s overload of the same name.) The two rows can
+coexist for what looks like the same flag, with different values: a
+`DEPARTMENT_ID`-scoped row being `true` has no effect on a caller that only
+ever reads the name-prefixed row.
+
+**Fix:** before assuming a `ConfigOption` row controls a given code path,
+check which resolution method the calling code actually uses, then match the
+row's shape (`DEPARTMENT_ID` + bare key, vs `DEPARTMENT_ID` NULL + `"<Dept
+Name> - "` prefix) — don't infer scope from the `DEPARTMENT_ID` column alone.
 
 
 ## 124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter

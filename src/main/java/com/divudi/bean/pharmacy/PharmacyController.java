@@ -926,7 +926,7 @@ public class PharmacyController implements Serializable {
 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Pharmacy Analytics - Show Purchase Orders Not Approved",
-                "Controls visibility of Purchase Orders Not Approved button",
+                "Controls visibility of the Purchase Order Status report button",
                 OptionScope.APPLICATION
         ));
 

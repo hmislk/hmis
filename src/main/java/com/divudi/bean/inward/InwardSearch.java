@@ -164,6 +164,7 @@ public class InwardSearch implements Serializable {
      */
     private Long appointmentReceiptBillId;
     private InwardBillReceiptDTO appointmentBillReceipt;
+    private InwardBillReceiptDTO cancelledBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -390,7 +391,10 @@ public class InwardSearch implements Serializable {
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_PAYMENT_REFUND:
-                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
+                // Same page the refund reprint's Cancel opens; cancelBillRefund() works on this bill.
+                paymentMethodData = new PaymentMethodData();
+                printPreview = false;
+                return "inward_cancel_bill_refund?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
@@ -3212,6 +3216,30 @@ public class InwardSearch implements Serializable {
         return appointmentBillReceipt;
     }
 
+    /**
+     * DTO of the cancellation bill of {@link #bill}, for the 5x5 and A4
+     * cancellation receipts on the inward deposit/payment cancel pages.
+     * Cached per cancellation bill id, because the receipt templates read it
+     * many times per render.
+     */
+    public InwardBillReceiptDTO getCancelledBillReceipt() {
+        Bill cb = bill == null ? null : bill.getCancelledBill();
+        if (cb == null || cb.getId() == null) {
+            return null;
+        }
+        if (cancelledBillReceipt == null || !cb.getId().equals(cancelledBillReceipt.getBillId())) {
+            cancelledBillReceipt = billFacade.findInwardBillReceiptDTO(cb.getId());
+            if (cancelledBillReceipt != null) {
+                // A cancellation bill points at its original through billedBill, not
+                // referenceBill.
+                if (cancelledBillReceipt.getReferenceBillDeptId() == null && cb.getBilledBill() != null) {
+                    cancelledBillReceipt.setReferenceBillDeptId(cb.getBilledBill().getDeptId());
+                }
+            }
+        }
+        return cancelledBillReceipt;
+    }
+
     public void markAsChecked() {
         Bill b = bill;
         if (b == null) {
@@ -3671,9 +3699,22 @@ public class InwardSearch implements Serializable {
 
     /**
      * Streams the selected (reprint) inward receipt as a raw .prn for dot-matrix
-     * printing. Always a duplicate. Heading derived from the bill type.
+     * printing, marked as a duplicate. Heading derived from the bill type.
      */
     public void streamReprintReceiptAsRawText() {
+        streamReprintRawText(true);
+    }
+
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn without the
+     * duplicate marker, for reprinting the original when the first print
+     * failed (e.g. printer breakdown).
+     */
+    public void streamReprintOriginalReceiptAsRawText() {
+        streamReprintRawText(false);
+    }
+
+    private void streamReprintRawText(boolean duplicate) {
         if (getBill() == null || getBill().getId() == null) {
             JsfUtil.addErrorMessage("Select a bill to reprint first.");
             return;
@@ -3704,10 +3745,10 @@ public class InwardSearch implements Serializable {
                 getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
                         ? billService.fetchBillPayments(getBill()) : null;
         String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP, multiplePayments,
+                duplicate, preprinted, topMargin, emitEscP, multiplePayments,
                 showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
 
-        String fileName = "inward-reprint-"
+        String fileName = (duplicate ? "inward-reprint-" : "inward-reprint-original-")
                 + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
                         : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
                 + ".prn";

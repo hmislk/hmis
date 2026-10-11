@@ -17,6 +17,19 @@ Works on both Windows and Linux (verified on Ubuntu). See the Linux notes under 
 Worked examples:
 - `examples/pharmacy-issue-own-department/` — the first accepted video; normal case, login happens silently before narration starts.
 - `examples/login-department-select/` — a video *about* logging in itself, using `manualLogin: true` (see Recorder API below).
+- `examples/pvc-card-print/` — a video whose key moment is a **print button** (see Printing below).
+
+## Printing (print buttons, receipts, cards)
+
+Chrome's print dialog is browser UI, not page content: Playwright's video never contains it, a headless recorder can't open it, and on this machine the shell can't screenshot the desktop either. Show *what gets printed* instead, with `scripts/printcap.js`:
+
+1. `await pc.install(r.page)` at the start of `flow`. It makes `print()` and `document.execCommand('print')` (which PrimeFaces `p:printer` tries first) record the printed document instead of opening the dialog.
+2. After clicking the print button: `html = await pc.waitForPrint(page, n)` (n = 1-based print count).
+3. `pdf = await pc.toPdf(page.context(), HMIS_BASE, html, 'x.pdf')` renders that exact HTML with Chrome's print engine at the CSS `@page` size, then `{ png, pages } = pc.toPng(pdf)` (needs `pip install pymupdf`).
+4. `pc.showPrinted(page, png, 'Printed front')` overlays it on camera; `pc.hidePrinted(page)` removes it.
+5. Narrate the dialog settings (printer, Margins, Scale) in a caption-only step.
+
+Assert `pages === 1` (or whatever the paper needs): the PDF is real verification, not decoration. The first take of the PVC card video exposed that every card side printed as 2 pages (#24305). If the user wants the real dialog in the video, they must screenshot it themselves (PrtScn) and you show the image as a still the same way.
 
 ## Rules
 
@@ -91,6 +104,9 @@ Environment variables: `VIEW` sets the window size. The default `1920x1080` is t
 | A nested flyout item (hover a top icon, then hover a second-level category, *then* click a third-level item) times out as "not visible" even though a plain `.isVisible()` check just said true | The default `r.click()`/`r.point()` mouse path travels from wherever the cursor currently is, and crossing other menu items on the way closes the flyout before the click lands. After the hover opens it, move the mouse in two short steps straight down the submenu column first (to just below the hovered header, then to the target's row — see `r.menu()`'s internal path in `recorder.js`) and only then call `r.click()` |
 | `button:has-text("X")`/`:text-is("X")` resolves but the action times out "element is not visible" | On a busy admin page, several *other* hidden buttons (other accordion tabs, conditionally-rendered sections) can also match that text and sort earlier in DOM order than the one you want — `.first()` then grabs the wrong one. Dump all matches with `page.evaluate` (text + `offsetParent!==null` + `id`) to find the real one, then target it by its own id instead of by text |
 | `button[title="…"]` locator works once, then times out | PrimeFaces tooltip strips `title` on hover. Locate by icon class (`button:has(.fa-pills)`) or `id` |
+| `pinGrowl()` returns `''` although the growl is on screen | PrimeFaces adds the growl container before the text fades in. Fixed in `recorder.js` (waits for `.ui-growl-message`); if a save is slow, give the step `r.sleep(2500)` after `pinGrowl()` and open the next step with `{keep:true}` so the confirmation is readable |
+| A captured print renders as 2+ PDF pages only while recording | The recorder overlay (`#__cap`, `#__cur`) is injected into every page of the recorded context, including the one `toPdf` opens. `printcap.toPdf` strips it; don't render captured HTML in a page without that step |
+| The page's live preview scrolls out of view while editing lower fields | That is a UX defect for real users too — fix the page (e.g. `position:sticky` preview), don't film around it |
 | Receipt/print page records as blank white | It calls `window.print()`. Before navigating: `await p.context().addInitScript(() => { window.print = () => {}; })` |
 | Re-record fails "Insufficient stock" | Earlier takes drained the first batch. Pass its expiry as `pick`: `r.autocomplete('Panadeine', '31 May 28')` |
 | Failed takes clutter the next take's lists | Never clean up. Use per-take names via env vars; for per-day lists (tokens), record in a department with none today |

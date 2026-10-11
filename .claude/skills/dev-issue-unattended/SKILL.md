@@ -471,6 +471,16 @@ Repeat, up to **3 cycles**:
 3 cycles without convergence → stop, summarize the sticking point, end the
 run (same as `dev-issue`).
 
+## 14a. File what you found along the way
+
+The run is not finished while a defect you noticed but did not fix lives only in chat or `tmp/`. From step 2 onward, keep a **Found along the way** list (in the batch's `tmp/` master plan, or `tmp/<issue>/found.md`). Anything outside the issue's scope goes on that list, not into the PR.
+
+Before Notify:
+1. **Confirm each item** against the code, or reproduce it. Drop anything unconfirmed, and say in Notify that you dropped it. A growl you didn't see is not proof of a silent failure.
+2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
+3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
+4. **List the new issue links** in Notify.
+
 ## 15. Notify
 
 Produce one skimmable summary covering **every issue in the batch** (a
@@ -482,9 +492,17 @@ single issue is just a batch of one), one line each:
 - `#N — closed, could not reproduce` (link to the closing comment)
 - `#N — stopped: <short reason>` (link to the blocker comment)
 - `#N — could not resolve issue number/URL`
+- `Found along the way → #K` (one line per issue filed in step 14a)
 
 For issues that shipped, include what was found, every decision made and
 why (from step 3/13), what was verified and how, and links to the
 issue/PR/wiki — same depth as a solo run. For issues that didn't ship, the
 link to the comment is enough; don't re-summarize what's already written
 there. **Never merge.**
+
+**Retrospective.** List what cost extra steps or went wrong. Grep the docs for
+each; drop any already documented and say so in one line. For each remaining
+one, give what happened, why it will recur, the file, and the exact text to
+add, under a `Retrospective proposals` heading for the user to approve on
+return. Never open the doc PR unattended. If none: "No retrospective
+findings."
