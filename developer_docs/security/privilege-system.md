@@ -40,6 +40,12 @@ Follow this checklist whenever a new privilege is required:
 - Reference the privilege from XHTML using `rendered="#{webUserController.hasPrivilege('YourPrivilege')}"`.
 - Update the admin privilege maintenance page `src/main/webapp/admin/users/user_privileges.xhtml` if static privilege rows are used (tree-based pages handle this automatically via Step 2).
 
+## Stateless (API-Key) Privilege Checks
+
+The UI's real privilege check — `webUserController.hasPrivilege(...)` → `SessionController.fillUserPrivileges(user, user.getDepartment(), false)` — only matches **direct** `WebUserPrivilege` grants (no `WebUserRolePrivilege`/role fallback) scoped to the user's **current department** (exact match, no NULL/global fallback in the typical path).
+
+> 🚨 **When adding a stateless equivalent for an API-key endpoint, don't default to `UserManagementApi.isAdmin()`'s pattern.** `isAdmin()` checks direct grants with no department filter at all, OR falls back to a role-based grant — that's specific to how `Admin` happens to be granted, not a general template. First check `fillUserPrivileges`'s JPQL for the privilege in question; if it's department-scoped with no role fallback (true for most), scope the stateless check the same way, using the API key's resolved `WebUser.getDepartment()` as the stand-in for "current department." Only copy `isAdmin()`'s broader pattern if you've verified that's genuinely how that specific privilege works. Found while building the drawer-balance reset API (issue #24433, PR #24437) — a `code-review high` pass caught that copying `isAdmin()` verbatim granted broader authority than the UI equivalent.
+
 ## Testing Checklist
 - Log in with an account that lacks the privilege to confirm the UI element stays hidden or disabled.
 - Repeat with a privileged account and verify the workflow succeeds end-to-end.
