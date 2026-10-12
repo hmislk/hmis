@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui">
+
+    <!-- One-time cashier PC setup for Raw Text printing. Must sit inside an h:form. -->
+    <p:panel header="Raw text printer setup (one-time per PC)"
+             toggleable="true" collapsed="true" styleClass="mt-3"
+             style="font-size: 0.9em;">
+        <ol class="mb-2 ps-3">
+            <li>Download the print agent below and unzip it to <code>C:\hmis-print\</code>.</li>
+            <li>Share the dot-matrix printer: Printer properties, Sharing tab, tick <i>Share this printer</i>.</li>
+            <li>Copy <code>print-agent-config.example.json</code> to <code>print-agent-config.json</code> and set
+                <code>PrinterPath</code> to the printer's exact name and <code>WatchFolder</code> to
+                <code>C:\hmis-print</code>.</li>
+            <li>In Chrome, Settings, Downloads: set the location to <code>C:\hmis-print</code> and turn off
+                <i>Ask where to save each file</i>.</li>
+            <li>Put a shortcut to <code>start-agent-hidden.vbs</code> in the Startup folder
+                (<code>shell:startup</code>), then run it once.</li>
+        </ol>
+        <div class="d-flex gap-2 align-items-center">
+            <p:commandButton value="Download print agent (.zip)"
+                             icon="fas fa-download"
+                             class="ui-button-secondary ui-button-outlined"
+                             ajax="false"
+                             immediate="true"
+                             action="#{inwardRawTextReceiptController.streamPrintAgentZip}"/>
+            <h:outputLink value="https://github.com/hmislk/hmis/wiki/Dot-Matrix-Printing-for-Inward-Deposit-and-Payment-Receipts"
+                          target="_blank">
+                <h:outputText value="Full setup guide and troubleshooting"/>
+            </h:outputLink>
+        </div>
+    </p:panel>
+</ui:composition>

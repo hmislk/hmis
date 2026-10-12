@@ -432,6 +432,7 @@
                             </p:commandButton>
                             <p:commandButton
                                 value="Print"
+                                rendered="#{not inwardRawTextReceiptController.rawTextPaper}"
                                 ajax="false"
                                 icon="fa fa-print"
                                 class="ui-button-info"
@@ -440,6 +441,7 @@
                             </p:commandButton>
                             <p:commandButton
                                 value="Print (Dot-Matrix)"
+                                rendered="#{not inwardRawTextReceiptController.rawTextPaper and configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}"
                                 ajax="false"
                                 icon="fa fa-print"
                                 class="ui-button-info"
@@ -448,6 +450,7 @@
                             </p:commandButton>
                             <p:commandButton
                                 value="Print (Raw Text)"
+                                rendered="#{inwardRawTextReceiptController.rawTextPaper}"
                                 ajax="false"
                                 icon="fa fa-file-lines"
                                 class="ui-button-help"
@@ -478,7 +481,7 @@
                     </f:facet>
 
                     <div class="row">
-                        <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup id="gpBillPreview" rendered="#{not inwardRawTextReceiptController.rawTextPaper}">
 
                             <div class="d-flex justify-content-center">
 
@@ -502,11 +505,20 @@
 
                         </h:panelGroup>
                         <h:panelGroup id="gpBillPreviewDmx">
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}">
+                            <h:panelGroup rendered="#{not inwardRawTextReceiptController.rawTextPaper and configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}">
                                 <div class="d-flex justify-content-center">
                                     <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardPaymentController.current}" heading="Payment Receipt" />
                                 </div>
                             </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewRawText" rendered="#{inwardRawTextReceiptController.rawTextPaper}">
+                            <ui:include src="/inward/raw_text_receipt/preview.xhtml">
+                                <ui:param name="bill" value="#{inwardPaymentController.current}"/>
+                                <ui:param name="headingType" value="INWARD_PAYMENT"/>
+                                <ui:param name="duplicate" value="#{false}"/>
+                                <ui:param name="layoutDept" value="#{sessionController.department}"/>
+                            </ui:include>
+                            <ui:include src="/inward/raw_text_receipt/setup_panel.xhtml"/>
                         </h:panelGroup>
                     </div>
                 </p:panel>
@@ -549,11 +561,13 @@
                         </div>
                     </div>
                 </div>
+                <ui:include src="/inward/raw_text_receipt/settings_card.xhtml"/>
                 <div class="d-flex gap-2 mt-3">
                     <p:commandButton value="Apply &amp; Close"
                                      icon="fas fa-save"
                                      class="ui-button-success"
                                      ajax="false"
+                                     actionListener="#{inwardRawTextReceiptController.saveSettings}"
                                      action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
                     <p:commandButton value="Cancel"
                                      icon="fas fa-times"

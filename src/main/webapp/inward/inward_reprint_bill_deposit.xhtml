@@ -43,6 +43,7 @@
                                     <p:commandButton
                                         id="btnPrintBill"
                                         value="Print"
+                                        rendered="#{not inwardRawTextReceiptController.rawTextPaper}"
                                         ajax="false"
                                         action="#"
                                         class="ui-button-info"
@@ -51,15 +52,18 @@
                                     </p:commandButton>
 
                                     <p:commandButton value="Print (Dot-Matrix)" ajax="false" icon="fa fa-print"
+                                                     rendered="#{not inwardRawTextReceiptController.rawTextPaper and configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}"
                                                      class="ui-button-info" action="#" >
                                         <p:printer target="gpBillPreviewDmx" ></p:printer>
                                     </p:commandButton>
                                     <p:commandButton id="btnPrintOriginalRawText"
+                                                     rendered="#{inwardRawTextReceiptController.rawTextPaper}"
                                                      value="Print Original (Raw Text)" ajax="false" icon="fa fa-file-lines"
                                                      class="ui-button-help"
                                                      title="Reprint the original receipt on the dot-matrix printer (use when the first print failed)"
                                                      action="#{inwardSearch.streamReprintOriginalReceiptAsRawText}" />
                                     <p:commandButton id="btnPrintDuplicateRawText"
+                                                     rendered="#{inwardRawTextReceiptController.rawTextPaper}"
                                                      value="Print Duplicate (Raw Text)" ajax="false" icon="fa fa-file-lines"
                                                      class="ui-button-help"
                                                      title="Print a duplicate receipt on the dot-matrix printer"
@@ -188,6 +192,7 @@
 
                             <div class="d-flex justify-content-center">
                                 <h:panelGroup id="gpBillPreview" layout="block" class="w-100">
+                                    <h:panelGroup rendered="#{not inwardRawTextReceiptController.rawTextPaper}" layout="block">
 
                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}" layout="block">
                                         <div class="row">
@@ -345,6 +350,52 @@
                                         </div>
                                     </h:panelGroup>
 
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{inwardRawTextReceiptController.rawTextPaper}" layout="block">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-file-lines" value="Print Original (Raw Text)" class="ui-button-help" ajax="false"
+                                                                                 action="#{inwardSearch.streamReprintOriginalReceiptAsRawText}"/>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <ui:include src="/inward/raw_text_receipt/preview.xhtml">
+                                                        <ui:param name="bill" value="#{inwardSearch.bill}"/>
+                                                        <ui:param name="headingType" value="#{inwardSearch.bill.billTypeAtomic}"/>
+                                                        <ui:param name="duplicate" value="#{false}"/>
+                                                        <ui:param name="layoutDept" value="#{inwardSearch.bill.department}"/>
+                                                    </ui:include>
+                                                </p:panel>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <p:panel>
+                                                    <f:facet name="header">
+                                                        <div class="d-flex justify-content-between">
+                                                            <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                            <div>
+                                                                <p:commandButton icon="fa fa-file-lines" value="Print Duplicate (Raw Text)" class="ui-button-help" ajax="false"
+                                                                                 action="#{inwardSearch.streamReprintReceiptAsRawText}"/>
+                                                            </div>
+                                                        </div>
+                                                    </f:facet>
+                                                    <ui:include src="/inward/raw_text_receipt/preview.xhtml">
+                                                        <ui:param name="bill" value="#{inwardSearch.bill}"/>
+                                                        <ui:param name="headingType" value="#{inwardSearch.bill.billTypeAtomic}"/>
+                                                        <ui:param name="duplicate" value="#{true}"/>
+                                                        <ui:param name="layoutDept" value="#{inwardSearch.bill.department}"/>
+                                                    </ui:include>
+                                                </p:panel>
+                                            </div>
+                                        </div>
+                                        <ui:include src="/inward/raw_text_receipt/setup_panel.xhtml"/>
+                                    </h:panelGroup>
+
                                 </h:panelGroup>
 
                                 <h:panelGroup id="gpBillPreviewDmx" styleClass="dmx-print-only">
@@ -386,13 +437,19 @@
                                     <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
                                     <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
                                 </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentDotMatrix" value="#{pharmacyConfigController.inwardPaymentDotMatrixPaper}"/>
+                                    <h:outputLabel for="inwardPaymentDotMatrix" value="Dot-Matrix Paper (LQ-310)" class="ms-2"/>
+                                </div>
                             </div>
                         </div>
+                        <ui:include src="/inward/raw_text_receipt/settings_card.xhtml"/>
                         <div class="d-flex gap-2 mt-3">
                             <p:commandButton value="Apply &amp; Close"
                                              icon="fas fa-save"
                                              class="ui-button-success"
                                              ajax="false"
+                                             actionListener="#{inwardRawTextReceiptController.saveSettings}"
                                              action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
                             <p:commandButton value="Cancel"
                                              icon="fas fa-times"
