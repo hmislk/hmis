@@ -42,7 +42,9 @@ import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.cashTransaction.DetailedFinancialBill;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
 import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.DrawerEntryFacade;
 import com.divudi.core.facade.PaymentHandoverItemFacade;
 import com.divudi.core.facade.PaymentMethodValueFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -94,6 +96,8 @@ public class FinancialTransactionController implements Serializable {
     BillNumberGenerator billNumberGenerator;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    DrawerEntryFacade drawerEntryFacade;
     @EJB
     BillService billService;
     @EJB
@@ -2296,6 +2300,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         resetFloatPaymentsOfHandover(selectedBill);
+        restoreSenderDrawerOfHandover(selectedBill);
 
         return navigateToReceiveHandoverBillsForMe();
     }
@@ -2353,6 +2358,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         resetFloatPaymentsOfHandover(selectedBill);
+        restoreSenderDrawerOfHandover(selectedBill);
 
         return navigateToMyHandovers();
     }
@@ -2382,6 +2388,30 @@ public class FinancialTransactionController implements Serializable {
         }
         selectedBill = fresh;
         return true;
+    }
+
+    /**
+     * Puts back in the sender's drawer what creating the handover took out: the counted
+     * cash and each non-cash payment, recorded as negative drawer entries on the create
+     * bill. Recall and Reject call it once, after claimPendingHandoverBill (#24463).
+     */
+    private void restoreSenderDrawerOfHandover(Bill handoverBill) {
+        if (handoverBill == null) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", handoverBill);
+        List<DrawerEntry> entries = drawerEntryFacade.findByJpql("SELECT de FROM DrawerEntry de "
+                + "WHERE de.retired = false AND de.bill = :bill AND de.transactionValue < 0", params);
+        if (entries == null) {
+            return;
+        }
+        for (DrawerEntry de : entries) {
+            if (de.getWebUser() == null || de.getPaymentMethod() == null) {
+                continue;
+            }
+            drawerController.updateDrawer(handoverBill, Math.abs(de.getTransactionValue()), de.getPaymentMethod(), de.getWebUser());
+        }
     }
 
     /**
