@@ -18,6 +18,7 @@ Worked examples:
 - `examples/pharmacy-issue-own-department/` — the first accepted video; normal case, login happens silently before narration starts.
 - `examples/login-department-select/` — a video *about* logging in itself, using `manualLogin: true` (see Recorder API below).
 - `examples/pvc-card-print/` — a video whose key moment is a **print button** (see Printing below).
+- `examples/inward-raw-text-paper-type/` — a button that **downloads a file** (`.prn`): catch it with `p.waitForEvent('download')`, then show its contents on screen. Also shows an unrecorded `setup()` and a `restore.js` that put a department setting back as found.
 
 ## Printing (print buttons, receipts, cards)
 
@@ -110,3 +111,6 @@ Environment variables: `VIEW` sets the window size. The default `1920x1080` is t
 | Receipt/print page records as blank white | It calls `window.print()`. Before navigating: `await p.context().addInitScript(() => { window.print = () => {}; })` |
 | Re-record fails "Insufficient stock" | Earlier takes drained the first batch. Pass its expiry as `pick`: `r.autocomplete('Panadeine', '31 May 28')` |
 | Failed takes clutter the next take's lists | Never clean up. Use per-take names via env vars; for per-day lists (tokens), record in a department with none today |
+| `tts.py` fails on one step with `CalledProcessError`, although the same text works on its own | The step id is a Windows reserved file name (`prn`, `con`, `aux`, `nul`, `com1`, `lpt1`), so `audio/<id>.mp3` can't be created. Rename the id |
+| A button with `onclick="confirm(...)"` (e.g. Pay) does nothing | Playwright dismisses dialogs by default, so `confirm()` returns false. Add `p.on('dialog', d => d.accept())` at the start of `flow` |
+| The real patient/doctor name shows on a test admission (consultant, referring doctor) | Point that field of the test record at a test staff member before recording, then `asadmin disable/enable` the app so the cache picks it up. Check every panel of every page in the flow |
