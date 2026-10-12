@@ -825,6 +825,9 @@ public class InpatientClinicalDataController implements Serializable {
             creditCompanyName = e.getCreditCompany().getName() != null ? e.getCreditCompany().getName() : "";
             creditCompanyAddress = e.getCreditCompany().getAddress() != null ? e.getCreditCompany().getAddress() : "";
             double commitment = fetchCreditCompanyCommitment(e, creditCompanyInstitution);
+            if (commitment <= 0) {
+                commitment = e.getCreditLimit();
+            }
             companyAmount = commitment > 0 ? String.format("%,.2f", commitment) : "";
         }
         if (creditCompanyInstitution != null) {
