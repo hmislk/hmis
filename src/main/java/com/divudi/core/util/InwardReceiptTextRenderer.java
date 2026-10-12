@@ -1,11 +1,13 @@
 package com.divudi.core.util;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -33,27 +35,84 @@ public final class InwardReceiptTextRenderer {
     }
 
     /**
-     * @param multiplePayments the bill's individual tender rows (from
-     * {@code BillService.fetchBillPayments(bill)}), rendered as a breakdown
-     * when {@code bill.getPaymentMethod()} is {@code MultiplePaymentMethods}.
-     * May be {@code null} or empty — the breakdown is then simply omitted.
+     * Receipt title for an inward deposit / payment family bill, e.g.
+     * "Inward Deposit", "Inward Payment Refund", "Inward Deposit Cancellation".
+     * Post-final-bill payments print as the plain Inward Payment equivalents.
+     * Falls back to "Inward Receipt" for a null or unrelated bill type.
+     */
+    public static String headingFor(BillTypeAtomic billTypeAtomic) {
+        if (billTypeAtomic == null) {
+            return "Inward Receipt";
+        }
+        switch (billTypeAtomic) {
+            case INWARD_DEPOSIT:
+            case INWARD_DEPOSIT_CANCELLATION:
+            case INWARD_DEPOSIT_REFUND:
+            case INWARD_DEPOSIT_REFUND_CANCELLATION:
+            case INWARD_PAYMENT:
+            case INWARD_PAYMENT_CANCELLATION:
+            case INWARD_PAYMENT_REFUND:
+            case INWARD_PAYMENT_REFUND_CANCELLATION:
+                return billTypeAtomic.getLabel();
+            case POST_FINAL_BILL_INWARD_PAYMENT:
+                return "Inward Payment";
+            case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
+                return "Inward Payment Cancellation";
+            case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
+                return "Inward Payment Refund";
+            default:
+                String n = billTypeAtomic.name();
+                if (n.contains("DEPOSIT")) {
+                    return "Inward Deposit";
+                } else if (n.contains("PAYMENT")) {
+                    return "Inward Payment";
+                }
+                return "Inward Receipt";
+        }
+    }
+
+    /**
+     * Renders with the Admission Type, Address and Phone rows all shown.
+     *
+     * @see #render(Bill, String, boolean, boolean, int, boolean, List,
+     * boolean, boolean, boolean)
      */
     public static String render(Bill bill, String heading, boolean duplicate,
             boolean preprintedStationery, int topMarginLines, boolean emitEscP,
             List<Payment> multiplePayments) {
         return render(bill, heading, duplicate, preprintedStationery, topMarginLines,
-                emitEscP, multiplePayments, WIDTH);
+                emitEscP, multiplePayments, true, true, true);
+    }
+
+    /**
+     * @param multiplePayments the bill's individual tender rows (from
+     * {@code BillService.fetchBillPayments(bill)}), rendered as a breakdown
+     * when {@code bill.getPaymentMethod()} is {@code MultiplePaymentMethods}.
+     * May be {@code null} or empty — the breakdown is then simply omitted.
+     * @param showAdmissionType print the "Admission Type" row
+     * @param showPatientAddress print the patient "Address" row
+     * @param showPatientPhone print the patient "Phone" row
+     */
+    public static String render(Bill bill, String heading, boolean duplicate,
+            boolean preprintedStationery, int topMarginLines, boolean emitEscP,
+            List<Payment> multiplePayments, boolean showAdmissionType,
+            boolean showPatientAddress, boolean showPatientPhone) {
+        return render(bill, heading, duplicate, preprintedStationery, topMarginLines,
+                emitEscP, multiplePayments, showAdmissionType, showPatientAddress,
+                showPatientPhone, WIDTH);
     }
 
     /**
      * @param lineWidth characters per line. Lower it when the printer/paper
      * cuts off the right-hand end of lines. Clamped to
      * {@link #MIN_WIDTH}..{@link #MAX_WIDTH}.
-     * @see #render(Bill, String, boolean, boolean, int, boolean, List)
+     * @see #render(Bill, String, boolean, boolean, int, boolean, List,
+     * boolean, boolean, boolean)
      */
     public static String render(Bill bill, String heading, boolean duplicate,
             boolean preprintedStationery, int topMarginLines, boolean emitEscP,
-            List<Payment> multiplePayments, int lineWidth) {
+            List<Payment> multiplePayments, boolean showAdmissionType,
+            boolean showPatientAddress, boolean showPatientPhone, int lineWidth) {
         int width = clampWidth(lineWidth);
         StringBuilder sb = new StringBuilder(1024);
 
@@ -83,13 +142,20 @@ public final class InwardReceiptTextRenderer {
         }
 
         String head = safe(heading);
+        String markers = "";
         if (duplicate) {
-            head = head + " **Duplicate**";
+            markers = markers + " **Duplicate**";
         }
         if (bill.isCancelled()) {
-            head = head + " **Cancelled**";
+            markers = markers + " **Cancelled**";
         }
-        centre(sb, head, width);
+        if ((head + markers).length() <= width) {
+            centre(sb, head + markers, width);
+        } else {
+            // keep the markers readable instead of clipping them off the title
+            centreWrapped(sb, head, width);
+            centreWrapped(sb, markers.trim(), width);
+        }
         rule(sb, '-', width);
 
         PatientEncounter pe = bill.getPatientEncounter();
@@ -115,11 +181,17 @@ public final class InwardReceiptTextRenderer {
         dfTime.setTimeZone(COLOMBO);
         Date created = bill.getCreatedAt();
 
-        field(sb, "Admission Type", admissionType, width);
+        if (showAdmissionType) {
+            field(sb, "Admission Type", admissionType, width);
+        }
         field(sb, "Name", name, width);
         field(sb, "Age / Gender", (age + " " + sex).trim(), width);
-        field(sb, "Address", address, width);
-        field(sb, "Phone", phone, width);
+        if (showPatientAddress) {
+            field(sb, "Address", address, width);
+        }
+        if (showPatientPhone) {
+            field(sb, "Phone", phone, width);
+        }
         field(sb, "BHT No", bht, width);
         field(sb, "Bill No", safe(bill.getDeptId()), width);
         field(sb, "Bill Date", created == null ? "" : dfDate.format(created), width);
@@ -136,27 +208,12 @@ public final class InwardReceiptTextRenderer {
                         && notBlank(p.getCreditCardRefNo())) {
                     label = label + " (" + p.getCreditCardRefNo().trim() + ")";
                 }
-                String value = money.format(p.getPaidValue());
-                if (label.length() > width - value.length() - 1) {
-                    // shorten the label, never the amount
-                    label = label.substring(0, Math.max(0, width - value.length() - 1));
-                }
-                int payPad = width - label.length() - value.length();
-                if (payPad < 1) {
-                    payPad = 1;
-                }
-                sb.append(label).append(spaces(payPad)).append(value).append('\n');
+                amountRow(sb, label, money.format(p.getPaidValue()), width);
             }
         }
 
         rule(sb, '=', width);
-        String amt = money.format(bill.getTotal());
-        String amtLabel = "Paying Amount";
-        int pad = width - amtLabel.length() - amt.length();
-        if (pad < 1) {
-            pad = 1;
-        }
-        sb.append(amtLabel).append(spaces(pad)).append(amt).append('\n');
+        amountRow(sb, "Paying Amount", money.format(bill.getTotal()), width);
         rule(sb, '=', width);
 
         if (notBlank(bill.getComments())) {
@@ -211,6 +268,62 @@ public final class InwardReceiptTextRenderer {
             lead = 0;
         }
         sb.append(spaces(lead)).append(v).append('\n');
+    }
+
+    /**
+     * Centres {@code s}, word-wrapping it onto further centred lines (hard
+     * breaking any single word longer than {@code width}) instead of clipping.
+     */
+    private static void centreWrapped(StringBuilder sb, String s, int width) {
+        for (String line : wrap(s, width)) {
+            centre(sb, line, width);
+        }
+    }
+
+    /**
+     * Label left, amount right-aligned. When both do not fit on one line with
+     * at least one space between them, the full label is printed (wrapped if
+     * needed) and the amount goes right-aligned on the line below — nothing is
+     * shortened and no row exceeds {@code width}.
+     */
+    private static void amountRow(StringBuilder sb, String label, String value, int width) {
+        String l = label == null ? "" : label;
+        String v = clip(value, width);
+        if (l.length() + 1 + v.length() <= width) {
+            sb.append(l).append(spaces(width - l.length() - v.length())).append(v).append('\n');
+            return;
+        }
+        for (String line : wrap(l, width)) {
+            sb.append(line).append('\n');
+        }
+        sb.append(spaces(width - v.length())).append(v).append('\n');
+    }
+
+    private static List<String> wrap(String s, int width) {
+        List<String> lines = new ArrayList<>();
+        String line = "";
+        for (String word : (s == null ? "" : s.trim()).split("\\s+")) {
+            while (word.length() > width) {
+                if (!line.isEmpty()) {
+                    lines.add(line);
+                    line = "";
+                }
+                lines.add(word.substring(0, width));
+                word = word.substring(width);
+            }
+            if (line.isEmpty()) {
+                line = word;
+            } else if (line.length() + 1 + word.length() <= width) {
+                line = line + " " + word;
+            } else {
+                lines.add(line);
+                line = word;
+            }
+        }
+        if (!line.isEmpty() || lines.isEmpty()) {
+            lines.add(line);
+        }
+        return lines;
     }
 
     private static void rule(StringBuilder sb, char c, int width) {

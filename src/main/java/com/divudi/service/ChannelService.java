@@ -33,6 +33,8 @@ import com.divudi.core.data.dto.ChannelServiceCategorywiseDetailsWrapperDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.channel.ChannelIncomeDTO;
+import com.divudi.core.data.dto.channel.ChannelShiftCollectionReportDTO;
+import com.divudi.core.data.dto.channel.ChannelShiftCollectionRowDTO;
 import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO;
 import com.divudi.core.data.dto.channel.ChannelUserSummeryDTO.ChannelUserSummeryByDateDTO;
 import com.divudi.ejb.BillNumberGenerator;
@@ -93,6 +95,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -501,44 +504,84 @@ public class ChannelService {
     }
 
     public ChannelReportController.WrapperDtoForChannelFutureIncome fetchChannelBookingBillsForShiftEnd(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods) {
-        String sql = "select new com.divudi.bean.channel.ChannelReportController.ChannelIncomeDetailDto(bs.id, "
+        List<ChannelShiftCollectionRowDTO> rows = fetchChannelShiftCollectionRows(shiftStartBillId, shiftEndBillId, createrId, hospital, categoryList, paymentMethods);
+
+        List<Long> cardBillIds = new ArrayList<>();
+        List<Long> multiplePaymentBillIds = new ArrayList<>();
+        for (ChannelShiftCollectionRowDTO r : rows) {
+            if (r.getPaymentMethod() == PaymentMethod.Card) {
+                cardBillIds.add(r.getBillId());
+            } else if (r.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+                multiplePaymentBillIds.add(r.getBillId());
+                cardBillIds.add(r.getBillId());
+            }
+        }
+        Map<Long, String> cardRemarks = fetchCardPaymentRemarks(cardBillIds);
+        Map<Long, Map<PaymentMethod, Double>> portions = fetchPaymentPortions(multiplePaymentBillIds);
+
+        ChannelShiftCollectionReportDTO report = new ChannelShiftCollectionReportDTO();
+        for (ChannelShiftCollectionRowDTO r : rows) {
+            r.setPaymentRemark(cardRemarks.get(r.getBillId()));
+            report.addRow(r, portions.get(r.getBillId()));
+        }
+
+        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
+        wrapperDto.setShiftCollection(report);
+        wrapperDto.setProcessDate(new Date());
+        return wrapperDto;
+    }
+
+    /**
+     * Channelling bills (bookings, payments, cancellations and refunds,
+     * including agent bookings) created by the cashier within the shift,
+     * for the segregated Shift End Collection Summary (issue #24248).
+     */
+    private List<ChannelShiftCollectionRowDTO> fetchChannelShiftCollectionRows(Long shiftStartBillId, Long shiftEndBillId, Long createrId, Institution hospital, List<Category> categoryList, List<PaymentMethod> paymentMethods) {
+        String sql = "select new com.divudi.core.data.dto.channel.ChannelShiftCollectionRowDTO("
                 + "bill.id, "
+                + "bill.deptId, "
                 + "bill.billTypeAtomic, "
+                + "bill.paymentMethod, "
                 + "session.sessionDate, "
                 + "bill.createdAt, "
-                + "bill.creater.name, "
+                + "staffPerson.name, "
                 + "person.name, "
-                + "person.phone, "
-                + "bill.paymentMethod, "
-                + "COALESCE(bill.staffFee, 0), "
-                + "COALESCE(bill.hospitalFee, 0), "
-                + "COALESCE(bill.netTotal, 0), "
-                + "bill.comments, "
+                + "bill.staffFee, "
+                + "bill.hospitalFee, "
+                + "bill.netTotal, "
                 + "bill.cancelled, "
                 + "bill.refunded, "
-                + "cb.id ) "
+                + "agent.name, "
+                + "agent.institutionCode, "
+                + "COALESCE(bill.agentRefNo, billedBill.agentRefNo, sbi.agentRefNo), "
+                + "bs.serialNo ) "
                 + "from BillSession bs "
                 + "join bs.bill bill "
                 + "join bs.sessionInstance session "
-                + "join bill.patient patient "
+                + "left join session.originatingSession os "
+                + "left join os.staff staff "
+                + "left join staff.person staffPerson "
+                + "left join bill.patient patient "
                 + "left join patient.person person "
-                + "left join bill.cancelledBill cb "
+                + "left join bill.creditCompany agent "
+                + "left join bill.billedBill billedBill "
+                + "left join bill.singleBillItem sbi "
                 + "where bill.billTypeAtomic in :bta "
                 + "and bill.id > :shiftStartBillId "
-                + "and bill.billType <> :bt ";
+                + "and bill.creater.id = :createrId ";
 
         List<BillTypeAtomic> btaList = new ArrayList<>();
-
         btaList.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         btaList.add(BillTypeAtomic.CHANNEL_PAYMENT_FOR_BOOKING_BILL);
         btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+        // cash returned at the counter for bookings whose credit was settled
+        btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
+        btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
 
         Map<String, Object> params = new HashMap<>();
         params.put("bta", btaList);
-        params.put("bt", BillType.ChannelAgent);
         params.put("shiftStartBillId", shiftStartBillId);
-
         params.put("createrId", createrId);
 
         if (shiftEndBillId != null) {
@@ -552,7 +595,7 @@ public class ChannelService {
         }
 
         if (categoryList != null && !categoryList.isEmpty()) {
-            sql += "and session.originatingSession.category in :category ";
+            sql += "and os.category in :category ";
             params.put("category", categoryList);
         }
 
@@ -561,56 +604,90 @@ public class ChannelService {
             params.put("pm", paymentMethods);
         }
 
-        sql += "and bill.creater.id = :createrId "
-                + "order by bill.createdAt desc";
+        sql += "order by bill.createdAt";
 
-        List<ChannelReportController.ChannelIncomeDetailDto> dtoList = (List<ChannelReportController.ChannelIncomeDetailDto>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
-
-        if (dtoList == null || dtoList.isEmpty()) {
-            return null;
-        }
-
-        ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto = new ChannelReportController.WrapperDtoForChannelFutureIncome();
-        wrapperDto.setIncomeDtos(dtoList);
-        wrapperDto.setProcessDate(new Date());
-
-        List<ChannelReportController.ChannelIncomeSummeryDto> summeryDtoList = new ArrayList<>();
-        HashSet<Long> cancelledBillIds = new HashSet<>();
-
-        for (ChannelReportController.ChannelIncomeDetailDto dto : dtoList) {
-            if (summeryDtoList.isEmpty()) {
-                ChannelReportController.ChannelIncomeSummeryDto summery1 = new ChannelReportController.ChannelIncomeSummeryDto();
-                summery1.setAppoimentDate(dto.getAppoinmentDate());
-                summeryDtoList.add(summery1);
-                fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
-                continue;
-            } else {
-                fillPaymentsDataToDto(summeryDtoList, dto, cancelledBillIds);
-            }
-
-        }
-        wrapperDto.setSummeryDtos(summeryDtoList);
-
-        for (ChannelReportController.ChannelIncomeSummeryDto summery : wrapperDto.getSummeryDtos()) {
-            wrapperDto.setAllCashTotal(wrapperDto.getAllCashTotal() + summery.getCashTotal());
-            wrapperDto.setAllCardTotal(wrapperDto.getAllCardTotal() + summery.getCardTotal());
-            wrapperDto.setAllCreditTotal(wrapperDto.getAllCreditTotal() + summery.getCreditTotal());
-            wrapperDto.setAllCancelTotal(wrapperDto.getAllCancelTotal() + summery.getCancelTotal());
-            wrapperDto.setAllRefundTotal(wrapperDto.getAllRefundTotal() + summery.getRefundTotal());
-            wrapperDto.setAllCancelAppoinments(wrapperDto.getAllCancelAppoinments() + summery.getTotalCancelAppoinments());
-            wrapperDto.setAllRefundAppoinments(wrapperDto.getAllRefundAppoinments() + summery.getTotalRefundAppoinments());
-            wrapperDto.setTotalValidAppoinments(wrapperDto.getTotalValidAppoinments() + summery.getTotalActiveAppoinments());
-
-            // fee total calculation
-            wrapperDto.setAllHosFeeTotal(wrapperDto.getAllHosFeeTotal() + summery.getTotalHosFee());
-            wrapperDto.setAllDoctorFeeTotal(wrapperDto.getAllDoctorFeeTotal() + summery.getTotalDocFee());
-            wrapperDto.setAllTotalAmount(wrapperDto.getAllTotalAmount() + summery.getTotalAmount());
-        }
-
-        return wrapperDto;
-
+        List<ChannelShiftCollectionRowDTO> rows = (List<ChannelShiftCollectionRowDTO>) billSessionFacade.findLightsByJpql(sql, params, TemporalType.TIMESTAMP);
+        return rows != null ? rows : new ArrayList<>();
     }
-    
+
+    /**
+     * Card bank and reference number per bill, e.g. "Bank A - 1234".
+     */
+    private Map<Long, String> fetchCardPaymentRemarks(List<Long> billIds) {
+        Map<Long, String> remarks = new HashMap<>();
+        if (billIds == null || billIds.isEmpty()) {
+            return remarks;
+        }
+        String sql = "select p.bill.id, bank.name, p.creditCardRefNo "
+                + " from Payment p "
+                + " left join p.bank bank "
+                + " where p.bill.id in :ids "
+                + " and p.paymentMethod = :card "
+                + " and p.retired = :ret "
+                + " order by p.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ids", billIds);
+        params.put("card", PaymentMethod.Card);
+        params.put("ret", false);
+        List<Object[]> results = paymentFacade.findAggregates(sql, params, TemporalType.TIMESTAMP);
+        if (results == null) {
+            return remarks;
+        }
+        for (Object[] r : results) {
+            Long billId = (Long) r[0];
+            String bankName = (String) r[1];
+            String refNo = (String) r[2];
+            StringBuilder sb = new StringBuilder();
+            if (bankName != null && !bankName.trim().isEmpty()) {
+                sb.append(bankName.trim());
+            }
+            if (refNo != null && !refNo.trim().isEmpty()) {
+                if (sb.length() > 0) {
+                    sb.append(" - ");
+                }
+                sb.append(refNo.trim());
+            }
+            if (sb.length() == 0) {
+                continue;
+            }
+            remarks.merge(billId, sb.toString(), (a, b) -> a + ", " + b);
+        }
+        return remarks;
+    }
+
+    /**
+     * Paid value per payment method for bills paid with multiple payment
+     * methods, in a stable payment method order.
+     */
+    private Map<Long, Map<PaymentMethod, Double>> fetchPaymentPortions(List<Long> billIds) {
+        Map<Long, Map<PaymentMethod, Double>> portions = new HashMap<>();
+        if (billIds == null || billIds.isEmpty()) {
+            return portions;
+        }
+        String sql = "select p.bill.id, p.paymentMethod, sum(p.paidValue) "
+                + " from Payment p "
+                + " where p.bill.id in :ids "
+                + " and p.retired = :ret "
+                + " group by p.bill.id, p.paymentMethod "
+                + " order by p.bill.id, p.paymentMethod";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ids", billIds);
+        params.put("ret", false);
+        List<Object[]> results = paymentFacade.findAggregates(sql, params, TemporalType.TIMESTAMP);
+        if (results == null) {
+            return portions;
+        }
+        for (Object[] r : results) {
+            Long billId = (Long) r[0];
+            PaymentMethod pm = (PaymentMethod) r[1];
+            Double paid = r[2] != null ? ((Number) r[2]).doubleValue() : 0.0;
+            if (pm == null) {
+                continue;
+            }
+            portions.computeIfAbsent(billId, k -> new LinkedHashMap<>()).put(pm, paid);
+        }
+        return portions;
+    }
 
     public ChannelServiceCategorywiseDetailsWrapperDTO fetchAndGenerateChannelCategorywiseDetailsForShiftEnd(Long shiftStartBillId) {
         if (shiftStartBillId == null) {
