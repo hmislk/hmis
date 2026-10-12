@@ -93,7 +93,7 @@ category changes that MySQL/EclipseLink cannot silently coerce on INSERT:
 | `blob` ↔ `longtext` | `@Lob String` read from a `blob` column fails |
 | `bit(1)` → `datetime` | a `Date` field that used to be a flag |
 
-Do **not** treat `southernlanka-prod` (or any other running hospital) as the
+Do **not** treat `southernlanka-staging` (or any other running hospital) as the
 reference — those branches carry older entity mappings. The authority is the
 **entity code on the branch you are deploying** + the wiki DDL.
 

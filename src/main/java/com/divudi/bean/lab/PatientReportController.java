@@ -1450,7 +1450,7 @@ public class PatientReportController implements Serializable {
                         }
                         break;
                     case Memo:
-                        valueToReplacePlaceholder = priv.getLobValue();
+                        valueToReplacePlaceholder = wrapMemoForHtmlTemplate(priv.getLobValue());
                         break;
                     default:
                         valueToReplacePlaceholder = ""; // Handle other types if necessary
@@ -1491,6 +1491,19 @@ public class PatientReportController implements Serializable {
             }
         }
 
+    }
+
+    /**
+     * Wraps a rich-text (Quill) memo value in a div with the htmlMemoValue
+     * class, so html_patient_report.xhtml can collapse the editor's paragraph
+     * margins and multi-line memos print without gaps between lines, the same
+     * as the microbiology report.
+     */
+    private String wrapMemoForHtmlTemplate(String memo) {
+        if (memo == null || memo.isEmpty()) {
+            return memo;
+        }
+        return "<div class=\"htmlMemoValue\">" + memo + "</div>";
     }
 
     public String getHtmlTemplateContent() {
@@ -1555,7 +1568,7 @@ public class PatientReportController implements Serializable {
                     }
                     break;
                 case Memo:
-                    value = prv.getLobValue();
+                    value = wrapMemoForHtmlTemplate(prv.getLobValue());
                     break;
                 default:
                     break;

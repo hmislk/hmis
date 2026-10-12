@@ -2,7 +2,7 @@
 name: hotfix-deploy
 description: >
   Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-prod, ruhunu-prod, southernlanka-prod, etc.). Covers branch creation,
+  (coop-production, rh-production, southernlanka-staging, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
   through the normal development → QA → prod pipeline. The agent may invoke
@@ -19,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`, `coop-stg-migrated`, `ruhunu-prod-migrated`)
+- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-staging`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -37,8 +37,8 @@ production deployment.
 **Confirm `$0` is the exact branch actually deployed to the environment that
 needs the fix before doing anything else.** Similarly-named branches serve
 different environments and are not interchangeable — e.g. for COOP,
-`coop-prod`, `coop-prod-migrated` and `coop-stg-migrated` are three distinct
-branches/deployments. If there is any doubt which branch backs the environment
+`coop-production` (pharmacy) and `coop-staging` (inward, live users) are two
+distinct deployments. If there is any doubt which branch backs the environment
 in question, ask the user rather than guess from the name. See the Common
 Production Branches table below, and verify it is still accurate before
 trusting it.
@@ -203,10 +203,18 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 
 | Hospital/Environment | Branch | Notes |
 |----------------------|--------|-------|
-| COOP — pharmacy | `coop-prod`, `coop-prod-migrated` | Pharmacy production. |
-| COOP — inward | `coop-stg-migrated` | Despite the "stg" name, this is what COOP inward users run against day to day. |
-| Ruhunu hospital | `ruhunu-prod`, `ruhunu-prod-migrated` | |
-| Southern Lanka | `southernlanka-prod`, `southernlanka-prod-migrated`, `southernlanka-stg-migrated` | Confirm which one currently serves live users before branching. |
+| COOP — pharmacy | `coop-production` | |
+| COOP — inward | `coop-staging` | Despite the "staging" name, COOP inward users run against it day to day (production DB). |
+| Ruhunu hospital | `rh-production` | `rh-staging` writes to the same production DB. |
+| Southern Lanka | `southernlanka-staging` | **Live users are here.** `southernlanka-production` exists but its app is disabled. |
+| RMH | `rmh-production` | `rmh-staging` writes to the same production DB. |
+| Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |
+
+The old `*-prod`, `*-prod-migrated` and `*-stg-migrated` branches were retired on
+2026-10-11 (archived as `archive/2026-10-11/<branch>` tags). Never target them.
+CI's `-hotfix` head check does not yet run for these new targets (#24453) — follow
+the naming rule anyway.
+Full map: [Deployment map](../../../developer_docs/deployment/ci-cd-pipeline-overview.md).
 
 If a hospital has more than one candidate branch and it is not obvious which
 one backs the environment the user means, ask which one before branching —
