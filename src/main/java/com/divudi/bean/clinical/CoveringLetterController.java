@@ -174,6 +174,11 @@ public class CoveringLetterController implements Serializable {
         if (orderedRows.isEmpty()) {
             orderedRows = selectedRows;
         }
+        String invalid = coveringLetterService.refreshAndValidateRows(orderedRows, recordType, creditCompany);
+        if (invalid != null) {
+            JsfUtil.addErrorMessage(invalid);
+            return "";
+        }
         CoveringLetter l = coveringLetterService.createLetter(selectedTemplate, orderedRows, recordType,
                 issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
         if (l == null) {

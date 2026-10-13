@@ -129,7 +129,7 @@ public class CoveringLetterService {
             m.put("pt", patient);
         }
         if (onlyUnsettled) {
-            jpql.append("and abs(b.netTotal)-abs(b.paidAmount)>:val ");
+            jpql.append("and abs(b.netTotal)-abs(coalesce(b.paidAmount, 0))>:val ");
             m.put("val", 0.1);
         }
         jpql.append("order by b.id");
@@ -280,24 +280,26 @@ public class CoveringLetterService {
             }
         }
 
+        // Data values are HTML-escaped; only the template itself and {rows_table}
+        // (whose cells are escaped in buildRowsTable) are inserted as raw HTML.
         String output = input
-                .replace("{letter_date}", CommonFunctions.formatDate(new Date(), dateFormat))
-                .replace("{reference_no}", nz(referenceNo))
-                .replace("{credit_company}", creditCompanyName)
-                .replace("{credit_company_address}", creditCompanyAddress)
-                .replace("{credit_company_contact}", creditCompanyContact)
-                .replace("{name}", commonValue(rows, true))
-                .replace("{policy_no}", commonValue(rows, false))
+                .replace("{letter_date}", esc(CommonFunctions.formatDate(new Date(), dateFormat)))
+                .replace("{reference_no}", esc(referenceNo))
+                .replace("{credit_company}", esc(creditCompanyName))
+                .replace("{credit_company_address}", esc(creditCompanyAddress))
+                .replace("{credit_company_contact}", esc(creditCompanyContact))
+                .replace("{name}", esc(commonValue(rows, true)))
+                .replace("{policy_no}", esc(commonValue(rows, false)))
                 .replace("{total}", String.format("%,.2f", total))
                 .replace("{count}", String.valueOf(rows.size()))
-                .replace("{from_date}", CommonFunctions.formatDate(minDate, dateFormat))
-                .replace("{to_date}", CommonFunctions.formatDate(maxDate, dateFormat))
-                .replace("{issuer}", issuer == null ? "" : nz(issuer.getName()))
-                .replace("{issuer_address}", issuer == null ? "" : nz(issuer.getAddress()))
-                .replace("{issuer_phone}", issuer == null ? "" : nz(issuer.getPhone()))
-                .replace("{issuer_bank}", issuer == null ? "" : nz(issuer.getBankName()))
-                .replace("{issuer_branch}", issuer == null ? "" : nz(issuer.getBranchName()))
-                .replace("{issuer_account_no}", issuer == null ? "" : nz(issuer.getAccountNo()));
+                .replace("{from_date}", esc(CommonFunctions.formatDate(minDate, dateFormat)))
+                .replace("{to_date}", esc(CommonFunctions.formatDate(maxDate, dateFormat)))
+                .replace("{issuer}", issuer == null ? "" : esc(issuer.getName()))
+                .replace("{issuer_address}", issuer == null ? "" : esc(issuer.getAddress()))
+                .replace("{issuer_phone}", issuer == null ? "" : esc(issuer.getPhone()))
+                .replace("{issuer_bank}", issuer == null ? "" : esc(issuer.getBankName()))
+                .replace("{issuer_branch}", issuer == null ? "" : esc(issuer.getBranchName()))
+                .replace("{issuer_account_no}", issuer == null ? "" : esc(issuer.getAccountNo()));
         // Row table last so that row text is never touched by placeholder replacement.
         output = output.replace("{rows_table}", buildRowsTable(t, rows, type, total, dateFormat));
         return output;
@@ -466,6 +468,45 @@ public class CoveringLetterService {
     private ReentrantLock lockFor(Institution issuer, int year) {
         String key = (issuer == null || issuer.getId() == null ? "0" : issuer.getId().toString()) + "-" + year;
         return LOCKS.computeIfAbsent(key, k -> new ReentrantLock());
+    }
+
+    /**
+     * Re-reads each selected admission or bill and refreshes the row amount from
+     * the record, so a letter is never built from values captured when the list
+     * was filled. Returns an error message for the first row that is no longer
+     * valid for the credit company, or null when all rows are valid.
+     */
+    public String refreshAndValidateRows(List<CoveringLetterRowDTO> rows, CoveringLetterRecordType type,
+            Institution creditCompany) {
+        if (rows == null || type == null || creditCompany == null) {
+            return "Nothing to generate";
+        }
+        for (CoveringLetterRowDTO r : rows) {
+            if (type == CoveringLetterRecordType.Admission) {
+                PatientEncounter pe = r.getId() == null ? null : patientEncounterFacade.find(r.getId());
+                if (pe == null || pe.isRetired() || !isLinkedToCreditCompany(pe, creditCompany)) {
+                    return r.getRefNo() + " is no longer a valid admission for this credit company. Press Fill again.";
+                }
+                r.setAmount(pe.getFinalBill() != null ? pe.getFinalBill().getNetTotal() : pe.getNetTotal());
+            } else {
+                Bill b = r.getId() == null ? null : billFacade.find(r.getId());
+                if (b == null || b.isRetired() || b.isCancelled()
+                        || b.getCreditCompany() == null || !b.getCreditCompany().equals(creditCompany)) {
+                    return r.getRefNo() + " is no longer a valid bill for this credit company. Press Fill again.";
+                }
+                r.setAmount(b.getNetTotal());
+            }
+        }
+        return null;
+    }
+
+    private boolean isLinkedToCreditCompany(PatientEncounter pe, Institution creditCompany) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("pe", pe);
+        m.put("cc", creditCompany);
+        String jpql = "select count(ecc) from EncounterCreditCompany ecc "
+                + "where ecc.retired=false and ecc.patientEncounter=:pe and ecc.institution=:cc";
+        return coveringLetterFacade.findLongByJpql(jpql, m) > 0;
     }
 
     /**
