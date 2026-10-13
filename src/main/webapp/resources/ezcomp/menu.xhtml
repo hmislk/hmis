@@ -806,6 +806,7 @@
                 <p:menuitem
                     id="ccSelfBillingHome"
                     ajax="false"
+                    rendered="#{webUserController.hasPrivilege('CcSelfBillingMenu')}"
                     action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                     icon="fas fa-hospital-user"
                     title="Collecting Centre Self Billing Home">

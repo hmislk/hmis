@@ -304,6 +304,7 @@
                                             immediate="true"
                                             ajax="false"
                                             action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                            rendered="#{webUserController.hasPrivilege('CcSelfBilling')}"
                                             class="ui-button-warning mx-1">
                                         </p:commandButton>
 
@@ -314,6 +315,7 @@
                                             icon="fa fa-check "
                                             style="width: 150px;"
                                             action="#{collectingCentreBillController.settleCcBill()}"
+                                            rendered="#{webUserController.hasPrivilege('CcSelfBilling')}"
                                             ajax="false"
                                             class="ui-button-success ">
                                             <p:confirm header="Confirm Settle" message="Are you sure you want to settle this bill? This cannot be undone." icon="pi pi-exclamation-triangle"/>
