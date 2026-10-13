@@ -703,3 +703,138 @@
     font-size: 0.85rem;
     color: #6c757d;
 }
+
+/* ---------- Mobile / tablet responsiveness ----------
+   Nothing is hidden on small screens: wide tables and fixed-size print
+   previews (11cm bills, A4 lab reports) scroll sideways inside their card
+   instead of being cut off or squeezing the whole page wider than the
+   phone. */
+.cc-bill-page .ui-datatable .ui-datatable-tablewrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.cc-bill-page .cc-scroll-x {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+/* Centred previews (lab report) must still scroll back to their left edge */
+.cc-bill-page .cc-scroll-x.d-flex {
+    justify-content: safe center;
+}
+.cc-bill-page .ui-tabs .ui-tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+}
+.cc-bill-page .ui-paginator {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+}
+.cc-bill-page .cc-ref-select {
+    max-width: 100%;
+}
+.cc-bill-page .ui-dialog,
+.cc-confirm-dialog.ui-dialog,
+.cc-settling-dialog.ui-dialog {
+    max-width: calc(100vw - 1.5rem);
+}
+
+/* Stacked columns need a little breathing room between them */
+@media (max-width: 991.98px) {
+    .cc-bill-page .cc-stack-gap-lg > [class*="col-"] + [class*="col-"] {
+        margin-top: 0.5rem;
+    }
+}
+@media (max-width: 767.98px) {
+    .cc-bill-page .cc-stack-gap > [class*="col-"] + [class*="col-"] {
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .cc-bill-page .ui-panel .ui-panel-content {
+        padding: 0.75rem;
+    }
+    .cc-bill-page .ui-panel .ui-panel-titlebar {
+        padding: 0.7rem 0.8rem;
+    }
+    /* m-1 side margins next to w-100 push cards past the screen edge */
+    .cc-bill-page .ui-panel.m-1 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .cc-bill-page .row.m-1 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .cc-bill-page .cc-actions-wrap {
+        flex-wrap: wrap;
+    }
+    .cc-bill-page .cc-actions-wrap .ui-button {
+        flex: 1 1 140px;
+        width: auto !important;
+    }
+    .cc-bill-page .cc-bill-total-value {
+        font-size: 1.4rem;
+    }
+    .cc-balance-stat-value {
+        font-size: 1.2rem;
+        overflow-wrap: anywhere;
+    }
+    .cc-balance-stat.cc-balance-stat-highlight .cc-balance-stat-value {
+        font-size: 1.3rem;
+    }
+    .cc-balance-stat:hover {
+        transform: none;
+    }
+    .cc-details-col {
+        flex-basis: 100%;
+    }
+    .cc-book-table.ui-datatable tbody td {
+        padding: 0.6rem 0.75rem;
+    }
+    /* Panel-header float:right buttons drop under the title instead of
+       overlapping it */
+    .cc-bill-page .ui-panel-titlebar .ui-panel-title .ui-button[style*="float"] {
+        margin-top: 0.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .cc-bill-page .cc-bill-total-bar {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    .cc-bill-page .cc-bill-total-value {
+        font-size: 1.25rem;
+    }
+    .cc-balance-stat-label {
+        white-space: normal;
+    }
+    .cc-settling-dialog .ui-dialog-content {
+        padding: 1.25rem !important;
+    }
+    .cc-confirm-dialog .ui-dialog-content {
+        padding: 1.25rem 1rem 1rem !important;
+    }
+    .cc-confirm-dialog .ui-dialog-footer {
+        flex-wrap: wrap;
+        padding: 0 1rem 1.25rem !important;
+    }
+    .ccpd-search-group {
+        flex-wrap: wrap;
+    }
+    .ccpd-header-right {
+        width: 100%;
+    }
+    .ccpd-search-input.ui-inputtext {
+        flex: 1 1 auto;
+        width: auto;
+        max-width: none;
+        min-width: 0;
+    }
+}
+
