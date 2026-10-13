@@ -134,6 +134,7 @@
                                     <p:dataTable
                                         rowIndexVar="i"
                                         id="tblStatement"
+                                        styleClass="cc-card-table" reflow="true"
                                         value="#{reportController.agentHistories}"
                                         var="agentHx"
                                         rowKey="#{agentHx.id}"
@@ -144,7 +145,6 @@
                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                         rowsPerPageTemplate="20,50,100"
                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
-                                        reflow="true"
                                         emptyMessage="No transactions found for the selected criteria">
 
                                         <p:column headerText="No" style="background-color: #{reportController.getTableRowColor(agentHx)}; width: 3em; padding: 8px;">
