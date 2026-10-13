@@ -468,10 +468,14 @@
                                         </ui:repeat>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 10rem; vertical-align: top; padding: 6px;">
-                                        <h:outputText
+                                    <p:column headerText="Status" style="width: 10rem; vertical-align: top; padding: 6px;" class="text-center">
+                                        <p:badge
                                             value="#{pi.status.label}"
-                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled}"/>
+                                            severity="#{pi.status eq 'SAMPLE_REJECTED' or pi.status eq 'SAMPLE_RECOLLECTION_REQUESTED' or pi.status eq 'SAMPLE_RECOLLECTION_PENDING' ? 'danger'
+                                                        : pi.status eq 'SAMPLE_APPROVED' or (pi.status.toString().startsWith('REPORT_') and pi.status ne 'REPORT_CREATED') ? 'success'
+                                                        : pi.status eq 'ORDERED' or pi.status eq 'SAMPLE_GENERATED' or pi.status eq 'SAMPLE_REGENERATED' or pi.status eq 'SEPARATE_AND_SAMPLE_GENERATED' ? 'secondary'
+                                                        : 'warning'}"
+                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled and pi.status ne null}"/>
                                         <p:badge value="Item Refunded" severity="warning" rendered="#{pi.billItem.refunded}"/>
                                         <p:badge value="Bill Cancelled" severity="danger" rendered="#{pi.billItem.bill.cancelled}"/>
                                     </p:column>
