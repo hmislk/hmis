@@ -32,7 +32,7 @@
 
                             <p:growl id="msg"/>
 
-                            <div class="row">
+                            <div class="row cc-stack-gap">
                                 <div class="col-md-3">
                                     <p:panel styleClass="cc-bill-card cc-c-blue">
                                         <f:facet name="header">
@@ -96,6 +96,7 @@
                                         <p:dataTable
                                             rowIndexVar="i"
                                             id="tblBills"
+                                            styleClass="cc-card-table" reflow="true"
                                             value="#{collectingCentreSelfSearchController.bills}"
                                             var="bill"
                                             style="min-width: 100%;"
