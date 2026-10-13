@@ -23,6 +23,7 @@ import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
@@ -612,11 +613,7 @@ public class InpatientClinicalDataController implements Serializable {
         String input = t.getContents();
         // p:textEditor escapes HTML entities and wraps lines in <p> tags.
         // Unescape so the template renders as actual HTML.
-        input = input.replace("&lt;", "<");
-        input = input.replace("&gt;", ">");
-        input = input.replace("&amp;", "&");
-        input = input.replace("&quot;", "\"");
-        input = input.replace("&#39;", "'");
+        input = CommonFunctions.unescapeTemplateHtml(input);
         String output = "";
 
         String name = e.getPatient().getPerson().getNameWithTitle();
@@ -790,6 +787,9 @@ public class InpatientClinicalDataController implements Serializable {
         String policyNo = "";
         String referenceNo = "";
         String creditLimit = "";
+        String creditCompanyContact = "";
+        String companyAmount = "";
+        Institution creditCompanyInstitution = null;
         EncounterCreditCompany ecc = getSelectedEncounterCreditCompany();
         if (ecc == null) {
             String jpqlCC = "select ecc from EncounterCreditCompany ecc "
@@ -809,13 +809,36 @@ public class InpatientClinicalDataController implements Serializable {
             }
             policyNo = ecc.getPolicyNo() != null ? ecc.getPolicyNo() : "";
             referenceNo = ecc.getReferanceNo() != null ? ecc.getReferanceNo() : "";
-            creditLimit = ecc.getCreditLimit() > 0 ? String.format("%.2f", ecc.getCreditLimit()) : "";
+            creditLimit = ecc.getCreditLimit() > 0 ? String.format("%,.2f", ecc.getCreditLimit()) : "";
+            creditCompanyInstitution = ecc.getInstitution();
+            double commitment = fetchCreditCompanyCommitment(e, creditCompanyInstitution);
+            if (commitment <= 0) {
+                commitment = ecc.getCreditLimit();
+            }
+            companyAmount = commitment > 0 ? String.format("%,.2f", commitment) : "";
         } else if (e.getCreditCompany() != null) {
+            creditCompanyInstitution = e.getCreditCompany();
             creditCompanyName = e.getCreditCompany().getName() != null ? e.getCreditCompany().getName() : "";
             creditCompanyAddress = e.getCreditCompany().getAddress() != null ? e.getCreditCompany().getAddress() : "";
+            double commitment = fetchCreditCompanyCommitment(e, creditCompanyInstitution);
+            if (commitment <= 0) {
+                commitment = e.getCreditLimit();
+            }
+            companyAmount = commitment > 0 ? String.format("%,.2f", commitment) : "";
+        }
+        if (creditCompanyInstitution != null) {
+            if (creditCompanyInstitution.getContactPerson() != null
+                    && creditCompanyInstitution.getContactPerson().getName() != null) {
+                creditCompanyContact = creditCompanyInstitution.getContactPerson().getName();
+            }
+            if (creditCompanyContact.trim().isEmpty() && creditCompanyInstitution.getContactPersonName() != null) {
+                creditCompanyContact = creditCompanyInstitution.getContactPersonName();
+            }
         }
 
-        String finalBill = String.format("%.2f", e.getNetTotal());
+        String finalBill = String.format("%,.2f", e.getNetTotal());
+        String finalBillNo = e.getFinalBill() != null && e.getFinalBill().getDeptId() != null
+                ? e.getFinalBill().getDeptId() : "";
 
         String institutionName = e.getInstitution() != null && e.getInstitution().getName() != null
                 ? e.getInstitution().getName() : "";
@@ -865,6 +888,9 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{policy_no}", policyNo)
                 .replace("{reference_no}", referenceNo)
                 .replace("{credit_limit}", creditLimit)
+                .replace("{credit_company_contact}", creditCompanyContact)
+                .replace("{company_amount}", companyAmount)
+                .replace("{final_bill_no}", finalBillNo)
                 .replace("{institution}", institutionName)
                 .replace("{department}", departmentName)
                 .replace("{doctor}", doctorName)
@@ -875,6 +901,29 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{patient_sex}", sex);
         return output;
 
+    }
+
+    /**
+     * The amount the credit company committed to pay, as allocated when the
+     * final bill was processed (one commitment bill per company). Returns 0
+     * when the admission has not been finalised yet.
+     */
+    private double fetchCreditCompanyCommitment(PatientEncounter e, Institution company) {
+        if (e == null || company == null || e.getFinalBill() == null) {
+            return 0;
+        }
+        // Scoped to the current final bill: a re-versioned final bill leaves the
+        // earlier version's commitment bill un-cancelled, so summing by encounter would double count.
+        String jpql = "select sum(b.netTotal) from Bill b "
+                + " where b.retired = false and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.referenceBill = :fb "
+                + " and b.creditCompany = :cc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        m.put("fb", e.getFinalBill());
+        m.put("cc", company);
+        return billFacade.findDoubleByJpql(jpql, m);
     }
 
     public StreamedContent getImage() throws IOException {

@@ -473,6 +473,10 @@ String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
 **must** be wrapped in `COALESCE(expr, '')`. Numeric and boolean fields from the root entity
 (`b.total`, `b.cancelled`) are safe without COALESCE.
 
+### 🚨 Never pass an enum literal as a `select new` argument
+
+EclipseLink passes `com.x.MyEnum.VALUE` inside a constructor expression as its ordinal (`Long`), and the query fails with `ConversionException` (EclipseLink-3001); `findLightsByJpql` then returns an empty list. Leave the enum out of the constructor and set it on the DTOs in Java after the query.
+
 ### 🚨 CRITICAL: `COALESCE(...) != <enum literal>` in a WHERE clause does not filter (this EclipseLink version)
 
 This is a different pitfall from the SELECT-list COALESCE rule above — it's about

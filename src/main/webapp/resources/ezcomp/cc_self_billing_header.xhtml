@@ -17,6 +17,9 @@
     <cc:interface>
         <cc:attribute name="pageTitle" type="java.lang.String" required="true"/>
         <cc:attribute name="highlight" type="java.lang.String" required="false"/>
+        <!-- Collecting centre shown as a split pill: code (dark blue) + name (white) -->
+        <cc:attribute name="highlightCode" type="java.lang.String" required="false"/>
+        <cc:attribute name="highlightName" type="java.lang.String" required="false"/>
         <cc:attribute name="pageIcon" type="java.lang.String" default="fa-solid fa-hospital"/>
         <cc:attribute name="backAction" method-signature="java.lang.String action()" required="false"/>
         <cc:attribute name="backLabel" type="java.lang.String" default="Back"/>
@@ -34,10 +37,14 @@
                 <div class="cc-header-title-row">
                     <h:outputText styleClass="cc-header-title" value="#{cc.attrs.pageTitle}"/>
                     <h:outputText styleClass="cc-header-highlight" value="#{cc.attrs.highlight}" rendered="#{cc.attrs.highlight != null}"/>
+                    <h:panelGroup styleClass="cc-header-cc" rendered="#{not empty cc.attrs.highlightName}">
+                        <h:outputText styleClass="cc-header-cc-code" value="#{cc.attrs.highlightCode}" rendered="#{not empty cc.attrs.highlightCode}"/>
+                        <h:outputText styleClass="cc-header-cc-name" value="#{cc.attrs.highlightName}"/>
+                    </h:panelGroup>
                 </div>
             </div>
             <div class="cc-header-right" rendered="#{sessionController.loggedUser != null}">
-                <div class="cc-header-chip" style="min-width: 200px;">
+                <div class="cc-header-chip">
                     <div class="cc-header-avatar">
                         <h:outputText styleClass="fas fa-user"/>
                     </div>

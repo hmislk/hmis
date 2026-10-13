@@ -293,6 +293,14 @@ navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update B
 than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
 Verified while testing issue #23222.
 
+**The drift can also show as an empty list, not a 500.** The two-argument `findByJpql` overload catches exceptions from `getResultList()` and returns an empty list, so a
+page whose list entity gained a column (e.g. letter templates after `DOCUMENTTEMPLATE.ROWCOLUMNS`) shows
+no rows and a dropdown with only its placeholder, while saving a new record fails with `Unknown column`.
+When data you created earlier has "vanished" and the red *Database Migration Pending* bar is showing,
+suspect a deploy that is ahead of the database before suspecting deleted data.
+On a hospital's own staging server, report it and let the owner run the DDL update; do not run schema
+changes there unasked.
+
 
 ## 104. A department/room created by direct SQL needs more than the FK columns
 

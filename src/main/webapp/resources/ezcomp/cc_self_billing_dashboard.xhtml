@@ -19,8 +19,8 @@
                     <h:outputText styleClass="cc-hero-title" value="Collecting Centre Self Billing"/>
                     <h:outputText 
                         styleClass="cc-hero-subtitle"
-                        value="#{sessionController.institution.name} &#8250; #{sessionController.department.name}"
-                        rendered="#{sessionController.department != null}"/>
+                        value="#{sessionController.institution.name}"
+                        rendered="#{sessionController.institution != null}"/>
                 </div>
                 <div class="cc-hero-right" rendered="#{sessionController.loggedUser != null}">
                     <div class="cc-hero-chip">
@@ -61,47 +61,9 @@
                 </div>
             </div>
 
-            <div class="cc-stat-grid" rendered="#{sessionController.loggedUser != null}">
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-city"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Institution"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.institution.name}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-sitemap"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Department"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.name}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-tag"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Department Type"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.departmentType.label}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-id-badge"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Username"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.loggedUser.name}"/>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cc-body-grid">
+            <div class="cc-body-grid" style="margin-top: 60px;">
                 <div>
+                    
                     <div class="cc-card">
                         <h:panelGroup layout="block" styleClass="cc-section-title">
                             <h:outputText styleClass="fas fa-bolt"/>
@@ -109,8 +71,9 @@
                         </h:panelGroup>
                         <div class="cc-action-grid">
                             <h:commandLink 
-                                styleClass="cc-action-card cc-c-blue" ajax="false"
-                                           action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
+                                styleClass="cc-action-card cc-c-blue" 
+                                ajax="false"
+                                action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-file-invoice-dollar"/>
                                 </div>
@@ -157,10 +120,6 @@
                         </div>
                     </div>
 
-                    <div class="cc-notice">
-                        <h:outputText styleClass="fas fa-info-circle"/>
-                        <h:outputText value="Self-billing tools for this Collecting Centre are being rolled out. The actions above will become available here soon."/>
-                    </div>
                 </div>
 
                 <div>
@@ -178,7 +137,7 @@
                                     <h:outputText value=" Logged User"/>
                                 </span>
                                 <h:outputText styleClass="cc-detail-value"
-                                              value="#{sessionController.loggedUser.webUserPerson.name}"
+                                              value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"
                                               rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
                             </div>
                             <div class="cc-detail-row">
@@ -195,18 +154,9 @@
                                     <span class="cc-detail-icon cc-c-orange">
                                         <h:outputText styleClass="fas fa-city"/>
                                     </span>
-                                    <h:outputText value=" Institution"/>
+                                    <h:outputText value=" Collecting Centre"/>
                                 </span>
                                 <h:outputText styleClass="cc-detail-value" value="#{sessionController.institution.name}"/>
-                            </div>
-                            <div class="cc-detail-row">
-                                <span class="cc-detail-label">
-                                    <span class="cc-detail-icon cc-c-green">
-                                        <h:outputText styleClass="fas fa-sitemap"/>
-                                    </span>
-                                    <h:outputText value=" Department"/>
-                                </span>
-                                <h:outputText styleClass="cc-detail-value" value="#{sessionController.department.name}"/>
                             </div>
                         </h:panelGroup>
                     </div>
@@ -225,9 +175,29 @@
                                 <h:outputText styleClass="cc-timeline-title" value="Create &amp; search own bills"/>
                                 <h:outputText styleClass="cc-timeline-desc" value="Raise and look up your centre's bills"/>
                             </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Bill cancellation &amp; refunds"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Cancel whole bills or refund selected items"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Account statements"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="View your centre's statement and export to Excel or PDF"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Sample management"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Print barcodes, collect, send and reject samples"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Lab reports"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="View, print and download approved reports"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Mobile friendly"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Use every page on a phone or tablet"/>
+                            </li>
                             <li class="cc-c-purple">
-                                <h:outputText styleClass="cc-timeline-title" value="Payments &amp; statements"/>
-                                <h:outputText styleClass="cc-timeline-desc" value="Track deposits and account statements"/>
+                                <h:outputText styleClass="cc-timeline-title" value="Payments"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Track deposits and payments to the hospital"/>
                             </li>
                             <li class="cc-c-orange">
                                 <h:outputText styleClass="cc-timeline-title" value="Reports"/>

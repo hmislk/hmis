@@ -294,6 +294,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPhysicalDischarge, "Physical Discharge"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDocumentUpload, "Document Upload"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientLetter, "Generate Inpatient Letters"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CoveringLetters, "Covering Letters (multi-record)"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSendEmail, "Send Email"), inwardClinicalNode);
 
         TreeNode inwardPackageNode = new DefaultTreeNode(new PrivilegeHolder(null, "Packages"), inwardNode);
@@ -745,6 +746,26 @@ public class UserPrivilageController implements Serializable {
 
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CollectingCentreReports, "Collecting Centre Reports"), collectingCentreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeCollectingCentre, "Change Collecting Centre"), collectingCentreNode);
+
+        TreeNode ccSelfNode = new DefaultTreeNode(new PrivilegeHolder(null, "Collecting Centre Self Billing"), allNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfBillingMenu, "Self Billing Menu"), ccSelfNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfBilling, "Create Bill"), ccSelfNode);
+
+        TreeNode ccSelfSearchNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search Bills"), ccSelfNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSearchBills, "Search Bills"), ccSelfSearchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfBillReprint, "Bill Reprint"), ccSelfSearchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfBillCancel, "Bill Cancel"), ccSelfSearchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfBillRefund, "Bill Refund"), ccSelfSearchNode);
+
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfStatement, "Statement"), ccSelfNode);
+
+        TreeNode ccSelfSampleNode = new DefaultTreeNode(new PrivilegeHolder(null, "Sample Management"), ccSelfNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleManagement, "Sample Management"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleBarcodePrint, "Generate/Print Barcodes"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleCollect, "Collect Samples"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleSend, "Send Samples"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleReject, "Reject Samples"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleRegenerate, "Re-Generate Samples"), ccSelfSampleNode);
 
         // User Menu
         TreeNode userNode = new DefaultTreeNode(new PrivilegeHolder(null, "User"), allNode);
