@@ -988,3 +988,16 @@
     }
 }
 
+/* Print previews shrunk to the screen by cc_self_billing_fit_screen.js.
+   Printing always uses the real size. */
+.cc-fit-screen > .cc-fit-inner {
+    max-width: none;
+}
+@media print {
+    .cc-fit-screen > .cc-fit-inner {
+        zoom: 1 !important;
+    }
+    .cc-scroll-x {
+        overflow: visible !important;
+    }
+}
