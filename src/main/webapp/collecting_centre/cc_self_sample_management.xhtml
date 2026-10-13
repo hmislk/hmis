@@ -96,7 +96,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-2 d-flex flex-column gap-2">
+                                    <div class="col-md-2 d-flex flex-column gap-2 mt-2 mt-md-0">
                                         <p:commandButton
                                             id="btnBills"
                                             ajax="false"
@@ -137,6 +137,7 @@
                                 </f:facet>
                                 <p:dataTable
                                     id="tblBills"
+                                    styleClass="cc-card-table" reflow="true"
                                     rowIndexVar="i"
                                     value="#{patientInvestigationController.bills}"
                                     var="b"
@@ -201,14 +202,16 @@
                                 </p:dataTable>
                             </p:panel>
 
-                            <!--BILL_BARCODES-->
-                            <sm:sm_barCodes/>
+                            <div class="cc-scroll-x">
+                                <!--BILL_BARCODES-->
+                                <sm:sm_barCodes/>
 
-                            <!--INDIVIDUAL_BARCODES (re-generated samples)-->
-                            <sm:sm_individual_barcode/>
+                                <!--INDIVIDUAL_BARCODES (re-generated samples)-->
+                                <sm:sm_individual_barcode/>
+                            </div>
 
                             <!--SAMPLES-->
-                            <h:panelGroup layout="block" class="row" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+                            <h:panelGroup layout="block" class="row cc-stack-gap" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
                                 <div class="col-md-9">
                                     <p:panel styleClass="cc-bill-card cc-c-orange">
                                         <f:facet name="header">
@@ -217,6 +220,7 @@
                                         </f:facet>
                                         <p:dataTable
                                             id="tblSamples"
+                                            styleClass="cc-card-table" reflow="true"
                                             value="#{patientInvestigationController.patientSamples}"
                                             var="ps"
                                             rowKey="#{ps.id}"
@@ -398,6 +402,7 @@
                                 </f:facet>
                                 <p:dataTable
                                     id="tblReports"
+                                    styleClass="cc-card-table" reflow="true"
                                     rowIndexVar="i"
                                     value="#{patientInvestigationController.items}"
                                     var="pi"
