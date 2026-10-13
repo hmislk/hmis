@@ -103,8 +103,24 @@
 
                                 <style>
                                     @media print {
+                                        /* The report box is a full A4 page (297mm) with its own
+                                           margins, so print it edge to edge on one sheet. Browser
+                                           page margins and the template's body padding-bottom
+                                           (copied into the print frame by p:printer) otherwise
+                                           push it onto a second, blank page. */
+                                        @page {
+                                            size: A4;
+                                            margin: 0;
+                                        }
+                                        html, body {
+                                            margin: 0 !important;
+                                            padding: 0 !important;
+                                        }
                                         .labReport {
                                             position: static !important;
+                                            height: 296mm !important;
+                                            page-break-after: avoid;
+                                            break-after: avoid;
                                         }
                                         #divReportM {
                                             position: static !important;
