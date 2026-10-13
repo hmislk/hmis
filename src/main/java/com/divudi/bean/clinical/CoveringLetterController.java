@@ -61,7 +61,7 @@ public class CoveringLetterController implements Serializable {
     private Date toDate;
     private AdmissionType admissionType;
     private Department department;
-    private boolean onlyUnsettled = true;
+    private boolean onlyUnsettled = false;
     private List<CoveringLetterRowDTO> rows = new ArrayList<>();
     private List<CoveringLetterRowDTO> selectedRows = new ArrayList<>();
     private List<DocumentTemplate> templates;
@@ -88,7 +88,7 @@ public class CoveringLetterController implements Serializable {
         fromDate = c.getTime();
         toDate = new Date();
         recordType = CoveringLetterRecordType.Admission;
-        onlyUnsettled = true;
+        onlyUnsettled = false;
         issuingInstitution = sessionController.getInstitution();
         creditCompany = null;
         patient = null;
@@ -170,6 +170,7 @@ public class CoveringLetterController implements Serializable {
             r.setPatientName(f.getPatientName());
             r.setPolicyNo(f.getPolicyNo());
             r.setAmount(f.getAmount());
+            r.setCompanyAmount(f.getCompanyAmount());
         }
         return null;
     }

@@ -19,6 +19,8 @@ public class CoveringLetterRowDTO implements Serializable {
     private String policyNo;
     private Double amount;
     private String alreadyInLetterRef;
+    /** The credit company's share of the amount (set after the query). */
+    private Double companyAmount;
 
     /**
      * Used by JPQL constructor queries. The record type is set afterwards,
@@ -97,5 +99,13 @@ public class CoveringLetterRowDTO implements Serializable {
 
     public void setAlreadyInLetterRef(String alreadyInLetterRef) {
         this.alreadyInLetterRef = alreadyInLetterRef;
+    }
+
+    public Double getCompanyAmount() {
+        return companyAmount;
+    }
+
+    public void setCompanyAmount(Double companyAmount) {
+        this.companyAmount = companyAmount;
     }
 }

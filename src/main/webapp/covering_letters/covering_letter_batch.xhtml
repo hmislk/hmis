@@ -100,11 +100,10 @@
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <h:panelGroup id="pnlUnsettled" layout="block" styleClass="col-md-3">
-                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-2"
-                                                  rendered="#{coveringLetterController.recordType eq 'OpdBill'}">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-2">
                                         <p:selectBooleanCheckbox id="chkUnsettled"
                                                                  value="#{coveringLetterController.onlyUnsettled}"/>
-                                        <p:outputLabel for="chkUnsettled" value="Only unsettled bills" styleClass="fw-bold"/>
+                                        <p:outputLabel for="chkUnsettled" value="Only unsettled" styleClass="fw-bold"/>
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <div class="col-md-3">
@@ -152,8 +151,13 @@
                                 <p:column headerText="Policy No">
                                     <h:outputText value="#{r.policyNo}"/>
                                 </p:column>
-                                <p:column headerText="Amount" styleClass="text-end" style="text-align: right;">
+                                <p:column headerText="Bill Amount" styleClass="text-end" style="text-align: right;">
                                     <h:outputText value="#{r.amount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Company Amount" styleClass="text-end" style="text-align: right;">
+                                    <h:outputText value="#{r.companyAmount}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </p:column>

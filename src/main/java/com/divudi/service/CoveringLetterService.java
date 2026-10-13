@@ -2,6 +2,7 @@ package com.divudi.service;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.clinical.CoveringLetterColumn;
 import com.divudi.core.data.clinical.CoveringLetterRecordType;
@@ -62,9 +63,6 @@ public class CoveringLetterService {
     @SuppressWarnings("unchecked")
     public List<CoveringLetterRowDTO> fetchAdmissionRows(Institution creditCompany, Patient patient,
             Date from, Date to, AdmissionType admissionType, Department department, boolean onlyUnsettled) {
-        // onlyUnsettled is intentionally not applied to admissions: "due" for an
-        // admission is derived from payment bills (patient + company), not from a
-        // stored field that can be filtered in JPQL.
         Map<String, Object> m = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("select new com.divudi.core.data.dto.CoveringLetterRowDTO(")
@@ -101,7 +99,7 @@ public class CoveringLetterService {
             return new ArrayList<>();
         }
         setRecordType(list, CoveringLetterRecordType.Admission);
-        return list;
+        return fillAdmissionCompanyAmounts(list, creditCompany, onlyUnsettled);
     }
 
     @SuppressWarnings("unchecked")
@@ -139,8 +137,61 @@ public class CoveringLetterService {
             return new ArrayList<>();
         }
         setRecordType(list, CoveringLetterRecordType.OpdBill);
+        // An OPD credit bill is charged to the credit company in full.
+        for (CoveringLetterRowDTO r : list) {
+            r.setCompanyAmount(r.getAmount());
+        }
         fillPolicyNos(list);
         return list;
+    }
+
+    /**
+     * Sets each admission's company amount from the credit company's commitment
+     * bill (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY) of the current final
+     * bill; admissions without one fall back to the final bill total. When
+     * onlyUnsettled is set, drops admissions whose commitment bill for this
+     * company is fully paid.
+     */
+    @SuppressWarnings("unchecked")
+    private List<CoveringLetterRowDTO> fillAdmissionCompanyAmounts(List<CoveringLetterRowDTO> rows,
+            Institution creditCompany, boolean onlyUnsettled) {
+        List<Long> ids = new ArrayList<>();
+        for (CoveringLetterRowDTO r : rows) {
+            ids.add(r.getId());
+        }
+        Map<Long, double[]> byEncounter = new HashMap<>();
+        if (!ids.isEmpty()) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ids", ids);
+            m.put("cc", creditCompany);
+            m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            String jpql = "select pe.id, b.netTotal, b.paidAmount from Bill b, PatientEncounter pe "
+                    + "where b.referenceBill = pe.finalBill and pe.id in :ids "
+                    + "and b.billTypeAtomic=:bta and b.creditCompany=:cc "
+                    + "and b.retired=false and b.cancelled=false";
+            List<Object[]> found = (List<Object[]>) billFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
+            if (found != null) {
+                for (Object[] o : found) {
+                    double[] v = byEncounter.computeIfAbsent((Long) o[0], k -> new double[2]);
+                    v[0] += o[1] == null ? 0 : ((Number) o[1]).doubleValue();
+                    v[1] += o[2] == null ? 0 : ((Number) o[2]).doubleValue();
+                }
+            }
+        }
+        List<CoveringLetterRowDTO> result = new ArrayList<>();
+        for (CoveringLetterRowDTO r : rows) {
+            double[] v = byEncounter.get(r.getId());
+            if (v == null) {
+                r.setCompanyAmount(r.getAmount());
+            } else {
+                r.setCompanyAmount(v[0]);
+                if (onlyUnsettled && Math.abs(v[0]) - Math.abs(v[1]) <= 0.1) {
+                    continue;
+                }
+            }
+            result.add(r);
+        }
+        return result;
     }
 
     private void setRecordType(List<CoveringLetterRowDTO> rows, CoveringLetterRecordType type) {
@@ -250,11 +301,15 @@ public class CoveringLetterService {
         String input = CommonFunctions.unescapeTemplateHtml(t.getContents());
 
         double total = 0;
+        double companyTotal = 0;
         Date minDate = null;
         Date maxDate = null;
         for (CoveringLetterRowDTO r : rows) {
             if (r.getAmount() != null) {
                 total += r.getAmount();
+            }
+            if (r.getCompanyAmount() != null) {
+                companyTotal += r.getCompanyAmount();
             }
             if (r.getDate() != null) {
                 if (minDate == null || r.getDate().before(minDate)) {
@@ -290,6 +345,7 @@ public class CoveringLetterService {
                 .replace("{credit_company_contact}", esc(creditCompanyContact))
                 .replace("{name}", esc(commonValue(rows, true)))
                 .replace("{policy_no}", esc(commonValue(rows, false)))
+                .replace("{company_total}", String.format("%,.2f", companyTotal))
                 .replace("{total}", String.format("%,.2f", total))
                 .replace("{count}", String.valueOf(rows.size()))
                 .replace("{from_date}", esc(CommonFunctions.formatDate(minDate, dateFormat)))
@@ -301,7 +357,7 @@ public class CoveringLetterService {
                 .replace("{issuer_branch}", issuer == null ? "" : esc(issuer.getBranchName()))
                 .replace("{issuer_account_no}", issuer == null ? "" : esc(issuer.getAccountNo()));
         // Row table last so that row text is never touched by placeholder replacement.
-        output = output.replace("{rows_table}", buildRowsTable(t, rows, type, total, dateFormat));
+        output = output.replace("{rows_table}", buildRowsTable(t, rows, type, total, companyTotal, dateFormat));
         return output;
     }
 
@@ -347,7 +403,7 @@ public class CoveringLetterService {
     private static final String CELL = "border:1px solid #000;padding:3px 6px;";
 
     private String buildRowsTable(DocumentTemplate t, List<CoveringLetterRowDTO> rows,
-            CoveringLetterRecordType type, double total, String dateFormat) {
+            CoveringLetterRecordType type, double total, double companyTotal, String dateFormat) {
         List<CoveringLetterColumn> cols = selectedColumns(t);
         StringBuilder sb = new StringBuilder();
         sb.append("<table class=\"covering-letter-rows\" style=\"border-collapse:collapse;width:100%\">");
@@ -358,7 +414,7 @@ public class CoveringLetterService {
             if (c == CoveringLetterColumn.REF_NO) {
                 label = type == CoveringLetterRecordType.OpdBill ? "Bill No" : "BHT No";
             }
-            String align = c == CoveringLetterColumn.AMOUNT ? "right" : "left";
+            String align = isAmount(c) ? "right" : "left";
             sb.append("<th style=\"").append(CELL).append("text-align:").append(align).append("\">")
                     .append(esc(label)).append("</th>");
         }
@@ -387,6 +443,10 @@ public class CoveringLetterService {
                         v = String.format("%,.2f", r.getAmount() == null ? 0.0 : r.getAmount());
                         align = "right";
                         break;
+                    case COMPANY_AMOUNT:
+                        v = String.format("%,.2f", r.getCompanyAmount() == null ? 0.0 : r.getCompanyAmount());
+                        align = "right";
+                        break;
                     default:
                         v = "";
                 }
@@ -395,26 +455,37 @@ public class CoveringLetterService {
             }
             sb.append("</tr>");
         }
-        String totalText = String.format("%,.2f", total);
-        int amountIdx = cols.indexOf(CoveringLetterColumn.AMOUNT);
+        int firstAmountIdx = -1;
+        for (int i = 0; i < cols.size(); i++) {
+            if (isAmount(cols.get(i))) {
+                firstAmountIdx = i;
+                break;
+            }
+        }
         sb.append("<tr>");
-        if (amountIdx >= 0) {
-            int span = amountIdx + 1; // "No" cell plus the columns before Amount
+        if (firstAmountIdx >= 0) {
+            int span = firstAmountIdx + 1; // "No" cell plus the columns before the first amount
             sb.append("<td colspan=\"").append(span).append("\" style=\"").append(CELL)
                     .append("text-align:right;font-weight:bold\">Total</td>");
-            sb.append("<td style=\"").append(CELL).append("text-align:right;font-weight:bold\">")
-                    .append(totalText).append("</td>");
-            for (int i = amountIdx + 1; i < cols.size(); i++) {
-                sb.append("<td style=\"").append(CELL).append("\"></td>");
+            for (int i = firstAmountIdx; i < cols.size(); i++) {
+                CoveringLetterColumn c = cols.get(i);
+                String v = c == CoveringLetterColumn.AMOUNT ? String.format("%,.2f", total)
+                        : c == CoveringLetterColumn.COMPANY_AMOUNT ? String.format("%,.2f", companyTotal) : "";
+                sb.append("<td style=\"").append(CELL).append("text-align:right;font-weight:bold\">")
+                        .append(v).append("</td>");
             }
         } else {
             sb.append("<td colspan=\"").append(cols.size()).append("\" style=\"").append(CELL)
                     .append("text-align:right;font-weight:bold\">Total</td>");
             sb.append("<td style=\"").append(CELL).append("text-align:right;font-weight:bold\">")
-                    .append(totalText).append("</td>");
+                    .append(String.format("%,.2f", total)).append("</td>");
         }
         sb.append("</tr></table>");
         return sb.toString();
+    }
+
+    private static boolean isAmount(CoveringLetterColumn c) {
+        return c == CoveringLetterColumn.AMOUNT || c == CoveringLetterColumn.COMPANY_AMOUNT;
     }
 
     private static String esc(String s) {

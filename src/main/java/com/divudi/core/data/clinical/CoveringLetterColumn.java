@@ -9,7 +9,8 @@ public enum CoveringLetterColumn {
     DATE("Date"),
     PATIENT("Patient"),
     POLICY_NO("Policy No"),
-    AMOUNT("Amount");
+    AMOUNT("Bill Amount"),
+    COMPANY_AMOUNT("Company Amount");
 
     private final String label;
 
