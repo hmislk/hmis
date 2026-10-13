@@ -293,7 +293,7 @@ navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update B
 than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
 Verified while testing issue #23222.
 
-**The drift can also show as an empty list, not a 500.** `findByJpql` swallows query exceptions, so a
+**The drift can also show as an empty list, not a 500.** The two-argument `findByJpql` overload catches exceptions from `getResultList()` and returns an empty list, so a
 page whose list entity gained a column (e.g. letter templates after `DOCUMENTTEMPLATE.ROWCOLUMNS`) shows
 no rows and a dropdown with only its placeholder, while saving a new record fails with `Unknown column`.
 When data you created earlier has "vanished" and the red *Database Migration Pending* bar is showing,
