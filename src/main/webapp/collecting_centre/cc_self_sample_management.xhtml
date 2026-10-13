@@ -478,21 +478,21 @@
 
                                     <p:column headerText="Actions" style="width: 30em; vertical-align: top; padding: 6px;">
                                         <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
-                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="w-50"/>
+                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="text-nowrap"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{pi.billItem.refunded and not pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
-                                            <p:badge value="Item Refunded" severity="info" size="large" class="w-50"/>
+                                            <p:badge value="Item Refunded" severity="info" size="large" class="text-nowrap"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{not pi.billItem.bill.cancelled and not pi.billItem.refunded}">
                                             <h:panelGroup rendered="#{empty collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" class="d-flex justify-content-center">
-                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="w-50"/>
+                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="text-nowrap"/>
                                             </h:panelGroup>
 
                                             <ui:repeat value="#{collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" var="dpr">
                                                 <h:panelGroup rendered="#{not dpr.approved}" class="d-flex justify-content-center">
-                                                    <p:badge value="Pending Approval.." severity="success" size="large" class="w-50"/>
+                                                    <p:badge value="Pending Approval.." severity="success" size="large" class="text-nowrap"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{dpr.approved}">
                                                     <div class="d-flex justify-content-between">
