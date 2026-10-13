@@ -166,6 +166,7 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    CoveringLetters("Covering Letters"),
     InwardSendEmail("Inward Send Email"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
@@ -1682,6 +1683,7 @@ public enum Privileges {
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case CoveringLetters:
             case InwardSendEmail:
             case InwardPackageAdministration:
             case InwardPackageAdmission:

@@ -613,11 +613,7 @@ public class InpatientClinicalDataController implements Serializable {
         String input = t.getContents();
         // p:textEditor escapes HTML entities and wraps lines in <p> tags.
         // Unescape so the template renders as actual HTML.
-        input = input.replace("&lt;", "<");
-        input = input.replace("&gt;", ">");
-        input = input.replace("&amp;", "&");
-        input = input.replace("&quot;", "\"");
-        input = input.replace("&#39;", "'");
+        input = CommonFunctions.unescapeTemplateHtml(input);
         String output = "";
 
         String name = e.getPatient().getPerson().getNameWithTitle();

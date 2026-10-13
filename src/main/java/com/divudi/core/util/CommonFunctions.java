@@ -888,6 +888,22 @@ public class CommonFunctions {
         return output;
     }
 
+    /**
+     * p:textEditor escapes HTML entities; unescape so a template renders as
+     * actual HTML.
+     */
+    public static String unescapeTemplateHtml(String input) {
+        if (input == null) {
+            return "";
+        }
+        input = input.replace("&lt;", "<");
+        input = input.replace("&gt;", ">");
+        input = input.replace("&amp;", "&");
+        input = input.replace("&quot;", "\"");
+        input = input.replace("&#39;", "'");
+        return input;
+    }
+
     public static String formatDate(Date date, String pattern) {
         String dateString = "";
         if (date == null) {
