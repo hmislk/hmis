@@ -829,7 +829,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         savePreReturnBill();
         savePreReturnBillComponents();
 
-        getBill().getReturnPreBills().add(getReturnBill());
+        // The lazy inverse list may already hold the just-persisted return; adding it again duplicated the row (issue #24483, #24109).
+        if (!getBill().getReturnPreBills().contains(getReturnBill())) {
+            getBill().getReturnPreBills().add(getReturnBill());
+        }
 
         // Update original bills (both PRE and SALE)
         updateOriginalBillsForReturn();
@@ -856,7 +859,10 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         paymentService.updateBalances(payments);
 
         getReturnBill().setReferenceBill(getBill());
-        getReturnBill().getReturnCashBills().add(finalReturnBill);
+        // The lazy inverse list may already hold the just-persisted return; adding it again duplicated the row (issue #24483, #24109).
+        if (!getReturnBill().getReturnCashBills().contains(finalReturnBill)) {
+            getReturnBill().getReturnCashBills().add(finalReturnBill);
+        }
         getReturnBill().setCreditCompany(getFinalReturnBill().getCreditCompany());
         getBillFacade().edit(getReturnBill());
 //        getBillFacade().edit(getFinalReturnBill());
