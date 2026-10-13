@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -528,7 +529,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         if (encounterCreditCompany != null) {
-            encounterCreditCompanies.remove(encounterCreditCompany);
+            Iterator<EncounterCreditCompany> it = encounterCreditCompanies.iterator();
+            while (it.hasNext()) {
+                if (it.next() == encounterCreditCompany) {
+                    it.remove();
+                    break;
+                }
+            }
             encounterCreditCompany = new EncounterCreditCompany();
         }
     }
