@@ -125,7 +125,7 @@ records yourself rather than gating on the user for them:
   the PR/issue evidence. Only ask the user if the local DB has no suitable
   record at all (e.g. the feature needs a state nothing local is in) — that
   is a real blocker, not a preference question.
-- **Environment**: local Payara (default) unless the issue specifically
+- **Environment**: when the user names a test environment (local, QA, `rh-local-staging`), use it without asking; creating fictional test data there needs no permission (find or save the login under `C:\Credentials\`, ask only if the URL or login is missing). Local Payara is the default unless the issue specifically
   requires testing against a remote env, in which case confirm which one
   with the user (this one *is* a real decision — remote envs carry real
   data/credentials risk that local doesn't). Credentials live outside the
