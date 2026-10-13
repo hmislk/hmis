@@ -49,7 +49,7 @@
                                     class="ui-button-info m-1"
                                     icon="fa fa-print"
                                     action="#{collectingCentreSelfSearchController.navigateToOriginalBillPrint()}"
-                                    rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}"
+                                    rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill') and webUserController.hasPrivilege('CcSelfBillReprint')}"
                                     ajax="false"/>
                                 <p:commandButton
                                     value="To Cancel"
@@ -86,7 +86,8 @@
                                                 type="button"
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
-                                                style="float: right;">
+                                                style="float: right;"
+                                                rendered="#{webUserController.hasPrivilege('CcSelfBillReprint')}">
                                                 <p:printer target="centerBillPreview"/>
                                             </p:commandButton>
                                         </f:facet>
@@ -112,7 +113,8 @@
                                                 type="button"
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
-                                                style="float: right;">
+                                                style="float: right;"
+                                                rendered="#{webUserController.hasPrivilege('CcSelfBillReprint')}">
                                                 <p:printer target="patientBillPreview"/>
                                             </p:commandButton>
                                         </f:facet>

@@ -230,6 +230,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void searchSelfBills() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            patientInvestigationController.setBills(null);
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             patientInvestigationController.setBills(null);
             return;
@@ -238,6 +242,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void searchSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            patientInvestigationController.setPatientSamples(null);
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             patientInvestigationController.setPatientSamples(null);
             return;
@@ -251,6 +259,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * of each investigation in its Action column.
      */
     public void searchSelfReports() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            patientInvestigationController.setItems(null);
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             patientInvestigationController.setItems(null);
             return;

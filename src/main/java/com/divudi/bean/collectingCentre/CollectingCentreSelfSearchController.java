@@ -76,8 +76,19 @@ public class CollectingCentreSelfSearchController implements Serializable {
         return "/collecting_centre/cc_self_search_bills?faces-redirect=true";
     }
 
+    /**
+     * The bill view page is also the entry point to cancel and refund, so any
+     * of reprint, cancel or refund lets the user open it. Printing on that page
+     * still needs the reprint privilege.
+     */
+    public boolean isCanOpenBill() {
+        return collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillReprint)
+                || collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillCancel)
+                || collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillRefund);
+    }
+
     public String navigateToReprintBill(Bill bill) {
-        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillReprint)) {
+        if (!isCanOpenBill()) {
             return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillReprint);
         }
         if (bill == null || bill.getId() == null) {
@@ -102,6 +113,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateToOriginalBillPrint() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillReprint)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillReprint);
+        }
         if (!isViewingOwnBill()) {
             return null;
         }
@@ -253,6 +267,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
 
     public void searchBills() {
         bills = null;
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfSearchBills)) {
+            return;
+        }
         Institution collectingCentre = sessionController.getInstitution();
         if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Collecting centre not found for the logged department");

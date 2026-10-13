@@ -118,10 +118,10 @@
                                                     value="#{bill.deptId}"
                                                     title="View / Reprint"
                                                     action="#{collectingCentreSelfSearchController.navigateToReprintBill(bill)}"
-                                                    rendered="#{webUserController.hasPrivilege('CcSelfBillReprint')}"/>
+                                                    rendered="#{collectingCentreSelfSearchController.canOpenBill}"/>
                                                 <h:outputText
                                                     value="#{bill.deptId}"
-                                                    rendered="#{not webUserController.hasPrivilege('CcSelfBillReprint')}"/>
+                                                    rendered="#{not collectingCentreSelfSearchController.canOpenBill}"/>
                                             </p:column>
 
                                             <p:column headerText="Billed At" style="width: 11em; padding: 8px;">
