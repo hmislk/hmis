@@ -471,45 +471,6 @@ public class CoveringLetterService {
     }
 
     /**
-     * Re-reads each selected admission or bill and refreshes the row amount from
-     * the record, so a letter is never built from values captured when the list
-     * was filled. Returns an error message for the first row that is no longer
-     * valid for the credit company, or null when all rows are valid.
-     */
-    public String refreshAndValidateRows(List<CoveringLetterRowDTO> rows, CoveringLetterRecordType type,
-            Institution creditCompany) {
-        if (rows == null || type == null || creditCompany == null) {
-            return "Nothing to generate";
-        }
-        for (CoveringLetterRowDTO r : rows) {
-            if (type == CoveringLetterRecordType.Admission) {
-                PatientEncounter pe = r.getId() == null ? null : patientEncounterFacade.find(r.getId());
-                if (pe == null || pe.isRetired() || !isLinkedToCreditCompany(pe, creditCompany)) {
-                    return r.getRefNo() + " is no longer a valid admission for this credit company. Press Fill again.";
-                }
-                r.setAmount(pe.getFinalBill() != null ? pe.getFinalBill().getNetTotal() : pe.getNetTotal());
-            } else {
-                Bill b = r.getId() == null ? null : billFacade.find(r.getId());
-                if (b == null || b.isRetired() || b.isCancelled()
-                        || b.getCreditCompany() == null || !b.getCreditCompany().equals(creditCompany)) {
-                    return r.getRefNo() + " is no longer a valid bill for this credit company. Press Fill again.";
-                }
-                r.setAmount(b.getNetTotal());
-            }
-        }
-        return null;
-    }
-
-    private boolean isLinkedToCreditCompany(PatientEncounter pe, Institution creditCompany) {
-        Map<String, Object> m = new HashMap<>();
-        m.put("pe", pe);
-        m.put("cc", creditCompany);
-        String jpql = "select count(ecc) from EncounterCreditCompany ecc "
-                + "where ecc.retired=false and ecc.patientEncounter=:pe and ecc.institution=:cc";
-        return coveringLetterFacade.findLongByJpql(jpql, m) > 0;
-    }
-
-    /**
      * Not transactional itself so that each facade call commits before the
      * per-issuer lock is released; the next caller then sees the new serial.
      */

@@ -132,16 +132,46 @@ public class CoveringLetterController implements Serializable {
             JsfUtil.addErrorMessage("Select the date range");
             return;
         }
-        if (recordType == CoveringLetterRecordType.OpdBill) {
-            rows = coveringLetterService.fetchOpdBillRows(creditCompany, patient, fromDate, toDate, onlyUnsettled);
-        } else {
-            rows = coveringLetterService.fetchAdmissionRows(creditCompany, patient, fromDate, toDate,
-                    admissionType, department, onlyUnsettled);
-        }
+        rows = fetchRows();
         coveringLetterService.markAlreadyInLetter(rows);
         if (rows.isEmpty()) {
             JsfUtil.addErrorMessage("No records found");
         }
+    }
+
+    private List<CoveringLetterRowDTO> fetchRows() {
+        if (recordType == CoveringLetterRecordType.OpdBill) {
+            return coveringLetterService.fetchOpdBillRows(creditCompany, patient, fromDate, toDate, onlyUnsettled);
+        }
+        return coveringLetterService.fetchAdmissionRows(creditCompany, patient, fromDate, toDate,
+                admissionType, department, onlyUnsettled);
+    }
+
+    /**
+     * Re-runs the list query with the current filters and refreshes every
+     * printed field of the selected rows from it, so a letter is never built
+     * from values captured at Fill. Returns an error message for the first
+     * selected row that no longer matches the filters (e.g. settled, cancelled,
+     * unlinked from the credit company), or null when all rows still match.
+     */
+    private String refreshSelectedRows(List<CoveringLetterRowDTO> selected) {
+        Map<Long, CoveringLetterRowDTO> fresh = new HashMap<>();
+        for (CoveringLetterRowDTO f : fetchRows()) {
+            fresh.put(f.getId(), f);
+        }
+        for (CoveringLetterRowDTO r : selected) {
+            CoveringLetterRowDTO f = fresh.get(r.getId());
+            if (f == null) {
+                return r.getRefNo() + " no longer matches the filters (it may have been settled, cancelled or "
+                        + "changed). Press Fill again.";
+            }
+            r.setRefNo(f.getRefNo());
+            r.setDate(f.getDate());
+            r.setPatientName(f.getPatientName());
+            r.setPolicyNo(f.getPolicyNo());
+            r.setAmount(f.getAmount());
+        }
+        return null;
     }
 
     public void recordTypeChanged() {
@@ -174,7 +204,7 @@ public class CoveringLetterController implements Serializable {
         if (orderedRows.isEmpty()) {
             orderedRows = selectedRows;
         }
-        String invalid = coveringLetterService.refreshAndValidateRows(orderedRows, recordType, creditCompany);
+        String invalid = refreshSelectedRows(orderedRows);
         if (invalid != null) {
             JsfUtil.addErrorMessage(invalid);
             return "";
