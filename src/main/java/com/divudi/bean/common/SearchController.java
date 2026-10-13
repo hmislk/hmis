@@ -3198,6 +3198,8 @@ public class SearchController implements Serializable {
                 m.put("netTotal", Math.abs(netTotalValue));
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                bills = new ArrayList<>(); // don't run the search without the filter the user typed
+                return;
             }
         }
 
@@ -10400,6 +10402,7 @@ public class SearchController implements Serializable {
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
         }
 
@@ -10454,6 +10457,7 @@ public class SearchController implements Serializable {
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
         }
 
