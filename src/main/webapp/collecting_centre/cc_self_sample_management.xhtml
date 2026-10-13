@@ -171,7 +171,7 @@
                                     <p:column headerText="Patient Phone" style="width: 9em; padding: 6px;">
                                         <h:outputText value="#{b.patient.person.phone}"/>
                                     </p:column>
-                                    <p:column headerText="Status" style="width: 12em; padding: 6px;" class="text-center">
+                                    <p:column headerText="Status" style="width: 10rem; padding: 6px;" class="text-center">
                                         <p:badge rendered="#{b.cancelled}" value="Bill Cancelled" severity="danger"/>
                                         <p:badge rendered="#{not b.cancelled and b.status ne null}" value="#{b.status.label}" severity="info"/>
                                     </p:column>
@@ -285,7 +285,7 @@
                                                 <h:outputText value="#{ps.bill.patient.person.ageAsString} / #{ps.bill.patient.person.sex.label}" class="text-secondary"/>
                                             </p:column>
 
-                                            <p:column headerText="Status" style="width: 13em; vertical-align: top; padding: 6px;" class="text-center">
+                                            <p:column headerText="Status" style="width: 11rem; vertical-align: top; padding: 6px;" class="text-center">
                                                 <p:badge rendered="#{ps.bill.cancelled}" value="Bill Cancelled" severity="danger"/>
                                                 <h:panelGroup rendered="#{not ps.bill.cancelled}">
                                                     <p:badge value="#{ps.status.label}" severity="info"/>
@@ -468,7 +468,7 @@
                                         </ui:repeat>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 11em; vertical-align: top; padding: 6px;">
+                                    <p:column headerText="Status" style="width: 10rem; vertical-align: top; padding: 6px;">
                                         <h:outputText
                                             value="#{pi.status.label}"
                                             rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled}"/>
