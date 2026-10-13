@@ -175,11 +175,10 @@
                                         <p:badge rendered="#{b.cancelled}" value="Bill Cancelled" severity="danger"/>
                                         <p:badge rendered="#{not b.cancelled and b.status ne null}" value="#{b.status.label}" severity="info"/>
                                     </p:column>
-                                    <p:column headerText="Actions" style="width: 22em; padding: 6px;">
-                                        <div class="d-flex gap-1">
+                                    <p:column headerText="Actions" style="width: 13rem; padding: 6px;">
+                                        <div class="d-flex flex-nowrap justify-content-start gap-1">
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Barcode"
                                                 icon="fas fa-barcode"
                                                 class="ui-button-success"
                                                 title="#{collectingCentreSelfCommonController.isSelfBill(b) ? 'Generate and print sample barcodes' : 'Hospital Billing - barcodes cannot be generated here'}"
@@ -187,15 +186,15 @@
                                                 action="#{collectingCentreSelfCommonController.generateSelfBarcodes(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Samples"
                                                 icon="fas fa-vial"
                                                 class="ui-button-warning"
+                                                title="View samples of this bill"
                                                 action="#{collectingCentreSelfCommonController.listSelfSamplesOfBill(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Reports"
                                                 icon="fas fa-file-medical"
                                                 class="ui-button-danger"
+                                                title="View reports of this bill"
                                                 action="#{collectingCentreSelfCommonController.listSelfReportsOfBill(b)}"/>
                                         </div>
                                     </p:column>
