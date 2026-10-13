@@ -4,6 +4,7 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
@@ -45,6 +46,8 @@ public class CollectingCentreSelfSearchController implements Serializable {
     private SessionController sessionController;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    private CollectingCentreSelfCommonController collectingCentreSelfCommonController;
 
     private static final String SUBMITTED_BILL_ID_PARAM = "ccSelfBillId";
 
@@ -55,6 +58,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
     private Bill viewingBill;
 
     public String navigateToSearchBills() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfSearchBills)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfSearchBills);
+        }
         fromDate = CommonFunctions.getStartOfDay();
         toDate = CommonFunctions.getEndOfDay();
         searchKeyword = new SearchKeyword();
@@ -63,11 +69,17 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateBackToSearchBills() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfSearchBills)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfSearchBills);
+        }
         viewingBill = null;
         return "/collecting_centre/cc_self_search_bills?faces-redirect=true";
     }
 
     public String navigateToReprintBill(Bill bill) {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillReprint)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillReprint);
+        }
         if (bill == null || bill.getId() == null) {
             JsfUtil.addErrorMessage("No bill selected");
             return null;
@@ -102,6 +114,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * for the self-service one.
      */
     public String navigateToCancelBill() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillCancel)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillCancel);
+        }
         if (!isViewingOwnBill() || !isSelfBillOrError(viewingBill)) {
             return null;
         }
@@ -115,6 +130,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateToRefundBill() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillRefund)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillRefund);
+        }
         if (!isViewingOwnBill() || !isSelfBillOrError(viewingBill)) {
             return null;
         }
@@ -135,6 +153,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * reached without navigateToCancelBill().
      */
     public void cancelBill() {
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfBillCancel)) {
+            return;
+        }
         Bill fetched = fetchSubmittedOwnBill();
         if (fetched == null || !isSelfBillOrError(fetched)) {
             return;
@@ -155,6 +176,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * refunded bills are allowed, as remaining items can still be refunded.
      */
     public String refundBill() {
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfBillRefund)) {
+            return "";
+        }
         Bill fetched = fetchSubmittedOwnBill();
         if (fetched == null || !isSelfBillOrError(fetched)) {
             return "";

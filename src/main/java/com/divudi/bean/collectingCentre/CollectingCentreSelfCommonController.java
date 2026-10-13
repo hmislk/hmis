@@ -1,11 +1,13 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.bean.lab.PatientReportUploadController;
 import com.divudi.bean.report.ReportController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.SearchDateType;
@@ -53,6 +55,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     private PatientReportUploadController patientReportUploadController;
+    @Inject
+    private WebUserController webUserController;
 
     @EJB
     private BillFacade billFacade;
@@ -62,12 +66,51 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientReportFacade patientReportFacade;
 
     private PatientReport printingReport;
+    private Privileges unauthorizedPrivilege;
+
+    // <editor-fold defaultstate="collapsed" desc="Privileges">
+    public boolean hasSelfPrivilege(Privileges privilege) {
+        return webUserController.hasPrivilege(privilege.name());
+    }
+
+    /**
+     * Opens the self-service "not authorized" page naming the missing
+     * privilege. Every self-service navigation method returns this when the
+     * user lacks the privilege, so the dashboard can show all its buttons.
+     */
+    public String navigateToSelfUnauthorized(Privileges privilege) {
+        unauthorizedPrivilege = privilege;
+        return "/collecting_centre/cc_self_unauthorized?faces-redirect=true";
+    }
+
+    /**
+     * For in-page actions (no navigation): adds an error and returns false
+     * when the user lacks the privilege.
+     */
+    public boolean checkSelfPrivilege(Privileges privilege) {
+        if (hasSelfPrivilege(privilege)) {
+            return true;
+        }
+        JsfUtil.addErrorMessage("You are not authorized to use " + privilege.getLabel());
+        return false;
+    }
+
+    public Privileges getUnauthorizedPrivilege() {
+        return unauthorizedPrivilege;
+    }
+    // </editor-fold>
 
     public String navigateToCollectingCentreSelfBillingHome() {
+        if (!hasSelfPrivilege(Privileges.CcSelfBillingMenu)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfBillingMenu);
+        }
         return "/collecting_centre/cc_self_index?faces-redirect=true";
     }
 
     public String navigateToCollectingCentreSelfStatement() {
+        if (!hasSelfPrivilege(Privileges.CcSelfStatement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfStatement);
+        }
         reportController.setFromDate(CommonFunctions.getStartOfMonth());
         reportController.setToDate(CommonFunctions.getEndOfDay());
         reportController.setInvoiceNumber(null);
@@ -82,6 +125,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * centre's balance history.
      */
     public void processCollectingCentreSelfStatement() {
+        if (!checkSelfPrivilege(Privileges.CcSelfStatement)) {
+            reportController.setAgentHistories(null);
+            return;
+        }
         if (!restrictStatementToOwnCollectingCentre()) {
             reportController.setAgentHistories(null);
             return;
@@ -126,6 +173,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * checks the bills/samples/reports belong to it.
      */
     public String navigateToCollectingCentreSelfSampleManagement() {
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfSampleManagement);
+        }
         patientInvestigationController.makeNull();
         patientInvestigationController.setSelectedPatientSamples(null);
         setSelfSampleManagementDefaults();
@@ -147,6 +197,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * bill opened through Search Bills. Bills of other centres are refused.
      */
     public String navigateToSelfSampleManagementFromBills(List<Bill> bills) {
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfSampleManagement);
+        }
         if (bills == null || bills.isEmpty()) {
             JsfUtil.addErrorMessage("No bill selected");
             return null;
@@ -170,6 +223,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
 
     public String navigateBackToCollectingCentreSelfSampleManagement() {
         printingReport = null;
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfSampleManagement);
+        }
         return "/collecting_centre/cc_self_sample_management?faces-redirect=true";
     }
 
@@ -232,6 +288,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void generateSelfBarcodes(Bill bill) {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleBarcodePrint)) {
+            return;
+        }
         Bill ownBill = fetchOwnBill(bill);
         if (ownBill == null) {
             return;
@@ -257,6 +316,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * samples are refused, like every other barcode action here.
      */
     public void viewSelfSampleBarcode(PatientSample sample) {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleBarcodePrint)) {
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             return;
         }
@@ -281,6 +343,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void collectSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleCollect)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }
@@ -288,6 +353,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void sendSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleSend)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }
@@ -295,6 +363,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void rejectSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleReject)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }
@@ -320,6 +391,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void reGenerateSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleRegenerate)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }

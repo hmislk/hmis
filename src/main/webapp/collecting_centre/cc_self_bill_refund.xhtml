@@ -138,6 +138,7 @@
                                                     icon="fa fa-money-bill-wave"
                                                     styleClass="ui-button-warning"
                                                     title="Refund the selected items"
+                                                    rendered="#{webUserController.hasPrivilege('CcSelfBillRefund')}"
                                                     action="#{collectingCentreSelfSearchController.refundBill()}">
                                                     <p:confirm header="Confirm Refund" message="Are you sure you want to refund the selected items? This cannot be undone." icon="pi pi-exclamation-triangle"/>
                                                 </p:commandButton>
