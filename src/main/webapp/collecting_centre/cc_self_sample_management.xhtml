@@ -30,7 +30,8 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Sample Management"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-vials"
                                 backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                                 backLabel="Back to Dashboard"/>
@@ -171,15 +172,14 @@
                                     <p:column headerText="Patient Phone" style="width: 9em; padding: 6px;">
                                         <h:outputText value="#{b.patient.person.phone}"/>
                                     </p:column>
-                                    <p:column headerText="Status" style="width: 12em; padding: 6px;" class="text-center">
+                                    <p:column headerText="Status" style="width: 10rem; padding: 6px;" class="text-center">
                                         <p:badge rendered="#{b.cancelled}" value="Bill Cancelled" severity="danger"/>
                                         <p:badge rendered="#{not b.cancelled and b.status ne null}" value="#{b.status.label}" severity="info"/>
                                     </p:column>
-                                    <p:column headerText="Actions" style="width: 22em; padding: 6px;">
-                                        <div class="d-flex gap-1">
+                                    <p:column headerText="Actions" style="width: 13rem; padding: 6px;">
+                                        <div class="d-flex flex-nowrap justify-content-start gap-1">
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Barcode"
                                                 icon="fas fa-barcode"
                                                 class="ui-button-success"
                                                 title="#{collectingCentreSelfCommonController.isSelfBill(b) ? 'Generate and print sample barcodes' : 'Hospital Billing - barcodes cannot be generated here'}"
@@ -187,15 +187,15 @@
                                                 action="#{collectingCentreSelfCommonController.generateSelfBarcodes(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Samples"
                                                 icon="fas fa-vial"
                                                 class="ui-button-warning"
+                                                title="View samples of this bill"
                                                 action="#{collectingCentreSelfCommonController.listSelfSamplesOfBill(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Reports"
                                                 icon="fas fa-file-medical"
                                                 class="ui-button-danger"
+                                                title="View reports of this bill"
                                                 action="#{collectingCentreSelfCommonController.listSelfReportsOfBill(b)}"/>
                                         </div>
                                     </p:column>
@@ -286,7 +286,7 @@
                                                 <h:outputText value="#{ps.bill.patient.person.ageAsString} / #{ps.bill.patient.person.sex.label}" class="text-secondary"/>
                                             </p:column>
 
-                                            <p:column headerText="Status" style="width: 13em; vertical-align: top; padding: 6px;" class="text-center">
+                                            <p:column headerText="Status" style="width: 11rem; vertical-align: top; padding: 6px;" class="text-center">
                                                 <p:badge rendered="#{ps.bill.cancelled}" value="Bill Cancelled" severity="danger"/>
                                                 <h:panelGroup rendered="#{not ps.bill.cancelled}">
                                                     <p:badge value="#{ps.status.label}" severity="info"/>
@@ -469,31 +469,35 @@
                                         </ui:repeat>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 11em; vertical-align: top; padding: 6px;">
-                                        <h:outputText
+                                    <p:column headerText="Status" style="width: 10rem; vertical-align: top; padding: 6px;" class="text-center">
+                                        <p:badge
                                             value="#{pi.status.label}"
-                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled}"/>
+                                            severity="#{pi.status eq 'SAMPLE_REJECTED' or pi.status eq 'SAMPLE_RECOLLECTION_REQUESTED' or pi.status eq 'SAMPLE_RECOLLECTION_PENDING' ? 'danger'
+                                                        : pi.status eq 'SAMPLE_APPROVED' or (pi.status.toString().startsWith('REPORT_') and pi.status ne 'REPORT_CREATED') ? 'success'
+                                                        : pi.status eq 'ORDERED' or pi.status eq 'SAMPLE_GENERATED' or pi.status eq 'SAMPLE_REGENERATED' or pi.status eq 'SEPARATE_AND_SAMPLE_GENERATED' ? 'secondary'
+                                                        : 'warning'}"
+                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled and pi.status ne null}"/>
                                         <p:badge value="Item Refunded" severity="warning" rendered="#{pi.billItem.refunded}"/>
                                         <p:badge value="Bill Cancelled" severity="danger" rendered="#{pi.billItem.bill.cancelled}"/>
                                     </p:column>
 
                                     <p:column headerText="Actions" style="width: 30em; vertical-align: top; padding: 6px;">
                                         <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
-                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="w-50"/>
+                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="text-nowrap"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{pi.billItem.refunded and not pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
-                                            <p:badge value="Item Refunded" severity="info" size="large" class="w-50"/>
+                                            <p:badge value="Item Refunded" severity="info" size="large" class="text-nowrap"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{not pi.billItem.bill.cancelled and not pi.billItem.refunded}">
                                             <h:panelGroup rendered="#{empty collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" class="d-flex justify-content-center">
-                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="w-50"/>
+                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="text-nowrap"/>
                                             </h:panelGroup>
 
                                             <ui:repeat value="#{collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" var="dpr">
                                                 <h:panelGroup rendered="#{not dpr.approved}" class="d-flex justify-content-center">
-                                                    <p:badge value="Pending Approval.." severity="success" size="large" class="w-50"/>
+                                                    <p:badge value="Pending Approval.." severity="success" size="large" class="text-nowrap"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{dpr.approved}">
                                                     <div class="d-flex justify-content-between">
@@ -506,9 +510,8 @@
                                                             icon="fa fa-print"
                                                             class="ui-button-info"
                                                             disabled="#{not dpr.approved}"
-                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}"/>
-                                                        <p:badge value="Approved" severity="success" class="mt-2" rendered="#{dpr.approved}"/>
-                                                        <p:badge value="Pending" severity="warning" class="mt-2" rendered="#{not dpr.approved}"/>
+                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}">
+                                                        </p:commandButton>
                                                     </div>
 
                                                     <div class="d-flex justify-content-end gap-2">

@@ -25,12 +25,25 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Statement"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-file-alt"
                                 backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                                 backLabel="Back to Dashboard"/>
 
                             <p:growl id="msg"/>
+
+                            <p:dialog widgetVar="ccProcessingDlg" modal="true" closable="false" resizable="false" draggable="false" showHeader="false" styleClass="cc-settling-dialog">
+                                <div class="cc-settling-body">
+                                    <span class="cc-settling-spinner">
+                                        <h:outputText styleClass="fa fa-spinner fa-spin"/>
+                                    </span>
+                                    <div class="cc-settling-text">
+                                        <span class="cc-settling-title">Processing Statement</span>
+                                        <span class="cc-settling-subtitle">Please wait, this may take a moment...</span>
+                                    </div>
+                                </div>
+                            </p:dialog>
 
                             <p:panel styleClass="cc-bill-card cc-c-blue">
                                 <f:facet name="header">
@@ -82,6 +95,8 @@
                                                 value="Process"
                                                 process="@form"
                                                 update="statementHeader tblStatement msg"
+                                                onstart="PF('ccProcessingDlg').show();"
+                                                oncomplete="PF('ccProcessingDlg').hide();"
                                                 action="#{collectingCentreSelfCommonController.processCollectingCentreSelfStatement}">
                                             </p:commandButton>
 
