@@ -510,9 +510,8 @@
                                                             icon="fa fa-print"
                                                             class="ui-button-info"
                                                             disabled="#{not dpr.approved}"
-                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}"/>
-                                                        <p:badge value="Approved" severity="success" class="mt-2" rendered="#{dpr.approved}"/>
-                                                        <p:badge value="Pending" severity="warning" class="mt-2" rendered="#{not dpr.approved}"/>
+                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}">
+                                                        </p:commandButton>
                                                     </div>
 
                                                     <div class="d-flex justify-content-end gap-2">
