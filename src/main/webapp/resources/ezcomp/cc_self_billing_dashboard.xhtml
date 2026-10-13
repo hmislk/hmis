@@ -61,47 +61,9 @@
                 </div>
             </div>
 
-            <div class="cc-stat-grid" rendered="#{sessionController.loggedUser != null}">
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-city"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Institution"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.institution.name}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-sitemap"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Department"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.name}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-tag"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Department Type"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.departmentType.label}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-id-badge"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Username"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.loggedUser.name}"/>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cc-body-grid">
+            <div class="cc-body-grid" style="margin-top: 60px;">
                 <div>
+                    
                     <div class="cc-card">
                         <h:panelGroup layout="block" styleClass="cc-section-title">
                             <h:outputText styleClass="fas fa-bolt"/>
@@ -109,8 +71,9 @@
                         </h:panelGroup>
                         <div class="cc-action-grid">
                             <h:commandLink 
-                                styleClass="cc-action-card cc-c-blue" ajax="false"
-                                           action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
+                                styleClass="cc-action-card cc-c-blue" 
+                                ajax="false"
+                                action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-file-invoice-dollar"/>
                                 </div>
@@ -157,10 +120,6 @@
                         </div>
                     </div>
 
-                    <div class="cc-notice">
-                        <h:outputText styleClass="fas fa-info-circle"/>
-                        <h:outputText value="Self-billing tools for this Collecting Centre are being rolled out. The actions above will become available here soon."/>
-                    </div>
                 </div>
 
                 <div>
@@ -178,7 +137,7 @@
                                     <h:outputText value=" Logged User"/>
                                 </span>
                                 <h:outputText styleClass="cc-detail-value"
-                                              value="#{sessionController.loggedUser.webUserPerson.name}"
+                                              value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"
                                               rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
                             </div>
                             <div class="cc-detail-row">
@@ -195,18 +154,9 @@
                                     <span class="cc-detail-icon cc-c-orange">
                                         <h:outputText styleClass="fas fa-city"/>
                                     </span>
-                                    <h:outputText value=" Institution"/>
+                                    <h:outputText value=" Collecting Centre"/>
                                 </span>
                                 <h:outputText styleClass="cc-detail-value" value="#{sessionController.institution.name}"/>
-                            </div>
-                            <div class="cc-detail-row">
-                                <span class="cc-detail-label">
-                                    <span class="cc-detail-icon cc-c-green">
-                                        <h:outputText styleClass="fas fa-sitemap"/>
-                                    </span>
-                                    <h:outputText value=" Department"/>
-                                </span>
-                                <h:outputText styleClass="cc-detail-value" value="#{sessionController.department.name}"/>
                             </div>
                         </h:panelGroup>
                     </div>
