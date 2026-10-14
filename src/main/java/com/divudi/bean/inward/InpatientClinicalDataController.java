@@ -5090,31 +5090,44 @@ public class InpatientClinicalDataController implements Serializable {
 
     private String resolveDefaultEmailRecipient() {
         EncounterCreditCompany selected = getSelectedEncounterCreditCompany();
-        if (selected != null && selected.getInstitution() != null
-                && selected.getInstitution().getEmail() != null
-                && !selected.getInstitution().getEmail().trim().isEmpty()) {
-            return selected.getInstitution().getEmail().trim();
+        if (selected != null && selected.getInstitution() != null) {
+            String e = validEmailOrNull(selected.getInstitution().getEmail());
+            if (e != null) {
+                return e;
+            }
         }
         if (encounterCreditCompanies != null) {
             for (EncounterCreditCompany ecc : encounterCreditCompanies) {
-                if (ecc.getInstitution() != null
-                        && ecc.getInstitution().getEmail() != null
-                        && !ecc.getInstitution().getEmail().trim().isEmpty()) {
-                    return ecc.getInstitution().getEmail().trim();
+                if (ecc.getInstitution() != null) {
+                    String e = validEmailOrNull(ecc.getInstitution().getEmail());
+                    if (e != null) {
+                        return e;
+                    }
                 }
             }
         }
-        if (current != null && current.getPatient() != null && current.getPatient().getPerson() != null
-                && current.getPatient().getPerson().getEmail() != null
-                && !current.getPatient().getPerson().getEmail().trim().isEmpty()) {
-            return current.getPatient().getPerson().getEmail().trim();
+        if (current != null && current.getPatient() != null && current.getPatient().getPerson() != null) {
+            String e = validEmailOrNull(current.getPatient().getPerson().getEmail());
+            if (e != null) {
+                return e;
+            }
         }
-        if (current != null && current.getGuardian() != null
-                && current.getGuardian().getEmail() != null
-                && !current.getGuardian().getEmail().trim().isEmpty()) {
-            return current.getGuardian().getEmail().trim();
+        if (current != null && current.getGuardian() != null) {
+            String e = validEmailOrNull(current.getGuardian().getEmail());
+            if (e != null) {
+                return e;
+            }
         }
         return "";
+    }
+
+    /** Returns the trimmed value only if it is a valid email address; master-data fields may hold free text. */
+    private String validEmailOrNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String v = value.trim();
+        return !v.isEmpty() && CommonFunctions.isValidEmail(v) ? v : null;
     }
 
     /**
