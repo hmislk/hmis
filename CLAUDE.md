@@ -21,6 +21,7 @@
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
 - **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
+- **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
 - **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
 - **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
 
@@ -42,7 +43,8 @@
 ### Git
 - Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
-- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI blocks others). Use the `/hotfix-deploy` skill.
+- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`** (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11. See [Deployment map](developer_docs/deployment/ci-cd-pipeline-overview.md).
+- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI enforces this only for the retired `*-prod` names until #24453). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
 - **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch and update its title/body.
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).

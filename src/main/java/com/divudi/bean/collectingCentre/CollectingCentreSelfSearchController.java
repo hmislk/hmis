@@ -3,6 +3,8 @@ package com.divudi.bean.collectingCentre;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
@@ -44,6 +46,8 @@ public class CollectingCentreSelfSearchController implements Serializable {
     private SessionController sessionController;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    private CollectingCentreSelfCommonController collectingCentreSelfCommonController;
 
     private static final String SUBMITTED_BILL_ID_PARAM = "ccSelfBillId";
 
@@ -54,6 +58,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
     private Bill viewingBill;
 
     public String navigateToSearchBills() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfSearchBills)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfSearchBills);
+        }
         fromDate = CommonFunctions.getStartOfDay();
         toDate = CommonFunctions.getEndOfDay();
         searchKeyword = new SearchKeyword();
@@ -62,11 +69,28 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateBackToSearchBills() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfSearchBills)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfSearchBills);
+        }
         viewingBill = null;
         return "/collecting_centre/cc_self_search_bills?faces-redirect=true";
     }
 
+    /**
+     * The bill view page is also the entry point to cancel and refund, so any
+     * of reprint, cancel or refund lets the user open it. Printing on that page
+     * still needs the reprint privilege.
+     */
+    public boolean isCanOpenBill() {
+        return collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillReprint)
+                || collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillCancel)
+                || collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillRefund);
+    }
+
     public String navigateToReprintBill(Bill bill) {
+        if (!isCanOpenBill()) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillReprint);
+        }
         if (bill == null || bill.getId() == null) {
             JsfUtil.addErrorMessage("No bill selected");
             return null;
@@ -89,6 +113,9 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateToOriginalBillPrint() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillReprint)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillReprint);
+        }
         if (!isViewingOwnBill()) {
             return null;
         }
@@ -101,7 +128,10 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * for the self-service one.
      */
     public String navigateToCancelBill() {
-        if (!isViewingOwnBill()) {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillCancel)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillCancel);
+        }
+        if (!isViewingOwnBill() || !isSelfBillOrError(viewingBill)) {
             return null;
         }
         billSearch.setBill(viewingBill);
@@ -114,7 +144,10 @@ public class CollectingCentreSelfSearchController implements Serializable {
     }
 
     public String navigateToRefundBill() {
-        if (!isViewingOwnBill()) {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBillRefund)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBillRefund);
+        }
+        if (!isViewingOwnBill() || !isSelfBillOrError(viewingBill)) {
             return null;
         }
         billSearch.setBill(viewingBill);
@@ -134,8 +167,11 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * reached without navigateToCancelBill().
      */
     public void cancelBill() {
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfBillCancel)) {
+            return;
+        }
         Bill fetched = fetchSubmittedOwnBill();
-        if (fetched == null) {
+        if (fetched == null || !isSelfBillOrError(fetched)) {
             return;
         }
         if (fetched.isCancelled()) {
@@ -154,7 +190,11 @@ public class CollectingCentreSelfSearchController implements Serializable {
      * refunded bills are allowed, as remaining items can still be refunded.
      */
     public String refundBill() {
-        if (fetchSubmittedOwnBill() == null) {
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfBillRefund)) {
+            return "";
+        }
+        Bill fetched = fetchSubmittedOwnBill();
+        if (fetched == null || !isSelfBillOrError(fetched)) {
             return "";
         }
         return billSearch.refundCollectingCenterBill();
@@ -202,8 +242,34 @@ public class CollectingCentreSelfSearchController implements Serializable {
         return true;
     }
 
+    /**
+     * Only bills raised by the centre itself (Self Billing) can be cancelled
+     * or refunded here; bills raised at the hospital for the centre
+     * (Hospital Billing) are view only.
+     */
+    public boolean isViewingSelfBill() {
+        return isSelfBill(viewingBill);
+    }
+
+    private boolean isSelfBillOrError(Bill bill) {
+        if (!isSelfBill(bill)) {
+            JsfUtil.addErrorMessage("This is a Hospital Billing bill and cannot be cancelled or refunded here");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isSelfBill(Bill bill) {
+        return bill != null
+                && bill.getDepartment() != null
+                && bill.getDepartment().getDepartmentType() == DepartmentType.CollectingCentre;
+    }
+
     public void searchBills() {
         bills = null;
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfSearchBills)) {
+            return;
+        }
         Institution collectingCentre = sessionController.getInstitution();
         if (collectingCentre == null) {
             JsfUtil.addErrorMessage("Collecting centre not found for the logged department");

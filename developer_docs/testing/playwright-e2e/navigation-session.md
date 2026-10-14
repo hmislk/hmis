@@ -579,3 +579,20 @@ way §106's second-level note already recommends confirming `display: block` bef
 
 Verified 2026-09-29 while trying to reach *Settings → Manage My API Keys* on the Ruhunu local-staging
 server (`rh-local-staging` branch) mid-investigation of an inward pharmacy margin bug.
+
+
+## 142. `browser_hover` opens a PrimeFaces flyout; a synthetic `dispatchEvent(mouseenter)` on the same `<li>` does not
+
+§136's fix says to `browser_hover` each ancestor `<li>`, but a synthetic `el.dispatchEvent(new
+MouseEvent('mouseenter', {bubbles:true}))` fired via `browser_evaluate` on that same element looks
+identical in code and still leaves `aria-expanded="false"` — PrimeFaces' hover handler only fires on
+the browser's own trusted pointer event, which `browser_hover` sends (via CDP) but a scripted
+`dispatchEvent` does not. A second gotcha stacks on top: even a genuine `browser_hover` needs a short
+settle — checking `aria-expanded` or searching for the child menu text immediately after the hover
+call can still read `false`/empty; add `browser_wait_for({time: 1})` before trusting the result.
+
+Fix: use the real `browser_hover` tool (not `dispatchEvent`) on each ancestor level per §136, then wait
+~1s before reading the submenu's state or clicking its items.
+
+Verified 2026-10-07 navigating nested Pharmacy submenus (e.g. *Admissions → Pharmacy → Request
+Medicines from Pharmacy*) while developing #24358/#24359/#24360.

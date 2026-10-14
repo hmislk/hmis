@@ -16,6 +16,7 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1103,11 +1104,32 @@ public class ConfigOptionController implements Serializable {
         // one's list).
         if (entity instanceof Department) {
             results = filterOutLongerNameCollisions(results, ((Department) entity).getName(), getAllDepartmentNames());
+            // Newer department-scoped options (getXxxValueByKeyForDepartment,
+            // e.g. "Inward Raw Text Receipt Line Width") are stored with the
+            // `department` FK set and no key prefix - list them too, or they
+            // can never be edited from the UI (issue #24454).
+            results = new ArrayList<>(results);
+            results.addAll(getDepartmentLinkedOptions((Department) entity));
+            results.sort(Comparator.comparing(ConfigOption::getOptionKey,
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
         } else if (entity instanceof Institution) {
             results = filterOutLongerNameCollisions(results, ((Institution) entity).getName(), getAllInstitutionNames());
         }
 
         return results;
+    }
+
+    /**
+     * Options stored against {@code department} via the {@code department}
+     * FK (no key prefix), as created by
+     * {@code ConfigOptionApplicationController.getXxxValueByKeyForDepartment}.
+     */
+    private List<ConfigOption> getDepartmentLinkedOptions(Department department) {
+        String jpql = "SELECT o FROM ConfigOption o WHERE COALESCE(o.retired, false) = false"
+                + " AND o.department = :dept AND o.institution IS NULL AND o.webUser IS NULL";
+        Map<String, Object> params = new HashMap<>();
+        params.put("dept", department);
+        return getFacade().findByJpql(jpql, params);
     }
 
     /**

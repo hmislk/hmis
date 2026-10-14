@@ -12,6 +12,7 @@ import static com.divudi.core.data.BillTypeAtomic.PHARMACY_GRN_RETURN;
 import com.divudi.core.data.IdentifiableWithNameOrCode;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.cashTransaction.CashTransaction;
@@ -550,6 +551,9 @@ public class Bill implements Serializable, RetirableEntity {
     private double ccTransactionAmount;
     private double ccTotalCenterValue;
     private double ccExcessAmount;
+
+    @Enumerated(EnumType.STRING)
+    private CollectingCentreBillingType ccBillingType;
 
     public Bill() {
         if (status == null) {
@@ -2190,7 +2194,8 @@ public class Bill implements Serializable, RetirableEntity {
         List<Bill> bills = new ArrayList<>();
 
         for (Bill b : returnPreBills) {
-            if (b instanceof RefundBill && b.getBillType() == BillType.PharmacyPre) {
+            // Skip duplicates: the lazy inverse list may already hold a just-saved return (issue #24483).
+            if (b instanceof RefundBill && b.getBillType() == BillType.PharmacyPre && !bills.contains(b)) {
 
                 bills.add(b);
             }
@@ -2224,9 +2229,11 @@ public class Bill implements Serializable, RetirableEntity {
     public List<Bill> getReturnCashBills() {
         List<Bill> bills = new ArrayList<>();
         for (Bill b : returnCashBills) {
+            // Skip duplicates (issue #24483).
             if (b instanceof RefundBill
                     && b.getBillType() == BillType.PharmacySale
-                    && b.getBilledBill() == null) {
+                    && b.getBilledBill() == null
+                    && !bills.contains(b)) {
                 bills.add(b);
             }
         }
@@ -3304,6 +3311,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setCcExcessAmount(double ccExcessAmount) {
         this.ccExcessAmount = ccExcessAmount;
+    }
+
+    public CollectingCentreBillingType getCcBillingType() {
+        return ccBillingType;
+    }
+
+    public void setCcBillingType(CollectingCentreBillingType ccBillingType) {
+        this.ccBillingType = ccBillingType;
     }
 
 }

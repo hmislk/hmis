@@ -466,5 +466,8 @@ a.cc-action-card {
 /* Keep two action cards per row on phones instead of a long single column */
 @media (max-width: 420px) {
     .cc-action-grid { grid-template-columns: repeat(2, 1fr); }
-    .cc-hero-chip { padding-right: 0.75rem; }
+    .cc-hero-chip {
+        padding-right: 0.75rem;
+        min-width: 0;
+    }
 }

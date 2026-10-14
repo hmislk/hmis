@@ -1,4 +1,4 @@
-name: "Restart a migrated service"
+name: "Restart a service (India South Central)"
 
 on:
   workflow_dispatch:
@@ -21,7 +21,6 @@ on:
           - vm-hmis-shared3-prod
           - vm-hmis-shared4-prod
           - vm-hmis-staging-prod
-          - vm-hmis-qa01-qa
 
       hospital_target:
         description: "Hospital — used for `hospital` only"
@@ -49,10 +48,6 @@ on:
           - stg-rmh
           - stg-coop
           - stg-southernlanka
-          - qa1
-          - qa2
-          - qa3
-          - qa4
 
       confirm:
         description: "Type the target name again to confirm"
@@ -100,7 +95,6 @@ jobs:
               stg-rmh)           VM=staging; CTX=rmh ;;
               stg-coop)          VM=staging; CTX=coop ;;
               stg-southernlanka) VM=staging; CTX=southernlanka ;;
-              qa1|qa2|qa3|qa4)   VM=qa01;    CTX="$TARGET" ;;
               *) echo "::error::unknown hospital $TARGET"; exit 1 ;;
             esac
           else
@@ -111,7 +105,6 @@ jobs:
               vm-hmis-shared3-prod) VM=shared3 ;;
               vm-hmis-shared4-prod) VM=shared4 ;;
               vm-hmis-staging-prod) VM=staging ;;
-              vm-hmis-qa01-qa)      VM=qa01 ;;
               *) echo "::error::unknown VM $TARGET"; exit 1 ;;
             esac
             CTX=""
@@ -125,19 +118,20 @@ jobs:
           fi
 
           case "$VM" in
-            shared1) IP='${{ secrets.PROD_SHARED1_IP }}'; ENVN=prod; AZ=vm-hmis-shared1-prod ;;
-            shared2) IP='${{ secrets.PROD_SHARED2_IP }}'; ENVN=prod; AZ=vm-hmis-shared2-prod ;;
-            shared3) IP='${{ secrets.PROD_SHARED3_IP }}'; ENVN=prod; AZ=vm-hmis-shared3-prod ;;
-            shared4) IP='${{ secrets.PROD_SHARED4_IP }}'; ENVN=prod; AZ=vm-hmis-shared4-prod ;;
-            staging) IP='${{ secrets.PROD_STAGING_IP }}'; ENVN=prod; AZ=vm-hmis-staging-prod ;;
-            qa01)    IP='${{ secrets.QA_MIGRATED_SERVER_IP }}'; ENVN=qa; AZ=vm-hmis-qa01-qa ;;
+            # India South Central VMs (since ~2026-10-08). QA is home-hosted and
+            # has its own home-qa* pipelines, so it is not restartable from here.
+            shared1) IP='${{ vars.ISC_SHARED1_IP }}'; AZ=vm-hmis-shared1-prod ;;
+            shared2) IP='${{ vars.ISC_SHARED2_IP }}'; AZ=vm-hmis-shared2-prod ;;
+            shared3) IP='${{ vars.ISC_SHARED3_IP }}'; AZ=vm-hmis-shared3-prod ;;
+            shared4) IP='${{ vars.ISC_SHARED4_IP }}'; AZ=vm-hmis-shared4-prod ;;
+            staging) IP='${{ vars.ISC_STAGING_IP }}'; AZ=vm-hmis-staging-prod ;;
           esac
-          [ -n "$IP" ] || { echo "::error::no IP secret set for $VM"; exit 1; }
+          [ -n "$IP" ] || { echo "::error::no IP variable set for $VM"; exit 1; }
 
           {
             echo "action=$ACTION"; echo "target=$TARGET"; echo "vm=$VM"
-            echo "ctx=$CTX"; echo "ip=$IP"; echo "envn=$ENVN"; echo "az=$AZ"
-            echo "rg=$([ "$ENVN" = qa ] && echo rg-hmis-qa-eastasia || echo rg-hmis-prod-eastasia)"
+            echo "ctx=$CTX"; echo "ip=$IP"; echo "az=$AZ"
+            echo "rg=rg-hmis-prod-indiasouthcentral"
           } >> "$GITHUB_OUTPUT"
 
           echo "### Restarting" >> "$GITHUB_STEP_SUMMARY"
@@ -157,11 +151,7 @@ jobs:
         if: inputs.action != 'vm'
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          if [ "${{ steps.t.outputs.envn }}" = "qa" ]; then
-            echo "${{ secrets.QA_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id
-          else
-            echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id
-          fi
+          echo "${{ secrets.PROD_MIGRATED_SSH_PRIVATE_KEY }}" > ~/.ssh/id
           chmod 600 ~/.ssh/id
           ssh-keyscan -H "${{ steps.t.outputs.ip }}" >> ~/.ssh/known_hosts 2>/dev/null
 
