@@ -50,7 +50,7 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - Defer expensive discount calculations
 
 ### Store module
-- Store BHT issues and returns run through the pharmacy controllers (e.g. `BhtIssueReturnController`). The `bean/store/*ReturnController` classes are unused: don't add fixes or guards there. Fix the pharmacy controller instead, and say so in the issue.
+- Hospitals issue and return Store items to BHTs through the pharmacy flow and controllers (e.g. `BhtIssueReturnController`). The `bean/store/*ReturnController` pages are still reachable (Theatre / Store → BHT Issue menus) but aren't used in practice. Don't add fixes or guards there unless an issue explicitly reports that path; fix the pharmacy controller and say so in the issue.
 
 ## GRN Report Testing
 
