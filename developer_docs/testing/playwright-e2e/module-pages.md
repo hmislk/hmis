@@ -682,3 +682,14 @@ Use this when a box has no admission that is finalised against an insurer. Every
 4. On the final bill page click **Process**, set the insurer's allocated amount (the patient co-payment balances itself), and **Save Final Bill**. Physical discharge is only possible after this.
 
 Record the BHT, final bill number and amounts in the delivery message.
+
+## 144. Setting up a non-cash settlement test: payments must come through an accepted handover
+
+**Payment → Financial Transaction Manager → Drawer → Settle Non-Cash Payments** lists only payments the user currently holds that were written to the cash book and are not yet settled. A card or cheque bill the user just collected is not listed. To build test data:
+
+1. User A starts a shift and collects the card/cheque bills.
+2. User A hands the shift over to user B (**Shift → Handover Current Shift**).
+3. User B opens **Shift Handovers to Accept**, clicks **To Accept**, then **Accept Handover & Write to Cashbook**.
+
+User B can then settle the payments. Settlement cannot be undone, so each retake needs new bills and a new handover. If `Allow Handover with Unmatched Balance` is off, the handover must include every collection in the shift. Use a new test user for A so the shift holds only the demo bills.
+
