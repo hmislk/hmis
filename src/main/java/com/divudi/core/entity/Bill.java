@@ -1278,7 +1278,9 @@ public class Bill implements Serializable, RetirableEntity {
             // priceMatrix is not persisted on BillItem for bills created via
             // native-SQL retail sale (issue #24479); derive the percentage
             // from total/discount instead of the never-populated discountPercent field.
-            discountPercent = (discount / total) * 100.0;
+            // Returned directly (not assigned to discountPercent) since this getter
+            // can run during read-only rendering and must not dirty the persistent field.
+            return (discount / total) * 100.0;
         }
 
         return discountPercent;
