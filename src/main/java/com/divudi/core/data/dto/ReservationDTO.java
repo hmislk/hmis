@@ -4,6 +4,9 @@ import com.divudi.bean.lab.LaboratoryCommonController;
 import com.divudi.core.data.AppointmentStatus;
 import com.divudi.core.data.Title;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Date;
 
 public class ReservationDTO implements Serializable {
@@ -148,6 +151,36 @@ public class ReservationDTO implements Serializable {
 
     public void setPatientAge(String patientAge) {
         this.patientAge = patientAge;
+    }
+
+    /**
+     * Compact age for dense grids: "86Y", "3M20D", "12D". The long-form
+     * {@link #getPatientAge()} is unchanged and is still used elsewhere. (#23621)
+     */
+    public String getPatientAgeShort() {
+        if (patientDob == null) {
+            return "";
+        }
+        Date ref = (createdAt != null) ? createdAt : new Date();
+        LocalDate birth = patientDob.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate on = ref.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if (birth.isAfter(on)) {
+            return "";
+        }
+        Period p = Period.between(birth, on);
+        int years = p.getYears();
+        int months = p.getMonths();
+        int days = p.getDays();
+        if (years >= 5) {
+            return years + "Y";
+        }
+        if (years >= 1) {
+            return (months > 0) ? years + "Y" + months + "M" : years + "Y";
+        }
+        if (months >= 1) {
+            return (days > 0) ? months + "M" + days + "D" : months + "M";
+        }
+        return days + "D";
     }
 
     public String getPatientNameWithTitle() {

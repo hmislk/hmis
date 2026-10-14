@@ -70,10 +70,17 @@ After the loop, if `bundle.getCashFloatNetTotal() != 0`:
    - `floatRecipient = receiver` (the accepting user)
    - `currentHolder = receiver`
    - `department = null`, `institution = null`
-3. Update the receiver's cash drawer via `drawerController.updateDrawerForIns`.
+3. **Do not move the receiver's drawer** for this payment. The accept already
+   credited the drawer with the counted denomination total, which includes the
+   float, so a second movement double-counts it (#24428).
 
-This receiver-side float is what makes the net float appear on the receiver's
-**own** shift handover screen alongside their collections.
+This receiver-side float is a record only. It is what makes the net float appear on
+the receiver's **own** shift handover screen alongside their collections.
+
+Its `paidValue` is **signed**: negative when the sender's shift sent out more float
+than it received. `generatePaymentBundleForHandovers()` reads it with its sign
+(`isNetFloatFromHandoverAccept`). Ordinary float receipts are still read with
+`Math.abs`.
 
 ## Why the create bill stores a float-inclusive total
 
@@ -100,7 +107,6 @@ The receiver-side float payment therefore has no cancel path today.
 If a future requirement arises, cancel should:
 
 - Retire the `FUND_TRANSFER_RECEIVED_BILL` and its float payment.
-- Reverse the receiver's cash drawer update.
 - Clear `currentHolder` rewrites for all collected payments (restore to sender).
 
 ## Cash-only

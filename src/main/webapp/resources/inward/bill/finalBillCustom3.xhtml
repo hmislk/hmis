@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <!--
         Inward Final Bill ("Custom Bill 2" in the Custom Bills tab), printed
@@ -107,20 +108,33 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                         <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
                             <ui:repeat value="#{bip.proFees}" var="fe">
-                                <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                <h:panelGroup rendered="#{(fe.feeAdjusted ne 0 or fe.freeOfCharge) and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                     <tr>
                                         <td style="text-align: left;">
                                             <h:outputLabel value="#{fe.staff.person.nameWithTitle}" />
                                             <h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}" />
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                            <h:outputText value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}" rendered="#{fe.freeOfCharge and fe.feeAdjusted eq 0}"/>
+                                            <h:outputLabel value="#{fe.feeAdjusted}" rendered="#{!(fe.freeOfCharge and fe.feeAdjusted eq 0)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
                                     </tr>
                                 </h:panelGroup>
                             </ui:repeat>
+                                <h:panelGroup rendered="#{bip.unattributedProfessionalFeeValue ge 0.01}">
+                                    <tr>
+                                        <td style="text-align: left;">
+                                            <h:outputLabel value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Other Professional Charges', 'Other Professional Charges')}" />
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{bip.unattributedProfessionalFeeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
                         </h:panelGroup>
                     </ui:repeat>
                 </tbody>
@@ -183,6 +197,8 @@
                     <td style="text-align: left;">Bill Prepared By : <h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
                 </tr>
             </table>
+
+            <bi:generatedApprovedStamp bill="#{cc.attrs.bill}"/>
 
             <div style="text-align: center; font-size: 10px; margin-top: 8px;">
                 <h:outputLabel value="Powered by CareCode (Pvt) Ltd." />

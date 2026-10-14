@@ -116,6 +116,7 @@ public enum BillType {
     PharmacySnapshotBill,
     PharmacyPhysicalCountBill,
     PharmacyStockAdjustmentBill,
+    PharmacyAdjustmentApprovalRequest,
     ChannelCash(ChannelCashFlow),
     ChannelPaid(ChannelCashFlow),
     ChannelAgent(ChannelCashFlow),
@@ -252,6 +253,8 @@ public enum BillType {
                 return "Physical Count Bill";
             case PharmacyStockAdjustmentBill:
                 return "Stock Adjustment Bill";
+            case PharmacyAdjustmentApprovalRequest:
+                return "Pharmacy Adjustment Approval Request";
             case GrnPayment:
                 return "Grn Payment";
             case GrnPaymentPre:
@@ -344,6 +347,38 @@ public enum BillType {
                 return "Fund Transfer Request Bill";
             case RecordShiftEndCash:
                 return "Shift End Cash Record";
+            case PharmacySaleWithoutStock:
+                return "Pharmacy Sale Without Stock";
+            case PharmacyAddtoStock:
+                return "Pharmacy Add to Stock";
+            case PharmacyBill:
+                return "Pharmacy Bill";
+            case PharmacyGrnBillImport:
+                return "Pharmacy GRN Import";
+            case PharmacyDirectIssue:
+                return "Pharmacy Direct Issue";
+            case PharmacyDirectReceive:
+                return "Pharmacy Direct Receive";
+            case PharmacyBhtIssue:
+                return "Pharmacy BHT Issue";
+            case PharmacyAdjustmentDepartmentStock:
+                return "Pharmacy Adjustment - Department Stock";
+            case PharmacyAdjustmentDepartmentSingleStock:
+                return "Pharmacy Adjustment - Department Single Stock";
+            case PharmacyAdjustmentStaffStock:
+                return "Pharmacy Adjustment - Staff Stock";
+            case PharmacyAdjustmentSaleRate:
+                return "Pharmacy Adjustment - Sale Rate";
+            case PharmacyAdjustmentWholeSaleRate:
+                return "Pharmacy Adjustment - Wholesale Rate";
+            case PharmacyAdjustmentPurchaseRate:
+                return "Pharmacy Adjustment - Purchase Rate";
+            case PharmacyAdjustmentCostRate:
+                return "Pharmacy Adjustment - Cost Rate";
+            case PharmacyAdjustmentExpiryDate:
+                return "Pharmacy Adjustment - Expiry Date";
+            case PharmacyMajorAdjustment:
+                return "Pharmacy Major Adjustment";
             default:
                 return this.toString();
         }

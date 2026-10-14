@@ -7,7 +7,6 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
@@ -168,6 +167,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
         mergeChargeMaps(result, fetchPatientRoomServiceItemCharges(encounters));
         mergeChargeMaps(result, fetchProfessionalFeeCharges(encounters));
         mergeChargeMaps(result, fetchAssistingFeeCharges(encounters));
+        mergeChargeMaps(result, fetchTechnicianFeeCharges(encounters));
         mergeChargeMaps(result, fetchPharmacyBillCharges(encounters));
         mergeChargeMaps(result, fetchStoreBillCharges(encounters));
 
@@ -337,6 +337,11 @@ public class InwardBhtChargeAggregationService implements Serializable {
         return fetchBillFeeCharges(encounters, InwardChargeType.DoctorAndNurses);
     }
 
+    /** BILL_FEE — technician/paramedical fees. Their own bucket whether or not the hospital merges (issue #23982). */
+    private Map<Long, Map<InwardChargeType, Double>> fetchTechnicianFeeCharges(List<PatientEncounter> encounters) {
+        return fetchBillFeeCharges(encounters, InwardChargeType.TechnicianAndParamedicalCharge);
+    }
+
     private Map<Long, Map<InwardChargeType, Double>> fetchBillFeeCharges(
             List<PatientEncounter> encounters, InwardChargeType targetType) {
 
@@ -477,14 +482,18 @@ public class InwardBhtChargeAggregationService implements Serializable {
 
     /**
      * Same filter as fetchDiscountAndMarginByEncounter(), but split by the SAME
-     * criterion the gross charge split uses (fetchProfessionalFeeCharges /
-     * fetchBillFeeCharges(consultantOnly=true)): a BillFee counts as "professional"
+     * criterion the gross charge split uses (fetchProfessionalFeeCharges →
+     * fetchBillFeeCharges(ProfessionalCharge)): a BillFee counts as "professional"
      * only if its bill is InwardProfessional AND its fee is Staff-type AND its
-     * staff is a Consultant — i.e. exactly the ProfessionalCharge criterion, not
-     * "any BillFee on an InwardProfessional bill" (which would also catch
-     * DoctorAndNurses/assisting-staff fees and misroute their discount). Used by
-     * the Professional & Other Fee Summary report (2026-08-15) to net each bucket
-     * independently, consistently with how the gross totals are bucketed.
+     * saved fee category is Consultant Fee (or Consultant/Assistant when merged)
+     * — i.e. exactly InwardProfessionalFeeClassificationService.staffCondition
+     * for ProfessionalCharge, not "any BillFee on an InwardProfessional bill"
+     * (which would also catch assistant and technician fees and misroute their
+     * discount). The staff subtype is no longer used: since #23874 the category
+     * is persisted per fee, and a technician is often a Consultant record
+     * (issue #23982). Used by the Professional & Other Fee Summary report
+     * (2026-08-15) to net each bucket independently, consistently with how the
+     * gross totals are bucketed.
      *
      * otherJpql uses explicit LEFT JOINs on bf.fee/bf.staff, not the implicit
      * inner-join path navigation professionalJpql uses (BillFee.fee and
@@ -495,26 +504,29 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * for professionalJpql (a null-staff row genuinely isn't professional), but
      * would have been wrong here: it silently dropped those rows from BOTH
      * buckets instead of counting them as "other" (CodeRabbit review, PR #22964).
+     * Its category test is notProfessionalChargeCategory(), the exact complement
+     * of the professional side's, so the two buckets never overlap or leak.
      * Returns Map&lt;encounterId, double[]{professionalDiscount, professionalServiceCharge,
      * otherDiscount, otherServiceCharge}&gt;.
      */
     public Map<Long, double[]> fetchDiscountAndMarginSplitByProfessional(List<PatientEncounter> encounters) {
         Map<Long, double[]> result = new HashMap<>();
 
-        // When the hospital merges assisting fees into professional, "professional"
-        // widens to every staffed professional fee and "other" narrows by exactly the
-        // same rows, so the two buckets stay complementary in both configurations.
-        boolean merged = professionalFeeClassificationService.isMerged();
+        // The merge toggle is handled inside the classification service: when
+        // merged, "professional" widens to every staffed non-technician fee and
+        // "other" narrows by exactly the same rows, so the two buckets stay
+        // complementary in both configurations.
+        Map<String, Object> params = new HashMap<>();
 
         String professionalJpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
-                + " from BillFee bf left join bf.staff s"
+                + " from BillFee bf"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
                 + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and bf.bill.billType = :btp"
                 + " and bf.fee.feeType = :ftp"
-                + (merged ? " and s.id is not null" : " and type(s) = :staffClass")
+                + professionalFeeClassificationService.staffCondition("bf", InwardChargeType.ProfessionalCharge, params)
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
@@ -525,19 +537,15 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and (bf.bill.billType != :btp or f.id is null or f.feeType != :ftp or s.id is null"
-                + (merged ? ")" : " or type(s) != :staffClass)")
+                + " or" + professionalFeeClassificationService.notProfessionalChargeCategory("bf") + ")"
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
-        Map<String, Object> params = new HashMap<>();
         params.put("encs", encounters);
         params.put("excludedTypes", Arrays.asList(
                 BillTypeAtomic.INWARD_FINAL_BILL, BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL));
         params.put("btp", BillType.InwardProfessional);
         params.put("ftp", FeeType.Staff);
-        if (!merged) {
-            params.put("staffClass", Consultant.class);
-        }
 
         List<Object[]> professionalRows = patientEncounterFacade.findObjectArrayByJpql(professionalJpql, params, TemporalType.TIMESTAMP);
         if (professionalRows != null) {

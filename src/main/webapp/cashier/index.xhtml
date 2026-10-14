@@ -450,15 +450,6 @@
                                 <p:tab title="Legacy">
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-secondary"
-                                        value="End Shift (OLD)"
-                                        icon="pi pi-power-off"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
-                                        ajax="false"
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}">
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        class="my-1 w-100 ui-button-secondary"
                                         value="Handover (OLD)"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
                                         icon="pi pi-forward"

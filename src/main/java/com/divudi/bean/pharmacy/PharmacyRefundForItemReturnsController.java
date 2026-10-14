@@ -1857,7 +1857,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 //        if (pharmacyBillingAfterShiftStart) {
 //            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
 //            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-//                JsfUtil.addErrorMessage("Start Your Shift First !");
+//                JsfUtil.addStartShiftFirstMessageForRedirect();
 //                financialTransactionController.navigateToFinancialTransactionIndex();
 //            }
 //        }
@@ -1942,7 +1942,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 //        if (pharmacyBillingAfterShiftStart) {
 //            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
 //            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-//                JsfUtil.addErrorMessage("Start Your Shift First !");
+//                JsfUtil.addStartShiftFirstMessageForRedirect();
 //                financialTransactionController.navigateToFinancialTransactionIndex();
 //            }
 //        }
@@ -2529,7 +2529,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         if (pharmacyBillingAfterShiftStart) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         }

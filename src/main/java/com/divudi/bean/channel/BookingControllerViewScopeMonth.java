@@ -1565,7 +1565,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_month?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -1608,7 +1608,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return "/channel/channel_booking_by_month?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

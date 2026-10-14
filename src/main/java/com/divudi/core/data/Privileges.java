@@ -91,6 +91,7 @@ public enum Privileges {
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
     InwardProcessReturnAfterNursingDischarge("Inward Process Return After Nursing Discharge"),
+    InwardProcessCancelAfterNursingDischarge("Inward Process Cancel After Nursing Discharge"),
     InwardHoldProfessionalPayments("Hold Professional Payments"),
     InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
@@ -116,6 +117,7 @@ public enum Privileges {
     InwardFinalBillRetire("Inward Final Bill Retire"),
     InwardFinalBillEmail("Inward Final Bill Email"),
     InwardFinalBillApprove("Inward Final Bill Approve"),
+    InwardFinalBillViewUnapproved("Inward Final Bill View / Print Unapproved"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     // Inpatient Dashboard - Reports Panel individual button privileges (issue: admission_profile.xhtml Reports panel)
@@ -167,6 +169,7 @@ public enum Privileges {
     InwardSendEmail("Inward Send Email"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
+    InwardPackageChange("Inward Package Change"),
     InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
@@ -192,6 +195,7 @@ public enum Privileges {
     InpatientDashboardPanelBilling("Inpatient Dashboard - Billing Panel"),
     InpatientDashboardPanelServices("Inpatient Dashboard - Services Panel"),
     InpatientDashboardPanelRoomManagement("Inpatient Dashboard - Room Management Panel"),
+    InpatientDashboardPanelPackage("Inpatient Dashboard - Package Panel"),
     InpatientDashboardPanelOperationTheatre("Inpatient Dashboard - Operation Theatre Panel"),
     InpatientDashboardPanelClinicalData("Inpatient Dashboard - Clinical Data Panel"),
     InpatientDashboardPanelPharmaceuticals("Inpatient Dashboard - Pharmaceuticals Panel"),
@@ -667,6 +671,9 @@ public enum Privileges {
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
     PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
+    PharmacyStockAdjustmentApproval("Pharmacy Stock Adjustment Approval"),
+    PharmacyPriceAdjustmentApproval("Pharmacy Price Adjustment Approval"),
+    PharmacyExpiryDateAdjustmentApproval("Pharmacy Expiry Date Adjustment Approval"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     ArchiveOldStockHistory("Archive Old StockHistory Records"),
@@ -955,6 +962,7 @@ public enum Privileges {
     PharmacyAnalyticsPurcharseBillWithSupplier("Pharmacy Analytics - Purcharse Bill with Supplier"),
     PharmacyAnalyticsPharmacyGRNReport("Pharmacy Analytics - Pharmacy GRN Report"),
     PharmacyAnalyticsPharmacyGRNAndPurchaseReport("Pharmacy Analytics - Pharmacy GRN and purchase Report"),
+    PharmacyAnalyticsBillSearchByItem("Pharmacy Analytics - Pharmacy Bill Search by Item"),
     PharmacyAnalyticsGRNPurchaseItemsBySupplier("Pharmacy Analytics - GRN Purchase Items by Supplier"),
     PharmacyAnalyticsGRNSummaryBySupplier("Pharmacy Analytics - GRN Summary By Supplier"),
     PharmacyAnalyticsGRNBillItemReport("Pharmacy Analytics - GRN Bill Item Report"),
@@ -1526,6 +1534,9 @@ public enum Privileges {
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
             case PharmacyAdjustmentCreateBatch:
+            case PharmacyStockAdjustmentApproval:
+            case PharmacyPriceAdjustmentApproval:
+            case PharmacyExpiryDateAdjustmentApproval:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
             case ArchiveOldStockHistory:
@@ -1666,6 +1677,7 @@ public enum Privileges {
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
             case InwardProcessReturnAfterNursingDischarge:
+            case InwardProcessCancelAfterNursingDischarge:
             case InwardHoldProfessionalPayments:
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
@@ -1673,6 +1685,7 @@ public enum Privileges {
             case InwardSendEmail:
             case InwardPackageAdministration:
             case InwardPackageAdmission:
+            case InwardPackageChange:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:
@@ -1681,6 +1694,7 @@ public enum Privileges {
             case InwardFinalBillRetire:
             case InwardFinalBillEmail:
             case InwardFinalBillApprove:
+            case InwardFinalBillViewUnapproved:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1696,6 +1710,7 @@ public enum Privileges {
             case InpatientDashboardPanelBilling:
             case InpatientDashboardPanelServices:
             case InpatientDashboardPanelRoomManagement:
+            case InpatientDashboardPanelPackage:
             case InpatientDashboardPanelOperationTheatre:
             case InpatientDashboardPanelClinicalData:
             case InpatientDashboardPanelPharmaceuticals:
@@ -1833,6 +1848,7 @@ public enum Privileges {
             case PharmacyAnalyticsPurcharseBillWithSupplier:
             case PharmacyAnalyticsPharmacyGRNReport:
             case PharmacyAnalyticsPharmacyGRNAndPurchaseReport:
+            case PharmacyAnalyticsBillSearchByItem:
             case PharmacyAnalyticsGRNPurchaseItemsBySupplier:
             case PharmacyAnalyticsGRNSummaryBySupplier:
             case PharmacyAnalyticsGRNBillItemReport:

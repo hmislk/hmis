@@ -473,6 +473,40 @@ String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
 **must** be wrapped in `COALESCE(expr, '')`. Numeric and boolean fields from the root entity
 (`b.total`, `b.cancelled`) are safe without COALESCE.
 
+### 🚨 CRITICAL: `COALESCE(...) != <enum literal>` in a WHERE clause does not filter (this EclipseLink version)
+
+This is a different pitfall from the SELECT-list COALESCE rule above — it's about
+`COALESCE` used inside a **WHERE-clause comparison** against a fully-qualified
+enum literal, not a nullable `String` in a constructor projection.
+
+```java
+// ❌ WRONG — compiles, runs, returns NO error, but does not exclude the matching rows
+String jpql = "SELECT bf FROM BillFee bf WHERE "
+        + "coalesce(bf.professionalFeeCategory, com.divudi.core.data.inward.InwardChargeType.ProfessionalCharge) "
+        + "!= com.divudi.core.data.inward.InwardChargeType.TechnicianAndParamedicalCharge";
+// Found by live E2E verification (issue #23874): a BillFee row with
+// professionalFeeCategory = TechnicianAndParamedicalCharge was still returned by
+// this query. The equivalent raw SQL (`COALESCE(col,'ProfessionalCharge') != 'TechnicianAndParamedicalCharge'`)
+// filters correctly when run directly against MySQL — the bug is specific to how
+// this EclipseLink version translates `coalesce(...)` combined with a
+// fully-qualified enum literal inside a comparison predicate, not the underlying SQL.
+```
+
+```java
+// ✅ CORRECT — spell out the null case explicitly instead of using coalesce()
+String jpql = "SELECT bf FROM BillFee bf WHERE "
+        + "(bf.professionalFeeCategory is null or bf.professionalFeeCategory "
+        + "!= com.divudi.core.data.inward.InwardChargeType.TechnicianAndParamedicalCharge)";
+```
+
+**Rule:** Never combine `coalesce(...)` with a fully-qualified enum literal in a
+JPQL comparison (`=`, `!=`). Use `field is null or field <op> <literal>` instead.
+This applies specifically to enum-typed fields compared against enum literals —
+the `COALESCE(expr, '')` pattern for nullable `String` projections above is a
+different context and is unaffected. Verify any such predicate against live data
+end-to-end (not just a passing build) — this one compiled cleanly, ran without
+error, and returned plausible-looking results that were simply wrong.
+
 ### 🚨 Best Practice: Avoid Cancellation Details in List DTOs
 
 **For list/table displays, AVOID including cancellation relationship details:**

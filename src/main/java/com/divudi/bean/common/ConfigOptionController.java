@@ -10,6 +10,8 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -32,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -94,6 +97,12 @@ public class ConfigOptionController implements Serializable {
     @EJB
     AuditService auditService;
 
+    @EJB
+    private DepartmentFacade departmentFacade;
+
+    @EJB
+    private InstitutionFacade institutionFacade;
+
     private ConfigOption option;
     private Institution institution;
     private Department department;
@@ -111,6 +120,17 @@ public class ConfigOptionController implements Serializable {
     private String enumValue;
     private OptionValueType optionValueType;
     private String globalFilter;
+
+    /**
+     * Backing field for the "Add New Option" dialog's Option Key input
+     * (issue #23678). Deliberately separate from {@link #key} — on the
+     * Department/Institution Options pages this holds only the suffix after
+     * the "&lt;Department name&gt; - " / "&lt;Institution name&gt; - " prefix,
+     * which {@link #saveNewOption()} adds back before creating the row. On
+     * the Application Options page, this suffix is the whole key (no
+     * prefix).
+     */
+    private String newOptionKeySuffix;
 
     /**
      * Creates a new instance of OptionController
@@ -218,6 +238,72 @@ public class ConfigOptionController implements Serializable {
             defaultValue = configOptionApplicationController.getBooleanValueByKeyReadOnly(key, defaultValue);
         }
         return configOptionApplicationController.getBooleanValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
+    /**
+     * Read-only variant of a department-scoped-key-first text lookup — the
+     * text-value sibling of {@link #getBooleanValueByKeyReadOnly(String, boolean)}:
+     * resolves {@code "<Department name> - <key>"} first and only falls back
+     * to the plain application-scoped key (and finally {@code defaultValue})
+     * when no department override exists. Never persists a new ConfigOption
+     * row for either key. Use this for {@code rendered="..."}/output-value
+     * reads (e.g. a per-department receipt title or registration number)
+     * that must not silently create configuration rows just because a page
+     * was viewed.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue) {
+        return getShortTextValueByKeyReadOnly(key, defaultValue, sessionController.getDepartment());
+    }
+
+    /**
+     * Department-explicit overload of {@link #getShortTextValueByKeyReadOnly(String, String)}.
+     * Use this on print/reprint templates and anywhere else the record being
+     * rendered (a {@code Bill}, etc.) carries its own department that may
+     * differ from {@code sessionController.getDepartment()} — e.g. a user
+     * logged into one department reprinting a bill created in another. Pass
+     * {@code bill.getDepartment()} rather than relying on the session's
+     * currently-selected department, or the wrong department's override
+     * (or no override at all) can be shown on that bill's receipt.
+     */
+    public String getShortTextValueByKeyReadOnly(String key, String defaultValue, Department department) {
+        if (department == null) {
+            return configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
+        }
+        String deptKey = department.getName() + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.SHORT_TEXT) {
+            defaultValue = configOptionApplicationController.getShortTextValueByKeyReadOnly(key, defaultValue);
+        }
+        return configOptionApplicationController.getShortTextValueByKeyReadOnly(deptKey, defaultValue);
+    }
+
+    public Long getLongValueByKey(String key) {
+        return getLongValueByKey(key, 0L);
+    }
+
+    /**
+     * Department-scoped-key-first lookup for a LONG option, mirroring
+     * {@link #getBooleanValueByKey(String, boolean)}: resolves
+     * {@code "<Department name> - <key>"} first and only falls back to the plain
+     * application-scoped key (and finally {@code defaultValue}) when no
+     * department override exists. Use this so an admin can tune a per-department
+     * value from Department Options without a code change.
+     */
+    public Long getLongValueByKey(String key, Long defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getLongValueByKey(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption deptOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (deptOption == null || deptOption.getValueType() != OptionValueType.LONG) {
+            // No department override — return the plain application value without
+            // letting getLongValueByKey(deptKey, ...) persist a spurious department row.
+            return configOptionApplicationController.getLongValueByKey(key, defaultValue);
+        }
+        return configOptionApplicationController.getLongValueByKey(deptKey, defaultValue);
     }
 
     public String navigateToDepartmentOptions() {
@@ -645,6 +731,112 @@ public class ConfigOptionController implements Serializable {
         auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), trigger);
     }
 
+    /**
+     * Resets the "Add New Option" dialog to a blank state. Call before
+     * showing the dialog (issue #23678) — mirrors
+     * {@link #prepareOptionForApplicationEdit(String)}/
+     * {@link #prepareOptionForDepartmentEdit(String, Department)}, but for a
+     * brand-new key instead of an existing row.
+     */
+    public void prepareNewOption() {
+        newOptionKeySuffix = null;
+        value = null;
+        optionValueType = null;
+    }
+
+    /**
+     * Creates a brand-new ConfigOption from the "Add New Option" dialog
+     * (issue #23678). Builds the full key from {@link #newOptionKeySuffix}
+     * plus whichever scope prefix applies to the page this was called from
+     * ({@link #department}, {@link #institution}, or neither for Application
+     * Options), then delegates to the existing {@link #saveOption(ConfigOption)}
+     * — the same create path every lazily-seeded key already goes through
+     * ({@code scope=APPLICATION}, {@code department}/{@code institution}/
+     * {@code webUser} all null; see {@code ConfigOptionFacade.createOptionIfNotExists}
+     * and {@code ConfigOptionApplicationController.createApplicationOptionIfAbsent}
+     * for the equivalent lazy-create shape this matches).
+     *
+     * @param scopePrefixSource the {@link Department} or {@link Institution}
+     * the calling page is scoped to, or {@code null} for Application
+     * Options. Passed explicitly (rather than read from {@link #department}/
+     * {@link #institution}) so the same method serves all three pages
+     * without guessing which field the caller meant.
+     */
+    public void saveNewOption(Object scopePrefixSource) {
+        if (newOptionKeySuffix == null || newOptionKeySuffix.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Option Key is required");
+            rejectNewOption();
+            return;
+        }
+        if (optionValueType == null) {
+            JsfUtil.addErrorMessage("Value Type is required");
+            rejectNewOption();
+            return;
+        }
+        String fullKey;
+        if (scopePrefixSource instanceof Department) {
+            fullKey = ((Department) scopePrefixSource).getName() + " - " + newOptionKeySuffix.trim();
+        } else if (scopePrefixSource instanceof Institution) {
+            fullKey = ((Institution) scopePrefixSource).getName() + " - " + newOptionKeySuffix.trim();
+        } else if (scopePrefixSource == null) {
+            fullKey = newOptionKeySuffix.trim();
+        } else {
+            throw new IllegalArgumentException("Unsupported scope prefix source: " + scopePrefixSource.getClass());
+        }
+
+        // Same guard saveOption() applies silently (it just returns without
+        // saving) - checked here too so this method can tell the caller the
+        // create was rejected, instead of reporting success for a row that
+        // was never actually persisted.
+        if (isInwardChargeTypeLabelKey(fullKey)) {
+            JsfUtil.addErrorMessage("Inward Charge Type Labels, Orders, and Groups can only be changed from the Inward Charge Type Labels page.");
+            rejectNewOption();
+            return;
+        }
+
+        ConfigOption existing = configOptionApplicationController.getApplicationOption(fullKey);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("An option with key \"" + fullKey + "\" already exists. Edit it instead of creating a duplicate.");
+            rejectNewOption();
+            return;
+        }
+
+        String initialValue = value;
+        if (optionValueType == OptionValueType.BOOLEAN && (initialValue == null || initialValue.trim().isEmpty())) {
+            initialValue = "false";
+        }
+        if (initialValue == null) {
+            initialValue = "";
+        }
+
+        ConfigOption newOption = new ConfigOption();
+        newOption.setOptionKey(fullKey);
+        newOption.setValueType(optionValueType);
+        newOption.setOptionValue(initialValue);
+        newOption.setScope(OptionScope.APPLICATION);
+        // department/institution/webUser intentionally left null — the scope
+        // lives entirely in the key text, matching every existing
+        // "<Department name> - <key>" / "<Institution name> - <key>" row.
+
+        saveOption(newOption);
+        JsfUtil.addSuccessMessage("Created \"" + fullKey + "\"");
+        PrimeFaces.current().ajax().addCallbackParam("newOptionSaved", true);
+        prepareNewOption();
+    }
+
+    /**
+     * Tells the "Add New Option" dialog's {@code oncomplete} that the create
+     * was rejected, via the same PrimeFaces ajax callback-param channel the
+     * success path uses ({@code newOptionSaved}) — so the dialog stays open
+     * (with the error growl visible) instead of hiding as if the row had
+     * been persisted. Missing/omitting the callback param defaults to
+     * "falsy" client-side, but set it explicitly here for clarity at each
+     * rejection call site in {@link #saveNewOption(Object)}.
+     */
+    private void rejectNewOption() {
+        PrimeFaces.current().ajax().addCallbackParam("newOptionSaved", false);
+    }
+
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
         StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope AND COALESCE(o.retired, false) = false");
         Map<String, Object> params = new HashMap<>();
@@ -864,11 +1056,22 @@ public class ConfigOptionController implements Serializable {
         if (entity == null) {
             jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL";
         } else if (entity instanceof Department) {
-            jpql += " AND o.department = :dept AND o.institution IS NULL AND o.webUser IS NULL";
-            params.put("dept", (Department) entity);
+            // Department-scoped options are never actually stored with the
+            // `department` FK set (see ConfigOptionController.saveNewOption()
+            // and every existing getXxxValueByKey department-scoped-key-first
+            // lookup) - the scope lives entirely in a
+            // "<Department name> - <key>" key prefix, with department left
+            // NULL. Filtering on the FK here always returned an empty list
+            // for the rows this page actually needs to manage (issue #23678).
+            jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL"
+                    + " AND o.optionKey LIKE :keyPrefix";
+            params.put("keyPrefix", ((Department) entity).getName() + " - %");
         } else if (entity instanceof Institution) {
-            jpql += " AND o.institution = :ins AND o.department IS NULL AND o.webUser IS NULL";
-            params.put("ins", (Institution) entity);
+            // Same key-prefix convention as the Department branch above -
+            // see that comment.
+            jpql += " AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL"
+                    + " AND o.optionKey LIKE :keyPrefix";
+            params.put("keyPrefix", ((Institution) entity).getName() + " - %");
         } else if (entity instanceof WebUser) {
             jpql += " AND o.webUser = :usr AND o.department IS NULL AND o.institution IS NULL";
             params.put("usr", (WebUser) entity);
@@ -878,7 +1081,98 @@ public class ConfigOptionController implements Serializable {
 
         jpql += " ORDER BY o.optionKey";
 
-        return getFacade().findByJpql(jpql, params);
+        List<ConfigOption> results = getFacade().findByJpql(jpql, params);
+
+        // A plain "LIKE '<name> - %'" prefix match is ambiguous when one
+        // department/institution's name is itself a prefix of another's
+        // (e.g. "OPD" vs "OPD - Diagnostic Centre") - a key belonging to the
+        // longer, more specific one (e.g. "OPD - Diagnostic Centre - Enable
+        // token system...") also matches the shorter name's "LIKE" filter,
+        // since the LOCATE-first-dash trick can't tell which department's
+        // name the match is really rooted at. Resolve it by checking, for
+        // every real department/institution name, whether it is a *longer*
+        // match for this key than the one we searched for - if so, the key
+        // actually belongs to that longer name and is excluded here
+        // (issue #23678). Deliberately checked against *every* active
+        // department/institution name (not just the current user's
+        // sessionController.getLoggableDepartments()/getLoggableInstitutions()
+        // — those are scoped to what this user can log into, and a
+        // department/institution this user has no access to could still
+        // exist with a name that collides, which the loggable-only lists
+        // would silently miss, leaking that other entity's rows into this
+        // one's list).
+        if (entity instanceof Department) {
+            results = filterOutLongerNameCollisions(results, ((Department) entity).getName(), getAllDepartmentNames());
+        } else if (entity instanceof Institution) {
+            results = filterOutLongerNameCollisions(results, ((Institution) entity).getName(), getAllInstitutionNames());
+        }
+
+        return results;
+    }
+
+    /**
+     * All non-retired department names, for the key-prefix collision guard
+     * in {@link #getAllOptions(Object)} — deliberately not
+     * {@code sessionController.getLoggableDepartments()}, which is scoped to
+     * the current user and would miss a colliding name outside that scope.
+     */
+    private List<String> getAllDepartmentNames() {
+        List<Department> departments = departmentFacade.findByJpql("SELECT d FROM Department d WHERE COALESCE(d.retired, false) = false");
+        List<String> names = new ArrayList<>();
+        for (Department d : departments) {
+            names.add(d.getName());
+        }
+        return names;
+    }
+
+    /**
+     * Institution counterpart of {@link #getAllDepartmentNames()}.
+     */
+    private List<String> getAllInstitutionNames() {
+        List<Institution> institutions = institutionFacade.findByJpql("SELECT i FROM Institution i WHERE COALESCE(i.retired, false) = false");
+        List<String> names = new ArrayList<>();
+        for (Institution i : institutions) {
+            names.add(i.getName());
+        }
+        return names;
+    }
+
+    /**
+     * Removes rows from {@code candidates} whose key is actually rooted at a
+     * longer {@code allNames} entry than {@code targetName} (see the
+     * "LIKE '<name> - %'" ambiguity note in {@link #getAllOptions(Object)}).
+     * A row is kept only when no other name in {@code allNames} that is
+     * longer than {@code targetName} is itself a prefix-match root for that
+     * row's key.
+     */
+    private List<ConfigOption> filterOutLongerNameCollisions(List<ConfigOption> candidates, String targetName, List<String> allNames) {
+        if (candidates.isEmpty() || allNames == null) {
+            return candidates;
+        }
+        List<String> longerNames = new ArrayList<>();
+        for (String name : allNames) {
+            if (name != null && name.length() > targetName.length() && name.startsWith(targetName)) {
+                longerNames.add(name);
+            }
+        }
+        if (longerNames.isEmpty()) {
+            return candidates;
+        }
+        List<ConfigOption> filtered = new ArrayList<>();
+        for (ConfigOption option : candidates) {
+            String key = option.getOptionKey();
+            boolean belongsToLongerName = false;
+            for (String longerName : longerNames) {
+                if (key != null && key.startsWith(longerName + " - ")) {
+                    belongsToLongerName = true;
+                    break;
+                }
+            }
+            if (!belongsToLongerName) {
+                filtered.add(option);
+            }
+        }
+        return filtered;
     }
 
     public List<ConfigOption> getDepartmentOptions(Department department) {
@@ -1039,12 +1333,36 @@ public class ConfigOptionController implements Serializable {
         return optionFacade;
     }
 
+    /**
+     * Value types offered by the "Add New Option" dialog (issue #23678) —
+     * the subset the issue asked for by name (BOOLEAN / SHORT_TEXT /
+     * LONG_TEXT / LONG / DOUBLE). INTEGER/ENUM/COLOR are intentionally left
+     * out here: ENUM needs an {@code enumType} the dialog has no way to
+     * collect, and INTEGER/COLOR aren't part of what this issue asked for.
+     */
+    public List<OptionValueType> getNewOptionValueTypes() {
+        return java.util.Arrays.asList(
+                OptionValueType.BOOLEAN,
+                OptionValueType.SHORT_TEXT,
+                OptionValueType.LONG_TEXT,
+                OptionValueType.LONG,
+                OptionValueType.DOUBLE);
+    }
+
     public String getKey() {
         return key;
     }
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public String getNewOptionKeySuffix() {
+        return newOptionKeySuffix;
+    }
+
+    public void setNewOptionKeySuffix(String newOptionKeySuffix) {
+        this.newOptionKeySuffix = newOptionKeySuffix;
     }
 
     public String getValue() {

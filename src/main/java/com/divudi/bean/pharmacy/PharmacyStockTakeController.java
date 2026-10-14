@@ -9,11 +9,13 @@ import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.dto.StockTakeUnmatchedRowDTO;
 import com.divudi.core.data.dto.StockVerificationBillItemDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
@@ -34,6 +36,7 @@ import com.divudi.service.pharmacy.StockTakeApprovalService;
 import com.divudi.service.pharmacy.ApprovalProgressTracker;
 import com.divudi.service.pharmacy.StockCountGenerationService;
 import com.divudi.service.pharmacy.StockCountGenerationTracker;
+import com.divudi.service.pharmacy.PharmacyBatchApiService;
 import com.divudi.service.pharmacy.StockTakePersistService;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,12 +108,22 @@ public class PharmacyStockTakeController implements Serializable {
     private StockTakeApprovalService stockTakeApprovalService;
     @EJB
     private ApprovalProgressTracker approvalProgressTracker;
-    @EJB
-    private StockCountGenerationService stockCountGenerationService;
-    @EJB
-    private StockCountGenerationTracker stockCountGenerationTracker;
+    // DEAD CODE — unreachable from any XHTML page (no button/link calls
+    // generateStockCountBillAsync(), and nothing navigates to
+    // pharmacy_stock_take_progress.xhtml). Commented out per CodeRabbit
+    // finding on PR #23601 (async path never set/filtered by
+    // departmentType, unlike the sync path). TODO: delete this whole
+    // async stock-count-generation chain (this class + StockCountGenerationService
+    // + StockCountGenerationTracker + pharmacy_stock_take_progress.xhtml) if it
+    // remains unused.
+    // @EJB
+    // private StockCountGenerationService stockCountGenerationService;
+    // @EJB
+    // private StockCountGenerationTracker stockCountGenerationTracker;
     @EJB
     private StockTakePersistService stockTakePersistService;
+    @Inject
+    private PharmacyBatchApiService pharmacyBatchApiService;
     @EJB
     private com.divudi.core.facade.CategoryFacade categoryFacade;
 
@@ -120,6 +134,9 @@ public class PharmacyStockTakeController implements Serializable {
     private List<com.divudi.core.data.dto.SnapshotBillItemDTO> snapshotItems;
     private Long snapshotItemsLoadedForBillId;
     private Bill physicalCountBill;
+    // Counted rows of the last upload that are not in the snapshot (#24337)
+    private List<StockTakeUnmatchedRowDTO> unmatchedRows = new ArrayList<>();
+    private int uploadSkippedNoQtyCount;
     private UploadedFile file;
     private Institution institution;
     private Institution site;
@@ -147,7 +164,8 @@ public class PharmacyStockTakeController implements Serializable {
     private int zeroStockBatchLimit = 5; // default limit of 5 zero-stock batches per item
 
     // Stock count generation job tracking
-    private String generationJobId;
+    // DEAD CODE — only used by the unreachable async chain. See note above stockCountGenerationService. TODO: delete.
+    // private String generationJobId;
 
     // Performance optimization: HashMap indexes for O(1) snapshot lookups
     private HashMap<String, BillItem> snapshotLookupByCodeBatch;
@@ -420,112 +438,130 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
     }
 
-    /**
-     * Start async stock count bill generation with progress tracking. This is
-     * the recommended method for large departments to avoid timeouts.
-     */
-    public String generateStockCountBillAsync() {
-        // Check privilege
-        if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
-            JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
-            return null;
-        }
-
-        // Check department
-        if (department == null) {
-            JsfUtil.addErrorMessage("Please select a department");
-            return null;
-        }
-
-        if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
-            JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
-            return null;
-        }
-
-        // Generate unique job ID
-        generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
-
-        // Initialize progress tracker
-        stockCountGenerationTracker.start(generationJobId, 0, "Starting stock count generation...");
-
-        // Start async generation
-        stockCountGenerationService.generateStockCountBillAsync(
-                generationJobId,
-                department,
-                includeZeroStockBatches,
-                zeroStockBatchLimit,
-                sessionController.getLoggedUser()
-        );
-
-        JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
-        return "/pharmacy/pharmacy_stock_take_progress?faces-redirect=true";
-    }
-
-    /**
-     * Check progress of async stock count generation. Called by polling
-     * mechanism on progress page.
-     */
-    public void checkGenerationProgress() {
-        // This method is called by p:poll, no action needed
-        // Progress is retrieved via getGenerationProgress()
-    }
-
-    /**
-     * Get current generation progress.
-     *
-     * @return Progress object or null if no job in progress
-     */
-    public StockCountGenerationTracker.Progress getGenerationProgress() {
-        if (generationJobId == null) {
-            return null;
-        }
-        return stockCountGenerationTracker.get(generationJobId);
-    }
-
-    /**
-     * Complete the generation process and load the generated bill. Called when
-     * progress indicates completion.
-     */
-    public String completeGeneration() {
-        if (generationJobId == null) {
-            JsfUtil.addErrorMessage("No generation job found");
-            return null;
-        }
-
-        StockCountGenerationTracker.Progress progress = stockCountGenerationTracker.get(generationJobId);
-
-        if (progress == null) {
-            JsfUtil.addErrorMessage("Generation progress not found");
-            return null;
-        }
-
-        if (progress.failed) {
-            JsfUtil.addErrorMessage("Generation failed: " + progress.errorMessage);
-            stockCountGenerationTracker.remove(generationJobId);
-            generationJobId = null;
-            return null;
-        }
-
-        if (!progress.completed) {
-            JsfUtil.addErrorMessage("Generation not yet completed");
-            return null;
-        }
-
-        // Get the in-memory bill (NOT persisted yet - like sync method)
-        snapshotBill = progress.getGeneratedBill();
-
-        if (snapshotBill != null) {
-            JsfUtil.addSuccessMessage("Stock count bill generated successfully with "
-                    + snapshotBill.getBillItems().size() + " items");
-            stockCountGenerationTracker.remove(generationJobId);
-            generationJobId = null;
-            // User can now review and click "Record/Settle Stock Count" to persist
-            return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
-        }
-
-        JsfUtil.addErrorMessage("Failed to retrieve generated bill");
-        return null;
-    }
+    // DEAD CODE — the async stock-count-generation chain below
+    // (generateStockCountBillAsync/checkGenerationProgress/getGenerationProgress/completeGeneration)
+    // is unreachable: no XHTML button calls generateStockCountBillAsync(), and
+    // nothing navigates to pharmacy_stock_take_progress.xhtml, which is the only
+    // page that calls the other three. Commented out per CodeRabbit finding on
+    // PR #23601 — the async path never set/filtered items by departmentType,
+    // unlike the sync generateStockCountBill() path, so a NULL-departmentType
+    // bill from this chain could silently overlap a typed stock take. Since the
+    // chain is unreachable, the fix is to retire it rather than patch it.
+    // TODO: delete this chain, StockCountGenerationService,
+    // StockCountGenerationTracker, and pharmacy_stock_take_progress.xhtml.
+    //
+    // /**
+    //  * Start async stock count bill generation with progress tracking. This is
+    //  * the recommended method for large departments to avoid timeouts.
+    //  */
+    // public String generateStockCountBillAsync() {
+    //     // Check privilege
+    //     if (!webUserController.hasPrivilege(Privileges.PharmacyStockAdjustment.toString())) {
+    //         JsfUtil.addErrorMessage("Not authorized to create stock take snapshots");
+    //         return null;
+    //     }
+    //
+    //     // Check department
+    //     if (department == null) {
+    //         JsfUtil.addErrorMessage("Please select a department");
+    //         return null;
+    //     }
+    //
+    //     if (sessionController.getDepartment() == null || !department.equals(sessionController.getDepartment())) {
+    //         JsfUtil.addErrorMessage("Please log to the department you want to take the stock");
+    //         return null;
+    //     }
+    //
+    //     if (selectedDepartmentType == null) {
+    //         JsfUtil.addErrorMessage("Please select a department type");
+    //         return null;
+    //     }
+    //
+    //     // Generate unique job ID
+    //     generationJobId = "stock-count-" + department.getId() + "-" + System.currentTimeMillis();
+    //
+    //     // Initialize progress tracker
+    //     stockCountGenerationTracker.start(generationJobId, 0, "Starting stock count generation...");
+    //
+    //     // Start async generation
+    //     stockCountGenerationService.generateStockCountBillAsync(
+    //             generationJobId,
+    //             department,
+    //             selectedDepartmentType,
+    //             includeZeroStockBatches,
+    //             zeroStockBatchLimit,
+    //             sessionController.getLoggedUser()
+    //     );
+    //
+    //     JsfUtil.addSuccessMessage("Stock count generation started. Please wait...");
+    //     return "/pharmacy/pharmacy_stock_take_progress?faces-redirect=true";
+    // }
+    //
+    // /**
+    //  * Check progress of async stock count generation. Called by polling
+    //  * mechanism on progress page.
+    //  */
+    // public void checkGenerationProgress() {
+    //     // This method is called by p:poll, no action needed
+    //     // Progress is retrieved via getGenerationProgress()
+    // }
+    //
+    // /**
+    //  * Get current generation progress.
+    //  *
+    //  * @return Progress object or null if no job in progress
+    //  */
+    // public StockCountGenerationTracker.Progress getGenerationProgress() {
+    //     if (generationJobId == null) {
+    //         return null;
+    //     }
+    //     return stockCountGenerationTracker.get(generationJobId);
+    // }
+    //
+    // /**
+    //  * Complete the generation process and load the generated bill. Called when
+    //  * progress indicates completion.
+    //  */
+    // public String completeGeneration() {
+    //     if (generationJobId == null) {
+    //         JsfUtil.addErrorMessage("No generation job found");
+    //         return null;
+    //     }
+    //
+    //     StockCountGenerationTracker.Progress progress = stockCountGenerationTracker.get(generationJobId);
+    //
+    //     if (progress == null) {
+    //         JsfUtil.addErrorMessage("Generation progress not found");
+    //         return null;
+    //     }
+    //
+    //     if (progress.failed) {
+    //         JsfUtil.addErrorMessage("Generation failed: " + progress.errorMessage);
+    //         stockCountGenerationTracker.remove(generationJobId);
+    //         generationJobId = null;
+    //         return null;
+    //     }
+    //
+    //     if (!progress.completed) {
+    //         JsfUtil.addErrorMessage("Generation not yet completed");
+    //         return null;
+    //     }
+    //
+    //     // Get the in-memory bill (NOT persisted yet - like sync method)
+    //     snapshotBill = progress.getGeneratedBill();
+    //
+    //     if (snapshotBill != null) {
+    //         JsfUtil.addSuccessMessage("Stock count bill generated successfully with "
+    //                 + snapshotBill.getBillItems().size() + " items");
+    //         stockCountGenerationTracker.remove(generationJobId);
+    //         generationJobId = null;
+    //         // User can now review and click "Record/Settle Stock Count" to persist
+    //         return "/pharmacy/pharmacy_stock_take_settle?faces-redirect=true";
+    //     }
+    //
+    //     JsfUtil.addErrorMessage("Failed to retrieve generated bill");
+    //     return null;
+    // }
 
     /**
      * Persist the generated stock count bill and navigate to print view.
@@ -540,11 +576,14 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        // Check if there's an ongoing stock taking for this department
+        // Check if there's an ongoing stock taking for this department and department type
         // Use department from snapshotBill to prevent bypass via mutable controller field
         Department deptFromBill = snapshotBill.getDepartment();
-        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill)) {
-            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department. Please complete the existing session first.");
+        com.divudi.core.data.DepartmentType deptTypeFromBill = snapshotBill.getDepartmentType();
+        if (deptFromBill != null && hasOngoingStockTaking(deptFromBill, deptTypeFromBill)) {
+            JsfUtil.addErrorMessage("Cannot start a new stock taking. There is already an ongoing stock taking session for this department"
+                    + (deptTypeFromBill != null ? " and department type (" + deptTypeFromBill.name() + ")" : "")
+                    + ". Please complete the existing session first.");
             //LOGGER.log(Level.WARNING, "[StockTake] Attempted to start new stock taking while one is ongoing. Department: {0}", deptFromBill.getName());
             return null;
         }
@@ -1434,6 +1473,8 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
+        unmatchedRows = new ArrayList<>();
+        uploadSkippedNoQtyCount = 0;
         try {
             // Parse Excel and build physicalCountBill entirely in memory — no DB writes
             java.util.Map<Long, SnapBillItemData> snapBillItemMap = preLoadSnapshotReferences(snapshotBillDisplay.getId());
@@ -1452,6 +1493,7 @@ public class PharmacyStockTakeController implements Serializable {
                 int colRealStock  = headerRow != null ? findColumnIndex(headerRow, "Real Stock Qty") : 11;
                 if (colBillItemId < 0) colBillItemId = 0;
                 if (colRealStock  < 0) colRealStock  = 11;
+                UnmatchedColumns unmatchedColumns = new UnmatchedColumns(headerRow);
 
                 int skipped = 0;
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -1461,11 +1503,14 @@ public class PharmacyStockTakeController implements Serializable {
                     Double physicalQty = getDoubleNullableOptimized(row, colRealStock);
                     if (physicalQty == null) { skipped++; continue; }
 
+                    // A counted row that is not a snapshot line is listed for the user instead of
+                    // being dropped silently (#24337).
                     Long snapBillItemId = getLongNullableOptimized(row, colBillItemId);
-                    if (snapBillItemId == null) { skipped++; continue; }
-
-                    SnapBillItemData snap = snapBillItemMap.get(snapBillItemId);
-                    if (snap == null) { skipped++; continue; }
+                    SnapBillItemData snap = snapBillItemId == null ? null : snapBillItemMap.get(snapBillItemId);
+                    if (snap == null) {
+                        unmatchedRows.add(buildUnmatchedRow(row, i + 1, physicalQty, unmatchedColumns));
+                        continue;
+                    }
 
                     // Build BillItem in memory using JPA proxies — no DB load
                     BillItem bi = new BillItem();
@@ -1483,13 +1528,15 @@ public class PharmacyStockTakeController implements Serializable {
 
                     billItems.add(bi);
                 }
+                uploadSkippedNoQtyCount = skipped;
                 System.out.println("PERF: Excel parsed in " + (System.currentTimeMillis() - startTime)
-                        + "ms — " + billItems.size() + " items, " + skipped + " skipped");
+                        + "ms — " + billItems.size() + " items, " + skipped + " skipped, "
+                        + unmatchedRows.size() + " not in snapshot");
             } finally {
                 cachedEvaluator = null;
             }
 
-            if (billItems.isEmpty()) {
+            if (billItems.isEmpty() && unmatchedRows.isEmpty()) {
                 JsfUtil.addErrorMessage("No valid data found in Excel file");
                 return null;
             }
@@ -1508,11 +1555,22 @@ public class PharmacyStockTakeController implements Serializable {
             }
             physicalCountBill.setBillItems(billItems);
 
-            JsfUtil.addSuccessMessage("File parsed. " + billItems.size() + " items ready for review.");
+            JsfUtil.addSuccessMessage("File parsed. " + billItems.size() + " matched, "
+                    + uploadSkippedNoQtyCount + " skipped (no quantity), "
+                    + unmatchedRows.size() + " not in the snapshot.");
+            if (!unmatchedRows.isEmpty()) {
+                JsfUtil.addErrorMessage(unmatchedRows.size() + " counted row(s) are not in the snapshot and will NOT be"
+                        + " adjusted unless you add them as new batches. See 'Rows not in the snapshot' below.");
+            }
+            FacesContext fc = FacesContext.getCurrentInstance();
+            if (fc != null) {
+                fc.getExternalContext().getFlash().setKeepMessages(true);
+            }
             return "/pharmacy/pharmacy_stock_take_review?faces-redirect=true";
 
         } catch (Exception e) {
             physicalCountBill = null;
+            unmatchedRows = new ArrayList<>();
             JsfUtil.addErrorMessage("Upload failed: " + e.getMessage());
             return null;
         }
@@ -1523,12 +1581,19 @@ public class PharmacyStockTakeController implements Serializable {
      * Persists physicalCountBill (with all BillItems) then immediately runs stock adjustment.
      */
     public String confirmUploadAndApprove() {
-        if (physicalCountBill == null || physicalCountBill.getBillItems() == null || physicalCountBill.getBillItems().isEmpty()) {
+        if (physicalCountBill == null || physicalCountBill.getBillItems() == null) {
             JsfUtil.addErrorMessage("No upload data to confirm. Please upload again.");
             return null;
         }
         if (!webUserController.hasPrivilege(Privileges.PharmacyStockTakeApprove.toString())) {
             JsfUtil.addErrorMessage("Not authorized to approve stock adjustments");
+            return null;
+        }
+        if (!addTickedUnmatchedRowsAsNewBatches()) {
+            return null;
+        }
+        if (physicalCountBill.getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No upload data to confirm. Please upload again.");
             return null;
         }
 
@@ -1585,6 +1650,223 @@ public class PharmacyStockTakeController implements Serializable {
             fc.getExternalContext().getFlash().setKeepMessages(true);
         }
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true";
+    }
+
+    /**
+     * Header positions of the descriptive columns used to report and add rows
+     * that are not in the snapshot. Missing headers stay -1.
+     */
+    private class UnmatchedColumns {
+
+        final int code;
+        final int name;
+        final int batch;
+        final int expiry;
+        final int purchaseRate;
+        final int retailRate;
+        final int costRate;
+
+        UnmatchedColumns(Row header) {
+            code = header == null ? -1 : findColumnIndex(header, "Code");
+            name = header == null ? -1 : findColumnIndex(header, "Name");
+            batch = header == null ? -1 : findColumnIndex(header, "Batch");
+            expiry = header == null ? -1 : findColumnIndex(header, "Expiry Date");
+            purchaseRate = header == null ? -1 : findColumnIndex(header, "Purchase Rate");
+            retailRate = header == null ? -1 : findColumnIndex(header, "Retail Rate");
+            costRate = header == null ? -1 : findColumnIndex(header, "Cost Rate");
+        }
+    }
+
+    private StockTakeUnmatchedRowDTO buildUnmatchedRow(Row row, int sheetRowNo, Double qty, UnmatchedColumns c) {
+        StockTakeUnmatchedRowDTO r = new StockTakeUnmatchedRowDTO();
+        r.setRowNo(sheetRowNo);
+        r.setQuantity(qty);
+        r.setCode(c.code >= 0 ? emptyToNull(getString(row, c.code)) : null);
+        r.setName(c.name >= 0 ? emptyToNull(getString(row, c.name)) : null);
+        r.setBatchNo(c.batch >= 0 ? emptyToNull(getString(row, c.batch)) : null);
+        r.setExpiryDate(c.expiry >= 0 ? getDateNullable(row, c.expiry) : null);
+        r.setPurchaseRate(c.purchaseRate >= 0 ? positiveOrNull(getDoubleNullableOptimized(row, c.purchaseRate)) : null);
+        r.setRetailRate(c.retailRate >= 0 ? positiveOrNull(getDoubleNullableOptimized(row, c.retailRate)) : null);
+        r.setCostRate(c.costRate >= 0 ? positiveOrNull(getDoubleNullableOptimized(row, c.costRate)) : null);
+
+        if (r.getCode() == null) {
+            r.setReason("No item code");
+            return r;
+        }
+        Amp amp = findAmpByCode(r.getCode());
+        if (amp == null) {
+            r.setReason("Item code not found");
+            return r;
+        }
+        r.setItemId(amp.getId());
+        r.setItemName(amp.getName());
+        if (r.getBatchNo() == null) {
+            r.setReason("No batch number");
+            return r;
+        }
+        if (r.getExpiryDate() == null) {
+            r.setReason("No or unreadable expiry date");
+            return r;
+        }
+        if (qty < 0) {
+            r.setReason("Negative quantity");
+            return r;
+        }
+        // Rates: the row's own columns first, else the item's most recent batch.
+        ItemBatch lastBatch = findLatestBatch(amp);
+        if (r.getRetailRate() == null && lastBatch != null) {
+            r.setRetailRate(positiveOrNull(lastBatch.getRetailsaleRate()));
+        }
+        if (r.getPurchaseRate() == null && lastBatch != null) {
+            r.setPurchaseRate(positiveOrNull(lastBatch.getPurcahseRate()));
+        }
+        if (r.getCostRate() == null && lastBatch != null) {
+            r.setCostRate(positiveOrNull(lastBatch.getCostRate()));
+        }
+        if (r.getRetailRate() == null) {
+            r.setReason("No retail rate (in the row or a previous batch)");
+            return r;
+        }
+        if (r.getPurchaseRate() == null) {
+            r.setPurchaseRate(r.getRetailRate() * 0.85); // same default as pharmacy_batches/create
+        }
+        if (r.getCostRate() == null) {
+            r.setCostRate(r.getPurchaseRate());
+        }
+        r.setResolvable(true);
+        r.setReason("Can be added as a new batch");
+        return r;
+    }
+
+    /**
+     * Creates (or reuses) the ItemBatch and department Stock for every ticked
+     * unmatched row and appends it to the physical count bill, so the counted
+     * quantity is adjusted with the rest of the stock take (#24337).
+     *
+     * @return false if nothing should be approved (an error was shown)
+     */
+    private boolean addTickedUnmatchedRowsAsNewBatches() {
+        if (unmatchedRows == null || unmatchedRows.isEmpty()) {
+            return true;
+        }
+        Department dept = physicalCountBill.getDepartment();
+        java.util.Set<Long> stockIdsInBill = new java.util.HashSet<>();
+        for (BillItem bi : physicalCountBill.getBillItems()) {
+            if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getStock() != null) {
+                stockIdsInBill.add(bi.getPharmaceuticalBillItem().getStock().getId());
+            }
+        }
+        int added = 0;
+        List<String> duplicates = new ArrayList<>();
+        List<String> invalidItems = new ArrayList<>();
+        java.util.Iterator<StockTakeUnmatchedRowDTO> it = unmatchedRows.iterator();
+        while (it.hasNext()) {
+            StockTakeUnmatchedRowDTO r = it.next();
+            if (!r.isResolvable() || !r.isAddAsNewBatch()) {
+                continue;
+            }
+            Item found = itemFacade.find(r.getItemId());
+            if (!(found instanceof Amp) || found.isRetired()) {
+                // The item was retired or removed after the upload.
+                invalidItems.add("row " + r.getRowNo());
+                continue;
+            }
+            Amp amp = (Amp) found;
+            ItemBatch batch = pharmacyBatchApiService.findOrCreateItemBatch(amp, r.getBatchNo(), r.getExpiryDate(),
+                    r.getRetailRate(), r.getPurchaseRate(), r.getCostRate());
+            Stock stock = pharmacyBatchApiService.findOrCreateDepartmentStock(batch, dept);
+            if (!stockIdsInBill.add(stock.getId())) {
+                duplicates.add("row " + r.getRowNo());
+                continue;
+            }
+            double current = stock.getStock() == null ? 0.0 : stock.getStock();
+
+            BillItem bi = new BillItem();
+            bi.setQty(r.getQuantity());
+            bi.setAdjustedValue(r.getQuantity() - current);
+            bi.setItem(amp);
+            bi.setDescreption("Added from stock-take upload (sheet row " + r.getRowNo() + ", not in snapshot)");
+            bi.setBill(physicalCountBill);
+            PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+            pbi.setBillItem(bi);
+            pbi.setItemBatch(batch);
+            pbi.setStock(stock);
+            pbi.setQty(r.getQuantity());
+            bi.setPharmaceuticalBillItem(pbi);
+            physicalCountBill.getBillItems().add(bi);
+            it.remove();
+            added++;
+        }
+        if (!invalidItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Not added - the item is no longer active: " + String.join(", ", invalidItems));
+        }
+        if (!duplicates.isEmpty()) {
+            JsfUtil.addErrorMessage("Not added - the batch is already a line of this stock take: "
+                    + String.join(", ", duplicates));
+        }
+        if (added > 0) {
+            JsfUtil.addSuccessMessage(added + " row(s) not in the snapshot were added as batches.");
+        }
+        return true;
+    }
+
+    private Amp findAmpByCode(String code) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("code", code.trim());
+        Item item = itemFacade.findFirstByJpql(
+                "select a from Amp a where a.retired=false and a.code=:code order by a.id", params);
+        return item instanceof Amp ? (Amp) item : null;
+    }
+
+    private ItemBatch findLatestBatch(Amp amp) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("item", amp);
+        return itemBatchFacade.findFirstByJpql(
+                "select ib from ItemBatch ib where ib.item=:item and ib.retired=false order by ib.id desc", params);
+    }
+
+    private Date getDateNullable(Row row, int col) {
+        Cell cell = row.getCell(col);
+        if (cell == null) {
+            return null;
+        }
+        try {
+            if (cell.getCellType() == org.apache.poi.ss.usermodel.CellType.NUMERIC) {
+                return cell.getDateCellValue();
+            }
+        } catch (Exception ignored) {
+            // fall through to text parsing
+        }
+        String s = emptyToNull(getString(row, col));
+        if (s == null) {
+            return null;
+        }
+        for (String pattern : new String[]{"yyyy-MM-dd", "dd/MM/yyyy", "dd-MM-yyyy", "yyyy/MM/dd"}) {
+            try {
+                java.text.SimpleDateFormat f = new java.text.SimpleDateFormat(pattern);
+                f.setLenient(false);
+                return f.parse(s);
+            } catch (java.text.ParseException ignored) {
+                // try the next pattern
+            }
+        }
+        return null;
+    }
+
+    private static String emptyToNull(String s) {
+        return s == null || s.trim().isEmpty() ? null : s.trim();
+    }
+
+    private static Double positiveOrNull(Double d) {
+        return d != null && d > 0 ? d : null;
+    }
+
+    public List<StockTakeUnmatchedRowDTO> getUnmatchedRows() {
+        return unmatchedRows;
+    }
+
+    public int getUploadSkippedNoQtyCount() {
+        return uploadSkippedNoQtyCount;
     }
 
     /**
@@ -2450,6 +2732,65 @@ public class PharmacyStockTakeController implements Serializable {
         return "/pharmacy/pharmacy_stock_take_variance_detailed?faces-redirect=true";
     }
 
+    /**
+     * Loads the lines of the given approved physical-count bills that have no
+     * snapshot line (batches added during the stock take, #24337), grouped per
+     * department stock row in upload order (#24350).
+     */
+    private List<AddedBatchLines> loadAddedBatchLines(List<Long> physBillIds) {
+        List<AddedBatchLines> groups = new ArrayList<>();
+        if (physBillIds == null || physBillIds.isEmpty()) {
+            return groups;
+        }
+        String jpql = "SELECT bi.id, bi.qty, bi.adjustedValue, st.id, "
+                + "ib.batchNo, ib.purcahseRate, ib.retailsaleRate, ib.costRate, "
+                + "it.code, it.name, cat.name, df.name "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN pbi.stock st "
+                + "LEFT JOIN pbi.itemBatch ib "
+                + "LEFT JOIN ib.item it "
+                + "LEFT JOIN it.category cat "
+                + "LEFT JOIN it.dosageForm df "
+                + "WHERE bi.bill.id IN :pbs AND bi.referanceBillItem IS NULL AND bi.retired = false "
+                + "ORDER BY bi.bill.createdAt ASC, bi.bill.id ASC, bi.id ASC";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pbs", physBillIds);
+        List<Object[]> rows = billItemFacade.findObjectArrayByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        if (rows == null) {
+            return groups;
+        }
+        java.util.Map<Object, AddedBatchLines> byStock = new java.util.LinkedHashMap<>();
+        for (Object[] r : rows) {
+            Long lineId = r[0] instanceof Number ? ((Number) r[0]).longValue() : null;
+            Double qty = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
+            Double adjusted = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : 0.0;
+            Long stockId = r[3] instanceof Number ? ((Number) r[3]).longValue() : null;
+            Object key = stockId != null ? (Object) ("S" + stockId) : (Object) ("L" + lineId);
+            AddedBatchLines g = byStock.get(key);
+            if (g == null) {
+                g = new AddedBatchLines();
+                g.firstLineId = lineId;
+                g.firstQty = qty;
+                g.firstAdjustedValue = adjusted;
+                g.batchNo = r[4] != null ? r[4].toString() : null;
+                g.purchaseRate = r[5] instanceof Number ? ((Number) r[5]).doubleValue() : null;
+                g.retailRate = r[6] instanceof Number ? ((Number) r[6]).doubleValue() : null;
+                g.costRate = r[7] instanceof Number ? ((Number) r[7]).doubleValue() : null;
+                g.code = r[8] != null ? r[8].toString() : null;
+                g.itemName = r[9] != null ? r[9].toString() : null;
+                g.category = r[10] != null ? r[10].toString() : null;
+                g.dosageForm = r[11] != null ? r[11].toString() : null;
+                byStock.put(key, g);
+            }
+            g.lastQty = qty;
+            g.lastLineId = lineId;
+            g.sumAdjustedValue += adjusted != null ? adjusted : 0.0;
+        }
+        groups.addAll(byStock.values());
+        return groups;
+    }
+
     // Build aggregated variance rows for the selected snapshot using scalar JPQL projections
     private void prepareVarianceRows() {
         varianceRows = new java.util.ArrayList<>();
@@ -2560,6 +2901,25 @@ public class PharmacyStockTakeController implements Serializable {
         // with multiple batches to appear twice: once with the real variance, once as a
         // zero-variance ghost row from the un-uploaded batch.
         varianceRows.removeIf(vr -> vr.getLastPhysicalQty() == null);
+
+        // Batches added during the stock take have no snapshot line; list them after the
+        // snapshot rows so the report covers every adjusted line (#24350).
+        for (AddedBatchLines g : loadAddedBatchLines(physBillIds)) {
+            VarianceRow vr = new VarianceRow();
+            vr.setAddedDuringStockTake(true);
+            vr.setItemName(g.itemName);
+            vr.setCode(g.code);
+            vr.setBatchNo(g.batchNo);
+            vr.setCategory(g.category);
+            vr.setDosageForm(g.dosageForm);
+            vr.setPurchaseRate(g.purchaseRate);
+            vr.setRetailRate(g.retailRate);
+            vr.setCostRate(g.costRate);
+            vr.setInitialQty(g.initialQty());
+            vr.setSumVariance(g.sumAdjustedValue);
+            vr.setLastPhysicalQty(g.lastQty);
+            varianceRows.add(vr);
+        }
     }
 
     // Build detailed before/after-adjustment rows for the selected snapshot. Same scope as
@@ -2645,7 +3005,8 @@ public class PharmacyStockTakeController implements Serializable {
         pp.put("pbs", physBillIds);
         List<Object[]> physRows = billItemFacade.findObjectArrayByJpql(jpqlPhys, pp, javax.persistence.TemporalType.TIMESTAMP);
 
-        java.util.Map<Long, Long> physToSnapshot = new java.util.HashMap<>();
+        // physical-count line id -> report row, for the adjustment overlay in Step 3
+        java.util.Map<Long, VarianceDetailedRow> physToRow = new java.util.HashMap<>();
         if (physRows != null) {
             for (Object[] pr : physRows) {
                 Long physId = pr[0] instanceof Number ? ((Number) pr[0]).longValue() : null;
@@ -2661,7 +3022,7 @@ public class PharmacyStockTakeController implements Serializable {
                 vr.setQtyAfter(physQty != null ? physQty : 0.0);
                 uploaded.put(snapId, true);
                 if (physId != null) {
-                    physToSnapshot.put(physId, snapId);
+                    physToRow.put(physId, vr);
                 }
             }
         }
@@ -2672,6 +3033,37 @@ public class PharmacyStockTakeController implements Serializable {
             if (Boolean.TRUE.equals(uploaded.get(e.getKey()))) {
                 varianceDetailedRows.add(e.getValue());
             }
+        }
+
+        // Batches added during the stock take have no snapshot line (#24350): before = stock
+        // before the first count, after = last count; Step 3 overrides both from the posted
+        // adjustment lines where those exist.
+        // For an added batch only the first count's adjustment may set Before and only the
+        // last count's may set After; a boundary with no adjustment keeps the counted value.
+        java.util.Set<Long> addedFirstLineIds = new java.util.HashSet<>();
+        java.util.Set<Long> addedLastLineIds = new java.util.HashSet<>();
+        for (AddedBatchLines g : loadAddedBatchLines(physBillIds)) {
+            VarianceDetailedRow vr = new VarianceDetailedRow();
+            vr.setAddedDuringStockTake(true);
+            vr.setPurchaseRate(g.purchaseRate);
+            vr.setRetailRate(g.retailRate);
+            vr.setCostRate(g.costRate);
+            vr.setBatchNo(g.batchNo);
+            vr.setCode(g.code);
+            vr.setItemName(g.itemName);
+            vr.setCategory(g.category);
+            vr.setDosageForm(g.dosageForm);
+            vr.setQtyBefore(g.initialQty());
+            vr.setQtyAfter(g.lastQty != null ? g.lastQty : 0.0);
+            if (g.firstLineId != null) {
+                physToRow.put(g.firstLineId, vr);
+                addedFirstLineIds.add(g.firstLineId);
+            }
+            if (g.lastLineId != null) {
+                physToRow.put(g.lastLineId, vr);
+                addedLastLineIds.add(g.lastLineId);
+            }
+            varianceDetailedRows.add(vr);
         }
 
         // --- Step 3: overlay authoritative before/after from the posted adjustment bill,
@@ -2695,7 +3087,8 @@ public class PharmacyStockTakeController implements Serializable {
         String jpqlAdj = "SELECT abi.referanceBillItem.id, pbi.beforeAdjustmentValue, pbi.afterAdjustmentValue "
                 + "FROM BillItem abi "
                 + "LEFT JOIN abi.pharmaceuticalBillItem pbi "
-                + "WHERE abi.bill.id IN :abs";
+                + "WHERE abi.bill.id IN :abs "
+                + "ORDER BY abi.bill.createdAt ASC, abi.bill.id ASC, abi.id ASC";
         HashMap<String, Object> adp = new HashMap<>();
         adp.put("abs", adjBillIds);
         List<Object[]> adjRows = billItemFacade.findObjectArrayByJpql(jpqlAdj, adp, javax.persistence.TemporalType.TIMESTAMP);
@@ -2707,20 +3100,17 @@ public class PharmacyStockTakeController implements Serializable {
             if (physId == null) {
                 continue;
             }
-            Long snapId = physToSnapshot.get(physId);
-            if (snapId == null) {
-                continue;
-            }
-            VarianceDetailedRow vr = map.get(snapId);
+            VarianceDetailedRow vr = physToRow.get(physId);
             if (vr == null) {
                 continue;
             }
             Double before = r[1] instanceof Number ? ((Number) r[1]).doubleValue() : null;
             Double after = r[2] instanceof Number ? ((Number) r[2]).doubleValue() : null;
-            if (before != null) {
+            boolean added = vr.isAddedDuringStockTake();
+            if (before != null && (!added || addedFirstLineIds.contains(physId))) {
                 vr.setQtyBefore(before);
             }
-            if (after != null) {
+            if (after != null && (!added || addedLastLineIds.contains(physId))) {
                 vr.setQtyAfter(after);
             }
         }
@@ -3555,16 +3945,23 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Check if there's an ongoing (incomplete) stock taking for the given
-     * department. An ongoing stock taking is one where bill.completed = false.
+     * department and department type. An ongoing stock taking is one where
+     * bill.completed = false. Stock takes for different department types
+     * (e.g. Pharmacy vs Store) within the same department cover disjoint
+     * item sets, so they are allowed to run concurrently. A legacy bill
+     * with a NULL departmentType (predating this field) is treated as
+     * conflicting with every department type, since its item scope is
+     * unknown and may overlap.
      */
-    private boolean hasOngoingStockTaking(Department dept) {
+    private boolean hasOngoingStockTaking(Department dept, com.divudi.core.data.DepartmentType deptType) {
         if (dept == null || dept.getId() == null) {
             return false;
         }
-        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false)";
+        String jpql = "select count(b) from Bill b where b.billType=:bt and b.department.id=:deptId and b.retired=false and (b.completed is null or b.completed=false) and (b.departmentType is null or b.departmentType=:deptType)";
         HashMap<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacySnapshotBill);
         params.put("deptId", dept.getId());
+        params.put("deptType", deptType);
         Long count = billFacade.countByJpql(jpql, params);
         return count != null && count > 0;
     }
@@ -3827,6 +4224,10 @@ public class PharmacyStockTakeController implements Serializable {
             apbi.setItemBatch(bi.getPharmaceuticalBillItem().getItemBatch());
             Stock stock = bi.getReferanceBillItem() != null && bi.getReferanceBillItem().getPharmaceuticalBillItem() != null
                     ? bi.getReferanceBillItem().getPharmaceuticalBillItem().getStock() : null;
+            if (stock == null && bi.getPharmaceuticalBillItem() != null) {
+                // Rows added as new batches (#24337) have no snapshot line; their own Stock is set.
+                stock = bi.getPharmaceuticalBillItem().getStock();
+            }
             apbi.setStock(stock);
             apbi.setQty(variance);
             if (stock != null) {
@@ -4932,13 +5333,14 @@ public class PharmacyStockTakeController implements Serializable {
         this.zeroStockBatchLimit = zeroStockBatchLimit;
     }
 
-    public String getGenerationJobId() {
-        return generationJobId;
-    }
-
-    public void setGenerationJobId(String generationJobId) {
-        this.generationJobId = generationJobId;
-    }
+    // DEAD CODE — only used by the unreachable async chain. See note above stockCountGenerationService. TODO: delete.
+    // public String getGenerationJobId() {
+    //     return generationJobId;
+    // }
+    //
+    // public void setGenerationJobId(String generationJobId) {
+    //     this.generationJobId = generationJobId;
+    // }
 
     /**
      * Generate a sanitized filename for variance report Excel export. Includes
@@ -5011,6 +5413,7 @@ public class PharmacyStockTakeController implements Serializable {
         private Double initialQty;
         private Double sumVariance;
         private Double lastPhysicalQty;
+        private boolean addedDuringStockTake;
 
         public Long getBillItemId() { return billItemId; }
         public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
@@ -5050,6 +5453,11 @@ public class PharmacyStockTakeController implements Serializable {
 
         // Alias used in XHTML column: r.batch
         public String getBatch() { return batchNo; }
+
+        public boolean isAddedDuringStockTake() { return addedDuringStockTake; }
+        public void setAddedDuringStockTake(boolean addedDuringStockTake) { this.addedDuringStockTake = addedDuringStockTake; }
+
+        public String getSource() { return addedDuringStockTake ? SOURCE_ADDED : SOURCE_SNAPSHOT; }
     }
 
     // DTO for variance detailed report — before/after adjustment quantities & values, no entity references
@@ -5065,6 +5473,7 @@ public class PharmacyStockTakeController implements Serializable {
         private Double costRate;
         private Double qtyBefore;
         private Double qtyAfter;
+        private boolean addedDuringStockTake;
 
         public String getCode() { return code; }
         public void setCode(String code) { this.code = code; }
@@ -5107,6 +5516,42 @@ public class PharmacyStockTakeController implements Serializable {
         public Double getValueVarianceAtCostRate() { return getValueAfterAtCostRate() - getValueBeforeAtCostRate(); }
         public Double getValueVarianceAtRetailRate() { return getValueAfterAtRetailRate() - getValueBeforeAtRetailRate(); }
         public Double getValueVarianceAtPurchaseRate() { return getValueAfterAtPurchaseRate() - getValueBeforeAtPurchaseRate(); }
+
+        public boolean isAddedDuringStockTake() { return addedDuringStockTake; }
+        public void setAddedDuringStockTake(boolean addedDuringStockTake) { this.addedDuringStockTake = addedDuringStockTake; }
+
+        public String getSource() { return addedDuringStockTake ? SOURCE_ADDED : SOURCE_SNAPSHOT; }
+    }
+
+    private static final String SOURCE_SNAPSHOT = "Snapshot";
+    private static final String SOURCE_ADDED = "Added (not in snapshot)";
+
+    /**
+     * Physical-count lines of one batch that was not in the snapshot but was
+     * added during the stock take (#24337), in upload order (#24350).
+     */
+    private static class AddedBatchLines {
+        Long firstLineId;
+        Long lastLineId;
+        Double firstQty;
+        Double firstAdjustedValue;
+        Double lastQty;
+        double sumAdjustedValue;
+        String batchNo;
+        Double purchaseRate;
+        Double retailRate;
+        Double costRate;
+        String code;
+        String itemName;
+        String category;
+        String dosageForm;
+
+        /** Stock before the first count: counted qty minus the posted variance. */
+        double initialQty() {
+            double q = firstQty != null ? firstQty : 0.0;
+            double a = firstAdjustedValue != null ? firstAdjustedValue : 0.0;
+            return q - a;
+        }
     }
 
     /** Scalar snapshot reference — replaces full BillItem entity pre-load. */

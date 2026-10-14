@@ -13,6 +13,7 @@ import com.divudi.bean.cashTransaction.DenominationController;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
+import com.divudi.bean.collectingCentre.CollectingCentreSelfCommonController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.lab.LaboratoryDoctorDashboardController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -26,6 +27,7 @@ import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
 import static com.divudi.core.data.LoginPage.COURIER_LANDING_PAGE;
 import static com.divudi.core.data.LoginPage.HOME;
+import static com.divudi.core.data.LoginPage.LABORATORY_DOCTER_DASHBOARD;
 import static com.divudi.core.data.LoginPage.OPD_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.OPD_TOKEN_DISPLAY;
 import static com.divudi.core.data.LoginPage.PHARMACY_TOKEN_DISPLAY;
@@ -176,6 +178,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
     private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
+    @Inject
+    private CollectingCentreSelfCommonController collectingCentreSelfCommonController;
     @Inject
     private UserSettingsController userSettingsController;
     // </editor-fold>
@@ -1934,6 +1938,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return courierController.navigateToCourierIndex();
             case LABORATORY_DOCTER_DASHBOARD:
                 return laboratoryDoctorDashboardController.navigateToDoctorDashboard();
+            case COLLECTING_CENTRE_SELF_BILLING_HOME:
+                return collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome();
             case HOME:
             default:
                 return "/home?faces-redirect=true";

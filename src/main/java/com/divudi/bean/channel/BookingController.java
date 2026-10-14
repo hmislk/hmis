@@ -976,7 +976,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

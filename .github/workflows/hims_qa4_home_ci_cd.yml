@@ -1,0 +1,206 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  HMIS QA4 — home-hosted (carecode-laptop, buddhika account)
+#
+#  Branch:  home-qa4  (NOT hims-qa4-home: the `hims-qa*` pattern is claimed by
+#           the "QA Branches Rules" ruleset, which demands a PR + check-branch
+#           status check for every push, including the branch-creating one —
+#           see hmislk/hmis#23736, which renamed QA1's trigger the same way.)
+#  Serves:  http://localhost:9090/qa4 on the LAN, and
+#           https://qa4.carecode.org/qa4 publicly through the Desktop's
+#           nginx (hmislk/qa-home-infra) — the Desktop is the only
+#           internet-facing host, terminating TLS for all four QA subdomains.
+#
+#  Single job, entirely on the qa4 self-hosted runner: checkout, build and
+#  deploy all run locally. This avoids shipping the ~135 MB WAR back down the
+#  home link (measured ~27 minutes at ~80 KB/s on the first split-job deploy,
+#  run 34677990172) — only an incremental `git fetch` crosses the network
+#  now. Same fix as QA1 (#23741) and QA3 (#23750).
+#
+#  WINDOWS-SPECIFIC NOTES (QA1/QA2 are Linux; QA3 and QA4 are Windows):
+#   * Every step pins `shell: bash` (Git Bash). That needs `bash.exe` on
+#     PATH — a stock Git-for-Windows install only puts `Git\cmd` there
+#     (git.exe, not bash.exe). On this machine `bash.exe` already resolves
+#     via `C:\Program Files\Git\usr\bin`, and `C:\Program Files\Git\bin` was
+#     also added to the user PATH as a belt-and-suspenders fix — the runner
+#     runs as this logged-in user (not SYSTEM), so user-scope PATH is
+#     actually seen here, unlike QA3's Desktop.
+#   * JAVA_HOME is pinned to JDK 11 below and is NOT inherited — this
+#     machine's ambient/shell-default JDK is 21, which cannot run this old
+#     Payara 5's deployment scanner against any modern jackson-core (ships
+#     Java 21 multi-release classes) — fails opaquely with "Unsupported
+#     class file major version 65". See qa-home-infra GOTCHAS.md.
+#   * Maven is a standalone install, not bundled with an IDE — MVN is an
+#     explicit path below.
+#   * asadmin is the `.bat` wrapper, and the WAR path is converted with
+#     `cygpath -w` before being handed to it.
+#   * No D: drive on this machine — DEPLOY_DIR is under C:.
+#
+#  Database: local MySQL `roseth`, via the `jdbc/roseth` resource (pool
+#  `poolRoseth`). That pool pre-existed pointing at localhost:3306/roseth but
+#  the local schema didn't exist yet — restored from a production dump
+#  (2026-09-12). No other roseth-named JDBC resource exists on this domain
+#  (unlike QA3's southernlanka landmines — nothing else to avoid here).
+# ═══════════════════════════════════════════════════════════════════════════
+name: HIMS QA4 Home CI/CD
+
+on:
+  push:
+    branches: [home-qa4]
+  workflow_dispatch:
+
+concurrency:
+  group: payara-qa4-home
+  cancel-in-progress: false
+
+# Only actions/checkout uses GITHUB_TOKEN here, and it only reads. Note that
+# `persist-credentials: false` stops the token being written into
+# .git/config; it does not narrow the token's own scopes, which is what
+# this does.
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    # Hard ref guard. `workflow_dispatch` lets anyone with write access pick
+    # an arbitrary branch or tag, and GitHub would then check that ref out
+    # and run it on this machine's self-hosted runner. Pinning the ref keeps
+    # a stray dispatch of some unrelated feature branch from building and
+    # deploying itself onto QA4. (Dispatch is kept because redeploying the
+    # current branch without an empty commit is genuinely useful, and anyone
+    # who can dispatch could push to `home-qa4` anyway - so this bounds
+    # mistakes more than it bounds a determined insider.)
+    if: github.ref == 'refs/heads/home-qa4'
+    runs-on: [self-hosted, qa4]
+    defaults:
+      run:
+        shell: bash
+    env:
+      APP_NAME:     qa4
+      JNDI_MAIN:    jdbc/roseth
+      JNDI_AUDIT:   jdbc/ruhunuAudit
+      HEALTH_URL:   http://localhost:9090/qa4/faces/index1.xhtml
+      ASADMIN:      C:\Users\buddhika\Payara_Server\glassfish\bin\asadmin.bat
+      ASADMIN_PORT: "5858"
+      DEPLOY_DIR:   /c/qa4-deploy
+      # Pinned deliberately - see the Windows notes in the header.
+      JAVA_HOME:    C:\Program Files\OpenLogic\jdk-11.0.24.8-hotspot
+      MVN:          C:\Users\buddhika\AppData\Local\Apache\apache-maven-3.9.16\bin\mvn.cmd
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Fail loudly and immediately if the toolchain is not what we expect,
+      # rather than part-way through a build.
+      - name: Verify local toolchain
+        run: |
+          set -euo pipefail
+          command -v bash >/dev/null || { echo "::error::bash not on PATH"; exit 1; }
+          test -x "$JAVA_HOME/bin/java.exe" || { echo "::error::no JDK at JAVA_HOME=$JAVA_HOME"; exit 1; }
+          test -f "$MVN" || { echo "::error::maven not found at $MVN"; exit 1; }
+          "$JAVA_HOME/bin/java.exe" -version
+          "$MVN" -v | head -3
+          java_major=$("$JAVA_HOME/bin/java.exe" -version 2>&1 | head -1 | grep -oE '"[0-9]+' | tr -d '"')
+          [ "$java_major" = "11" ] || { echo "::error::expected JDK 11, got $java_major"; exit 1; }
+
+      - name: Substitute datasource JNDI names
+        run: |
+          set -euo pipefail
+          PU=src/main/resources/META-INF/persistence.xml
+          test -f "$PU" || { echo "::error::$PU not found"; exit 1; }
+
+          sed -i "s|[$][{]JDBC_DATASOURCE[}]|${JNDI_MAIN}|g"        "$PU"
+          sed -i "s|[$][{]JDBC_AUDIT_DATASOURCE[}]|${JNDI_AUDIT}|g" "$PU"
+
+          echo "--- resolved datasources ---"
+          grep -E 'jta-data-source|non-jta-data-source' "$PU"
+
+          if grep -q 'JDBC_DATASOURCE\|JDBC_AUDIT_DATASOURCE' "$PU"; then
+            echo "::error::unsubstituted JDBC placeholder remains in $PU"
+            exit 1
+          fi
+
+          for want in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            grep -q "<[a-z-]*jta-data-source>${want}</" "$PU" || {
+              echo "::error::$PU does not reference ${want}."
+              grep -E 'jta-data-source' "$PU"
+              exit 1; }
+          done
+          echo "datasources verified: $JNDI_MAIN, $JNDI_AUDIT"
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          "$MVN" -B -ntp clean package -DskipTests
+
+      - name: Rename artifact
+        run: |
+          set -euo pipefail
+          war=$(find target -maxdepth 1 -name '*.war' | head -1)
+          test -n "$war" || { echo "::error::no WAR produced"; exit 1; }
+          mv "$war" "target/${APP_NAME}.war"
+          ls -l "target/${APP_NAME}.war"
+
+      - name: Deploy to Payara
+        run: |
+          set -euo pipefail
+          asadmin() { "$ASADMIN" --port "$ASADMIN_PORT" "$@"; }
+
+          test -f "target/${APP_NAME}.war" || { echo "::error::WAR missing"; exit 1; }
+          WAR_WIN=$(cygpath -w "$(pwd)/target/${APP_NAME}.war")
+          echo "WAR: $WAR_WIN"
+
+          for j in "$JNDI_MAIN" "$JNDI_AUDIT"; do
+            asadmin list-jdbc-resources | tr -d '\r' | grep -qx "$j" || {
+              echo "::error::JNDI resource $j not found in this domain."; exit 1; }
+            # Pool name is NOT derivable from the JNDI name (e.g.
+            # jdbc/ruhunuAudit -> poolRuhunuAuditLocal) - look it up.
+            key="resources.jdbc-resource.${j}.pool-name"
+            pool=$(asadmin get "$key" 2>/dev/null | tr -d '\r' | grep -F "$key=" | head -1)
+            pool="${pool#*=}"
+            [ -n "$pool" ] || { echo "::error::could not resolve pool behind $j"; exit 1; }
+            asadmin ping-connection-pool "$pool" || {
+              echo "::error::pool $pool (behind $j) is not reachable"; exit 1; }
+            echo "$j -> $pool OK"
+          done
+
+          # Keep a rollback copy before touching the running app.
+          mkdir -p "$DEPLOY_DIR"
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.deployed" ]; then
+            cp "$DEPLOY_DIR/${APP_NAME}.war.deployed" "$DEPLOY_DIR/${APP_NAME}.war.previous"
+          fi
+
+          asadmin undeploy "$APP_NAME" 2>/dev/null || echo "not previously deployed"
+          if ! asadmin deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true "$WAR_WIN"; then
+            echo "::error::deploy failed"
+            if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+              echo "restoring previous WAR"
+              asadmin deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true \
+                "$(cygpath -w "$DEPLOY_DIR/${APP_NAME}.war.previous")"
+            fi
+            exit 1
+          fi
+          cp "target/${APP_NAME}.war" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          asadmin list-applications
+
+      - name: Health check
+        run: |
+          set -euo pipefail
+          asadmin() { "$ASADMIN" --port "$ASADMIN_PORT" "$@"; }
+
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HEALTH_URL" || echo 000)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && { echo "healthy"; exit 0; }
+            sleep 10
+          done
+          echo "::error::qa4 did not become healthy at $HEALTH_URL - removing it"
+          asadmin undeploy "$APP_NAME" 2>/dev/null || true
+          if [ -f "$DEPLOY_DIR/${APP_NAME}.war.previous" ]; then
+            echo "restoring previous WAR"
+            asadmin deploy --contextroot "$APP_NAME" --name "$APP_NAME" --force=true \
+              "$(cygpath -w "$DEPLOY_DIR/${APP_NAME}.war.previous")"
+            cp "$DEPLOY_DIR/${APP_NAME}.war.previous" "$DEPLOY_DIR/${APP_NAME}.war.deployed"
+          fi
+          exit 1

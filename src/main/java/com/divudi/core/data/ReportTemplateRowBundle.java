@@ -124,6 +124,9 @@ public class ReportTemplateRowBundle implements Serializable {
     private double floatInTotal;
     private double cashFloatOutTotal;
     private double cashFloatInTotal;
+    // Fund transfer payments actually counted into floatIn/floatOut totals, so the handover
+    // can mark exactly these as handed over (#24170)
+    private List<Payment> countedFundTransferPayments;
 
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
@@ -2447,6 +2450,23 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setCashFloatInTotal(double cashFloatInTotal) {
         this.cashFloatInTotal = cashFloatInTotal;
+    }
+
+    public List<Payment> getCountedFundTransferPayments() {
+        // Do not lazily assign — isCountedFundTransferPaymentsTracked() relies on null
+        return countedFundTransferPayments == null ? new ArrayList<>() : countedFundTransferPayments;
+    }
+
+    public void setCountedFundTransferPayments(List<Payment> countedFundTransferPayments) {
+        this.countedFundTransferPayments = countedFundTransferPayments;
+    }
+
+    /**
+     * True when this bundle was built by a flow that records the counted fund transfer
+     * payments (even if none were counted); false for bundles built by older flows.
+     */
+    public boolean isCountedFundTransferPaymentsTracked() {
+        return countedFundTransferPayments != null;
     }
 
     public double getCashFloatNetTotal() {

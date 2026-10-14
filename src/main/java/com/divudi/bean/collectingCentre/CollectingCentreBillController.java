@@ -61,6 +61,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FeeValue;
 import com.divudi.core.entity.lab.Investigation;
@@ -264,6 +265,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private String externalDoctor;
 
     private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
+
+    private boolean ccSelfServiceBilling;
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
@@ -902,8 +905,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
 
         ccBillSettlingStarted.set(false);
-        return "/collecting_centre/bill_print?faces-redirect=true";
-
+        if (ccSelfServiceBilling) {
+            return "/collecting_centre/cc_self_bill_print?faces-redirect=true";
+        }else{
+            return "/collecting_centre/bill_print?faces-redirect=true";
+        }
+        
     }
 
     public BillItem saveCcBillItem(Bill b, BillEntry e, WebUser wu) {
@@ -1180,6 +1187,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         ccBill.setCollectingCentre(collectingCentre);
 
+        if (sessionController.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+            ccBill.setCcBillingType(CollectingCentreBillingType.AGENT_BILLING);
+        } else {
+            ccBill.setCcBillingType(CollectingCentreBillingType.HOSPITAL_BILLING);
+        }
+
         ccBill.setToDepartment(bt);
         ccBill.setToInstitution(bt.getInstitution());
 
@@ -1296,6 +1309,30 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return true;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Referral details are required for CC billing.", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("External Doctor is required for CC billing.", false)) {
+                if(externalDoctor == null || externalDoctor.trim().equalsIgnoreCase("")){
+                    JsfUtil.addErrorMessage("External Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required for CC billing.", false)) {
+                if(referredBy == null){
+                    JsfUtil.addErrorMessage("Referring Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Institution is required for CC billing.", false)) {
+                if(referredByInstitution == null){
+                    JsfUtil.addErrorMessage("Referring Institution is required for CC billing.");
+                    return true;
+                }
+            }
+            
+        }
+
         return false;
     }
 
@@ -1479,6 +1516,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
+        setExternalDoctor(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);
@@ -1707,6 +1745,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBill();
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1715,6 +1754,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1745,7 +1785,42 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
+    }
+
+    /**
+     * Entry point for a Collecting Centre self-service user creating a bill
+     * for their own institution. Unlike the staff-facing flow, the
+     * collecting centre is not picked from a list - it is always the
+     * institution the user is logged in as.
+     */
+    public String navigateToCollectingCentreSelfBilling() {
+        prepareNewBill();
+        collectingCentre = sessionController.getInstitution();
+        loadCCFinancialData(collectingCentre);
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
+        itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
+        setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = true;
+        return "/collecting_centre/cc_self_bill?faces-redirect=true";
+    }
+
+    public String navigateToCollectingCentreSelfBillingKeepingCollectingCentre() {
+        collectingCentre = sessionController.getInstitution();
+        loadCCFinancialData(collectingCentre);
+        prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = true;
+        return "/collecting_centre/cc_self_bill?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {

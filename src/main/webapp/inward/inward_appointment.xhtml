@@ -277,7 +277,12 @@
                                                             timeInput="true"
                                                             showTime="true"
                                                             showButtonBar="true"
-                                                            class="my-2"/>
+                                                            class="my-2">
+                                                            <p:ajax event="dateSelect"
+                                                                    listener="#{appointmentController.onReservedFromDateChanged()}"
+                                                                    update="appointmentDate"
+                                                                    process="@this" />
+                                                        </p:datePicker>
 
                                                         <h:outputLabel
                                                             for="reserveToTimeStamp"

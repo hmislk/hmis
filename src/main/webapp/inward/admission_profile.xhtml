@@ -129,6 +129,10 @@
                     </div>
                 </ui:fragment>
 
+                <!-- "Not yet accepted" banner: pending admission handover, room transfer or
+                     theatre transfer for this admission (Issue #24150) -->
+                <in:pendingAcceptanceBanner admission="#{admissionController.current}"/>
+
                 <!-- Pending Appointment Deposit Conversion warning: the appointment
                      that was admitted still has an un-cancelled appointment deposit
                      bill that hasn't been converted into this admission's Inward
@@ -326,6 +330,31 @@
                             </div>
                         </p:panel>
 
+                        <p:panel header="Package" class="m-1" rendered="#{webUserController.hasPrivilege('InpatientDashboardPanelPackage')}">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <p:outputLabel value="Current Package: " class="fw-bold"/>
+                                    <h:outputText value="#{admissionController.current.inpatientPackage.name}" rendered="#{admissionController.current.inpatientPackage ne null}"/>
+                                    <h:outputText value="No Package" rendered="#{admissionController.current.inpatientPackage eq null}"/>
+                                </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        id="btnChangePackage"
+                                        rendered="#{webUserController.hasPrivilege('InwardPackageChange')}"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        value="Change Package"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToPackageChange()}"
+                                        icon="fa fa-box-archive"
+                                        class="w-100">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{packageChangeController.current}" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+
                         <p:panel header="Billing" class="m-1" rendered="#{admissionController.current.parentEncounter == null and webUserController.hasPrivilege('InpatientDashboardPanelBilling')}">
                             <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <div class="border border-warning rounded p-2 mb-2 shadow-sm" style="background-color:#fffdf5;">
@@ -334,8 +363,11 @@
                                             <i class="fa fa-receipt me-1"/> Last Processing Summary
                                         </span>
                                         <span class="d-inline-flex align-items-center gap-1">
-                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null}">
-                                                <p:tag value="Snapshot - Not Live" icon="fa fa-clock-rotate-left" severity="warning" class="small"/>
+                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null and not admissionController.current.paymentFinalized}">
+                                                <p:tag value="Updated on Each Bill" icon="fa fa-rotate" severity="success" class="small"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null and admissionController.current.paymentFinalized}">
+                                                <p:tag value="Not Updated - Payment Finalized" icon="fa fa-lock" severity="warning" class="small"/>
                                             </h:panelGroup>
                                             <p:tag value="Developer" icon="fa fa-code" severity="info" class="small"/>
                                         </span>
@@ -343,11 +375,14 @@
 
                                     <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
                                         <div class="d-flex align-items-center py-2 px-3 mb-2 rounded shadow-sm"
-                                             role="alert"
-                                             style="border-left:8px solid #dc3545; background-color:#fdecea; color:#842029;">
-                                            <i class="fa fa-triangle-exclamation fa-lg me-2 text-danger"/>
+                                             role="status"
+                                             style="border-left:8px solid #0d6efd; background-color:#e7f1ff; color:#084298;">
+                                            <i class="fa fa-circle-info fa-lg me-2"/>
                                             <span class="fw-semibold">
-                                                Totals are <span class="fw-bold text-danger text-decoration-underline">NOT current</span> &#8212; snapshot only. Re-process for live values.
+                                                <h:outputText rendered="#{not admissionController.current.paymentFinalized}"
+                                                              value="Totals are updated whenever a bill is added. Room charges keep accruing until the next update."/>
+                                                <h:outputText rendered="#{admissionController.current.paymentFinalized}"
+                                                              value="Payment is finalized, so bills added from now on (such as post-final payments) do not update these totals."/>
                                             </span>
                                         </div>
                                     </h:panelGroup>
@@ -1219,6 +1254,21 @@
                                             <f:setPropertyActionListener
                                                 value="#{admissionController.current}"
                                                 target="#{inwardPharmacyEncounterReportController.patientEncounter}" />
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            id="btnPharmacyItemMovementSummary"
+                                            value="Pharmacy Item Summary"
+                                            action="#{inpatientPharmacyItemMovementController.navigateToItemMovementSummaryForAdmission()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySummaryViews') or webUserController.hasPrivilege('InwardReportPharmacyIssueSummary')}"
+                                            icon="fa fa-pills"
+                                            class="w-100"
+                                            ajax="false"
+                                            title="Per item: directly issued, issued on request, returned and cancelled for this admission">
+                                            <f:setPropertyActionListener
+                                                value="#{admissionController.current}"
+                                                target="#{inpatientPharmacyItemMovementController.patientEncounter}" />
                                         </p:commandButton>
                                     </div>
                                 </div>

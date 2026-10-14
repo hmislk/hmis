@@ -49,6 +49,7 @@ These guidelines apply to the entire repository.
 - Use `h:outputText` for headings/labels in ERP pages.
 
 ## Security & Credentials
+- **This repo is public.** Never put a hospital's data in a GitHub issue, PR, comment or commit message: affected-record counts, production bill/BHT/PHN numbers or entity IDs, production schema names, cutover dates, per-staff statistics, patient/doctor names, or production data-fix logs. Describe the defect and the local test evidence instead; keep the hospital-specific numbers in `tmp/` or give them to the developer directly. Naming which hospital reported a bug is fine. See `developer_docs/git/github-public-content-policy.md`.
 - Never commit secrets or database credentials.
 - Keep credentials outside repo (`~/.config/hmis/credentials.txt` or equivalent).
 

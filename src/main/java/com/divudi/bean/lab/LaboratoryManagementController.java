@@ -95,6 +95,11 @@ public class LaboratoryManagementController implements Serializable {
     LaboratoryCommonController laboratoryCommonController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    com.divudi.bean.common.WebUserController webUserController;
+    @EJB
+    private com.divudi.service.LabSampleLockService labSampleLockService;
+    private String sampleCollectionCancelReason;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -1925,8 +1930,90 @@ public class LaboratoryManagementController implements Serializable {
         }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.receiveDTOSamplesAtLab", sessionController.getLoggedUser());
     }
 
+    public boolean canCancelSampleCollection(PatientSample ps) {
+        return webUserController.hasPrivilege("LabRevertSample")
+                && labSampleLockService.canCancelSampleCollection(ps);
+    }
+
+    /**
+     * Cheap row-level check for the dashboard table (no queries): privilege
+     * plus collected and not cancelled according to the row data.
+     */
+    public boolean canCancelSampleCollectionDto(SampleDTO dto) {
+        return dto != null
+                && webUserController.hasPrivilege("LabRevertSample")
+                && Boolean.TRUE.equals(dto.getSampleCollected())
+                && !Boolean.TRUE.equals(dto.getCancelled());
+    }
+
+    /**
+     * Cancels the collection of the samples selected on the dashboard
+     * (selectedSampleDtos), using sampleCollectionCancelReason.
+     */
+    public void cancelSampleCollection() {
+        if (!webUserController.hasPrivilege("LabRevertSample")) {
+            JsfUtil.addErrorMessage("You do not have the 'Lab Revert Sample' privilege.");
+            return;
+        }
+        if (selectedSampleDtos == null || selectedSampleDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No samples selected");
+            return;
+        }
+        if (sampleCollectionCancelReason == null || sampleCollectionCancelReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a reason for cancelling the sample collection.");
+            return;
+        }
+        int done = 0;
+        for (SampleDTO dto : selectedSampleDtos) {
+            PatientSample ps = dto.getSampleId() == null ? null : patientSampleFacade.find(dto.getSampleId());
+            String error = labSampleLockService.cancelSampleCollection(ps, sessionController.getLoggedUser(), sampleCollectionCancelReason);
+            if (error != null) {
+                JsfUtil.addErrorMessage(error);
+                continue;
+            }
+            done++;
+        }
+        listingEntity = ListingEntity.PATIENT_SAMPLES;
+        if (done > 0) {
+            reloadSampleDTOList();
+            selectedSampleDtos = new ArrayList<>();
+            sampleCollectionCancelReason = null;
+            JsfUtil.addSuccessMessage("Sample collection cancelled for " + done + " sample(s).");
+        }
+    }
+
+    public String getSampleCollectionCancelReason() {
+        return sampleCollectionCancelReason;
+    }
+
+    public void setSampleCollectionCancelReason(String sampleCollectionCancelReason) {
+        this.sampleCollectionCancelReason = sampleCollectionCancelReason;
+    }
+
     public void rejectSamples() {
         reportTimerController.trackReportExecution(() -> {
+            if ((selectedPatientSamples == null || selectedPatientSamples.isEmpty())
+                    && selectedSampleDtos != null && !selectedSampleDtos.isEmpty()) {
+                // The dashboard sample table selects SampleDTO rows, not PatientSample entities.
+                // Delegate to the Sample Management rejection so the same eligibility checks
+                // (cancelled bill, refunded test, report exists, department, reason) apply.
+                List<PatientSample> samples = new ArrayList<>();
+                for (SampleDTO dto : selectedSampleDtos) {
+                    PatientSample ps = dto.getSampleId() == null ? null : patientSampleFacade.find(dto.getSampleId());
+                    if (ps != null) {
+                        samples.add(ps);
+                    }
+                }
+                patientInvestigationController.setSelectedPatientSamples(samples);
+                patientInvestigationController.setSampleRejectionComment(sampleRejectionComment);
+                patientInvestigationController.rejectSamples();
+                sampleRejectionComment = "";
+                listingEntity = ListingEntity.PATIENT_SAMPLES;
+                // reloadSampleDTOList() refreshes only the selected rows, so clear the selection afterwards.
+                reloadSampleDTOList();
+                selectedSampleDtos = new ArrayList<>();
+                return;
+            }
             if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
                 JsfUtil.addErrorMessage("No samples selected");
                 return;
@@ -1966,6 +2053,14 @@ public class LaboratoryManagementController implements Serializable {
             for (Bill tb : affectedBills.values()) {
                 tb.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
                 billFacade.edit(tb);
+            }
+
+            for (PatientInvestigation rpi : rejectedPtixs.values()) {
+                if (labSampleLockService.allSamplesRejected(rpi)) {
+                    rpi.setSampleCollected(false);
+                    rpi.setCollected(false);
+                    patientInvestigationFacade.edit(rpi);
+                }
             }
 
             JsfUtil.addSuccessMessage("Selected Samples Are Rejected");

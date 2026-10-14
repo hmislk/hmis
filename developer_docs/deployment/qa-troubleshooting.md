@@ -7,7 +7,7 @@
 - Build phase shows ✅ success
 - Deploy phase shows ✅ success
 - BUT: Applications return 404 errors when accessed
-- `curl https://qa.carecode.org/qa*/faces/index1.xhtml` returns 404
+- `curl https://qa-migrated.carecode.org/qa*/faces/index1.xhtml` returns 404
 
 ### Root Cause Analysis
 
@@ -31,7 +31,7 @@ Hardcoded JNDI datasources in `persistence.xml` instead of environment variables
    ```xml
    <jta-data-source>jdbc/coop</jta-data-source>
    <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
-   <jta-data-source>jdbc/qa</jta-data-source>
+   <jta-data-source>jdbc/qa1</jta-data-source>
    ```
 
 ### Step-by-Step Fix
@@ -67,51 +67,44 @@ gh pr create --base development --head fix-qa-jndi-datasources --title "Fix QA J
 gh pr merge [PR_NUMBER] --merge --admin
 ```
 
-#### Step 3: Redeploy all QA environments
-```bash
-# Switch back to development and pull latest
-git checkout development
-git pull origin development
+#### Step 3: Redeploy the QA environments
 
-# Create deployment PRs for all QA environments
-gh pr create --base hims-qa1 --head development --title "Deploy JNDI fix to QA1" --body "Deploy with fixed JNDI configuration"
-gh pr create --base hims-qa2 --head development --title "Deploy JNDI fix to QA2" --body "Deploy with fixed JNDI configuration"  
-gh pr create --base hims-qa3 --head development --title "Deploy JNDI fix to QA3" --body "Deploy with fixed JNDI configuration"
+Once the fix is on `development`, redeploy with the `deploy-qa` skill (opens a
+`development → hims-qaN-migrated` PR, waits for `check-branch`, merges):
 
-# Merge all PRs (after checks pass)
-gh pr merge [QA1_PR] --merge --admin
-gh pr merge [QA2_PR] --merge --admin
-gh pr merge [QA3_PR] --merge --admin
 ```
+/deploy-qa all        # rh-local-staging + all four hims-qaN-migrated
+```
+
+or one at a time: `/deploy-qa qa1`, `/deploy-qa qa2`, …
 
 ### Verification Steps
 
 #### 1. Verify build logs show proper JNDI replacement
 ```bash
 # Get the run ID from deployment
-gh run list --branch hims-qa1 --limit 1
+gh run list --branch hims-qa1-migrated --limit 1
 
-# Check that build logs show replacement working
-gh run view [RUN_ID] --log | grep -A 5 "Update JDBC Data Sources"
+# Check that build logs show the JNDI substitution working
+gh run view [RUN_ID] --log | grep -A 5 "Substitute datasource JNDI names"
 ```
 
-**Expected output:**
+**Expected output** (qa1 shown; qa2–qa4 substitute `jdbc/qa2`…`jdbc/qa4`):
 ```
-Update JDBC Data Sources in persistence.xml
-sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/qa</jta-data-source>|'
-sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/qaAudit</jta-data-source>|'
-
-Verify JDBC Data Sources in persistence.xml  
-        <jta-data-source>jdbc/qa</jta-data-source>
-        <jta-data-source>jdbc/qaAudit</jta-data-source>
+Substitute datasource JNDI names
+--- resolved datasources ---
+        <jta-data-source>jdbc/qa1</jta-data-source>
+        <jta-data-source>jdbc/qa1Audit</jta-data-source>
+datasources verified: jdbc/qa1, jdbc/qa1Audit
 ```
 
 #### 2. Test application availability (after ~5 minutes for startup)
 ```bash
 # Test all QA environments
-curl -s -o /dev/null -w "%{http_code}" https://qa.carecode.org/qa1/faces/index1.xhtml
-curl -s -o /dev/null -w "%{http_code}" https://qa.carecode.org/qa2/faces/index1.xhtml  
-curl -s -o /dev/null -w "%{http_code}" https://qa.carecode.org/qa3/faces/index1.xhtml
+curl -s -o /dev/null -w "%{http_code}" https://qa-migrated.carecode.org/qa1/faces/index1.xhtml
+curl -s -o /dev/null -w "%{http_code}" https://qa-migrated.carecode.org/qa2/faces/index1.xhtml
+curl -s -o /dev/null -w "%{http_code}" https://qa-migrated.carecode.org/qa3/faces/index1.xhtml
+curl -s -o /dev/null -w "%{http_code}" https://qa-migrated.carecode.org/qa4/faces/index1.xhtml
 
 # Expected output: 200 for all environments
 ```
@@ -129,13 +122,18 @@ curl -s -o /dev/null -w "%{http_code}" https://qa.carecode.org/qa3/faces/index1.
 
 ## Environment-Specific JNDI Mappings
 
-| Environment | JDBC_DATASOURCE | JDBC_AUDIT_DATASOURCE |
-|-------------|-----------------|----------------------|
-| QA1 | jdbc/qa | jdbc/qaAudit |
-| QA2 | jdbc/coop | jdbc/coopAudit |
-| QA3 | jdbc/qa3 | jdbc/qa3audit |
+| Environment | Branch              | JDBC_DATASOURCE | JDBC_AUDIT_DATASOURCE |
+|-------------|---------------------|-----------------|----------------------|
+| QA1 | `hims-qa1-migrated` | jdbc/qa1 | jdbc/qa1Audit |
+| QA2 | `hims-qa2-migrated` | jdbc/qa2 | jdbc/qa2Audit |
+| QA3 | `hims-qa3-migrated` | jdbc/qa3 | jdbc/qa3Audit |
+| QA4 | `hims-qa4-migrated` | jdbc/qa4 | jdbc/qa4Audit |
 
-These mappings are handled automatically by the GitHub Actions workflow when environment variables are used correctly.
+Each workflow's `Substitute datasource JNDI names` step replaces
+`${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` with the values above and then
+fails the build if any `${...}` placeholder remains or a hardcoded datasource
+was committed instead. The JDBC pools themselves are Ansible-managed on the
+Payara host (`host_vars/vm-hmis-qa01.yml`).
 
 ## Server-Side Infrastructure Failures
 

@@ -293,7 +293,7 @@
                                                     var="mysp"
                                                     itemLabel="#{mysp.name}"
                                                     itemValue="#{mysp}">
-                                                    <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff pIxAdd pBillDetails" />
+                                                    <f:ajax event="itemSelect" execute="acSpeciality" listener="#{inwardProfessionalBillController.onSpecialitySelect}" render="scStaff pIxAdd pBillDetails" />
                                                 </p:autoComplete>
                                             </div>
                                         </div>
@@ -322,7 +322,25 @@
                                                 </p:autoComplete>
                                             </div>
                                         </div>
-                                        
+
+                                        <div class="row mb-3 align-items-center">
+                                            <div class="col-md-4">
+                                                <h:outputLabel value="Fee Category" styleClass="fw-bold" for="feeCategory"/>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <p:selectOneMenu
+                                                    styleClass="w-100"
+                                                    id="feeCategory"
+                                                    value="#{inwardProfessionalBillController.currentBillFee.professionalFeeCategory}">
+                                                    <f:selectItems
+                                                        value="#{inwardProfessionalBillController.professionalFeeCategoryOptions}"
+                                                        var="cat"
+                                                        itemLabel="#{cat}"
+                                                        itemValue="#{cat}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+
                                         <div class="row mb-3 align-items-center">
                                             <div class="col-md-4">
                                                 <h:outputLabel value="Fee Amount" styleClass="fw-bold"/>
@@ -422,6 +440,9 @@
                                             <p:column headerText="Doctor">
                                                 <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff!=null}" styleClass="fw-bold text-dark"/>
                                             </p:column>
+                                            <p:column headerText="Fee Category">
+                                                <h:outputLabel value="#{bif.professionalFeeCategory ne null ? bif.professionalFeeCategory.label : 'Consultant Fee'}"/>
+                                            </p:column>
                                             <p:column headerText="Fee at">
                                                 <h:outputLabel value="#{bif.feeAt}" >
                                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
@@ -441,7 +462,7 @@
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Assign Staff">
-                                                <h:panelGroup rendered="#{bif.fromPackage}" layout="block">
+                                                <h:panelGroup rendered="#{bif.sourcePackageItem ne null}" layout="block">
                                                     <p:autoComplete
                                                         id="acAssignPackageStaff"
                                                         styleClass="w-100"
@@ -617,7 +638,7 @@
                                             <h:outputLabel value="#{bif.speciality.name}" rendered="#{bif.speciality != null}"/>
                                         </p:column>
                                         <p:column headerText="Doctor">
-                                            <h:outputLabel value="#{bif.staff.person.name}" rendered="#{bif.staff != null}" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{bif.staff.person.nameWithTitle}" rendered="#{bif.staff != null}" styleClass="fw-bold"/>
                                         </p:column>
                                         <p:column headerText="Fee Date">
                                             <h:outputLabel value="#{bif.feeAt}">

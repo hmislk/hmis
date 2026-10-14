@@ -305,7 +305,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 billSettlingStarted = false;
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_native?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2149,6 +2149,20 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
     public void setPatient(Patient patient) {
         this.patient = patient;
         allergyListOfPatient = null;
+        selectPaymentSchemeAsPerPatientMembership();
+    }
+
+    // A member's pharmacy discount scheme comes from their membership; a non-member clears it (same as PharmacySaleController).
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+        if (patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
+            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
+        }
+        listnerForPaymentMethodChange();
     }
 
     public Bill getPreBill() {

@@ -3,10 +3,13 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dto.PendingLabInvestigationDTO;
 import com.divudi.core.data.dto.PendingPharmacyItemDTO;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
@@ -44,14 +47,21 @@ public class NursingDischargeController implements Serializable {
     @EJB
     private PatientRoomFacade patientRoomFacade;
 
+    @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
+
     @Inject
     private SessionController sessionController;
 
     @Inject
     private NotificationController notificationController;
 
+    @Inject
+    private InwardBeanController inwardBean;
+
     private PatientEncounter currentEncounter;
     private List<PendingPharmacyItemDTO> pendingPharmacyItems = new ArrayList<>();
+    private List<PendingLabInvestigationDTO> pendingLabInvestigations = new ArrayList<>();
 
     // -------------------------------------------------------------------------
     // Navigation
@@ -60,6 +70,7 @@ public class NursingDischargeController implements Serializable {
     public String navigateToNursingDischarge(PatientEncounter pe) {
         this.currentEncounter = pe;
         loadPendingPharmacyItems();
+        loadPendingLabInvestigations();
         return "/inward/inward_nursing_discharge?faces-redirect=true";
     }
 
@@ -181,6 +192,36 @@ public class NursingDischargeController implements Serializable {
     }
 
     // -------------------------------------------------------------------------
+    // Pending lab investigation validation
+    // -------------------------------------------------------------------------
+
+    @SuppressWarnings("unchecked")
+    public void loadPendingLabInvestigations() {
+        pendingLabInvestigations = new ArrayList<>();
+        if (currentEncounter == null) {
+            return;
+        }
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingLabInvestigationDTO("
+                + "pi.investigation.name, pi.orderedAt, pi.status)"
+                + " FROM PatientInvestigation pi"
+                + " WHERE pi.encounter = :pe"
+                + " AND pi.retired = false"
+                + " AND (pi.cancelled = false OR pi.cancelled IS NULL)"
+                + " AND pi.sampleSent = false"
+                // Excludes voided orders - a cancelled bill or refunded bill item must not block discharge
+                + " AND pi.billItem.bill.cancelled = false"
+                + " AND pi.billItem.refunded = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", currentEncounter);
+        pendingLabInvestigations = (List<PendingLabInvestigationDTO>)
+                patientInvestigationFacade.findLightsByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    public boolean hasPendingLabInvestigations() {
+        return !pendingLabInvestigations.isEmpty();
+    }
+
+    // -------------------------------------------------------------------------
     // Nursing Discharge
     // -------------------------------------------------------------------------
 
@@ -224,6 +265,21 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Cannot confirm nursing discharge: "
                     + pendingPharmacyItems.size()
                     + " pending pharmacy item(s) must be resolved first.");
+            return;
+        }
+        loadPendingLabInvestigations();
+        if (!pendingLabInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot confirm nursing discharge: "
+                    + pendingLabInvestigations.size()
+                    + " lab investigation(s) must be sent to lab first.");
+            return;
+        }
+        List<PatientEncounter> cpts = inwardBean.fetchChildPatientEncounter(currentEncounter);
+        List<PatientItem> runningTimedServices = inwardBean.fetchRunningTimedPatientItems(currentEncounter, cpts);
+        if (!runningTimedServices.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot confirm nursing discharge: "
+                    + runningTimedServices.size()
+                    + " timed service(s) are still running and must be stopped first.");
             return;
         }
         Map<String, Object> before = nursingDischargeStateMap();
@@ -347,5 +403,9 @@ public class NursingDischargeController implements Serializable {
 
     public List<PendingPharmacyItemDTO> getPendingPharmacyItems() {
         return pendingPharmacyItems;
+    }
+
+    public List<PendingLabInvestigationDTO> getPendingLabInvestigations() {
+        return pendingLabInvestigations;
     }
 }

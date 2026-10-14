@@ -275,6 +275,24 @@ public class RequestController implements Serializable {
                     return "";
                 }
                 break;
+            case PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL:
+                if (!webUserController.hasPrivilege("PharmacyStockAdjustmentApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve pharmacy stock adjustment requests.");
+                    return "";
+                }
+                break;
+            case PHARMACY_PRICE_ADJUSTMENT_APPROVAL:
+                if (!webUserController.hasPrivilege("PharmacyPriceAdjustmentApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve pharmacy price adjustment requests.");
+                    return "";
+                }
+                break;
+            case PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL:
+                if (!webUserController.hasPrivilege("PharmacyExpiryDateAdjustmentApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve pharmacy expiry date adjustment requests.");
+                    return "";
+                }
+                break;
             default:
                 JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
@@ -347,6 +365,18 @@ public class RequestController implements Serializable {
                 patient = currentRequest.getBill().getPatient();
                 comment = null;
                 navigation = "/common/request/pharmacy_retail_sale_return_request_approvel?faces-redirect=true";
+                break;
+            case PHARMACY_STOCK_ADJUSTMENT_REQUEST:
+            case PHARMACY_STAFF_STOCK_ADJUSTMENT_REQUEST:
+            case PHARMACY_PURCHASE_RATE_ADJUSTMENT_REQUEST:
+            case PHARMACY_COST_RATE_ADJUSTMENT_REQUEST:
+            case PHARMACY_RETAIL_RATE_ADJUSTMENT_REQUEST:
+            case PHARMACY_WHOLESALE_RATE_ADJUSTMENT_REQUEST:
+            case PHARMACY_STOCK_EXPIRY_DATE_ADJUSTMENT_REQUEST:
+                bills = new ArrayList<>();
+                bills.add(currentRequest.getBill());
+                comment = null;
+                navigation = "/common/request/pharmacy_adjustment_request_approvel?faces-redirect=true";
                 break;
             default:
                 navigation = "";
@@ -876,6 +906,130 @@ public class RequestController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Approved");
     }
 
+    /**
+     * Approves a pharmacy stock/staff-stock quantity adjustment request
+     * (issue #23800). Only transitions status - the actual stock mutation
+     * happens later, when the submitting user (or anyone with the matching
+     * submit privilege) fulfils the approved request via
+     * {@code PharmacyAdjustmentController.processApprovedAdjustment(Bill)},
+     * which re-triggers the original, unmodified {@code adjustXxx()} method.
+     */
+    public void approvePharmacyStockQtyAdjustmentRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getRequestType() != RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL) {
+            JsfUtil.addErrorMessage("Invalid request type for pharmacy stock quantity adjustment approval.");
+            return;
+        }
+
+        if (currentRequest.getStatus() != RequestStatus.PENDING && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("PharmacyStockAdjustmentApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve this request.");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approved");
+    }
+
+    /**
+     * Approves a pharmacy purchase/cost/retail/wholesale rate adjustment
+     * request (issue #23800). See
+     * {@link #approvePharmacyStockQtyAdjustmentRequest()} for the fulfilment
+     * flow - no mutation happens here.
+     */
+    public void approvePharmacyPriceAdjustmentRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getRequestType() != RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL) {
+            JsfUtil.addErrorMessage("Invalid request type for pharmacy price adjustment approval.");
+            return;
+        }
+
+        if (currentRequest.getStatus() != RequestStatus.PENDING && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("PharmacyPriceAdjustmentApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve this request.");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approved");
+    }
+
+    /**
+     * Approves a pharmacy stock expiry-date adjustment request (issue
+     * #23800). See {@link #approvePharmacyStockQtyAdjustmentRequest()} for
+     * the fulfilment flow - no mutation happens here.
+     */
+    public void approvePharmacyExpiryDateAdjustmentRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getRequestType() != RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL) {
+            JsfUtil.addErrorMessage("Invalid request type for pharmacy expiry date adjustment approval.");
+            return;
+        }
+
+        if (currentRequest.getStatus() != RequestStatus.PENDING && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("PharmacyExpiryDateAdjustmentApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve this request.");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approved");
+    }
+
     public void approveDrawerAdjustmentRequest() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Request not found for approval");
@@ -1002,6 +1156,12 @@ public class RequestController implements Serializable {
             canReject = webUserController.hasPrivilege("PettyCashCancellationApproval");
         } else if (currentRequest.getRequestType() == RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL) {
             canReject = webUserController.hasPrivilege("PharmacyRetailSaleReturnApproval");
+        } else if (currentRequest.getRequestType() == RequestType.PHARMACY_STOCK_QTY_ADJUSTMENT_APPROVAL) {
+            canReject = webUserController.hasPrivilege("PharmacyStockAdjustmentApproval");
+        } else if (currentRequest.getRequestType() == RequestType.PHARMACY_PRICE_ADJUSTMENT_APPROVAL) {
+            canReject = webUserController.hasPrivilege("PharmacyPriceAdjustmentApproval");
+        } else if (currentRequest.getRequestType() == RequestType.PHARMACY_EXPIRY_DATE_ADJUSTMENT_APPROVAL) {
+            canReject = webUserController.hasPrivilege("PharmacyExpiryDateAdjustmentApproval");
         } else {
             canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
         }

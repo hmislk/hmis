@@ -698,7 +698,7 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_2?faces-redirect=true";
             } else {
                 setBillSettlingStarted(false);
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier_2?faces-redirect=true";
             }
         } else {
@@ -1569,7 +1569,7 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
                 setBillSettlingStarted(false);
                 return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -1608,7 +1608,7 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return navigateToPharmacyRetailSaleAfterCashierCheck(pt, ps);
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -1644,7 +1644,7 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return navigateToPharmacyRetailSaleAfterCashierCheckForCashier(pt, ps);
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

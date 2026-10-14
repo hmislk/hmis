@@ -47,6 +47,12 @@ Params: `query` (required — name/code/barcode), `limit` (default 30, max 50).
 All four take `stockId`, `departmentId`, `comment` (required, non-empty) plus the field being
 changed, and return a `PHARMACY_STOCK_ADJUSTMENT`-family bill.
 
+Privileges are checked **per department**: the API key's user must hold the privilege for the
+`departmentId` in the request (`stock_quantity` → `PharmacyAdjustmentDepartmentStockQTY`,
+`retail_rate` → `PharmacyAdjustmentSaleRate`, `purchase_rate` → `PharmacyAdjustmentPurchaseRate`,
+`expiry_date` → `PharmacyAdjustmentExpiryDate`). A privilege held only for another department
+gives `403 Not authorized`.
+
 | Endpoint | Field | Notes |
 |---|---|---|
 | `POST /pharmacy_adjustments/stock_quantity` | `newQuantity` | Physical count corrections |
@@ -77,18 +83,38 @@ Auto-generates `code` from `name` (lowercase, underscored). Response `data.creat
 if newly created.
 
 ### `POST /pharmacy_batches/create`
-Creates an `ItemBatch` + `Stock` for a department.
+Creates (or reuses) an `ItemBatch` and the department's `Stock` row, optionally setting the
+quantity in the same call.
 
 ```json
-{"itemId":1234,"batchNo":"BATCH001","expiryDate":"2025-12-31","retailRate":100.0,
+{"itemId":1234,"batchNo":"BATCH001","expiryDate":"2027-12-31","retailRate":100.0,
  "purchaseRate":85.0,"costRate":null,"wholesaleRate":90.0,"departmentId":456,
- "comment":"Initial stock creation"}
+ "comment":"Theatre stock take","initialQuantity":12,"allowPastExpiry":false}
 ```
 
 - `purchaseRate` defaults to 85% of `retailRate` if null; `costRate` defaults to `purchaseRate`.
 - `batchNo` auto-generates as `"B" + timestamp` if omitted.
-- Duplicate `(itemId, batchNo, expiryDate)` reuses the existing batch and just creates a new
-  `Stock` row for the given department — response `message` says which happened.
+- **Existing batch:** a matching `(itemId, batchNo, expiryDate)` is reused and **keeps its own
+  rates**; the request's rates are not applied. When they differ, the response has
+  `ratesDiffer: true` and echoes `requestedRetailRate` / `requestedPurchaseRate` /
+  `requestedCostRate` / `requestedWholesaleRate` so the caller can run a rate adjustment
+  (wholesale is compared only when the request supplies it). `batchCreated` says which happened.
+- **Existing stock:** if the department already has a `Stock` row for the batch, that row is
+  returned (`stockCreated: false`); a second row is never created.
+- `expiryDate` must be today or later unless `allowPastExpiry: true` (to record expired stock
+  found in a stock take). The flag needs `PharmacyAdjustmentExpiryDate` for the department.
+- `initialQuantity` (a number ≥ 0) sets the department stock to that quantity through the same path as
+  `stock_quantity`, so a stock-adjustment bill and stock history are written. It is an absolute
+  quantity, not an addition; nothing is posted if the stock already holds it. `comment` is used
+  as the adjustment comment (default "Initial quantity on batch creation"). Needs
+  `PharmacyAdjustmentDepartmentStockQTY` for the department.
+- Without either option the call needs no privilege beyond a valid key (unchanged).
+
+Response `data`: `batchId`, `stockId`, `batchNo`, `item`, `departmentName`, `retailRate`,
+`purchaseRate`, `costRate`, `wholesaleRate`, `expiryDate` (the batch's actual values), `message`,
+`batchCreated`, `stockCreated`, `ratesDiffer`, `requested*Rate` (null unless rates differ),
+`quantity` (stock after the call), `adjustmentBillId` / `adjustmentBillNumber` (null unless
+`initialQuantity` changed the stock).
 
 ### `GET /pharmacy_batches/amp/search`
 Params: `name` (required), `limit` (default 30, max 50). Search-only, never creates.
@@ -100,12 +126,14 @@ Params: `name` (required), `limit` (default 30, max 50). Search-only, never crea
 selection → 4. Call the relevant adjustment endpoint with the chosen `stockId`.
 
 For a brand-new item: `amp/search_or_create` → `pharmacy_batches/create` with the returned
-`itemId`.
+`itemId`. For a stock take, one `pharmacy_batches/create` call per counted batch with
+`initialQuantity` (and `allowPastExpiry` for expired items) replaces create + `stock_quantity`
++ `expiry_date`.
 
 ## Error Handling
 
-Standard envelope on failure: `{"status":"error","code":<400|401|404|500>,"message":"..."}`.
-- `400` invalid/missing params · `401` bad API key · `404` no matching stock/department ·
+Standard envelope on failure: `{"status":"error","code":<400|401|403|404|500>,"message":"..."}`.
+- `400` invalid/missing params · `401` bad API key · `403` privilege missing for that department · `404` no matching stock/department ·
   `500` server error.
 - No search results: retry with a shorter/partial `query` before giving up, or broaden the
   department filter.

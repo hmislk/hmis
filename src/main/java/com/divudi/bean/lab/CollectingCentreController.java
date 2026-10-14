@@ -11,17 +11,20 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CollectingCentrePaymentMethod;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.dto.AgentHistoryDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.facade.AgentHistoryFacade;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.service.AgentHistoryService;
 import com.divudi.service.AuditService;
@@ -71,6 +74,8 @@ public class CollectingCentreController implements Serializable {
     AgentHistoryService agentHistoryService;
     @EJB
     AuditService auditService;
+    @EJB
+    DepartmentFacade departmentFacade;
 
     private int ccManagementIndex = 0;
 
@@ -495,6 +500,49 @@ public class CollectingCentreController implements Serializable {
         }
         recreateModel();
         getItems();
+    }
+
+    public void createDepartmentForCollectingCentre() {
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save the Collecting Centre first");
+            return;
+        }
+
+        if (findDepartmentForCollectingCentre(current) != null) {
+            JsfUtil.addErrorMessage("A Department already exists for this Collecting Centre");
+            return;
+        }
+
+        Department dep = new Department();
+        dep.setDepartmentType(DepartmentType.CollectingCentre);
+        dep.setInstitution(current);
+        dep.setName(current.getName());
+        dep.setCode(current.getCode());
+        dep.setAddress(current.getAddress());
+        dep.setTelephone1(current.getPhone());
+        dep.setEmail(current.getEmail());
+        dep.setCreatedAt(new Date());
+        dep.setCreater(getSessionController().getLoggedUser());
+
+        departmentFacade.create(dep);
+
+        JsfUtil.addSuccessMessage("Department Created Successfully");
+    }
+
+    private Department findDepartmentForCollectingCentre(Institution cc) {
+        if (cc == null || cc.getId() == null) {
+            return null;
+        }
+        String jpql = "select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " and d.departmentType=:t "
+                + " and d.institution=:ins";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("t", DepartmentType.CollectingCentre);
+        m.put("ins", cc);
+        return departmentFacade.findFirstByJpql(jpql, m);
     }
 
     public void save(Institution cc) {
