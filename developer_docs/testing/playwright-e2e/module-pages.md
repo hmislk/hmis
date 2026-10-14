@@ -31,6 +31,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [130. A failed `errorCheck()` can look exactly like a dead Settle button](#130-a-failed-errorcheck-can-look-exactly-like-a-dead-settle-button)
 - [143. Creating an inward test admission with a finalised insurer bill on a staging box](#143-creating-an-inward-test-admission-with-a-finalised-insurer-bill-on-a-staging-box)
+- [144. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#144-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
 
 ---
 
@@ -682,3 +683,13 @@ Use this when a box has no admission that is finalised against an insurer. Every
 4. On the final bill page click **Process**, set the insurer's allocated amount (the patient co-payment balances itself), and **Save Final Bill**. Physical discharge is only possible after this.
 
 Record the BHT, final bill number and amounts in the delivery message.
+
+
+## 144. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page
+
+For issue #24479, there are three pharmacy-bill-search entry points under Pharmacy > Sale, and only one reaches the actual reprint page (`pharmacy_reprint_bill_sale.xhtml`, the `PharmacyBillSearch`-backed page rendering the real `Bill` JPA entity through `ph:saleBill`/`saleBill_Header`):
+
+- **Pharmacy > Sale > Search Sale Bill** (`pharmacy_search_sale_bill.xhtml`) — "View Bill" (`RetailSaleNativeSqlController.viewByBillId()`) reloads into a `PrintBillData` DTO and reopens `pharmacy_bill_retail_sale_native.xhtml`, the SAME page as the original settle-time print — not the reprint page.
+- **Pharmacy > Sale > Pharmacy Bill Search by Bill Type** (`pharmacy_search.xhtml`, per #53 above) → select "Pharmacy Sale Bill" → row's "View / Manage Bill" — **this is the one that lands on `pharmacy_reprint_bill_sale.xhtml`**.
+
+Before trusting what a "view" action shows for a reprint-specific bug, confirm you're on `pharmacy_reprint_bill_sale.xhtml` (page title "Reprint Sale Bill", a "**Duplicate**" marker on the bill) — the other page's similar-looking "view" renders from a different code path (DTO vs reloaded entity) and can silently fail to reproduce an entity-reload-specific bug.
