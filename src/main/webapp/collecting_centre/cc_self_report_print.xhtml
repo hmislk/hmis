@@ -31,7 +31,8 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Report View"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-file-medical"
                                 backAction="#{collectingCentreSelfCommonController.navigateBackToCollectingCentreSelfSampleManagement}"
                                 backLabel="Back to Sample Management"/>

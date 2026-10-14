@@ -31,7 +31,8 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [130. A failed `errorCheck()` can look exactly like a dead Settle button](#130-a-failed-errorcheck-can-look-exactly-like-a-dead-settle-button)
 - [143. Creating an inward test admission with a finalised insurer bill on a staging box](#143-creating-an-inward-test-admission-with-a-finalised-insurer-bill-on-a-staging-box)
-- [144. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#144-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
+- [144. Setting up a non-cash settlement test: payments must come through an accepted handover](#144-setting-up-a-non-cash-settlement-test-payments-must-come-through-an-accepted-handover)
+- [145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#145-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
 
 ---
 
@@ -684,8 +685,17 @@ Use this when a box has no admission that is finalised against an insurer. Every
 
 Record the BHT, final bill number and amounts in the delivery message.
 
+## 144. Setting up a non-cash settlement test: payments must come through an accepted handover
 
-## 144. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page
+**Payment → Financial Transaction Manager → Drawer → Settle Non-Cash Payments** lists only payments the user currently holds that were written to the cash book and are not yet settled. A card or cheque bill the user just collected is not listed. To build test data:
+
+1. User A starts a shift and collects the card/cheque bills.
+2. User A hands the shift over to user B (**Shift → Handover Current Shift**).
+3. User B opens **Shift Handovers to Accept**, clicks **To Accept**, then **Accept Handover & Write to Cashbook**.
+
+User B can then settle the payments. Settlement cannot be undone, so each retake needs new bills and a new handover. If `Allow Handover with Unmatched Balance` is off, the handover must include every collection in the shift. Use a new test user for A so the shift holds only the demo bills.
+
+## 145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page
 
 For issue #24479, there are three pharmacy-bill-search entry points under Pharmacy > Sale, and only one reaches the actual reprint page (`pharmacy_reprint_bill_sale.xhtml`, the `PharmacyBillSearch`-backed page rendering the real `Bill` JPA entity through `ph:saleBill`/`saleBill_Header`):
 

@@ -49,7 +49,7 @@
                                     class="ui-button-info m-1"
                                     icon="fa fa-print"
                                     action="#{collectingCentreSelfSearchController.navigateToOriginalBillPrint()}"
-                                    rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}"
+                                    rendered="#{webUserController.hasPrivilege('CollectingCentreReprintOriginalBill') and webUserController.hasPrivilege('CcSelfBillReprint')}"
                                     ajax="false"/>
                                 <p:commandButton
                                     value="To Cancel"
@@ -57,7 +57,7 @@
                                     icon="fa fa-times"
                                     action="#{collectingCentreSelfSearchController.navigateToCancelBill()}"
                                     disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or collectingCentreSelfSearchController.viewingBill.refunded}"
-                                    rendered="#{collectingCentreSelfSearchController.viewingSelfBill}"
+                                    rendered="#{collectingCentreSelfSearchController.viewingSelfBill and webUserController.hasPrivilege('CcSelfBillCancel')}"
                                     ajax="false"/>
                                 <p:commandButton
                                     value="To Refund"
@@ -65,13 +65,14 @@
                                     icon="fa fa-money-bill-wave"
                                     action="#{collectingCentreSelfSearchController.navigateToRefundBill()}"
                                     disabled="#{collectingCentreSelfSearchController.viewingBill.cancelled or not billReturnController.checkCanReturnBill(collectingCentreSelfSearchController.viewingBill)}"
-                                    rendered="#{collectingCentreSelfSearchController.viewingSelfBill}"
+                                    rendered="#{collectingCentreSelfSearchController.viewingSelfBill and webUserController.hasPrivilege('CcSelfBillRefund')}"
                                     ajax="false"/>
                                 <p:commandButton
                                     value="To Sample Management"
                                     class="ui-button-info m-1"
                                     icon="fas fa-flask"
                                     action="#{collectingCentreSelfCommonController.navigateToSelfSampleManagementFromBill(collectingCentreSelfSearchController.viewingBill)}"
+                                    rendered="#{webUserController.hasPrivilege('CcSelfSampleManagement')}"
                                     ajax="false"/>
                             </h:panelGroup>
 
@@ -85,7 +86,8 @@
                                                 type="button"
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
-                                                style="float: right;">
+                                                style="float: right;"
+                                                rendered="#{webUserController.hasPrivilege('CcSelfBillReprint')}">
                                                 <p:printer target="centerBillPreview"/>
                                             </p:commandButton>
                                         </f:facet>
@@ -111,7 +113,8 @@
                                                 type="button"
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
-                                                style="float: right;">
+                                                style="float: right;"
+                                                rendered="#{webUserController.hasPrivilege('CcSelfBillReprint')}">
                                                 <p:printer target="patientBillPreview"/>
                                             </p:commandButton>
                                         </f:facet>

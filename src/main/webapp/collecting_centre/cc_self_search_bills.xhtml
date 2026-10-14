@@ -25,7 +25,8 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Search Bills"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-magnifying-glass"
                                 backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                                 backLabel="Back to Dashboard"/>
@@ -116,7 +117,11 @@
                                                     ajax="false"
                                                     value="#{bill.deptId}"
                                                     title="View / Reprint"
-                                                    action="#{collectingCentreSelfSearchController.navigateToReprintBill(bill)}"/>
+                                                    action="#{collectingCentreSelfSearchController.navigateToReprintBill(bill)}"
+                                                    rendered="#{collectingCentreSelfSearchController.canOpenBill}"/>
+                                                <h:outputText
+                                                    value="#{bill.deptId}"
+                                                    rendered="#{not collectingCentreSelfSearchController.canOpenBill}"/>
                                             </p:column>
 
                                             <p:column headerText="Billed At" style="width: 11em; padding: 8px;">

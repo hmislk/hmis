@@ -2195,7 +2195,8 @@ public class Bill implements Serializable, RetirableEntity {
         List<Bill> bills = new ArrayList<>();
 
         for (Bill b : returnPreBills) {
-            if (b instanceof RefundBill && b.getBillType() == BillType.PharmacyPre) {
+            // Skip duplicates: the lazy inverse list may already hold a just-saved return (issue #24483).
+            if (b instanceof RefundBill && b.getBillType() == BillType.PharmacyPre && !bills.contains(b)) {
 
                 bills.add(b);
             }
@@ -2229,9 +2230,11 @@ public class Bill implements Serializable, RetirableEntity {
     public List<Bill> getReturnCashBills() {
         List<Bill> bills = new ArrayList<>();
         for (Bill b : returnCashBills) {
+            // Skip duplicates (issue #24483).
             if (b instanceof RefundBill
                     && b.getBillType() == BillType.PharmacySale
-                    && b.getBilledBill() == null) {
+                    && b.getBilledBill() == null
+                    && !bills.contains(b)) {
                 bills.add(b);
             }
         }
