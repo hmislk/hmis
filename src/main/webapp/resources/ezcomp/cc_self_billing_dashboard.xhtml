@@ -265,6 +265,9 @@
                             <!-- Clicking anywhere on the card (except its buttons) opens the view popup. -->
                             <div class="cc-notif-item #{un.seen ? 'cc-notif-seen' : 'cc-notif-unseen'}"
                                  title="Click to view"
+                                 tabindex="0"
+                                 role="button"
+                                 onkeydown="if ((event.key === 'Enter' || event.key === ' ') &amp;&amp; event.target === this) { event.preventDefault(); this.querySelector('.cc-notif-view').click(); }"
                                  onclick="if (!event.target.closest('.ui-button')) { this.querySelector('.cc-notif-view').click(); }">
                                 <span class="cc-notif-icon">
                                     <h:outputText styleClass="#{un.notification.completed ? 'pi pi-check-circle' : 'pi pi-bell'}"/>

@@ -2674,22 +2674,24 @@ public class LaboratoryManagementController implements Serializable {
             return;
         }
 
-        if (!pt.getHandoverComplete()) {
-            pt.setHandoverComplete(true);
-            patientReportFacade.edit(pt);
-        }
-
         Staff handedOverTo = reportHandoverStaff;
         boolean inward = pt.getPatientInvestigation() != null
                 && pt.getPatientInvestigation().getBillItem() != null
                 && pt.getPatientInvestigation().getBillItem().getBill() != null
                 && pt.getPatientInvestigation().getBillItem().getBill().getPatientEncounter() != null;
-        addReportIssueHistory(pt.getId(), handedOverTo);
-        reportHandoverStaff = null;
         if (inward && handedOverTo == null) {
-            // addReportIssueHistory has already shown "Staff is Missing."
+            // Validate before marking the handover complete, so a failed handover is not recorded.
+            JsfUtil.addErrorMessage("Staff is Missing.");
             return;
         }
+
+        if (!pt.getHandoverComplete()) {
+            pt.setHandoverComplete(true);
+            patientReportFacade.edit(pt);
+        }
+
+        addReportIssueHistory(pt.getId(), handedOverTo);
+        reportHandoverStaff = null;
         if (inward) {
             String staffName = handedOverTo.getPerson() != null ? handedOverTo.getPerson().getNameWithTitle() : null;
             JsfUtil.addSuccessMessage(staffName != null && !staffName.trim().isEmpty()
