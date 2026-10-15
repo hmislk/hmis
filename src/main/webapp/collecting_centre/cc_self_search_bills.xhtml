@@ -84,6 +84,17 @@
                                         <h:outputLabel value="Patient Phone" for="txtPatientPhone" class="mt-2"/>
                                         <p:inputText id="txtPatientPhone" placeholder="Enter patient phone number" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientPhone}" class="w-100"/>
 
+                                        <h:outputLabel value="CC Bill Type" for="cmbCcBillingType" class="mt-2"/>
+                                        <p:selectOneMenu id="cmbCcBillingType"
+                                                         value="#{collectingCentreSelfSearchController.ccBillingType}"
+                                                         class="w-100">
+                                            <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItems value="#{collectingCentreSelfSearchController.ccBillingTypes}"
+                                                           var="t"
+                                                           itemLabel="#{t.label}"
+                                                           itemValue="#{t}"/>
+                                        </p:selectOneMenu>
+
                                     </p:panel>
                                 </div>
 
