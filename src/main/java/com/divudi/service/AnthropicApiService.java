@@ -1929,9 +1929,9 @@ public class AnthropicApiService implements Serializable {
                         + "  Clinical: {dx} {past-dx} {allergies} {routine-medicines} {rx} {drx} {ix} {procedures}\n"
                         + "  Vitals: {bp} {pr} {rr} {sat} {height} {weight} {bmi} {pfr}\n"
                         + "  Vital series: {temp-series} {bp-series} {pr-series} {rr-series} {sat-series}\n"
-                        + "  Credit company: {credit_company} {credit_company_address} {policy_no} {reference_no} {credit_limit}\n"
+                        + "  Credit company: {credit_company} {credit_company_address} {credit_company_contact} {policy_no} {reference_no} {credit_limit} {company_amount}\n"
                         + "  Institution: {institution} {department} {doctor} {letter_date}\n"
-                        + "  Billing: {final_bill} (admission net total) {patient_name} {patient_age} {patient_sex} (aliases of name/age/sex)\n"
+                        + "  Billing: {final_bill} (admission net total) {final_bill_no} (final bill number) {patient_name} {patient_age} {patient_sex} (aliases of name/age/sex)\n"
                         + "If the admission has more than one credit company, the user selects which one to use on the "
                         + "inward_letters page before generating; the credit company placeholders resolve to the selected company.\n"
                         + "InpatientDiagnosisCard uses the same placeholders (credit company fields resolve to empty if not applicable).")
@@ -7073,7 +7073,7 @@ public class AnthropicApiService implements Serializable {
           .append("method: LIST | GET | POST | PUT | DELETE. ")
           .append("LIST: browse templates by type and name. GET /{id}: retrieve a template including its full HTML contents. ")
           .append("POST: create a new template (name, type, contents required). PUT: update name, type, contents, defaultTemplate, or autoGenerate flags. DELETE: soft-retire. ")
-          .append("InpatientLetter placeholders available in contents: {credit_company} {credit_company_address} {policy_no} {reference_no} {credit_limit} ")
+          .append("InpatientLetter placeholders available in contents: {credit_company} {credit_company_address} {credit_company_contact} {policy_no} {reference_no} {credit_limit} {company_amount} {final_bill_no} ")
           .append("{institution} {department} {doctor} {letter_date} {final_bill} {patient_name} {patient_age} {patient_sex} — plus all Inpatient Diagnosis Card placeholders ")
           .append("({name} {age} {sex} {bht} {doa} {dod} {dx} {past-dx} {allergies} {rx} {drx} {ix} {procedures} {routine-medicines} vitals). ")
           .append("If an admission has multiple credit companies, the user picks one on the inward_letters page before generating. ")

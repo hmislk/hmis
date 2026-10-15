@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -73,6 +74,8 @@ public class PurchaseReturnController implements Serializable {
     /**
      * Controllers
      */
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
     @Inject
@@ -294,7 +297,10 @@ public class PurchaseReturnController implements Serializable {
 
         }
         saveReturnBill();
-        Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        Payment p = null;
+        if (configOptionApplicationController.getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false)) {
+            p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        }
         saveComponent(p);
 
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());

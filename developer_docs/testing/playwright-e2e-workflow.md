@@ -24,14 +24,16 @@ or by § number below, and read only that section.
 - **[Local Payara, asadmin, DB drift and seed data](playwright-e2e/environment-db.md)**: §27, §34, §38, §39, §41, §63, §73, §74, §87, §98, §102, §104, §111, §118, §119, §141, §142
 - **[Screenshots, printing, exports, styling checks](playwright-e2e/evidence-printing.md)**: §43, §83, §84, §110, §115, §120, §133
 - **[Code/authoring bugs that E2E exposes (JSF, EL, JPQL)](playwright-e2e/jsf-code-pitfalls.md)**: §25, §33, §42, §45, §51, §69, §76, §82, §86, §92, §100, §103, §112, §121, §122, §126, §132, §134
-- **[Page- and module-specific quirks (pharmacy, inward, theatre, GRN, lab, reports)](playwright-e2e/module-pages.md)**: §21, §22, §23, §29, §30, §31, §40, §49, §53, §54, §55, §58, §59, §60, §61, §65, §66, §67, §70, §75, §81, §85, §88, §91, §95, §107, §125, §130
+- **[Page- and module-specific quirks (pharmacy, inward, theatre, GRN, lab, reports)](playwright-e2e/module-pages.md)**: §21, §22, §23, §29, §30, §31, §40, §49, §53, §54, §55, §58, §59, §60, §61, §65, §66, §67, §70, §75, §81, §85, §88, §91, §95, §107, §125, §130, §143, §144
 
 ---
 
 ## 0. Before you start
 
-- **Confirm the target environment with the developer.** Never assume which
-  deployment or database a local URL points at. Credentials live **outside** the
+- **Confirm the target environment with the developer, unless they already named
+  one.** A named test environment (local, QA, `*-local-staging`) is not a question:
+  go there, create fictional test data freely (§15a), and ask only for a missing
+  URL or login. Never assume which deployment or database a local URL points at. Credentials live **outside** the
   repo (`C:\Credentials\`) — never paste them into docs, code, or commit
   messages.
 - The app must already be deployed and running. Playwright does **not** build or

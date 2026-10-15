@@ -30,6 +30,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action](#107-inward_lab_dashboardxhtmls-send-to-lab-has-no-pmessagespgrowl-at-all--a-missing-transporter-silently-no-ops-the-whole-action)
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [130. A failed `errorCheck()` can look exactly like a dead Settle button](#130-a-failed-errorcheck-can-look-exactly-like-a-dead-settle-button)
+- [143. Creating an inward test admission with a finalised insurer bill on a staging box](#143-creating-an-inward-test-admission-with-a-finalised-insurer-bill-on-a-staging-box)
 
 ---
 
@@ -670,3 +671,25 @@ means the action ran and bailed, not that the click was lost.
 Corollary for scraping messages: `.ui-growl-item` is transient. Capture messages
 immediately after the click (or screenshot right away) rather than after the
 several-second settle wait, or a real validation error reads as silence.
+
+## 143. Creating an inward test admission with a finalised insurer bill on a staging box
+
+Use this when a box has no admission that is finalised against an insurer. Every step is through the menus. Log in to a department with the full menu (privileges are per department), and run `window.confirm = () => true` on each page, because a dismissed `confirm()` otherwise hides the real error message.
+
+1. **Inpatient > Admissions > Patient Admit.** Fill admission type, a fictional patient (title, name, gender, age, mobile, phone, NIC, address, **Patient Area**), consultant, medical officer, **a room that belongs to a department you can log in to** (a room of a department that is not in the login list can never be accepted), guardian (all fields), payment method **Credit**, then the insurer, credit limit, policy and reference numbers and **Add Credit Company**. Each required field shows one error at a time.
+2. **Add Services & Investigations.** Add items and Settle. Lab investigations block nursing discharge until they are sent to the lab: **Inpatient > Laboratory Dashboard**, search the BHT, Bills, Generate Barcodes, To Samples, select all, Collect Samples, pick a Sample Transporter, Send to Lab.
+3. **Room Details > Discharge from Room**, then **Clinical Discharge** (confirm), **Nursing Discharge** (needs the room and lab steps), then **Interim Bill**: set the discharge time, **Discharge**, **Create Final Bill**.
+4. On the final bill page click **Process**, set the insurer's allocated amount (the patient co-payment balances itself), and **Save Final Bill**. Physical discharge is only possible after this.
+
+Record the BHT, final bill number and amounts in the delivery message.
+
+## 144. Setting up a non-cash settlement test: payments must come through an accepted handover
+
+**Payment → Financial Transaction Manager → Drawer → Settle Non-Cash Payments** lists only payments the user currently holds that were written to the cash book and are not yet settled. A card or cheque bill the user just collected is not listed. To build test data:
+
+1. User A starts a shift and collects the card/cheque bills.
+2. User A hands the shift over to user B (**Shift → Handover Current Shift**).
+3. User B opens **Shift Handovers to Accept**, clicks **To Accept**, then **Accept Handover & Write to Cashbook**.
+
+User B can then settle the payments. Settlement cannot be undone, so each retake needs new bills and a new handover. If `Allow Handover with Unmatched Balance` is off, the handover must include every collection in the shift. Use a new test user for A so the shift holds only the demo bills.
+

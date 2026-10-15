@@ -1,5 +1,10 @@
 # QA Deployment Troubleshooting Guide
 
+> **2026-10-11:** the Azure QA estate (`hims-qaN-migrated`,
+> `qa-migrated.carecode.org`) referenced in the examples below is retired; QA
+> now runs on `home-qaN` (see [qa-deployment-guide.md](qa-deployment-guide.md)).
+> The JNDI / `persistence.xml` diagnosis still applies to every deploy branch.
+
 ## 🚨 CRITICAL: Application 404 Errors After Deployment
 
 ### Symptoms

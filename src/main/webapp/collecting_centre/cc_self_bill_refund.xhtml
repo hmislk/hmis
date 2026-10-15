@@ -23,6 +23,7 @@
 
                 <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <h:outputScript library="js" name="cc_self_billing_fit_screen.js" target="body"/>
                     <div class="cc-bill-page">
                         <h:form id="form">
                             <input type="hidden" name="ccSelfBillId" value="#{billSearch.bill.id}"/>
@@ -82,7 +83,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
+                                <div class="row cc-stack-gap">
                                     <div class="col-md-7">
                                         <p:panel styleClass="cc-bill-card cc-c-blue m-1">
                                             <f:facet name="header">
@@ -91,6 +92,7 @@
                                             </f:facet>
                                             <p:dataTable
                                                 id="dtF"
+                                                styleClass="cc-card-table" reflow="true"
                                                 rowIndexVar="rowIndex"
                                                 value="#{billSearch.billItems}"
                                                 var="b"
@@ -136,6 +138,7 @@
                                                     icon="fa fa-money-bill-wave"
                                                     styleClass="ui-button-warning"
                                                     title="Refund the selected items"
+                                                    rendered="#{webUserController.hasPrivilege('CcSelfBillRefund')}"
                                                     action="#{collectingCentreSelfSearchController.refundBill()}">
                                                     <p:confirm header="Confirm Refund" message="Are you sure you want to refund the selected items? This cannot be undone." icon="pi pi-exclamation-triangle"/>
                                                 </p:commandButton>
@@ -209,9 +212,13 @@
                                                     <p:printer target="refundBillPreview"/>
                                                 </p:commandButton>
                                             </f:facet>
-                                            <h:panelGroup id="refundBillPreview">
-                                                <bi:fiveFiveCCBill_CC_Refund_Custom1 bill="#{billSearch.bill}" duplicate="false"/>
-                                            </h:panelGroup>
+                                            <div class="cc-scroll-x cc-fit-screen">
+                                                <div class="cc-fit-inner">
+                                                    <h:panelGroup id="refundBillPreview">
+                                                        <bi:fiveFiveCCBill_CC_Refund_Custom1 bill="#{billSearch.bill}" duplicate="false"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </div>
                                         </p:panel>
                                     </div>
                                 </div>
