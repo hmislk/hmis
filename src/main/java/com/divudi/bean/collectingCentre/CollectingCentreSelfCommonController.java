@@ -298,6 +298,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setPatientName(null);
         patientInvestigationController.setSampleId(null);
         patientInvestigationController.setPatientInvestigationStatus(null);
+        patientInvestigationController.setSampleTransportedToLabByStaff(null);
+        patientInvestigationController.setSampleRejectionComment(null);
         setSelfSampleManagementDefaults();
     }
 
