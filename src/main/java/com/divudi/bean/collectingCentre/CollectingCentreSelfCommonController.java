@@ -392,10 +392,29 @@ public class CollectingCentreSelfCommonController implements Serializable {
         if (!areSelectedSamplesOwn()) {
             return;
         }
+        if (!areSelectedSamplesCollected()) {
+            return;
+        }
         if (!areSelectedSamplesNotSent()) {
             return;
         }
         patientInvestigationController.rejectSamples();
+    }
+
+    /**
+     * Only a collected sample can be rejected; one that only has a barcode
+     * has not been taken yet. Reads the collected flag from the database,
+     * not the page copy.
+     */
+    private boolean areSelectedSamplesCollected() {
+        for (PatientSample ps : patientInvestigationController.getSelectedPatientSamples()) {
+            PatientSample fetched = patientSampleFacade.find(ps.getId());
+            if (fetched == null || !Boolean.TRUE.equals(fetched.getSampleCollected())) {
+                JsfUtil.addErrorMessage("Sample " + ps.getId() + " has not been collected yet and cannot be rejected");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
