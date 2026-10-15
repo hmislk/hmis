@@ -1,6 +1,7 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UserNotificationController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.lab.PatientReportController;
@@ -14,12 +15,14 @@ import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.UserNotificationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 
@@ -29,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +61,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientReportUploadController patientReportUploadController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    private UserNotificationController userNotificationController;
 
     @EJB
     private BillFacade billFacade;
@@ -64,9 +70,12 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientSampleFacade patientSampleFacade;
     @EJB
     private PatientReportFacade patientReportFacade;
+    @EJB
+    private UserNotificationFacade userNotificationFacade;
 
     private PatientReport printingReport;
     private Privileges unauthorizedPrivilege;
+    private UserNotification viewingNotification;
 
     // <editor-fold defaultstate="collapsed" desc="Privileges">
     public boolean hasSelfPrivilege(Privileges privilege) {
@@ -559,6 +568,61 @@ public class CollectingCentreSelfCommonController implements Serializable {
                 && bill != null
                 && (collectingCentre.equals(bill.getFromInstitution())
                 || collectingCentre.equals(bill.getCollectingCentre()));
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Notifications">
+    /**
+     * Opens one of the logged user's notifications in the dashboard popup and
+     * marks it seen. A notification can only be removed once it has been seen.
+     */
+    public void viewSelfNotification(UserNotification un) {
+        if (!isOwnNotification(un)) {
+            JsfUtil.addErrorMessage("Invalid notification");
+            return;
+        }
+        viewingNotification = un;
+        if (!un.isSeen()) {
+            un.setSeen(true);
+            userNotificationFacade.edit(un);
+        }
+    }
+
+    /**
+     * Removes (retires) one of the logged user's notifications. CC
+     * notifications are not tied to a bill, room or encounter department, so
+     * the general UserNotificationController remove does not apply here.
+     */
+    public void removeSelfNotification(UserNotification un) {
+        if (!isOwnNotification(un)) {
+            JsfUtil.addErrorMessage("Nothing to remove");
+            return;
+        }
+        if (!un.isSeen()) {
+            JsfUtil.addErrorMessage("View the notification before removing it");
+            return;
+        }
+        un.setRetired(true);
+        un.setRetiredAt(new Date());
+        un.setRetirer(sessionController.getLoggedUser());
+        un.setRetireComments("Removed from collecting centre self billing");
+        userNotificationFacade.edit(un);
+        if (un.equals(viewingNotification)) {
+            viewingNotification = null;
+        }
+        userNotificationController.filterNotificationsByCriteria();
+        JsfUtil.addSuccessMessage("Notification removed");
+    }
+
+    private boolean isOwnNotification(UserNotification un) {
+        return un != null
+                && un.getId() != null
+                && un.getWebUser() != null
+                && un.getWebUser().equals(sessionController.getLoggedUser());
+    }
+
+    public UserNotification getViewingNotification() {
+        return viewingNotification;
     }
     // </editor-fold>
 
