@@ -316,6 +316,16 @@ a.cc-action-card {
     border-bottom: 1px solid var(--surface-d, #eef0f2);
 }
 .cc-detail-row:last-child { border-bottom: none; }
+/* Long values (e.g. the collecting centre name) go on their own line under the label */
+.cc-detail-row.cc-detail-row-stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+}
+.cc-detail-row.cc-detail-row-stacked .cc-detail-value {
+    text-align: left;
+    padding-left: calc(24px + 0.4rem);
+}
 .cc-detail-label {
     color: var(--text-color-secondary, #6c757d);
     font-size: 0.85rem;
