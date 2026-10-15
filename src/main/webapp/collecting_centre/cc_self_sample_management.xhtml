@@ -152,8 +152,8 @@
                                     <p:column headerText="No" style="width: 3em; padding: 6px;">
                                         <h:outputText value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" style="width: 13em; padding: 6px;">
-                                        <h:outputText value="#{b.deptId}"/>
+                                    <p:column headerText="Bill No" style="padding: 6px; white-space: nowrap; width: 18em;" >
+                                        <h:outputText value="#{b.deptId}" style="white-space: nowrap;"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
                                         <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING' or (b.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(b))}"/>
