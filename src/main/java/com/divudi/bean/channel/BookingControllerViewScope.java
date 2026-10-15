@@ -100,6 +100,8 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ChannelService;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.time.LocalDateTime;
@@ -8159,17 +8161,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
             return false;
         }
-        double tendered;
+        BigDecimal tendered;
         try {
-            tendered = Double.parseDouble(strTenderedValue.trim());
+            tendered = new BigDecimal(strTenderedValue.trim()).setScale(2, RoundingMode.HALF_UP);
         } catch (NumberFormatException e) {
             JsfUtil.addErrorMessage("Please enter the correct tendered amount.");
             return true;
         }
-        double payable = (feeNetTotalForSelectedBill != null && feeNetTotalForSelectedBill > 0)
-                ? feeNetTotalForSelectedBill
-                : getBillSession().getBill().getNetTotal();
-        if (tendered < payable) {
+        // Compare against the amount savePaidBill() records as paid.
+        BigDecimal payable = BigDecimal.valueOf(getBillSession().getBill().getNetTotal()).setScale(2, RoundingMode.HALF_UP);
+        if (tendered.compareTo(payable) < 0) {
             JsfUtil.addErrorMessage("Please enter the correct tendered amount.");
             return true;
         }
