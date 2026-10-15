@@ -212,8 +212,9 @@
                             </div>
 
                             <!--SAMPLES-->
-                            <h:panelGroup layout="block" class="row cc-stack-gap" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
-                                <div class="col-md-9">
+                            <!-- g-0: no negative row margins (the page has no container), which caused a horizontal scrollbar; pe-md-3 keeps the column gap. -->
+                            <h:panelGroup layout="block" class="row g-0 cc-stack-gap" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+                                <div class="col-md-9 pe-md-3">
                                     <p:panel styleClass="cc-bill-card cc-c-orange">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa-solid fa-vial"/>
