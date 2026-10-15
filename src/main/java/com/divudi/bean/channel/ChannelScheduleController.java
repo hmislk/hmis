@@ -159,6 +159,7 @@ public class ChannelScheduleController implements Serializable {
     private Date sessionInstanceOldDayMonth;
     private Date sessionInstanceOldTime;
     private List<ServiceSession> retiredItems;
+    
 
     public String channelSheduleForAllDoctor(Staff stf) {
         if (stf == null) {
