@@ -8058,24 +8058,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (settlePaymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend;
-                try {
-                    tend = Double.parseDouble(strTenderedValue);
-                } catch (NumberFormatException e) {
-                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
-                    return;
-                }
-                if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
-                    JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
-                    return;
-                }
-            }
+        if (errorCheckForSettleTenderedAmount()) {
+            return;
         }
 
         Bill b = savePaidBill();
@@ -8161,6 +8145,35 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSessionFacade().create(bs);
         return bs;
 
+    }
+
+    private boolean errorCheckForSettleTenderedAmount() {
+        if (settlePaymentMethod != PaymentMethod.Cash) {
+            return false;
+        }
+        boolean tenderedEntered = strTenderedValue != null && !strTenderedValue.trim().isEmpty();
+        if (!tenderedEntered) {
+            if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+                JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                return true;
+            }
+            return false;
+        }
+        double tendered;
+        try {
+            tendered = Double.parseDouble(strTenderedValue.trim());
+        } catch (NumberFormatException e) {
+            JsfUtil.addErrorMessage("Please enter the correct tendered amount.");
+            return true;
+        }
+        double payable = (feeNetTotalForSelectedBill != null && feeNetTotalForSelectedBill > 0)
+                ? feeNetTotalForSelectedBill
+                : getBillSession().getBill().getNetTotal();
+        if (tendered < payable) {
+            JsfUtil.addErrorMessage("Please enter the correct tendered amount.");
+            return true;
+        }
+        return false;
     }
 
     private Bill savePaidBill() {
