@@ -995,12 +995,10 @@ public class PatientReportController implements Serializable {
 
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = false;
-            System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-        
+
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -2165,7 +2163,7 @@ public class PatientReportController implements Serializable {
                 return;
             }
         }
-        
+
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
