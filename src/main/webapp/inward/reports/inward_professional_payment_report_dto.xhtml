@@ -26,16 +26,33 @@
 
                                 @page {
                                     size: A4 landscape;
-                                    margin: 8mm;
+                                    margin: 5mm 5mm 5mm 25mm;
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
-                                        font-size: 10pt;
+                                        font-size: 8pt;
                                     }
                                 }
 
-                                [id$="summaryTbl"] table {
+                                [id$="summaryTbl"],
+                                [id$="detailedTbl"] {
+                                    overflow: visible !important;
+                                }
+
+                                [id$="summaryTbl"] table,
+                                [id$="detailedTbl"] table {
+                                    width: 100% !important;
                                     font-size: 11px !important;
+                                }
+
+                                [id$="summaryTbl"] thead,
+                                [id$="detailedTbl"] thead {
+                                    display: table-header-group;
+                                }
+
+                                [id$="summaryTbl"] tr,
+                                [id$="detailedTbl"] tr {
+                                    page-break-inside: avoid;
                                 }
 
                                 .print-only-col {
