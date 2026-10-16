@@ -272,7 +272,7 @@
                                     <p:column headerText="Sex" style="width: 100px; text-align: center;">
                                         <p:cellEditor>
                                             <f:facet name="output">
-                                                <h:outputText value="#{empty f.sex ? 'Both' : f.sex}" />
+                                                <h:outputText value="#{empty f.sex ? 'Not set' : f.sex}" />
                                             </f:facet>
                                             <f:facet name="input">
                                                 <p:selectOneMenu value="#{f.sex}" class="w-100">
