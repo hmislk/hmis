@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
@@ -78,8 +79,9 @@ public class NonCashSettlementApprovalController implements Serializable {
     public boolean canAct(Request r) {
         return r != null
                 && (r.getStatus() == RequestStatus.PENDING || r.getStatus() == RequestStatus.UNDER_REVIEW)
+                && sessionController.getLoggedUser() != null
                 && webUserController.hasPrivilege(PRIVILEGE)
-                && !sessionController.getLoggedUser().equals(r.getRequester());
+                && !Objects.equals(sessionController.getLoggedUser(), r.getRequester());
     }
 
     public String actionBlockedReason(Request r) {
@@ -89,7 +91,8 @@ public class NonCashSettlementApprovalController implements Serializable {
         if (!webUserController.hasPrivilege(PRIVILEGE)) {
             return "You need the Approve Non-Cash Settlement privilege.";
         }
-        if (sessionController.getLoggedUser().equals(r.getRequester())) {
+        if (sessionController.getLoggedUser() == null
+                || Objects.equals(sessionController.getLoggedUser(), r.getRequester())) {
             return "You cannot approve or reject your own request.";
         }
         if (r.getStatus() != RequestStatus.PENDING && r.getStatus() != RequestStatus.UNDER_REVIEW) {
@@ -103,12 +106,16 @@ public class NonCashSettlementApprovalController implements Serializable {
             return;
         }
         acting = true;
+        Long id = selected.getId();
         try {
             paymentSettlementService.approveSettlement(selected.getId(), sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Request " + selected.getRequestNo() + " approved. The payments are settled.");
             search();
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException e) {
             JsfUtil.addErrorMessage(e.getMessage());
+        } catch (IllegalStateException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            refreshKeepingSelection(id);
         } finally {
             acting = false;
         }
@@ -119,14 +126,32 @@ public class NonCashSettlementApprovalController implements Serializable {
             return;
         }
         acting = true;
+        Long id = selected.getId();
         try {
             paymentSettlementService.rejectSettlement(selected.getId(), sessionController.getLoggedUser(), rejectReason);
             JsfUtil.addSuccessMessage("Request " + selected.getRequestNo() + " rejected. The payments are back with the requester.");
             search();
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (IllegalArgumentException e) {
             JsfUtil.addErrorMessage(e.getMessage());
+        } catch (IllegalStateException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            refreshKeepingSelection(id);
         } finally {
             acting = false;
+        }
+    }
+
+    /** Re-runs the search and re-selects the request with the given id if it is still listed. */
+    private void refreshKeepingSelection(Long id) {
+        search();
+        if (id == null) {
+            return;
+        }
+        for (Request r : requests) {
+            if (id.equals(r.getId())) {
+                select(r);
+                break;
+            }
         }
     }
 
@@ -143,7 +168,8 @@ public class NonCashSettlementApprovalController implements Serializable {
     }
 
     public RequestStatus[] getStatuses() {
-        return RequestStatus.values();
+        return new RequestStatus[]{RequestStatus.PENDING, RequestStatus.APPROVED,
+            RequestStatus.REJECTED, RequestStatus.CANCELLED};
     }
 
     public RequestStatus getStatus() {
