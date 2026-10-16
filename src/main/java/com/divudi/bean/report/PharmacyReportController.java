@@ -14550,7 +14550,8 @@ public class PharmacyReportController implements Serializable {
 
         jpql = "select s"
                 + " from Stock s "
-                + " where s.itemBatch.dateOfExpire between :fd and :td ";
+                + " where s.itemBatch.dateOfExpire between :fd and :td "
+                + " and s.stock > 0 ";
 
         if (institution != null) {
             jpql += " and s.department.institution=:ins ";
@@ -14660,7 +14661,8 @@ public class PharmacyReportController implements Serializable {
                 + "ib.costRate, " // costRate - using actual cost rate instead of purchase rate
                 + "ib.retailsaleRate, " // retailRate
                 + "s.stock, " // stockQuantity
-                + "coalesce(df.name, '')) " // dosageFormName - null-safe
+                + "coalesce(df.name, ''), " // dosageFormName - null-safe
+                + "ib.batchNo) " // batchNo - the batch number users see (ib.id is only an internal reference)
                 + "from Stock s "
                 + "join s.itemBatch ib "
                 + "join ib.item i "
@@ -14668,7 +14670,8 @@ public class PharmacyReportController implements Serializable {
                 + "left join i.category c "
                 + "left join i.measurementUnit mu "
                 + "left join i.dosageForm df "
-                + "where ib.dateOfExpire between :fd and :td ";
+                + "where ib.dateOfExpire between :fd and :td "
+                + "and s.stock > 0 ";
 
         Map parameters = new HashMap();
         parameters.put("fd", fromDate);
@@ -14758,7 +14761,8 @@ public class PharmacyReportController implements Serializable {
                 + "left join i.category c "
                 + "left join i.measurementUnit mu "
                 + "left join i.dosageForm df "
-                + "where ib.dateOfExpire between :fd and :td ";
+                + "where ib.dateOfExpire between :fd and :td "
+                + "and s.stock > 0 ";
 
         Map parameters = new HashMap();
         parameters.put("fd", fromDate);
@@ -14883,7 +14887,7 @@ public class PharmacyReportController implements Serializable {
                         row.createCell(4).setCellValue(item.getName() != null ? item.getName() : "-");
                         row.createCell(5).setCellValue(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
                         row.createCell(6).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
-                        row.createCell(7).setCellValue(stock.getItemBatch().getId());
+                        row.createCell(7).setCellValue(stock.getItemBatch().getBatchNo() != null ? stock.getItemBatch().getBatchNo() : "-");
                         row.createCell(8).setCellValue(stock.getItemBatch() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
@@ -15008,7 +15012,7 @@ public class PharmacyReportController implements Serializable {
                         addCellToPdfTable(table, item.getName() != null ? item.getName() : "-", dataFont);
                         addCellToPdfTable(table, item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-", dataFont);
                         addCellToPdfTable(table, item.getCategory() != null ? item.getCategory().getName() : "-", dataFont);
-                        addCellToPdfTable(table, stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-", dataFont);
+                        addCellToPdfTable(table, stock.getItemBatch() != null && stock.getItemBatch().getBatchNo() != null ? stock.getItemBatch().getBatchNo() : "-", dataFont);
                         addCellToPdfTable(table, stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
                                 && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
@@ -18065,7 +18069,7 @@ public class PharmacyReportController implements Serializable {
                 dataRow.createCell(colIndex++).setCellValue((dto.getItemName() != null) ? dto.getItemName() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getUom() != null ? dto.getUom() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getItemType() != null ? dto.getItemType() : "");
-                dataRow.createCell(colIndex++).setCellValue(dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "");
+                dataRow.createCell(colIndex++).setCellValue(dto.getBatchNo() != null ? dto.getBatchNo() : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "");
                 dataRow.createCell(colIndex++).setCellValue(dto.getCostRate() != null ? dto.getCostRate() : 0.0);
                 dataRow.createCell(colIndex++).setCellValue(dto.getRetailRate() != null ? dto.getRetailRate() : 0.0);
@@ -18156,7 +18160,7 @@ public class PharmacyReportController implements Serializable {
                 addCellToPdfTable(table, dto.getItemName() != null ? dto.getItemName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
                 addCellToPdfTable(table, dto.getUom() != null ? dto.getUom() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
                 addCellToPdfTable(table, dto.getItemType() != null ? dto.getItemType() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                addCellToPdfTable(table, dto.getBatchNumber() != null ? String.valueOf(dto.getBatchNumber()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                addCellToPdfTable(table, dto.getBatchNo() != null ? dto.getBatchNo() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
                 addCellToPdfTable(table, dto.getExpiryDate() != null ? sdf.format(dto.getExpiryDate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
                 addCellToPdfTable(table, dto.getCostRate() != null ? String.format("%,.2f", dto.getCostRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, dto.getRetailRate() != null ? String.format("%,.2f", dto.getRetailRate()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
