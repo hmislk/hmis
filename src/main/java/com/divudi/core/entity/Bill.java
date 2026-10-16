@@ -1278,12 +1278,15 @@ public class Bill implements Serializable, RetirableEntity {
     }
 
     public double getDiscountPercentPharmacy() {
-        ////System.out.println("getting discount percent");
-//        ////System.out.println("bill item"+getBillItems());
-//        ////System.out.println(getBillItems().get(0).getPriceMatrix());
         if (!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() != null) {
-            ////System.out.println("sys inside");
             discountPercent = getBillItems().get(0).getPriceMatrix().getDiscountPercent();
+        } else if (total != 0) {
+            // priceMatrix is not persisted on BillItem for bills created via
+            // native-SQL retail sale (issue #24479); derive the percentage
+            // from total/discount instead of the never-populated discountPercent field.
+            // Returned directly (not assigned to discountPercent) since this getter
+            // can run during read-only rendering and must not dirty the persistent field.
+            return (discount / total) * 100.0;
         }
 
         return discountPercent;
