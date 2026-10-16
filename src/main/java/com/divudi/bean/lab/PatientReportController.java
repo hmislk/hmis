@@ -277,7 +277,7 @@ public class PatientReportController implements Serializable {
         }
 
         System.out.println("Successfully Update Patient Name, Age, Gender.");
-        
+
         calculatedRequerd = true;
 
         Boolean updateDynamicLabel = false;
@@ -299,7 +299,7 @@ public class PatientReportController implements Serializable {
                 System.out.println("Successfully Update DynamicLabel in Report");
             }
         }
-        
+
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = true;
             System.out.println("Patient Details Update ----> Calculated Requerd = " + calculatedRequerd);
@@ -1092,12 +1092,10 @@ public class PatientReportController implements Serializable {
 
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = false;
-            System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-        
+
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1326,7 +1324,7 @@ public class PatientReportController implements Serializable {
             calculatedRequerd = false;
             System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-        
+
     }
 
     /**
@@ -2242,7 +2240,7 @@ public class PatientReportController implements Serializable {
                 return;
             }
         }
-        
+
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
