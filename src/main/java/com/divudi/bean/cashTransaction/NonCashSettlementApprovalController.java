@@ -1,0 +1,200 @@
+package com.divudi.bean.cashTransaction;
+
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.core.data.Privileges;
+import com.divudi.core.data.RequestStatus;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Request;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.service.PaymentSettlementService;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import javax.ejb.EJB;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+/**
+ * Approve / reject pending Non-Cash Settlement requests (#24541).
+ */
+@Named
+@ViewScoped
+public class NonCashSettlementApprovalController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private static final String PRIVILEGE = Privileges.ApproveNonCashSettlement.name();
+
+    @EJB
+    private PaymentSettlementService paymentSettlementService;
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
+
+    private RequestStatus status = RequestStatus.PENDING;
+    private Department department;
+    private Date fromDate;
+    private Date toDate;
+    private List<Request> requests = new ArrayList<>();
+    private Request selected;
+    private List<Payment> selectedPayments = new ArrayList<>();
+    private String rejectReason;
+    private boolean acting;
+
+    public String navigateToApprovals() {
+        return "/cashier/non_cash_settlement_approvals?faces-redirect=true";
+    }
+
+    /** Called by f:viewAction on every entry. */
+    public void init() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
+        }
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        search();
+    }
+
+    public void search() {
+        requests = paymentSettlementService.findRequests(status, department, fromDate, toDate);
+        selected = null;
+        selectedPayments = new ArrayList<>();
+        rejectReason = null;
+    }
+
+    public void select(Request r) {
+        selected = r;
+        selectedPayments = r == null ? new ArrayList<>()
+                : paymentSettlementService.findPaymentsOfSettlementBill(r.getBill());
+        rejectReason = null;
+    }
+
+    public boolean canAct(Request r) {
+        return r != null
+                && (r.getStatus() == RequestStatus.PENDING || r.getStatus() == RequestStatus.UNDER_REVIEW)
+                && webUserController.hasPrivilege(PRIVILEGE)
+                && !sessionController.getLoggedUser().equals(r.getRequester());
+    }
+
+    public String actionBlockedReason(Request r) {
+        if (r == null) {
+            return "";
+        }
+        if (!webUserController.hasPrivilege(PRIVILEGE)) {
+            return "You need the Approve Non-Cash Settlement privilege.";
+        }
+        if (sessionController.getLoggedUser().equals(r.getRequester())) {
+            return "You cannot approve or reject your own request.";
+        }
+        if (r.getStatus() != RequestStatus.PENDING && r.getStatus() != RequestStatus.UNDER_REVIEW) {
+            return "This request is no longer pending.";
+        }
+        return "";
+    }
+
+    public void approve() {
+        if (acting || selected == null) {
+            return;
+        }
+        acting = true;
+        try {
+            paymentSettlementService.approveSettlement(selected.getId(), sessionController.getLoggedUser());
+            JsfUtil.addSuccessMessage("Request " + selected.getRequestNo() + " approved. The payments are settled.");
+            search();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        } finally {
+            acting = false;
+        }
+    }
+
+    public void reject() {
+        if (acting || selected == null) {
+            return;
+        }
+        acting = true;
+        try {
+            paymentSettlementService.rejectSettlement(selected.getId(), sessionController.getLoggedUser(), rejectReason);
+            JsfUtil.addSuccessMessage("Request " + selected.getRequestNo() + " rejected. The payments are back with the requester.");
+            search();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        } finally {
+            acting = false;
+        }
+    }
+
+    public long getPendingCount() {
+        return paymentSettlementService.countPendingRequests();
+    }
+
+    public double getSelectedTotal() {
+        double t = 0.0;
+        for (Payment p : selectedPayments) {
+            t += p.getPaidValue();
+        }
+        return t;
+    }
+
+    public RequestStatus[] getStatuses() {
+        return RequestStatus.values();
+    }
+
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<Request> getRequests() {
+        return requests;
+    }
+
+    public Request getSelected() {
+        return selected;
+    }
+
+    public List<Payment> getSelectedPayments() {
+        return selectedPayments;
+    }
+
+    public String getRejectReason() {
+        return rejectReason;
+    }
+
+    public void setRejectReason(String rejectReason) {
+        this.rejectReason = rejectReason;
+    }
+}
