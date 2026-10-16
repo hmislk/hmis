@@ -122,7 +122,7 @@
 
             <h:panelGroup id="editPatient" >
 
-                <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
+                <h:panelGroup rendered="#{cc.attrs.editable and cc.attrs.controller.patientDetailsEditable}" >
                     <h:panelGroup rendered="#{not cc.attrs.searchable or empty patientController.quickSearchPatientList}">
                         <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
@@ -382,7 +382,7 @@
             </h:panelGroup>
             <h:panelGroup id="viewPatient" >
 
-                <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
+                <h:panelGroup  rendered="#{not cc.attrs.editable or not cc.attrs.controller.patientDetailsEditable}"  >
                     <h:panelGroup  rendered="#{not cc.attrs.searchable or empty patientController.quickSearchPatientList}" >
                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null and cc.attrs.controller.patient.id ne null}" >
 
