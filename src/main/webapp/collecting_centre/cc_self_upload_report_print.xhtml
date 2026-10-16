@@ -25,7 +25,8 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Uploaded Report"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-file-medical"
                                 backAction="#{collectingCentreSelfCommonController.navigateBackToCollectingCentreSelfSampleManagement}"
                                 backLabel="Back to Sample Management"/>
@@ -40,7 +41,7 @@
 
                             <p:panel styleClass="cc-bill-card cc-c-red" rendered="#{collectingCentreSelfCommonController.selfUploadReportPrintAllowed}">
                                 <f:facet name="header">
-                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center w-100">
                                         <div>
                                             <h:outputText styleClass="fa-solid fa-file-medical"/>
                                             <h:outputText value="Uploaded Report" class="mx-2"/>
@@ -56,7 +57,7 @@
                                     </div>
                                 </f:facet>
 
-                                <div class="d-flex justify-content-center w-100">
+                                <div class="d-flex justify-content-center w-100 cc-scroll-x">
                                     <h:panelGroup id="divPrint">
                                         <!-- PDF files print from the PDF viewer's own toolbar -->
                                         <h:panelGroup rendered="#{patientReportUploadController.pdf}">

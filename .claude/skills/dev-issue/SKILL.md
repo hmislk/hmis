@@ -69,6 +69,11 @@ issue, sets the project board status to In Progress.
 - **If the issue is a bug report**, try to pin down the root cause by reading
   code first. Note explicitly whether this succeeded — that decides whether
   step 2a runs.
+- When sweeping related issues that share a page/module by topic, don't
+  assume a related issue shares the same page/controller — confirm from that
+  issue's own repro steps before reproducing or planning a fix against an
+  assumed page. Testing the wrong page can burn several reproduction
+  attempts before the mismatch surfaces.
 
 ## 2a. Reproduce the bug (bug issues only)
 
