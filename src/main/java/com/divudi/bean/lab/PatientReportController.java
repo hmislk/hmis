@@ -1095,6 +1095,7 @@ public class PatientReportController implements Serializable {
                             if (f.getMinPossibleValue() != null && f.getMinPossibleValue().equalsIgnoreCase(strValue)) {
                                 return f.getLowMessage();
                             }
+                            d = 0.0;
                         }
 
                     } catch (NumberFormatException e) {
