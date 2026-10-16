@@ -3291,6 +3291,9 @@ public class FinancialTransactionController implements Serializable {
             uniquePayments.addAll(othersPayments);
         }
         for (Payment p : uniquePayments) {
+            if (p.getPaymentSettlementBill() != null) {
+                continue;
+            }
             if (p.getPaymentMethod() == currentPayment.getPaymentMethod()) {
                 p.setSelectedForHandover(false);
                 fundTransferAvailablePayments.add(p);
@@ -3618,6 +3621,17 @@ public class FinancialTransactionController implements Serializable {
             floatTransferStarted = false;
             JsfUtil.addErrorMessage("At least one float must be added before settlement");
             return "";
+        }
+        for (Payment cp : getCurrentBillPayments()) {
+            Payment ref = cp.getReferancePayment();
+            if (ref != null && ref.getId() != null) {
+                Payment fresh = paymentFacade.find(ref.getId());
+                if (fresh != null && fresh.getPaymentSettlementBill() != null) {
+                    floatTransferStarted = false;
+                    JsfUtil.addErrorMessage("Payment " + ref.getId() + " is in a non-cash settlement request awaiting approval and cannot be transferred.");
+                    return "";
+                }
+            }
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
@@ -8634,6 +8648,7 @@ public class FinancialTransactionController implements Serializable {
                 + "AND p.currentHolder = :holder "
                 + "AND p.paymentMethod <> :cash "
                 + "AND p.paidValue > 0 "
+                + "AND p.paymentSettlementBill IS NULL "
                 + "ORDER BY p.createdAt DESC";
         Map<String, Object> params = new HashMap<>();
         params.put("holder", loggedUser);
@@ -9362,6 +9377,16 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getBillType() != BillType.DepositFundBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
+        }
+        for (Payment cp : getCurrentBillPayments()) {
+            Payment ref = cp.getReferancePayment();
+            if (ref != null && ref.getId() != null) {
+                Payment fresh = paymentFacade.find(ref.getId());
+                if (fresh != null && fresh.getPaymentSettlementBill() != null) {
+                    JsfUtil.addErrorMessage("Payment " + ref.getId() + " is in a non-cash settlement request awaiting approval and cannot be deposited.");
+                    return "";
+                }
+            }
         }
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());

@@ -9,6 +9,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Request;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.NonCashSettlementException;
 import com.divudi.service.PaymentSettlementService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -120,9 +121,7 @@ public class NonCashSettlementApprovalController implements Serializable {
             paymentSettlementService.approveSettlement(selected.getId(), sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Request " + selected.getRequestNo() + " approved. The payments are settled.");
             search();
-        } catch (IllegalArgumentException e) {
-            JsfUtil.addErrorMessage(e.getMessage());
-        } catch (IllegalStateException e) {
+        } catch (NonCashSettlementException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             refreshKeepingSelection(id);
         } finally {
@@ -138,15 +137,17 @@ public class NonCashSettlementApprovalController implements Serializable {
             JsfUtil.addErrorMessage(actionBlockedReason(selected));
             return;
         }
+        if (rejectReason == null || rejectReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Enter a reason to reject the request.");
+            return;
+        }
         acting = true;
         Long id = selected.getId();
         try {
             paymentSettlementService.rejectSettlement(selected.getId(), sessionController.getLoggedUser(), rejectReason);
             JsfUtil.addSuccessMessage("Request " + selected.getRequestNo() + " rejected. The payments are back with the requester.");
             search();
-        } catch (IllegalArgumentException e) {
-            JsfUtil.addErrorMessage(e.getMessage());
-        } catch (IllegalStateException e) {
+        } catch (NonCashSettlementException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             refreshKeepingSelection(id);
         } finally {

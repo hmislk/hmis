@@ -158,10 +158,10 @@ public class PaymentSettlementService {
                                String comments,
                                WebUser actor) {
         if (payments == null || payments.isEmpty()) {
-            throw new IllegalArgumentException("No payments selected for settlement");
+            throw new NonCashSettlementException("No payments selected for settlement");
         }
         if (actor == null) {
-            throw new IllegalArgumentException("Actor is required");
+            throw new NonCashSettlementException("Actor is required");
         }
 
         // Re-fetch each payment from the DB inside this transaction (addresses CodeRabbit
@@ -173,47 +173,47 @@ public class PaymentSettlementService {
         double total = 0.0;
         for (Payment incoming : payments) {
             if (incoming == null || incoming.getId() == null) {
-                throw new IllegalArgumentException("Invalid payment in selection");
+                throw new NonCashSettlementException("Invalid payment in selection");
             }
             Payment p = paymentFacade.findWithLock(incoming.getId());
             if (p == null) {
-                throw new IllegalStateException("Payment " + incoming.getId() + " not found");
+                throw new NonCashSettlementException("Payment " + incoming.getId() + " not found");
             }
             if (!p.getCashbookEntryCompleted()) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "Payment " + p.getId() + " has no cash book entry — cannot settle"
                                 + " before it has been through first handover");
             }
             if (p.isPaymentSettled()) {
-                throw new IllegalStateException("Payment " + p.getId() + " is already settled");
+                throw new NonCashSettlementException("Payment " + p.getId() + " is already settled");
             }
             if (p.getPaymentSettlementBill() != null) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "Payment " + p.getId() + " is already in a settlement request awaiting approval");
             }
             if (p.isHandingOverStarted()) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "Payment " + p.getId() + " is in a handover that has not been accepted yet — cannot settle");
             }
             if (NON_CASH_METHODS.indexOf(p.getPaymentMethod()) < 0) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "Payment " + p.getId() + " is not a non-cash payment — settlement does not apply");
             }
             // Holder ownership: the user submitting the settlement must currently hold each
             // payment. Guards against a race where the payment changed hands between the page
             // load and submit, or against a privileged user manipulating the form payload.
             if (p.getCurrentHolder() == null || !p.getCurrentHolder().equals(actor)) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "Payment " + p.getId() + " is not currently held by you — cannot settle");
             }
             if (p.getDepartment() == null) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "Payment " + p.getId() + " has no department — cannot settle");
             }
             if (settlementDepartment == null) {
                 settlementDepartment = p.getDepartment();
             } else if (!p.getDepartment().equals(settlementDepartment)) {
-                throw new IllegalStateException(
+                throw new NonCashSettlementException(
                         "All payments in a settlement must belong to the same department"
                                 + " — payment " + p.getId() + " belongs to a different department");
             }
@@ -285,24 +285,28 @@ public class PaymentSettlementService {
      */
     public Bill cancelSettlement(Bill settlementBill, String comments, WebUser actor) {
         if (settlementBill == null) {
-            throw new IllegalArgumentException("Settlement bill is required");
+            throw new NonCashSettlementException("Settlement bill is required");
         }
         if (actor == null) {
-            throw new IllegalArgumentException("Actor is required");
+            throw new NonCashSettlementException("Actor is required");
+        }
+        settlementBill = billFacade.findWithLock(settlementBill.getId());
+        if (settlementBill == null) {
+            throw new NonCashSettlementException("Settlement bill not found");
         }
         if (settlementBill.getBillTypeAtomic() != BillTypeAtomic.PAYMENT_SETTLEMENT_BILL) {
-            throw new IllegalStateException("Bill is not a payment settlement bill");
+            throw new NonCashSettlementException("Bill is not a payment settlement bill");
         }
         if (settlementBill.isCancelled()) {
-            throw new IllegalStateException("Settlement bill is already cancelled");
+            throw new NonCashSettlementException("Settlement bill is already cancelled");
         }
         if (settlementBill.isRetired()) {
-            throw new IllegalStateException("Settlement bill was rejected or withdrawn — nothing to cancel");
+            throw new NonCashSettlementException("Settlement bill was rejected or withdrawn — nothing to cancel");
         }
         Request pending = findRequestOfBill(settlementBill);
         if (pending != null && (pending.getStatus() == RequestStatus.PENDING
                 || pending.getStatus() == RequestStatus.UNDER_REVIEW)) {
-            throw new IllegalStateException("Settlement is still awaiting approval — reject or withdraw it instead");
+            throw new NonCashSettlementException("Settlement is still awaiting approval — reject or withdraw it instead");
         }
         boolean reverseDrawer = NonCashSettlementRules.reversesDrawerOnCancel(settlementBill);
 
@@ -311,7 +315,7 @@ public class PaymentSettlementService {
         // holder who owned the payments when they were settled.
         WebUser originalHolder = settlementBill.getFromWebUser();
         if (originalHolder == null) {
-            throw new IllegalStateException(
+            throw new NonCashSettlementException(
                     "Settlement bill " + settlementBill.getId() + " has no fromWebUser — cannot restore holder");
         }
 
@@ -358,7 +362,7 @@ public class PaymentSettlementService {
         if (reverseDrawer) {
             Drawer drawer = drawerService.getUsersDrawer(originalHolder);
             if (drawer == null) {
-                throw new IllegalStateException("Drawer not found for " + originalHolder.getName());
+                throw new NonCashSettlementException("Drawer not found for " + originalHolder.getName());
             }
             for (Map.Entry<PaymentMethod, Double> e : NonCashSettlementRules.totalsByMethod(settledPayments).entrySet()) {
                 drawerService.applyDrawerAdjustment(drawer, e.getKey(), e.getValue(), cancellationBill, actor);
@@ -457,20 +461,20 @@ public class PaymentSettlementService {
 
     private Request loadPendingRequest(Long requestId) {
         if (requestId == null) {
-            throw new IllegalArgumentException("Request is required");
+            throw new NonCashSettlementException("Request is required");
         }
         // Row lock so concurrent approve/reject/withdraw serialise and the second sees the non-pending status.
         Request request = requestFacade.findWithLock(requestId);
         if (request == null || request.isRetired()
                 || request.getRequestType() != RequestType.NON_CASH_SETTLEMENT_APPROVAL) {
-            throw new IllegalStateException("Settlement request not found");
+            throw new NonCashSettlementException("Settlement request not found");
         }
         if (request.getStatus() != RequestStatus.PENDING && request.getStatus() != RequestStatus.UNDER_REVIEW) {
-            throw new IllegalStateException("Request " + request.getRequestNo() + " is no longer pending");
+            throw new NonCashSettlementException("Request " + request.getRequestNo() + " is no longer pending");
         }
         Bill bill = request.getBill();
         if (bill == null || bill.isRetired() || bill.isCancelled() || bill.getApproveAt() != null) {
-            throw new IllegalStateException("Request " + request.getRequestNo() + " has no pending settlement bill");
+            throw new NonCashSettlementException("Request " + request.getRequestNo() + " has no pending settlement bill");
         }
         return request;
     }
@@ -480,22 +484,22 @@ public class PaymentSettlementService {
         WebUser requester = request.getRequester();
         String blocker = NonCashSettlementRules.approvalBlocker(requester, approver);
         if (blocker != null) {
-            throw new IllegalStateException(blocker);
+            throw new NonCashSettlementException(blocker);
         }
         Bill bill = request.getBill();
         List<Payment> payments = findPaymentsOfSettlementBill(bill);
         if (payments.isEmpty()) {
-            throw new IllegalStateException("Request " + request.getRequestNo() + " has no payments");
+            throw new NonCashSettlementException("Request " + request.getRequestNo() + " has no payments");
         }
         for (Payment p : payments) {
             String paymentBlocker = NonCashSettlementRules.paymentApprovalBlocker(p, bill, requester);
             if (paymentBlocker != null) {
-                throw new IllegalStateException(paymentBlocker);
+                throw new NonCashSettlementException(paymentBlocker);
             }
         }
         Drawer drawer = drawerService.getUsersDrawer(requester);
         if (drawer == null) {
-            throw new IllegalStateException("Drawer not found for " + requester.getName());
+            throw new NonCashSettlementException("Drawer not found for " + requester.getName());
         }
 
         for (Payment p : payments) {
@@ -522,15 +526,15 @@ public class PaymentSettlementService {
 
     public void rejectSettlement(Long requestId, WebUser actor, String reason) {
         if (actor == null) {
-            throw new IllegalArgumentException("Actor is required");
+            throw new NonCashSettlementException("Actor is required");
         }
         if (reason == null || reason.trim().isEmpty()) {
-            throw new IllegalArgumentException("A reason is required to reject a settlement request");
+            throw new NonCashSettlementException("A reason is required to reject a settlement request");
         }
         Request request = loadPendingRequest(requestId);
         String blocker = NonCashSettlementRules.approvalBlocker(request.getRequester(), actor);
         if (blocker != null) {
-            throw new IllegalStateException(blocker.replace("approve", "reject"));
+            throw new NonCashSettlementException(blocker.replace("approve", "reject"));
         }
         releasePayments(request, actor, reason.trim());
         Date now = new Date();
@@ -544,11 +548,11 @@ public class PaymentSettlementService {
 
     public void withdrawSettlement(Long requestId, WebUser actor) {
         if (actor == null) {
-            throw new IllegalArgumentException("Actor is required");
+            throw new NonCashSettlementException("Actor is required");
         }
         Request request = loadPendingRequest(requestId);
         if (!actor.equals(request.getRequester())) {
-            throw new IllegalStateException("Only the user who made the request can withdraw it");
+            throw new NonCashSettlementException("Only the user who made the request can withdraw it");
         }
         releasePayments(request, actor, "Withdrawn by requester");
         Date now = new Date();

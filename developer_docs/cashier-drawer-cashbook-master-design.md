@@ -509,7 +509,7 @@ The holder of one or more non-cash payments selects them, records the external r
 - Sets `payment.paymentSettlementBill = <this bill>`
 - Sets `payment.currentHolder = null`
 
-From that point onward the payment is excluded from every handover query (the existing `currentHolder = :user` filter handles this automatically — no handover query change needed). Since #24541 this is a two-step workflow: submitting creates a *pending* settlement bill and a `NON_CASH_SETTLEMENT_APPROVAL` request; the three field updates happen only when a different user with `ApproveNonCashSettlement` approves. While pending, the requester cannot end their shift or create a handover. On approval the holder's drawer is debited per payment method. See `developer_docs/plans/2026-10-16-non-cash-settlement-approval-design.md`.
+From that point onward the payment is excluded from every handover query (the existing `currentHolder = :user` filter handles this automatically — no handover query change needed). Since #24541 this is a two-step workflow: submitting (`requestSettlement`) creates a *pending* settlement bill and a `NON_CASH_SETTLEMENT_APPROVAL` request and sets only `paymentSettlementBill` (the payment stays with the holder, `paymentSettled=false`); `paymentSettled=true` and `currentHolder=null` are applied only when a different user with `ApproveNonCashSettlement` approves. Reject or withdraw clears `paymentSettlementBill` and retires the bill. While pending, the requester cannot end their shift or create a handover. On approval the holder's drawer is debited per payment method. See `developer_docs/plans/2026-10-16-non-cash-settlement-approval-design.md`.
 
 **Cash Book is NOT touched at settlement.** The payment was already added to the cash book at first handover (existing behaviour). The settlement is a status transition, not a financial event.
 
@@ -577,11 +577,18 @@ Holder opens "Settle Non-Cash" page
                                 AND currentHolder = :loggedInUser
                                 AND cashbookEntryCompleted = true
   → Holder selects payments, enters external references
-  → Submits → PAYMENT_SETTLEMENT_BILL created
+  → Submits (requestSettlement) → pending PAYMENT_SETTLEMENT_BILL + approval request created
+  → For each payment:
+      paymentSettlementBill = <bill>      (paymentSettled stays false, currentHolder unchanged)
+
+Approval (different user with ApproveNonCashSettlement):
   → For each payment:
       paymentSettled = true
-      paymentSettlementBill = <bill>
       currentHolder = null
+  → Holder's drawer debited per payment method
+
+Reject / withdraw:
+  → paymentSettlementBill = null on each payment; settlement bill retired
 
 Cancellation:
   → PAYMENT_SETTLEMENT_BILL_CANCELLED created via standard cancellation
