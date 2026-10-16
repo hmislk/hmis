@@ -1994,17 +1994,10 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Mark shortage-related component bills so the accept page displays the
-            // "Shift Shortage" label in the Institution/Type column.  The sign-only
-            // check misses two cases: (a) a cancellation-only row (positive cashValue)
-            // and (b) a merged row where the original shortage and its same-day
-            // cancellation net to zero.  Checking the bill type of any linked payment
-            // covers all three cases reliably.
-            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
-                    p.getBill() != null && (
-                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
-                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
-            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
+            // Negative-cash components (bank deposits, float decreases, shortages) and
+            // shortage-related ones go to FLOATS. The "Shift Shortage" label itself is
+            // driven by childBundle.isShortageRelated(), which checks bill types (#24555).
+            if (childBundle.getCashValue() < -0.001 || childBundle.isShortageRelated()) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -2134,17 +2127,9 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Mark shortage-related component bills so the reprint composite displays
-            // the "Shift Shortage" label in the Institution/Type column.  The sign-only
-            // check misses two cases: (a) a cancellation-only row (positive cashValue)
-            // and (b) a merged row where the original shortage and its same-day
-            // cancellation net to zero.  Checking the bill type of any linked payment
-            // covers all three cases reliably.
-            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
-                    p.getBill() != null && (
-                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
-                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
-            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
+            // Same rule as navigateToReceiveNewHandoverBill(); the label follows
+            // childBundle.isShortageRelated() (#24555).
+            if (childBundle.getCashValue() < -0.001 || childBundle.isShortageRelated()) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -5532,6 +5517,10 @@ public class FinancialTransactionController implements Serializable {
                 String userKey = (p.getCreater() != null && p.getCreater().getId() != null) ? p.getCreater().getId().toString() : "No User";
                 String webUserKey = (p.getCurrentHolder() != null && p.getCurrentHolder().getId() != null) ? p.getCurrentHolder().getId().toString() : "No WebUser";
                 String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
+                // Keep shift shortages out of the bank deposit / float movement row (#24555)
+                if (p.getBill() != null && ReportTemplateRowBundle.isShortageBillType(p.getBill().getBillTypeAtomic())) {
+                    handoverKey += "-SHORTAGE";
+                }
 
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
 
