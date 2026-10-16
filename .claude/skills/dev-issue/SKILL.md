@@ -60,7 +60,11 @@ issue, sets the project board status to In Progress.
 
 ## 2. Investigate
 
-- Read the issue body and comments (`gh issue view $0 --comments`).
+- Read the issue body and comments:
+  `gh issue view $0 --repo hmislk/hmis --json title,body,labels,comments`
+  (`--comments` and `gh pr edit` fail with "Projects (classic) is being
+  deprecated" and change nothing; use `--json`, or
+  `gh api -X PATCH repos/hmislk/hmis/pulls/<N> -F body=@file` for PR bodies.)
 - Explore the relevant code. Use the `Explore` agent for anything spanning
   more than a few files.
 - Identify: which entities/services/JSF pages are involved, which existing
