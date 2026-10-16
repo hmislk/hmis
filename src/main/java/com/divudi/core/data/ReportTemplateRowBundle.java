@@ -2433,6 +2433,22 @@ public class ReportTemplateRowBundle implements Serializable {
         return false;
     }
 
+    /**
+     * Only the rows whose payment belongs to a shift shortage bill or its cancellation.
+     * A handover saved before #24555 can hold a shortage and a bank deposit in one
+     * bundle; the "Shortage Transactions" print sections list these rows only.
+     */
+    public List<ReportTemplateRow> getShortageRows() {
+        List<ReportTemplateRow> rows = new ArrayList<>();
+        for (ReportTemplateRow row : getReportTemplateRows()) {
+            if (row != null && row.getPayment() != null && row.getPayment().getBill() != null
+                    && isShortageBillType(row.getPayment().getBill().getBillTypeAtomic())) {
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
     public static boolean isShortageBillType(BillTypeAtomic bta) {
         return bta == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
                 || bta == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED;
