@@ -67,6 +67,9 @@
                                                   showTime="true"
                                                   inputStyleClass="w-100"
                                                   styleClass="w-100 mb-3"/>
+                                    <h:outputText value="Pending requests are always listed regardless of dates."
+                                                  rendered="#{nonCashSettlementApprovalController.status eq 'PENDING'}"
+                                                  styleClass="d-block text-muted small mb-2"/>
 
                                     <p:commandButton value="Search"
                                                      icon="fa fa-search"

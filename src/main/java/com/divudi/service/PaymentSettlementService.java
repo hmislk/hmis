@@ -175,7 +175,7 @@ public class PaymentSettlementService {
             if (incoming == null || incoming.getId() == null) {
                 throw new IllegalArgumentException("Invalid payment in selection");
             }
-            Payment p = paymentFacade.find(incoming.getId());
+            Payment p = paymentFacade.findWithLock(incoming.getId());
             if (p == null) {
                 throw new IllegalStateException("Payment " + incoming.getId() + " not found");
             }
@@ -264,6 +264,8 @@ public class PaymentSettlementService {
         request.setInstitution(settlementInstitution);
         request.setDepartment(settlementDepartment);
         requestService.save(request, actor);
+        // Request ids are IDENTITY; flush so getId() is populated before building the request number.
+        requestFacade.flush();
         request.setRequestNo(REQUEST_NO_PREFIX + request.getId());
         requestService.save(request, actor);
 
@@ -501,6 +503,7 @@ public class PaymentSettlementService {
             p.setCurrentHolder(null);
             paymentFacade.edit(p);
         }
+        // applyDrawerAdjustment flushes and clears the persistence context; payment edits above are already merged, bill/request below are re-merged.
         for (Map.Entry<PaymentMethod, Double> e : NonCashSettlementRules.totalsByMethod(payments).entrySet()) {
             drawerService.applyDrawerAdjustment(drawer, e.getKey(), -e.getValue(), bill, approver);
         }
@@ -525,6 +528,10 @@ public class PaymentSettlementService {
             throw new IllegalArgumentException("A reason is required to reject a settlement request");
         }
         Request request = loadPendingRequest(requestId);
+        String blocker = NonCashSettlementRules.approvalBlocker(request.getRequester(), actor);
+        if (blocker != null) {
+            throw new IllegalStateException(blocker.replace("approve", "reject"));
+        }
         releasePayments(request, actor, reason.trim());
         Date now = new Date();
         request.setRejected(true);

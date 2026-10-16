@@ -46,6 +46,7 @@ public class NonCashSettlementApprovalController implements Serializable {
     private List<Payment> selectedPayments = new ArrayList<>();
     private String rejectReason;
     private boolean acting;
+    private Long pendingCount;
 
     public String navigateToApprovals() {
         return "/cashier/non_cash_settlement_approvals?faces-redirect=true";
@@ -63,7 +64,11 @@ public class NonCashSettlementApprovalController implements Serializable {
     }
 
     public void search() {
-        requests = paymentSettlementService.findRequests(status, department, fromDate, toDate);
+        // Pending requests are always listed regardless of dates.
+        boolean pendingOnly = status == RequestStatus.PENDING;
+        requests = paymentSettlementService.findRequests(status, department,
+                pendingOnly ? null : fromDate, pendingOnly ? null : toDate);
+        pendingCount = null;
         selected = null;
         selectedPayments = new ArrayList<>();
         rejectReason = null;
@@ -105,6 +110,10 @@ public class NonCashSettlementApprovalController implements Serializable {
         if (acting || selected == null) {
             return;
         }
+        if (!canAct(selected)) {
+            JsfUtil.addErrorMessage(actionBlockedReason(selected));
+            return;
+        }
         acting = true;
         Long id = selected.getId();
         try {
@@ -123,6 +132,10 @@ public class NonCashSettlementApprovalController implements Serializable {
 
     public void reject() {
         if (acting || selected == null) {
+            return;
+        }
+        if (!canAct(selected)) {
+            JsfUtil.addErrorMessage(actionBlockedReason(selected));
             return;
         }
         acting = true;
@@ -156,7 +169,10 @@ public class NonCashSettlementApprovalController implements Serializable {
     }
 
     public long getPendingCount() {
-        return paymentSettlementService.countPendingRequests();
+        if (pendingCount == null) {
+            pendingCount = paymentSettlementService.countPendingRequests();
+        }
+        return pendingCount;
     }
 
     public double getSelectedTotal() {
