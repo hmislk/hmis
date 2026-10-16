@@ -21,6 +21,7 @@ import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Request;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.JsfUtil;
@@ -49,6 +50,7 @@ import com.divudi.core.facade.PaymentHandoverItemFacade;
 import com.divudi.core.facade.PaymentMethodValueFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentSettlementService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -84,6 +86,8 @@ import org.json.JSONObject;
 public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private PaymentSettlementService paymentSettlementService;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -3867,6 +3871,9 @@ public class FinancialTransactionController implements Serializable {
      * {@link #navigateToCreateShiftEndSummaryBillForHandover()}.
      */
     public String navigateToCreateShiftEndSummaryBill() {
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return null;
+        }
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         fillPaymentsFromShiftStartToNow();
@@ -3883,6 +3890,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToCreateShiftEndSummaryBillForHandover() {
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return null;
+        }
         resetClassVariables();
         Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
         nonClosedShiftStartFundBill = startBill;
@@ -4059,6 +4069,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBill() {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         // Check if handover is restricted until shift is started
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
@@ -4081,6 +4094,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForCurrentShift() {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         resetClassVariables();
         Bill startBill = fetchNonClosedShiftStartFundBill();
         bundle = new ReportTemplateRowBundle();
@@ -4254,6 +4270,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForSelectedPeriod() {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         // Check if handover is restricted until shift is started
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
@@ -4312,6 +4331,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         resetClassVariables();
         handoverValuesCreated = false;
         bundle = new ReportTemplateRowBundle();
@@ -4576,6 +4598,9 @@ public class FinancialTransactionController implements Serializable {
 
     @Deprecated
     public String navigateToCreateShiftEndSummaryBillByBills() {
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return null;
+        }
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         fillBillsFromShiftStartToNow();
@@ -6009,6 +6034,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return "";
+        }
 
         nonClosedShiftStartFundBill = currentBill.getReferenceBill();
 
@@ -6183,6 +6211,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (currentBill.getReferenceBill() == null) {
             JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (blockedByPendingNonCashSettlement("end your shift")) {
             return "";
         }
         if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
@@ -6370,6 +6401,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (user.equals(sessionController.getLoggedUser())) {
             JsfUtil.addErrorMessage("Cannot handover to yourself. Please select a different user.");
+            return null;
+        }
+        if (blockedByPendingNonCashSettlement("create a handover")) {
             return null;
         }
         if (bundle == null) {
@@ -7714,6 +7748,21 @@ public class FinancialTransactionController implements Serializable {
         params.put("fUser", fromUser);
         params.put("startBill", startBill);
         return billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * A user with a non-cash settlement awaiting approval may not end their shift or
+     * create a handover (#24541). Not bypassable by any configuration option.
+     */
+    private boolean blockedByPendingNonCashSettlement(String actionText) {
+        Request pending = paymentSettlementService.findPendingRequestOf(sessionController.getLoggedUser());
+        if (pending == null) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("You have a non-cash settlement awaiting approval (request "
+                + pending.getRequestNo() + "). It must be approved or rejected before you can "
+                + actionText + ".");
+        return true;
     }
 
     public boolean isHandoverRequiredButNotComplete() {
