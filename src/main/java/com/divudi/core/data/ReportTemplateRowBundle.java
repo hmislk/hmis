@@ -2416,6 +2416,28 @@ public class ReportTemplateRowBundle implements Serializable {
         return paymentHandover == PaymentHandover.FLOAT_OUT || paymentHandover == PaymentHandover.FLOAT_IN;
     }
 
+    /**
+     * True when any payment in this bundle belongs to a shift shortage bill or its
+     * cancellation. Views use this, not PaymentHandover.FLOATS, to show the shortage
+     * label: FLOATS also holds bank deposits/withdrawals and float movements (#24555).
+     */
+    public boolean isShortageRelated() {
+        for (ReportTemplateRow row : getReportTemplateRows()) {
+            if (row == null || row.getPayment() == null || row.getPayment().getBill() == null) {
+                continue;
+            }
+            if (isShortageBillType(row.getPayment().getBill().getBillTypeAtomic())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isShortageBillType(BillTypeAtomic bta) {
+        return bta == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                || bta == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED;
+    }
+
     public double getFloatOutTotal() {
         return floatOutTotal;
     }
