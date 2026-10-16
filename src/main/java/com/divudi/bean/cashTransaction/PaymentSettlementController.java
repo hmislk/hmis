@@ -124,7 +124,7 @@ public class PaymentSettlementController implements Serializable {
             // currentHolder / paymentSettled bindings to the preview without
             // first deep-copying or projecting to a DTO.
             List<Payment> snapshot = new ArrayList<>(selectedPayments);
-            lastSettlementBill = paymentSettlementService.settlePayments(
+            lastSettlementBill = paymentSettlementService.requestSettlement(
                     selectedPayments,
                     referenceNumber.trim(),
                     comments,

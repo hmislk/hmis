@@ -4,14 +4,19 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.RequestStatus;
+import com.divudi.core.data.RequestType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Request;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.RequestFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,9 +35,11 @@ import javax.ejb.Stateless;
  * settlement / similar) as confirmed by the bank or processor. After settlement,
  * the payment leaves the cashier system entirely and stops appearing in handovers.
  *
- * Settlement does NOT write to the Cash Book. The payment was already recorded
- * in the cash book at first handover. See
- * developer_docs/cashier-drawer-cashbook-master-design.md Phase 4 for the full design.
+ * Settlement is a two-step maker-checker workflow (#24541): the holder submits a
+ * request (payments linked to a pending PAYMENT_SETTLEMENT_BILL, nothing moves),
+ * and a different user with ApproveNonCashSettlement approves it, which settles the
+ * payments and debits the holder's drawer. Cash Book is never touched here.
+ * See developer_docs/plans/2026-10-16-non-cash-settlement-approval-design.md.
  */
 @Stateless
 public class PaymentSettlementService {
@@ -43,6 +50,14 @@ public class PaymentSettlementService {
     private BillFacade billFacade;
     @EJB
     private BillNumberGenerator billNumberGenerator;
+    @EJB
+    private RequestFacade requestFacade;
+    @EJB
+    private RequestService requestService;
+    @EJB
+    private DrawerService drawerService;
+
+    public static final String REQUEST_NO_PREFIX = "NCSET-";
 
     private static final List<PaymentMethod> NON_CASH_METHODS = Arrays.asList(
             PaymentMethod.Card,
@@ -68,6 +83,8 @@ public class PaymentSettlementService {
         String jpql = "SELECT DISTINCT p.department FROM Payment p"
                 + " WHERE p.paymentMethod IN :methods"
                 + " AND p.paymentSettled = false"
+                + " AND p.paymentSettlementBill IS NULL"
+                + " AND p.handingOverStarted = false"
                 + " AND p.currentHolder = :holder"
                 + " AND p.cashbookEntryCompleted = true"
                 + " AND p.retired = false"
@@ -111,6 +128,8 @@ public class PaymentSettlementService {
         String jpql = "SELECT p FROM Payment p"
                 + " WHERE p.paymentMethod IN :methods"
                 + " AND p.paymentSettled = false"
+                + " AND p.paymentSettlementBill IS NULL"
+                + " AND p.handingOverStarted = false"
                 + " AND p.currentHolder = :holder"
                 + " AND p.department = :department"
                 + " AND p.cashbookEntryCompleted = true"
@@ -125,8 +144,8 @@ public class PaymentSettlementService {
     }
 
     /**
-     * Creates a PAYMENT_SETTLEMENT_BILL grouping the given payments and marks
-     * them settled. No cash book entry is written.
+     * Creates a pending PAYMENT_SETTLEMENT_BILL and a NON_CASH_SETTLEMENT_APPROVAL
+     * request. Payments are linked to the bill but not settled; drawer and cash book untouched.
      *
      * @param payments the non-cash payments being settled
      * @param referenceNumber external reference (POS batch ID, bank slip number, etc.)
@@ -134,7 +153,7 @@ public class PaymentSettlementService {
      * @param actor the logged-in user creating the settlement
      * @return the persisted settlement Bill
      */
-    public Bill settlePayments(List<Payment> payments,
+    public Bill requestSettlement(List<Payment> payments,
                                String referenceNumber,
                                String comments,
                                WebUser actor) {
@@ -167,6 +186,14 @@ public class PaymentSettlementService {
             }
             if (p.isPaymentSettled()) {
                 throw new IllegalStateException("Payment " + p.getId() + " is already settled");
+            }
+            if (p.getPaymentSettlementBill() != null) {
+                throw new IllegalStateException(
+                        "Payment " + p.getId() + " is already in a settlement request awaiting approval");
+            }
+            if (p.isHandingOverStarted()) {
+                throw new IllegalStateException(
+                        "Payment " + p.getId() + " is in a handover that has not been accepted yet — cannot settle");
             }
             if (NON_CASH_METHODS.indexOf(p.getPaymentMethod()) < 0) {
                 throw new IllegalStateException(
@@ -221,11 +248,24 @@ public class PaymentSettlementService {
         billFacade.create(settlementBill);
 
         for (Payment p : authoritativePayments) {
-            p.setPaymentSettled(true);
             p.setPaymentSettlementBill(settlementBill);
-            p.setCurrentHolder(null);
             paymentFacade.edit(p);
         }
+
+        Request request = new Request();
+        request.setRequestType(RequestType.NON_CASH_SETTLEMENT_APPROVAL);
+        request.setStatus(RequestStatus.PENDING);
+        request.setBill(settlementBill);
+        request.setRequester(actor);
+        request.setRequestAt(new Date());
+        request.setRequestReason(comments);
+        request.setReferenceNumber(referenceNumber);
+        request.setTargetWebUser(actor);
+        request.setInstitution(settlementInstitution);
+        request.setDepartment(settlementDepartment);
+        requestService.save(request, actor);
+        request.setRequestNo(REQUEST_NO_PREFIX + request.getId());
+        requestService.save(request, actor);
 
         return settlementBill;
     }
@@ -239,7 +279,7 @@ public class PaymentSettlementService {
      * type PAYMENT_SETTLEMENT_BILL_CANCELLED is created and linked to the original
      * via billedBill / backwardReferenceBill.
      *
-     * Cash book is NOT touched.
+     * Cash book is NOT touched. The holder's drawer is credited back only for settlements approved under #24541 (approveAt set); legacy settlements never debited it.
      */
     public Bill cancelSettlement(Bill settlementBill, String comments, WebUser actor) {
         if (settlementBill == null) {
@@ -254,6 +294,15 @@ public class PaymentSettlementService {
         if (settlementBill.isCancelled()) {
             throw new IllegalStateException("Settlement bill is already cancelled");
         }
+        if (settlementBill.isRetired()) {
+            throw new IllegalStateException("Settlement bill was rejected or withdrawn — nothing to cancel");
+        }
+        Request pending = findRequestOfBill(settlementBill);
+        if (pending != null && (pending.getStatus() == RequestStatus.PENDING
+                || pending.getStatus() == RequestStatus.UNDER_REVIEW)) {
+            throw new IllegalStateException("Settlement is still awaiting approval — reject or withdraw it instead");
+        }
+        boolean reverseDrawer = NonCashSettlementRules.reversesDrawerOnCancel(settlementBill);
 
         // Restore each payment to the holder it had at the time of settlement.
         // The settlement bill's fromWebUser is the user who created it, which is the
@@ -304,6 +353,16 @@ public class PaymentSettlementService {
 
         billFacade.create(cancellationBill);
 
+        if (reverseDrawer) {
+            Drawer drawer = drawerService.getUsersDrawer(originalHolder);
+            if (drawer == null) {
+                throw new IllegalStateException("Drawer not found for " + originalHolder.getName());
+            }
+            for (Map.Entry<PaymentMethod, Double> e : NonCashSettlementRules.totalsByMethod(settledPayments).entrySet()) {
+                drawerService.applyDrawerAdjustment(drawer, e.getKey(), e.getValue(), cancellationBill, actor);
+            }
+        }
+
         settlementBill.setCancelled(true);
         settlementBill.setCancelledBill(cancellationBill);
         settlementBill.setEditor(actor);
@@ -311,5 +370,209 @@ public class PaymentSettlementService {
         billFacade.edit(settlementBill);
 
         return cancellationBill;
+    }
+
+    public Request findPendingRequestOf(WebUser requester) {
+        if (requester == null) {
+            return null;
+        }
+        String jpql = "SELECT q FROM Request q"
+                + " WHERE q.retired = false"
+                + " AND q.requestType = :type"
+                + " AND q.status = :status"
+                + " AND q.requester = :requester"
+                + " ORDER BY q.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", RequestType.NON_CASH_SETTLEMENT_APPROVAL);
+        params.put("status", RequestStatus.PENDING);
+        params.put("requester", requester);
+        return requestFacade.findFirstByJpql(jpql, params);
+    }
+
+    public List<Request> findPendingRequestsOf(WebUser requester) {
+        if (requester == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT q FROM Request q"
+                + " WHERE q.retired = false"
+                + " AND q.requestType = :type"
+                + " AND q.status = :status"
+                + " AND q.requester = :requester"
+                + " ORDER BY q.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", RequestType.NON_CASH_SETTLEMENT_APPROVAL);
+        params.put("status", RequestStatus.PENDING);
+        params.put("requester", requester);
+        return requestFacade.findByJpql(jpql, params);
+    }
+
+    public long countPendingRequests() {
+        String jpql = "SELECT COUNT(q) FROM Request q"
+                + " WHERE q.retired = false"
+                + " AND q.requestType = :type"
+                + " AND q.status = :status";
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", RequestType.NON_CASH_SETTLEMENT_APPROVAL);
+        params.put("status", RequestStatus.PENDING);
+        return requestFacade.findLongByJpql(jpql, params);
+    }
+
+    public List<Request> findRequests(RequestStatus status, Department department, Date fromDate, Date toDate) {
+        StringBuilder jpql = new StringBuilder("SELECT q FROM Request q"
+                + " WHERE q.retired = false"
+                + " AND q.requestType = :type");
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", RequestType.NON_CASH_SETTLEMENT_APPROVAL);
+        if (status != null) {
+            jpql.append(" AND q.status = :status");
+            params.put("status", status);
+        }
+        if (department != null) {
+            jpql.append(" AND q.department = :dep");
+            params.put("dep", department);
+        }
+        if (fromDate != null) {
+            jpql.append(" AND q.requestAt >= :fd");
+            params.put("fd", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" AND q.requestAt <= :td");
+            params.put("td", toDate);
+        }
+        jpql.append(" ORDER BY q.id DESC");
+        return requestFacade.findByJpql(jpql.toString(), params, javax.persistence.TemporalType.TIMESTAMP);
+    }
+
+    public List<Payment> findPaymentsOfSettlementBill(Bill settlementBill) {
+        if (settlementBill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT p FROM Payment p WHERE p.paymentSettlementBill = :b ORDER BY p.paymentMethod, p.createdAt";
+        Map<String, Object> params = new HashMap<>();
+        params.put("b", settlementBill);
+        return paymentFacade.findByJpql(jpql, params);
+    }
+
+    private Request loadPendingRequest(Long requestId) {
+        if (requestId == null) {
+            throw new IllegalArgumentException("Request is required");
+        }
+        Request request = requestFacade.find(requestId);
+        if (request == null || request.isRetired()
+                || request.getRequestType() != RequestType.NON_CASH_SETTLEMENT_APPROVAL) {
+            throw new IllegalStateException("Settlement request not found");
+        }
+        if (request.getStatus() != RequestStatus.PENDING && request.getStatus() != RequestStatus.UNDER_REVIEW) {
+            throw new IllegalStateException("Request " + request.getRequestNo() + " is no longer pending");
+        }
+        Bill bill = request.getBill();
+        if (bill == null || bill.isRetired() || bill.isCancelled() || bill.getApproveAt() != null) {
+            throw new IllegalStateException("Request " + request.getRequestNo() + " has no pending settlement bill");
+        }
+        return request;
+    }
+
+    public void approveSettlement(Long requestId, WebUser approver) {
+        Request request = loadPendingRequest(requestId);
+        WebUser requester = request.getRequester();
+        String blocker = NonCashSettlementRules.approvalBlocker(requester, approver);
+        if (blocker != null) {
+            throw new IllegalStateException(blocker);
+        }
+        Bill bill = request.getBill();
+        List<Payment> payments = findPaymentsOfSettlementBill(bill);
+        if (payments.isEmpty()) {
+            throw new IllegalStateException("Request " + request.getRequestNo() + " has no payments");
+        }
+        for (Payment p : payments) {
+            String paymentBlocker = NonCashSettlementRules.paymentApprovalBlocker(p, bill, requester);
+            if (paymentBlocker != null) {
+                throw new IllegalStateException(paymentBlocker);
+            }
+        }
+        Drawer drawer = drawerService.getUsersDrawer(requester);
+        if (drawer == null) {
+            throw new IllegalStateException("Drawer not found for " + requester.getName());
+        }
+
+        for (Payment p : payments) {
+            p.setPaymentSettled(true);
+            p.setCurrentHolder(null);
+            paymentFacade.edit(p);
+        }
+        for (Map.Entry<PaymentMethod, Double> e : NonCashSettlementRules.totalsByMethod(payments).entrySet()) {
+            drawerService.applyDrawerAdjustment(drawer, e.getKey(), -e.getValue(), bill, approver);
+        }
+
+        Date now = new Date();
+        bill.setApproveUser(approver);
+        bill.setApproveAt(now);
+        billFacade.edit(bill);
+
+        request.setApproved(true);
+        request.setApprovedBy(approver);
+        request.setApprovedAt(now);
+        request.setStatus(RequestStatus.APPROVED);
+        requestService.save(request, approver);
+    }
+
+    public void rejectSettlement(Long requestId, WebUser actor, String reason) {
+        if (actor == null) {
+            throw new IllegalArgumentException("Actor is required");
+        }
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("A reason is required to reject a settlement request");
+        }
+        Request request = loadPendingRequest(requestId);
+        releasePayments(request, actor, reason.trim());
+        Date now = new Date();
+        request.setRejected(true);
+        request.setRejectedBy(actor);
+        request.setRejectedAt(now);
+        request.setRejectionReason(reason.trim());
+        request.setStatus(RequestStatus.REJECTED);
+        requestService.save(request, actor);
+    }
+
+    public void withdrawSettlement(Long requestId, WebUser actor) {
+        if (actor == null) {
+            throw new IllegalArgumentException("Actor is required");
+        }
+        Request request = loadPendingRequest(requestId);
+        if (!actor.equals(request.getRequester())) {
+            throw new IllegalStateException("Only the user who made the request can withdraw it");
+        }
+        releasePayments(request, actor, "Withdrawn by requester");
+        Date now = new Date();
+        request.setCancelled(true);
+        request.setCancelledBy(actor);
+        request.setCancelledAt(now);
+        request.setCancellationReason("Withdrawn by requester");
+        request.setStatus(RequestStatus.CANCELLED);
+        requestService.save(request, actor);
+    }
+
+    private void releasePayments(Request request, WebUser actor, String reason) {
+        Bill bill = request.getBill();
+        for (Payment p : findPaymentsOfSettlementBill(bill)) {
+            if (p.isPaymentSettled()) {
+                continue;
+            }
+            p.setPaymentSettlementBill(null);
+            paymentFacade.edit(p);
+        }
+        bill.setRetired(true);
+        bill.setRetirer(actor);
+        bill.setRetiredAt(new Date());
+        bill.setRetireComments(reason);
+        billFacade.edit(bill);
+    }
+
+    private Request findRequestOfBill(Bill bill) {
+        String jpql = "SELECT q FROM Request q WHERE q.retired = false AND q.bill = :b AND q.requestType = :type ORDER BY q.id DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("b", bill);
+        params.put("type", RequestType.NON_CASH_SETTLEMENT_APPROVAL);
+        return requestFacade.findFirstByJpql(jpql, params);
     }
 }
