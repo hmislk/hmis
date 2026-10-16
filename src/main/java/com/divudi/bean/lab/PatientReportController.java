@@ -946,9 +946,24 @@ public class PatientReportController implements Serializable {
 
             if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().isEmpty()) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    double tmpDbl = CommonFunctions.extractDoubleValue(priv.getStrValue());
-                    priv.setStrValue(CommonFunctions.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
-                    priv.setDoubleValue(tmpDbl);
+                    String typed = priv.getStrValue() == null ? "" : priv.getStrValue().replace(",", "").trim();
+                    Double typedNumber = null;
+                    try {
+                        double parsed = Double.parseDouble(typed);
+                        if (!Double.isNaN(parsed) && !Double.isInfinite(parsed)) {
+                            typedNumber = parsed;
+                        }
+                    } catch (NumberFormatException e) {
+                        typedNumber = null;
+                    }
+                    if (typedNumber != null) {
+                        // Numeric result: format the text and keep the number
+                        priv.setStrValue(CommonFunctions.formatNumber(typedNumber, priv.getInvestigationItem().getFormatString()));
+                        priv.setDoubleValue(typedNumber);
+                    } else {
+                        // Non-numeric result (e.g. "<0.001", ">100", empty): keep the text as typed, number is 0
+                        priv.setDoubleValue(0.0);
+                    }
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
                     Double numberWithFormatter = CommonFunctions.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
