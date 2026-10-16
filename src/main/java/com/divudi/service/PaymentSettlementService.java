@@ -457,7 +457,8 @@ public class PaymentSettlementService {
         if (requestId == null) {
             throw new IllegalArgumentException("Request is required");
         }
-        Request request = requestFacade.find(requestId);
+        // Row lock so concurrent approve/reject/withdraw serialise and the second sees the non-pending status.
+        Request request = requestFacade.findWithLock(requestId);
         if (request == null || request.isRetired()
                 || request.getRequestType() != RequestType.NON_CASH_SETTLEMENT_APPROVAL) {
             throw new IllegalStateException("Settlement request not found");
