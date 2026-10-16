@@ -1162,55 +1162,87 @@ public class PatientReportController implements Serializable {
     }
 
     private String findFlagValue(PatientReportItemValue v) {
+        String logPrefix = "[findFlagValue] ";
         Map m = new HashMap();
         String sql;
         m.put("s", v.getPatient().getPerson().getSex());
         m.put("f", v.getInvestigationItem());
 //        m.put("a", v.getPatient().getAgeInDays());
+        System.out.println(logPrefix + "Flag item = " + (v.getInvestigationItem() == null ? "null" : v.getInvestigationItem().getName() + " (id " + v.getInvestigationItem().getId() + ")")
+                + ", Sex = " + v.getPatient().getPerson().getSex()
+                + ", Age in days = " + v.getPatient().getAgeInDays());
         sql = "Select f from TestFlag f where f.retired=false and f.investigationItemOfFlagType=:f and f.sex=:s order by f.orderNo";
         List<TestFlag> fs = getTestFlagFacade().findByJpql(sql, m);
+        System.out.println(logPrefix + "Matching flag rules found = " + (fs == null ? 0 : fs.size()));
         for (TestFlag f : fs) {
 
             Long a = v.getPatient().getAgeInDays();
-            //System.err.println("Age is a" + a);
-            //System.err.println("From Age is " + f.getFromAge());
-            //System.err.println("To Age is " + f.getToAge());
+            System.out.println(logPrefix + "Checking flag rule id " + f.getId()
+                    + " | Age range " + f.getFromAge() + " - " + f.getToAge() + " days"
+                    + " | Value range " + f.getFromVal() + " - " + f.getToVal()
+                    + " | Patient age " + a + " days");
 
-            //////System.out.println("flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {
-                //////System.out.println("searching val");
+
+                System.out.println(logPrefix + "Age within range. Searching value item = " + (f.getInvestigationItemOfValueType() == null ? "null" : f.getInvestigationItemOfValueType().getName()));
+
                 PatientReportItemValue val = findItemValue(currentPatientReport, f.getInvestigationItemOfValueType());
-                //////System.out.println("val is " + val);
                 if (val == null) {
-                    //////System.out.println("val is null");
+                    System.out.println(logPrefix + "Value not found in the report. Skipping rule id " + f.getId());
                     continue;
                 }
                 Double d = val.getDoubleValue();
+                System.out.println(logPrefix + "Double value = " + d + ", String value = " + val.getStrValue());
+
                 if (d == null || d == 0) {
                     try {
+                        System.out.println("Start Try ---> ");
                         if (NumberUtils.isNumber(val.getStrValue())) {
+                            System.out.println("Before Try IF ---> ");
                             d = Double.parseDouble(val.getStrValue());
+                            System.out.println("After Try IF---> ");
                         } else {
-                            d = 0.0;
+                            System.out.println("Before Try else ---> ");
+                            System.out.println("Result = " + val.getStrValue());
+
+                            System.out.println("Min Possible Value = " + f.getMinPossibleValue());
+                            System.out.println("Max Possible Value = " + f.getMaxPossibleValue());
+
+                            String strValue = val.getStrValue();
+
+                            if (f.getMaxPossibleValue() != null && f.getMaxPossibleValue().equalsIgnoreCase(strValue)) {
+                                System.out.println("Max Flag = " + f.getHighMessage());
+                                return f.getHighMessage();
+                            }
+
+                            if (f.getMinPossibleValue() != null && f.getMinPossibleValue().equalsIgnoreCase(strValue)) {
+                                System.out.println("Low Flag = " + f.getLowMessage());
+                                return f.getLowMessage();
+                            }
                         }
 
                     } catch (NumberFormatException e) {
+                        System.out.println("Catch Part ---> ");
                         d = 0.0;
                     }
+                    System.out.println(logPrefix + "Double value empty. Value taken from string = " + d);
                 }
 
                 if (f.getFromVal() > d) {
-                    //////System.out.println("dddddddddddddd 1");
+                    System.out.println(logPrefix + "Result LOW (" + d + " < " + f.getFromVal() + "). Message = " + f.getLowMessage());
                     return f.getLowMessage();
                 } else if (f.getToVal() < d) {
-                    //////System.out.println("dddddddddddddd 2");
+                    System.out.println(logPrefix + "Result HIGH (" + d + " > " + f.getToVal() + "). Message = " + f.getHighMessage());
                     return f.getHighMessage();
                 } else {
-                    //////System.out.println("dddddddddddddd 3");
+                    System.out.println(logPrefix + "Result NORMAL (" + f.getFromVal() + " <= " + d + " <= " + f.getToVal() + "). Message = " + f.getFlagMessage());
                     return f.getFlagMessage();
                 }
+            } else {
+                System.out.println(logPrefix + "Age out of range. Skipping rule id " + f.getId());
             }
         }
+        System.out.println(logPrefix + "No flag rule matched. Returning empty message.");
         return "";
     }
 
