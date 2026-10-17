@@ -15,6 +15,7 @@ import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.lab.ReportPageSettings;
 import com.divudi.core.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PatientReportBean;
@@ -3193,6 +3194,143 @@ public class PatientReportController implements Serializable {
 //        }
 //        //System.out.println("currentPatientReport = " + currentPatientReport.toString());
         return currentPatientReport;
+    }
+
+    /**
+     * Multi-page lab reports are off unless the hospital turns this option on.
+     */
+    public boolean isMultiPageEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(ReportPageSettings.CONFIG_KEY_ENABLED, false);
+    }
+
+    /**
+     * Number of pages of the current report's template: the highest page of any
+     * non-retired template item, at least 1.
+     */
+    public int getCurrentReportPageCount() {
+        if (currentPatientReport == null || currentPatientReport.getItem() == null) {
+            return 1;
+        }
+        int pages = 1;
+        for (InvestigationItem ii : currentPatientReport.getItem().getReportItems()) {
+            if (!ii.isRetired()) {
+                pages = Math.max(pages, ReportPageSettings.pageOf(ii));
+            }
+        }
+        return pages;
+    }
+
+    public boolean isCurrentReportMultiPage() {
+        return isMultiPageEnabled() && getCurrentReportPageCount() > 1;
+    }
+
+    /**
+     * Values of the current report that belong on page 1. For a single-page
+     * report (or with the option off) this is the unchanged full list.
+     */
+    public List<PatientReportItemValue> getPageOneItemValues() {
+        return getItemValuesForPage(1);
+    }
+
+    public List<PatientReportItemValue> getItemValuesForPage(int page) {
+        if (currentPatientReport == null) {
+            return new ArrayList<>();
+        }
+        List<PatientReportItemValue> all = currentPatientReport.getPatientReportItemValues();
+        if (!isCurrentReportMultiPage()) {
+            return page == 1 ? all : new ArrayList<>();
+        }
+        List<PatientReportItemValue> onPage = new ArrayList<>();
+        for (PatientReportItemValue v : all) {
+            if (v.getInvestigationItem() == null || ReportPageSettings.pageOf(v.getInvestigationItem()) == page) {
+                onPage.add(v);
+            }
+        }
+        return onPage;
+    }
+
+    /**
+     * Template items of the current report that belong on page 1, without the
+     * hidden page-settings items.
+     */
+    public List<InvestigationItem> getPageOneReportItems() {
+        return getReportItemsForPage(1);
+    }
+
+    public List<InvestigationItem> getReportItemsForPage(int page) {
+        if (currentPatientReport == null || currentPatientReport.getItem() == null) {
+            return new ArrayList<>();
+        }
+        List<InvestigationItem> all = currentPatientReport.getItem().getReportItems();
+        if (!isCurrentReportMultiPage()) {
+            return page == 1 ? all : new ArrayList<>();
+        }
+        List<InvestigationItem> onPage = new ArrayList<>();
+        for (InvestigationItem ii : all) {
+            if (ReportPageSettings.pageOf(ii) == page && !ReportPageSettings.isSettingsItem(ii)) {
+                onPage.add(ii);
+            }
+        }
+        return onPage;
+    }
+
+    /**
+     * Page numbers 2..N of the current report; empty for a single-page report,
+     * so the extra page boxes add nothing to today's markup.
+     */
+    public List<Integer> getExtraPageNumbers() {
+        List<Integer> extra = new ArrayList<>();
+        if (isCurrentReportMultiPage()) {
+            int pages = getCurrentReportPageCount();
+            for (int p = 2; p <= pages; p++) {
+                extra.add(p);
+            }
+        }
+        return extra;
+    }
+
+    /**
+     * Hidden settings item of a page of the current report's template, or null.
+     */
+    public InvestigationItem getPageSettingsItem(int page) {
+        if (currentPatientReport == null || currentPatientReport.getItem() == null) {
+            return null;
+        }
+        for (InvestigationItem ii : currentPatientReport.getItem().getReportItems()) {
+            if (!ii.isRetired() && ReportPageSettings.isSettingsItem(ii) && ReportPageSettings.pageOf(ii) == page) {
+                return ii;
+            }
+        }
+        return null;
+    }
+
+    public ReportPageSettings getPageSettings(int page) {
+        InvestigationItem ii = getPageSettingsItem(page);
+        return ii == null ? new ReportPageSettings() : ReportPageSettings.fromJson(ii.getHtmltext());
+    }
+
+    /**
+     * "Page n of N" for a page of a multi-page report; empty when the page has
+     * it switched off or the report has a single page.
+     */
+    public String getPageNumberText(int page) {
+        if (!isCurrentReportMultiPage()) {
+            return "";
+        }
+        ReportPageSettings s = getPageSettings(page);
+        return s.isPageNumber() ? s.formatPageNumber(page, getCurrentReportPageCount()) : "";
+    }
+
+    /**
+     * Placement of "Page n of N": where the settings item was placed in the
+     * template designer, otherwise bottom centre.
+     */
+    public String getPageNumberStyle(int page) {
+        InvestigationItem ii = getPageSettingsItem(page);
+        if (ii != null && (ii.getRiLeft() != 0 || ii.getRiTop() != 0)) {
+            return ii.getCssStyle() + "; position:absolute; z-index:1000;";
+        }
+        return "position:absolute; bottom:8mm; left:0; width:100%; text-align:center; font-size:9pt; z-index:1000;";
     }
 
     public PatientReport getLastPatientReport(Investigation ix) {
