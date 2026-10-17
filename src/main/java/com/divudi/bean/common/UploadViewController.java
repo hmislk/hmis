@@ -84,7 +84,9 @@ public class UploadViewController {
             pm.put("pb", UploadType.Lab_Report_Page_Background);
             pm.put("pg", "page=" + page);
             Upload pageUpload = uploadFacade.findFirstByJpql(pageJpql, pm);
-            if (pageUpload != null) {
+            if (pageUpload != null
+                    && (pageUpload.getBaImage() != null
+                    || (pageUpload.getFileUrl() != null && !pageUpload.getFileUrl().trim().isEmpty()))) {
                 return pageUpload;
             }
         }

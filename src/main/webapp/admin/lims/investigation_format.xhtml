@@ -112,6 +112,10 @@
                                                     <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}"/>
                                                 </p:inputText>
                                                 <p:commandButton value="Position" icon="fa fa-arrows" class="ms-2" process="@this" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('dtbItem',view).clientId}" action="#{investigationItemController.editPageNumberPlacement()}"/>
+                                                <p:commandButton value="Save Position" icon="fa fa-save" class="ms-2"
+                                                                 process="@this :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"
+                                                                 update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}"
+                                                                 action="#{investigationItemController.saveSelected()}"/>
                                             </h:panelGroup>
                                             <div class="mt-1">
                                                 <h:outputText value="Background " class="me-2"/>

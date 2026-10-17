@@ -385,6 +385,7 @@ public class InvestigationItemController implements Serializable {
 
                 nii.setName(ii.getName());
                 nii.setReportItemType(ii.getReportItemType());
+                nii.setPageNo(ii.getPageNo());
 
                 List<InvestigationItemValue> niivs = new ArrayList<>();
                 for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
@@ -1543,7 +1544,8 @@ public class InvestigationItemController implements Serializable {
 
     public List<Integer> getDesignerPageItems() {
         List<Integer> pages = new ArrayList<>();
-        for (int p = 1; p <= getDesignerPageCount(); p++) {
+        int count = getDesignerPageCount();
+        for (int p = 1; p <= count; p++) {
             pages.add(p);
         }
         return pages;
@@ -1644,6 +1646,9 @@ public class InvestigationItemController implements Serializable {
      */
     public void editPageNumberPlacement() {
         current = findOrCreatePageSettingsItem(designerPage);
+        // rebuild the item list so the dropdown includes the selected settings item;
+        // otherwise a later full-form Save would submit "no selection" and save a blank item
+        listInvestigationItem();
     }
 
     public void addPage() {
@@ -2093,6 +2098,8 @@ public class InvestigationItemController implements Serializable {
 
     public void setCurrentInvestigation(Investigation currentInvestigation) {
         this.currentInvestigation = currentInvestigation;
+        designerPage = 1;
+        designerPageSettings = null;
         listInvestigationItem();
     }
 
@@ -2444,6 +2451,9 @@ public class InvestigationItemController implements Serializable {
 
         userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
         userChangableItems.removeIf(ReportPageSettings::isSettingsItem);
+        if (current != null && ReportPageSettings.isSettingsItem(current) && !userChangableItems.contains(current)) {
+            userChangableItems.add(current);
+        }
         return userChangableItems;
     }
 
