@@ -1185,8 +1185,8 @@ public class PatientReportController implements Serializable {
                             if (f.getMinPossibleValue() != null && f.getMinPossibleValue().trim().equalsIgnoreCase(strValue)) {
                                 return f.getLowMessage();
                             }
-                            // Non-numeric text that matches neither Min nor Max Possible Value: no flag
-                            return "";
+                            // Non-numeric text that matches neither Min nor Max Possible Value: try later rules; no flag if none match
+                            continue;
                         } else {
                             d = 0.0;
                         }
