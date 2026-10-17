@@ -6,7 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:lab="http://xmlns.jcp.org/jsf/composite/ezcomp/lab">
 
 
     <f:metadata >
@@ -101,9 +102,11 @@
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'General'}"  >
                                     <div id="divReport"  class="labReport"  >
                                         <ez:common_report 
-                                            showBackground="#{patientReportController.showBackground}"
+                                            showBackground="#{patientReportController.showBackground and not (patientReportController.currentReportMultiPage and patientReportController.getPageSettings(1).background eq 'none')}"
                                             commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
-                                            patientReport="#{patientReportController.currentPatientReport}"/>
+                                            patientReport="#{patientReportController.currentPatientReport}"
+                                            pageNo="#{patientReportController.currentReportMultiPage ? 1 : null}"
+                                            backgroundOnly="#{patientReportController.currentReportMultiPage and not patientReportController.getPageSettings(1).commonReport}"/>
 
                                         <ui:repeat value="#{patientReportController.pageOneReportItems}" var="myIi" >
                                             <h:panelGroup
@@ -231,7 +234,30 @@
 
 
 
+                                        <h:outputText
+                                            rendered="#{not empty patientReportController.getPageNumberText(1)}"
+                                            value="#{patientReportController.getPageNumberText(1)}"
+                                            style="#{patientReportController.getPageNumberStyle(1)}"
+                                            escape="false"/>
                                     </div>
+                                    <!-- Pages 2..N of a multi-page report; nothing is drawn for a single-page report. -->
+                                    <ui:repeat value="#{patientReportController.extraPageNumbers}" var="pg">
+                                        <div id="divReport_p#{pg}" class="labReport labReportNext" style="height: 297mm;" >
+                                            <ez:common_report
+                                                showBackground="#{patientReportController.showBackground and patientReportController.getPageSettings(pg).background ne 'none'}"
+                                                commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
+                                                patientReport="#{patientReportController.currentPatientReport}"
+                                                pageNo="#{pg}"
+                                                backgroundPage="#{patientReportController.getPageSettings(pg).background eq 'page1' ? 1 : pg}"
+                                                backgroundOnly="#{not patientReportController.getPageSettings(pg).commonReport}"/>
+                                            <lab:report_items_of_page page="#{pg}"/>
+                                            <h:outputText
+                                                rendered="#{not empty patientReportController.getPageNumberText(pg)}"
+                                                value="#{patientReportController.getPageNumberText(pg)}"
+                                                style="#{patientReportController.getPageNumberStyle(pg)}"
+                                                escape="false"/>
+                                        </div>
+                                    </ui:repeat>
                                 </h:panelGroup>
 
                                 <!--Microbiology-->

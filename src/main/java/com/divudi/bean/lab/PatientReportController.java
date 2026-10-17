@@ -3213,7 +3213,8 @@ public class PatientReportController implements Serializable {
         }
         int pages = 1;
         for (InvestigationItem ii : currentPatientReport.getItem().getReportItems()) {
-            if (!ii.isRetired()) {
+            // hidden page-settings items do not make a page: only real content does
+            if (ii != null && !ii.isRetired() && !ReportPageSettings.isSettingsItem(ii)) {
                 pages = Math.max(pages, ReportPageSettings.pageOf(ii));
             }
         }
@@ -3221,6 +3222,12 @@ public class PatientReportController implements Serializable {
     }
 
     public boolean isCurrentReportMultiPage() {
+        // Only General (absolute-positioned) reports can have more than one page
+        if (currentPatientReport == null
+                || !(currentPatientReport.getItem() instanceof Investigation)
+                || ((Investigation) currentPatientReport.getItem()).getReportType() != InvestigationReportType.General) {
+            return false;
+        }
         return isMultiPageEnabled() && getCurrentReportPageCount() > 1;
     }
 
