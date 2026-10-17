@@ -1175,18 +1175,19 @@ public class PatientReportController implements Serializable {
                 
                 if (d == null || d == 0) {
                     try {
-                        if (NumberUtils.isNumber(val.getStrValue())) {
-                            d = Double.parseDouble(val.getStrValue());
-                        } else {
-                            String strValue = val.getStrValue();
-
-                            if (f.getMaxPossibleValue() != null && f.getMaxPossibleValue().equalsIgnoreCase(strValue)) {
+                        String strValue = val.getStrValue() == null ? "" : val.getStrValue().trim();
+                        if (NumberUtils.isNumber(strValue)) {
+                            d = Double.parseDouble(strValue);
+                        } else if (!strValue.isEmpty()) {
+                            if (f.getMaxPossibleValue() != null && f.getMaxPossibleValue().trim().equalsIgnoreCase(strValue)) {
                                 return f.getHighMessage();
                             }
-
-                            if (f.getMinPossibleValue() != null && f.getMinPossibleValue().equalsIgnoreCase(strValue)) {
+                            if (f.getMinPossibleValue() != null && f.getMinPossibleValue().trim().equalsIgnoreCase(strValue)) {
                                 return f.getLowMessage();
                             }
+                            // Non-numeric text that matches neither Min nor Max Possible Value: no flag
+                            return "";
+                        } else {
                             d = 0.0;
                         }
 
