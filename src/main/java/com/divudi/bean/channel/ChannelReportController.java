@@ -488,18 +488,14 @@ public class ChannelReportController implements Serializable {
         bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
     }
 
+    /**
+     * Former Update action of the Summary Collection Report. It replaced the
+     * report with null when the filter matched nothing (e.g. Agent payment),
+     * which dropped the user back to the shift list (issue #24534). Kept for
+     * compatibility; delegates to the shift-preserving refresh.
+     */
     public void updateChannelBookingBillsForShitEndFromChannelReportController(){
-        if (bookingsByShiftDto == null) {
-            return;
-        }
-        if (bookingsByShiftDto.getShiftStartBillId() == null) {
-            return;
-        }
-        bookingsByShiftDto  = channelService.updateChannelBookingBillsForShitEnd(bookingsByShiftDto.getShiftStartBillId(), bookingsByShiftDto.getShiftEndBillId(), bookingsByShiftDto.getCashierId(), bookingsByShiftDto.getHospital(), categoryList, paymentMethods, bookingsByShiftDto.getShiftStartAt(), bookingsByShiftDto.getShiftEndAt(), bookingsByShiftDto.getCashierUserName());
-        if (bookingsByShiftDto != null) {
-            bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
-        }
-
+        refreshShiftCollectionReport();
     }
     
     
