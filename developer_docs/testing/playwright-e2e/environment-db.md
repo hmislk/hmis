@@ -19,6 +19,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [141. Patient phone quick search matches `PATIENTPHONENUMBER` or `PATIENTMOBILENUMBER`, not `PERSON.PHONE`](#141-patient-phone-quick-search-matches-patientphonenumber-or-patientmobilenumber-not-personphone)
 - [142. Deploy fails with `JNDI lookup failed ${JDBC_DATASOURCE}`: the WAR was built with placeholders](#142-deploy-fails-with-jndi-lookup-failed-jdbc_datasource-the-war-was-built-with-placeholders)
+- [146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)](#146-clicks-register-as-no-ops-the-mcp-browser-profile-is-zoomed-devicepixelratio-075)
 
 ---
 
@@ -464,3 +465,8 @@ SELECT n FROM (
 
 Build only while `persistence.xml` holds local JNDI (`jdbc/coop` / `jdbc/ruhunuAudit`). A WAR built after a commit swapped in `${JDBC_DATASOURCE}` fails to deploy, and the failed `redeploy` leaves `rh` undeployed. Restore local JNDI, rebuild, then:
 `asadmin --port 9048 deploy --force=true --name rh --contextroot rh target/rh-3.0.0.war`
+
+## 146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)
+
+Symptom: `browser_click` "succeeds" but no POST fires, checkboxes stay unticked, and an accordion opens then closes. Check `devicePixelRatio` and `innerWidth` in `browser_evaluate`. A stored per-host zoom (e.g. 0.75, `innerWidth` 2560 at a 1920 viewport) survives `Ctrl+0`, `browser_close` and the CDP metrics override.
+Fix: drive the flow with the local node rig (fresh `chromium.launch({ channel: 'chrome' })` context, no stored zoom).
