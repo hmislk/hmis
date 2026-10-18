@@ -24,7 +24,7 @@ or by § number below, and read only that section.
 - **[Local Payara, asadmin, DB drift and seed data](playwright-e2e/environment-db.md)**: §27, §34, §38, §39, §41, §63, §73, §74, §87, §98, §102, §104, §111, §118, §119, §141, §142, §146, §148
 - **[Screenshots, printing, exports, styling checks](playwright-e2e/evidence-printing.md)**: §43, §83, §84, §110, §115, §120, §133
 - **[Code/authoring bugs that E2E exposes (JSF, EL, JPQL)](playwright-e2e/jsf-code-pitfalls.md)**: §25, §33, §42, §45, §51, §69, §76, §82, §86, §92, §100, §103, §112, §121, §122, §126, §132, §134, §152
-- **[Page- and module-specific quirks (pharmacy, inward, theatre, GRN, lab, reports)](playwright-e2e/module-pages.md)**: §21, §22, §23, §29, §30, §31, §40, §49, §53, §54, §55, §58, §59, §60, §61, §65, §66, §67, §70, §75, §81, §85, §88, §91, §95, §107, §125, §130, §143, §144, §147, §149, §150
+- **[Page- and module-specific quirks (pharmacy, inward, theatre, GRN, lab, reports)](playwright-e2e/module-pages.md)**: §21, §22, §23, §29, §30, §31, §40, §49, §53, §54, §55, §58, §59, §60, §61, §65, §66, §67, §70, §75, §81, §85, §88, §91, §95, §107, §125, §130, §143, §144, §147, §149, §150, §153
 
 ---
 
