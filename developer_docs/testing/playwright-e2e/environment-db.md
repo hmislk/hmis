@@ -18,6 +18,8 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [118. Verifying an `@Asynchronous` dispatch: read the thread name in `server.log`, not the wall clock](#118-verifying-an-asynchronous-dispatch-read-the-thread-name-in-serverlog-not-the-wall-clock)
 - [119. The local dev box has no email or SMS gateway — verify the queued row, not the delivery](#119-the-local-dev-box-has-no-email-or-sms-gateway--verify-the-queued-row-not-the-delivery)
 - [141. Patient phone quick search matches `PATIENTPHONENUMBER` or `PATIENTMOBILENUMBER`, not `PERSON.PHONE`](#141-patient-phone-quick-search-matches-patientphonenumber-or-patientmobilenumber-not-personphone)
+- [142. Deploy fails with `JNDI lookup failed ${JDBC_DATASOURCE}`: the WAR was built with placeholders](#142-deploy-fails-with-jndi-lookup-failed-jdbc_datasource-the-war-was-built-with-placeholders)
+- [146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)](#146-clicks-register-as-no-ops-the-mcp-browser-profile-is-zoomed-devicepixelratio-075)
 
 ---
 
@@ -292,6 +294,14 @@ navigate to `/faces/mf.xhtml` and click **Load Latest DDL from Wiki and Update B
 than hand-writing `ALTER TABLE`. Re-check the column with `SHOW COLUMNS` before resuming the test.
 Verified while testing issue #23222.
 
+**The drift can also show as an empty list, not a 500.** The two-argument `findByJpql` overload catches exceptions from `getResultList()` and returns an empty list, so a
+page whose list entity gained a column (e.g. letter templates after `DOCUMENTTEMPLATE.ROWCOLUMNS`) shows
+no rows and a dropdown with only its placeholder, while saving a new record fails with `Unknown column`.
+When data you created earlier has "vanished" and the red *Database Migration Pending* bar is showing,
+suspect a deploy that is ahead of the database before suspecting deleted data.
+On a hospital's own staging server, report it and let the owner run the DDL update; do not run schema
+changes there unasked.
+
 
 ## 104. A department/room created by direct SQL needs more than the FK columns
 
@@ -448,3 +458,15 @@ SELECT n FROM (
   UNION SELECT id, patientMobileNumber FROM patient WHERE retired=0 AND patientMobileNumber IS NOT NULL
 ) x GROUP BY n HAVING COUNT(DISTINCT id)=1 LIMIT 5;
 ```
+
+---
+
+## 142. Deploy fails with `JNDI lookup failed ${JDBC_DATASOURCE}`: the WAR was built with placeholders
+
+Build only while `persistence.xml` holds local JNDI (`jdbc/coop` / `jdbc/ruhunuAudit`). A WAR built after a commit swapped in `${JDBC_DATASOURCE}` fails to deploy, and the failed `redeploy` leaves `rh` undeployed. Restore local JNDI, rebuild, then:
+`asadmin --port 9048 deploy --force=true --name rh --contextroot rh target/rh-3.0.0.war`
+
+## 146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)
+
+Symptom: `browser_click` "succeeds" but no POST fires, checkboxes stay unticked, and an accordion opens then closes. Check `devicePixelRatio` and `innerWidth` in `browser_evaluate`. A stored per-host zoom (e.g. 0.75, `innerWidth` 2560 at a 1920 viewport) survives `Ctrl+0`, `browser_close` and the CDP metrics override.
+Fix: drive the flow with the local node rig (fresh `chromium.launch({ channel: 'chrome' })` context, no stored zoom).

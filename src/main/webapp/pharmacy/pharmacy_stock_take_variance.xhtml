@@ -121,6 +121,11 @@
                                             <p:column headerText="Batch" width="8em" class="text-center">
                                                 <h:outputText value="#{r.batchNo}"/>
                                             </p:column>
+                                            <p:column headerText="Source" sortBy="#{r.source}" filterBy="#{r.source}" filterMatchMode="contains" width="10em">
+                                                <h:outputText value="#{r.source}"
+                                                              styleClass="#{r.addedDuringStockTake ? 'badge bg-warning text-dark' : ''}"
+                                                              title="#{r.addedDuringStockTake ? 'Counted batch that was not in the snapshot, added during this stock take' : 'Line of the stock take snapshot'}"/>
+                                            </p:column>
                                             <p:column headerText="Purchase Rate" width="8em" class="text-end">
                                                 <h:outputText value="#{r.purchaseRate}">
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>

@@ -289,7 +289,16 @@
 
                             <div class="d-flex justify-content-center align-items-center">
                                 <h:panelGroup id="gpCancelBillPreview">
-                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false) or configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}">
+                                        <bill:FiveFiveCancellationReceipt receipt="#{inwardSearch.cancelledBillReceipt}" duplicate="false"
+                                                                          titleLabel="#{inwardPaymentController.receiptHeading(inwardSearch.bill.cancelledBill, 'Cancellation Receipt')}"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false)}">
+                                        <bill:A4PaperCancellationReceipt receipt="#{inwardSearch.cancelledBillReceipt}" duplicate="false"
+                                                                         titleLabel="#{inwardPaymentController.receiptHeading(inwardSearch.bill.cancelledBill, 'Cancellation Receipt')}"/>
+                                    </h:panelGroup>
+                                    <!-- POS is also the fallback, so the receipt is never blank when no paper format is configured -->
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true) or not (configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Paper', false) or configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false) or configOptionController.getBooleanValueByKey('Inward Payment Bill A4 Paper', false))}" style="align-items: center;">
                                         <bill:posPaperCancellationBill bill="#{inwardSearch.bill.cancelledBill}" duplicate="false"/>
                                     </h:panelGroup>
                                 </h:panelGroup>

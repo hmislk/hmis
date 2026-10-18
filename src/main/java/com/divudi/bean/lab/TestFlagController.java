@@ -78,6 +78,7 @@ public class TestFlagController implements Serializable {
     double toValue;
     Sex sex;
     TestFlag removingFlag;
+    InvestigationItem filterFlagType;
 
     public void onEdit(RowEditEvent event) {
         TestFlag tmp = (TestFlag) event.getObject();
@@ -287,6 +288,7 @@ public class TestFlagController implements Serializable {
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
+        filterFlagType = null;
         recreateModel();
     }
 
@@ -399,6 +401,27 @@ public class TestFlagController implements Serializable {
             }
         }
         return items;
+    }
+
+    public List<TestFlag> getFilteredItems() {
+        if (filterFlagType == null) {
+            return getItems();
+        }
+        List<TestFlag> filtered = new ArrayList<>();
+        for (TestFlag f : getItems()) {
+            if (f.getInvestigationItemOfFlagType() != null && filterFlagType.equals(f.getInvestigationItemOfFlagType())) {
+                filtered.add(f);
+            }
+        }
+        return filtered;
+    }
+
+    public InvestigationItem getFilterFlagType() {
+        return filterFlagType;
+    }
+
+    public void setFilterFlagType(InvestigationItem filterFlagType) {
+        this.filterFlagType = filterFlagType;
     }
 
     public List<TestFlag> getIxItemFlags(InvestigationItem ix) {

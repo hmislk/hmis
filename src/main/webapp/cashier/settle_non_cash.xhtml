@@ -45,6 +45,47 @@
 
                             <p:messages id="msgs"/>
 
+                            <h:panelGroup layout="block"
+                                          rendered="#{not empty paymentSettlementController.myPendingRequests}"
+                                          styleClass="mb-3">
+                                <h:outputText value="My pending settlement requests"
+                                              styleClass="fw-bold d-block mb-1"/>
+                                <h:outputText value="While a request is pending you cannot end your shift or create a handover."
+                                              styleClass="text-warning d-block mb-2"/>
+                                <p:dataTable id="myRequestsTable"
+                                             value="#{paymentSettlementController.myPendingRequests}"
+                                             var="r">
+                                    <p:column headerText="Request No">
+                                        <h:outputText value="#{r.requestNo}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill No">
+                                        <h:outputText value="#{r.bill.deptId}"/>
+                                    </p:column>
+                                    <p:column headerText="Department">
+                                        <h:outputText value="#{r.department.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Requested At">
+                                        <h:outputText value="#{r.requestAt}">
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Total" style="text-align: right;">
+                                        <h:outputText value="#{r.bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Action" style="width: 8rem; text-align: center;">
+                                        <p:commandButton value="Withdraw"
+                                                         icon="fa fa-undo"
+                                                         styleClass="ui-button-warning"
+                                                         process="@this"
+                                                         action="#{paymentSettlementController.withdraw(r)}"
+                                                         update="settleNonCashForm"
+                                                         onclick="if(!confirm('Withdraw this settlement request?')) return false;"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
+
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <h:outputText value="Department *"
@@ -158,9 +199,10 @@
 
                                 <div class="text-end">
                                     <p:commandButton icon="fa fa-check"
-                                                     value="Confirm Settlement"
+                                                     value="Submit for Approval"
                                                      styleClass="ui-button-success"
                                                      ajax="false"
+                                                     onclick="if(!confirm('Submit these payments for settlement approval?')) return false;"
                                                      action="#{paymentSettlementController.settleSelected()}"/>
                                 </div>
                             </h:panelGroup>
@@ -179,7 +221,7 @@
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
                                         <i class="fa fa-file-alt me-2"/>
-                                        <h:outputText value="Payment Settlement Bill"/>
+                                        <h:outputText value="Settlement Request"/>
                                     </div>
                                     <div>
                                         <p:commandButton value="Print"
@@ -204,8 +246,10 @@
                                                   styleClass="d-block fw-bold fs-4"/>
                                     <h:outputText value="#{paymentSettlementController.lastSettlementBill.department.name}"
                                                   styleClass="d-block text-muted"/>
-                                    <h:outputText value="Payment Settlement Bill"
+                                    <h:outputText value="Settlement Request"
                                                   styleClass="d-block fw-bold fs-5 mt-2"/>
+                                    <h:outputText value="PENDING APPROVAL"
+                                                  styleClass="d-block fw-bold fs-4 text-warning mt-1"/>
                                 </div>
 
                                 <div class="row g-2 mb-3">
@@ -213,6 +257,9 @@
                                         <h:outputText value="Bill No: " styleClass="fw-medium"/>
                                         <h:outputText value="#{paymentSettlementController.lastSettlementBill.deptId}"
                                                       styleClass="fw-bold"/>
+                                        <h:outputText value=" (Request #{paymentSettlementController.lastRequest.requestNo})"
+                                                      rendered="#{not empty paymentSettlementController.lastRequest}"
+                                                      styleClass="ms-2"/>
                                     </div>
                                     <div class="col-sm-6 text-sm-end">
                                         <h:outputText value="Date: " styleClass="fw-medium"/>
@@ -221,7 +268,7 @@
                                         </h:outputText>
                                     </div>
                                     <div class="col-sm-6">
-                                        <h:outputText value="Settled By: " styleClass="fw-medium"/>
+                                        <h:outputText value="Requested By: " styleClass="fw-medium"/>
                                         <h:outputText value="#{paymentSettlementController.lastSettlementBill.fromWebUser.webUserPerson.nameWithTitle}"/>
                                     </div>
                                     <div class="col-sm-6 text-sm-end">
@@ -266,7 +313,7 @@
 
                                 <div class="d-flex justify-content-end mb-4">
                                     <div class="text-end">
-                                        <h:outputText value="Total Settled" styleClass="d-block text-muted"/>
+                                        <h:outputText value="Total Requested" styleClass="d-block text-muted"/>
                                         <h:outputText value="#{paymentSettlementController.lastSettledTotal}"
                                                       styleClass="fw-bold fs-4">
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -277,12 +324,12 @@
                                 <div class="row g-4 mt-4 pt-4">
                                     <div class="col-6 text-center">
                                         <div style="border-top: 1px solid #333; padding-top: 0.25rem;">
-                                            <h:outputText value="Settled By"/>
+                                            <h:outputText value="Requested By"/>
                                         </div>
                                     </div>
                                     <div class="col-6 text-center">
                                         <div style="border-top: 1px solid #333; padding-top: 0.25rem;">
-                                            <h:outputText value="Verified By"/>
+                                            <h:outputText value="Approved By"/>
                                         </div>
                                     </div>
                                 </div>
