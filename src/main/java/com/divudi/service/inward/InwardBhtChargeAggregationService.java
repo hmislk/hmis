@@ -166,6 +166,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
         mergeChargeMaps(result, fetchAdmissionFeeCharges(encounters));
         mergeChargeMaps(result, fetchPatientRoomCalculatedCharges(encounters));
         mergeChargeMaps(result, fetchPatientRoomServiceItemCharges(encounters));
+        mergeChargeMaps(result, fetchServiceItemsUnderOtherChargeTypes(encounters));
         mergeChargeMaps(result, fetchProfessionalFeeCharges(encounters));
         mergeChargeMaps(result, fetchAssistingFeeCharges(encounters));
         mergeChargeMaps(result, fetchPharmacyBillCharges(encounters));
@@ -241,8 +242,9 @@ public class InwardBhtChargeAggregationService implements Serializable {
     }
 
     /**
-     * ADMISSION_FEE: a flat AdmissionType.admissionFee value, never persisted as
-     * a BillItem — read straight off the already-loaded encounter list.
+     * ADMISSION_FEE: a flat AdmissionType.admissionFee value, not persisted as
+     * a BillItem — read straight off the already-loaded encounter list. Services
+     * filed under Admission Fee are added by fetchServiceItemsUnderOtherChargeTypes.
      */
     private Map<Long, Map<InwardChargeType, Double>> fetchAdmissionFeeCharges(List<PatientEncounter> encounters) {
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
@@ -310,6 +312,43 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.cancelled = false"
+                + " and b.billType = :btp"
+                + " and enc in :encs"
+                + " and bi.inwardChargeType in :types"
+                + " group by enc.id, bi.inwardChargeType";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardBill);
+        params.put("encs", encounters);
+        params.put("types", types);
+
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return collectChargeTypeRows(rows);
+    }
+
+    /**
+     * Service BillItems on InwardBill filed under a charge type whose main source
+     * is not a BillItem (ADMISSION_FEE, BILL_FEE, PHARMACY_BILL, STORE_BILL), for
+     * example an "Admission Fee" service. The interim bill adds every InwardBill
+     * item to its charge type on top of that type's main source
+     * (BhtSummeryController.setServiceTotCategoryWise), so the journal must too.
+     * No overlap with the other sources: BillFee reads InwardProfessional bills
+     * and the pharmacy/store queries read their own bill types.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchServiceItemsUnderOtherChargeTypes(List<PatientEncounter> encounters) {
+        List<InwardChargeType> types = new ArrayList<>();
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.ADMISSION_FEE));
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.BILL_FEE));
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.PHARMACY_BILL));
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.STORE_BILL));
+        if (types.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
+                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
+                + " where bi.retired = false"
+                + " and b.retired = false"
                 + " and b.billType = :btp"
                 + " and enc in :encs"
                 + " and bi.inwardChargeType in :types"
