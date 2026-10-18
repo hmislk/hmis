@@ -979,11 +979,16 @@ public class InwardBeanController implements Serializable {
      * baby's running service has to be stopped and repriced along with hers.
      */
     public List<PatientItem> fetchRunningTimedPatientItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        // A timed service whose bill was cancelled before cancellation retired
+        // it (#24548) must not count as running: left joins keep unbilled ones.
         String sql = "Select i From PatientItem i"
+                + " left join i.billItem bi"
+                + " left join bi.bill b"
                 + " where i.retired=false"
                 + " and type(i.item)=:cls"
                 + " and i.patientEncounter IN :pe"
-                + " and i.toTime is null";
+                + " and i.toTime is null"
+                + " and (bi is null or (bi.retired=false and (b is null or (b.retired=false and b.cancelled=false))))";
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {

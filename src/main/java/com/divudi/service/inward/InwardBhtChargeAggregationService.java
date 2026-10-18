@@ -292,12 +292,17 @@ public class InwardBhtChargeAggregationService implements Serializable {
     private Map<Long, Map<InwardChargeType, Double>> fetchRunningTimedItemTopUps(List<PatientEncounter> encounters) {
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
 
+        // Skip a service whose bill was cancelled or retired: its bill rows net to
+        // zero, so it must not accrue. Left joins keep unbilled services.
         String jpql = "select i from PatientItem i"
+                + " left join i.billItem bi"
+                + " left join bi.bill b"
                 + " where i.retired = false"
                 + " and type(i.item) = :cls"
                 + " and i.toTime is null"
                 + " and i.item.inwardChargeType is not null"
-                + " and i.patientEncounter in :encs";
+                + " and i.patientEncounter in :encs"
+                + " and (bi is null or (bi.retired = false and (b is null or (b.retired = false and b.cancelled = false))))";
 
         Map<String, Object> params = new HashMap<>();
         params.put("cls", TimedItem.class);
