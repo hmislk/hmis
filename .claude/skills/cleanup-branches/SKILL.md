@@ -214,7 +214,7 @@ carries nothing that the restored working copy doesn't already have. Run this
 for ref in $(git stash list --format='%gd' | sort -t'{' -k2 -rn); do
   [ "$(git stash show --name-only "$ref")" = "src/main/resources/META-INF/persistence.xml" ] || continue
   git rev-parse -q --verify "$ref^3" >/dev/null && continue   # has untracked files
-  other=$(git stash show -p "$ref" | grep '^[+-][^+-]' | grep -v '<jta-data-source>')
+  other=$(git stash show -p "$ref" | grep -E '^[+-][^+-]|^(old|new) mode' | grep -v '<jta-data-source>')
   [ -z "$other" ] && git stash list | grep -F "$ref:" && git stash drop "$ref"
 done
 ```
@@ -224,7 +224,7 @@ done
 - The match is by content, not message: default `WIP on <branch>: …` stashes
   that hold only the swap are dropped too.
 - Keep any stash that touches another file, holds untracked files, or changes
-  any other `persistence.xml` line — that is real WIP; list it in the report
+  any other `persistence.xml` line or its file mode — that is real WIP; list it in the report
   instead of dropping it.
 
 ## Step 9 — Report
