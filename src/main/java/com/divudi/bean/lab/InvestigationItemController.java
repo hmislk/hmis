@@ -386,6 +386,10 @@ public class InvestigationItemController implements Serializable {
                 nii.setName(ii.getName());
                 nii.setReportItemType(ii.getReportItemType());
                 nii.setPageNo(ii.getPageNo());
+                if (ReportPageSettings.isSettingsItem(ii)) {
+                    // the page's background, common-report and page-number settings
+                    nii.setHtmltext(ii.getHtmltext());
+                }
 
                 List<InvestigationItemValue> niivs = new ArrayList<>();
                 for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
@@ -2100,6 +2104,11 @@ public class InvestigationItemController implements Serializable {
         this.currentInvestigation = currentInvestigation;
         designerPage = 1;
         designerPageSettings = null;
+        // a page-settings item of the previous investigation must not stay selected
+        if (current != null && ReportPageSettings.isSettingsItem(current)
+                && (current.getItem() == null || !current.getItem().equals(currentInvestigation))) {
+            current = null;
+        }
         listInvestigationItem();
     }
 
@@ -2451,7 +2460,9 @@ public class InvestigationItemController implements Serializable {
 
         userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
         userChangableItems.removeIf(ReportPageSettings::isSettingsItem);
-        if (current != null && ReportPageSettings.isSettingsItem(current) && !userChangableItems.contains(current)) {
+        if (current != null && ReportPageSettings.isSettingsItem(current)
+                && current.getItem() != null && current.getItem().equals(currentInvestigation)
+                && !userChangableItems.contains(current)) {
             userChangableItems.add(current);
         }
         return userChangableItems;
