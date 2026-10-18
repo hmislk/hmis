@@ -757,5 +757,7 @@ A `PHARMACY_TRANSFER_REQUEST_PRE` bill points to its approved
 `PHARMACY_TRANSFER_REQUEST` bill via `forwardReferenceBill`. Issues set
 `backwardReferenceBill` on the **approved** bill, and "View Request" in
 Issue for Requests opens that approved bill. When querying for an un-issued
-request, or verifying a cancellation, join PRE → `FORWARDREFERENCEBILL_ID`
-and check the approved bill's `CANCELLED` and issues.
+request, join PRE → `FORWARDREFERENCEBILL_ID` and check the approved bill's
+issues. Cancel Request marks whichever bill the page opened: the approved bill
+from Issue for Requests, the PRE bill from Approved Requests. Check that
+bill's `CANCELLED`.
