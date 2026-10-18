@@ -86,7 +86,7 @@ Do NOT add new print pages using this pattern:
 - Custom Format 2
 
 **Configuration Keys:**
-- `GRN Receipt Paper is A4`
+- `GRN Receipt Paper is A4 One`
 - `GRN Receipt Paper is Custom 1`
 - `GRN Receipt Paper is Custom 2`
 
@@ -365,7 +365,7 @@ Follow this naming pattern for configuration keys:
 Examples:
 - `Pharmacy Transfer Issue A4 Paper`
 - `Pharmacy Transfer Receive Bill is Template`
-- `GRN Receipt Paper is A4`
+- `GRN Receipt Paper is A4 One`
 
 ### Configuration Controller Usage Guidelines
 
