@@ -138,7 +138,9 @@ public class AdmissionChargeApplicationBean implements Serializable {
         try {
             result = inwardServiceBillService.createServiceBills(request);
         } catch (RuntimeException ex) {
-            retireCreatedBills(createdBills, null, loggedUser, ex);
+            // getCreatedBatchBill() rather than a null: saveBatchBill() may have
+            // committed the batch bill and then failed while linking the children.
+            retireCreatedBills(createdBills, request.getCreatedBatchBill(), loggedUser, ex);
             throw ex;
         }
 
@@ -196,6 +198,12 @@ public class AdmissionChargeApplicationBean implements Serializable {
      * {@code BillFee.retired = false}, so retiring only the parent bill would
      * leave the charge visible in the charge-type breakdown.</p>
      *
+     * <p>The order is bill, then items, then fees, and it matters. Bill.billItems
+     * and Bill.billFees cascade ALL, and so does the eager BillItem.billFees, so
+     * merging a parent writes its in-memory children - still unretired - back
+     * over whatever was retired before it. Each level must be retired after the
+     * parent that would otherwise overwrite it.</p>
+     *
      * <p>Never throws - it may run while an exception is already in flight, and
      * masking that exception with a second one would hide the real cause.</p>
      *
@@ -221,14 +229,11 @@ public class AdmissionChargeApplicationBean implements Serializable {
                 Map<String, Object> params = new HashMap<>();
                 params.put("b", bill);
 
-                for (BillFee bf : billFeeFacade.findByJpql(
-                        "select bf from BillFee bf where bf.retired = false and bf.bill = :b", params)) {
-                    bf.setRetired(true);
-                    bf.setRetirer(loggedUser);
-                    bf.setRetiredAt(now);
-                    bf.setRetireComments(reason);
-                    billFeeFacade.edit(bf);
-                }
+                bill.setRetired(true);
+                bill.setRetirer(loggedUser);
+                bill.setRetiredAt(now);
+                bill.setRetireComments(reason);
+                billFacade.edit(bill);
 
                 for (BillItem bi : billItemFacade.findByJpql(
                         "select bi from BillItem bi where bi.retired = false and bi.bill = :b", params)) {
@@ -239,11 +244,14 @@ public class AdmissionChargeApplicationBean implements Serializable {
                     billItemFacade.edit(bi);
                 }
 
-                bill.setRetired(true);
-                bill.setRetirer(loggedUser);
-                bill.setRetiredAt(now);
-                bill.setRetireComments(reason);
-                billFacade.edit(bill);
+                for (BillFee bf : billFeeFacade.findByJpql(
+                        "select bf from BillFee bf where bf.retired = false and bf.bill = :b", params)) {
+                    bf.setRetired(true);
+                    bf.setRetirer(loggedUser);
+                    bf.setRetiredAt(now);
+                    bf.setRetireComments(reason);
+                    billFeeFacade.edit(bf);
+                }
             } catch (RuntimeException cleanupFailure) {
                 logger.log(Level.SEVERE,
                         "Could not retire admission charge bill " + bill.getId()
