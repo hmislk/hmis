@@ -134,11 +134,11 @@ records yourself rather than gating on the user for them:
   the PR/issue evidence. Only ask the user if the local DB has no suitable
   record at all (e.g. the feature needs a state nothing local is in) — that
   is a real blocker, not a preference question.
-- **Environment**: when the user names a test environment (local, QA, `rh-local-staging`), use it without asking; creating fictional test data there needs no permission (find or save the login under `C:\Credentials\`, ask only if the URL or login is missing). Local Payara is the default unless the issue specifically
+- **Environment**: when the user names a test environment (local, QA, `rh-local-staging`), use it without asking; creating fictional test data there needs no permission (find or save the login under the credentials store, e.g. `~/Credentials/hmis/` on Linux or `C:\Credentials\` on Windows; ask only if the URL itself is missing — a missing LOGIN for a testing environment is not a blocker: try the saved default login first, and if none works, create a new user account through the app itself and proceed). Local Payara is the default unless the issue specifically
   requires testing against a remote env, in which case confirm which one
   with the user (this one *is* a real decision — remote envs carry real
   data/credentials risk that local doesn't). Credentials live outside the
-  repo in `C:\Credentials\` — never inlined.
+  repo in the credentials store — never inlined.
 
 Only the environment choice is a discussion gate here. Department/record
 selection against local test data is not — deciding it yourself and moving
