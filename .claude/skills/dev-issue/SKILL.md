@@ -232,6 +232,10 @@ and list it in the main guide's Contents. Write it as a symptom heading plus
 1–3 lines of fix. Leave the story, dates and issue history out; they belong in
 the PR. Skip this step if nothing new came up.
 
+Commit learnings before the PR is created. A later one: check
+`gh pr view <N> --json state` first; if MERGED, put it on a new
+branch from `origin/development` and open its own PR.
+
 ## 10. Publish evidence and update the wiki
 
 Follow playwright-e2e
@@ -363,6 +367,10 @@ Repeat, up to **3 cycles**:
    - For genuinely ambiguous comments, pause and ask the user — don't burn a
      cycle guessing.
    - If fixes were applied, push and go to 1.
+   - A green CodeRabbit check is not a review. If its only comment
+     says "Review limit reached", it reviewed nothing: say so in
+     Notify, and wait for the limit reset or ask the user before
+     treating the PR as reviewed.
 4. If checks are green and there are no unresolved review comments, stop —
    this cycle is done.
 
