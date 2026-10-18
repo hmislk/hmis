@@ -81,14 +81,20 @@ Do NOT add new print pages using this pattern:
 ### GRN Configuration
 
 **Configuration Options:**
-- A4 Paper Format
+- A4 Paper Format One (`grn_with_costing`)
+- A4 Paper Format Two (`grn_with_costing_new` — adds Last Purchase Rate and Profit % columns)
 - Custom Format 1
 - Custom Format 2
+- Custom Format 3
 
 **Configuration Keys:**
-- `GRN Receipt Paper is A4 One`
+- `GRN Receipt Paper is A4 One` — defaults to the stored value of the old `GRN Receipt Paper is A4` key (or `true` if that was never set)
+- `GRN Receipt Paper is A4 Two` — defaults to `false`
 - `GRN Receipt Paper is Custom 1`
 - `GRN Receipt Paper is Custom 2`
+- `GRN Receipt Paper is Custom 3`
+
+`GRN Receipt Paper is A4` is no longer a setting of its own; it is only read as the starting value for `GRN Receipt Paper is A4 One`.
 
 ### Transfer Receive Configuration
 
