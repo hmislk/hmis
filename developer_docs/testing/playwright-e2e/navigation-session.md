@@ -22,6 +22,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [114b. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114b-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
 - [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
 - [136. Forcing `.click()` on a still-hidden PrimeFaces menu leaf (parent flyout never actually opened) can crash the JSF view state and log you out](#136-forcing-click-on-a-still-hidden-primefaces-menu-leaf-parent-flyout-never-actually-opened-can-crash-the-jsf-view-state-and-log-you-out)
+- [151. Dependent browser steps sent in one message race each other — send them one at a time](#151-dependent-browser-steps-sent-in-one-message-race-each-other--send-them-one-at-a-time)
 
 ---
 
@@ -596,3 +597,7 @@ Fix: use the real `browser_hover` tool (not `dispatchEvent`) on each ancestor le
 
 Verified 2026-10-07 navigating nested Pharmacy submenus (e.g. *Admissions → Pharmacy → Request
 Medicines from Pharmacy*) while developing #24358/#24359/#24360.
+
+## 151. Dependent browser steps sent in one message race each other — send them one at a time
+
+Tool calls in one message can run concurrently: waits overlap instead of adding up, and a click can fire before the page that a previous menu click requested has loaded ("does not match any elements"). Send each step that depends on the previous page in its own message, and wait for a real condition (`browser_wait_for` text) rather than stacking timed waits.
