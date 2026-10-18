@@ -735,6 +735,7 @@ All under *Cashier → Financial Transaction Manager*. Design: [Handover Float P
 
 ## 147. Patient Admit: "Admit" also matches "Provisional Emergency Admit"
 
-`getByRole('button', { name: 'Admit' })` clicks *Provisional Emergency Admit* and opens its
-confirm dialog; `exact: true` finds nothing (the icon glyph is part of the name). Click
-`[id$=":admt"]`. Consultant and Medical Officer are required.
+`getByRole('button', { name: 'Admit' })` matches both buttons, so `.click()` throws a
+strict-mode violation, and `.first()` (or picking by name in a snapshot) clicks *Provisional
+Emergency Admit*, which comes first and opens its confirm dialog. Click `[id$=":admt"]`.
+Consultant and Medical Officer are required.
