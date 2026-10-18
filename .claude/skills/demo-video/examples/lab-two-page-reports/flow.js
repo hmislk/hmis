@@ -2,6 +2,7 @@
 // Run from tmp/demo-videos/lab-two-page-reports/ :
 //   PT="Demo Alpha" HMIS_BASE=http://localhost:9090/rh/ DEPT="Main Laboratory" node flow.js
 // PT = name of the fictional test patient billed in setup (use a new one for every take).
+// Local or QA only: setup bills a fictional test patient, which is fine on a test environment and never on production.
 const { chromium } = require('playwright');
 const { run } = require('../../../.claude/skills/demo-video/scripts/recorder');
 
@@ -50,12 +51,15 @@ async function normalizeDesigner(page) {
     await pages.filter({ hasText: 'Page 3' }).click(); await sleep(1500);
     await page.locator('button:has-text("Remove Page")').click(); await page.waitForLoadState('networkidle'); await sleep(2000);
   }
-  for (let i = 0; i < 10; i++) {   // remove the Label an earlier take added to page 2 (only page 2: page 1 has real items named Label)
+  for (let i = 0; i < 10; i++) {   // remove the note an earlier take added to page 2 (named 'Page 2 note' once the take has renamed it; only page 2: page 1 has real items named Label)
     await page.locator('.ui-selectonemenu', { has: page.locator('[id$="dtbItem_input"]') }).click(); await sleep(600);
-    const opt = page.locator('li.ui-selectonemenu-item:visible', { hasText: /^Label - Label \(page 2\)$/ }).first();
+    const opt = page.locator('li.ui-selectonemenu-item:visible', { hasText: /^(Page 2 note|Label) - Label \(page 2\)$/ }).first();
     if (!(await opt.count())) { await page.keyboard.press('Escape'); break; }
     await opt.click(); await page.waitForLoadState('networkidle'); await sleep(1500);
     await page.locator('button:has-text("Remove")').filter({ hasNotText: 'Page' }).first().click(); await page.waitForLoadState('networkidle'); await sleep(2000);
+  }
+  if (!(await pages.filter({ hasText: 'Page 2' }).count())) {   // a format that has only one page yet
+    await page.locator('button:has-text("Add Page")').click(); await page.waitForLoadState('networkidle'); await sleep(2000);
   }
   await pages.filter({ hasText: 'Page 2' }).click(); await sleep(2000);
   const box = page.locator('[id$=pPages] .ui-chkbox-box').first();

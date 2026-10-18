@@ -18,6 +18,15 @@ import argparse, datetime, os, re, sys
 
 sys.stdout.reconfigure(encoding='utf-8')
 
+YT_URL = r'https?://(?:www\.)?(?:youtu\.be/|youtube\.com/(?:watch\?v=|shorts/|live/))'
+
+
+def vid(u):
+    """The 11-character video id of a YouTube link, or None."""
+    m = re.search(YT_URL + r'([\w-]{11})', u or '')
+    return m.group(1) if m else None
+
+
 ap = argparse.ArgumentParser()
 ap.add_argument('--module', required=True, help='heading in Video-Library.md, e.g. "Laboratory (LIMS)"')
 ap.add_argument('--topic', required=True)
@@ -30,6 +39,9 @@ ap.add_argument('--date', default=datetime.date.today().isoformat())
 ap.add_argument('--wiki', default=os.environ.get('HMIS_WIKI', '../hmis.wiki'))
 ap.add_argument('--dry-run', action='store_true')
 a = ap.parse_args()
+video_id = vid(a.url)
+if video_id is None:
+    ap.error(f'--url does not look like a YouTube video link: {a.url}')
 
 lib_path = os.path.join(a.wiki, 'Video-Library.md')
 raw = open(lib_path, encoding='utf-8', newline='').read()
@@ -75,7 +87,7 @@ if heading in lines:
         if table:
             lines.insert(table[-1] + 1, row)
         else:   # "No videos yet." section: start a table
-            body = [i for i in section if lines[i].strip()]
+            body = [i for i in section if lines[i].strip().lower().startswith('no videos yet')]   # only the placeholder, not other text
             for i in reversed(body):
                 del lines[i]
             lines[start + 1:start + 1] = ['', HEADER, SEP, row]
@@ -100,17 +112,21 @@ if art_path:
     else:
         t = open(art_path, encoding='utf-8', newline='').read()
         anl = '\r\n' if '\r\n' in t else '\n'
-        vid = lambda u: re.search(r'(?:youtu\.be/|v=)([\w-]{11})', u).group(1)
-        if old_url and vid(old_url) in t:
+        old_id = vid(old_url)
+        if old_id and old_id in t:
             # swap the video id and drop tracking parameters that belonged to the old link
-            t2 = re.sub(r'(https?://(?:www\.)?(?:youtu\.be/|youtube\.com/watch\?v=)' + re.escape(vid(old_url)) + r')(\?si=[\w-]+|&si=[\w-]+)?', a.url, t)
+            t2 = re.sub('(' + YT_URL + re.escape(old_id) + r')(\?si=[\w-]+|&si=[\w-]+)?', a.url, t)
             art_msg = f'article {a.article}.md: old link replaced'
-        elif re.search(r'youtu(?:\.be|be\.com)/', t) and vid(a.url) in t:
+        elif video_id in t:
             t2 = t
             art_msg = f'article {a.article}.md: already links this video'
+        elif re.search(r'youtu(?:\.be|be\.com)/', t):
+            # another video (maybe another language's): never add a second line or overwrite it
+            t2 = t
+            art_msg = f'article {a.article}.md: already links a different video; left unchanged, edit it by hand if it is the old version of this one'
         else:
             ls = t.split(anl)
-            at = next((i for i, l in enumerate(ls) if l.startswith('# ')), -1) + 1
+            at = next((i for i, line in enumerate(ls) if line.startswith('# ')), -1) + 1
             ls[at:at] = ['', f'**Video:** [{a.topic}]({a.url})' + (f' ({a.length}). ' if a.length else '. ') + 'More videos are in the [Video Library](Video-Library).']
             t2 = anl.join(ls)
             art_msg = f'article {a.article}.md: Video line added'
