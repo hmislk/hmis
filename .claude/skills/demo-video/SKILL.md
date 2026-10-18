@@ -18,6 +18,7 @@ Worked examples:
 - `examples/pharmacy-issue-own-department/` — the first accepted video; normal case, login happens silently before narration starts.
 - `examples/login-department-select/` — a video *about* logging in itself, using `manualLogin: true` (see Recorder API below).
 - `examples/pvc-card-print/` — a video whose key moment is a **print button** (see Printing below).
+- `examples/lab-two-page-reports/` — a long (about 5 min) configuration-plus-data-entry story. `setup()` resets a config option and a report format and bills a fresh test patient through the menus (one new `PT` name per take); the flow then enables the option, edits the format designer, and enters results. Shows `exact()` text locators, retrying accordion headers, and picking result boxes by screen order.
 - `examples/inward-raw-text-paper-type/` — a button that **downloads a file** (`.prn`): catch it with `p.waitForEvent('download')`, then show its contents on screen. Also shows an unrecorded `setup()` and a `restore.js` that put a department setting back as found.
 
 ## Printing (print buttons, receipts, cards)
@@ -56,6 +57,10 @@ Assert `pages === 1` (or whatever the paper needs): the PDF is real verification
 8. **Check.** Run `python <skill>/scripts/check_frames.py <slug>.mp4` and read `frames/sheet.png`. Every caption must match what is on screen at that moment. Fix the flow and repeat steps 6–8 until it does.
 9. **Deliver.** Save the MP4 in `tmp/demo-videos/` and report its path. Say which environment and test data appear in it.
 10. **Publish to YouTube (optional, only when asked).** HMIS is open source and these videos go out **public** on the channel the token belongs to. Write `youtube.json` in the work dir (`title` of at most 100 characters, plus optional `tags`, `privacy`, `language` such as `si`/`ta`, `playlistId` and `description`, which defaults to the `script.json` narration). Run `python <skill>/scripts/upload.py <slug>.mp4 --dry-run`, show the user the metadata, and upload **only after they confirm**: `python <skill>/scripts/upload.py <slug>.mp4`. The script writes `youtube-upload.json`, which blocks a second upload of the same video unless you pass `--force`. Report the `youtu.be` link. The one-time setup is below.
+
+11. **Update the wiki Video Library (whenever a video is uploaded or replaced).** The wiki keeps one page, [Video Library](https://github.com/hmislk/hmis/wiki/Video-Library), with every video grouped by module (same order as the Wiki Article Index). A new recording of a topic **replaces** its old link; it never adds a second row for the same topic and language. From the repo root run:
+    `python .claude/skills/demo-video/scripts/wiki_video_link.py --module "<Index heading, e.g. Laboratory (LIMS)>" --topic "<video topic>" --url <youtu.be link> --lang English --audience "<who>" --length "about 3 min" --article <Wiki-Article-Name>`
+    It replaces the row with the same topic and language (new link, new Updated date) or adds one under the module heading, and swaps the old video link in the written article for the new one, or adds a **Video:** line under the article's title when it has none. Use `--dry-run` first to see what it will do. Then commit and push `../hmis.wiki` in one commit and put the link in the delivery message. For a Sinhala or Tamil version, run it again with `--lang Sinhala` (a separate row) and leave out `--article` when the English article is reused; pass `--article` only for a distinct translated article. Without a YouTube upload (a file-only delivery), skip this step.
 
 ## YouTube publishing setup (one time)
 
