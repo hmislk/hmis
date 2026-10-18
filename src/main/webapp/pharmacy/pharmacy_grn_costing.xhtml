@@ -674,12 +674,12 @@
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup 
                             class="d-flex justify-content-center" 
-                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One',true)}"  >
+                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One', configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true))}"  >
                             <pha:grn_with_costing bill="#{grnCostingController.grnBill}"/>
                         </h:panelGroup>
                         <h:panelGroup 
                             class="d-flex justify-content-center" 
-                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two',true)}"  >
+                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two', false)}"  >
                             <pha:grn_with_costing_new bill="#{grnCostingController.grnBill}"/>
                         </h:panelGroup>
                         <h:panelGroup
