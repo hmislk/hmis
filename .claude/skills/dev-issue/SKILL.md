@@ -169,16 +169,19 @@ new persisted fields.
 
 ## 6. Build and local redeploy ("deploy sos")
 
-Per `playwright-e2e` §0a:
+Per `playwright-e2e` §0a.
 
-```powershell
-$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
-& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
-& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
-```
+Use the JDK 11, Maven and Payara locations saved in **this machine's** Claude
+memory (build tools / Payara install). Do not assume paths: developer machines
+differ (Windows 10/11, Ubuntu, with or without a D: drive). If nothing is saved,
+find them, then save them to memory.
 
-Check `D:\Payara\glassfish\domains\domain1\logs\server.log` for deployment
-errors before moving on.
+Rules that hold on every machine:
+- Build with JDK 11: set `JAVA_HOME` and `AS_JAVA` to it before `asadmin`.
+- `mvn clean package -DskipTests`, then `asadmin redeploy --name <app> <war>`;
+  take `<app>` from `asadmin list-applications` (it is not always `rh`).
+- After redeploy, check the app answers and the server log shows no deployment
+  errors before moving on.
 
 ## 7. Test with Playwright + verify in DB
 

@@ -14,6 +14,7 @@
 - **🚨 Retrospect after nontrivial work.** If a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix and ask before opening a PR. Write it as a short rule, not a story. See [Retrospective](developer_docs/process/continuous-improvement-retrospective.md).
 
 ### Code
+- Line endings differ by machine (many files are CRLF on Windows). Edit with the Edit tool; if you script a replacement, match the file's line endings and check the diff for whole-file changes.
 - **🚨 No mock data** or temporary workarounds in business logic.
 - **🚨 Never "fix" intentional typos** (e.g. `purcahseRate`); they are DB column names.
 - **🚨 Never rename composite components** without checking every usage.
