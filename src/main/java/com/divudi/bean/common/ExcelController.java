@@ -5213,6 +5213,7 @@ public class ExcelController {
                     for (com.divudi.core.data.PaymentMethod sm : section.getSplitMethods()) {
                         headers.add(sm.getLabel());
                     }
+                    headers.add("Collected");
                 }
                 int hosCol = headers.size();
                 headers.add("Hospital Fee");
@@ -5248,6 +5249,7 @@ public class ExcelController {
                         for (com.divudi.core.data.PaymentMethod sm : section.getSplitMethods()) {
                             row.createCell(col++).setCellValue(dto.getSplitValue(sm));
                         }
+                        row.createCell(col++).setCellValue(dto.getCollectionValue());
                     }
                     row.createCell(col++).setCellValue(dto.getHosFee());
                     row.createCell(col++).setCellValue(dto.getDoctorFee());
@@ -5261,12 +5263,15 @@ public class ExcelController {
                 subtotalLabel.setCellValue("Subtotal (" + section.getBillCount() + " bills)");
                 subtotalLabel.setCellStyle(metaStyleBold);
                 if (isMultiSection) {
-                    int splitCol = hosCol - section.getSplitMethods().size();
+                    int splitCol = hosCol - section.getSplitMethods().size() - 1;
                     for (com.divudi.core.data.PaymentMethod sm : section.getSplitMethods()) {
                         Cell sc = subtotalRow.createCell(splitCol++);
                         sc.setCellValue(section.getSplitTotal(sm));
                         sc.setCellStyle(metaStyleBold);
                     }
+                    Cell collCell = subtotalRow.createCell(splitCol);
+                    collCell.setCellValue(section.getCollectionTotal());
+                    collCell.setCellStyle(metaStyleBold);
                 }
                 Cell subHos = subtotalRow.createCell(hosCol);
                 subHos.setCellValue(section.getHosFeeTotal());
