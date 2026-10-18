@@ -35,6 +35,8 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#145-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
 - [146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify](#146-cashier-float--handover--shift-end-flows-menu-paths-required-fields-and-what-to-verify)
 - [147. Patient Admit: "Admit" also matches "Provisional Emergency Admit"](#147-patient-admit-admit-also-matches-provisional-emergency-admit)
+- [149. Interim Bill search says "No results found" for an admission from another institution](#149-interim-bill-search-says-no-results-found-for-an-admission-from-another-institution)
+- [150. Interim Bill room charges are stale on the first open — open it twice before comparing totals](#150-interim-bill-room-charges-are-stale-on-the-first-open--open-it-twice-before-comparing-totals)
 
 ---
 
@@ -739,3 +741,11 @@ All under *Cashier → Financial Transaction Manager*. Design: [Handover Float P
 strict-mode violation, and `.first()` (or picking by name in a snapshot) clicks *Provisional
 Emergency Admit*, which comes first and opens its confirm dialog. Click `[id$=":admt"]`.
 Consultant and Medical Officer are required.
+
+## 149. Interim Bill search says "No results found" for an admission from another institution
+
+The Interim Bill patient search only covers the institution in its **Institution** dropdown, which defaults to the logged-in institution. Before typing the BHT, pick the admission's institution (`PATIENTENCOUNTER.INSTITUTION_ID`) from that dropdown.
+
+## 150. Interim Bill room charges are stale on the first open — open it twice before comparing totals
+
+The first Interim Bill open after time has passed shows the room charge last saved, while saving the up-to-date one (#24582). Open it a second time before comparing its totals with a report or the DB. Reports that read `PATIENTROOM.CALCULATED*CHARGE` (Invoice Journal, Professional & Other Fee Summary) only pick up the new value after that first open.
