@@ -10,11 +10,13 @@ import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -55,6 +57,10 @@ public class InwardBhtChargeAggregationService implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private PatientItemFacade patientItemFacade;
+    @EJB
+    private TimedItemPricingService timedItemPricingService;
     @EJB
     private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
@@ -171,6 +177,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
 
         mergeChargeMaps(result, fetchBillItemCharges(encounters));
         mergeChargeMaps(result, fetchUnbilledTimedItemCharges(encounters));
+        mergeChargeMaps(result, fetchRunningTimedItemTopUps(encounters));
         mergeChargeMaps(result, fetchAdmissionFeeCharges(encounters));
         mergeChargeMaps(result, fetchPatientRoomCalculatedCharges(encounters));
         mergeChargeMaps(result, fetchPatientRoomServiceItemCharges(encounters));
@@ -262,6 +269,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " where i.retired = false"
                 + " and type(i.item) = :cls"
                 + " and i.billItem is null"
+                + " and i.item.inwardChargeType is not null"
                 + " and enc in :encs"
                 + " group by enc.id, i.item.inwardChargeType";
 
@@ -271,6 +279,60 @@ public class InwardBhtChargeAggregationService implements Serializable {
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
         return collectChargeTypeRows(rows);
+    }
+
+    /**
+     * Live accrual of timed services that are still running (toTime is null),
+     * billed or not. Their saved value (PatientItem.serviceValue, mirrored on the
+     * BillItem) is priced once when the service is added and does not grow, so
+     * each running service is re-priced as of now and only the positive
+     * difference is added. Mirrors BhtSummeryController.addRunningTimedServiceLiveTopUp,
+     * so the journal matches the interim bill while a service runs.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchRunningTimedItemTopUps(List<PatientEncounter> encounters) {
+        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+
+        String jpql = "select i from PatientItem i"
+                + " where i.retired = false"
+                + " and type(i.item) = :cls"
+                + " and i.toTime is null"
+                + " and i.item.inwardChargeType is not null"
+                + " and i.patientEncounter in :encs";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("cls", TimedItem.class);
+        params.put("encs", encounters);
+
+        List<PatientItem> running = patientItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (running == null) {
+            return result;
+        }
+        Date now = new Date();
+        for (PatientItem pi : running) {
+            PatientEncounter enc = pi.getPatientEncounter();
+            if (enc == null || enc.getId() == null || !(pi.getItem() instanceof TimedItem)) {
+                continue;
+            }
+            // A start time in the future has not accrued anything yet.
+            if (pi.getFromTime() == null || now.before(pi.getFromTime())) {
+                continue;
+            }
+            TimedItem item = (TimedItem) pi.getItem();
+            // No configured fee would price at zero; keep the saved value.
+            if (timedItemPricingService.getAllTimedItemFees(item).isEmpty()) {
+                continue;
+            }
+            double liveValue = timedItemPricingService.calTotalTimedChargeForItem(
+                    item, pi.getFromTime(), now, enc.isForiegner());
+            double savedValue = pi.getServiceValue() != null ? pi.getServiceValue() : 0.0;
+            double delta = liveValue - savedValue;
+            if (delta <= 0.0) {
+                continue;
+            }
+            result.computeIfAbsent(enc.getId(), k -> new EnumMap<>(InwardChargeType.class))
+                  .merge(item.getInwardChargeType(), delta, Double::sum);
+        }
+        return result;
     }
 
     /**
