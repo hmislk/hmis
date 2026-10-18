@@ -273,8 +273,11 @@ public class PharmacyConfigController implements Serializable {
         settlePaymentPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", true);
 
         // GRN Settings
-        grnReceiptA4One = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4 One", true);
-        grnReceiptA4Two = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4 Two", true);
+        // A4 One replaces the old "GRN Receipt Paper is A4" key -- inherit its
+        // stored value so hospitals that disabled A4 keep it disabled.
+        grnReceiptA4One = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4 One",
+                configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true));
+        grnReceiptA4Two = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4 Two", false);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
         grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
         grnReceiptCustom3 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 3", true);
