@@ -178,6 +178,9 @@ find them, then save them to memory.
 
 Rules that hold on every machine:
 - Build with JDK 11: set `JAVA_HOME` and `AS_JAVA` to it before `asadmin`.
+  This does not change a domain already running on JDK 17/21 (redeploy fails
+  with `Unsupported class file major version`): `asadmin stop-domain`, set both
+  variables, then `start-domain`.
 - `mvn clean package -DskipTests`, then `asadmin redeploy --name <app> <war>`;
   take `<app>` from `asadmin list-applications` (it is not always `rh`).
 - After redeploy, check the app answers and the server log shows no deployment
