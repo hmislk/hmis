@@ -2248,6 +2248,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        // Read the current state from the database: the page may have been loaded before the
+        // other party accepted, rejected or recalled this handover.
+        Bill freshHandover = selectedBill.getId() == null ? null : billFacade.findWithoutCache(selectedBill.getId());
+        if (freshHandover == null || freshHandover.isCompleted() || freshHandover.isCancelled()) {
+            JsfUtil.addErrorMessage("This handover has already been accepted, rejected or recalled, so it cannot be rejected.");
+            return null;
+        }
+        selectedBill = freshHandover;
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
@@ -2306,6 +2314,14 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        // Read the current state from the database: the page may have been loaded before the
+        // other party accepted, rejected or recalled this handover.
+        Bill freshHandover = selectedBill.getId() == null ? null : billFacade.findWithoutCache(selectedBill.getId());
+        if (freshHandover == null || freshHandover.isCompleted() || freshHandover.isCancelled()) {
+            JsfUtil.addErrorMessage("This handover has already been accepted, rejected or recalled, so it cannot be recalled.");
+            return null;
+        }
+        selectedBill = freshHandover;
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
