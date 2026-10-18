@@ -36,22 +36,17 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BilledBillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.core.util.InwardReceiptTextRenderer;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Controller for the inpatient "Make a Deposit" workflow.
@@ -99,6 +94,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private InwardRawTextReceiptController inwardRawTextReceiptController;
     @Inject
     private AdmissionController admissionController;
     @Inject
@@ -1108,52 +1105,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("No saved deposit to print.");
             return;
         }
-        com.divudi.core.entity.Department dept = sessionController.getDepartment();
-        boolean preprinted = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
-        Long topMarginRaw = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
-        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
-        boolean emitEscP = configOptionApplicationController
-                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
-        Long lineWidthRaw = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
-        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
-                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
-        boolean showAdmissionType = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
-        boolean showPatientAddress = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
-        boolean showPatientPhone = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
-
-        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
-                getCurrent().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
-                        ? billService.fetchBillPayments(getCurrent()) : null;
-        String text = InwardReceiptTextRenderer.render(getCurrent(),
-                InwardReceiptTextRenderer.headingFor(BillTypeAtomic.INWARD_DEPOSIT),
-                false, preprinted, topMargin, emitEscP, multiplePayments,
-                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
-
-        String fileName = "inward-deposit-"
-                + (getCurrent().getDeptId() == null ? String.valueOf(getCurrent().getId())
-                        : getCurrent().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
-                + ".prn";
-
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-        try (OutputStream os = response.getOutputStream()) {
-            // ISO-8859-1 so ESC/P control bytes (0x1B, 0x0C) pass through unchanged.
-            os.write(text.getBytes(Charset.forName("ISO-8859-1")));
-            os.flush();
-        } catch (java.io.IOException e) {
-            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
-            context.responseComplete();
-            return;
-        }
-        context.responseComplete();
+        inwardRawTextReceiptController.streamReceipt(getCurrent(), BillTypeAtomic.INWARD_DEPOSIT,
+                false, sessionController.getDepartment(), "inward-deposit-");
     }
 
     public BillNumberGenerator getBillNumberBean() {

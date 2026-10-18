@@ -60,7 +60,11 @@ issue, sets the project board status to In Progress.
 
 ## 2. Investigate
 
-- Read the issue body and comments (`gh issue view $0 --comments`).
+- Read the issue body and comments:
+  `gh issue view $0 --repo hmislk/hmis --json title,body,labels,comments`
+  (`--comments` and `gh pr edit` fail with "Projects (classic) is being
+  deprecated" and change nothing; use `--json`, or
+  `gh api -X PATCH repos/hmislk/hmis/pulls/<N> -F body=@file` for PR bodies.)
 - Explore the relevant code. Use the `Explore` agent for anything spanning
   more than a few files.
 - Identify: which entities/services/JSF pages are involved, which existing
@@ -69,6 +73,11 @@ issue, sets the project board status to In Progress.
 - **If the issue is a bug report**, try to pin down the root cause by reading
   code first. Note explicitly whether this succeeded — that decides whether
   step 2a runs.
+- When sweeping related issues that share a page/module by topic, don't
+  assume a related issue shares the same page/controller — confirm from that
+  issue's own repro steps before reproducing or planning a fix against an
+  assumed page. Testing the wrong page can burn several reproduction
+  attempts before the mismatch surfaces.
 
 ## 2a. Reproduce the bug (bug issues only)
 
@@ -125,11 +134,11 @@ records yourself rather than gating on the user for them:
   the PR/issue evidence. Only ask the user if the local DB has no suitable
   record at all (e.g. the feature needs a state nothing local is in) — that
   is a real blocker, not a preference question.
-- **Environment**: local Payara (default) unless the issue specifically
+- **Environment**: when the user names a test environment (local, QA, `rh-local-staging`), use it without asking; creating fictional test data there needs no permission (find or save the login under the credentials store, e.g. `~/Credentials/hmis/` on Linux or `C:\Credentials\` on Windows; ask only if the URL itself is missing — a missing LOGIN for a testing environment is not a blocker: try the saved default login first, and if none works, create a new user account through the app itself and proceed). Local Payara is the default unless the issue specifically
   requires testing against a remote env, in which case confirm which one
   with the user (this one *is* a real decision — remote envs carry real
   data/credentials risk that local doesn't). Credentials live outside the
-  repo in `C:\Credentials\` — never inlined.
+  repo in the credentials store — never inlined.
 
 Only the environment choice is a discussion gate here. Department/record
 selection against local test data is not — deciding it yourself and moving
@@ -160,16 +169,22 @@ new persisted fields.
 
 ## 6. Build and local redeploy ("deploy sos")
 
-Per `playwright-e2e` §0a:
+Per `playwright-e2e` §0a.
 
-```powershell
-$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
-& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
-& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
-```
+Use the JDK 11, Maven and Payara locations saved in **this machine's** Claude
+memory (build tools / Payara install). Do not assume paths: developer machines
+differ (Windows 10/11, Ubuntu, with or without a D: drive). If nothing is saved,
+find them, then save them to memory.
 
-Check `D:\Payara\glassfish\domains\domain1\logs\server.log` for deployment
-errors before moving on.
+Rules that hold on every machine:
+- Build with JDK 11: set `JAVA_HOME` and `AS_JAVA` to it before `asadmin`.
+  This does not change a domain already running on JDK 17/21 (redeploy fails
+  with `Unsupported class file major version`): `asadmin stop-domain`, set both
+  variables, then `start-domain`.
+- `mvn clean package -DskipTests`, then `asadmin redeploy --name <app> <war>`;
+  take `<app>` from `asadmin list-applications` (it is not always `rh`).
+- After redeploy, check the app answers and the server log shows no deployment
+  errors before moving on.
 
 ## 7. Test with Playwright + verify in DB
 

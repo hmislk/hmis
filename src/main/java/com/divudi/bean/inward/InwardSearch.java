@@ -108,6 +108,8 @@ public class InwardSearch implements Serializable {
     private com.divudi.service.AuditService auditService;
     @Inject
     private NotificationController notificationController;
+    @Inject
+    private InwardRawTextReceiptController inwardRawTextReceiptController;
     @EJB
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
@@ -3719,54 +3721,9 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Select a bill to reprint first.");
             return;
         }
-        com.divudi.core.entity.Department dept = getBill().getDepartment();
-        boolean preprinted = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
-        Long topMarginRaw = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
-        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
-        boolean emitEscP = configOptionApplicationController
-                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
-        Long lineWidthRaw = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
-        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
-                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
-        boolean showAdmissionType = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
-        boolean showPatientAddress = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
-        boolean showPatientPhone = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
-
-        String heading = com.divudi.core.util.InwardReceiptTextRenderer
-                .headingFor(getBill().getBillTypeAtomic());
-
-        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
-                getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
-                        ? billService.fetchBillPayments(getBill()) : null;
-        String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                duplicate, preprinted, topMargin, emitEscP, multiplePayments,
-                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
-
-        String fileName = (duplicate ? "inward-reprint-" : "inward-reprint-original-")
-                + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
-                        : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
-                + ".prn";
-
-        javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();
-        javax.servlet.http.HttpServletResponse response =
-                (javax.servlet.http.HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-        try (java.io.OutputStream os = response.getOutputStream()) {
-            os.write(text.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
-            os.flush();
-        } catch (java.io.IOException e) {
-            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
-            context.responseComplete();
-            return;
-        }
-        context.responseComplete();
+        inwardRawTextReceiptController.streamReceipt(getBill(), getBill().getBillTypeAtomic(),
+                duplicate, getBill().getDepartment(),
+                duplicate ? "inward-reprint-" : "inward-reprint-original-");
     }
 
 }

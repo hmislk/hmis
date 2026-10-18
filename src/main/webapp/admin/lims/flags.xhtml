@@ -27,7 +27,7 @@
                                     action="#{investigationController.navigateToManageInvestigation}" 
                                     ajax="false" >
                                 </p:commandButton>
-                                
+
                             </div>
                         </f:facet>
 
@@ -47,6 +47,7 @@
                                         value="#{testFlagController.investigation}" 
                                         completeMethod="#{investigationController.completeInvest}" 
                                         var="ix" 
+                                        disabled="true"
                                         itemLabel="#{ix.name}" 
                                         itemValue="#{ix}" 
                                         maxResults="20">
@@ -59,7 +60,7 @@
                                         <p:column headerText="Department" style="padding: 6px;">
                                             #{ix.department}
                                         </p:column>
-                                        <p:ajax event="itemSelect" process="acIx" update="iif iiv tbl" />
+                                        <p:ajax event="itemSelect" process="acIx" update="iif iiv tbl cmbFilterFlag lblFlagCount" />
                                     </p:autoComplete>
                                 </div>
                             </div>
@@ -221,137 +222,178 @@
                             </div>
                         </div>
 
-                        <div class="mt-2">
+                        <div class="mt-3">
                             <p:panel>
                                 <f:facet name="header">
-                                     <h:outputText value="Flag List" />  
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-flag"></i>
+                                            <h:outputText value="Flag List" />
+                                            <h:outputText id="lblFlagCount"
+                                                          value="(#{testFlagController.filteredItems.size()})"
+                                                          style="font-weight: normal;" />
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <p:outputLabel value="Filter by Flag" for="cmbFilterFlag" style="font-weight: normal;" />
+                                            <p:selectOneMenu
+                                                id="cmbFilterFlag"
+                                                style="min-width: 220px;"
+                                                title="Show only the rules of the selected flag"
+                                                value="#{testFlagController.filterFlagType}" >
+                                                <f:selectItem itemLabel="All Flags"/>
+                                                <f:selectItems value="#{testFlagController.investigationItemsOfFlagType}" var="ff" itemLabel="#{ff.name}" itemValue="#{ff}" />
+                                                <p:ajax event="change" process="@this" update="tbl lblFlagCount" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
                                 </f:facet>
-                                <p:dataTable id="tbl" value="#{testFlagController.items}" editable="true" var="f" >
-                                    <p:ajax event="rowEdit" listener="#{testFlagController.onEdit}"  /> 
-                                    
-                                    <p:column headerText="Investigation">
-                                        #{f.item.name}
+                                <p:dataTable 
+                                    id="tbl"
+                                    value="#{testFlagController.filteredItems}"
+                                    editable="true"
+                                    var="f"
+                                    rowIndexVar="i"
+                                    styleClass="w-100"
+                                    size="small"
+                                    stripedRows="true"
+                                    emptyMessage="No flags defined for the selected investigation">
+
+                                    <p:ajax event="rowEdit" listener="#{testFlagController.onEdit}" />
+
+                                    <p:column headerText="#" style="width: 40px; text-align: center;">
+                                        <h:outputText value="#{i + 1}" />
                                     </p:column>
-                                    <p:column headerText="Flag Field">
-                                        #{f.investigationItemOfFlagType.name}
+                                    <p:column headerText="Flag Field" style="min-width: 140px;">
+                                        <h:outputText value="#{f.investigationItemOfFlagType.name}" style="font-weight: bold;" />
                                     </p:column>
-                                    <p:column headerText="Value Field">
-                                        #{f.investigationItemOfValueType.name}
+                                    <p:column headerText="Value Field" style="min-width: 140px;">
+                                        <h:outputText value="#{f.investigationItemOfValueType.name}" />
                                     </p:column>
-                                    <p:column headerText="Sex">  
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.sex}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
+                                    <p:column headerText="Sex" style="width: 100px; text-align: center;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{empty f.sex ? 'Not set' : f.sex}" />
+                                            </f:facet>
+                                            <f:facet name="input">
                                                 <p:selectOneMenu value="#{f.sex}" class="w-100">
                                                     <f:selectItem itemLabel="Select Sex"/>
                                                     <f:selectItem itemLabel="Male" itemValue="Male"/>
                                                     <f:selectItem itemLabel="Female" itemValue="Female"/>
                                                 </p:selectOneMenu>
-                                            </f:facet>  
-                                        </p:cellEditor>    
-
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-                                    <p:column headerText="From Age">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.fromAge}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText class="w-100" autocomplete="off" value="#{f.fromAge}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor>                                     
+                                    <p:column headerText="From Age" style="width: 90px; text-align: right;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.fromAge}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.fromAge}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-                                    <p:column headerText="To Age">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.toAge}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText  class="w-100" autocomplete="off" value="#{f.toAge}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor> 
-
+                                    <p:column headerText="To Age" style="width: 90px; text-align: right;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.toAge}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.toAge}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-
-                                    <p:column headerText="From Value">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.fromVal}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText  class="w-100" autocomplete="off" value="#{f.fromVal}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor>                                    
+                                    <p:column headerText="From Value" style="width: 90px; text-align: right;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.fromVal}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.fromVal}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-
-                                    <p:column headerText="To Value">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.toVal}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText  class="w-100" autocomplete="off" value="#{f.toVal}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor>                                       
+                                    <p:column headerText="To Value" style="width: 90px; text-align: right;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.toVal}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.toVal}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
 
-                                    <p:column headerText="High Message">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.highMessage}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText autocomplete="off" class="w-100" value="#{f.highMessage}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor>  
-
+                                    <p:column headerText="Min Value" style="width: 90px; text-align: right;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.minPossibleValue}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.minPossibleValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
 
-                                    <p:column headerText="Low Message">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.lowMessage}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText autocomplete="off" class="w-100" value="#{f.lowMessage}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor>                                    
+                                    <p:column headerText="Max Value" style="width: 90px; text-align: right;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.maxPossibleValue}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.maxPossibleValue}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
 
-                                    <p:column headerText="Normal Message">
-                                        <p:cellEditor>  
-                                            <f:facet name="output">  
-                                                <h:outputText value="#{f.flagMessage}" />  
-                                            </f:facet>  
-                                            <f:facet name="input">  
-                                                <p:inputText autocomplete="off" class="w-100" value="#{f.flagMessage}"/>  
-                                            </f:facet>  
-                                        </p:cellEditor>                                        
+                                    <p:column headerText="Low Message" style="min-width: 140px; white-space: normal;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.lowMessage}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.lowMessage}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-
-
-                                    <p:column rendered="false" headerText="Report Item id">
-                                        #{f.investigationItemOfFlagType.id}
-                                        <br/>
-                                        #{f.retired}
+                                    <p:column headerText="High Message" style="min-width: 140px; white-space: normal;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.highMessage}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.highMessage}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-
-                                    <p:column headerText="Edit" style="width: 80px;">
-                                        <p:rowEditor> </p:rowEditor>
+                                    <p:column headerText="Normal Message" style="min-width: 140px; white-space: normal;">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{f.flagMessage}" />
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText class="w-100" autocomplete="off" value="#{f.flagMessage}" />
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
-                                    <p:column headerText="Remove" style="width: 55px;">
+                                    <p:column headerText="Actions" style="width: 250px; text-align: center;">
+                                        <p:rowEditor 
+                                            editTitle="Edit" 
+                                            saveTitle="Save" 
+                                            cancelTitle="Cancel"
+                                            style="display: inline-block; vertical-align: middle;" >
+                                        </p:rowEditor>
 
-                                        <p:commandButton 
-                                            title="Remove" 
-                                            class="ui-button-danger"
-                                            icon="fa-solid fa-trash" 
+                                        <p:commandButton
+                                            title="Remove"
+                                            class="ui-button-danger ui-button-flat ms-2"
+                                            icon="fa fa-trash"
+                                            process="@this"
+                                            update="tbl lblFlagCount"
                                             action="#{testFlagController.removeFlag}" >
                                             <f:setPropertyActionListener value="#{f}" target="#{testFlagController.removingFlag}" />
                                         </p:commandButton>
                                     </p:column>
-
                                 </p:dataTable>
                             </p:panel>
                         </div>

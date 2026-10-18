@@ -22,6 +22,7 @@
 
                 <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <h:outputScript library="js" name="cc_self_billing_fit_screen.js" target="body"/>
                     <div class="cc-bill-page">
                         <h:form id="form">
                             <ez:cc_self_billing_header
@@ -39,7 +40,7 @@
                                 <h:outputText value="No bill selected. Go back to Search Bills and pick a bill."/>
                             </h:panelGroup>
 
-                            <h:panelGroup layout="block" styleClass="row" rendered="#{collectingCentreSelfSearchController.viewingBill ne null and webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}">
+                            <h:panelGroup layout="block" styleClass="row cc-stack-gap" rendered="#{collectingCentreSelfSearchController.viewingBill ne null and webUserController.hasPrivilege('CollectingCentreReprintOriginalBill')}">
                                 <div class="col-md-6">
                                     <p:panel>
                                         <f:facet name="header">
@@ -54,11 +55,15 @@
                                             </p:commandButton>
                                         </f:facet>
 
-                                        <h:panelGroup id="centerBillPreview">
-                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Center(CC) : Size is FiveFiveCustom1 paper',true)}">
-                                                <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="false"/>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
+                                        <div class="cc-scroll-x cc-fit-screen">
+                                            <div class="cc-fit-inner">
+                                                <h:panelGroup id="centerBillPreview">
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Center(CC) : Size is FiveFiveCustom1 paper',true)}">
+                                                        <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="false"/>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
                                     </p:panel>
                                 </div>
 
@@ -76,11 +81,15 @@
                                             </p:commandButton>
                                         </f:facet>
 
-                                        <h:panelGroup id="patientBillPreview">
-                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Patient : Size is FiveFiveCustom1 paper',true)}">
-                                                <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="false"/>
-                                            </h:panelGroup>
-                                        </h:panelGroup>
+                                        <div class="cc-scroll-x cc-fit-screen">
+                                            <div class="cc-fit-inner">
+                                                <h:panelGroup id="patientBillPreview">
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Patient : Size is FiveFiveCustom1 paper',true)}">
+                                                        <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{collectingCentreSelfSearchController.viewingBill}" duplicate="false"/>
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
                                     </p:panel>
                                 </div>
                             </h:panelGroup>

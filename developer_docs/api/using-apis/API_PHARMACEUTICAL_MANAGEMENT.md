@@ -392,7 +392,12 @@ All responses follow this standard format:
 - `id`, `name`, `code`, `descreption`, `retired`, `inactive`, `vtmId`, `vtmName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`
 
 ### AMP Response
-- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`
+- `id`, `name`, `code`, `barcode`, `inactive`, `vmpId`, `vmpName`, `categoryId`, `categoryName`, `dosageFormId`, `dosageFormName`, `issueUnitId`, `issueUnitName`, `strengthUnitId`, `strengthUnitName`, `discountAllowed`, `allowFractions`, `consumptionAllowed`, `refundsAllowed`
+
+`refundsAllowed` is checked when a pharmacy sale return is saved. An AMP with
+`refundsAllowed: false` is rejected with "Item '…' is not allowed to be
+returned". Set it with `PUT /api/pharmaceutical_items/amp/{id}` and body
+`{"refundsAllowed": true}`.
 
 Note: `issueUnitId`/`strengthUnitId`/`issueUnitName`/`strengthUnitName` are
 populated on `GET`/`POST`/`PUT` (single-item) responses but not yet on the

@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="frmCardPayments">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Card Payments" />
+                        </f:facet>
+
+                        <h:panelGrid columns="5" class="w-100" columnClasses="w-10,w-35,w-5,w-10,w-35">
+                            <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            <p:datePicker id="fromDate" showTime="true" class="w-100" inputStyleClass="w-100"
+                                          value="#{cardPaymentReportController.fromDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:spacer/>
+                            <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            <p:datePicker id="toDate" showTime="true" class="w-100" inputStyleClass="w-100"
+                                          value="#{cardPaymentReportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control" filter="true"
+                                             value="#{cardPaymentReportController.institution}">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins"
+                                               itemLabel="#{ins.name}" itemValue="#{ins}" />
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <h:outputLabel value="Site" for="cmbSite" class="mx-3"/>
+                            <p:selectOneMenu id="cmbSite" styleClass="w-100 form-control" filter="true"
+                                             value="#{cardPaymentReportController.site}">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="s"
+                                               itemLabel="#{s.name}" itemValue="#{s}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Department" for="acDept" class="mx-3"/>
+                            <p:autoComplete id="acDept" class="w-100" inputStyleClass="w-100 form-control"
+                                            value="#{cardPaymentReportController.department}"
+                                            completeMethod="#{departmentController.completeDept}"
+                                            var="d" itemLabel="#{d.name}" itemValue="#{d}" forceSelection="true"/>
+                            <p:spacer/>
+                            <h:outputLabel value="Bank" for="acBank" class="mx-3"/>
+                            <p:autoComplete id="acBank" class="w-100" inputStyleClass="w-100 form-control"
+                                            value="#{cardPaymentReportController.bank}"
+                                            completeMethod="#{institutionController.completeBank}"
+                                            var="bk" itemLabel="#{bk.name}" itemValue="#{bk}" forceSelection="true"/>
+
+                            <h:outputLabel value="Payment Method" for="cmbPm" class="mx-3"/>
+                            <p:selectOneMenu id="cmbPm" styleClass="w-100 form-control" filter="true"
+                                             value="#{cardPaymentReportController.paymentMethod}">
+                                <f:selectItem itemLabel="All Payment Methods" />
+                                <f:selectItems value="#{enumController.paymentMethods}" var="pm"
+                                               itemLabel="#{pm.label}" itemValue="#{pm}" />
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <h:outputLabel value="Bill Type" for="cmbBt" class="mx-3"/>
+                            <p:selectOneMenu id="cmbBt" styleClass="w-100 form-control" filter="true" filterMatchMode="contains"
+                                             value="#{cardPaymentReportController.billTypeAtomic}">
+                                <f:selectItem itemLabel="All Bill Types" />
+                                <f:selectItems value="#{enumController.billTypesAtomic}" var="bt"
+                                               itemLabel="#{bt.label}" itemValue="#{bt}" />
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <div class="mt-3">
+                            <p:commandButton value="Process" icon="pi pi-search" ajax="false"
+                                             class="ui-button-primary mx-2"
+                                             action="#{cardPaymentReportController.process}"/>
+                            <p:commandButton value="Download" icon="pi pi-download" ajax="false"
+                                             class="ui-button-success"
+                                             disabled="#{cardPaymentReportController.rows eq null}">
+                                <p:dataExporter fileName="card_payments" target="tblCardPayments" type="xlsx" />
+                            </p:commandButton>
+                        </div>
+
+                        <p:dataTable id="tblCardPayments" value="#{cardPaymentReportController.rows}" var="r"
+                                     class="mt-3" paginator="true" rows="20" paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="20,50,100,{ShowAll|'All'}"
+                                     emptyMessage="No payments found">
+                            <p:column headerText="Date/Time" exportValue="#{r.paymentDate}">
+                                <h:outputText value="#{r.paymentDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill No" exportValue="#{r.billNo}">
+                                <p:commandLink value="#{r.billNo}" ajax="false"
+                                               rendered="#{r.billId ne null}"
+                                               action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(r.billId)}"/>
+                            </p:column>
+                            <p:column headerText="Bill Type" exportValue="#{r.billTypeLabel}">
+                                <h:outputText value="#{r.billTypeLabel}" />
+                            </p:column>
+                            <p:column headerText="Payment Method" exportValue="#{r.paymentMethodLabel}">
+                                <h:outputText value="#{r.paymentMethodLabel}" />
+                            </p:column>
+                            <p:column headerText="Patient">
+                                <h:outputText value="#{r.patientName}" />
+                            </p:column>
+                            <p:column headerText="Bank">
+                                <h:outputText value="#{r.bankName}" />
+                            </p:column>
+                            <p:column headerText="Reference No">
+                                <h:outputText value="#{r.reference}" />
+                            </p:column>
+                            <p:column headerText="Comments">
+                                <h:outputText value="#{r.comments}" />
+                            </p:column>
+                            <p:column headerText="Cashier">
+                                <h:outputText value="#{r.cashierName}" />
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputText value="#{r.departmentName}" />
+                            </p:column>
+                            <p:column headerText="Amount" class="text-end" exportValue="#{r.paidValue}">
+                                <h:outputText value="#{r.paidValue}" class="d-flex justify-content-end">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <h:panelGroup layout="block" class="mt-2 text-end fw-bold"
+                                      rendered="#{cardPaymentReportController.rows ne null}">
+                            <h:outputText value="Total: " />
+                            <h:outputText value="#{cardPaymentReportController.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

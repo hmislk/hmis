@@ -80,7 +80,8 @@ public class CollectingCentrePaymentController implements Serializable {
     private List<BillLight> selectedCCpaymentBills;
 
     private double totalCCAmount;
-    private double totalHospitalAmount;
+    private double periodCCBillCCFeeTotal;
+    private double periodCCBillHospitalTotal;
 
     private double totalCCReceiveAmount = 0.0;
     private double payingTotalCCAmount = 0.0;
@@ -139,7 +140,8 @@ public class CollectingCentrePaymentController implements Serializable {
     }
 
     public void makeNull() {
-        totalHospitalAmount = 0.0;
+        periodCCBillHospitalTotal = 0.0;
+        periodCCBillCCFeeTotal = 0.0;
         totalCCAmount = 0.0;
         fromDate = null;
         toDate = null;
@@ -205,7 +207,7 @@ public class CollectingCentrePaymentController implements Serializable {
 
         calculateTotalOfPaymentReceive();
         
-        totalCCAmount = totalCCReceiveAmount - totalHospitalAmount;
+        totalCCAmount = totalCCReceiveAmount - periodCCBillHospitalTotal;
         
         if(totalCCAmount >= 0.0){
             duePaymentAmount = totalCCAmount;
@@ -509,8 +511,8 @@ public class CollectingCentrePaymentController implements Serializable {
 
         selectedCCpaymentBills = billFacade.findLightsByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
-        totalHospitalAmount = 0.0;
-        totalCCAmount = 0.0;
+        periodCCBillHospitalTotal = 0.0;
+        periodCCBillCCFeeTotal = 0.0;
 
         for (BillLight bl : selectedCCpaymentBills) {
             if (bl.getReferenceNumber() == null || bl.getReferenceNumber().isEmpty()) {
@@ -545,8 +547,8 @@ public class CollectingCentrePaymentController implements Serializable {
                     bl.setHospitalTotal(-bill.getHospitalTotal());
                 }
             }
-            totalHospitalAmount += bl.getHospitalTotal();
-            totalCCAmount += bl.getCcTotal();
+            periodCCBillHospitalTotal += bl.getHospitalTotal();
+            periodCCBillCCFeeTotal += bl.getCcTotal();
         }
     }
 
@@ -677,8 +679,8 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setCcBalanceBeforeTransaction(startingBalanseInCC);
         ccAgentPaymentBill.setCcBalanceAfterTransaction(finalEndingBalanseInCC);
         ccAgentPaymentBill.setCcTotalReceived(totalCCReceiveAmount);
-        ccAgentPaymentBill.setCcTransactionAmount(totalHospitalAmount);
-        ccAgentPaymentBill.setCcTotalCenterValue(totalCCAmount);
+        ccAgentPaymentBill.setCcTransactionAmount(periodCCBillHospitalTotal);
+        ccAgentPaymentBill.setCcTotalCenterValue(periodCCBillCCFeeTotal);
         ccAgentPaymentBill.setCcExcessAmount(payingBalanceAcodingToCCBalabce);
 
         ccAgentPaymentBill.setFromDate(fromDate);
@@ -863,7 +865,7 @@ public class CollectingCentrePaymentController implements Serializable {
             footerRow.createCell(3).setCellValue("");
 
             Cell totalHospitalCell = footerRow.createCell(4);
-            totalHospitalCell.setCellValue(getTotalHospitalAmount());
+            totalHospitalCell.setCellValue(getPeriodCCBillHospitalTotal());
             totalHospitalCell.setCellStyle(mergedStyle); // Bold + amount formatting
 
             Cell totalCCCell = footerRow.createCell(5);
@@ -1159,12 +1161,12 @@ public class CollectingCentrePaymentController implements Serializable {
         this.totalCCAmount = totalCCAmount;
     }
 
-    public double getTotalHospitalAmount() {
-        return totalHospitalAmount;
+    public double getPeriodCCBillHospitalTotal() {
+        return periodCCBillHospitalTotal;
     }
 
-    public void setTotalHospitalAmount(double totalHospitalAmount) {
-        this.totalHospitalAmount = totalHospitalAmount;
+    public void setPeriodCCBillHospitalTotal(double periodCCBillHospitalTotal) {
+        this.periodCCBillHospitalTotal = periodCCBillHospitalTotal;
     }
 
     public double getPayingTotalCCAmount() {
@@ -1278,6 +1280,14 @@ public class CollectingCentrePaymentController implements Serializable {
 
     public void setDuePaymentAmount(double duePaymentAmount) {
         this.duePaymentAmount = duePaymentAmount;
+    }
+
+    public double getPeriodCCBillCCFeeTotal() {
+        return periodCCBillCCFeeTotal;
+    }
+
+    public void setPeriodCCBillCCFeeTotal(double periodCCBillCCFeeTotal) {
+        this.periodCCBillCCFeeTotal = periodCCBillCCFeeTotal;
     }
 
 }
