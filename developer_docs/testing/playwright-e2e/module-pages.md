@@ -33,6 +33,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [143. Creating an inward test admission with a finalised insurer bill on a staging box](#143-creating-an-inward-test-admission-with-a-finalised-insurer-bill-on-a-staging-box)
 - [144. Setting up a non-cash settlement test: payments must come through an accepted handover](#144-setting-up-a-non-cash-settlement-test-payments-must-come-through-an-accepted-handover)
 - [145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#145-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
+- [146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify](#146-cashier-float--handover--shift-end-flows-menu-paths-required-fields-and-what-to-verify)
 
 ---
 
@@ -703,3 +704,30 @@ For issue #24479, there are three pharmacy-bill-search entry points under Pharma
 - **Pharmacy > Sale > Pharmacy Bill Search by Bill Type** (`pharmacy_search.xhtml`, per #53 above) → select "Pharmacy Sale Bill" → row's "View / Manage Bill" — **this is the one that lands on `pharmacy_reprint_bill_sale.xhtml`**.
 
 Before trusting what a "view" action shows for a reprint-specific bug, confirm you're on `pharmacy_reprint_bill_sale.xhtml` (page title "Reprint Sale Bill", a "**Duplicate**" marker on the bill) — the other page's similar-looking "view" renders from a different code path (DTO vs reloaded entity) and can silently fail to reproduce an entity-reload-specific bug.
+
+## 146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify
+
+All under *Cashier → Financial Transaction Manager*. Design: [Handover Float Propagation](../../billing/handover-float-propagation.md).
+
+| Action | Menu path |
+|---|---|
+| Send float | Float Management → Float Transfer |
+| Receive float | Float Management → Float Transfers to Receive |
+| Cancel a sent float (only before it is received) | Float Management → My Float Outs → Cancel |
+| Hand over | Shift → Handover Current Shift |
+| Recall a handover (sender, only before accept) | Handover → My Handovers → Recall |
+| Accept or reject a handover | Handover → Shift Handovers to Accept → To Accept |
+| Record excess / shortage | Shift → Record Shift Excess / Record Shift Shortage |
+| Shift-end cash, end shift | Shift → Record Shift End Cash in Hand, then End Shift |
+| Drawer history | Drawer → My Drawer History |
+| Reset a drawer (no API yet, #24433) | Admin → Adjust Drawer Balance (needs `DrawerAdjustmentDirect`) |
+
+- **Float receive needs a comment and a denomination count.** Fill both before clicking Receive.
+- **A handover's counted denominations must equal expected cash.** Record any excess or shortage bill first; never test a "handover with a difference".
+- **An accepted handover cannot be cancelled.** "Handover cancel" means Recall (sender) or Reject (receiver) while it is still pending.
+- **OPD Billing** is under *OPD → Billing*; hover "Billing" to open the submenu. The same item can't be added twice to one bill, so build amounts from different items or quantities.
+- **Accept `confirm()` guards** by setting `window.confirm = () => true` before each click (see [§4](../playwright-e2e-workflow.md#4-confirmations-and-double-click-protection)).
+- **Verify three things after every step**, not just the screen you are on:
+  1. *My Drawer History* for **both** users. An accept adds one Cash row (the counted cash, float included) and no separate float row (#24428). Each non-cash payment in the handover (Card, Cheque, …) adds its own row.
+  2. The next *Handover Current Shift* screen: Net Float (Cash) must equal the user's own signed floats plus the signed net floats carried in from accepted handovers.
+  3. *Record Shift End Cash in Hand*: if the drawer started the shift at 0, expected cash should equal the drawer's cash balance.
