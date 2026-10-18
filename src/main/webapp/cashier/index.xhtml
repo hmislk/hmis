@@ -153,6 +153,15 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Non-Cash Settlement Approvals (#{nonCashSettlementApprovalController.pendingCount})"
+                                        icon="pi pi-verified"
+                                        ajax="false"
+                                        action="#{nonCashSettlementApprovalController.navigateToApprovals()}"
+                                        rendered="#{webUserController.hasPrivilege('ApproveNonCashSettlement')}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-danger"
                                         value="Withdrawals"
                                         icon="pi pi-upload"

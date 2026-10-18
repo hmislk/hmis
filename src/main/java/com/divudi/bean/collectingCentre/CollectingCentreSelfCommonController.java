@@ -1,23 +1,28 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UserNotificationController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.bean.lab.PatientReportUploadController;
 import com.divudi.bean.report.ReportController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Upload;
+import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.UserNotificationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 
@@ -27,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +59,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     private PatientReportUploadController patientReportUploadController;
+    @Inject
+    private WebUserController webUserController;
+    @Inject
+    private UserNotificationController userNotificationController;
 
     @EJB
     private BillFacade billFacade;
@@ -60,14 +70,56 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientSampleFacade patientSampleFacade;
     @EJB
     private PatientReportFacade patientReportFacade;
+    @EJB
+    private UserNotificationFacade userNotificationFacade;
 
     private PatientReport printingReport;
+    private Privileges unauthorizedPrivilege;
+    private UserNotification viewingNotification;
+
+    // <editor-fold defaultstate="collapsed" desc="Privileges">
+    public boolean hasSelfPrivilege(Privileges privilege) {
+        return webUserController.hasPrivilege(privilege.name());
+    }
+
+    /**
+     * Opens the self-service "not authorized" page naming the missing
+     * privilege. Every self-service navigation method returns this when the
+     * user lacks the privilege, so the dashboard can show all its buttons.
+     */
+    public String navigateToSelfUnauthorized(Privileges privilege) {
+        unauthorizedPrivilege = privilege;
+        return "/collecting_centre/cc_self_unauthorized?faces-redirect=true";
+    }
+
+    /**
+     * For in-page actions (no navigation): adds an error and returns false
+     * when the user lacks the privilege.
+     */
+    public boolean checkSelfPrivilege(Privileges privilege) {
+        if (hasSelfPrivilege(privilege)) {
+            return true;
+        }
+        JsfUtil.addErrorMessage("You are not authorized to use " + privilege.getLabel());
+        return false;
+    }
+
+    public Privileges getUnauthorizedPrivilege() {
+        return unauthorizedPrivilege;
+    }
+    // </editor-fold>
 
     public String navigateToCollectingCentreSelfBillingHome() {
+        if (!hasSelfPrivilege(Privileges.CcSelfBillingMenu)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfBillingMenu);
+        }
         return "/collecting_centre/cc_self_index?faces-redirect=true";
     }
 
     public String navigateToCollectingCentreSelfStatement() {
+        if (!hasSelfPrivilege(Privileges.CcSelfStatement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfStatement);
+        }
         reportController.setFromDate(CommonFunctions.getStartOfMonth());
         reportController.setToDate(CommonFunctions.getEndOfDay());
         reportController.setInvoiceNumber(null);
@@ -82,6 +134,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * centre's balance history.
      */
     public void processCollectingCentreSelfStatement() {
+        if (!checkSelfPrivilege(Privileges.CcSelfStatement)) {
+            reportController.setAgentHistories(null);
+            return;
+        }
         if (!restrictStatementToOwnCollectingCentre()) {
             reportController.setAgentHistories(null);
             return;
@@ -126,6 +182,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * checks the bills/samples/reports belong to it.
      */
     public String navigateToCollectingCentreSelfSampleManagement() {
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfSampleManagement);
+        }
         patientInvestigationController.makeNull();
         patientInvestigationController.setSelectedPatientSamples(null);
         setSelfSampleManagementDefaults();
@@ -147,6 +206,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * bill opened through Search Bills. Bills of other centres are refused.
      */
     public String navigateToSelfSampleManagementFromBills(List<Bill> bills) {
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfSampleManagement);
+        }
         if (bills == null || bills.isEmpty()) {
             JsfUtil.addErrorMessage("No bill selected");
             return null;
@@ -170,10 +232,17 @@ public class CollectingCentreSelfCommonController implements Serializable {
 
     public String navigateBackToCollectingCentreSelfSampleManagement() {
         printingReport = null;
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            return navigateToSelfUnauthorized(Privileges.CcSelfSampleManagement);
+        }
         return "/collecting_centre/cc_self_sample_management?faces-redirect=true";
     }
 
     public void searchSelfBills() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            patientInvestigationController.setBills(null);
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             patientInvestigationController.setBills(null);
             return;
@@ -182,6 +251,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void searchSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            patientInvestigationController.setPatientSamples(null);
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             patientInvestigationController.setPatientSamples(null);
             return;
@@ -195,6 +268,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * of each investigation in its Action column.
      */
     public void searchSelfReports() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleManagement)) {
+            patientInvestigationController.setItems(null);
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             patientInvestigationController.setItems(null);
             return;
@@ -221,6 +298,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setPatientName(null);
         patientInvestigationController.setSampleId(null);
         patientInvestigationController.setPatientInvestigationStatus(null);
+        patientInvestigationController.setSampleTransportedToLabByStaff(null);
+        patientInvestigationController.setSampleRejectionComment(null);
         setSelfSampleManagementDefaults();
     }
 
@@ -232,6 +311,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void generateSelfBarcodes(Bill bill) {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleBarcodePrint)) {
+            return;
+        }
         Bill ownBill = fetchOwnBill(bill);
         if (ownBill == null) {
             return;
@@ -257,6 +339,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
      * samples are refused, like every other barcode action here.
      */
     public void viewSelfSampleBarcode(PatientSample sample) {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleBarcodePrint)) {
+            return;
+        }
         if (!restrictSampleManagementToOwnCollectingCentre()) {
             return;
         }
@@ -281,6 +366,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void collectSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleCollect)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }
@@ -288,6 +376,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void sendSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleSend)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }
@@ -295,13 +386,35 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void rejectSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleReject)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
+            return;
+        }
+        if (!areSelectedSamplesCollected()) {
             return;
         }
         if (!areSelectedSamplesNotSent()) {
             return;
         }
         patientInvestigationController.rejectSamples();
+    }
+
+    /**
+     * Only a collected sample can be rejected; one that only has a barcode
+     * has not been taken yet. Reads the collected flag from the database,
+     * not the page copy.
+     */
+    private boolean areSelectedSamplesCollected() {
+        for (PatientSample ps : patientInvestigationController.getSelectedPatientSamples()) {
+            PatientSample fetched = patientSampleFacade.find(ps.getId());
+            if (fetched == null || !Boolean.TRUE.equals(fetched.getSampleCollected())) {
+                JsfUtil.addErrorMessage("Sample " + ps.getId() + " has not been collected yet and cannot be rejected");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -320,6 +433,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
     }
 
     public void reGenerateSelfSamples() {
+        if (!checkSelfPrivilege(Privileges.CcSelfSampleRegenerate)) {
+            return;
+        }
         if (!areSelectedSamplesOwn()) {
             return;
         }
@@ -473,6 +589,61 @@ public class CollectingCentreSelfCommonController implements Serializable {
                 && bill != null
                 && (collectingCentre.equals(bill.getFromInstitution())
                 || collectingCentre.equals(bill.getCollectingCentre()));
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Notifications">
+    /**
+     * Opens one of the logged user's notifications in the dashboard popup and
+     * marks it seen. A notification can only be removed once it has been seen.
+     */
+    public void viewSelfNotification(UserNotification un) {
+        if (!isOwnNotification(un)) {
+            JsfUtil.addErrorMessage("Invalid notification");
+            return;
+        }
+        viewingNotification = un;
+        if (!un.isSeen()) {
+            un.setSeen(true);
+            userNotificationFacade.edit(un);
+        }
+    }
+
+    /**
+     * Removes (retires) one of the logged user's notifications. CC
+     * notifications are not tied to a bill, room or encounter department, so
+     * the general UserNotificationController remove does not apply here.
+     */
+    public void removeSelfNotification(UserNotification un) {
+        if (!isOwnNotification(un)) {
+            JsfUtil.addErrorMessage("Nothing to remove");
+            return;
+        }
+        if (!un.isSeen()) {
+            JsfUtil.addErrorMessage("View the notification before removing it");
+            return;
+        }
+        un.setRetired(true);
+        un.setRetiredAt(new Date());
+        un.setRetirer(sessionController.getLoggedUser());
+        un.setRetireComments("Removed from collecting centre self billing");
+        userNotificationFacade.edit(un);
+        if (un.equals(viewingNotification)) {
+            viewingNotification = null;
+        }
+        userNotificationController.filterNotificationsByCriteria();
+        JsfUtil.addSuccessMessage("Notification removed");
+    }
+
+    private boolean isOwnNotification(UserNotification un) {
+        return un != null
+                && un.getId() != null
+                && un.getWebUser() != null
+                && un.getWebUser().equals(sessionController.getLoggedUser());
+    }
+
+    public UserNotification getViewingNotification() {
+        return viewingNotification;
     }
     // </editor-fold>
 

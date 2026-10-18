@@ -633,6 +633,11 @@
                         <p:menuitem  ajax="false"  action="/inward/inward_search_final?faces-redirect=true" value="Final Bill Search" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_search_final_check?faces-redirect=true" value="Final Bill Search by Discharge Date" icon="fas fa-search-dollar" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardSearchFinalBill')}" ></p:menuitem>
                     </p:submenu>
+                    <p:menuitem ajax="false"
+                                action="#{coveringLetterController.navigateToCoveringLetterBatch()}"
+                                value="Covering Letters"
+                                icon="fa fa-envelope"
+                                rendered="#{webUserController.hasPrivilege('CoveringLetters')}" ></p:menuitem>
                     <p:submenu label="Pharmacy" icon="fa fa-prescription-bottle" rendered="#{webUserController.hasPrivilege('InwardPharmacyMenu')}">
                         <p:menuitem
                             ajax="false"
@@ -801,6 +806,7 @@
                 <p:menuitem
                     id="ccSelfBillingHome"
                     ajax="false"
+                    rendered="#{webUserController.hasPrivilege('CcSelfBillingMenu')}"
                     action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                     icon="fas fa-hospital-user"
                     title="Collecting Centre Self Billing Home">

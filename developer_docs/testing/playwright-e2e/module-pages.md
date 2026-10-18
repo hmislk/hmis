@@ -30,7 +30,10 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [107. `inward_lab_dashboard.xhtml`'s "Send to Lab" has no `p:messages`/`p:growl` at all — a missing Transporter silently no-ops the whole action](#107-inward_lab_dashboardxhtmls-send-to-lab-has-no-pmessagespgrowl-at-all--a-missing-transporter-silently-no-ops-the-whole-action)
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [130. A failed `errorCheck()` can look exactly like a dead Settle button](#130-a-failed-errorcheck-can-look-exactly-like-a-dead-settle-button)
-- [143. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify](#143-cashier-float--handover--shift-end-flows-menu-paths-required-fields-and-what-to-verify)
+- [143. Creating an inward test admission with a finalised insurer bill on a staging box](#143-creating-an-inward-test-admission-with-a-finalised-insurer-bill-on-a-staging-box)
+- [144. Setting up a non-cash settlement test: payments must come through an accepted handover](#144-setting-up-a-non-cash-settlement-test-payments-must-come-through-an-accepted-handover)
+- [145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#145-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
+- [146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify](#146-cashier-float--handover--shift-end-flows-menu-paths-required-fields-and-what-to-verify)
 
 ---
 
@@ -672,8 +675,37 @@ Corollary for scraping messages: `.ui-growl-item` is transient. Capture messages
 immediately after the click (or screenshot right away) rather than after the
 several-second settle wait, or a real validation error reads as silence.
 
+## 143. Creating an inward test admission with a finalised insurer bill on a staging box
 
-## 143. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify
+Use this when a box has no admission that is finalised against an insurer. Every step is through the menus. Log in to a department with the full menu (privileges are per department), and run `window.confirm = () => true` on each page, because a dismissed `confirm()` otherwise hides the real error message.
+
+1. **Inpatient > Admissions > Patient Admit.** Fill admission type, a fictional patient (title, name, gender, age, mobile, phone, NIC, address, **Patient Area**), consultant, medical officer, **a room that belongs to a department you can log in to** (a room of a department that is not in the login list can never be accepted), guardian (all fields), payment method **Credit**, then the insurer, credit limit, policy and reference numbers and **Add Credit Company**. Each required field shows one error at a time.
+2. **Add Services & Investigations.** Add items and Settle. Lab investigations block nursing discharge until they are sent to the lab: **Inpatient > Laboratory Dashboard**, search the BHT, Bills, Generate Barcodes, To Samples, select all, Collect Samples, pick a Sample Transporter, Send to Lab.
+3. **Room Details > Discharge from Room**, then **Clinical Discharge** (confirm), **Nursing Discharge** (needs the room and lab steps), then **Interim Bill**: set the discharge time, **Discharge**, **Create Final Bill**.
+4. On the final bill page click **Process**, set the insurer's allocated amount (the patient co-payment balances itself), and **Save Final Bill**. Physical discharge is only possible after this.
+
+Record the BHT, final bill number and amounts in the delivery message.
+
+## 144. Setting up a non-cash settlement test: payments must come through an accepted handover
+
+**Payment → Financial Transaction Manager → Drawer → Settle Non-Cash Payments** lists only payments the user currently holds that were written to the cash book and are not yet settled. A card or cheque bill the user just collected is not listed. To build test data:
+
+1. User A starts a shift and collects the card/cheque bills.
+2. User A hands the shift over to user B (**Shift → Handover Current Shift**).
+3. User B opens **Shift Handovers to Accept**, clicks **To Accept**, then **Accept Handover & Write to Cashbook**.
+
+User B can then settle the payments. Settlement cannot be undone, so each retake needs new bills and a new handover. If `Allow Handover with Unmatched Balance` is off, the handover must include every collection in the shift. Use a new test user for A so the shift holds only the demo bills.
+
+## 145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page
+
+For issue #24479, there are three pharmacy-bill-search entry points under Pharmacy > Sale, and only one reaches the actual reprint page (`pharmacy_reprint_bill_sale.xhtml`, the `PharmacyBillSearch`-backed page rendering the real `Bill` JPA entity through `ph:saleBill`/`saleBill_Header`):
+
+- **Pharmacy > Sale > Search Sale Bill** (`pharmacy_search_sale_bill.xhtml`) — "View Bill" (`RetailSaleNativeSqlController.viewByBillId()`) reloads into a `PrintBillData` DTO and reopens `pharmacy_bill_retail_sale_native.xhtml`, the SAME page as the original settle-time print — not the reprint page.
+- **Pharmacy > Sale > Pharmacy Bill Search by Bill Type** (`pharmacy_search.xhtml`, per #53 above) → select "Pharmacy Sale Bill" → row's "View / Manage Bill" — **this is the one that lands on `pharmacy_reprint_bill_sale.xhtml`**.
+
+Before trusting what a "view" action shows for a reprint-specific bug, confirm you're on `pharmacy_reprint_bill_sale.xhtml` (page title "Reprint Sale Bill", a "**Duplicate**" marker on the bill) — the other page's similar-looking "view" renders from a different code path (DTO vs reloaded entity) and can silently fail to reproduce an entity-reload-specific bug.
+
+## 146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify
 
 All under *Cashier → Financial Transaction Manager*. Design: [Handover Float Propagation](../../billing/handover-float-propagation.md).
 

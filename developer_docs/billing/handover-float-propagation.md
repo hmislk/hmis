@@ -104,8 +104,12 @@ the net float — don't "fix" them to match.
 
 Handovers cannot be cancelled once accepted. Before accept, the sender can Recall
 (`recallMyHandoverBill`) and the receiver can Reject (`rejectToReceiveHandoverBill`).
-Both re-read the handover bill from the database and refuse it if it is already
-completed (accepted) or cancelled, so a page loaded before the accept cannot undo it.
+Both credit back the sender's drawer by reversing the negative drawer entries the
+create bill made (`restoreSenderDrawerOfHandover`, #24463).
+Both first claim the handover atomically (`claimPendingHandoverBill`: an UPDATE that
+sets `completed` only while it is neither completed nor cancelled), so a page loaded
+before the accept cannot undo it.
+
 The receiver-side float payment therefore has no cancel path today.
 If a future requirement arises, cancel should:
 

@@ -60,7 +60,11 @@ issue, sets the project board status to In Progress.
 
 ## 2. Investigate
 
-- Read the issue body and comments (`gh issue view $0 --comments`).
+- Read the issue body and comments:
+  `gh issue view $0 --repo hmislk/hmis --json title,body,labels,comments`
+  (`--comments` and `gh pr edit` fail with "Projects (classic) is being
+  deprecated" and change nothing; use `--json`, or
+  `gh api -X PATCH repos/hmislk/hmis/pulls/<N> -F body=@file` for PR bodies.)
 - Explore the relevant code. Use the `Explore` agent for anything spanning
   more than a few files.
 - Identify: which entities/services/JSF pages are involved, which existing
@@ -69,6 +73,11 @@ issue, sets the project board status to In Progress.
 - **If the issue is a bug report**, try to pin down the root cause by reading
   code first. Note explicitly whether this succeeded — that decides whether
   step 2a runs.
+- When sweeping related issues that share a page/module by topic, don't
+  assume a related issue shares the same page/controller — confirm from that
+  issue's own repro steps before reproducing or planning a fix against an
+  assumed page. Testing the wrong page can burn several reproduction
+  attempts before the mismatch surfaces.
 
 ## 2a. Reproduce the bug (bug issues only)
 
@@ -125,7 +134,7 @@ records yourself rather than gating on the user for them:
   the PR/issue evidence. Only ask the user if the local DB has no suitable
   record at all (e.g. the feature needs a state nothing local is in) — that
   is a real blocker, not a preference question.
-- **Environment**: local Payara (default) unless the issue specifically
+- **Environment**: when the user names a test environment (local, QA, `rh-local-staging`), use it without asking; creating fictional test data there needs no permission (find or save the login under `C:\Credentials\`, ask only if the URL or login is missing). Local Payara is the default unless the issue specifically
   requires testing against a remote env, in which case confirm which one
   with the user (this one *is* a real decision — remote envs carry real
   data/credentials risk that local doesn't). Credentials live outside the
