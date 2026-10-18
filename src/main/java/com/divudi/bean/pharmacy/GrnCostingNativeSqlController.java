@@ -881,7 +881,13 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setLineCostRate(BigDecimalUtil.valueOrZero(f.getLineCostRate()).doubleValue());
         line.setValueAtCostRate(BigDecimalUtil.valueOrZero(f.getValueAtCostRate()).doubleValue());
         line.setTotalCostRate(BigDecimalUtil.valueOrZero(f.getTotalCostRate()).doubleValue());
-        line.setProfitMargin(BigDecimalUtil.valueOrZero(f.getProfitMargin()).doubleValue());
+        // Recompute rather than copy f.getProfitMargin(): several edit
+        // listeners (e.g. qtyChangedListner) redistribute bill discounts/
+        // expenses into totalCost without refreshing the margin, so the
+        // stored value can be stale.
+        BigDecimal currentProfitMargin = calculateProfitMarginForPurchasesBigDecimal(bi);
+        f.setProfitMargin(currentProfitMargin);
+        line.setProfitMargin(currentProfitMargin.doubleValue());
         PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
         if (pbi != null) {
             line.setLastPurchaseRate(pbi.getLastPurchaseRate());
@@ -1372,6 +1378,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
+        recalculateProfitMarginsForAllItems();
     }
 
     // ==================================================================
