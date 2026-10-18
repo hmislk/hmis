@@ -183,6 +183,12 @@ Rules that hold on every machine:
   variables, then `start-domain`.
 - `mvn clean package -DskipTests`, then `asadmin redeploy --name <app> <war>`;
   take `<app>` from `asadmin list-applications` (it is not always `rh`).
+- Redeploy with the app's existing context root:
+  `asadmin redeploy --name <app> --contextroot <root> <war>`, where `<root>`
+  comes from `asadmin get applications.application.<app>.context-root`.
+  Without it, the WAR's built-in `/rh` collides with an `rh` app and the
+  failed redeploy leaves `<app>` undeployed. On Windows run asadmin from
+  PowerShell: Git Bash rewrites `/coop` into a Windows path.
 - After redeploy, check the app answers and the server log shows no deployment
   errors before moving on.
 

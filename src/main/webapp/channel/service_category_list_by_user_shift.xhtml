@@ -11,7 +11,6 @@
         <ui:composition template="/channel/channel_reports.xhtml">
 
             <ui:define name="subContent">
-                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form>
 
                     <p:panel >
@@ -21,71 +20,61 @@
 
 
                         </f:facet>
-                        <h:panelGrid columns="9" style="width: 100%">
+                        <div class="row g-3 align-items-end mb-3">
+                            <div class="col-md-3">
+                                <p:outputLabel for="fromDate" class="d-block mb-1">
+                                    <i class="fa fa-calendar me-1"/> From
+                                </p:outputLabel>
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="fromDate"
+                                    value="#{channelReportController.fromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    ></p:calendar>
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;"
-                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
-                            </h:panelGroup>
+                            <div class="col-md-3">
+                                <p:outputLabel for="toDate" class="d-block mb-1">
+                                    <i class="fa fa-calendar me-1"/> To
+                                </p:outputLabel>
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="toDate"
+                                    value="#{channelReportController.toDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    ></p:calendar>
+                            </div>
 
-                            <p:calendar 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                id="fromDate"
-                                value="#{channelReportController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                ></p:calendar>
-                            <p:spacer width="50"/>
+                            <div class="col-md-3">
+                                <p:outputLabel for="cmbUser" class="d-block mb-1">
+                                    <i class="fas fa-user me-1"/> User
+                                </p:outputLabel>
+                                <p:autoComplete
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="cmbUser"
+                                    placeholder="All Users"
+                                    forceSelection="true"
+                                    completeMethod="#{webUserController.completeUser}"
+                                    var="w" itemLabel="#{w.webUserPerson.name}"
+                                    itemValue="#{w}"
+                                    value="#{channelReportController.webUser}" >
+                                </p:autoComplete>
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;"
-                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="To Date" for="toDate" class="mx-3"/>
-                            </h:panelGroup>
-
-                            <p:calendar 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                id="toDate"
-                                value="#{channelReportController.toDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                ></p:calendar>
-
-                            <p:spacer width="50"/>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fas fa-user mr-2"/>
-                                <h:outputLabel value="User" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                class="w-100  " 
-                                inputStyleClass="w-100" 
-                                id="cmbUser"  
-                                placeholder="All Users"
-                                forceSelection="true" 
-                                completeMethod="#{webUserController.completeUser}" 
-                                var="w" itemLabel="#{w.webUserPerson.name}" 
-                                itemValue="#{w}"
-                                value="#{channelReportController.webUser}" >
-                            </p:autoComplete>
-
-
-
-                        </h:panelGrid>
-
-                        <div class="row my-3">
-                            <div class="col-2">
-                                <p:commandButton 
+                            <div class="col-md-3">
+                                <p:commandButton
+                                    id="btnProcess"
                                     icon="fa-solid fa-cogs"
                                     class="ui-button-warning"
-                                    style="float: left;"
-                                    value="Process" 
-                                    ajax="false" 
+                                    value="Process"
+                                    title="List the selected user's shifts in this date range"
+                                    ajax="false"
                                     action="#{channelReportController.listShiftStartBills()}" >
                                 </p:commandButton>
                             </div>
-
                         </div>
 
 
@@ -763,458 +752,394 @@
 
                         <h:panelGroup rendered="#{channelReportController.bookingsByShiftDto ne null}">
                             <p:panel >
-                                <div class="d-flex flex-column gap-2 mb-2 w-75">
-                                    <h:panelGrid 
-                                        columns="5"
-                                        class="my-2 ui-fluid" 
-                                        style="table-layout: fixed; width: 100%;" 
-                                        columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
-                                        fp-col-extraWidth-label2, fp-col-input2">
-                                        <h:outputLabel value="Category"/>
-
-                                        <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="Select Categories"
+                                <div class="row g-3 align-items-end mb-3">
+                                    <div class="col-md-3">
+                                        <p:outputLabel for="supplierMenu" value="Category" class="d-block mb-1"/>
+                                        <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="All Categories"
                                                             id="supplierMenu"
                                                             filter="true"
-                                                            styleClass="w-100 form-control"
+                                                            styleClass="w-100"
                                                             converter="categoryConverter"
                                                             filterMatchMode="contains">
                                             <f:selectItems value="#{serviceCategoryController.items}" var="item"
                                                         itemLabel="#{item.name}" itemValue="#{item}" />
-
                                         </p:selectCheckboxMenu>
+                                    </div>
 
-                                        <p:spacer/>
-
-                                        <h:outputLabel value="Payment Method"/>
-
-                                        <p:selectCheckboxMenu value="#{channelReportController.paymentMethods}" label="Select Payment Methods"
+                                    <div class="col-md-3">
+                                        <p:outputLabel for="cmbPaymentMethod" value="Payment Method" class="d-block mb-1"/>
+                                        <p:selectCheckboxMenu value="#{channelReportController.paymentMethods}" label="All Payment Methods"
                                                             id="cmbPaymentMethod"
                                                             filter="true"
-                                                            styleClass="w-100 form-control"
+                                                            styleClass="w-100"
                                                             filterMatchMode="contains">
                                             <f:selectItems value="#{enumController.paymentMethodsForChannelSettling}" var="method"
                                                         itemLabel="#{method.label}" itemValue="#{method}" />
-
                                         </p:selectCheckboxMenu>
-                                    </h:panelGrid>
-                                        <div class="d-flex align-items-center my-2">
-                                            <p:commandButton 
-                                                ajax="false"
-                                                class="ui-button-danger mx-1"
-                                                value="Update" 
-                                                action="#{channelReportController.updateChannelBookingBillsForShitEndFromChannelReportController()}"/>
+                                    </div>
 
-                                            <p:commandButton 
-                                                value="Export to Excel" 
-                                                ajax="false" 
-                                                icon="fas fa-file-excel"
-                                                class="mx-1 ui-button-success">
-                                                <p:fileDownload value="#{channelReportController.channelSummaryCollectionReportAsExcel}" />
-                                            </p:commandButton>
-                                        </div>
+                                    <div class="col-md-6 d-flex flex-wrap gap-2 justify-content-md-end">
+                                        <p:commandButton
+                                            id="btnUpdate"
+                                            ajax="false"
+                                            icon="fas fa-filter"
+                                            class="ui-button-warning"
+                                            value="Apply Filters"
+                                            title="Reload this shift's report with the selected category and payment method filters"
+                                            action="#{channelReportController.updateChannelBookingBillsForShitEndFromChannelReportController()}"/>
+
+                                        <p:commandButton
+                                            id="btnExportExcel"
+                                            value="Export to Excel"
+                                            ajax="false"
+                                            icon="fas fa-file-excel"
+                                            title="Download this report as an Excel workbook"
+                                            class="ui-button-success">
+                                            <p:fileDownload value="#{channelReportController.channelSummaryCollectionReportAsExcel}" />
+                                        </p:commandButton>
+                                        <p:commandButton id="btnPrint" value="Print" icon="fas fa-print" class="ui-button-info" type="button"
+                                                         title="Print this report">
+                                            <p:printer target="reportPrint"/>
+                                        </p:commandButton>
+                                    </div>
                                 </div>
 
-                                <p:dataTable id="tableForReport"  
-                                            value="#{channelReportController.bookingsByShiftDto.incomeDtos}" var="row" 
-                                            paginator="true"
-                                            scrollable="true"
-                                            scrollHeight="800px"
-                                            rows="10"
-                                            rowIndexVar="n"
-                                            expandedRow="true"
-                                            paginatorPosition="bottom"
-                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                            rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
-                                            rowKey="#{row.bsId}">
-                                                                <p:ajax event="page" oncomplete="updateTotals()" />
-                                    <f:facet name="header">
-
-                                        <h:outputLabel value="#{channelReportController.institution.name}"/>
-                                        <h:outputLabel value="From : " />
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>                          
-                                        <h:outputLabel value="&emsp;&emsp;To :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="&emsp;&emsp;Processed By :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processedBy}" >
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="&emsp;&emsp;Processed At :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                    </f:facet>
-
-                                    <p:column  headerText="Serial No" style=" text-align: center;">
-                                        <h:outputText value="#{n+1}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Bill ID" style=" text-align: center;">
-                                        <h:outputText value="#{row.billId}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Appoinment Date" style=" text-align: center; font-weight: bold">
-                                        <h:outputText value="#{row.appoinmentDate}">
-                                            <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Created Date" style=" text-align: center;">
-                                        <h:outputText value="#{row.billedDate}">
-                                            <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Billed By" style=" text-align: center;">
-                                        <h:outputText value="#{row.billedBy}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Patient Name" style=" text-align: center; font-weight: bold">
-                                        <h:outputText value="#{row.patientName}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Payment Method" style=" text-align: center;">
-                                        <h:outputText value="#{row.paymentMethod}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Hospital Fee" style=" text-align: center;">
-                                        <h:outputText styleClass="hosFee" value="#{row.hosFee}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="totalhosFee" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                    <p:column headerText="Doctor Fee" style=" text-align: center;">
-                                        <h:outputText styleClass="doctorFee" value="#{row.doctorFee}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="totalDocFee" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                    <p:column headerText="Total Fee" style=" text-align: center; font-weight: bold">
-                                        <h:outputText styleClass="total" value="#{row.totalAppoinmentFee}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="totalFee" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-
-
-                                </p:dataTable>
-
-                                <hr></hr>
-                                <p:dataTable id="tableForsummery"  
-                                            value="#{channelReportController.bookingsByShiftDto.summeryDtos}" var="row" 
-                                            paginator="true"
-                                            scrollable="true"
-                                            scrollHeight="800px"
-                                            rows="10"
-                                            rowIndexVar="n"
-                                            expandedRow="true"
-                                            paginatorPosition="bottom"
-                                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                            rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'}"
-                                            rowKey="#{row.appoimentDate}">
-                                    <p:ajax event="page" oncomplete="updateTotals()" />
-                                    <f:facet name="header">
-
-                                        <h:outputLabel value="#{channelReportController.institution.name}"/>
-                                        <h:outputLabel value="From : " />
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>                          
-                                        <h:outputLabel value="&emsp;&emsp;To :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="&emsp;&emsp;Processed By :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processedBy}" >
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="&emsp;&emsp;Processed At :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                    </f:facet>
-
-                                    <p:column  headerText="Serial No" style=" text-align: center;">
-                                        <h:outputText value="#{n+1}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Appoinment Date" style=" text-align: center;">
-                                        <h:outputText value="#{row.appoimentDate}">
-                                            <f:convertDateTime
-                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                        </h:outputText>
-                                    </p:column>
-
-                                    <p:column headerText="Total Appoinments" style=" text-align: center; font-weight: bold">
-                                        <h:outputText value="#{row.totalActiveAppoinments}"/>
-                                    </p:column>
-
-                                    <p:column headerText="Total Amount" style=" text-align: center; font-weight: bold">
-                                        <h:outputText styleClass="summeryTotal" value="#{row.totalAmount}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="summeryAllTotal" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                    <p:column headerText="Total Doc Fee" style=" text-align: center; font-weight: bold">
-                                        <h:outputText styleClass="summeryDocFee" value="#{row.totalDocFee}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="summeryDocFeeTotal" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                    <p:column headerText="Total Hospital Fee" style=" text-align: center; font-weight: bold">
-                                        <h:outputText styleClass="summeryHosFee" value="#{row.totalHosFee}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="summeryHosFeeTotal" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                    <p:column headerText="Card Total" style=" text-align: center;">
-                                        <h:outputText styleClass="summeryCardValue" value="#{row.cardTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="summeryCardValueTotal" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-                                    <p:column headerText="Cash Total" style=" text-align: center;">
-                                        <h:outputText styleClass="summeryCashValue" value="#{row.cashTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputText>
-
-                                        <f:facet name="footer">
-                                            <h:outputLabel styleClass="summeryCashValueTotal" value="0.00">
-                                                <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
-                                        </f:facet>
-                                    </p:column>
-
-
-
-                                </p:dataTable>
-                                <br></br>
-
-                                <table style="width: 100%; border-collapse: collapse; font-weight: bold; font-size: 14px; text-align: left;">
-                                    <div style="font-weight: bold" class="text-center">
-                                        <h:outputLabel value="#{sessionController.institution.name}"/>
-                                        <br></br>
-                                        <h:outputLabel value="Channeling Income Summery Report"/>
+                                <h:panelGroup id="reportPrint" layout="block">
+                                    <!-- Report header -->
+                                    <div class="text-center fw-bold" style="font-weight: bold">
+                                        <h:outputText value="#{sessionController.institution.name}" style="font-size: 1.1rem;"/>
+                                        <br/>
+                                        <h:outputText value="Summary Collection Report"/>
                                     </div>
-                                    <hr></hr>
-                                    <div class="d-flex align-item-center justify-content-between" style="font-weight: bold">
-                                        
-                                        <h:outputLabel value="From : " />
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.shiftStartAt}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>                          
-                                        <h:outputLabel value="&emsp;&emsp;To :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.shiftEndAt}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="&emsp;&emsp;Processed By :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processedBy}" >
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="&emsp;&emsp;Processed At :"/>
-                                        <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
+                                    <hr/>
+                                    <div class="row mb-2" style="font-weight: bold">
+                                        <div class="col-md-3">
+                                            <h:outputText value="Cashier : "/>
+                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.cashierUserName}"/>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <h:outputText value="Shift Start : "/>
+                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.shiftStartAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <h:outputText value="Shift End : "/>
+                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.shiftEndAt}"
+                                                          rendered="#{channelReportController.bookingsByShiftDto.shiftEndAt ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                            <h:outputText value="Not Ended"
+                                                          rendered="#{channelReportController.bookingsByShiftDto.shiftEndAt eq null}"/>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <h:outputText value="Processed By : "/>
+                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.processedBy}"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h:outputText value="Processed At : "/>
+                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.processDate}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </div>
                                     </div>
-                                
-                                    <hr></hr>
 
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Cash Collection" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allCashTotal}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Card Collection" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allCardTotal}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Credit Collection" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allCreditTotal}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Valid Appointments" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.totalValidAppoinments}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Cancel and Refund Collection" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allCancelTotal + channelReportController.bookingsByShiftDto.allRefundTotal}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Cancel Appointments" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allCancelAppoinments}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Refund Appointments" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allRefundAppoinments}" />
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 2px solid #ccc; padding: 6px;"> 
-                                            <h:outputText value="Total Cancel And Refund Appointments" />
-                                        </td>
-                                        <td style="border: 2px solid #ccc; padding: 6px; text-align: right;"> 
-                                            <h:outputText value="#{channelReportController.bookingsByShiftDto.allCancelAppoinments + channelReportController.bookingsByShiftDto.allRefundAppoinments}" />
-                                        </td>
-                                    </tr>
-                                </table>
+                                    <!-- Empty result -->
+                                    <h:panelGroup layout="block" class="text-muted my-3"
+                                                  rendered="#{channelReportController.bookingsByShiftDto.isEmpty()}">
+                                        <h:outputText value="No bills match the selected filters for this shift."/>
+                                    </h:panelGroup>
 
+                                    <h:panelGroup layout="block" rendered="#{not channelReportController.bookingsByShiftDto.isEmpty()}">
 
-                                <!--                            <p:dataTable  
-                                                                id="totalSummeryTable"
-                                                                scrollHeight="800px"
-                                                                >
-                                                                <p:ajax event="page" oncomplete="updateTotals()" />
-                                                                <f:facet name="header">
-                                
-                                                                    <h:outputLabel value="#{channelReportController.institution.name}"/>
-                                                                    <h:outputLabel value="From : " />
-                                                                    <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                                    </h:outputLabel>                          
-                                                                    <h:outputLabel value="&emsp;&emsp;To :"/>
-                                                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                                    </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="&emsp;&emsp;Processed By :"/>
-                                                                    <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processedBy}" >
-                                                                    </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="&emsp;&emsp;Processed At :"/>
-                                                                    <h:outputLabel class="ml-2"  value="#{channelReportController.bookingsByShiftDto.processDate}" >
-                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                                    </h:outputLabel>
-                                                                </f:facet>
-                                
-                                                                <p:row>
-                                                                    <p:column style="font-weight:bold; border:none">
-                                                                        <h:outputText value="Total Cash Collection" />
-                                                                    </p:column>
-                                                                    <p:column style="border:none">
-                                                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
-                                                                    </p:column>
-                                                                </p:row>
-                                
-                                                                <p:row>
-                                                                    <p:column style="font-weight:bold; border:none">
-                                                                        <h:outputText value="Total Cash Collection" />
-                                                                    </p:column>
-                                                                    <p:column style="border:none">
-                                                                        <h:outputText styleClass="summeryCashValueTotal" value="0.00" />
-                                                                    </p:column>
-                                                                </p:row>
-                                
-                                                            </p:dataTable>-->
+                                        <!-- One table per payment method section. No paginator: every row must be visible for reconciliation. -->
+                                        <ui:repeat value="#{channelReportController.bookingsByShiftDto.sections}" var="section">
+                                            <p:dataTable value="#{section.rows}" var="row" rowIndexVar="n"
+                                                         styleClass="mb-3 table-sm"
+                                                         rowKey="#{row.bsId}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="#{section.label}"/>
+                                                    <h:outputText value=" (#{section.billCount} bills)" class="ml-2"/>
+                                                </f:facet>
 
-                                <script>
-                                    function calculateTotals(selector, targeter) {
-                                        const values = Array.from(document.querySelectorAll(selector));
-                                        const totalValue = values
-                                                .map(value => {
-                                                    const cleanValue = value.innerText.replace(/,/g, "");
-                                                    return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                                })
-                                                .reduce((total, value) => total + value, 0);
+                                                <p:column headerText="Serial" style="text-align: center; width: 3rem;">
+                                                    <h:outputText value="#{n+1}"/>
+                                                </p:column>
 
-                                        const targetElements = document.querySelectorAll(targeter);
-                                        targetElements.forEach(el => {
-                                            el.innerText = totalValue.toFixed(2);
-                                        });
+                                                <p:column headerText="Bill No" style="text-align: center; white-space: nowrap; min-width: 13em;">
+                                                    <h:outputText value="#{row.billDeptId}"/>
+                                                </p:column>
 
-                                    }
+                                                <p:column headerText="Appointment Date" style="text-align: center;">
+                                                    <h:outputText value="#{row.appoinmentDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                    </h:outputText>
+                                                </p:column>
 
-                                    function updateTotals() {
-                                        calculateTotals('.hosFee', '.totalhosFee');
-                                        calculateTotals('.doctorFee', '.totalDocFee');
-                                        calculateTotals('.total', '.totalFee');
+                                                <p:column headerText="Created" style="text-align: center;">
+                                                    <h:outputText value="#{row.billedDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText>
+                                                </p:column>
 
-                                        calculateTotals('.summeryTotal', '.summeryAllTotal');
-                                        calculateTotals('.summeryDocFee', '.summeryDocFeeTotal');
-                                        calculateTotals('.summeryHosFee', '.summeryHosFeeTotal');
-                                        calculateTotals('.summeryCardValue', '.summeryCardValueTotal');
-                                        calculateTotals('.summeryCashValue', '.summeryCashValueTotal');
+                                                <p:column headerText="Doctor / Consultant">
+                                                    <h:outputText value="#{row.doctorName}"/>
+                                                </p:column>
 
-                                    }
+                                                <p:column headerText="Patient Name">
+                                                    <h:outputText value="#{row.patientName}"/>
+                                                </p:column>
 
-                                    setTimeout(updateTotals, 500);
-                                </script>
+                                                <!-- Card section only -->
+                                                <p:column headerText="Card Ref No" rendered="#{section.paymentMethod eq 'Card'}">
+                                                    <h:outputText value="#{row.cardRefNo}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Bank" rendered="#{section.paymentMethod eq 'Card'}">
+                                                    <h:outputText value="#{row.cardBank}"/>
+                                                </p:column>
+
+                                                <!-- Agent section only -->
+                                                <p:column headerText="Agent" rendered="#{section.paymentMethod eq 'Agent'}">
+                                                    <h:outputText value="#{row.agentName}"/>
+                                                </p:column>
+
+                                                <p:column headerText="Agent Ref No" rendered="#{section.paymentMethod eq 'Agent'}">
+                                                    <h:outputText value="#{row.agentRefNo}"/>
+                                                </p:column>
+
+                                                <!-- Multiple section only: one column per split payment method (empty list for other sections) -->
+                                                <p:columns value="#{section.splitMethods}" var="m"
+                                                           headerText="#{m eq 'Card' ? 'Card (Credit/Debit)' : m.label}"
+                                                           style="text-align: right;">
+                                                    <h:outputText value="#{row.getSplitValue(m)}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{section.getSplitTotal(m)}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:columns>
+
+                                                <p:column headerText="Collected" style="text-align: right;" rendered="#{section.multiple}">
+                                                    <h:outputText value="#{row.collectionValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{section.collectionTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column headerText="Hospital Fee" style="text-align: right;">
+                                                    <h:outputText value="#{row.hosFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{section.hosFeeTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column headerText="Doctor Fee" style="text-align: right;">
+                                                    <h:outputText value="#{row.doctorFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{section.doctorFeeTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column headerText="Total Fee" style="text-align: right; font-weight: bold;">
+                                                    <h:outputText value="#{row.totalAppoinmentFee}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{section.totalAmount}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column headerText="Status" style="text-align: center;">
+                                                    <h:outputText value="#{row.status}"
+                                                                  styleClass="#{row.status eq 'Cancelled' or row.status eq 'Cancellation' or row.status eq 'Refund' or row.status eq 'Refunded' ? 'text-danger' : ''}"/>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </ui:repeat>
+
+                                        <!-- Summary by appointment date -->
+                                        <p:dataTable value="#{channelReportController.bookingsByShiftDto.summeryDtos}" var="row" rowIndexVar="n"
+                                                     styleClass="mb-3 table-sm"
+                                                     rowKey="#{row.appoimentDate}">
+                                            <f:facet name="header">
+                                                <h:outputText value="Summary by Appointment Date"/>
+                                            </f:facet>
+
+                                            <p:column headerText="Serial" style="text-align: center; width: 3rem;">
+                                                <h:outputText value="#{n+1}"/>
+                                            </p:column>
+
+                                            <p:column headerText="Appointment Date" style="text-align: center;">
+                                                <h:outputText value="#{row.appoimentDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Total Appointments" style="text-align: right; font-weight: bold;">
+                                                <h:outputText value="#{row.totalActiveAppoinments}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Total Amount" style="text-align: right; font-weight: bold;">
+                                                <h:outputText value="#{row.totalAmount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allTotalAmount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <p:column headerText="Total Doc Fee" style="text-align: right;">
+                                                <h:outputText value="#{row.totalDocFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allDoctorFeeTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <p:column headerText="Total Hospital Fee" style="text-align: right;">
+                                                <h:outputText value="#{row.totalHosFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allHosFeeTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+
+                                            <!-- One column per payment method that has a collection; footer = collection amount -->
+                                            <p:columns value="#{channelReportController.bookingsByShiftDto.collections}" var="c"
+                                                       headerText="#{c.label}" style="text-align: right;">
+                                                <h:outputText value="#{row.getMethodTotal(c.paymentMethod)}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{c.amount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:columns>
+                                        </p:dataTable>
+
+                                        <!-- Shift End Collection Summary -->
+                                        <table style="width: 100%; border-collapse: collapse; font-weight: bold; font-size: 14px; text-align: left;">
+                                            <ui:repeat value="#{channelReportController.bookingsByShiftDto.collections}" var="c">
+                                                <tr>
+                                                    <td style="border: 2px solid #ccc; padding: 6px;">
+                                                        <h:outputText value="Total #{c.label} Collection"/>
+                                                    </td>
+                                                    <td style="border: 2px solid #ccc; padding: 6px; text-align: right;">
+                                                        <h:outputText value="#{c.amount}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                            <tr style="background-color: #f2f2f2;">
+                                                <td style="border: 2px solid #ccc; padding: 6px; font-weight: bold;">
+                                                    <h:outputText value="Grand Total Collection"/>
+                                                </td>
+                                                <td style="border: 2px solid #ccc; padding: 6px; text-align: right; font-weight: bold;">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.grandCollectionTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 2px solid #ccc; padding: 6px;">
+                                                    <h:outputText value="Total Valid Appointments"/>
+                                                </td>
+                                                <td style="border: 2px solid #ccc; padding: 6px; text-align: right;">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.totalValidAppoinments}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 2px solid #ccc; padding: 6px;">
+                                                    <h:outputText value="Cancel and Refund Collection"/>
+                                                </td>
+                                                <td style="border: 2px solid #ccc; padding: 6px; text-align: right;">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allCancelTotal + channelReportController.bookingsByShiftDto.allRefundTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 2px solid #ccc; padding: 6px;">
+                                                    <h:outputText value="Total Cancel Appointments"/>
+                                                </td>
+                                                <td style="border: 2px solid #ccc; padding: 6px; text-align: right;">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allCancelAppoinments}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 2px solid #ccc; padding: 6px;">
+                                                    <h:outputText value="Total Refund Appointments"/>
+                                                </td>
+                                                <td style="border: 2px solid #ccc; padding: 6px; text-align: right;">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allRefundAppoinments}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="border: 2px solid #ccc; padding: 6px;">
+                                                    <h:outputText value="Total Cancel And Refund Appointments"/>
+                                                </td>
+                                                <td style="border: 2px solid #ccc; padding: 6px; text-align: right;">
+                                                    <h:outputText value="#{channelReportController.bookingsByShiftDto.allCancelAppoinments + channelReportController.bookingsByShiftDto.allRefundAppoinments}">
+                                                        <f:convertNumber pattern="#,##0"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Signature block -->
+                                        <div class="row" style="margin-top: 60px;">
+                                            <div class="col-4 text-center">
+                                                <div style="border-top: 1px solid #000; padding-top: 4px;">
+                                                    <h:outputText value="Cashier Signature"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <div style="border-top: 1px solid #000; padding-top: 4px;">
+                                                    <h:outputText value="Handover Date / Time"/>
+                                                </div>
+                                            </div>
+                                            <div class="col-4 text-center">
+                                                <div style="border-top: 1px solid #000; padding-top: 4px;">
+                                                    <h:outputText value="Received By (Name &amp; Signature)"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
                             </p:panel>
                         </h:panelGroup>
