@@ -6,6 +6,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Privileges;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.BillFacade;
@@ -54,6 +55,7 @@ public class CollectingCentreSelfSearchController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private SearchKeyword searchKeyword;
+    private CollectingCentreBillingType ccBillingType;
     private List<Bill> bills;
     private Bill viewingBill;
 
@@ -64,6 +66,7 @@ public class CollectingCentreSelfSearchController implements Serializable {
         fromDate = CommonFunctions.getStartOfDay();
         toDate = CommonFunctions.getEndOfDay();
         searchKeyword = new SearchKeyword();
+        ccBillingType = null;
         bills = null;
         return "/collecting_centre/cc_self_search_bills?faces-redirect=true";
     }
@@ -305,6 +308,16 @@ public class CollectingCentreSelfSearchController implements Serializable {
             params.put("patientPhone", "%" + sk.getPatientPhone().trim() + "%");
         }
 
+        // Bills saved before ccBillingType existed have it null; the list shows
+        // those as Hospital Billing, so the filter does the same.
+        if (ccBillingType == CollectingCentreBillingType.HOSPITAL_BILLING) {
+            jpql += " and (bill.ccBillingType = :ccBillingType or bill.ccBillingType is null) ";
+            params.put("ccBillingType", ccBillingType);
+        } else if (ccBillingType != null) {
+            jpql += " and bill.ccBillingType = :ccBillingType ";
+            params.put("ccBillingType", ccBillingType);
+        }
+
         jpql += " order by bill.createdAt desc ";
 
         params.put("billType", BillType.CollectingCentreBill);
@@ -365,6 +378,18 @@ public class CollectingCentreSelfSearchController implements Serializable {
 
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public CollectingCentreBillingType getCcBillingType() {
+        return ccBillingType;
+    }
+
+    public void setCcBillingType(CollectingCentreBillingType ccBillingType) {
+        this.ccBillingType = ccBillingType;
+    }
+
+    public CollectingCentreBillingType[] getCcBillingTypes() {
+        return CollectingCentreBillingType.values();
     }
 
     public List<Bill> getBills() {

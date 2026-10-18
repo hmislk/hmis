@@ -1927,7 +1927,8 @@ public class InwardReportControllerBht implements Serializable {
                 + "bf.paidValue, "
                 + "COALESCE(rbfBill.deptId, ''), "
                 + "rbfBill.createdAt, "
-                + "bf.createdAt) "
+                + "bf.createdAt, "
+                + "per.title) "
                 + "FROM BillFee bf "
                 + "JOIN bf.bill b "
                 + "JOIN b.patientEncounter pe "
@@ -2011,7 +2012,7 @@ public class InwardReportControllerBht implements Serializable {
             InwardProfessionalPaymentReportRowDTO row = rowsByStaffAndSpeciality.get(key);
             if (row == null) {
                 row = new InwardProfessionalPaymentReportRowDTO();
-                row.setConsultantName(fee.getStaffName());
+                row.setConsultantName(fee.getStaffNameWithTitle());
                 row.setSpecialityName(fee.getSpecialityName());
                 rowsByStaffAndSpeciality.put(key, row);
                 billNumbersByKey.put(key, new LinkedHashSet<>());
@@ -2054,7 +2055,7 @@ public class InwardReportControllerBht implements Serializable {
             InwardProfessionalPaymentDetailRowDTO row = rowsByStaffAndSpeciality.get(key);
             if (row == null) {
                 row = new InwardProfessionalPaymentDetailRowDTO();
-                row.setConsultantName(fee.getStaffName());
+                row.setConsultantName(fee.getStaffNameWithTitle());
                 row.setSpecialityName(fee.getSpecialityName());
                 rowsByStaffAndSpeciality.put(key, row);
             }
