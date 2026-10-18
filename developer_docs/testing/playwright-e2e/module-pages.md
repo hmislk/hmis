@@ -37,7 +37,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [147. Patient Admit: "Admit" also matches "Provisional Emergency Admit"](#147-patient-admit-admit-also-matches-provisional-emergency-admit)
 - [149. Interim Bill search says "No results found" for an admission from another institution](#149-interim-bill-search-says-no-results-found-for-an-admission-from-another-institution)
 - [150. Interim Bill room charges are stale on the first open — open it twice before comparing totals](#150-interim-bill-room-charges-are-stale-on-the-first-open--open-it-twice-before-comparing-totals)
-- [152. Transfer request: issue and cancel act on the approved bill, not the PRE bill](#152-transfer-request-issue-and-cancel-act-on-the-approved-bill-not-the-pre-bill)
+- [153. Transfer request: issue and cancel act on the approved bill, not the PRE bill](#153-transfer-request-issue-and-cancel-act-on-the-approved-bill-not-the-pre-bill)
 
 ---
 
@@ -751,7 +751,7 @@ The Interim Bill patient search only covers the institution in its **Institution
 
 The first Interim Bill open after time has passed shows the room charge last saved, while saving the up-to-date one (#24582). Open it a second time before comparing its totals with a report or the DB. Reports that read `PATIENTROOM.CALCULATED*CHARGE` (Invoice Journal, Professional & Other Fee Summary) only pick up the new value after that first open.
 
-## 152. Transfer request: issue and cancel act on the approved bill, not the PRE bill
+## 153. Transfer request: issue and cancel act on the approved bill, not the PRE bill
 
 A `PHARMACY_TRANSFER_REQUEST_PRE` bill points to its approved
 `PHARMACY_TRANSFER_REQUEST` bill via `forwardReferenceBill`. Issues set
