@@ -11,7 +11,6 @@
         <ui:composition template="/channel/channel_reports.xhtml">
 
             <ui:define name="subContent">
-                <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
                 <h:form>
 
                     <p:panel >
@@ -21,71 +20,61 @@
 
 
                         </f:facet>
-                        <h:panelGrid columns="9" style="width: 100%">
+                        <div class="row g-3 align-items-end mb-3">
+                            <div class="col-md-3">
+                                <p:outputLabel for="fromDate" class="d-block mb-1">
+                                    <i class="fa fa-calendar me-1"/> From
+                                </p:outputLabel>
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="fromDate"
+                                    value="#{channelReportController.fromDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    ></p:calendar>
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;"
-                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
-                            </h:panelGroup>
+                            <div class="col-md-3">
+                                <p:outputLabel for="toDate" class="d-block mb-1">
+                                    <i class="fa fa-calendar me-1"/> To
+                                </p:outputLabel>
+                                <p:calendar
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="toDate"
+                                    value="#{channelReportController.toDate}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    ></p:calendar>
+                            </div>
 
-                            <p:calendar 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                id="fromDate"
-                                value="#{channelReportController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                ></p:calendar>
-                            <p:spacer width="50"/>
+                            <div class="col-md-3">
+                                <p:outputLabel for="cmbUser" class="d-block mb-1">
+                                    <i class="fas fa-user me-1"/> User
+                                </p:outputLabel>
+                                <p:autoComplete
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="cmbUser"
+                                    placeholder="All Users"
+                                    forceSelection="true"
+                                    completeMethod="#{webUserController.completeUser}"
+                                    var="w" itemLabel="#{w.webUserPerson.name}"
+                                    itemValue="#{w}"
+                                    value="#{channelReportController.webUser}" >
+                                </p:autoComplete>
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;"
-                                              styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                <h:outputLabel value="To Date" for="toDate" class="mx-3"/>
-                            </h:panelGroup>
-
-                            <p:calendar 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                id="toDate"
-                                value="#{channelReportController.toDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                ></p:calendar>
-
-                            <p:spacer width="50"/>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fas fa-user mr-2"/>
-                                <h:outputLabel value="User" class="mx-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete 
-                                class="w-100  " 
-                                inputStyleClass="w-100" 
-                                id="cmbUser"  
-                                placeholder="All Users"
-                                forceSelection="true" 
-                                completeMethod="#{webUserController.completeUser}" 
-                                var="w" itemLabel="#{w.webUserPerson.name}" 
-                                itemValue="#{w}"
-                                value="#{channelReportController.webUser}" >
-                            </p:autoComplete>
-
-
-
-                        </h:panelGrid>
-
-                        <div class="row my-3">
-                            <div class="col-2">
-                                <p:commandButton 
+                            <div class="col-md-3">
+                                <p:commandButton
+                                    id="btnProcess"
                                     icon="fa-solid fa-cogs"
                                     class="ui-button-warning"
-                                    style="float: left;"
-                                    value="Process" 
-                                    ajax="false" 
+                                    value="Process"
+                                    title="List the selected user's shifts in this date range"
+                                    ajax="false"
                                     action="#{channelReportController.listShiftStartBills()}" >
                                 </p:commandButton>
                             </div>
-
                         </div>
 
 
@@ -763,58 +752,56 @@
 
                         <h:panelGroup rendered="#{channelReportController.bookingsByShiftDto ne null}">
                             <p:panel >
-                                <div class="d-flex flex-column gap-2 mb-2 w-75">
-                                    <h:panelGrid 
-                                        columns="5"
-                                        class="my-2 ui-fluid" 
-                                        style="table-layout: fixed; width: 100%;" 
-                                        columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
-                                        fp-col-extraWidth-label2, fp-col-input2">
-                                        <h:outputLabel value="Category"/>
-
-                                        <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="Select Categories"
+                                <div class="row g-3 align-items-end mb-3">
+                                    <div class="col-md-3">
+                                        <p:outputLabel for="supplierMenu" value="Category" class="d-block mb-1"/>
+                                        <p:selectCheckboxMenu value="#{channelReportController.categoryList}" label="All Categories"
                                                             id="supplierMenu"
                                                             filter="true"
-                                                            styleClass="w-100 form-control"
+                                                            styleClass="w-100"
                                                             converter="categoryConverter"
                                                             filterMatchMode="contains">
                                             <f:selectItems value="#{serviceCategoryController.items}" var="item"
                                                         itemLabel="#{item.name}" itemValue="#{item}" />
-
                                         </p:selectCheckboxMenu>
+                                    </div>
 
-                                        <p:spacer/>
-
-                                        <h:outputLabel value="Payment Method"/>
-
-                                        <p:selectCheckboxMenu value="#{channelReportController.paymentMethods}" label="Select Payment Methods"
+                                    <div class="col-md-3">
+                                        <p:outputLabel for="cmbPaymentMethod" value="Payment Method" class="d-block mb-1"/>
+                                        <p:selectCheckboxMenu value="#{channelReportController.paymentMethods}" label="All Payment Methods"
                                                             id="cmbPaymentMethod"
                                                             filter="true"
-                                                            styleClass="w-100 form-control"
+                                                            styleClass="w-100"
                                                             filterMatchMode="contains">
                                             <f:selectItems value="#{enumController.paymentMethodsForChannelSettling}" var="method"
                                                         itemLabel="#{method.label}" itemValue="#{method}" />
-
                                         </p:selectCheckboxMenu>
-                                    </h:panelGrid>
-                                        <div class="d-flex align-items-center my-2">
-                                            <p:commandButton 
-                                                ajax="false"
-                                                class="ui-button-danger mx-1"
-                                                value="Update" 
-                                                action="#{channelReportController.updateChannelBookingBillsForShitEndFromChannelReportController()}"/>
+                                    </div>
 
-                                            <p:commandButton 
-                                                value="Export to Excel" 
-                                                ajax="false" 
-                                                icon="fas fa-file-excel"
-                                                class="mx-1 ui-button-success">
-                                                <p:fileDownload value="#{channelReportController.channelSummaryCollectionReportAsExcel}" />
-                                            </p:commandButton>
-                                            <p:commandButton value="Print" icon="fas fa-print" class="mx-1 ui-button-info" type="button">
-                                                <p:printer target="reportPrint"/>
-                                            </p:commandButton>
-                                        </div>
+                                    <div class="col-md-6 d-flex flex-wrap gap-2 justify-content-md-end">
+                                        <p:commandButton
+                                            id="btnUpdate"
+                                            ajax="false"
+                                            icon="fas fa-filter"
+                                            class="ui-button-warning"
+                                            value="Apply Filters"
+                                            title="Reload this shift's report with the selected category and payment method filters"
+                                            action="#{channelReportController.updateChannelBookingBillsForShitEndFromChannelReportController()}"/>
+
+                                        <p:commandButton
+                                            id="btnExportExcel"
+                                            value="Export to Excel"
+                                            ajax="false"
+                                            icon="fas fa-file-excel"
+                                            title="Download this report as an Excel workbook"
+                                            class="ui-button-success">
+                                            <p:fileDownload value="#{channelReportController.channelSummaryCollectionReportAsExcel}" />
+                                        </p:commandButton>
+                                        <p:commandButton id="btnPrint" value="Print" icon="fas fa-print" class="ui-button-info" type="button"
+                                                         title="Print this report">
+                                            <p:printer target="reportPrint"/>
+                                        </p:commandButton>
+                                    </div>
                                 </div>
 
                                 <h:panelGroup id="reportPrint" layout="block">
