@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/cashier/index.xhtml">
+            <ui:define name="subcontent">
+                <f:metadata>
+                    <f:viewAction action="#{nonCashSettlementApprovalController.init()}"/>
+                </f:metadata>
+
+                <h:form id="ncsApprovalForm">
+                    <p:messages id="msgs"/>
+
+                    <h:panelGroup layout="block"
+                                  rendered="#{not webUserController.hasPrivilege('ApproveNonCashSettlement')}">
+                        <p:panel header="Non-Cash Settlement Approvals">
+                            <h:outputText value="You do not have the required privilege to approve non-cash settlements."
+                                          styleClass="d-block mb-3 text-danger"/>
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block"
+                                  rendered="#{webUserController.hasPrivilege('ApproveNonCashSettlement')}">
+                        <div class="row g-3">
+                            <!-- Filters (left sidebar) -->
+                            <div class="col-md-3">
+                                <p:panel header="Filters">
+                                    <h:outputText value="Status" styleClass="fw-medium mb-1 d-block"/>
+                                    <p:selectOneMenu id="ddStatus"
+                                                     value="#{nonCashSettlementApprovalController.status}"
+                                                     styleClass="w-100 mb-2">
+                                        <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{nonCashSettlementApprovalController.statuses}"
+                                                       var="s"
+                                                       itemLabel="#{s.label}"
+                                                       itemValue="#{s}"/>
+                                    </p:selectOneMenu>
+
+                                    <h:outputText value="Department" styleClass="fw-medium mb-1 d-block"/>
+                                    <p:autoComplete id="acDepartment"
+                                                    value="#{nonCashSettlementApprovalController.department}"
+                                                    completeMethod="#{departmentController.completeDept}"
+                                                    var="dep"
+                                                    itemLabel="#{dep.name}"
+                                                    itemValue="#{dep}"
+                                                    forceSelection="true"
+                                                    inputStyleClass="w-100"
+                                                    styleClass="w-100 mb-2"/>
+
+                                    <h:outputText value="From" styleClass="fw-medium mb-1 d-block"/>
+                                    <p:datePicker id="dpFrom"
+                                                  value="#{nonCashSettlementApprovalController.fromDate}"
+                                                  pattern="dd MMM yyyy HH:mm"
+                                                  showTime="true"
+                                                  inputStyleClass="w-100"
+                                                  styleClass="w-100 mb-2"/>
+
+                                    <h:outputText value="To" styleClass="fw-medium mb-1 d-block"/>
+                                    <p:datePicker id="dpTo"
+                                                  value="#{nonCashSettlementApprovalController.toDate}"
+                                                  pattern="dd MMM yyyy HH:mm"
+                                                  showTime="true"
+                                                  inputStyleClass="w-100"
+                                                  styleClass="w-100 mb-3"/>
+                                    <h:outputText value="Pending requests are always listed regardless of dates."
+                                                  rendered="#{nonCashSettlementApprovalController.status eq 'PENDING'}"
+                                                  styleClass="d-block text-muted small mb-2"/>
+
+                                    <p:commandButton value="Search"
+                                                     icon="fa fa-search"
+                                                     styleClass="ui-button-primary w-100"
+                                                     process="@form"
+                                                     action="#{nonCashSettlementApprovalController.search()}"
+                                                     update="ncsApprovalForm"/>
+                                </p:panel>
+                            </div>
+
+                            <!-- Requests and details -->
+                            <div class="col-md-9">
+                                <p:panel header="Non-Cash Settlement Approvals">
+                                    <p:dataTable id="requestsTable"
+                                                 value="#{nonCashSettlementApprovalController.requests}"
+                                                 var="r"
+                                                 paginator="true"
+                                                 rows="20"
+                                                 emptyMessage="No settlement requests found."
+                                                 styleClass="mb-3">
+                                        <p:column headerText="Request No">
+                                            <h:outputText value="#{r.requestNo}"/>
+                                        </p:column>
+                                        <p:column headerText="Bill No">
+                                            <h:outputText value="#{r.bill.deptId}"/>
+                                        </p:column>
+                                        <p:column headerText="Department">
+                                            <h:outputText value="#{r.department.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Requested By">
+                                            <h:outputText value="#{r.requester.webUserPerson.name}"/>
+                                        </p:column>
+                                        <p:column headerText="Requested At">
+                                            <h:outputText value="#{r.requestAt}">
+                                                <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Reference">
+                                            <h:outputText value="#{r.referenceNumber}"/>
+                                        </p:column>
+                                        <p:column headerText="Total" style="text-align: right;">
+                                            <h:outputText value="#{r.bill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Status">
+                                            <h:outputText value="#{r.status.label}"/>
+                                        </p:column>
+                                        <p:column headerText="Approved/Rejected By">
+                                            <h:outputText value="#{r.approvedBy != null ? r.approvedBy.webUserPerson.name : (r.rejectedBy != null ? r.rejectedBy.webUserPerson.name : '')}"/>
+                                        </p:column>
+                                        <p:column headerText="Action" style="width: 6rem; text-align: center;">
+                                            <p:commandButton value="View"
+                                                             icon="fa fa-eye"
+                                                             styleClass="ui-button-secondary"
+                                                             process="@this"
+                                                             action="#{nonCashSettlementApprovalController.select(r)}"
+                                                             update="ncsApprovalForm"/>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{nonCashSettlementApprovalController.selected != null}">
+                                        <p:panel header="Payments in request #{nonCashSettlementApprovalController.selected.requestNo}">
+                                            <p:dataTable id="paymentsTable"
+                                                         value="#{nonCashSettlementApprovalController.selectedPayments}"
+                                                         var="p"
+                                                         emptyMessage="No payments."
+                                                         styleClass="mb-3">
+                                                <p:column headerText="Method">
+                                                    <h:outputText value="#{p.paymentMethod.label}"/>
+                                                </p:column>
+                                                <p:column headerText="Bill">
+                                                    <h:outputText value="#{p.bill.deptId}"/>
+                                                </p:column>
+                                                <p:column headerText="Reference">
+                                                    <h:outputText value="#{p.referenceNo}"/>
+                                                </p:column>
+                                                <p:column headerText="Bank">
+                                                    <h:outputText value="#{p.bank.name}"/>
+                                                </p:column>
+                                                <p:column headerText="Amount" style="text-align: right;">
+                                                    <h:outputText value="#{p.paidValue}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                    <f:facet name="footer">
+                                                        <h:outputText value="#{nonCashSettlementApprovalController.selectedTotal}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </f:facet>
+                                                </p:column>
+                                            </p:dataTable>
+
+                                            <h:outputText value="Rejection reason" styleClass="fw-medium mb-1 d-block"/>
+                                            <p:inputTextarea id="rejectReason"
+                                                             value="#{nonCashSettlementApprovalController.rejectReason}"
+                                                             placeholder="Reason (required to reject)"
+                                                             rows="2"
+                                                             styleClass="w-100 mb-3"/>
+
+                                            <div class="text-end">
+                                                <p:commandButton value="Approve"
+                                                                 icon="fa fa-check"
+                                                                 styleClass="ui-button-success me-2"
+                                                                 process="@this"
+                                                                 action="#{nonCashSettlementApprovalController.approve()}"
+                                                                 update="ncsApprovalForm"
+                                                                 disabled="#{not nonCashSettlementApprovalController.canAct(nonCashSettlementApprovalController.selected)}"
+                                                                 title="#{nonCashSettlementApprovalController.actionBlockedReason(nonCashSettlementApprovalController.selected)}"
+                                                                 onclick="if(!confirm('Approve this settlement? The payments will be settled and removed from the requester\'s drawer.')) return false;"/>
+                                                <p:commandButton value="Reject"
+                                                                 icon="fa fa-times"
+                                                                 styleClass="ui-button-danger"
+                                                                 process="@this rejectReason"
+                                                                 action="#{nonCashSettlementApprovalController.reject()}"
+                                                                 update="ncsApprovalForm"
+                                                                 disabled="#{not nonCashSettlementApprovalController.canAct(nonCashSettlementApprovalController.selected)}"
+                                                                 title="#{nonCashSettlementApprovalController.actionBlockedReason(nonCashSettlementApprovalController.selected)}"
+                                                                 onclick="if(!confirm('Reject this settlement request?')) return false;"/>
+                                            </div>
+                                        </p:panel>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

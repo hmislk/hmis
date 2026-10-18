@@ -190,7 +190,11 @@ public class BhtIssueReturnController implements Serializable {
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
-        if (tmp.getQty() > getPharmacyRecieveBean().calQty4(tmp.getReferanceBillItem())) {
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            calTotal();
+            JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+        } else if (tmp.getQty() > getPharmacyRecieveBean().calQty4(tmp.getReferanceBillItem())) {
             tmp.setQty(0.0);
             calTotal();
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
@@ -414,6 +418,14 @@ public class BhtIssueReturnController implements Serializable {
 //                System.out.println("bi.getPharmaceuticalBillItem().getQtyInUnit() = " + bi.getPharmaceuticalBillItem().getQtyInUnit());
 //                System.out.println("bi.getQty() = " + bi.getQty());
 //                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+                // onEdit()'s negative check only fires on the per-row blur AJAX; a fast
+                // submit of the full Return form can reach settle() with a still-negative
+                // qty if that AJAX hasn't round-tripped yet. Re-check here, the last point
+                // before the value is persisted.
+                if (bi.getQty() < 0) {
+                    JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+                    return;
+                }
                 double returnedQty = getPharmacyRecieveBean().getTotalQty(
                         bi.getReferanceBillItem(),
                         getBill().getBillType()

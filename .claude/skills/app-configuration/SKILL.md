@@ -28,6 +28,7 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 - Use descriptive, hierarchical names
 - Module prefix: `Pharmacy Transfer Issue - Show Rate and Value`
 - Report columns: `Pharmacy Disbursement Reports - Display Serial Number`
+- **🚨 Never change the meaning of an existing key**: no added/removed `!`, no new default, no conflicting defaults. Create a new key named after what `true` does. CI `config-semantics-guard` enforces this; see [Changing existing options](../../../developer_docs/configuration/application-options.md#changing-existing-options).
 
 ## Configuration Categories
 
@@ -57,7 +58,7 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 - **🚨 `configOptionController` keys are department-scoped when a department is selected.** With a department selected in the session, it reads `<Department name> - <key>` first and falls back to the global `<key>`, and its `setBooleanValueByKey` writes only the department copy. With no department selected, it reads and writes the global `<key>`. The receipt pages' **Settings** dialogs (e.g. `Inward Payment Bill ... Paper`) use it, so check the row for the session's department (`optionKey like '<Dept> - %'`), not just the global one.
 
 ### Laboratory Sample Lock
-- `Block cancellation and refund of OPD, package and collecting centre bills once a lab sample is collected` (application scope, default true): once a sample is collected, OPD/package/CC bills cannot be cancelled, refunded or returned by anyone. Replaces `Enable the Special Privilege of Canceling OPD Bills` and `...CC Bills`, which are no longer read in those paths.
+- `Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample` (application scope, default true): once the laboratory has accepted a sample, OPD/package/CC bills cannot be cancelled, refunded or returned by anyone (collected-only samples do not lock). Replaces `Enable the Special Privilege of Canceling OPD Bills` and `...CC Bills`, which are no longer read in those paths.
 
 ### Pharmacy Procurement
 - Cross-department PO receiving (institution-wide, opt-in)

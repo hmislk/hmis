@@ -407,81 +407,95 @@
 
                 <p:panel rendered="#{inwardDepositController.printPreview}">
                     <f:facet name="header">
-                        <h:outputLabel value="Inpatient Deposit Bill" class="mt-2"/>
-                        <div class="d-flex gap-2" style="float: right;">
-                            <p:commandButton
-                                value="New Deposit"
-                                icon="fa-solid fa-plus"
-                                class="ui-button-success"
-                                ajax="false"
-                                action="#{inwardDepositController.makeNull}" >
-                            </p:commandButton>
-                            <p:commandButton
-                                id="btnToCancel"
-                                ajax="false" value="To Cancel"
-                                class="ui-button-danger"
-                                icon="fa fa-ban"
-                                action="#{inwardSearch.navigateToDepositBillCancellation()}"
-                                disabled="#{inwardDepositController.current.cancelled or inwardDepositController.current.refunded}">
-                                <f:setPropertyActionListener value="#{inwardDepositController.current}" target="#{inwardSearch.bill}"/>
-                            </p:commandButton>
-                            <p:commandButton
-                                id="btnToRefund"
-                                ajax="false" value="Refund"
-                                class="ui-button-warning"
-                                icon="fa fa-money-bill-transfer"
-                                action="#{inwardRefundController.navigateToRefundFromDepositBill(inwardDepositController.current)}"
-                                disabled="#{inwardDepositController.current.cancelled or inwardDepositController.current.refunded}">
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                icon="fa fa-print"
-                                class="ui-button-info"
-                                action="#"  >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print (Dot-Matrix)"
-                                ajax="false"
-                                icon="fa fa-print"
-                                class="ui-button-info"
-                                action="#"  >
-                                <p:printer target="gpBillPreviewDmx" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print (Raw Text)"
-                                ajax="false"
-                                icon="fa fa-file-lines"
-                                class="ui-button-help"
-                                action="#{inwardDepositController.streamCurrentDepositReceiptAsRawText}" >
-                            </p:commandButton>
-                            <p:commandButton
-                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                                value="Settings"
-                                icon="fas fa-cog"
-                                class="ui-button-secondary"
-                                type="button"
-                                onclick="PF('inwardPaymentConfigDialog').show();"/>
-                            <p:commandButton
-                                ajax="false"
-                                icon="fas fa-file-invoice-dollar"
-                                value="Interim Bill"
-                                class="ui-button-info mx-1"
-                                action="#{bhtSummeryController.navigateToIntrimBillRefresh()}"
-                                />
-                            <p:commandButton
-                                ajax="false"
-                                icon="fas fa-id-card"
-                                value="Inpatient Dashboard"
-                                class="ui-button-secondary "
-                                action="#{inwardDepositController.navigateToInpationDashbord()}"
-                                />
+                        <div class="d-flex justify-content-between align-items-center w-100 flex-wrap gap-2">
+
+                            <!-- LEFT: title + receipt print settings -->
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fas fa-receipt"/>
+                                <h:outputText value="Inpatient Deposit Bill"/>
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    title="Receipt paper type and raw text layout"
+                                    styleClass="ui-button-secondary ui-button-outlined"
+                                    type="button"
+                                    onclick="PF('inwardPaymentConfigDialog').show();"/>
+                            </div>
+
+                            <!-- CENTER: navigation -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    value="Interim Bill"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{bhtSummeryController.navigateToIntrimBillRefresh()}"/>
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    value="Inpatient Dashboard"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{inwardDepositController.navigateToInpationDashbord()}"/>
+                            </div>
+
+                            <!-- RIGHT: actions, least to most important -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    id="btnToCancel"
+                                    ajax="false" value="To Cancel"
+                                    styleClass="ui-button-secondary"
+                                    icon="fa fa-ban"
+                                    action="#{inwardSearch.navigateToDepositBillCancellation()}"
+                                    disabled="#{inwardDepositController.current.cancelled or inwardDepositController.current.refunded}">
+                                    <f:setPropertyActionListener value="#{inwardDepositController.current}" target="#{inwardSearch.bill}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnToRefund"
+                                    ajax="false" value="Refund"
+                                    styleClass="ui-button-warning"
+                                    icon="fa fa-money-bill-transfer"
+                                    action="#{inwardRefundController.navigateToRefundFromDepositBill(inwardDepositController.current)}"
+                                    disabled="#{inwardDepositController.current.cancelled or inwardDepositController.current.refunded}"/>
+                                <p:commandButton
+                                    value="New Deposit"
+                                    icon="fa-solid fa-plus"
+                                    styleClass="ui-button-warning"
+                                    ajax="false"
+                                    action="#{inwardDepositController.makeNull}"/>
+                                <p:commandButton
+                                    value="Print (Dot-Matrix)"
+                                    rendered="#{not inwardRawTextReceiptController.rawTextPaper and configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    styleClass="ui-button-info"
+                                    action="#">
+                                    <p:printer target="gpBillPreviewDmx"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Print"
+                                    rendered="#{not inwardRawTextReceiptController.rawTextPaper}"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    styleClass="ui-button-success"
+                                    style="min-width:120px"
+                                    action="#">
+                                    <p:printer target="gpBillPreview"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Print (Raw Text)"
+                                    rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    styleClass="ui-button-success"
+                                    style="min-width:120px"
+                                    action="#{inwardDepositController.streamCurrentDepositReceiptAsRawText}"/>
+                            </div>
                         </div>
                     </f:facet>
 
                     <div class="row">
-                        <h:panelGroup id="gpBillPreview">
+                        <h:panelGroup id="gpBillPreview" rendered="#{not inwardRawTextReceiptController.rawTextPaper}">
 
                             <div class="d-flex justify-content-center">
 
@@ -505,11 +519,20 @@
 
                         </h:panelGroup>
                         <h:panelGroup id="gpBillPreviewDmx">
-                            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}">
+                            <h:panelGroup rendered="#{not inwardRawTextReceiptController.rawTextPaper and configOptionController.getBooleanValueByKey('Inward Payment Bill Dot Matrix Paper', false)}">
                                 <div class="d-flex justify-content-center">
                                     <bill:FiveFiveDotMatrixPaymentBill bill="#{inwardDepositController.current}" heading="Deposit Receipt" />
                                 </div>
                             </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewRawText" rendered="#{inwardRawTextReceiptController.rawTextPaper}">
+                            <ui:include src="/inward/raw_text_receipt/preview.xhtml">
+                                <ui:param name="bill" value="#{inwardDepositController.current}"/>
+                                <ui:param name="headingType" value="INWARD_DEPOSIT"/>
+                                <ui:param name="duplicate" value="#{false}"/>
+                                <ui:param name="layoutDept" value="#{sessionController.department}"/>
+                            </ui:include>
+                            <ui:include src="/inward/raw_text_receipt/setup_panel.xhtml"/>
                         </h:panelGroup>
                     </div>
                 </p:panel>
@@ -552,11 +575,13 @@
                         </div>
                     </div>
                 </div>
+                <ui:include src="/inward/raw_text_receipt/settings_card.xhtml"/>
                 <div class="d-flex gap-2 mt-3">
                     <p:commandButton value="Apply &amp; Close"
                                      icon="fas fa-save"
                                      class="ui-button-success"
                                      ajax="false"
+                                     actionListener="#{inwardRawTextReceiptController.saveSettings}"
                                      action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
                     <p:commandButton value="Cancel"
                                      icon="fas fa-times"

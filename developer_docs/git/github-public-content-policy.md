@@ -52,7 +52,7 @@ script, per-user statistics — belongs in one of these, none of which is public
 
 A GitHub issue may still say **which hospital reported it** when that is needed
 to route the work: the hospital-name **labels** and the hospital-named branches
-(`southernlanka-prod-migrated`) are part of how this repo is organised. The line
+(`southernlanka-staging`) are part of how this repo is organised. The line
 is between naming the reporter and publishing that hospital's data. Naming the
 hospital plus a bug is fine; naming the hospital plus its record counts,
 identifiers, dates and schema is not.
