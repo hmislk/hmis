@@ -49,7 +49,7 @@
                                             <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
                                         </p:column>
                                         <p:ajax event="itemSelect" process="acPt" 
-                                                update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
+                                                update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} :#{p:resolveFirstComponentWithId('pPagesHolder',view).clientId} "/>
                                     </p:autoComplete> 
 
                                     <p:panel header="Add New ...">
@@ -80,6 +80,7 @@
 
                                     </p:panel>
 
+                                    <h:panelGroup id="pPagesHolder" layout="block">
                                     <p:panel id="pPages" header="Pages" rendered="#{investigationItemController.multiPageEnabled}" class="mt-2">
                                         <div class="d-flex gap-2 align-items-center">
                                             <p:selectOneButton id="btnDesignerPage" value="#{investigationItemController.designerPage}">
@@ -130,6 +131,7 @@
                                             <p:commandButton value="Save Page Settings" icon="fa fa-save" class="mt-2" process="pPageSettings" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" action="#{investigationItemController.saveDesignerPageSettings()}"/>
                                         </h:panelGroup>
                                     </p:panel>
+                                    </h:panelGroup>
 
 
                                     <!--                                    <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
