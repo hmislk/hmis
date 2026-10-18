@@ -573,7 +573,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
         // Create payment for the return - ALL payment methods require payment records for healthcare compliance
         // Payment validation was performed at method start, so we can proceed with confidence
-        if (currentBill.getPaymentMethod() != null) {
+        // Payments for supplier returns are generated only when the institution has enabled it
+        boolean generatePayments = configOptionApplicationController.getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
+        if (generatePayments && currentBill.getPaymentMethod() != null) {
             try {
                 List<Payment> returnPayments = paymentService.createPayment(currentBill, getPaymentMethodData());
                 if (returnPayments != null && !returnPayments.isEmpty()) {

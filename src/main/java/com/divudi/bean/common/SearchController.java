@@ -412,6 +412,9 @@ public class SearchController implements Serializable {
     private Item item;
     // Item selected on the Pharmacy Bill Search by Item report (issue #24250).
     private Item billSearchItem;
+    // Free-text item name / code entered on Pharmacy Bill Search by Bill Type Atomic (issue #24366).
+    private String billSearchItemName;
+    private String billSearchItemCode;
     private double dueTotal;
     private double doneTotal;
     private double netTotal;
@@ -3188,8 +3191,16 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            // Bound to a String param it never matched; return bills store negative totals and users type the positive amount (issue #24483).
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                sql += " and abs(abs(b.netTotal) - :netTotal) < 0.01 ";
+                m.put("netTotal", Math.abs(netTotalValue));
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                bills = new ArrayList<>(); // don't run the search without the filter the user typed
+                return;
+            }
         }
 
         sql += " order by b.createdAt desc  ";
@@ -4290,7 +4301,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
         //     //////
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -10383,14 +10394,22 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            // Tolerance compare: stored totals carry float noise (e.g. 1940.0000000000002); strip thousands separators (issue #24427).
+            String netTotalString = getSearchKeyword().getNetTotal().trim().replace(",", "");
             try {
                 Double netTotalValue = Double.parseDouble(netTotalString);
-                jpql += "and b.netTotal = :netTotal ";
+                jpql += "and abs(b.netTotal - :netTotal) < 0.01 ";
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
+        }
+
+        // The page binds an Item autocomplete to searchKeyword.item (issue #24427).
+        if (getSearchKeyword().getItem() != null) {
+            jpql += "and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item = :item) ";
+            params.put("item", getSearchKeyword().getItem());
         }
 
         jpql += "order by b.createdAt desc ";
@@ -10430,14 +10449,22 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            // Tolerance compare: stored totals carry float noise (e.g. 1940.0000000000002); strip thousands separators (issue #24427).
+            String netTotalString = getSearchKeyword().getNetTotal().trim().replace(",", "");
             try {
                 Double netTotalValue = Double.parseDouble(netTotalString);
-                jpql += "and b.netTotal = :netTotal ";
+                jpql += "and abs(b.netTotal - :netTotal) < 0.01 ";
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
+        }
+
+        // The page binds an Item autocomplete to searchKeyword.item (issue #24427).
+        if (getSearchKeyword().getItem() != null) {
+            jpql += "and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item = :item) ";
+            params.put("item", getSearchKeyword().getItem());
         }
 
         jpql += "order by b.createdAt desc ";
@@ -10562,6 +10589,11 @@ public class SearchController implements Serializable {
     public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
+        billSearchItemName = null;
+        billSearchItemCode = null;
+        // Result tables on this page hide their own keyword inputs, so clear any
+        // keywords left over from other search pages (issue #24366).
+        searchKeyword = null;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
     }
 
@@ -10592,7 +10624,8 @@ public class SearchController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
         }
-        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null, maxResult);
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null,
+                billSearchItemName, billSearchItemCode, maxResult);
     }
 
     /**
@@ -10617,6 +10650,22 @@ public class SearchController implements Serializable {
 
     public void setBillSearchItem(Item billSearchItem) {
         this.billSearchItem = billSearchItem;
+    }
+
+    public String getBillSearchItemName() {
+        return billSearchItemName;
+    }
+
+    public void setBillSearchItemName(String billSearchItemName) {
+        this.billSearchItemName = billSearchItemName;
+    }
+
+    public String getBillSearchItemCode() {
+        return billSearchItemCode;
+    }
+
+    public void setBillSearchItemCode(String billSearchItemCode) {
+        this.billSearchItemCode = billSearchItemCode;
     }
 
     public String navigateToItemizedSaleSummary() {

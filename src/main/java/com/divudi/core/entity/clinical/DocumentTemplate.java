@@ -6,7 +6,9 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -40,6 +42,8 @@ public class DocumentTemplate implements Serializable {
     @Lob
     private String contents;
     private DocumentTemplateType type;
+    @Lob
+    private String rowColumns;
 
     private boolean defaultTemplate;
     private boolean autoGenerate;
@@ -189,6 +193,46 @@ public class DocumentTemplate implements Serializable {
 
     public void setAutoGenerate(boolean autoGenerate) {
         this.autoGenerate = autoGenerate;
+    }
+
+    public String getRowColumns() {
+        return rowColumns;
+    }
+
+    public void setRowColumns(String rowColumns) {
+        this.rowColumns = rowColumns;
+    }
+
+    public List<String> getRowColumnList() {
+        List<String> list = new ArrayList<>();
+        if (rowColumns == null || rowColumns.trim().isEmpty()) {
+            return list;
+        }
+        for (String c : rowColumns.split(",")) {
+            String t = c.trim();
+            if (!t.isEmpty()) {
+                list.add(t);
+            }
+        }
+        return list;
+    }
+
+    public void setRowColumnList(List<String> columns) {
+        if (columns == null || columns.isEmpty()) {
+            this.rowColumns = null;
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String c : columns) {
+            if (c == null || c.trim().isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+            sb.append(c.trim());
+        }
+        this.rowColumns = sb.length() == 0 ? null : sb.toString();
     }
 
 }

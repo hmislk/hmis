@@ -3,6 +3,7 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.inward.InpatientClinicalDataController;
 
+import com.divudi.core.data.clinical.CoveringLetterColumn;
 import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.clinical.DocumentTemplate;
@@ -201,6 +202,35 @@ public class DocumentTemplateController implements Serializable {
     public String navigateToListLetterTemplates() {
         items = fillByType(DocumentTemplateType.InpatientLetter);
         return "/emr/settings/document_templates?faces-redirect=true";
+    }
+
+    public String navigateToAddCoveringLetterTemplate() {
+        current = new DocumentTemplate();
+        current.setWebUser(sessionController.getLoggedUser());
+        current.setType(DocumentTemplateType.CoveringLetter);
+        current.setContents(generateDefaultCoveringLetterTemplateContents());
+        return "/emr/settings/document_template?faces-redirect=true";
+    }
+
+    public String generateDefaultCoveringLetterTemplateContents() {
+        return "Date: {letter_date}<br/>"
+                + "Reference No: {reference_no}<br/><br/>"
+                + "To: {credit_company}<br/>"
+                + "{credit_company_address}<br/><br/>"
+                + "Dear Sir/Madam,<br/><br/>"
+                + "Please find below the details of the records included in this letter.<br/><br/>"
+                + "{rows_table}<br/>"
+                + "Yours faithfully,<br/>"
+                + "{issuer}<br/>";
+    }
+
+    public String navigateToListCoveringLetterTemplates() {
+        items = fillByType(DocumentTemplateType.CoveringLetter);
+        return "/emr/settings/document_templates?faces-redirect=true";
+    }
+
+    public List<CoveringLetterColumn> getCoveringLetterColumns() {
+        return Arrays.asList(CoveringLetterColumn.values());
     }
 
     public void saveUserDocumentTemplate() {

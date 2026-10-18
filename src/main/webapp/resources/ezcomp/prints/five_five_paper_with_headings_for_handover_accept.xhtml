@@ -972,7 +972,7 @@
 
                 <!-- Shortage transactions — individual shortage/cancellation bills -->
                 <ui:repeat value="#{cc.attrs.bundle.selectedBundles}" var="shortageBundle">
-                    <h:panelGroup rendered="#{shortageBundle.paymentHandover ne null and shortageBundle.paymentHandover.name() eq 'FLOATS' and not empty shortageBundle.reportTemplateRows}">
+                    <h:panelGroup rendered="#{not empty shortageBundle.shortageRows}">
                         <hr/>
                         <div style="font-weight: bold; margin: 8px 0 4px 0;">Shortage Transactions</div>
                         <table class="table table-bordered table-sm">
@@ -985,7 +985,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <ui:repeat value="#{shortageBundle.reportTemplateRows}" var="shortageRow">
+                                <ui:repeat value="#{shortageBundle.shortageRows}" var="shortageRow">
                                     <tr>
                                         <td>
                                             <h:outputText value="#{shortageRow.payment.createdAt}">

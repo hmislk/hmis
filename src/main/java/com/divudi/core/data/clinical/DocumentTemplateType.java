@@ -17,4 +17,5 @@ public enum DocumentTemplateType {
     InpatientDiagnosisCard,
     InpatientLetter,
     InpatientEmail,
+    CoveringLetter,
 }
