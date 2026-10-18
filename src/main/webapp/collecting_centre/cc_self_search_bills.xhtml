@@ -25,14 +25,15 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Search Bills"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-magnifying-glass"
                                 backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                                 backLabel="Back to Dashboard"/>
 
                             <p:growl id="msg"/>
 
-                            <div class="row">
+                            <div class="row cc-stack-gap">
                                 <div class="col-md-3">
                                     <p:panel styleClass="cc-bill-card cc-c-blue">
                                         <f:facet name="header">
@@ -83,6 +84,17 @@
                                         <h:outputLabel value="Patient Phone" for="txtPatientPhone" class="mt-2"/>
                                         <p:inputText id="txtPatientPhone" placeholder="Enter patient phone number" autocomplete="off" value="#{collectingCentreSelfSearchController.searchKeyword.patientPhone}" class="w-100"/>
 
+                                        <h:outputLabel value="CC Bill Type" for="cmbCcBillingType" class="mt-2"/>
+                                        <p:selectOneMenu id="cmbCcBillingType"
+                                                         value="#{collectingCentreSelfSearchController.ccBillingType}"
+                                                         class="w-100">
+                                            <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItems value="#{collectingCentreSelfSearchController.ccBillingTypes}"
+                                                           var="t"
+                                                           itemLabel="#{t.label}"
+                                                           itemValue="#{t}"/>
+                                        </p:selectOneMenu>
+
                                     </p:panel>
                                 </div>
 
@@ -96,6 +108,7 @@
                                         <p:dataTable
                                             rowIndexVar="i"
                                             id="tblBills"
+                                            styleClass="cc-card-table" reflow="true"
                                             value="#{collectingCentreSelfSearchController.bills}"
                                             var="bill"
                                             style="min-width: 100%;"
@@ -115,13 +128,22 @@
                                                     ajax="false"
                                                     value="#{bill.deptId}"
                                                     title="View / Reprint"
-                                                    action="#{collectingCentreSelfSearchController.navigateToReprintBill(bill)}"/>
+                                                    action="#{collectingCentreSelfSearchController.navigateToReprintBill(bill)}"
+                                                    rendered="#{collectingCentreSelfSearchController.canOpenBill}"/>
+                                                <h:outputText
+                                                    value="#{bill.deptId}"
+                                                    rendered="#{not collectingCentreSelfSearchController.canOpenBill}"/>
                                             </p:column>
 
                                             <p:column headerText="Billed At" style="width: 11em; padding: 8px;">
                                                 <h:outputText value="#{bill.createdAt}">
                                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputText>
+                                            </p:column>
+
+                                            <p:column headerText="Type" style="width: 9em; padding: 8px;" class="text-center">
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{bill.ccBillingType eq 'AGENT_BILLING'}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{bill.ccBillingType eq 'HOSPITAL_BILLING' or bill.ccBillingType eq null}"/>
                                             </p:column>
 
                                             <p:column headerText="Patient" style="padding: 8px;">

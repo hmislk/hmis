@@ -21,6 +21,7 @@ import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Request;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.JsfUtil;
@@ -42,11 +43,14 @@ import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.cashTransaction.DetailedFinancialBill;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
 import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.DrawerEntryFacade;
 import com.divudi.core.facade.PaymentHandoverItemFacade;
 import com.divudi.core.facade.PaymentMethodValueFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentSettlementService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -70,7 +74,6 @@ import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
-import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -84,6 +87,8 @@ public class FinancialTransactionController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
+    private PaymentSettlementService paymentSettlementService;
+    @EJB
     private BillFacade billFacade;
     @EJB
     private PaymentFacade paymentFacade;
@@ -95,6 +100,8 @@ public class FinancialTransactionController implements Serializable {
     BillNumberGenerator billNumberGenerator;
     @EJB
     DrawerFacade drawerFacade;
+    @EJB
+    DrawerEntryFacade drawerEntryFacade;
     @EJB
     BillService billService;
     @EJB
@@ -1987,17 +1994,10 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Mark shortage-related component bills so the accept page displays the
-            // "Shift Shortage" label in the Institution/Type column.  The sign-only
-            // check misses two cases: (a) a cancellation-only row (positive cashValue)
-            // and (b) a merged row where the original shortage and its same-day
-            // cancellation net to zero.  Checking the bill type of any linked payment
-            // covers all three cases reliably.
-            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
-                    p.getBill() != null && (
-                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
-                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
-            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
+            // Negative-cash components (bank deposits, float decreases, shortages) and
+            // shortage-related ones go to FLOATS. The "Shift Shortage" label itself is
+            // driven by childBundle.isShortageRelated(), which checks bill types (#24555).
+            if (childBundle.getCashValue() < -0.001 || childBundle.isShortageRelated()) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -2127,17 +2127,9 @@ public class FinancialTransactionController implements Serializable {
             }
 
             childBundle.calculateTotalsByPaymentsAndDenominations();
-            // Mark shortage-related component bills so the reprint composite displays
-            // the "Shift Shortage" label in the Institution/Type column.  The sign-only
-            // check misses two cases: (a) a cancellation-only row (positive cashValue)
-            // and (b) a merged row where the original shortage and its same-day
-            // cancellation net to zero.  Checking the bill type of any linked payment
-            // covers all three cases reliably.
-            boolean isShortageRelated = payments != null && payments.stream().anyMatch(p ->
-                    p.getBill() != null && (
-                            p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
-                            || p.getBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED));
-            if (childBundle.getCashValue() < -0.001 || isShortageRelated) {
+            // Same rule as navigateToReceiveNewHandoverBill(); the label follows
+            // childBundle.isShortageRelated() (#24555).
+            if (childBundle.getCashValue() < -0.001 || childBundle.isShortageRelated()) {
                 childBundle.setPaymentHandover(PaymentHandover.FLOATS);
             }
             bundle.getBundles().add(childBundle);
@@ -2249,6 +2241,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
             return null;
         }
+        if (!claimPendingHandoverBill()) {
+            return null;
+        }
 
         selectedBill.setCancelled(true);
         selectedBill.setCompleted(true);
@@ -2294,6 +2289,7 @@ public class FinancialTransactionController implements Serializable {
         }
 
         resetFloatPaymentsOfHandover(selectedBill);
+        restoreSenderDrawerOfHandover(selectedBill);
 
         return navigateToReceiveHandoverBillsForMe();
     }
@@ -2305,6 +2301,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (selectedBill.getBillTypeAtomic() != BillTypeAtomic.FUND_SHIFT_HANDOVER_CREATE) {
             JsfUtil.addErrorMessage("Wrong Bill Type.");
+            return null;
+        }
+        if (!claimPendingHandoverBill()) {
             return null;
         }
 
@@ -2348,8 +2347,60 @@ public class FinancialTransactionController implements Serializable {
         }
 
         resetFloatPaymentsOfHandover(selectedBill);
+        restoreSenderDrawerOfHandover(selectedBill);
 
         return navigateToMyHandovers();
+    }
+
+    /**
+     * Atomically claims the selected handover for Recall, Reject or Accept: a single
+     * conditional UPDATE marks it completed only if it is still pending, so only one
+     * request can win. A page left open, or two overlapping requests, can otherwise
+     * cancel an accepted handover or accept one twice (#24435). Call it after the
+     * caller's own validation, because a claimed handover is no longer pending.
+     */
+    private boolean claimPendingHandoverBill() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", selectedBill.getId());
+        int claimed = billFacade.updateByJpql("UPDATE Bill b SET b.completed = true "
+                + "WHERE b.id = :id AND b.completed = false AND b.cancelled = false", params);
+        Bill fresh = billFacade.findWithoutCache(selectedBill.getId());
+        if (claimed != 1 || fresh == null) {
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("Handover bill not found.");
+            } else if (fresh.isCancelled()) {
+                JsfUtil.addErrorMessage("This handover has already been recalled or rejected.");
+            } else {
+                JsfUtil.addErrorMessage("This handover has already been accepted.");
+            }
+            return false;
+        }
+        selectedBill = fresh;
+        return true;
+    }
+
+    /**
+     * Puts back in the sender's drawer what creating the handover took out: the counted
+     * cash and each non-cash payment, recorded as negative drawer entries on the create
+     * bill. Recall and Reject call it once, after claimPendingHandoverBill (#24463).
+     */
+    private void restoreSenderDrawerOfHandover(Bill handoverBill) {
+        if (handoverBill == null) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", handoverBill);
+        List<DrawerEntry> entries = drawerEntryFacade.findByJpql("SELECT de FROM DrawerEntry de "
+                + "WHERE de.retired = false AND de.bill = :bill AND de.transactionValue < 0", params);
+        if (entries == null) {
+            return;
+        }
+        for (DrawerEntry de : entries) {
+            if (de.getWebUser() == null || de.getPaymentMethod() == null) {
+                continue;
+            }
+            drawerController.updateDrawer(handoverBill, Math.abs(de.getTransactionValue()), de.getPaymentMethod(), de.getWebUser());
+        }
     }
 
     /**
@@ -2495,7 +2546,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void fillHandoverStatusReport() {
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpqlBuilder = new StringBuilder("select s from Bill s "
                 + "where (s.retired=false or s.retired is null) "
@@ -3225,6 +3276,9 @@ public class FinancialTransactionController implements Serializable {
             uniquePayments.addAll(othersPayments);
         }
         for (Payment p : uniquePayments) {
+            if (p.getPaymentSettlementBill() != null) {
+                continue;
+            }
             if (p.getPaymentMethod() == currentPayment.getPaymentMethod()) {
                 p.setSelectedForHandover(false);
                 fundTransferAvailablePayments.add(p);
@@ -3553,6 +3607,17 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("At least one float must be added before settlement");
             return "";
         }
+        for (Payment cp : getCurrentBillPayments()) {
+            Payment ref = cp.getReferancePayment();
+            if (ref != null && ref.getId() != null) {
+                Payment fresh = paymentFacade.find(ref.getId());
+                if (fresh != null && fresh.getPaymentSettlementBill() != null) {
+                    floatTransferStarted = false;
+                    JsfUtil.addErrorMessage("Payment " + ref.getId() + " is in a non-cash settlement request awaiting approval and cannot be transferred.");
+                    return "";
+                }
+            }
+        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
             Drawer drawer = sessionController.getLoggedUserDrawer() != null
@@ -3797,7 +3862,17 @@ public class FinancialTransactionController implements Serializable {
         fillPaymentsFromShiftStartToNow();
     }
 
+    /**
+     * No longer reachable from the UI (#24340 removed the "End Shift (OLD)" button on
+     * cashier/index.xhtml, since it bypassed every handover/float-transfer guard). Kept
+     * in place, unused, in case another institution's deployment still depends on it
+     * directly — do not wire a button back to it without adding the same guards as
+     * {@link #navigateToCreateShiftEndSummaryBillForHandover()}.
+     */
     public String navigateToCreateShiftEndSummaryBill() {
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return null;
+        }
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         fillPaymentsFromShiftStartToNow();
@@ -3814,6 +3889,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToCreateShiftEndSummaryBillForHandover() {
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return null;
+        }
         resetClassVariables();
         Bill startBill = findNonClosedShiftStartFundBill(sessionController.getLoggedUser());
         nonClosedShiftStartFundBill = startBill;
@@ -3990,6 +4068,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBill() {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         // Check if handover is restricted until shift is started
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
@@ -4012,6 +4093,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForCurrentShift() {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         resetClassVariables();
         Bill startBill = fetchNonClosedShiftStartFundBill();
         bundle = new ReportTemplateRowBundle();
@@ -4185,6 +4269,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForSelectedPeriod() {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         // Check if handover is restricted until shift is started
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Handover Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
@@ -4243,6 +4330,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToHandoverCreateBillForSelectedShift(Bill startBill) {
+        if (blockedByPendingNonCashSettlement("create a handover")) {
+            return null;
+        }
         resetClassVariables();
         handoverValuesCreated = false;
         bundle = new ReportTemplateRowBundle();
@@ -4507,6 +4597,9 @@ public class FinancialTransactionController implements Serializable {
 
     @Deprecated
     public String navigateToCreateShiftEndSummaryBillByBills() {
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return null;
+        }
         resetClassVariables();
         findNonClosedShiftStartFundBillIsAvailable();
         fillBillsFromShiftStartToNow();
@@ -5399,11 +5492,16 @@ public class FinancialTransactionController implements Serializable {
                                 countedFundTransferPayments.add(p);
                             }
                         } else if (bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL) {
-                            // Float in received by this user
+                            // Float in received by this user. A net float carried in by an
+                            // accepted handover keeps its sign — negative when the sender's
+                            // shift sent more float out than it received (#24428).
+                            double floatInValue = isNetFloatFromHandoverAccept(p)
+                                    ? p.getPaidValue()
+                                    : Math.abs(p.getPaidValue());
                             countedFundTransferPayments.add(p);
-                            floatInAcc += Math.abs(p.getPaidValue());
+                            floatInAcc += floatInValue;
                             if (p.getPaymentMethod() == PaymentMethod.Cash) {
-                                cashFloatInAcc += Math.abs(p.getPaidValue());
+                                cashFloatInAcc += floatInValue;
                             }
                         }
                         // Cancelled, declined, or pending — no drawer effect, skip
@@ -5419,6 +5517,10 @@ public class FinancialTransactionController implements Serializable {
                 String userKey = (p.getCreater() != null && p.getCreater().getId() != null) ? p.getCreater().getId().toString() : "No User";
                 String webUserKey = (p.getCurrentHolder() != null && p.getCurrentHolder().getId() != null) ? p.getCurrentHolder().getId().toString() : "No WebUser";
                 String handoverKey = (ph != null) ? ph.name() : "No Handover"; // Use the enum name as part of the key
+                // Keep shift shortages out of the bank deposit / float movement row (#24555)
+                if (p.getBill() != null && ReportTemplateRowBundle.isShortageBillType(p.getBill().getBillTypeAtomic())) {
+                    handoverKey += "-SHORTAGE";
+                }
 
                 String key = String.join("-", dateKey, deptKey, userKey, webUserKey, handoverKey);
 
@@ -5935,6 +6037,9 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        if (blockedByPendingNonCashSettlement("end your shift")) {
+            return "";
+        }
 
         nonClosedShiftStartFundBill = currentBill.getReferenceBill();
 
@@ -6109,6 +6214,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (currentBill.getReferenceBill() == null) {
             JsfUtil.addErrorMessage("Error");
+            return "";
+        }
+        if (blockedByPendingNonCashSettlement("end your shift")) {
             return "";
         }
         if (fundTransferBillsToReceive != null && !fundTransferBillsToReceive.isEmpty()) {
@@ -6296,6 +6404,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (user.equals(sessionController.getLoggedUser())) {
             JsfUtil.addErrorMessage("Cannot handover to yourself. Please select a different user.");
+            return null;
+        }
+        if (blockedByPendingNonCashSettlement("create a handover")) {
             return null;
         }
         if (bundle == null) {
@@ -7528,6 +7639,22 @@ public class FinancialTransactionController implements Serializable {
                 || bta == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED;
     }
 
+    /**
+     * True for the receiver-side net float payment that
+     * acceptHandoverBillAndWriteToCashbook() creates: a FUND_TRANSFER_RECEIVED_BILL
+     * whose reference bill is the handover accept bill. Unlike an ordinary float
+     * receipt, its paid value is signed.
+     */
+    private boolean isNetFloatFromHandoverAccept(Payment payment) {
+        if (payment == null || payment.getBill() == null) {
+            return false;
+        }
+        Bill bill = payment.getBill();
+        return bill.getBillTypeAtomic() == BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL
+                && bill.getReferenceBill() != null
+                && bill.getReferenceBill().getBillTypeAtomic() == BillTypeAtomic.FUND_SHIFT_HANDOVER_ACCEPT;
+    }
+
     public boolean hasAtLeastOneHandoverBillToReceive(WebUser fromUser,
             Staff fromStaff,
             WebUser toUser,
@@ -7626,6 +7753,21 @@ public class FinancialTransactionController implements Serializable {
         return billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * A user with a non-cash settlement awaiting approval may not end their shift or
+     * create a handover (#24541). Not bypassable by any configuration option.
+     */
+    private boolean blockedByPendingNonCashSettlement(String actionText) {
+        Request pending = paymentSettlementService.findPendingRequestOf(sessionController.getLoggedUser());
+        if (pending == null) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("You have a non-cash settlement awaiting approval (request "
+                + pending.getRequestNo() + "). It must be approved or rejected before you can "
+                + actionText + ".");
+        return true;
+    }
+
     public boolean isHandoverRequiredButNotComplete() {
         boolean requireHandoverBeforeShiftEnd = configOptionApplicationController
                 .getBooleanValueByKey("Require Handover Before Shift End", false);
@@ -7678,7 +7820,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandoverBillsForMeToReceive() {
         String sql;
-        fundTransferBillsToReceive = new ArrayDeque<>();
+        fundTransferBillsToReceive = new ArrayList<>();
         handoverBillsToReceiveCount = 0;
         Map tempMap = new HashMap();
         sql = "select s "
@@ -7706,7 +7848,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillMyHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -7724,7 +7866,7 @@ public class FinancialTransactionController implements Serializable {
 
     public void fillHandovers() {
         String jpql;
-        currentBills = new ArrayDeque<>();
+        currentBills = new ArrayList<>();
         Map params = new HashMap();
         jpql = "select s "
                 + "from Bill s "
@@ -8068,6 +8210,10 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String acceptHandoverBillAndWriteToCashbook() {
+        if (selectedBill == null) {
+            JsfUtil.addErrorMessage("Please select a bill.");
+            return null;
+        }
         if (bundle == null) {
             JsfUtil.addErrorMessage("Error - Null Bundle");
             return null;
@@ -8078,6 +8224,9 @@ public class FinancialTransactionController implements Serializable {
         }
         if (bundle.getBundles().isEmpty()) {
             JsfUtil.addErrorMessage("No Payments to Handover");
+            return null;
+        }
+        if (!claimPendingHandoverBill()) {
             return null;
         }
         currentBill = new Bill();
@@ -8208,8 +8357,9 @@ public class FinancialTransactionController implements Serializable {
         // floatRecipient was never set for shift-handover floats). Without this, the receiver's
         // Shift Handover Create page shows no float row and a missing "Net To Handover" line.
         // The payment's paidValue preserves the signed net (positive = receiver gains cash,
-        // negative = receiver transfers cash out); we use updateDrawer (sign-preserving)
-        // instead of updateDrawerForIns (which takes Math.abs).
+        // negative = receiver transfers cash out). It is a record only: the drawer was
+        // already credited with the counted denomination total above, which includes the
+        // float, so moving the drawer again would double-count it (#24428).
         double cashFloatNet = bundle.getCashFloatNetTotal();
         if (Math.abs(cashFloatNet) > 0.001) {
             Bill floatReceivedBill = new Bill();
@@ -8250,7 +8400,6 @@ public class FinancialTransactionController implements Serializable {
             floatPayment.setInstitution(null);
             floatPayment.setCreatedAt(new Date());
             paymentController.save(floatPayment);
-            drawerController.updateDrawer(floatPayment, cashFloatNet, reciver);
         }
 
         billController.save(currentBill);
@@ -8488,6 +8637,7 @@ public class FinancialTransactionController implements Serializable {
                 + "AND p.currentHolder = :holder "
                 + "AND p.paymentMethod <> :cash "
                 + "AND p.paidValue > 0 "
+                + "AND p.paymentSettlementBill IS NULL "
                 + "ORDER BY p.createdAt DESC";
         Map<String, Object> params = new HashMap<>();
         params.put("holder", loggedUser);
@@ -9216,6 +9366,16 @@ public class FinancialTransactionController implements Serializable {
         if (currentBill.getBillType() != BillType.DepositFundBill) {
             JsfUtil.addErrorMessage("Error");
             return "";
+        }
+        for (Payment cp : getCurrentBillPayments()) {
+            Payment ref = cp.getReferancePayment();
+            if (ref != null && ref.getId() != null) {
+                Payment fresh = paymentFacade.find(ref.getId());
+                if (fresh != null && fresh.getPaymentSettlementBill() != null) {
+                    JsfUtil.addErrorMessage("Payment " + ref.getId() + " is in a non-cash settlement request awaiting approval and cannot be deposited.");
+                    return "";
+                }
+            }
         }
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
@@ -10833,7 +10993,7 @@ public class FinancialTransactionController implements Serializable {
         // Shift Management Tab Configurations
         cashierIndexMetadata.addConfigOption(new ConfigOptionInfo(
                 "Legacy Handover is enabled",
-                "When enabled, shows legacy handover options in the Shift Management tab including 'End Shift - OLD', 'Handover (OLD)', and 'Handover Shift (OLD)' buttons.",
+                "When enabled, shows legacy handover options in the Shift Management tab including 'Handover (OLD)' and 'Handover Shift (OLD)' buttons.",
                 OptionScope.APPLICATION
         ));
 

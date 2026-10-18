@@ -49,6 +49,9 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - Cache autocomplete results for converter
 - Defer expensive discount calculations
 
+### Store module
+- Hospitals issue and return Store items to BHTs through the pharmacy flow and controllers (e.g. `BhtIssueReturnController`). The `bean/store/*ReturnController` pages are still reachable (Theatre / Store → BHT Issue menus) but aren't used in practice. Don't add fixes or guards there unless an issue explicitly reports that path; fix the pharmacy controller and say so in the issue.
+
 ## GRN Report Testing
 
 When testing GRN / Direct Purchase report changes:

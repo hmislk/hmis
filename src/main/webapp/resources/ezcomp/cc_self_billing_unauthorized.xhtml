@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!--
+        Shown when a Collecting Centre self-service user opens a section
+        without its privilege. Reuses the "not available" card styles.
+    -->
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <div class="cc-na-wrap">
+            <div class="cc-na-blob-mid"/>
+            <div class="cc-na-card">
+                <div class="cc-na-icon-ring">
+                    <div class="cc-na-icon">
+                        <h:outputText styleClass="fas fa-lock"/>
+                    </div>
+                </div>
+
+                <h:outputText styleClass="cc-na-title" value="Not Authorized"/>
+
+                <h:outputText styleClass="cc-na-message" escape="false"
+                              rendered="#{collectingCentreSelfCommonController.unauthorizedPrivilege != null}"
+                              value="You do not have the privilege &lt;span class=&quot;cc-na-highlight&quot;&gt;#{collectingCentreSelfCommonController.unauthorizedPrivilege.label}&lt;/span&gt;. Please contact your system administrator."/>
+                <h:outputText styleClass="cc-na-message"
+                              rendered="#{collectingCentreSelfCommonController.unauthorizedPrivilege == null}"
+                              value="You do not have the privilege to open this page. Please contact your system administrator."/>
+
+                <div class="cc-na-actions">
+                    <p:commandButton id="btnCcUnauthorizedDashboard"
+                                     ajax="false"
+                                     value="Back to Dashboard"
+                                     icon="pi pi-home"
+                                     styleClass="cc-na-btn-home"
+                                     rendered="#{webUserController.hasPrivilege('CcSelfBillingMenu')}"
+                                     action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"/>
+                    <p:commandButton id="btnCcUnauthorizedLogout"
+                                     ajax="false"
+                                     value="Logout"
+                                     icon="pi pi-sign-out"
+                                     styleClass="cc-na-btn-logout"
+                                     action="#{sessionController.logout}"/>
+                </div>
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>
