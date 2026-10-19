@@ -2926,7 +2926,7 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelBill(getBill(), comment, paymentMethod, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
 
             //Copy & paste
             if (cb.getId() == null) {
