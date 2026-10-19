@@ -72,7 +72,7 @@
                                                              and inwardCombinedPaymentReportController.summaryView}">
                                     <p:dataExporter type="xlsx"
                                                     target="tblSubtotals"
-                                                    fileName="Combined Inward Payments Summary"
+                                                    fileName="#{inwardCombinedPaymentReportController.exportFileName}"
                                                     postProcessor="#{inwardCombinedPaymentReportController.postProcessExport}" />
                                 </p:commandButton>
 
@@ -84,7 +84,7 @@
                                                              and not inwardCombinedPaymentReportController.summaryView}">
                                     <p:dataExporter type="xlsx"
                                                     target="tblRows"
-                                                    fileName="Combined Inward Payments"
+                                                    fileName="#{inwardCombinedPaymentReportController.exportFileName}"
                                                     postProcessor="#{inwardCombinedPaymentReportController.postProcessExport}" />
                                 </p:commandButton>
 
