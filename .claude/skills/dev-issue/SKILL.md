@@ -60,6 +60,9 @@ issue, sets the project board status to In Progress.
 
 ## 2. Investigate
 
+- **Before investigating, and again before coding, check for open PRs on the issue and its related issues:**
+  `gh pr list --repo hmislk/hmis --state open --search "<N> OR <related N>"`.
+  If one exists, build on its branch instead of opening a parallel PR.
 - Read the issue body and comments:
   `gh issue view $0 --repo hmislk/hmis --json title,body,labels,comments`
   (`--comments` and `gh pr edit` fail with "Projects (classic) is being
