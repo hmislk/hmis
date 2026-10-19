@@ -170,7 +170,12 @@ Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" |
   Where-Object { $_.CommandLine -like '*ms-playwright-mcp*' } |
   Select-Object ProcessId, CommandLine
 ```
-Every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
+**First check who owns it.** `ps -o ppid= -p <chrome pid>` gives `playwright-mcp`,
+and its parent is a `claude` process. If that `claude` is still running, another
+session owns the browser: don't kill it. Drive the app with a standalone node
+script instead (`chromium.launch({ channel: 'chrome', headless: true })`).
+
+If the owner is gone, every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
 crashpad handler, gpu-process, utility, renderer subprocesses) is safe to
 `Stop-Process -Force` — they all share that same isolated profile directory,
 distinct from the user's real Chrome profile. After clearing them,

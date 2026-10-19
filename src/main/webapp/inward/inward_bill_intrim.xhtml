@@ -76,7 +76,7 @@
                                                     forceSelection="true"
                                                     required="true"
                                                     requiredMessage="Please select a patient"
-                                                    value="#{bhtSummeryController.patientEncounter}"
+                                                    value="#{bhtSummeryController.admissionToOpen}"
                                                     completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
                                                     var="myItem"
                                                     itemValue="#{myItem}"
@@ -127,7 +127,7 @@
                                         </div>
 
                                         <h:panelGroup id="pnlPatientPreview">
-                                            <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
+                                            <h:panelGroup rendered="#{bhtSummeryController.admissionToOpen ne null}" layout="block">
                                                 <div class="card border-primary mt-3 mb-3">
                                                     <div class="card-header bg-primary text-white py-2">
                                                         <div class="d-flex align-items-center">
@@ -139,29 +139,29 @@
                                                         <div class="row">
                                                             <div class="col-md-3 mb-2">
                                                                 <small class="text-muted d-block">Patient Name</small>
-                                                                <strong>#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}</strong>
+                                                                <strong>#{bhtSummeryController.admissionToOpen.patient.person.nameWithTitle}</strong>
                                                             </div>
                                                             <div class="col-md-2 mb-2">
                                                                 <small class="text-muted d-block">BHT No</small>
-                                                                <strong class="text-primary">#{bhtSummeryController.patientEncounter.bhtNo}</strong>
+                                                                <strong class="text-primary">#{bhtSummeryController.admissionToOpen.bhtNo}</strong>
                                                             </div>
                                                             <div class="col-md-2 mb-2">
                                                                 <small class="text-muted d-block">PHN</small>
-                                                                <strong>#{bhtSummeryController.patientEncounter.patient.phn}</strong>
+                                                                <strong>#{bhtSummeryController.admissionToOpen.patient.phn}</strong>
                                                             </div>
                                                             <div class="col-md-2 mb-2">
                                                                 <small class="text-muted d-block">Room</small>
-                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom ne null}">
-                                                                    <strong>#{bhtSummeryController.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                                <h:panelGroup rendered="#{bhtSummeryController.admissionToOpen.currentPatientRoom ne null}">
+                                                                    <strong>#{bhtSummeryController.admissionToOpen.currentPatientRoom.roomFacilityCharge.name}</strong>
                                                                 </h:panelGroup>
-                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom eq null}">
+                                                                <h:panelGroup rendered="#{bhtSummeryController.admissionToOpen.currentPatientRoom eq null}">
                                                                     <span class="text-muted">Not assigned</span>
                                                                 </h:panelGroup>
                                                             </div>
                                                             <div class="col-md-3 mb-2">
                                                                 <small class="text-muted d-block">Status</small>
-                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtSummeryController.patientEncounter.discharged}" />
-                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtSummeryController.patientEncounter.discharged}" />
+                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtSummeryController.admissionToOpen.discharged}" />
+                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtSummeryController.admissionToOpen.discharged}" />
                                                             </div>
                                                         </div>
                                                     </div>
