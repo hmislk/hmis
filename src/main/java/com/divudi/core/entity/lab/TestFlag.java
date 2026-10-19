@@ -46,6 +46,12 @@ public class TestFlag extends InvestigationItemValue implements Serializable {
     boolean displayNormalMessage;
     double fromVal;
     double toVal;
+    
+    @Lob
+    private String maxPossibleValue;
+    
+    @Lob
+    private String minPossibleValue;
 
     public double getFromVal() {
         return fromVal;
@@ -184,5 +190,21 @@ public class TestFlag extends InvestigationItemValue implements Serializable {
 
     public void setInvestigationItemOfFlagType(InvestigationItem investigationItemOfFlagType) {
         this.investigationItemOfFlagType = investigationItemOfFlagType;
+    }
+
+    public String getMaxPossibleValue() {
+        return maxPossibleValue;
+    }
+
+    public void setMaxPossibleValue(String maxPossibleValue) {
+        this.maxPossibleValue = maxPossibleValue;
+    }
+
+    public String getMinPossibleValue() {
+        return minPossibleValue;
+    }
+
+    public void setMinPossibleValue(String minPossibleValue) {
+        this.minPossibleValue = minPossibleValue;
     }
 }

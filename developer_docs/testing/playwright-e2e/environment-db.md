@@ -20,6 +20,8 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [141. Patient phone quick search matches `PATIENTPHONENUMBER` or `PATIENTMOBILENUMBER`, not `PERSON.PHONE`](#141-patient-phone-quick-search-matches-patientphonenumber-or-patientmobilenumber-not-personphone)
 - [142. Deploy fails with `JNDI lookup failed ${JDBC_DATASOURCE}`: the WAR was built with placeholders](#142-deploy-fails-with-jndi-lookup-failed-jdbc_datasource-the-war-was-built-with-placeholders)
 - [146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)](#146-clicks-register-as-no-ops-the-mcp-browser-profile-is-zoomed-devicepixelratio-075)
+- [148. Testing a failure path: inject the failure with a local DB trigger, never in code](#148-testing-a-failure-path-inject-the-failure-with-a-local-db-trigger-never-in-code)
+- [152. Room-charge totals never match the room table on a package admission](#152-room-charge-totals-never-match-the-room-table-on-a-package-admission)
 
 ---
 
@@ -470,3 +472,17 @@ Build only while `persistence.xml` holds local JNDI (`jdbc/coop` / `jdbc/ruhunuA
 
 Symptom: `browser_click` "succeeds" but no POST fires, checkboxes stay unticked, and an accordion opens then closes. Check `devicePixelRatio` and `innerWidth` in `browser_evaluate`. A stored per-host zoom (e.g. 0.75, `innerWidth` 2560 at a 1920 viewport) survives `Ctrl+0`, `browser_close` and the CDP metrics override.
 Fix: drive the flow with the local node rig (fresh `chromium.launch({ channel: 'chrome' })` context, no stored zoom).
+
+## 148. Testing a failure path: inject the failure with a local DB trigger, never in code
+
+To exercise a compensation/rollback path, add a temporary `BEFORE UPDATE`/`INSERT` trigger
+on the **local** DB that `SIGNAL SQLSTATE '45000'`s on exactly the write to fail; drop it
+right after the run. Never put a test `throw` (flag file, system property) in business
+code. Narrow the condition (e.g. `NEW.retired = 0`) so the compensation's own writes pass.
+
+## 152. Room-charge totals never match the room table on a package admission
+
+An admission with `PATIENTENCOUNTER.INPATIENTPACKAGE_ID` set shows flat package
+allocations for Room/MO/Nursing Charges, not the calculated room charges. When
+picking a test admission for room-charge checks, filter
+`INPATIENTPACKAGE_ID IS NULL`.

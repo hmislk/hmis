@@ -129,6 +129,7 @@
                                     }
                                 </style>
 
+                                <h:outputScript library="js" name="lab-report-pdf.js" target="body"/>
                                 <script>
                                     function downloadPdf() {
                                         recordExportHistory();
@@ -145,7 +146,7 @@
                                             jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
                                         };
                                         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-                                            pdf.deletePage(2);
+                                            return labReportTrimPdf(pdf, element);
                                         }).save().then(() => {
                                             element.classList.add('print-only');
                                             if (window.ccFitScreen) {

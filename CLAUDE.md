@@ -10,10 +10,12 @@
 - **🚨 No worktrees.** Never use `isolation: "worktree"`; edit in the main checkout. If you are under `.claude/worktrees/*`, stop and move there. (Worktrees desync the developer's branch.)
 - **🚨 No Artifact tool for deliverables.** Recipients can't open them without a Claude account. Write `.md` in `tmp/` (working), `developer_docs/` (tracked) or `../hmis.wiki/` (wiki; never inside this repo).
 - **🚨 Discuss uncertainties** about the implementation approach with the user before coding.
+- **🚨 Removing or hiding a feature? Check production usage first.** Run a read-only query of its bill types/tables on every production DB before coding, not at merge. Keep the results in `tmp/`.
 - **🚨 Live config: apply agreed values exactly**, check the deployed branch has the code, then verify a newly created record, not the config row. See [app-configuration skill](.claude/skills/app-configuration/SKILL.md).
 - **🚨 Retrospect after nontrivial work.** If a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix and ask before opening a PR. Write it as a short rule, not a story. See [Retrospective](developer_docs/process/continuous-improvement-retrospective.md).
 
 ### Code
+- Line endings differ by machine (many files are CRLF on Windows). Edit with the Edit tool; if you script a replacement, match the file's line endings and check the diff for whole-file changes.
 - **🚨 No mock data** or temporary workarounds in business logic.
 - **🚨 Never "fix" intentional typos** (e.g. `purcahseRate`); they are DB column names.
 - **🚨 Never rename composite components** without checking every usage.

@@ -15,6 +15,7 @@ import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.Sex;
+import com.divudi.core.data.lab.ReportPageSettings;
 import com.divudi.core.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PatientReportBean;
@@ -205,14 +206,11 @@ public class PatientReportController implements Serializable {
         if (patientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             if (patientReport.getApproved()) {
                 calculatedRequerd = false;
-                System.out.println("Navigate the Report. (Approved) ----> Calculated Requerd = " + calculatedRequerd);
             } else {
                 calculatedRequerd = true;
-                System.out.println("Navigate the Report. (Pending Approved) ----> Calculated Requerd = " + calculatedRequerd);
             }
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
         if (null == patientReport.getReportType()) {
@@ -276,8 +274,6 @@ public class PatientReportController implements Serializable {
             labTestHistoryController.addParientDetailsEditHistory(currentPtIx, currentPatientReport);
         }
 
-        System.out.println("Successfully Update Patient Name, Age, Gender.");
-        
         calculatedRequerd = true;
 
         Boolean updateDynamicLabel = false;
@@ -296,16 +292,13 @@ public class PatientReportController implements Serializable {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
                     labTestHistoryController.addReCalculateDynamicLabelHistory(currentPtIx, currentPatientReport);
                 }
-                System.out.println("Successfully Update DynamicLabel in Report");
             }
         }
-        
+
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = true;
-            System.out.println("Patient Details Update ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
     }
@@ -946,9 +939,24 @@ public class PatientReportController implements Serializable {
 
             if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().isEmpty()) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    double tmpDbl = CommonFunctions.extractDoubleValue(priv.getStrValue());
-                    priv.setStrValue(CommonFunctions.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
-                    priv.setDoubleValue(tmpDbl);
+                    String typed = priv.getStrValue() == null ? "" : priv.getStrValue().replace(",", "").trim();
+                    Double typedNumber = null;
+                    try {
+                        double parsed = Double.parseDouble(typed);
+                        if (!Double.isNaN(parsed) && !Double.isInfinite(parsed)) {
+                            typedNumber = parsed;
+                        }
+                    } catch (NumberFormatException e) {
+                        typedNumber = null;
+                    }
+                    if (typedNumber != null) {
+                        // Numeric result: format the text and keep the number
+                        priv.setStrValue(CommonFunctions.formatNumber(typedNumber, priv.getInvestigationItem().getFormatString()));
+                        priv.setDoubleValue(typedNumber);
+                    } else {
+                        // Non-numeric result (e.g. "<0.001", ">100", empty): keep the text as typed, number is 0
+                        priv.setDoubleValue(0.0);
+                    }
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
                     Double numberWithFormatter = CommonFunctions.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
@@ -1077,12 +1085,10 @@ public class PatientReportController implements Serializable {
 
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = false;
-            System.out.println("Calculation Complete. ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-        
+
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1152,29 +1158,36 @@ public class PatientReportController implements Serializable {
         m.put("s", v.getPatient().getPerson().getSex());
         m.put("f", v.getInvestigationItem());
 //        m.put("a", v.getPatient().getAgeInDays());
+
         sql = "Select f from TestFlag f where f.retired=false and f.investigationItemOfFlagType=:f and f.sex=:s order by f.orderNo";
         List<TestFlag> fs = getTestFlagFacade().findByJpql(sql, m);
+        
         for (TestFlag f : fs) {
 
             Long a = v.getPatient().getAgeInDays();
-            //System.err.println("Age is a" + a);
-            //System.err.println("From Age is " + f.getFromAge());
-            //System.err.println("To Age is " + f.getToAge());
 
-            //////System.out.println("flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {
-                //////System.out.println("searching val");
+
                 PatientReportItemValue val = findItemValue(currentPatientReport, f.getInvestigationItemOfValueType());
-                //////System.out.println("val is " + val);
                 if (val == null) {
-                    //////System.out.println("val is null");
                     continue;
                 }
                 Double d = val.getDoubleValue();
+                
                 if (d == null || d == 0) {
                     try {
-                        if (NumberUtils.isNumber(val.getStrValue())) {
-                            d = Double.parseDouble(val.getStrValue());
+                        String strValue = val.getStrValue() == null ? "" : val.getStrValue().trim();
+                        if (NumberUtils.isNumber(strValue)) {
+                            d = Double.parseDouble(strValue);
+                        } else if (!strValue.isEmpty()) {
+                            if (f.getMaxPossibleValue() != null && f.getMaxPossibleValue().trim().equalsIgnoreCase(strValue)) {
+                                return f.getHighMessage();
+                            }
+                            if (f.getMinPossibleValue() != null && f.getMinPossibleValue().trim().equalsIgnoreCase(strValue)) {
+                                return f.getLowMessage();
+                            }
+                            // Non-numeric text that matches neither Min nor Max Possible Value: try later rules; no flag if none match
+                            continue;
                         } else {
                             d = 0.0;
                         }
@@ -1185,13 +1198,10 @@ public class PatientReportController implements Serializable {
                 }
 
                 if (f.getFromVal() > d) {
-                    //////System.out.println("dddddddddddddd 1");
                     return f.getLowMessage();
                 } else if (f.getToVal() < d) {
-                    //////System.out.println("dddddddddddddd 2");
                     return f.getHighMessage();
                 } else {
-                    //////System.out.println("dddddddddddddd 3");
                     return f.getFlagMessage();
                 }
             }
@@ -1236,7 +1246,6 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentReportInvestigation(Investigation currentReportInvestigation) {
-        //////System.out.println("setting currentReportInvestigation - " + currentReportInvestigation.getName());
         this.currentReportInvestigation = currentReportInvestigation;
     }
 
@@ -1274,12 +1283,10 @@ public class PatientReportController implements Serializable {
 
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = true;
-            System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
-        
+
     }
 
     /**
@@ -1349,10 +1356,8 @@ public class PatientReportController implements Serializable {
 
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = true;
-            System.out.println("Saved Report Values (Result) ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
         JsfUtil.addSuccessMessage("Saved");
@@ -2195,7 +2200,7 @@ public class PatientReportController implements Serializable {
                 return;
             }
         }
-        
+
         boolean authorized = configOptionApplicationController.getBooleanValueByKey("The relevant authorized user must approve the test report himself.", false);
         if (authorized) {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().getStaff() != null) {
@@ -2332,7 +2337,6 @@ public class PatientReportController implements Serializable {
         }
 
         calculatedRequerd = true;
-        System.out.println("After Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);
 
         JsfUtil.addSuccessMessage("Approved");
 
@@ -2674,10 +2678,8 @@ public class PatientReportController implements Serializable {
 
         if (currentPatientReport.getPatientInvestigation().getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = true;
-            System.out.println("After Cancel Approvel, Reset the Calculated Requerd Value ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
     }
@@ -3186,13 +3188,151 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport getCurrentPatientReport() {
-//        PatientReport cpt;
-//        if (currentPatientReport != null && currentPatientReport.getId() != null && currentPatientReport.getId() != 0) {
-//            cpt = getFacade().find(currentPatientReport.getId());
-//            currentPatientReport = cpt;
-//        }
-//        //System.out.println("currentPatientReport = " + currentPatientReport.toString());
         return currentPatientReport;
+    }
+
+    /**
+     * Multi-page lab reports are off unless the hospital turns this option on.
+     */
+    public boolean isMultiPageEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(ReportPageSettings.CONFIG_KEY_ENABLED, false);
+    }
+
+    /**
+     * Number of pages of the current report's template: the highest page of any
+     * non-retired template item, at least 1.
+     */
+    public int getCurrentReportPageCount() {
+        if (currentPatientReport == null || currentPatientReport.getItem() == null) {
+            return 1;
+        }
+        int pages = 1;
+        for (InvestigationItem ii : currentPatientReport.getItem().getReportItems()) {
+            // hidden page-settings items do not make a page: only real content does
+            if (ii != null && !ii.isRetired() && !ReportPageSettings.isSettingsItem(ii)) {
+                pages = Math.max(pages, ReportPageSettings.pageOf(ii));
+            }
+        }
+        return pages;
+    }
+
+    public boolean isCurrentReportMultiPage() {
+        // Only General (absolute-positioned) reports can have more than one page
+        if (currentPatientReport == null
+                || !(currentPatientReport.getItem() instanceof Investigation)
+                || ((Investigation) currentPatientReport.getItem()).getReportType() != InvestigationReportType.General) {
+            return false;
+        }
+        return isMultiPageEnabled() && getCurrentReportPageCount() > 1;
+    }
+
+    /**
+     * Values of the current report that belong on page 1. For a single-page
+     * report (or with the option off) this is the unchanged full list.
+     */
+    public List<PatientReportItemValue> getPageOneItemValues() {
+        return getItemValuesForPage(1);
+    }
+
+    public List<PatientReportItemValue> getItemValuesForPage(int page) {
+        if (currentPatientReport == null) {
+            return new ArrayList<>();
+        }
+        List<PatientReportItemValue> all = currentPatientReport.getPatientReportItemValues();
+        if (!isCurrentReportMultiPage()) {
+            return page == 1 ? all : new ArrayList<>();
+        }
+        List<PatientReportItemValue> onPage = new ArrayList<>();
+        for (PatientReportItemValue v : all) {
+            if (v.getInvestigationItem() == null || ReportPageSettings.pageOf(v.getInvestigationItem()) == page) {
+                onPage.add(v);
+            }
+        }
+        return onPage;
+    }
+
+    /**
+     * Template items of the current report that belong on page 1, without the
+     * hidden page-settings items.
+     */
+    public List<InvestigationItem> getPageOneReportItems() {
+        return getReportItemsForPage(1);
+    }
+
+    public List<InvestigationItem> getReportItemsForPage(int page) {
+        if (currentPatientReport == null || currentPatientReport.getItem() == null) {
+            return new ArrayList<>();
+        }
+        List<InvestigationItem> all = currentPatientReport.getItem().getReportItems();
+        if (!isCurrentReportMultiPage()) {
+            return page == 1 ? all : new ArrayList<>();
+        }
+        List<InvestigationItem> onPage = new ArrayList<>();
+        for (InvestigationItem ii : all) {
+            if (ReportPageSettings.pageOf(ii) == page && !ReportPageSettings.isSettingsItem(ii)) {
+                onPage.add(ii);
+            }
+        }
+        return onPage;
+    }
+
+    /**
+     * Page numbers 2..N of the current report; empty for a single-page report,
+     * so the extra page boxes add nothing to today's markup.
+     */
+    public List<Integer> getExtraPageNumbers() {
+        List<Integer> extra = new ArrayList<>();
+        if (isCurrentReportMultiPage()) {
+            int pages = getCurrentReportPageCount();
+            for (int p = 2; p <= pages; p++) {
+                extra.add(p);
+            }
+        }
+        return extra;
+    }
+
+    /**
+     * Hidden settings item of a page of the current report's template, or null.
+     */
+    public InvestigationItem getPageSettingsItem(int page) {
+        if (currentPatientReport == null || currentPatientReport.getItem() == null) {
+            return null;
+        }
+        for (InvestigationItem ii : currentPatientReport.getItem().getReportItems()) {
+            if (!ii.isRetired() && ReportPageSettings.isSettingsItem(ii) && ReportPageSettings.pageOf(ii) == page) {
+                return ii;
+            }
+        }
+        return null;
+    }
+
+    public ReportPageSettings getPageSettings(int page) {
+        InvestigationItem ii = getPageSettingsItem(page);
+        return ii == null ? new ReportPageSettings() : ReportPageSettings.fromJson(ii.getHtmltext());
+    }
+
+    /**
+     * "Page n of N" for a page of a multi-page report; empty when the page has
+     * it switched off or the report has a single page.
+     */
+    public String getPageNumberText(int page) {
+        if (!isCurrentReportMultiPage()) {
+            return "";
+        }
+        ReportPageSettings s = getPageSettings(page);
+        return s.isPageNumber() ? s.formatPageNumber(page, getCurrentReportPageCount()) : "";
+    }
+
+    /**
+     * Placement of "Page n of N": where the settings item was placed in the
+     * template designer, otherwise bottom centre.
+     */
+    public String getPageNumberStyle(int page) {
+        InvestigationItem ii = getPageSettingsItem(page);
+        if (ii != null && (ii.getRiLeft() != 0 || ii.getRiTop() != 0)) {
+            return ii.getCssStyle() + "; position:absolute; z-index:1000;";
+        }
+        return "position:absolute; bottom:8mm; left:0; width:100%; text-align:center; font-size:9pt; z-index:1000;";
     }
 
     public PatientReport getLastPatientReport(Investigation ix) {
@@ -3225,13 +3365,10 @@ public class PatientReportController implements Serializable {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
 
-        System.out.println(pi.getInvestigation().getName() + " Test Allow to Calculate = " + pi.getInvestigation().isCalculatedRequerd());
         if (pi.getInvestigation().isCalculatedRequerd()) {
             calculatedRequerd = true;
-            System.out.println("Create New Report and Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
         } else {
             calculatedRequerd = false;
-            System.out.println("Create New Report and not Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
         return link;

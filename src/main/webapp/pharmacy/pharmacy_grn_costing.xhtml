@@ -674,8 +674,13 @@
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup 
                             class="d-flex justify-content-center" 
-                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4',true)}"  >
+                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One', configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true))}"  >
                             <pha:grn_with_costing bill="#{grnCostingController.grnBill}"/>
+                        </h:panelGroup>
+                        <h:panelGroup 
+                            class="d-flex justify-content-center" 
+                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two', false)}"  >
+                            <pha:grn_with_costing_new bill="#{grnCostingController.grnBill}"/>
                         </h:panelGroup>
                         <h:panelGroup
                             class="d-flex justify-content-center"
@@ -719,9 +724,17 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <p:selectBooleanCheckbox
-                                            id="grnA4Paper"
-                                            value="#{pharmacyConfigController.grnReceiptA4}" />
-                                        <p:outputLabel for="grnA4Paper" value="A4 Paper Format" class="ms-2" />
+                                            id="grnReceiptA4One"
+                                            value="#{pharmacyConfigController.grnReceiptA4One}" />
+                                        <p:outputLabel for="grnReceiptA4One" value="A4 Paper Format One" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Standard A4 size paper format for GRN receipts</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox
+                                            id="grnReceiptA4Two"
+                                            value="#{pharmacyConfigController.grnReceiptA4Two}" />
+                                        <p:outputLabel for="grnReceiptA4Two" value="A4 Paper Format Two" class="ms-2" />
                                         <small class="form-text text-muted d-block">Standard A4 size paper format for GRN receipts</small>
                                     </div>
 

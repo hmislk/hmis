@@ -28,3 +28,10 @@
     }
 }
 
+
+/* Second and later pages of a multi-page lab report */
+.labReportNext{
+    page-break-before: always;
+    break-before: page;
+    box-sizing: border-box;
+}
