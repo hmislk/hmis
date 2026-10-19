@@ -212,7 +212,7 @@ public class InwardCombinedPaymentReportController implements Serializable {
     }
 
     /**
-     * Rows in the order the selected view shows them: grouped together under
+     * Rows in the order the generated view shows them: grouped together under
      * their group in a grouped view, plain chronological order otherwise. The
      * grouped order comes from walking the groups rather than re-sorting, so
      * rows keep their chronological order inside each group.
@@ -236,7 +236,7 @@ public class InwardCombinedPaymentReportController implements Serializable {
      * grouped by.
      */
     public String getGroupColumnHeader() {
-        return VIEW_GROUPED_BHT.equals(viewMode) ? "BHT No" : "Bill Type";
+        return VIEW_GROUPED_BHT.equals(generatedViewMode) ? "BHT No" : "Bill Type";
     }
 
     /**
@@ -374,15 +374,15 @@ public class InwardCombinedPaymentReportController implements Serializable {
     }
 
     public boolean isSummaryView() {
-        return VIEW_SUMMARY.equals(viewMode);
+        return VIEW_SUMMARY.equals(generatedViewMode);
     }
 
     public boolean isDetailView() {
-        return VIEW_DETAIL.equals(viewMode);
+        return VIEW_DETAIL.equals(generatedViewMode);
     }
 
     public boolean isGroupedView() {
-        return VIEW_GROUPED_TYPE.equals(viewMode) || VIEW_GROUPED_BHT.equals(viewMode);
+        return VIEW_GROUPED_TYPE.equals(generatedViewMode) || VIEW_GROUPED_BHT.equals(generatedViewMode);
     }
 
     public boolean isNoResults() {
