@@ -485,6 +485,10 @@ public class ChannelReportController implements Serializable {
         }
 
         bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+
+        if (bookingsByShiftDto.isEmpty()) {
+            JsfUtil.addErrorMessage("No bills match the selected filters for this shift.");
+        }
     }
 
     public void updateChannelBookingBillsForShitEndFromChannelReportController(){
@@ -494,7 +498,16 @@ public class ChannelReportController implements Serializable {
         if (bookingsByShiftDto.getShiftStartBillId() == null) {
             return;
         }
-        bookingsByShiftDto  = channelService.updateChannelBookingBillsForShitEnd(bookingsByShiftDto.getShiftStartBillId(), bookingsByShiftDto.getShiftEndBillId(), bookingsByShiftDto.getCashierId(), bookingsByShiftDto.getHospital(), categoryList, paymentMethods, bookingsByShiftDto.getShiftStartAt(), bookingsByShiftDto.getShiftEndAt(), bookingsByShiftDto.getCashierUserName());
+        WrapperDtoForChannelFutureIncome updated = channelService.updateChannelBookingBillsForShitEnd(bookingsByShiftDto.getShiftStartBillId(), bookingsByShiftDto.getShiftEndBillId(), bookingsByShiftDto.getCashierId(), bookingsByShiftDto.getHospital(), categoryList, paymentMethods, bookingsByShiftDto.getShiftStartAt(), bookingsByShiftDto.getShiftEndAt(), bookingsByShiftDto.getCashierUserName());
+        if (updated == null) {
+            JsfUtil.addErrorMessage("Could not update the report. Please try again.");
+            return;
+        }
+        updated.setProcessedBy(bookingsByShiftDto.getProcessedBy());
+        bookingsByShiftDto = updated;
+        if (bookingsByShiftDto.isEmpty()) {
+            JsfUtil.addErrorMessage("No bills match the selected filters for this shift.");
+        }
 
     }
     
@@ -649,6 +662,15 @@ public class ChannelReportController implements Serializable {
         private boolean isRefunded;
         private String refundBillDeptId;
 
+        private String doctorName;
+        private String agentName;
+        private String agentRefNo;
+        private String cardRefNo;
+        private String cardBank;
+        private String status;
+        private Map<PaymentMethod, Double> paymentSplits = new LinkedHashMap<>();
+        private double collectionValue;
+
 
 
         public ChannelIncomeDetailDto(long bsId, long billId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded, Long cancelBillId) {
@@ -668,6 +690,15 @@ public class ChannelReportController implements Serializable {
             this.isCancelled = isCancelled;
             this.isRefunded = isRefunded;
             this.cancelBillId = cancelBillId != null ? cancelBillId : null;
+        }
+
+        // constructor for the shift-end (summary collection) report
+        public ChannelIncomeDetailDto(long bsId, long billId, String billDeptId, BillTypeAtomic billTypeAtomic, Date appoinmentDate, Date billedDate, String billedBy, String patientName, String patientPhone, PaymentMethod paymentMethod, double doctorFee, double hosFee, double totalAppoinmentFee, String remark, boolean isCancelled, boolean isRefunded, Long cancelBillId, String doctorName, String agentName, String agentRefNo) {
+            this(bsId, billId, billTypeAtomic, appoinmentDate, billedDate, billedBy, patientName, patientPhone, paymentMethod, doctorFee, hosFee, totalAppoinmentFee, remark, isCancelled, isRefunded, cancelBillId);
+            this.billDeptId = billDeptId;
+            this.doctorName = doctorName;
+            this.agentName = agentName;
+            this.agentRefNo = agentRefNo;
         }
 
          // constructor for channel income card payments
@@ -690,6 +721,75 @@ public class ChannelReportController implements Serializable {
             this.cardFee = netTotal;
             this.paymentReference = paymentReference;
             this.creditCompanyName = bankName;
+        }
+
+        public String getDoctorName() {
+            return doctorName;
+        }
+
+        public void setDoctorName(String doctorName) {
+            this.doctorName = doctorName;
+        }
+
+        public String getAgentName() {
+            return agentName;
+        }
+
+        public void setAgentName(String agentName) {
+            this.agentName = agentName;
+        }
+
+        public String getAgentRefNo() {
+            return agentRefNo;
+        }
+
+        public void setAgentRefNo(String agentRefNo) {
+            this.agentRefNo = agentRefNo;
+        }
+
+        public String getCardRefNo() {
+            return cardRefNo;
+        }
+
+        public void setCardRefNo(String cardRefNo) {
+            this.cardRefNo = cardRefNo;
+        }
+
+        public String getCardBank() {
+            return cardBank;
+        }
+
+        public void setCardBank(String cardBank) {
+            this.cardBank = cardBank;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public Map<PaymentMethod, Double> getPaymentSplits() {
+            return paymentSplits;
+        }
+
+        public void setPaymentSplits(Map<PaymentMethod, Double> paymentSplits) {
+            this.paymentSplits = paymentSplits != null ? paymentSplits : new LinkedHashMap<>();
+        }
+
+        public double getSplitValue(PaymentMethod pm) {
+            Double v = paymentSplits != null ? paymentSplits.get(pm) : null;
+            return v != null ? v : 0.0;
+        }
+
+        public double getCollectionValue() {
+            return collectionValue;
+        }
+
+        public void setCollectionValue(double collectionValue) {
+            this.collectionValue = collectionValue;
         }
 
         public BillTypeAtomic getBillTypeAtomic() {
@@ -877,7 +977,182 @@ public class ChannelReportController implements Serializable {
         }
     }
 
+    public static class PaymentMethodSectionDto {
+
+        private PaymentMethod paymentMethod;
+        private String label;
+        private List<ChannelIncomeDetailDto> rows = new ArrayList<>();
+        private double hosFeeTotal;
+        private double doctorFeeTotal;
+        private double totalAmount;
+        private double collectionTotal;
+        private int billCount;
+        private List<PaymentMethod> splitMethods = new ArrayList<>();
+        private Map<PaymentMethod, Double> splitTotals = new LinkedHashMap<>();
+
+        public boolean isMultiple() {
+            return paymentMethod == PaymentMethod.MultiplePaymentMethods;
+        }
+
+        public double getSplitTotal(PaymentMethod pm) {
+            Double v = splitTotals != null ? splitTotals.get(pm) : null;
+            return v != null ? v : 0.0;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public List<ChannelIncomeDetailDto> getRows() {
+            return rows;
+        }
+
+        public void setRows(List<ChannelIncomeDetailDto> rows) {
+            this.rows = rows;
+        }
+
+        public double getHosFeeTotal() {
+            return hosFeeTotal;
+        }
+
+        public void setHosFeeTotal(double hosFeeTotal) {
+            this.hosFeeTotal = hosFeeTotal;
+        }
+
+        public double getDoctorFeeTotal() {
+            return doctorFeeTotal;
+        }
+
+        public void setDoctorFeeTotal(double doctorFeeTotal) {
+            this.doctorFeeTotal = doctorFeeTotal;
+        }
+
+        public double getTotalAmount() {
+            return totalAmount;
+        }
+
+        public void setTotalAmount(double totalAmount) {
+            this.totalAmount = totalAmount;
+        }
+
+        public double getCollectionTotal() {
+            return collectionTotal;
+        }
+
+        public void setCollectionTotal(double collectionTotal) {
+            this.collectionTotal = collectionTotal;
+        }
+
+        public int getBillCount() {
+            return billCount;
+        }
+
+        public void setBillCount(int billCount) {
+            this.billCount = billCount;
+        }
+
+        public List<PaymentMethod> getSplitMethods() {
+            return splitMethods;
+        }
+
+        public void setSplitMethods(List<PaymentMethod> splitMethods) {
+            this.splitMethods = splitMethods;
+        }
+
+        public Map<PaymentMethod, Double> getSplitTotals() {
+            return splitTotals;
+        }
+
+        public void setSplitTotals(Map<PaymentMethod, Double> splitTotals) {
+            this.splitTotals = splitTotals;
+        }
+    }
+
+    public static class PaymentMethodCollectionDto {
+
+        private PaymentMethod paymentMethod;
+        private String label;
+        private double amount;
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public void setPaymentMethod(PaymentMethod paymentMethod) {
+            this.paymentMethod = paymentMethod;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public void setAmount(double amount) {
+            this.amount = amount;
+        }
+    }
+
     public static class WrapperDtoForChannelFutureIncome {
+
+        private List<PaymentMethodSectionDto> sections = new ArrayList<>();
+        private List<PaymentMethodCollectionDto> collections = new ArrayList<>();
+        private double grandCollectionTotal;
+        private List<PaymentMethod> summaryMethods = new ArrayList<>();
+
+        public boolean isEmpty() {
+            return incomeDtos == null || incomeDtos.isEmpty();
+        }
+
+        public List<PaymentMethodSectionDto> getSections() {
+            return sections;
+        }
+
+        public void setSections(List<PaymentMethodSectionDto> sections) {
+            this.sections = sections;
+        }
+
+        public List<PaymentMethodCollectionDto> getCollections() {
+            return collections;
+        }
+
+        public void setCollections(List<PaymentMethodCollectionDto> collections) {
+            this.collections = collections;
+        }
+
+        public double getGrandCollectionTotal() {
+            return grandCollectionTotal;
+        }
+
+        public void setGrandCollectionTotal(double grandCollectionTotal) {
+            this.grandCollectionTotal = grandCollectionTotal;
+        }
+
+        public List<PaymentMethod> getSummaryMethods() {
+            return summaryMethods;
+        }
+
+        public void setSummaryMethods(List<PaymentMethod> summaryMethods) {
+            this.summaryMethods = summaryMethods;
+        }
 
         private List<ChannelIncomeDetailDto> incomeDtos;
         private List<ChannelIncomeSummeryDto> summeryDtos;
@@ -1099,6 +1374,20 @@ public class ChannelReportController implements Serializable {
         private double totalActiveAppoinments;
         private double totalCancelAppoinments;
         private double totalRefundAppoinments;
+        private Map<PaymentMethod, Double> methodTotals = new LinkedHashMap<>();
+
+        public Map<PaymentMethod, Double> getMethodTotals() {
+            return methodTotals;
+        }
+
+        public void setMethodTotals(Map<PaymentMethod, Double> methodTotals) {
+            this.methodTotals = methodTotals;
+        }
+
+        public double getMethodTotal(PaymentMethod pm) {
+            Double v = methodTotals != null ? methodTotals.get(pm) : null;
+            return v != null ? v : 0.0;
+        }
 
         public double getTotalRefundAppoinments() {
             return totalRefundAppoinments;
@@ -1234,6 +1523,10 @@ public class ChannelReportController implements Serializable {
 
         if (wrapperDto == null) {
             return;
+        }
+
+        if (wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("No bills match the selected filters.");
         }
 
         wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());

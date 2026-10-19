@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
@@ -75,6 +76,8 @@ public class GoodsReturnController implements Serializable {
     /**
      * Controllers
      */
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
     @Inject
@@ -367,7 +370,10 @@ public class GoodsReturnController implements Serializable {
 
         saveReturnBill();
 
-        Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        Payment p = null;
+        if (configOptionApplicationController.getBooleanValueByKey("Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false)) {
+            p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+        }
         saveComponent(p);
 
         calTotal();
@@ -639,7 +645,10 @@ public class GoodsReturnController implements Serializable {
     private void updateOriginalBill() {
         returnBill.setBilledBill(bill);
         billFacade.edit(returnBill);
-        bill.getRefundBills().add(returnBill);
+        // The lazy inverse list may already hold the just-persisted return; adding it again duplicated the row (issue #24483, #24109).
+        if (!bill.getRefundBills().contains(returnBill)) {
+            bill.getRefundBills().add(returnBill);
+        }
         bill.setRefundAmount(Math.abs(bill.getRefundAmount()) + Math.abs(returnBill.getNetTotal()));
         bill.setBalance(Math.abs(bill.getNetTotal()) - Math.abs(bill.getRefundAmount()));
         bill.setBackwardReferenceBill(getReturnBill());

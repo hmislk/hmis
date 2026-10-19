@@ -60,6 +60,7 @@ import com.divudi.core.facade.PriceMatrixFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.inward.TimedItemPricingService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +107,8 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
+    @EJB
+    private TimedItemPricingService timedItemPricingService;
     @EJB
     private RoomFacilityTimedItemFacade roomFacilityTimedItemFacade;
     @EJB
@@ -976,11 +979,16 @@ public class InwardBeanController implements Serializable {
      * baby's running service has to be stopped and repriced along with hers.
      */
     public List<PatientItem> fetchRunningTimedPatientItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        // A timed service whose bill was cancelled before cancellation retired
+        // it (#24548) must not count as running: left joins keep unbilled ones.
         String sql = "Select i From PatientItem i"
+                + " left join i.billItem bi"
+                + " left join bi.bill b"
                 + " where i.retired=false"
                 + " and type(i.item)=:cls"
                 + " and i.patientEncounter IN :pe"
-                + " and i.toTime is null";
+                + " and i.toTime is null"
+                + " and (bi is null or (bi.retired=false and (b is null or (b.retired=false and b.cancelled=false))))";
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
@@ -3732,58 +3740,19 @@ public class InwardBeanController implements Serializable {
         return tmp;
     }
 
+    /** Delegates to {@link TimedItemPricingService#getAllTimedItemFees}. */
     public List<TimedItemFee> getAllTimedItemFees(TimedItem ti) {
-        if (ti == null || ti.getId() == null) {
-            return new ArrayList<>();
-        }
-        HashMap hm = new HashMap();
-        hm.put("id", ti.getId());
-        // The id tiebreak matters: getFeeForBlock() indexes into this list positionally,
-        // so any two fees sharing a sortOrder would otherwise order arbitrarily and the
-        // same stay could be billed at a different tier on different runs. New fees can
-        // no longer collide (TimedItemFeeRules), but rows saved before that still can.
-        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC, tif.id ASC";
-        List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
-        return fees != null ? fees : new ArrayList<>();
+        return timedItemPricingService.getAllTimedItemFees(ti);
     }
 
+    /** Delegates to {@link TimedItemPricingService#getFeeForBlock}. */
     public TimedItemFee getFeeForBlock(List<TimedItemFee> fees, int blockNumber) {
-        if (fees == null || fees.isEmpty()) {
-            return null;
-        }
-        if (blockNumber <= fees.size()) {
-            return fees.get(blockNumber - 1);
-        }
-        TimedItemFee lastFee = fees.get(fees.size() - 1);
-        if (lastFee.isRepeating() || fees.size() == 1) {
-            return lastFee;
-        }
-        return null;
+        return timedItemPricingService.getFeeForBlock(fees, blockNumber);
     }
 
+    /** Delegates to {@link TimedItemPricingService#calTotalTimedChargeForItem}. */
     public double calTotalTimedChargeForItem(TimedItem ti, Date fromTime, Date toTime, boolean foreigner) {
-        List<TimedItemFee> fees = getAllTimedItemFees(ti);
-        if (fees.isEmpty()) {
-            return 0.0;
-        }
-        TimedItemFee firstFee = fees.get(0);
-        double count = calCount(firstFee, fromTime, toTime);
-        int wholeBlocks = (int) count;
-        double total = 0.0;
-        for (int b = 1; b <= wholeBlocks; b++) {
-            TimedItemFee fee = getFeeForBlock(fees, b);
-            if (fee != null) {
-                total += foreigner ? fee.getFfee() : fee.getFee();
-            }
-        }
-        double remainder = count - wholeBlocks;
-        if (remainder > 0) {
-            TimedItemFee fee = getFeeForBlock(fees, wholeBlocks + 1);
-            if (fee != null) {
-                total += (foreigner ? fee.getFfee() : fee.getFee()) * remainder;
-            }
-        }
-        return total;
+        return timedItemPricingService.calTotalTimedChargeForItem(ti, fromTime, toTime, foreigner);
     }
 
     public TimedItemFeeFacade getTimedItemFeeFacade() {
@@ -3968,54 +3937,9 @@ public class InwardBeanController implements Serializable {
     }
     
 
+    /** Delegates to {@link TimedItemPricingService#calCount}. */
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
-
-        // No fee configured at all counts the same as a fee with no duration set:
-        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
-        // so this is reachable from the room paths, and a missing configuration
-        // should not break the page that is rendering the bill.
-        if (tif == null) {
-            return 0;
-        }
-
-        // A one-time fee is charged once for the whole service, however long it
-        // ran — no block counting, and no dependency on elapsed time at all.
-        if (tif.isOneTime()) {
-            return 1;
-        }
-
-        double duration = tif.getDurationMinutes();
-        double overShoot = tif.getOverShootMinutes();
-        //  double tempFee = tif.getFee();
-        double consumeTime = 0;
-
-        if (dischargedDate == null) {
-            dischargedDate = new Date();
-        }
-
-        consumeTime = CommonFunctions.calculateDurationMin(admittedDate, dischargedDate);
-        if (consumeTime == 0) {
-            return 0;
-        }
-        double count = 0;
-        double calculation = 0;
-
-        if (consumeTime != 0 && duration != 0) {
-            if (tif.isBooleanValue()) {
-                //For Minut Calculation (Theatre Charges)
-                count = (consumeTime / duration);
-            } else {
-                //For Room Calculation Hour(For Room Charges)
-                count = (long) (consumeTime / duration);
-            }
-
-            calculation = (consumeTime - (count * duration));
-            if ((overShoot != 0 && overShoot <= calculation) || count == 0) {
-                count++;
-            }
-        }
-
-        return count;
+        return timedItemPricingService.calCount(tif, admittedDate, dischargedDate);
     }
 
     public ItemFeeFacade getItemFeeFacade() {

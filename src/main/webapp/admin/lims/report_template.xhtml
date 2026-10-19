@@ -164,6 +164,26 @@
                                             <div style="min-width: 20px;"></div>
 
                                         </h:panelGrid>
+                                        <h:panelGrid columns="2" rendered="#{commonReportItemController.multiPageEnabled}">
+                                            <h:outputText value="Show on" />
+                                            <p:selectOneMenu style="width: 140px;" value="#{commonReportItemController.current.pageNo}" title="Which pages of a multi-page report print this item">
+                                                <f:selectItem itemLabel="All pages" itemValue="0"/>
+                                                <f:selectItem itemLabel="Page 1 only" itemValue="1"/>
+                                                <f:selectItem itemLabel="Page 2 only" itemValue="2"/>
+                                                <f:selectItem itemLabel="Page 3 only" itemValue="3"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="3" rendered="#{commonReportItemController.multiPageEnabled}">
+                                            <h:outputText value="All items of this format" />
+                                            <p:selectOneMenu style="width: 140px;" value="#{commonReportItemController.bulkPageNo}">
+                                                <f:selectItem itemLabel="All pages" itemValue="0"/>
+                                                <f:selectItem itemLabel="Page 1 only" itemValue="1"/>
+                                                <f:selectItem itemLabel="Page 2 only" itemValue="2"/>
+                                                <f:selectItem itemLabel="Page 3 only" itemValue="3"/>
+                                            </p:selectOneMenu>
+                                            <p:commandButton value="Apply to all" ajax="false" action="#{commonReportItemController.applyPageToAllItems()}"
+                                                             onclick="return confirm('Change Show on for every item of this format? Other investigations using this format are affected.');"/>
+                                        </h:panelGrid>
                                         <h:panelGrid columns="5" >
                                             <h:outputText value="Text-Align"/>
                                             <p:selectOneMenu  id="cmbTxtAlign" value="#{commonReportItemController.current.cssTextAlign}"  >

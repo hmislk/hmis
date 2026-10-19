@@ -9,6 +9,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [115. Element screenshots land on the wrong region — crop the viewport shot instead](#115-element-screenshots-land-on-the-wrong-region--crop-the-viewport-shot-instead)
 - [120. Verifying a `p:fileDownload` export: POST the form with `fetch` and decode locally](#120-verifying-a-pfiledownload-export-post-the-form-with-fetch-and-decode-locally)
 - [133. Redacted print evidence on a restored-production DB: clone only the rows you need into a fixed overlay, then screenshot that](#133-redacted-print-evidence-on-a-restored-production-db-clone-only-the-rows-you-need-into-a-fixed-overlay-then-screenshot-that)
+- [143. Redacting PII from a screenshot: crop the whole header band, not computed text coordinates](#143-redacting-pii-from-a-screenshot-crop-the-whole-header-band-not-computed-text-coordinates)
 
 ---
 
@@ -254,3 +255,11 @@ image before it leaves `tmp/`.
 Related: a PrimeFaces `p:toggleSwitch` (e.g. the **FOC** switch on *Add Professional Fee*) ignores clicks on
 its hidden `<input>`; click its `.ui-toggleswitch-slider` child instead, then confirm with
 `document.getElementById('<id>_input').checked`.
+
+
+## 143. Redacting PII from a screenshot: crop the whole header band, not computed text coordinates
+
+Masking a screenshot by computing the pixel rectangle around specific PII text is fragile — a slightly-off
+rectangle leaves the text partially visible, and nothing catches this unless the redacted file is reopened
+and inspected. Crop away the entire header/metadata band that contains the PII instead (e.g. the page's top
+N px, if that's where patient name/BHT render), and always re-read the output image before publishing it.

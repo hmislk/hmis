@@ -60,7 +60,14 @@ issue, sets the project board status to In Progress.
 
 ## 2. Investigate
 
-- Read the issue body and comments (`gh issue view $0 --comments`).
+- **Before investigating, and again before coding, check for open PRs on the issue and its related issues:**
+  `gh pr list --repo hmislk/hmis --state open --search "<N> OR <related N>"`.
+  If one exists, build on its branch instead of opening a parallel PR.
+- Read the issue body and comments:
+  `gh issue view $0 --repo hmislk/hmis --json title,body,labels,comments`
+  (`--comments` and `gh pr edit` fail with "Projects (classic) is being
+  deprecated" and change nothing; use `--json`, or
+  `gh api -X PATCH repos/hmislk/hmis/pulls/<N> -F body=@file` for PR bodies.)
 - Explore the relevant code. Use the `Explore` agent for anything spanning
   more than a few files.
 - Identify: which entities/services/JSF pages are involved, which existing
@@ -69,6 +76,11 @@ issue, sets the project board status to In Progress.
 - **If the issue is a bug report**, try to pin down the root cause by reading
   code first. Note explicitly whether this succeeded — that decides whether
   step 2a runs.
+- When sweeping related issues that share a page/module by topic, don't
+  assume a related issue shares the same page/controller — confirm from that
+  issue's own repro steps before reproducing or planning a fix against an
+  assumed page. Testing the wrong page can burn several reproduction
+  attempts before the mismatch surfaces.
 
 ## 2a. Reproduce the bug (bug issues only)
 
@@ -125,11 +137,11 @@ records yourself rather than gating on the user for them:
   the PR/issue evidence. Only ask the user if the local DB has no suitable
   record at all (e.g. the feature needs a state nothing local is in) — that
   is a real blocker, not a preference question.
-- **Environment**: local Payara (default) unless the issue specifically
+- **Environment**: when the user names a test environment (local, QA, `rh-local-staging`), use it without asking; creating fictional test data there needs no permission (find or save the login under the credentials store, e.g. `~/Credentials/hmis/` on Linux or `C:\Credentials\` on Windows; ask only if the URL itself is missing — a missing LOGIN for a testing environment is not a blocker: try the saved default login first, and if none works, create a new user account through the app itself and proceed). Local Payara is the default unless the issue specifically
   requires testing against a remote env, in which case confirm which one
   with the user (this one *is* a real decision — remote envs carry real
   data/credentials risk that local doesn't). Credentials live outside the
-  repo in `C:\Credentials\` — never inlined.
+  repo in the credentials store — never inlined.
 
 Only the environment choice is a discussion gate here. Department/record
 selection against local test data is not — deciding it yourself and moving
@@ -160,16 +172,28 @@ new persisted fields.
 
 ## 6. Build and local redeploy ("deploy sos")
 
-Per `playwright-e2e` §0a:
+Per `playwright-e2e` §0a.
 
-```powershell
-$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
-& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
-& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
-```
+Use the JDK 11, Maven and Payara locations saved in **this machine's** Claude
+memory (build tools / Payara install). Do not assume paths: developer machines
+differ (Windows 10/11, Ubuntu, with or without a D: drive). If nothing is saved,
+find them, then save them to memory.
 
-Check `D:\Payara\glassfish\domains\domain1\logs\server.log` for deployment
-errors before moving on.
+Rules that hold on every machine:
+- Build with JDK 11: set `JAVA_HOME` and `AS_JAVA` to it before `asadmin`.
+  This does not change a domain already running on JDK 17/21 (redeploy fails
+  with `Unsupported class file major version`): `asadmin stop-domain`, set both
+  variables, then `start-domain`.
+- `mvn clean package -DskipTests`, then `asadmin redeploy --name <app> <war>`;
+  take `<app>` from `asadmin list-applications` (it is not always `rh`).
+- Redeploy with the app's existing context root:
+  `asadmin redeploy --name <app> --contextroot <root> <war>`, where `<root>`
+  comes from `asadmin get applications.application.<app>.context-root`.
+  Without it, the WAR's built-in `/rh` collides with an `rh` app and the
+  failed redeploy leaves `<app>` undeployed. On Windows run asadmin from
+  PowerShell: Git Bash rewrites `/coop` into a Windows path.
+- After redeploy, check the app answers and the server log shows no deployment
+  errors before moving on.
 
 ## 7. Test with Playwright + verify in DB
 
@@ -216,6 +240,10 @@ If a new Playwright/dev gotcha surfaced, add it to the matching topic file in
 and list it in the main guide's Contents. Write it as a symptom heading plus
 1–3 lines of fix. Leave the story, dates and issue history out; they belong in
 the PR. Skip this step if nothing new came up.
+
+Commit learnings before the PR is created. A later one: check
+`gh pr view <N> --json state` first; if MERGED, put it on a new
+branch from `origin/development` and open its own PR.
 
 ## 10. Publish evidence and update the wiki
 
@@ -348,6 +376,10 @@ Repeat, up to **3 cycles**:
    - For genuinely ambiguous comments, pause and ask the user — don't burn a
      cycle guessing.
    - If fixes were applied, push and go to 1.
+   - A green CodeRabbit check is not a review. If its only comment
+     says "Review limit reached", it reviewed nothing: say so in
+     Notify, and wait for the limit reset or ask the user before
+     treating the PR as reviewed.
 4. If checks are green and there are no unresolved review comments, stop —
    this cycle is done.
 
@@ -374,5 +406,14 @@ Step 5 read-back query) and quote what it returns. Never report the board status
 memory of an earlier update call. (Issue #24105 was reported as "In Progress" when the
 board still showed Backlog.)
 Include the issues filed in step 14a.
+
+**Retrospective.** Before Notify, list what cost extra steps or went wrong.
+Grep the docs for each; drop any already documented and say so in one line.
+For each remaining one, show: what happened, why it will recur, the file, and
+the exact text to add. Then ask with `AskUserQuestion` (one question per
+finding, Add / Skip, exact text as preview). Never end a run with a finding
+still undecided. If none: "No retrospective findings." See
+[Retrospective](../../../developer_docs/process/continuous-improvement-retrospective.md).
+
 **Never merge** — that's the user's call.
 Once the user says the PRs are merged, run `cleanup-branches`, so merged local and remote branches are deleted and `development` is fast-forwarded and checked out.

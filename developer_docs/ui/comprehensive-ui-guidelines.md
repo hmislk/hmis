@@ -553,9 +553,9 @@ Do NOT use `dropdown="true"` on `p:autoComplete`. It renders a dropdown toggle b
     inputStyleClass="w-100 form-control"
     value="#{myController.institution}"
     completeMethod="#{institutionController.completeCreditCompany}"
-    var="cc"
-    itemLabel="#{cc.name}"
-    itemValue="#{cc}"
+    var="crCo"
+    itemLabel="#{crCo.name}"
+    itemValue="#{crCo}"
     forceSelection="true" />
 
 <!-- WRONG — both issues shown -->
@@ -567,6 +567,8 @@ Do NOT use `dropdown="true"` on `p:autoComplete`. It renders a dropdown toggle b
 ```
 
 This applies to all entity-backed autocompletes: `Institution`, `Department`, `Item`, `Patient`, etc.
+
+**Never use `cc` as an EL `var` name** (`f:selectItems`, `p:autoComplete`, `ui:repeat`, `p:dataTable`). `cc` is the JSF composite-component implicit object, so `#{cc.name}` renders blank or as `Institution[ id=... ]`.
 
 ---
 

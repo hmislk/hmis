@@ -110,3 +110,7 @@ Use the **last choice in history** - whatever JNDI names are currently in the fi
 - ✅ Maintains local development functionality  
 - ✅ Prevents manual errors
 - ✅ One-command simplicity
+
+## IDENTITY ids are null until flush inside one transaction
+
+Inside a single `@Stateless` call, `facade.create(e)` does not assign an IDENTITY id; `e.getId()` stays null until the context flushes. Call `facade.flush()` before building anything from the id (e.g. `"NCSET-" + request.getId()`). The `DrawerAdjustmentController` pattern works only because each facade call there commits separately.
