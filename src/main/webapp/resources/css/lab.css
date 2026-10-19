@@ -35,3 +35,12 @@
     break-before: page;
     box-sizing: border-box;
 }
+
+/* The print pages set .labReport to position: static, which makes the
+   absolutely positioned items of every later page fall onto page 1.
+   Each later page must stay the containing block of its own items. */
+@media print {
+    .labReport.labReportNext{
+        position: relative !important;
+    }
+}
