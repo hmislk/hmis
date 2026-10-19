@@ -1990,8 +1990,8 @@ public class ChannelService {
                 + "session.sessionDate, "
                 + "bill.createdAt, "
                 + "creater.name, "
-                + "COALESCE(person.name, ob.patientName), "
-                + "COALESCE(person.phone, ob.phoneNo), "
+                + "COALESCE(person.name, ob.patientName, cob.patientName), "
+                + "COALESCE(person.phone, ob.phoneNo, cob.phoneNo), "
                 + "bill.paymentMethod, "
                 + "COALESCE(bill.staffFee, 0), "
                 + "COALESCE(bill.hospitalFee, 0), "
@@ -2008,6 +2008,9 @@ public class ChannelService {
                 + "left join patient.person person "
                 + "left join bill.referenceBill rb "
                 + "left join rb.onlineBooking ob "
+                + "left join bill.billedBill bb "
+                + "left join bb.referenceBill brb "
+                + "left join brb.onlineBooking cob "
                 + "left join bill.cancelledBill cb "
                 + "where bs.createdAt between :fromDate and :todate "
                 + "and bill.billTypeAtomic in :bta ";
@@ -2019,7 +2022,8 @@ public class ChannelService {
         btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         btaList.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
         // Online agent bookings have no creater, so they appear only when no user is selected.
-        // Their patient is on the online booking of the referenced pending bill.
+        // Their patient is on the online booking of the referenced pending bill;
+        // a cancellation reaches it through the cancelled (billed) bill.
         btaList.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         btaList.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
 
