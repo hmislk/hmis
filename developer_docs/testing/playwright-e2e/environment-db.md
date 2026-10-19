@@ -473,6 +473,8 @@ Build only while `persistence.xml` holds local JNDI (`jdbc/coop` / `jdbc/ruhunuA
 Symptom: `browser_click` "succeeds" but no POST fires, checkboxes stay unticked, and an accordion opens then closes. Check `devicePixelRatio` and `innerWidth` in `browser_evaluate`. A stored per-host zoom (e.g. 0.75, `innerWidth` 2560 at a 1920 viewport) survives `Ctrl+0`, `browser_close` and the CDP metrics override.
 Fix: drive the flow with the local node rig (fresh `chromium.launch({ channel: 'chrome' })` context, no stored zoom).
 
+Screenshots under the same zoom: `getBoundingClientRect()` returns CSS px, but `page.screenshot({ fullPage: true, clip })` takes device px. Multiply the page coordinates (`rect + scrollX/Y`) by `devicePixelRatio` before clipping, or element/viewport crops land offset.
+
 ## 148. Testing a failure path: inject the failure with a local DB trigger, never in code
 
 To exercise a compensation/rollback path, add a temporary `BEFORE UPDATE`/`INSERT` trigger
