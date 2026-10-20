@@ -11,6 +11,52 @@
             <ui:define name="subcontent">
                 <h:form id="frm">
 
+                    <style>
+                        @media screen {
+                            .printOnlyReport { display: none; }
+                        }
+                        @media print {
+                            @page { size: A4 landscape; }
+                            .printOnlyReport { display: block; font-size: 10px; padding-right: 2px; }
+                            .printOnlyReport .printTitle {
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 13px;
+                                margin-bottom: 2px;
+                            }
+                            .printOnlyReport .printSubTitle {
+                                text-align: center;
+                                margin-bottom: 6px;
+                            }
+                            .printOnlyReport table {
+                                width: 99.5%;
+                                max-width: 99.5%;
+                                box-sizing: border-box;
+                                border-collapse: collapse;
+                                font-size: 10px;
+                            }
+                            .printOnlyReport thead { display: table-header-group; }
+                            .printOnlyReport tfoot { display: table-row-group; }
+                            .printOnlyReport tr { page-break-inside: avoid; }
+                            .printOnlyReport th, .printOnlyReport td {
+                                border: 1px solid #000;
+                                padding: 2px 4px;
+                                text-align: left;
+                                vertical-align: top;
+                                word-wrap: break-word;
+                                overflow-wrap: anywhere;
+                            }
+                            .printOnlyReport th { background-color: #e9ecef; font-weight: bold; }
+                            .printOnlyReport .num { text-align: right; white-space: nowrap; }
+                            .printOnlyReport tfoot td { font-weight: bold; }
+                            .printOnlyReport .negative { color: #dc3545; }
+                            .printOnlyReport .printFooter {
+                                margin-top: 8px;
+                                page-break-inside: avoid;
+                            }
+                        }
+                    </style>
+
                     <p:panel header="BHT Deposit Detail" class="m-1">
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -202,7 +248,7 @@
                                 <div>
                                     <p:commandButton value="Print" icon="fas fa-print"
                                                      class="ui-button-info me-1" ajax="false">
-                                        <p:printer target="tblReport" />
+                                        <p:printer target="printReport" />
                                     </p:commandButton>
                                     <p:commandButton value="Excel" icon="fas fa-file-excel"
                                                      class="ui-button-success" ajax="false">
@@ -371,6 +417,114 @@
                             </f:facet>
 
                         </p:dataTable>
+
+                        <!-- Print view: plain table with every row (the screen table is paginated) -->
+                        <h:panelGroup layout="block" id="printReport" styleClass="printOnlyReport">
+                            <div class="printTitle">BHT Deposit Detail</div>
+                            <div class="printSubTitle">
+                                <h:outputText value="#{bhtDepositDetailReportController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                                <h:outputText value=" to " />
+                                <h:outputText value="#{bhtDepositDetailReportController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                                <h:outputText value=" | Date Basis: #{bhtDepositDetailReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : (bhtDepositDetailReportController.dateBasis eq 'paymentDate' ? 'Payment Date' : 'Discharge Date')}" />
+                                <h:outputText value=" | Report Type: #{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Discharge Payments' : 'All'))}" />
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bill No</th>
+                                        <th>Bill Type</th>
+                                        <th>BHT No</th>
+                                        <th>Patient Name</th>
+                                        <th>Admission Type</th>
+                                        <th>Admitted</th>
+                                        <th>Discharged</th>
+                                        <th>Date / Time</th>
+                                        <th>Payment Method</th>
+                                        <th class="num">Amount</th>
+                                        <ui:repeat value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm">
+                                            <th class="num"><h:outputText value="#{pm.label}" /></th>
+                                        </ui:repeat>
+                                        <th>Reference No</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{bhtDepositDetailReportController.reportRows}" var="row">
+                                        <tr>
+                                            <td class="nowrap"><h:outputText value="#{row.billNo}" /></td>
+                                            <td class="nowrap"><h:outputText value="#{row.billType}" styleClass="#{row.amount lt 0 ? 'negative' : ''}" /></td>
+                                            <td class="nowrap"><h:outputText value="#{row.bhtNo}" /></td>
+                                            <td><h:outputText value="#{row.patientName}" /></td>
+                                            <td><h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" /></td>
+                                            <td class="nowrap">
+                                                <h:outputText value="#{row.dateOfAdmission}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="nowrap">
+                                                <h:outputText value="#{row.dateOfDischarge}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="nowrap">
+                                                <h:outputText value="#{row.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="nowrap"><h:outputText value="#{row.paymentMethod != null ? row.paymentMethod.label : ''}" /></td>
+                                            <td class="num">
+                                                <h:outputText value="#{row.amount}" styleClass="#{row.amount lt 0 ? 'negative' : ''}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                            <ui:repeat value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm">
+                                                <td class="num">
+                                                    <h:outputText value="#{bhtDepositDetailReportController.getRowAmountForMethod(row, pm)}"
+                                                                  styleClass="#{row.amount lt 0 ? 'negative' : ''}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                            </ui:repeat>
+                                            <td><h:outputText value="#{row.referenceNo}" /></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td class="num" colspan="9">Total</td>
+                                        <td class="num">
+                                            <h:outputText value="#{bhtDepositDetailReportController.grandTotal}"
+                                                          styleClass="#{bhtDepositDetailReportController.grandTotal lt 0 ? 'negative' : ''}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                        <ui:repeat value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm">
+                                            <td class="num">
+                                                <h:outputText value="#{bhtDepositDetailReportController.getTotalForMethod(pm)}"
+                                                              styleClass="#{bhtDepositDetailReportController.getTotalForMethod(pm) lt 0 ? 'negative' : ''}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                        </ui:repeat>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <div class="printFooter">
+                                <div>
+                                    <h:outputText value="Processing Time : " />
+                                    <h:outputText value="#{bhtDepositDetailReportController.processedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </div>
+                                <div>
+                                    <h:outputText value="Processing By : #{sessionController.loggedUser.webUserPerson.nameWithTitle}" />
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
                     </p:panel>
 
