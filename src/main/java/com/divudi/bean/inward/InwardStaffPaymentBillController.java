@@ -807,7 +807,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btas.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         params.put("btas", btas);
 

@@ -427,7 +427,10 @@ public class IssueReturnController implements Serializable {
         }
         getOriginalBill().setRefundedBill(getReturnBill());
         getOriginalBill().setRefunded(true);
-        getOriginalBill().getRefundBills().add(getReturnBill());
+        // The lazy inverse list may already hold the just-persisted return; adding it again duplicated the row (issue #24483, #24109).
+        if (!getOriginalBill().getRefundBills().contains(getReturnBill())) {
+            getOriginalBill().getRefundBills().add(getReturnBill());
+        }
         getBillFacade().edit(getOriginalBill());
 
         printPreview = true;

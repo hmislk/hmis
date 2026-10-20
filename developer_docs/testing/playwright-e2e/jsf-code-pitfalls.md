@@ -20,6 +20,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [126. JSF will not decode a `disabled` command button — you cannot reach the controller guard behind it by re-enabling the button in the DOM](#126-jsf-will-not-decode-a-disabled-command-button--you-cannot-reach-the-controller-guard-behind-it-by-re-enabling-the-button-in-the-dom)
 - [132. `Bill.referenceBill` means different things on different flows — don't branch on "is it set", branch on the bill's own type](#132-billreferencebill-means-different-things-on-different-flows--dont-branch-on-is-it-set-branch-on-the-bills-own-type)
 - [134. `f:validateRegex` on a `p:inputText` bound to a `Map<String,String>` entry fires even on a blank/untouched row — with no visible error](#134-fvalidateregex-on-a-pinputtext-bound-to-a-mapstringstring-entry-fires-even-on-a-blankuntouched-row--with-no-visible-error)
+- [152. `#{x.empty}` fails with "Encountered empty": `empty` is a reserved EL word](#152-xempty-fails-with-encountered-empty-empty-is-a-reserved-el-word)
 
 ---
 
@@ -593,3 +594,18 @@ editing page 1, clicking to page 2, then Save only submits page 2's inputs; page
 lost (nothing in the DOM to decode them from). For a grid with a single page-level Save button (no
 per-row save), use `scrollable="true" scrollHeight="..."` instead of pagination so every row stays in the
 DOM and submits together.
+
+## 152. `#{x.empty}` fails with "Encountered empty": `empty` is a reserved EL word
+
+Symptom: the page returns HTTP 500 with `TagAttributeException ... Error Parsing: #{bean.dto.empty}`.
+Fix: call the method instead (`#{bean.dto.isEmpty()}`), or name the getter something else (`isNoRows()`). The same applies to the other reserved EL words: `not`, `and`, `or`, `eq`, `ne`, `lt`, `gt`, `le`, `ge`, `div`, `mod`, `instanceof`.
+
+## 154. `p:dataExporter target=` 500s with "Cannot find component" when the table is inside a nested `p:tabView`/`p:accordionPanel`
+
+Symptom: `ComponentNotFoundException: Cannot find component for expressions "tableA,tableB"` when you click Excel/PDF, even though the tables are rendered.
+Fix: a nested `p:tabView` is a `NamingContainer`, so prefix each target with its id: `target="innerTabs:tableA,innerTabs:tableB"`.
+
+## 155. `p:dataExporter` writes `<br/>`, `HtmlPanelGroup@1a2b3c` or raw HTML into exported cells
+
+Symptom: the export works, but cells contain `<br/>`, `...HtmlPanelGroup@...`, `...CommandButton@...` or `<div ...>`.
+Fix: the exporter writes every non-`ValueHolder` child of a column as its `toString()`. Keep only `h:outputLabel`/`h:outputText` children (use `style="display: block"` instead of `<br/>`), give input/panel columns `exportValue="#{...}"`, and set `exportable="false"` on button columns.

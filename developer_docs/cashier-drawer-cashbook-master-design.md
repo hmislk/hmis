@@ -509,7 +509,7 @@ The holder of one or more non-cash payments selects them, records the external r
 - Sets `payment.paymentSettlementBill = <this bill>`
 - Sets `payment.currentHolder = null`
 
-From that point onward the payment is excluded from every handover query (the existing `currentHolder = :user` filter handles this automatically — no handover query change needed).
+From that point onward the payment is excluded from every handover query (the existing `currentHolder = :user` filter handles this automatically — no handover query change needed). Since #24541 this is a two-step workflow: submitting (`requestSettlement`) creates a *pending* settlement bill and a `NON_CASH_SETTLEMENT_APPROVAL` request and sets only `paymentSettlementBill` (the payment stays with the holder, `paymentSettled=false`); `paymentSettled=true` and `currentHolder=null` are applied only when a different user with `ApproveNonCashSettlement` approves. Reject or withdraw clears `paymentSettlementBill` and retires the bill. While pending, the requester cannot end their shift or create a handover. On approval the holder's drawer is debited per payment method. See `developer_docs/plans/2026-10-16-non-cash-settlement-approval-design.md`.
 
 **Cash Book is NOT touched at settlement.** The payment was already added to the cash book at first handover (existing behaviour). The settlement is a status transition, not a financial event.
 
@@ -537,6 +537,8 @@ Standard bill cancellation pattern. Reverses the three field updates so the paym
 
 Cash Book is not touched on cancellation either. Discrepancies (bounced cheque, processor chargeback, lost payment) are out of scope for this design and handled via a separate, planned reconciliation process — these cases are rare.
 
+Cancelling an approved (#24541) settlement also credits the drawer back; legacy settlements (no `approveAt`) do not. A pending request is rejected or withdrawn, not cancelled.
+
 ### 4.5 Entity Changes
 
 **`Payment`** — add two fields:
@@ -560,7 +562,7 @@ PAYMENT_SETTLEMENT_BILL_CANCELLED("Payment Settlement Bill - Cancelled", BillCat
     BillType.PaymentSettlementBill),
 ```
 
-`BillFinanceType.NO_FINANCE_TRANSACTIONS` because the settlement does NOT move drawer or cash book balances — the payment is already in the cash book from first handover.
+`BillFinanceType.NO_FINANCE_TRANSACTIONS` because the settlement does NOT move cash book balances (the drawer is debited on approval via a drawer entry, #24541) — the payment is already in the cash book from first handover.
 
 **`BillType`** (legacy enum) — add `PaymentSettlementBill` value to keep the existing pattern intact.
 
@@ -575,11 +577,18 @@ Holder opens "Settle Non-Cash" page
                                 AND currentHolder = :loggedInUser
                                 AND cashbookEntryCompleted = true
   → Holder selects payments, enters external references
-  → Submits → PAYMENT_SETTLEMENT_BILL created
+  → Submits (requestSettlement) → pending PAYMENT_SETTLEMENT_BILL + approval request created
+  → For each payment:
+      paymentSettlementBill = <bill>      (paymentSettled stays false, currentHolder unchanged)
+
+Approval (different user with ApproveNonCashSettlement):
   → For each payment:
       paymentSettled = true
-      paymentSettlementBill = <bill>
       currentHolder = null
+  → Holder's drawer debited per payment method
+
+Reject / withdraw:
+  → paymentSettlementBill = null on each payment; settlement bill retired
 
 Cancellation:
   → PAYMENT_SETTLEMENT_BILL_CANCELLED created via standard cancellation
@@ -596,7 +605,7 @@ This simplified design **supersedes** the earlier proposal in this document for:
 - A separate `SettlementBatch` entity (not needed — `Bill` + new `BillTypeAtomic` suffices)
 - A Payment lifecycle status enum (not needed — boolean + FK + existing `currentHolder` suffices)
 - Cash-book adjustment entries on settlement (not done — separate reconciliation handles discrepancies)
-- Approval workflow for non-cash settlement (deferred to a later issue if needed)
+- Approval workflow — implemented in #24541 (reuses `Request`)
 
 ### 4.8 Deferred Items in This Phase
 

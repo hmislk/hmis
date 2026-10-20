@@ -5014,9 +5014,13 @@ public class ExcelController {
 
                 // Header Row
                 Row dateSummaryHeader = summarySheet.createRow(summaryRowIndex++);
-                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee", "Card Total", "Cash Total"};
+                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee"};
                 for (int i = 0; i < headers.length; i++) {
                     dateSummaryHeader.createCell(i).setCellValue(headers[i]);
+                }
+                List<ChannelReportController.PaymentMethodCollectionDto> collections = wrapperDto.getCollections();
+                for (int i = 0; i < collections.size(); i++) {
+                    dateSummaryHeader.createCell(headers.length + i).setCellValue(collections.get(i).getLabel());
                 }
 
                 // Data Rows
@@ -5030,23 +5034,26 @@ public class ExcelController {
                     row.createCell(col++).setCellValue(dto.getTotalAmount());
                     row.createCell(col++).setCellValue(dto.getTotalDocFee());
                     row.createCell(col++).setCellValue(dto.getTotalHosFee());
-                    row.createCell(col++).setCellValue(dto.getCardTotal());
-                    row.createCell(col++).setCellValue(dto.getCashTotal());
+                    for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                        row.createCell(col++).setCellValue(dto.getMethodTotal(c.getPaymentMethod()));
+                    }
                 }
 
                 Row dateSummaryFooter = summarySheet.createRow(summaryRowIndex++);
                 dateSummaryFooter.createCell(3).setCellValue(wrapperDto.getAllTotalAmount());
                 dateSummaryFooter.createCell(4).setCellValue(wrapperDto.getAllDoctorFeeTotal());
                 dateSummaryFooter.createCell(5).setCellValue(wrapperDto.getAllHosFeeTotal());
-                dateSummaryFooter.createCell(6).setCellValue(wrapperDto.getAllCardTotal());
-                dateSummaryFooter.createCell(7).setCellValue(wrapperDto.getAllCashTotal());
+                for (int i = 0; i < collections.size(); i++) {
+                    dateSummaryFooter.createCell(headers.length + i).setCellValue(collections.get(i).getAmount());
+                }
 
                 summaryRowIndex += 2;
                 
                 Map<String, Double> summaryData = new LinkedHashMap<>();
-                summaryData.put("Total Cash Collection",                wrapperDto.getAllCashTotal());
-                summaryData.put("Total Card Collection",                wrapperDto.getAllCardTotal());
-                summaryData.put("Total Credit Collection",              wrapperDto.getAllCreditTotal());
+                for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                    summaryData.put("Total " + c.getLabel() + " Collection", c.getAmount());
+                }
+                summaryData.put("Grand Total Collection",               wrapperDto.getGrandCollectionTotal());
                 summaryData.put("Total Valid Appointments",             wrapperDto.getTotalValidAppoinments());
                 summaryData.put("Cancel and Refund Collection",         wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal());
                 summaryData.put("Total Cancel Appointments",            wrapperDto.getAllCancelAppoinments());
@@ -5184,114 +5191,227 @@ public class ExcelController {
 
         currentRow++;
 
-        if (wrapperDto.getIncomeDtos() != null && !wrapperDto.getIncomeDtos().isEmpty()) {
-            Row detailHeaderRow = dataSheet.createRow(currentRow++);
-            String[] detailHeaders = {"Serial No", "Bill Id", "Appointment Date", "Created Date", "Billed By", "Patient Name", "Payment Method", "Hospital Fee", "Doctor Fee", "Total Fee"};
-            for (int i = 0; i < detailHeaders.length; i++) {
-                detailHeaderRow.createCell(i).setCellValue(detailHeaders[i]);
-            }
+        if (wrapperDto.getSections() != null && !wrapperDto.getSections().isEmpty()) {
+            for (ChannelReportController.PaymentMethodSectionDto section : wrapperDto.getSections()) {
+                // Section title
+                Row sectionTitleRow = dataSheet.createRow(currentRow++);
+                Cell sectionTitleCell = sectionTitleRow.createCell(0);
+                sectionTitleCell.setCellValue(section.getLabel());
+                sectionTitleCell.setCellStyle(metaStyleBold);
 
-            int serial = 1;
-            for (ChannelReportController.ChannelIncomeDetailDto dto : wrapperDto.getIncomeDtos()) {
-                Row row = dataSheet.createRow(currentRow++);
-                int col = 0;
-                row.createCell(col++).setCellValue(serial++);
-                row.createCell(col++).setCellValue(dto.getBillId());
-                row.createCell(col++).setCellValue(dto.getAppoinmentDate() != null ? longDate.format(dto.getAppoinmentDate()) : "");
-                row.createCell(col++).setCellValue(dto.getBilledDate()     != null ? longDateTime.format(dto.getBilledDate()) : "");
-                row.createCell(col++).setCellValue(dto.getBilledBy()       != null ? dto.getBilledBy() : "");
-                row.createCell(col++).setCellValue(dto.getPatientName()    != null ? dto.getPatientName() : "");
-                row.createCell(col++).setCellValue(dto.getPaymentMethod()  != null ? dto.getPaymentMethod().toString() : "");
-                row.createCell(col++).setCellValue(dto.getHosFee());
-                row.createCell(col++).setCellValue(dto.getDoctorFee());
-                row.createCell(col++).setCellValue(dto.getTotalAppoinmentFee());
-            }
+                // Header row
+                List<String> headers = new java.util.ArrayList<>();
+                headers.add("Serial No");
+                headers.add("Bill No");
+                headers.add("Appointment Date");
+                headers.add("Created Date");
+                headers.add("Doctor");
+                headers.add("Patient Name");
+                boolean isCardSection = section.getPaymentMethod() == com.divudi.core.data.PaymentMethod.Card;
+                boolean isAgentSection = section.getPaymentMethod() == com.divudi.core.data.PaymentMethod.Agent;
+                boolean isMultiSection = section.isMultiple();
+                if (isCardSection) {
+                    headers.add("Card Ref");
+                    headers.add("Bank");
+                } else if (isAgentSection) {
+                    headers.add("Agent");
+                    headers.add("Agent Ref No");
+                } else if (isMultiSection) {
+                    for (com.divudi.core.data.PaymentMethod sm : section.getSplitMethods()) {
+                        headers.add(sm.getLabel());
+                    }
+                    headers.add("Collected");
+                }
+                int hosCol = headers.size();
+                headers.add("Hospital Fee");
+                headers.add("Doctor Fee");
+                headers.add("Total Fee");
+                headers.add("Status");
 
-            Row detailFooterRow = dataSheet.createRow(currentRow);
-            detailFooterRow.createCell(7).setCellValue(wrapperDto.getAllHosFeeTotal());
-            detailFooterRow.createCell(8).setCellValue(wrapperDto.getAllDoctorFeeTotal());
-            detailFooterRow.createCell(9).setCellValue(wrapperDto.getAllTotalAmount());
+                Row headerRow = dataSheet.createRow(currentRow++);
+                for (int i = 0; i < headers.size(); i++) {
+                    Cell hc = headerRow.createCell(i);
+                    hc.setCellValue(headers.get(i));
+                    hc.setCellStyle(metaStyleBold);
+                }
+
+                // Data rows
+                int serial = 1;
+                for (ChannelReportController.ChannelIncomeDetailDto dto : section.getRows()) {
+                    Row row = dataSheet.createRow(currentRow++);
+                    int col = 0;
+                    row.createCell(col++).setCellValue(serial++);
+                    row.createCell(col++).setCellValue(dto.getBillDeptId() != null ? dto.getBillDeptId() : "");
+                    row.createCell(col++).setCellValue(dto.getAppoinmentDate() != null ? longDate.format(dto.getAppoinmentDate()) : "");
+                    row.createCell(col++).setCellValue(dto.getBilledDate() != null ? longDateTime.format(dto.getBilledDate()) : "");
+                    row.createCell(col++).setCellValue(dto.getDoctorName() != null ? dto.getDoctorName() : "");
+                    row.createCell(col++).setCellValue(dto.getPatientName() != null ? dto.getPatientName() : "");
+                    if (isCardSection) {
+                        row.createCell(col++).setCellValue(dto.getCardRefNo() != null ? dto.getCardRefNo() : "");
+                        row.createCell(col++).setCellValue(dto.getCardBank() != null ? dto.getCardBank() : "");
+                    } else if (isAgentSection) {
+                        row.createCell(col++).setCellValue(dto.getAgentName() != null ? dto.getAgentName() : "");
+                        row.createCell(col++).setCellValue(dto.getAgentRefNo() != null ? dto.getAgentRefNo() : "");
+                    } else if (isMultiSection) {
+                        for (com.divudi.core.data.PaymentMethod sm : section.getSplitMethods()) {
+                            row.createCell(col++).setCellValue(dto.getSplitValue(sm));
+                        }
+                        row.createCell(col++).setCellValue(dto.getCollectionValue());
+                    }
+                    row.createCell(col++).setCellValue(dto.getHosFee());
+                    row.createCell(col++).setCellValue(dto.getDoctorFee());
+                    row.createCell(col++).setCellValue(dto.getTotalAppoinmentFee());
+                    row.createCell(col++).setCellValue(dto.getStatus() != null ? dto.getStatus() : "");
+                }
+
+                // Subtotal row
+                Row subtotalRow = dataSheet.createRow(currentRow++);
+                Cell subtotalLabel = subtotalRow.createCell(0);
+                subtotalLabel.setCellValue("Subtotal (" + section.getBillCount() + " bills)");
+                subtotalLabel.setCellStyle(metaStyleBold);
+                if (isMultiSection) {
+                    int splitCol = hosCol - section.getSplitMethods().size() - 1;
+                    for (com.divudi.core.data.PaymentMethod sm : section.getSplitMethods()) {
+                        Cell sc = subtotalRow.createCell(splitCol++);
+                        sc.setCellValue(section.getSplitTotal(sm));
+                        sc.setCellStyle(metaStyleBold);
+                    }
+                    Cell collCell = subtotalRow.createCell(splitCol);
+                    collCell.setCellValue(section.getCollectionTotal());
+                    collCell.setCellStyle(metaStyleBold);
+                }
+                Cell subHos = subtotalRow.createCell(hosCol);
+                subHos.setCellValue(section.getHosFeeTotal());
+                subHos.setCellStyle(metaStyleBold);
+                Cell subDoc = subtotalRow.createCell(hosCol + 1);
+                subDoc.setCellValue(section.getDoctorFeeTotal());
+                subDoc.setCellStyle(metaStyleBold);
+                Cell subTot = subtotalRow.createCell(hosCol + 2);
+                subTot.setCellValue(section.getTotalAmount());
+                subTot.setCellStyle(metaStyleBold);
+
+                // Blank row
+                currentRow++;
+            }
         } else {
             Row noDataRow = dataSheet.createRow(currentRow++);
             Cell noDataCell = noDataRow.createCell(0);
             noDataCell.setCellValue("No Data for Detailed View");
         }
 
-            if (wrapperDto.getSummeryDtos() != null && !wrapperDto.getSummeryDtos().isEmpty()) {
+        if (wrapperDto.getSummeryDtos() != null && !wrapperDto.getSummeryDtos().isEmpty()) {
 
-                XSSFSheet summarySheet = workbook.createSheet("Summary View");
-                int summaryRowIndex = 0;
+            XSSFSheet summarySheet = workbook.createSheet("Summary View");
+            int summaryRowIndex = 0;
 
-                // Row 0: Institution Name
-                Row institutionSRow = summarySheet.createRow(summaryRowIndex);
-                Cell institutionSCell = institutionSRow.createCell(0);
-                String institutionSName = sessionController.getInstitution() != null
-                        ? sessionController.getInstitution().getName()
-                        : "Institution";
-                institutionSCell.setCellValue(institutionSName);
-                institutionSCell.setCellStyle(titleStyle);
-                summarySheet.addMergedRegion(new CellRangeAddress(summaryRowIndex, summaryRowIndex, 0, 7));
-                summaryRowIndex++;
+            // Row 0: Institution Name
+            Row institutionSRow = summarySheet.createRow(summaryRowIndex);
+            Cell institutionSCell = institutionSRow.createCell(0);
+            String institutionSName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName()
+                    : "Institution";
+            institutionSCell.setCellValue(institutionSName);
+            institutionSCell.setCellStyle(titleStyle);
+            summarySheet.addMergedRegion(new CellRangeAddress(summaryRowIndex, summaryRowIndex, 0, 7));
+            summaryRowIndex++;
 
-                // Row 1: Report Title
-                Row titleSRow = summarySheet.createRow(summaryRowIndex);
-                Cell titleSCell = titleSRow.createCell(0);
-                titleSCell.setCellValue("Summary Collection Report");
-                titleSCell.setCellStyle(centerStyle);
-                summarySheet.addMergedRegion(new CellRangeAddress(summaryRowIndex, summaryRowIndex, 0, 7));
-                summaryRowIndex++;
+            // Row 1: Report Title
+            Row titleSRow = summarySheet.createRow(summaryRowIndex);
+            Cell titleSCell = titleSRow.createCell(0);
+            titleSCell.setCellValue("Summary Collection Report");
+            titleSCell.setCellStyle(centerStyle);
+            summarySheet.addMergedRegion(new CellRangeAddress(summaryRowIndex, summaryRowIndex, 0, 7));
+            summaryRowIndex++;
 
-                // Header Row
-                Row dateSummaryHeader = summarySheet.createRow(summaryRowIndex++);
-                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee", "Card Total", "Cash Total"};
-                for (int i = 0; i < headers.length; i++) {
-                    dateSummaryHeader.createCell(i).setCellValue(headers[i]);
+            List<com.divudi.core.data.PaymentMethod> summaryMethods = wrapperDto.getSummaryMethods() != null
+                    ? wrapperDto.getSummaryMethods()
+                    : new java.util.ArrayList<com.divudi.core.data.PaymentMethod>();
+            Map<com.divudi.core.data.PaymentMethod, String> collectionLabels = new LinkedHashMap<>();
+            if (wrapperDto.getCollections() != null) {
+                for (ChannelReportController.PaymentMethodCollectionDto c : wrapperDto.getCollections()) {
+                    collectionLabels.put(c.getPaymentMethod(), c.getLabel());
                 }
+            }
 
-                // Data Rows
-                int serial = 1;
-                for (ChannelReportController.ChannelIncomeSummeryDto dto : wrapperDto.getSummeryDtos()) {
-                    Row row = summarySheet.createRow(summaryRowIndex++);
-                    int col = 0;
-                    row.createCell(col++).setCellValue(serial++);
-                    row.createCell(col++).setCellValue(dto.getAppoimentDate() != null ? longDate.format(dto.getAppoimentDate()) : "");
-                    row.createCell(col++).setCellValue(dto.getTotalActiveAppoinments());
-                    row.createCell(col++).setCellValue(dto.getTotalAmount());
-                    row.createCell(col++).setCellValue(dto.getTotalDocFee());
-                    row.createCell(col++).setCellValue(dto.getTotalHosFee());
-                    row.createCell(col++).setCellValue(dto.getCardTotal());
-                    row.createCell(col++).setCellValue(dto.getCashTotal());
+            // Header Row
+            Row dateSummaryHeader = summarySheet.createRow(summaryRowIndex++);
+            String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee"};
+            int hc = 0;
+            for (; hc < headers.length; hc++) {
+                dateSummaryHeader.createCell(hc).setCellValue(headers[hc]);
+            }
+            for (com.divudi.core.data.PaymentMethod sm : summaryMethods) {
+                String lbl = collectionLabels.get(sm);
+                dateSummaryHeader.createCell(hc++).setCellValue(lbl != null ? lbl : sm.getLabel());
+            }
+
+            // Data Rows
+            int serial = 1;
+            for (ChannelReportController.ChannelIncomeSummeryDto dto : wrapperDto.getSummeryDtos()) {
+                Row row = summarySheet.createRow(summaryRowIndex++);
+                int col = 0;
+                row.createCell(col++).setCellValue(serial++);
+                row.createCell(col++).setCellValue(dto.getAppoimentDate() != null ? longDate.format(dto.getAppoimentDate()) : "");
+                row.createCell(col++).setCellValue(dto.getTotalActiveAppoinments());
+                row.createCell(col++).setCellValue(dto.getTotalAmount());
+                row.createCell(col++).setCellValue(dto.getTotalDocFee());
+                row.createCell(col++).setCellValue(dto.getTotalHosFee());
+                for (com.divudi.core.data.PaymentMethod sm : summaryMethods) {
+                    row.createCell(col++).setCellValue(dto.getMethodTotal(sm));
                 }
+            }
 
-                Row dateSummaryFooter = summarySheet.createRow(summaryRowIndex++);
-                dateSummaryFooter.createCell(3).setCellValue(wrapperDto.getAllTotalAmount());
-                dateSummaryFooter.createCell(4).setCellValue(wrapperDto.getAllDoctorFeeTotal());
-                dateSummaryFooter.createCell(5).setCellValue(wrapperDto.getAllHosFeeTotal());
-                dateSummaryFooter.createCell(6).setCellValue(wrapperDto.getAllCardTotal());
-                dateSummaryFooter.createCell(7).setCellValue(wrapperDto.getAllCashTotal());
-
-                summaryRowIndex += 2;
-                
-                Map<String, Double> summaryData = new LinkedHashMap<>();
-                summaryData.put("Total Cash Collection",                wrapperDto.getAllCashTotal());
-                summaryData.put("Total Card Collection",                wrapperDto.getAllCardTotal());
-                summaryData.put("Total Credit Collection",              wrapperDto.getAllCreditTotal());
-                summaryData.put("Total Valid Appointments",             wrapperDto.getTotalValidAppoinments());
-                summaryData.put("Cancel and Refund Collection",         wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal());
-                summaryData.put("Total Cancel Appointments",            wrapperDto.getAllCancelAppoinments());
-                summaryData.put("Total Refund Appointments",            wrapperDto.getAllRefundAppoinments());
-                summaryData.put("Total Cancel And Refund Appointments", wrapperDto.getAllCancelAppoinments() + wrapperDto.getAllRefundAppoinments());
-
-                for (Map.Entry<String, Double> entry : summaryData.entrySet()) {
-                    Row row = summarySheet.createRow(summaryRowIndex++);
-                    Cell label = row.createCell(0);
-                    label.setCellValue(entry.getKey());
-                    label.setCellStyle(centerSmallStyle);
-                    Cell data = row.createCell(1);
-                    data.setCellValue(entry.getValue());
-                    data.setCellStyle(centerSmallStyle);
+            // Footer (totals)
+            Row dateSummaryFooter = summarySheet.createRow(summaryRowIndex++);
+            Cell footerLabel = dateSummaryFooter.createCell(0);
+            footerLabel.setCellValue("Total");
+            footerLabel.setCellStyle(centerSmallStyle);
+            dateSummaryFooter.createCell(2).setCellValue(wrapperDto.getTotalValidAppoinments());
+            dateSummaryFooter.createCell(3).setCellValue(wrapperDto.getAllTotalAmount());
+            dateSummaryFooter.createCell(4).setCellValue(wrapperDto.getAllDoctorFeeTotal());
+            dateSummaryFooter.createCell(5).setCellValue(wrapperDto.getAllHosFeeTotal());
+            int fc = headers.length;
+            if (wrapperDto.getCollections() != null) {
+                Map<com.divudi.core.data.PaymentMethod, Double> collectionAmounts = new LinkedHashMap<>();
+                for (ChannelReportController.PaymentMethodCollectionDto c : wrapperDto.getCollections()) {
+                    collectionAmounts.put(c.getPaymentMethod(), c.getAmount());
                 }
-                
+                for (com.divudi.core.data.PaymentMethod sm : summaryMethods) {
+                    Double amt = collectionAmounts.get(sm);
+                    dateSummaryFooter.createCell(fc++).setCellValue(amt != null ? amt : 0.0);
+                }
+            }
+
+            summaryRowIndex += 2;
+
+            // Collection block: one line per payment method, then the grand total
+            Row collectionTitle = summarySheet.createRow(summaryRowIndex++);
+            Cell collectionTitleCell = collectionTitle.createCell(0);
+            collectionTitleCell.setCellValue("Collection by Payment Method");
+            collectionTitleCell.setCellStyle(centerSmallStyle);
+
+            Map<String, Double> summaryData = new LinkedHashMap<>();
+            if (wrapperDto.getCollections() != null) {
+                for (ChannelReportController.PaymentMethodCollectionDto c : wrapperDto.getCollections()) {
+                    summaryData.put(c.getLabel() + " Collection", c.getAmount());
+                }
+            }
+            summaryData.put("Grand Total", wrapperDto.getGrandCollectionTotal());
+            summaryData.put("Total Valid Appointments", wrapperDto.getTotalValidAppoinments());
+            summaryData.put("Cancel and Refund Collection", wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal());
+            summaryData.put("Total Cancel Appointments", wrapperDto.getAllCancelAppoinments());
+            summaryData.put("Total Refund Appointments", wrapperDto.getAllRefundAppoinments());
+
+            for (Map.Entry<String, Double> entry : summaryData.entrySet()) {
+                Row row = summarySheet.createRow(summaryRowIndex++);
+                Cell label = row.createCell(0);
+                label.setCellValue(entry.getKey());
+                label.setCellStyle(centerSmallStyle);
+                Cell data = row.createCell(1);
+                data.setCellValue(entry.getValue());
+                data.setCellStyle(centerSmallStyle);
+            }
+
         }
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

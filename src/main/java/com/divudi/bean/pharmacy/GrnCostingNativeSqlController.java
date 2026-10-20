@@ -28,6 +28,7 @@ import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
@@ -46,6 +47,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -879,6 +881,18 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setLineCostRate(BigDecimalUtil.valueOrZero(f.getLineCostRate()).doubleValue());
         line.setValueAtCostRate(BigDecimalUtil.valueOrZero(f.getValueAtCostRate()).doubleValue());
         line.setTotalCostRate(BigDecimalUtil.valueOrZero(f.getTotalCostRate()).doubleValue());
+        // Recompute rather than copy f.getProfitMargin(): several edit
+        // listeners (e.g. qtyChangedListner) redistribute bill discounts/
+        // expenses into totalCost without refreshing the margin, so the
+        // stored value can be stale.
+        BigDecimal currentProfitMargin = calculateProfitMarginForPurchasesBigDecimal(bi);
+        f.setProfitMargin(currentProfitMargin);
+        line.setProfitMargin(currentProfitMargin.doubleValue());
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+        if (pbi != null) {
+            line.setLastPurchaseRate(pbi.getLastPurchaseRate());
+            line.setLastPurchaseRatePack(pbi.getLastPurchaseRatePack());
+        }
     }
 
     private GrnLineData toLineData(BillItem bi) {
@@ -1109,9 +1123,11 @@ public class GrnCostingNativeSqlController implements Serializable {
         freeBillItem.setBillItemFinanceDetails(fd);
         recalculateFinancialsBeforeAddingBillItem(fd);
 
-        freePbi.setLastPurchaseRate(lastPr);
-        freePbi.setLastPurchaseRateInUnit(lastPr);
-        freePbi.setLastPurchaseRatePack(lastPr * fd.getUnitsPerPack().doubleValue());
+        double lastGrnUnitRate = buildLastGrnUnitRateMap(singleItemList, getSessionController().getDepartment())
+                .getOrDefault(freeItemToAdd.getId(), 0.0);
+        freePbi.setLastPurchaseRate(lastGrnUnitRate);
+        freePbi.setLastPurchaseRateInUnit(lastGrnUnitRate);
+        freePbi.setLastPurchaseRatePack(lastGrnUnitRate * fd.getUnitsPerPack().doubleValue());
 
         getBillItems().add(freeBillItem);
 
@@ -1362,6 +1378,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
+        recalculateProfitMarginsForAllItems();
     }
 
     // ==================================================================
@@ -2749,6 +2766,50 @@ public class GrnCostingNativeSqlController implements Serializable {
     }
 
     /**
+     * Per-unit gross purchase rate of each item on its most recent finalized
+     * GRN or Direct Purchase in the given department -- the "Last Purchase
+     * Rate" shown on the GRN print. Filters on billTypeAtomic rather than
+     * billType, which would also match unfinished PHARMACY_GRN_PRE drafts.
+     * Lines with no recorded rate (older purchases) are skipped so the next
+     * earlier priced purchase is used instead.
+     */
+    private Map<Long, Double> buildLastGrnUnitRateMap(List<Item> items, Department department) {
+        Map<Long, Double> result = new HashMap<>();
+        if (items == null || items.isEmpty() || department == null) {
+            return result;
+        }
+        String jpql = "SELECT bi.item.id,"
+                + " bi.billItemFinanceDetails.lineGrossRate,"
+                + " bi.billItemFinanceDetails.unitsPerPack"
+                + " FROM BillItem bi"
+                + " WHERE bi.retired = false"
+                + " AND bi.bill.retired = false"
+                + " AND bi.bill.cancelled = false"
+                + " AND bi.bill.billTypeAtomic IN :btas"
+                + " AND bi.bill.department = :dept"
+                + " AND bi.item IN :items"
+                + " AND bi.billItemFinanceDetails.lineGrossRate > 0"
+                + " ORDER BY bi.id DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE));
+        params.put("dept", department);
+        params.put("items", items);
+        List<Object> rows = billItemFacade.findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long itemId = ((Number) cols[0]).longValue();
+                if (!result.containsKey(itemId)) {
+                    double rate = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                    double upp = cols[2] instanceof Number ? ((Number) cols[2]).doubleValue() : 0.0;
+                    result.put(itemId, upp > 0 ? rate / upp : rate);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Builds new in-memory GRN lines from the source purchase order's
      * remaining (ordered minus already-GRN'd) quantities. In-memory only, no
      * persistence. Ported verbatim from
@@ -2773,6 +2834,7 @@ public class GrnCostingNativeSqlController implements Serializable {
             }
         }
         Map<Long, double[]> lastRatesMap = buildLastRatesMap(allPoItems);
+        Map<Long, Double> lastGrnUnitRateMap = buildLastGrnUnitRateMap(allPoItems, getSessionController().getDepartment());
 
         for (PharmaceuticalBillItem pbiInApprovedOrder : poBillItems) {
 
@@ -2867,9 +2929,10 @@ public class GrnCostingNativeSqlController implements Serializable {
                 newlyCreatedBillItemForGrn.setBillItemFinanceDetails(fd);
                 recalculateFinancialsBeforeAddingBillItem(fd);
 
-                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRate(pr);
-                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRateInUnit(pr);
-                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRatePack(pr * fd.getUnitsPerPack().doubleValue());
+                double lastGrnUnitRate = lastGrnUnitRateMap.getOrDefault(newlyCreatedBillItemForGrn.getItem().getId(), 0.0);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRate(lastGrnUnitRate);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRateInUnit(lastGrnUnitRate);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRatePack(lastGrnUnitRate * fd.getUnitsPerPack().doubleValue());
 
                 getBillItems().add(newlyCreatedBillItemForGrn);
             }

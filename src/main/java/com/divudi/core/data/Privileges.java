@@ -166,6 +166,7 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    CoveringLetters("Covering Letters"),
     InwardSendEmail("Inward Send Email"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
@@ -234,6 +235,7 @@ public enum Privileges {
     CashierHandoverStatusReport("Cashier Handover Status Report"),
     SettleHandoverProofMissing("Settle Handover Proof Missing"),
     SettleNonCashPayments("Settle Non-Cash Payments"),
+    ApproveNonCashSettlement("Approve Non-Cash Settlement"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -802,6 +804,22 @@ public enum Privileges {
     CollectingCentreDebitNote("CC Debit Note"),
     CollectingCentreReports("CC Reports"),
     ChangeCollectingCentre("Change Collecting Centre"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Collecting Centre Self Billing">
+    CcSelfBillingMenu("CC Self Billing Menu"),
+    CcSelfBilling("CC Self - Create Bill"),
+    CcSelfSearchBills("CC Self - Search Bills"),
+    CcSelfBillReprint("CC Self - Bill Reprint"),
+    CcSelfBillCancel("CC Self - Bill Cancel"),
+    CcSelfBillRefund("CC Self - Bill Refund"),
+    CcSelfStatement("CC Self - Statement"),
+    CcSelfSampleManagement("CC Self - Sample Management"),
+    CcSelfSampleBarcodePrint("CC Self - Generate/Print Barcodes"),
+    CcSelfSampleCollect("CC Self - Collect Samples"),
+    CcSelfSampleSend("CC Self - Send Samples"),
+    CcSelfSampleReject("CC Self - Reject Samples"),
+    CcSelfSampleRegenerate("CC Self - Re-Generate Samples"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="User">
@@ -1624,6 +1642,22 @@ public enum Privileges {
             case CollectingCentreReports:
             case ChangeCollectingCentre:
                 return "Collecting Centre";
+
+            // Collecting Centre Self Billing Privileges
+            case CcSelfBillingMenu:
+            case CcSelfBilling:
+            case CcSelfSearchBills:
+            case CcSelfBillReprint:
+            case CcSelfBillCancel:
+            case CcSelfBillRefund:
+            case CcSelfStatement:
+            case CcSelfSampleManagement:
+            case CcSelfSampleBarcodePrint:
+            case CcSelfSampleCollect:
+            case CcSelfSampleSend:
+            case CcSelfSampleReject:
+            case CcSelfSampleRegenerate:
+                return "Collecting Centre Self Billing";
             
             // Approval Privileges
             case RequestManager:
@@ -1638,6 +1672,7 @@ public enum Privileges {
             case CashierHandoverStatusReport:
             case SettleHandoverProofMissing:
             case SettleNonCashPayments:
+            case ApproveNonCashSettlement:
                 return "Finance";
 
             case IssueFundTransfer:
@@ -1682,6 +1717,7 @@ public enum Privileges {
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case CoveringLetters:
             case InwardSendEmail:
             case InwardPackageAdministration:
             case InwardPackageAdmission:

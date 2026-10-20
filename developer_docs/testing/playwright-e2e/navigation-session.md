@@ -22,6 +22,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [114b. PrimeFaces menubar flyouts close between MCP tool calls — click the leaf `<a>` in one `browser_evaluate`](#114b-primefaces-menubar-flyouts-close-between-mcp-tool-calls--click-the-leaf-a-in-one-browser_evaluate)
 - [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
 - [136. Forcing `.click()` on a still-hidden PrimeFaces menu leaf (parent flyout never actually opened) can crash the JSF view state and log you out](#136-forcing-click-on-a-still-hidden-primefaces-menu-leaf-parent-flyout-never-actually-opened-can-crash-the-jsf-view-state-and-log-you-out)
+- [151. Dependent browser steps sent in one message race each other — send them one at a time](#151-dependent-browser-steps-sent-in-one-message-race-each-other--send-them-one-at-a-time)
 
 ---
 
@@ -169,7 +170,12 @@ Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" |
   Where-Object { $_.CommandLine -like '*ms-playwright-mcp*' } |
   Select-Object ProcessId, CommandLine
 ```
-Every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
+**First check who owns it.** `ps -o ppid= -p <chrome pid>` gives `playwright-mcp`,
+and its parent is a `claude` process. If that `claude` is still running, another
+session owns the browser: don't kill it. Drive the app with a standalone node
+script instead (`chromium.launch({ channel: 'chrome', headless: true })`).
+
+If the owner is gone, every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
 crashpad handler, gpu-process, utility, renderer subprocesses) is safe to
 `Stop-Process -Force` — they all share that same isolated profile directory,
 distinct from the user's real Chrome profile. After clearing them,
@@ -579,3 +585,24 @@ way §106's second-level note already recommends confirming `display: block` bef
 
 Verified 2026-09-29 while trying to reach *Settings → Manage My API Keys* on the Ruhunu local-staging
 server (`rh-local-staging` branch) mid-investigation of an inward pharmacy margin bug.
+
+
+## 142. `browser_hover` opens a PrimeFaces flyout; a synthetic `dispatchEvent(mouseenter)` on the same `<li>` does not
+
+§136's fix says to `browser_hover` each ancestor `<li>`, but a synthetic `el.dispatchEvent(new
+MouseEvent('mouseenter', {bubbles:true}))` fired via `browser_evaluate` on that same element looks
+identical in code and still leaves `aria-expanded="false"` — PrimeFaces' hover handler only fires on
+the browser's own trusted pointer event, which `browser_hover` sends (via CDP) but a scripted
+`dispatchEvent` does not. A second gotcha stacks on top: even a genuine `browser_hover` needs a short
+settle — checking `aria-expanded` or searching for the child menu text immediately after the hover
+call can still read `false`/empty; add `browser_wait_for({time: 1})` before trusting the result.
+
+Fix: use the real `browser_hover` tool (not `dispatchEvent`) on each ancestor level per §136, then wait
+~1s before reading the submenu's state or clicking its items.
+
+Verified 2026-10-07 navigating nested Pharmacy submenus (e.g. *Admissions → Pharmacy → Request
+Medicines from Pharmacy*) while developing #24358/#24359/#24360.
+
+## 151. Dependent browser steps sent in one message race each other — send them one at a time
+
+Tool calls in one message can run concurrently: waits overlap instead of adding up, and a click can fire before the page that a previous menu click requested has loaded ("does not match any elements"). Send each step that depends on the previous page in its own message, and wait for a real condition (`browser_wait_for` text) rather than stacking timed waits.

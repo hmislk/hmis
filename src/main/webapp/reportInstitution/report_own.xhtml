@@ -80,6 +80,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Report By Item " action="report_opd_daily_summery_credit_department" /> 
                                             <p:commandButton class="w-100" ajax="false" value="Report By Bill" action="report_opd_daily_summery_credit_department_by_bill" />
                                             <p:commandButton class="w-100" ajax="false" value="Report By Bill (With Letter)" action="report_opd_credit_bill_by_credit_company_with_letter" />
+                                            <p:commandButton class="w-100" ajax="false" value="Covering Letters (Multiple Bills)" action="#{coveringLetterController.navigateToCoveringLetterBatch()}" rendered="#{webUserController.hasPrivilege('CoveringLetters')}" />
                                             <p:commandButton class="w-100" ajax="false" value="Credit Company Break Down" action="report_credit_category" /> 
                                             <p:commandButton class="w-100" ajax="false" value="Report Credit Bill (OPD/Pharmacy/Inward)" action="/credit/credit_bill_all" /> 
                                             <p:commandButton class="w-100" ajax="false" value="Report Credit Bill Payment (OPD/Pharmacy/Inward)" action="/inward/inward_search_balance_payment_1" /> 
