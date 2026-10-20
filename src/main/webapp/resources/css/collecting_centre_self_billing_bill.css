@@ -703,3 +703,301 @@
     font-size: 0.85rem;
     color: #6c757d;
 }
+
+/* ---------- Mobile / tablet responsiveness ----------
+   Nothing is hidden on small screens: wide tables and fixed-size print
+   previews (11cm bills, A4 lab reports) scroll sideways inside their card
+   instead of being cut off or squeezing the whole page wider than the
+   phone. */
+.cc-bill-page .ui-datatable .ui-datatable-tablewrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.cc-bill-page .cc-scroll-x {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+/* Centred previews (lab report) must still scroll back to their left edge */
+.cc-bill-page .cc-scroll-x.d-flex {
+    justify-content: safe center;
+}
+.cc-bill-page .ui-tabs .ui-tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+}
+.cc-bill-page .ui-paginator {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+}
+.cc-bill-page .cc-ref-select {
+    max-width: 100%;
+}
+.cc-bill-page .ui-dialog,
+.cc-confirm-dialog.ui-dialog,
+.cc-settling-dialog.ui-dialog {
+    max-width: calc(100vw - 1.5rem);
+}
+
+/* Stacked columns need a little breathing room between them */
+@media (max-width: 991.98px) {
+    .cc-bill-page .cc-stack-gap-lg > [class*="col-"] + [class*="col-"] {
+        margin-top: 0.5rem;
+    }
+}
+@media (max-width: 767.98px) {
+    .cc-bill-page .cc-stack-gap > [class*="col-"] + [class*="col-"] {
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .cc-bill-page .ui-panel .ui-panel-content {
+        padding: 0.75rem;
+    }
+    .cc-bill-page .ui-panel .ui-panel-titlebar {
+        padding: 0.7rem 0.8rem;
+    }
+    /* m-1 side margins next to w-100 push cards past the screen edge */
+    .cc-bill-page .ui-panel.m-1 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .cc-bill-page .row.m-1 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .cc-bill-page .cc-actions-wrap {
+        flex-wrap: wrap;
+    }
+    .cc-bill-page .cc-actions-wrap .ui-button {
+        flex: 1 1 140px;
+        width: auto !important;
+    }
+    .cc-bill-page .cc-bill-total-value {
+        font-size: 1.4rem;
+    }
+    .cc-balance-stat-value {
+        font-size: 1.2rem;
+        overflow-wrap: anywhere;
+    }
+    .cc-balance-stat.cc-balance-stat-highlight .cc-balance-stat-value {
+        font-size: 1.3rem;
+    }
+    .cc-balance-stat:hover {
+        transform: none;
+    }
+    .cc-details-col {
+        flex-basis: 100%;
+    }
+    .cc-book-table.ui-datatable tbody td {
+        padding: 0.6rem 0.75rem;
+    }
+    /* Panel-header float:right buttons drop under the title instead of
+       overlapping it */
+    .cc-bill-page .ui-panel-titlebar .ui-panel-title .ui-button[style*="float"] {
+        margin-top: 0.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .cc-bill-page .cc-bill-total-bar {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    .cc-bill-page .cc-bill-total-value {
+        font-size: 1.25rem;
+    }
+    .cc-balance-stat-label {
+        white-space: normal;
+    }
+    .cc-settling-dialog .ui-dialog-content {
+        padding: 1.25rem !important;
+    }
+    .cc-confirm-dialog .ui-dialog-content {
+        padding: 1.25rem 1rem 1rem !important;
+    }
+    .cc-confirm-dialog .ui-dialog-footer {
+        flex-wrap: wrap;
+        padding: 0 1rem 1.25rem !important;
+    }
+    .ccpd-search-group {
+        flex-wrap: wrap;
+    }
+    .ccpd-header-right {
+        width: 100%;
+    }
+    .ccpd-search-input.ui-inputtext {
+        flex: 1 1 auto;
+        width: auto;
+        max-width: none;
+        min-width: 0;
+    }
+}
+
+/* ---------- Modern data tables (cc-card-table) ----------
+   Desktop: a clean rounded table. Phones/tablets (<= 768px): every row
+   becomes a card listing each column as "LABEL  value", so no column is
+   hidden and nothing has to be scrolled sideways. The labels come from
+   PrimeFaces reflow (reflow="true"), which copies each header into its
+   cells as span.ui-column-title. */
+.cc-bill-page .cc-card-table .ui-datatable-tablewrapper {
+    border: 1px solid var(--surface-d, #e6eaf0);
+    border-radius: 12px;
+    overflow-x: auto;
+    background: var(--surface-a, #fff);
+}
+.cc-bill-page .cc-card-table .ui-datatable-tablewrapper > table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.cc-bill-page .cc-card-table thead th {
+    background: #f4f7fb;
+    color: #5f6b7a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    border: none;
+    border-bottom: 2px solid #e3e8ef;
+}
+.cc-bill-page .cc-card-table .ui-datatable-data > tr > td {
+    border: none;
+    border-bottom: 1px solid #eef1f5;
+    vertical-align: middle;
+}
+.cc-bill-page .cc-card-table .ui-datatable-data > tr:last-child > td {
+    border-bottom: none;
+}
+.cc-bill-page .cc-card-table .ui-datatable-data > tr:nth-child(even) {
+    background: rgba(30, 136, 229, 0.025);
+}
+.cc-bill-page .cc-card-table .ui-datatable-data > tr:hover {
+    background: rgba(30, 136, 229, 0.07);
+}
+.cc-bill-page .cc-card-table .ui-datatable-data > tr.ui-state-highlight {
+    background: rgba(30, 136, 229, 0.16);
+    color: inherit;
+}
+.cc-bill-page .cc-card-table .ui-paginator {
+    border: none;
+    background: transparent;
+    padding-top: 0.6rem;
+}
+
+@media (max-width: 768px) {
+    .cc-bill-page .cc-card-table .ui-datatable-tablewrapper {
+        border: none;
+        border-radius: 0;
+        overflow: visible;
+        background: transparent;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-tablewrapper > table,
+    .cc-bill-page .cc-card-table .ui-datatable-data {
+        display: block;
+        width: 100% !important;
+        min-width: 0;
+        table-layout: auto;
+        border: none;
+    }
+    .cc-bill-page .cc-card-table thead,
+    .cc-bill-page .cc-card-table tfoot {
+        display: none;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr {
+        display: block;
+        position: relative;
+        margin-bottom: 0.75rem;
+        padding: 0.35rem 0.9rem;
+        background: var(--surface-a, #fff);
+        border: 1px solid #e3e8ef;
+        border-left: 4px solid #1E88E5;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, 0.06);
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr:nth-child(even),
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr:hover {
+        background: var(--surface-a, #fff);
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr.ui-state-highlight {
+        background: rgba(30, 136, 229, 0.08);
+        border-left-color: #43A047;
+    }
+    /* Each cell: label on the left (38%), value flows on the right.
+       !important beats the per-column inline width/padding/alignment. */
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr > td {
+        display: block !important;
+        position: relative;
+        float: none !important;
+        width: 100% !important;
+        min-height: 2.1rem;
+        padding: 0.5rem 0 0.5rem 38% !important;
+        text-align: left !important;
+        border: none;
+        border-bottom: 1px dashed #e6eaf0;
+        overflow-wrap: anywhere;
+        box-sizing: border-box;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr > td:last-child {
+        border-bottom: none;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr > td > .ui-column-title {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0.55rem;
+        width: 35%;
+        min-width: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 0.7rem;
+        font-weight: 700;
+        line-height: 1.3;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6c7a89;
+        overflow-wrap: anywhere;
+    }
+    /* Cells without a header (selection box, remove/select buttons) and the
+       "no records" row use the full card width */
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr > td:has(> .ui-column-title:empty),
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr > td:not(:has(> .ui-column-title)) {
+        padding-left: 0 !important;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr > td > .ui-column-title:empty {
+        display: none !important;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data > tr.ui-datatable-empty-message {
+        border-left-color: #b0bec5;
+        text-align: center;
+    }
+    /* Inline button/badge groups inside a cell wrap instead of overflowing */
+    .cc-bill-page .cc-card-table .ui-datatable-data td .d-flex {
+        flex-wrap: wrap;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data td .w-50 {
+        width: auto !important;
+    }
+    .cc-bill-page .cc-card-table .ui-datatable-data td .form-control,
+    .cc-bill-page .cc-card-table .ui-datatable-data td .ui-selectonemenu {
+        max-width: 100%;
+    }
+}
+
+/* Print previews shrunk to the screen by cc_self_billing_fit_screen.js.
+   Printing always uses the real size. */
+.cc-fit-screen > .cc-fit-inner {
+    max-width: none;
+}
+@media print {
+    .cc-fit-screen > .cc-fit-inner {
+        zoom: 1 !important;
+    }
+    .cc-scroll-x {
+        overflow: visible !important;
+    }
+}

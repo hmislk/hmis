@@ -40,6 +40,16 @@
                                         </div>
                                     </div>
 
+                                    <h:panelGroup layout="block" class="d-flex mt-2" rendered="#{reportFormatController.multiPageEnabled}">
+                                        <div class="col-5"><h:outputLabel class="w-100" value="Page"/></div>
+                                        <div class="col-7">
+                                            <p:selectOneMenu class="w-100" value="#{reportFormatController.uploadPage}">
+                                                <f:selectItems value="#{reportFormatController.uploadPageChoices}" var="pg" itemLabel="Page #{pg}" itemValue="#{pg}"/>
+                                                <p:ajax process="@this" update="priview option" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+
                                     <div class="d-flex mt-2">
                                         <div class="col-5"><h:outputLabel class="w-100" value="Type"/></div>
                                         <div class="col-7">

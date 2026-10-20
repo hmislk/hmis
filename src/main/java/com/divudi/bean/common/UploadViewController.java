@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.UploadType;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
@@ -38,7 +39,8 @@ public class UploadViewController {
             return new DefaultStreamedContent();
         } else {
             String id = context.getExternalContext().getRequestParameterMap().get("id");
-            Upload upload = findCategoryUploadById(id);
+            String page = context.getExternalContext().getRequestParameterMap().get("page");
+            Upload upload = findCategoryUploadById(id, CommonFunctions.convertStringToLongOrZero(page).intValue());
             if (upload != null) {
                 byte[] imgArr = upload.getBaImage();
                 if (imgArr == null) {
@@ -60,21 +62,50 @@ public class UploadViewController {
         }
     }
 
-    private Upload findCategoryUploadById(String id) {
+    /**
+     * Background of a report format for a page. Page 1, and any page without
+     * its own background, resolves to the format's ordinary background exactly
+     * as before pages existed; page-specific rows are kept apart by upload type.
+     */
+    private Upload findCategoryUploadById(String id, int page) {
         Long lid = CommonFunctions.convertStringToLongOrZero(id);
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("cid", lid);
+        if (page > 1) {
+            String pageJpql = "select u "
+                    + " from Upload u "
+                    + " where u.retired=:ret "
+                    + " and u.category.id=:cid "
+                    + " and u.uploadType=:pb "
+                    + " and u.comments=:pg "
+                    + " order by u.id desc";
+            Map pm = new HashMap(m);
+            pm.put("pb", UploadType.Lab_Report_Page_Background);
+            pm.put("pg", "page=" + page);
+            Upload pageUpload = uploadFacade.findFirstByJpql(pageJpql, pm);
+            if (pageUpload != null
+                    && (pageUpload.getBaImage() != null
+                    || (pageUpload.getFileUrl() != null && !pageUpload.getFileUrl().trim().isEmpty()))) {
+                return pageUpload;
+            }
+        }
         String jpql = "select u "
                 + " from Upload u "
                 + " where u.retired=:ret "
                 + " and u.category.id=:cid "
+                + " and (u.uploadType is null or u.uploadType<>:pb) "
                 + " order by u.id desc";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("cid", lid);
+        m.put("pb", UploadType.Lab_Report_Page_Background);
         return uploadFacade.findFirstByJpql(jpql, m);
     }
 
     public String getReportTemplate(String id) {
-        Upload u = findCategoryUploadById(id);
+        return getReportTemplate(id, 1);
+    }
+
+    public String getReportTemplate(String id, int page) {
+        Upload u = findCategoryUploadById(id, page);
 
         String url = "";
         if (u == null) {

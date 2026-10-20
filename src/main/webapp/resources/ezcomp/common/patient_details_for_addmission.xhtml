@@ -30,7 +30,7 @@
                         <h:outputText value="Select a Patient" rendered="#{cc.attrs.controller.patient eq null}"></h:outputText>
                         <h:outputText styleClass="fas fa-user" />
                         <h:panelGroup 
-                            rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                            rendered="#{not cc.attrs.searchable or empty patientController.quickSearchPatientList}">
                             <h:outputText
                                 rendered="#{cc.attrs.controller.patient.id eq null}"
                                 value="Patient" 
@@ -98,7 +98,7 @@
             </f:facet>
 
             <h:panelGroup id="selectPatient" >
-                <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
+                <h:panelGroup rendered="#{cc.attrs.searchable and not empty patientController.quickSearchPatientList}">
                     <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
                         <p:column headerText="Name">
                             #{ps.person.name}
@@ -122,8 +122,8 @@
 
             <h:panelGroup id="editPatient" >
 
-                <h:panelGroup rendered="#{cc.attrs.controller.patientDetailsEditable}" >
-                    <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
+                <h:panelGroup rendered="#{cc.attrs.editable and cc.attrs.controller.patientDetailsEditable}" >
+                    <h:panelGroup rendered="#{not cc.attrs.searchable or empty patientController.quickSearchPatientList}">
                         <h:panelGroup class="mb-1 w-100" id="panelPatient" >
                             <h:panelGroup id="gpPatient" >
                                 <div class="row">
@@ -382,8 +382,8 @@
             </h:panelGroup>
             <h:panelGroup id="viewPatient" >
 
-                <h:panelGroup  rendered="#{not cc.attrs.controller.patientDetailsEditable}"  >
-                    <h:panelGroup  rendered="#{patientController.quickSearchPatientList eq null}" >
+                <h:panelGroup  rendered="#{not cc.attrs.editable or not cc.attrs.controller.patientDetailsEditable}"  >
+                    <h:panelGroup  rendered="#{not cc.attrs.searchable or empty patientController.quickSearchPatientList}" >
                         <h:panelGrid columns="3" class="my-1" id="panelPatientDisplay" rendered="#{cc.attrs.controller.patient ne null and cc.attrs.controller.patient.id ne null}" >
 
                             <h:outputLabel value="Name " class="mx-3"/>
