@@ -64,12 +64,12 @@
                                             action="#{collectingCentreController.saveSelected()}"
                                             class="ui-button-warning btn"
                                             process="gpDetail btnSave"
-                                            update="lstSelect growl" >
+                                            update="lstSelect ccTabs:ccDeptPanel growl" >
                                         </p:commandButton>
                                     </div>
                                 </f:facet>
 
-                                <p:tabView activeIndex="#{collectingCentreController.activeIndex}">
+                                <p:tabView id="ccTabs" activeIndex="#{collectingCentreController.activeIndex}">
                                     <p:tab title="Basic Details">
                                         <p:panelGrid 
                                             layout="tabular"
