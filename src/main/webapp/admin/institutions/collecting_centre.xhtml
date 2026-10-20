@@ -200,15 +200,8 @@
                                             <h:outputText value="Current Balance" >                                        
                                             </h:outputText>
                                             <h:panelGroup >
-                                                <p:inputText
-                                                    autocomplete="off" 
-                                                    rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                    value="#{collectingCentreController.current.ballance}"  
-                                                    class="w-100">
-                                                </p:inputText>
-                                                <h:outputText 
-                                                    rendered="#{not webUserController.hasPrivilege('Developers')}"
-                                                    value="#{collectingCentreController.current.ballance}">                                        
+                                                <h:outputText
+                                                    value="#{collectingCentreController.current.ballance}">
                                                 </h:outputText>
                                             </h:panelGroup>
 

@@ -1951,8 +1951,7 @@ public class ChannelBillController implements Serializable {
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
+        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 

@@ -6593,8 +6593,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
+        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 

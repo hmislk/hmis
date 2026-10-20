@@ -1710,8 +1710,7 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
+        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 
