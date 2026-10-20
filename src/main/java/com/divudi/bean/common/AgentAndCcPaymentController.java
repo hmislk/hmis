@@ -322,8 +322,7 @@ public class AgentAndCcPaymentController implements Serializable {
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
+        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 
@@ -643,8 +642,7 @@ public class AgentAndCcPaymentController implements Serializable {
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
+        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 

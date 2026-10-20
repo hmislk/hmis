@@ -3514,8 +3514,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         agentHistory.setHistoryType(historyType);
         agentHistoryFacade.create(agentHistory);
 
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
+        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 
