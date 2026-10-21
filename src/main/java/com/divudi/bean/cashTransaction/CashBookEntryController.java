@@ -1192,7 +1192,7 @@ public class CashBookEntryController implements Serializable {
             newCbEntry.setToInstitution(entryData.getToDepartment().getInstitution());
 
             newCbEntry.setFromSite(entryData.getFromDepartment().getSite());
-            newCbEntry.setToSite(entryData.getFromDepartment().getSite());
+            newCbEntry.setToSite(entryData.getToDepartment().getSite());
 
             newCbEntry.setCashbookDate(bundle.getDate());
             newCbEntry.setCreater(sessionController.getLoggedUser());
