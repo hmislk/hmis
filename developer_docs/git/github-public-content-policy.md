@@ -31,6 +31,10 @@ attached file:
 - **Production data-fix logs** — "reset 1,635 rows on <schema> at 20:50". The
   fact that rows were repaired, the count, and the schema together describe a
   live hospital's database contents.
+- **Supplier and pricing data from a production copy** — supplier names,
+  purchase rates, line values and totals in screenshots taken from a local
+  copy of a hospital database. Blur them (CSS `filter: blur(9px)` on the
+  cells before the screenshot); 5px is still readable.
 
 ## Publish instead
 
