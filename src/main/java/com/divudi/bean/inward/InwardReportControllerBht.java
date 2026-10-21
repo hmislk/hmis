@@ -752,7 +752,7 @@ public class InwardReportControllerBht implements Serializable {
             fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         paymentBillDtosForDepartment = new ArrayList<>();
         paymentBillDtosForDepartmentNetTotal = 0.0;
