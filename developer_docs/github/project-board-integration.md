@@ -38,6 +38,14 @@ When the issue is fully resolved:
 gh project item-edit --project-id PVT_kwDOAHw-zs4ApMln --id PROJECT_ITEM_ID --field-id PVTSSF_lADOAHw-zs4ApMlnzggpN3k --single-select-option-id 1bab9178
 ```
 
+### 4. Closing an Issue Without a PR
+QA picks up work by board status, not by issue state. A merged PR moves its issues to "Dev Completed"; a manual `gh issue close` (explained, not a bug, duplicate, cannot reproduce) does not, so QA never sees it. After every manual close:
+```bash
+# Move to "Dev Completed" status, then read the status back
+gh project item-edit --project-id PVT_kwDOAHw-zs4ApMln --id PROJECT_ITEM_ID --field-id PVTSSF_lADOAHw-zs4ApMlnzggpN3k --single-select-option-id 85d4d4c9
+```
+Add the issue to the board first if it is not on it.
+
 ## Status Option IDs
 - **Backlog**: `8a5edcf1`
 - **Current Sprint**: `1cbc1930`

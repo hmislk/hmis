@@ -356,6 +356,11 @@ button on that same Application Options page: it re-runs `loadApplicationOptions
 and the new value takes effect immediately. Used on #23651 to flip
 `Inward Final Bill - Bundle Grouped Charge Types` between runs.
 
+This works only for a **new** row. After an SQL `UPDATE` of an existing row, Reload
+Config still returns the old value (the L2 cache serves the stale entity, §48); change
+existing rows with **Edit Option** on the same page. Hit on #24624 with
+`Legacy Functions Allowed`.
+
 Note the department-scoped-key-first resolution (`feedback_config_option_scope_resolution`):
 `getBooleanValueByKeyReadOnly("X", …)` with a department selected looks up
 `"<Dept> - X"` before the plain `"X"`, so an admin who saved the toggle from a

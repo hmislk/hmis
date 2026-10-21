@@ -193,8 +193,11 @@ reporter bring it back with a live discussion if it's still happening.
    observe the described behavior. Closing for now — if this is still
    occurring, let's discuss and file a fresh issue with updated repro
    details."
-3. `gh issue close <n> --repo hmislk/hmis --reason "not planned"`.
-4. Check that both the comment and the close actually succeeded before
+3. `gh issue close <n> --repo hmislk/hmis --reason "not planned"`, then set
+   the board status to **Dev Completed** and read it back. QA works from
+   board status, so a closed issue left in Backlog is never checked. See
+   [Project Board §4](../../../developer_docs/github/project-board-integration.md#4-closing-an-issue-without-a-pr).
+4. Check that the comment, the close and the status change all succeeded before
    calling this outcome final — if the close command errors after the
    comment posted, note that in the batch summary rather than assuming the
    issue is closed.
