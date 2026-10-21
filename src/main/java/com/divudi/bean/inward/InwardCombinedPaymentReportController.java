@@ -175,7 +175,7 @@ public class InwardCombinedPaymentReportController implements Serializable {
         cancelledCount = 0;
 
         Map<String, InwardCombinedPaymentGroupDto> byKey = new LinkedHashMap<>();
-        boolean groupByBht = VIEW_GROUPED_BHT.equals(viewMode);
+        boolean groupByBht = VIEW_GROUPED_BHT.equals(generatedViewMode);
 
         for (InwardCombinedPaymentRowDto row : reportRows) {
             double signed = row.getSignedAmount();
