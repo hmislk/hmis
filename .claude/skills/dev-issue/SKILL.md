@@ -199,6 +199,15 @@ Rules that hold on every machine:
   PowerShell: Git Bash rewrites `/coop` into a Windows path.
 - After redeploy, check the app answers and the server log shows no deployment
   errors before moving on.
+- If Claude Code kills the build/redeploy for low memory, don't stop to ask:
+  run a background until-loop that waits for free RAM (e.g. > 3 GB), then
+  rerun the step and continue.
+  - Check free RAM every 60 s, with
+    `(Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory` (KB) on Windows
+    or `free -m` on Linux. Give up after 30 minutes and report to the user.
+  - Before retrying a redeploy, run `asadmin list-applications`. If `<app>` is
+    gone, use `deploy --force=true --name <app> --contextroot <root> <war>`
+    instead of `redeploy`.
 
 ## 7. Test with Playwright + verify in DB
 
