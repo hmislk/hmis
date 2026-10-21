@@ -859,7 +859,7 @@ public class InwardReportControllerBht implements Serializable {
             fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         if (toDate == null) {
-            toDate = new Date();
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         // Issue #22805 review - without this guard, a BHT Range search left
         // with either endpoint unselected silently falls back to the date
