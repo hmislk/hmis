@@ -41,6 +41,16 @@ import com.divudi.core.light.common.BillLight;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.text.SimpleDateFormat;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dto.PharmacyFreeItemReceivedDTO;
+import com.divudi.core.data.dto.PharmacyFreeItemSummaryDTO;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
 import java.util.HashMap;
 import java.util.Date;
 import java.util.List;
@@ -84,6 +94,10 @@ public class PharmacyProcurementReportController implements Serializable {
     private DrawerFacade drawerFacade;
     @EJB
     BillService billService;
+    @EJB
+    private InstitutionFacade institutionFacade;
+    @EJB
+    private ItemFacade itemFacade;
 
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -188,6 +202,17 @@ public class PharmacyProcurementReportController implements Serializable {
     private List<BillLight> donationBills;
     private BillLight billLight;
 
+    // Free Items Received report
+    private DepartmentType[] departmentTypes;
+    private String freeItemReportType = "DETAIL";
+    private List<PharmacyFreeItemReceivedDTO> freeItemRows;
+    private List<PharmacyFreeItemSummaryDTO> freeItemSummaryRows;
+    private double freeItemTotalPaidQty;
+    private double freeItemTotalFreeQty;
+    private double freeItemTotalFreeValue;
+    private long freeItemLineCount;
+    private long freeItemBillCount;
+
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPurchaseItemList() {
@@ -202,6 +227,13 @@ public class PharmacyProcurementReportController implements Serializable {
     public String navigateToDonationBillListPrint() {
         generateDonationBillList();
         return "/pharmacy/reports/procurement_reports/donation_bill_list_print?faces-redirect=true";
+    }
+
+    public String navigateToFreeItemsReceivedReport() {
+        resetFreeItemFilters();
+        fromDate = CommonFunctions.getStartOfDay();
+        toDate = CommonFunctions.getEndOfDay();
+        return "/pharmacy/pharmacy_report_grn_free_items_by_supplier?faces-redirect=true";
     }
 
     public String navigateToViewDonationBill() {
@@ -247,6 +279,179 @@ public class PharmacyProcurementReportController implements Serializable {
         setDownloadingExcel(null);
         setFile(null);
         setSearchKeyword(new SearchKeyword());
+    }
+
+    private void resetFreeItemFilters() {
+        setInstitution(null);
+        setSite(null);
+        setDepartment(null);
+        setDealer(null);
+        setItem(null);
+        departmentTypes = null;
+        freeItemReportType = "DETAIL";
+        freeItemRows = new ArrayList<>();
+        freeItemSummaryRows = new ArrayList<>();
+        freeItemTotalPaidQty = 0;
+        freeItemTotalFreeQty = 0;
+        freeItemTotalFreeValue = 0;
+        freeItemLineCount = 0;
+        freeItemBillCount = 0;
+    }
+
+    public void processFreeItemsReceivedReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select the from and to dates");
+            return;
+        }
+        freeItemRows = new ArrayList<>();
+        freeItemSummaryRows = new ArrayList<>();
+        freeItemTotalPaidQty = 0;
+        freeItemTotalFreeQty = 0;
+        freeItemTotalFreeValue = 0;
+        freeItemLineCount = 0;
+        freeItemBillCount = 0;
+        try {
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.PHARMACY_GRN);
+            btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            Map<String, Object> m = new HashMap<>();
+            String jpql = "select new com.divudi.core.data.dto.PharmacyFreeItemReceivedDTO("
+                    + " b.id, b.createdAt, b.deptId, b.invoiceNumber, b.billTypeAtomic, d.name, d.departmentType,"
+                    + " s.id, s.name, i.id, i.code, i.name, pbi.qty, pbi.freeQty, pbi.purchaseRate) "
+                    + " from BillItem bi join bi.pharmaceuticalBillItem pbi join bi.bill b join b.department d join bi.item i"
+                    + " left join b.fromInstitution s "
+                    + " where bi.retired=false and b.retired=false and b.cancelled=false and pbi.freeQty > 0 "
+                    + " and b.billTypeAtomic in :btas and b.createdAt between :fd and :td ";
+            m.put("btas", btas);
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            if (institution != null) {
+                jpql += " and b.institution=:ins ";
+                m.put("ins", institution);
+            }
+            if (site != null) {
+                jpql += " and d.site=:site ";
+                m.put("site", site);
+            }
+            if (department != null) {
+                jpql += " and b.department=:dep ";
+                m.put("dep", department);
+            }
+            if (dealer != null) {
+                jpql += " and b.fromInstitution=:sup ";
+                m.put("sup", dealer);
+            }
+            if (item != null) {
+                jpql += " and bi.item=:item ";
+                m.put("item", item);
+            }
+            if (departmentTypes != null && departmentTypes.length > 0) {
+                jpql += " and d.departmentType in :dts ";
+                m.put("dts", Arrays.asList(departmentTypes));
+            }
+            jpql += " order by b.createdAt, b.id, bi.id";
+            List<?> res = billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+            for (Object o : res) {
+                freeItemRows.add((PharmacyFreeItemReceivedDTO) o);
+            }
+            buildFreeItemSummaries();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in processing the free items received report");
+        }
+    }
+
+    private void buildFreeItemSummaries() {
+        Set<Long> allBills = new HashSet<>();
+        Map<String, PharmacyFreeItemSummaryDTO> groups = new LinkedHashMap<>();
+        Map<String, Set<Long>> groupBills = new HashMap<>();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        for (PharmacyFreeItemReceivedDTO r : freeItemRows) {
+            double paid = r.getPaidQty() == null ? 0.0 : r.getPaidQty();
+            double free = r.getFreeQty() == null ? 0.0 : r.getFreeQty();
+            double value = r.getFreeValue();
+            freeItemTotalPaidQty += paid;
+            freeItemTotalFreeQty += free;
+            freeItemTotalFreeValue += value;
+            freeItemLineCount++;
+            allBills.add(r.getBillId());
+
+            String gk;
+            String label;
+            if ("SUPPLIER".equals(freeItemReportType)) {
+                gk = String.valueOf(r.getSupplierId());
+                label = r.getSupplierName() != null ? r.getSupplierName() : "No Supplier";
+            } else if ("ITEM".equals(freeItemReportType)) {
+                gk = String.valueOf(r.getItemId());
+                label = r.getItemName();
+            } else if ("DATE".equals(freeItemReportType)) {
+                label = r.getReceivedDate() == null ? "" : df.format(r.getReceivedDate());
+                gk = label;
+            } else {
+                continue;
+            }
+            PharmacyFreeItemSummaryDTO g = groups.get(gk);
+            if (g == null) {
+                g = new PharmacyFreeItemSummaryDTO();
+                g.setKey(label);
+                g.setSupplierId(r.getSupplierId());
+                g.setItemId(r.getItemId());
+                g.setItemCode(r.getItemCode());
+                if (r.getReceivedDate() != null) {
+                    g.setDate(CommonFunctions.getStartOfDay(r.getReceivedDate()));
+                }
+                groups.put(gk, g);
+                groupBills.put(gk, new HashSet<>());
+            }
+            g.setLineCount(g.getLineCount() + 1);
+            g.setPaidQty(g.getPaidQty() + paid);
+            g.setFreeQty(g.getFreeQty() + free);
+            g.setFreeValue(g.getFreeValue() + value);
+            groupBills.get(gk).add(r.getBillId());
+        }
+        freeItemBillCount = allBills.size();
+        for (Map.Entry<String, PharmacyFreeItemSummaryDTO> e : groups.entrySet()) {
+            e.getValue().setBillCount(groupBills.get(e.getKey()).size());
+        }
+        freeItemSummaryRows = new ArrayList<>(groups.values());
+        if ("DATE".equals(freeItemReportType)) {
+            freeItemSummaryRows.sort((a, b) -> a.getKey().compareTo(b.getKey()));
+        } else {
+            freeItemSummaryRows.sort((a, b) -> Double.compare(b.getFreeValue(), a.getFreeValue()));
+        }
+    }
+
+    public void viewFreeItemDetailsForSupplier(Long supplierId) {
+        if (supplierId == null) {
+            JsfUtil.addErrorMessage("No supplier selected");
+            return;
+        }
+        Institution sup = institutionFacade.find(supplierId);
+        if (sup == null) {
+            JsfUtil.addErrorMessage("Supplier not found");
+            return;
+        }
+        dealer = sup;
+        freeItemReportType = "DETAIL";
+        processFreeItemsReceivedReport();
+    }
+
+    public void viewFreeItemDetailsForItem(Long itemId) {
+        if (itemId == null) {
+            JsfUtil.addErrorMessage("No item selected");
+            return;
+        }
+        Item it = itemFacade.find(itemId);
+        if (it == null) {
+            JsfUtil.addErrorMessage("Item not found");
+            return;
+        }
+        item = it;
+        freeItemReportType = "DETAIL";
+        processFreeItemsReceivedReport();
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypes() {
+        return Arrays.asList(DepartmentType.values());
     }
 
     public void resetAllFilters() {
@@ -1207,6 +1412,58 @@ public class PharmacyProcurementReportController implements Serializable {
      */
     public void setMaxResult(int maxResult) {
         this.maxResult = maxResult;
+    }
+
+    public DepartmentType[] getDepartmentTypes() {
+        return departmentTypes;
+    }
+
+    public void setDepartmentTypes(DepartmentType[] departmentTypes) {
+        this.departmentTypes = departmentTypes;
+    }
+
+    public String getFreeItemReportType() {
+        return freeItemReportType;
+    }
+
+    public void setFreeItemReportType(String freeItemReportType) {
+        this.freeItemReportType = freeItemReportType;
+    }
+
+    public List<PharmacyFreeItemReceivedDTO> getFreeItemRows() {
+        return freeItemRows;
+    }
+
+    public void setFreeItemRows(List<PharmacyFreeItemReceivedDTO> freeItemRows) {
+        this.freeItemRows = freeItemRows;
+    }
+
+    public List<PharmacyFreeItemSummaryDTO> getFreeItemSummaryRows() {
+        return freeItemSummaryRows;
+    }
+
+    public void setFreeItemSummaryRows(List<PharmacyFreeItemSummaryDTO> freeItemSummaryRows) {
+        this.freeItemSummaryRows = freeItemSummaryRows;
+    }
+
+    public double getFreeItemTotalPaidQty() {
+        return freeItemTotalPaidQty;
+    }
+
+    public double getFreeItemTotalFreeQty() {
+        return freeItemTotalFreeQty;
+    }
+
+    public double getFreeItemTotalFreeValue() {
+        return freeItemTotalFreeValue;
+    }
+
+    public long getFreeItemLineCount() {
+        return freeItemLineCount;
+    }
+
+    public long getFreeItemBillCount() {
+        return freeItemBillCount;
     }
 
 // </editor-fold>
