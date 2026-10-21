@@ -770,7 +770,9 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
-        if (comment == null) {
+        // A blank inputText submits "" (not null), so a null check alone let the
+        // request be cancelled without a comment (#24517).
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Provide Comment To Cancel !");
             return "";
         }
@@ -787,6 +789,8 @@ public class PharmacyBillSearch implements Serializable {
         // same bill id (this bean is session-scoped) re-reads the now-cancelled
         // status instead of serving the stale pre-cancellation snapshot.
         bhtIssueRequestPrintDtoBillId = null;
+        // Session-scoped: clear so this comment is not reused for the next cancellation.
+        comment = null;
         return navigateBackFromInwardPharmacyRequestReprint();
     }
 
@@ -906,7 +910,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
-        if (comment == null || comment.isEmpty()) {
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
             return "";
         }
@@ -973,6 +977,8 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
+        // Session-scoped: clear so this comment is not reused for the next cancellation.
+        comment = null;
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 

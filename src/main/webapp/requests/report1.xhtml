@@ -42,44 +42,44 @@
                                               patientReport="#{patientReportController.currentPatientReport}"/>
 
 
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false}"  escape="false" />
                                 </div>
                             </ui:repeat>
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.lobValue}" rendered="#{prv.investigationItem.ixItemType eq 'Template' and prv.investigationItem.retired eq false}"  escape="false" />
                                 </div>
                             </ui:repeat>
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar'}" escape="false" />
                                 </div>
                             </ui:repeat>
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.doubleValue}"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Double' and prv.investigationItem.retired eq false}"   escape="false" />
                                 </div>
                             </ui:repeat>
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'DynamicLabel'}" escape="false" />
                                 </div>
                             </ui:repeat>
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.strValue}" rendered="#{prv.investigationItem.ixItemType eq 'Flag'}" escape="false" />
                                 </div>
                             </ui:repeat>
-                            <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                            <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                 <div style="#{prv.investigationItem.cssStyle}; position:absolute;">
                                     <h:outputLabel value="#{prv.doubleValue}" rendered="#{prv.investigationItem.ixItemType eq 'Calculation' }" escape="false" >
                                         <f:convertNumber pattern="0.0" />
                                     </h:outputLabel>
                                 </div>
                             </ui:repeat>
-                            <ui:repeat value="#{patientReportController.currentPatientReport.item.reportItems}" var="myIi" >
+                            <ui:repeat value="#{patientReportController.pageOneReportItems}" var="myIi" >
                                 <div style="#{myIi.cssStyle}; position:absolute;">
                                     <h:outputText rendered="#{myIi.retired ne true and myIi.ixItemType eq 'Label' }" value="#{myIi.htmltext}" style="color: #{myIi.cssColor}" escape="false" ></h:outputText>
                                 </div>
@@ -97,7 +97,7 @@
                                 </div>
                                 <div id="labelsAndValues" style="left:5%; width: 90%; display: inline-block; vertical-align: top; " >
                                     <div style="vertical-align: top; width: 100%; padding: 1px;margin: auto;display: inline-block;">
-                                        <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                        <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                             <h:panelGroup style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top;" layout="block"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop lt 50 }" >
                                                 <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
                                                 <div style="display: inline-block; top: 0px; float: left; width: 20%; text-align: left; padding-top: 2%; padding-bottom: 1%; ">
@@ -116,7 +116,7 @@
                                                        rendered="#{patientReportController.currentPatientReport.transHasAbst}"
                                                        style="font-size: 120%; font-weight: bold; padding-left: 18px;"></h:outputLabel>
                                     </div>
-                                    <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
+                                    <ui:repeat  value="#{patientReportController.pageOneItemValues}" 
                                                 var="prv" >
                                         <h:panelGroup 
                                             rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired eq false and prv.strValue ne '' and prv.strValue ne null  }" >
@@ -131,7 +131,7 @@
 
                                         </h:panelGroup>
                                     </ui:repeat>
-                                    <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
+                                    <ui:repeat  value="#{patientReportController.pageOneItemValues}" var="prv" >
                                         <h:panelGroup rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired eq false and prv.lobValue ne '' and prv.lobValue ne null and prv.investigationItem.riTop gt 50 }" >
                                             <div style="float: left;width: 5%; " ></div>
                                             <div style=" float: left; text-align: left; width: 20%;padding-left: 1px; padding-right: 1px; padding-top: 5px; vertical-align: top;">

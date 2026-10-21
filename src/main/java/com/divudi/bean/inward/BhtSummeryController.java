@@ -245,6 +245,10 @@ public class BhtSummeryController implements Serializable {
     private double paidByCompany;
     private PatientItem tmpPI;
     private PatientEncounter patientEncounter;
+    // Admission picked on the Interim Bill search panel. Kept apart from
+    // patientEncounter so that picking it does not hide the search panel
+    // before Continue's action can run (issue #24582).
+    private PatientEncounter admissionToOpen;
     private Bill current;
     private Bill originalBill;
     private Bill tempBill;
@@ -4494,6 +4498,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String createIntrimBillTable() {
+        if (admissionToOpen != null) {
+            patientEncounter = admissionToOpen;
+            admissionToOpen = null;
+        }
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
@@ -4744,6 +4752,7 @@ public class BhtSummeryController implements Serializable {
 
     public void clear() {
         patientEncounter = null;
+        admissionToOpen = null;
         institution = sessionController.getInstitution();
         makeNull();
     }
@@ -4990,6 +4999,7 @@ public class BhtSummeryController implements Serializable {
 
     public String navigateToIntrimBill() {
         patientEncounter = null;
+        admissionToOpen = null;
         institution = sessionController.getInstitution();
         makeNull();
         return "/inward/inward_bill_intrim?faces-redirect=true";
@@ -5059,6 +5069,14 @@ public class BhtSummeryController implements Serializable {
 
     public PatientEncounter getPatientEncounter() {
         return patientEncounter;
+    }
+
+    public PatientEncounter getAdmissionToOpen() {
+        return admissionToOpen;
+    }
+
+    public void setAdmissionToOpen(PatientEncounter admissionToOpen) {
+        this.admissionToOpen = admissionToOpen;
     }
 
     public List<EncounterCreditCompany> getEncounterCreditCompanys() {
@@ -6254,6 +6272,11 @@ public class BhtSummeryController implements Serializable {
     private List<Bill> additionalChargeBill;
 
     private void setKnownChargeTot() {
+        // The sums below read the saved PatientRoom columns, so make sure the
+        // rooms have been recalculated and saved first. A lazy render that
+        // reaches here with patientRooms still null would otherwise show the
+        // last saved room charges (issue #24582).
+        getPatientRooms();
         // Fetch all 7 PatientRoom charge sums in a single query
         Map<InwardChargeType, Double> roomSums = getInwardBean().getPatientRoomChargeSumsBulk(getPatientEncounter(), childPatientEncouters);
 
