@@ -81,6 +81,11 @@ issue, sets the project board status to In Progress.
   issue's own repro steps before reproducing or planning a fix against an
   assumed page. Testing the wrong page can burn several reproduction
   attempts before the mismatch surfaces.
+- **If no code change is needed** (data problem, works as designed, duplicate),
+  explain in an issue comment, close it, then set its board status to
+  **Dev Completed** and read it back. QA works from board status; a manually
+  closed issue left in Backlog is never checked. See
+  [Project Board §4](../../../developer_docs/github/project-board-integration.md#4-closing-an-issue-without-a-pr).
 
 ## 2a. Reproduce the bug (bug issues only)
 
