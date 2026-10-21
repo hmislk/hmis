@@ -13,6 +13,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Request;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -38,7 +39,8 @@ import javax.ejb.Stateless;
  * Settlement is a two-step maker-checker workflow (#24541): the holder submits a
  * request (payments linked to a pending PAYMENT_SETTLEMENT_BILL, nothing moves),
  * and a different user with ApproveNonCashSettlement approves it, which settles the
- * payments and debits the holder's drawer. Cash Book is never touched here.
+ * payments, debits the holder's drawer and debits the department's cash book
+ * (#24627); cancelling an approved settlement reverses both.
  * See developer_docs/plans/2026-10-16-non-cash-settlement-approval-design.md.
  */
 @Stateless
@@ -56,6 +58,8 @@ public class PaymentSettlementService {
     private RequestService requestService;
     @EJB
     private DrawerService drawerService;
+    @EJB
+    private CashbookService cashbookService;
 
     public static final String REQUEST_NO_PREFIX = "NCSET-";
 
@@ -281,7 +285,8 @@ public class PaymentSettlementService {
      * type PAYMENT_SETTLEMENT_BILL_CANCELLED is created and linked to the original
      * via billedBill / backwardReferenceBill.
      *
-     * Cash book is NOT touched. The holder's drawer is credited back only for settlements approved under #24541 (approveAt set); legacy settlements never debited it.
+     * The cash book entries written at approval are reversed; settlements approved before #24627 wrote none, so nothing is reversed for them.
+     * The holder's drawer is credited back only for settlements approved under #24541 (approveAt set); legacy settlements never debited it.
      */
     public Bill cancelSettlement(Bill settlementBill, String comments, WebUser actor) {
         if (settlementBill == null) {
@@ -358,6 +363,9 @@ public class PaymentSettlementService {
         }
 
         billFacade.create(cancellationBill);
+
+        // Put the settled payments back into the cash book they left at approval.
+        cashbookService.reverseFundMovementEntries(settlementBill, cancellationBill, actor);
 
         if (reverseDrawer) {
             Drawer drawer = drawerService.getUsersDrawer(originalHolder);
@@ -506,6 +514,12 @@ public class PaymentSettlementService {
             p.setPaymentSettled(true);
             p.setCurrentHolder(null);
             paymentFacade.edit(p);
+        }
+        // Settled payments leave the cash book of the settlement's department (#24627).
+        for (Payment p : payments) {
+            Department cashbookDepartment = bill.getDepartment() != null ? bill.getDepartment() : p.getDepartment();
+            CashBook cashbook = cashbookService.findAndSaveCashBookForDepartment(cashbookDepartment);
+            cashbookService.writeFundMovementEntry(p, -Math.abs(p.getPaidValue()), cashbook, bill, approver);
         }
         // applyDrawerAdjustment flushes and clears the persistence context; payment edits above are already merged, bill/request below are re-merged.
         for (Map.Entry<PaymentMethod, Double> e : NonCashSettlementRules.totalsByMethod(payments).entrySet()) {
