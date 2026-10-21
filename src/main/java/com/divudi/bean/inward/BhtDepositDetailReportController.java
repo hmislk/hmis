@@ -287,6 +287,20 @@ public class BhtDepositDetailReportController implements Serializable {
     }
 
     /**
+     * Same wording as the Report Type menu, for the PDF filter summary.
+     */
+    private String reportTypeLabel(String type) {
+        if ("DEPOSIT".equals(type)) {
+            return "Inpatient Deposits";
+        } else if ("PAYMENT".equals(type)) {
+            return "Inpatient Payment";
+        } else if ("POST_FINAL".equals(type)) {
+            return "Post Final Bill Payments";
+        }
+        return "All";
+    }
+
+    /**
      * Short label for the Bill Type column, so a negative contra row reads as
      * e.g. "Deposit Refund" or "Payment Cancellation".
      */
@@ -312,11 +326,11 @@ public class BhtDepositDetailReportController implements Serializable {
             case INWARD_PAYMENT_REFUND_CANCELLATION:
                 return "Payment Refund Cancellation";
             case POST_FINAL_BILL_INWARD_PAYMENT:
-                return "Post Discharge Payment";
+                return "Post Final Bill Payment";
             case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
-                return "Post Discharge Payment Cancellation";
+                return "Post Final Bill Payment Cancellation";
             case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
-                return "Post Discharge Payment Refund";
+                return "Post Final Bill Payment Refund";
             default:
                 return bta.getLabel();
         }
@@ -616,7 +630,7 @@ public class BhtDepositDetailReportController implements Serializable {
             addPdfInfoRow(filterTable, "Date Basis", dateBasisLabel, labelFont, valueFont);
             addPdfInfoRow(filterTable, "From", appliedFromDate != null ? dtf.format(appliedFromDate) : "-", labelFont, valueFont);
             addPdfInfoRow(filterTable, "To", appliedToDate != null ? dtf.format(appliedToDate) : "-", labelFont, valueFont);
-            addPdfInfoRow(filterTable, "Report Type", appliedReportType != null ? appliedReportType : "ALL", labelFont, valueFont);
+            addPdfInfoRow(filterTable, "Report Type", reportTypeLabel(appliedReportType), labelFont, valueFont);
             addPdfInfoRow(filterTable, "Admission Status",
                     appliedAdmissionStatus != null ? appliedAdmissionStatus.getLabel() : "-", labelFont, valueFont);
             addPdfInfoRow(filterTable, "Admission Type",

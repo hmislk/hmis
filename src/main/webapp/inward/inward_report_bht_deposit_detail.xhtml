@@ -221,11 +221,12 @@
                             <p:selectOneMenu 
                                 id="reportTypeMenu" 
                                 styleClass="w-100 form-control"
+                                title="Post Final Bill Payments: payments collected after the final bill to settle the balance due. Deposits and deposit refunds made after the final bill are listed under Inpatient Deposits."
                                 value="#{bhtDepositDetailReportController.reportType}">
                                 <f:selectItem itemValue="ALL" itemLabel="All" />
                                 <f:selectItem itemValue="DEPOSIT" itemLabel="Inpatient Deposits" />
                                 <f:selectItem itemValue="PAYMENT" itemLabel="Inpatient Payment" />
-                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Discharge Payments" />
+                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Final Bill Payments" />
                             </p:selectOneMenu>
 
                         </h:panelGrid>
@@ -430,7 +431,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                                 <h:outputText value=" | Date Basis: #{bhtDepositDetailReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : (bhtDepositDetailReportController.dateBasis eq 'paymentDate' ? 'Payment Date' : 'Discharge Date')}" />
-                                <h:outputText value=" | Report Type: #{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Discharge Payments' : 'All'))}" />
+                                <h:outputText value=" | Report Type: #{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Final Bill Payments' : 'All'))}" />
                             </div>
                             <table>
                                 <thead>
