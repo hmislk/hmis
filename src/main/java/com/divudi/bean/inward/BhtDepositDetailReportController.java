@@ -112,6 +112,8 @@ public class BhtDepositDetailReportController implements Serializable {
     private Institution appliedInstitution;
     private Institution appliedSite;
     private Department appliedDepartment;
+    // When generateReport() last ran; shown as "Processing Time" on the print view.
+    private Date processedAt;
 
     public void generateReport() {
         reportRows = new ArrayList<>();
@@ -129,6 +131,7 @@ public class BhtDepositDetailReportController implements Serializable {
         appliedInstitution = institution;
         appliedSite = site;
         appliedDepartment = department;
+        processedAt = new Date();
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
@@ -880,6 +883,7 @@ public class BhtDepositDetailReportController implements Serializable {
         grandTotal = 0;
         totalByMethod = new LinkedHashMap<>();
         usedPaymentMethods = new ArrayList<>();
+        processedAt = null;
     }
 
     private static Date startOfCurrentMonth() {
@@ -900,6 +904,10 @@ public class BhtDepositDetailReportController implements Serializable {
         cal.set(Calendar.SECOND, 59);
         cal.set(Calendar.MILLISECOND, 999);
         return cal.getTime();
+    }
+
+    public Date getProcessedAt() {
+        return processedAt;
     }
 
     public Date getFromDate() {

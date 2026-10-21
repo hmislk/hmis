@@ -1525,6 +1525,10 @@ public class ChannelReportController implements Serializable {
             return;
         }
 
+        if (wrapperDto.getIncomeDtos() == null || wrapperDto.getIncomeDtos().isEmpty()) {
+            JsfUtil.addErrorMessage("No bills match the selected filters.");
+        }
+
         wrapperDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
 
         if (institution != null) {
