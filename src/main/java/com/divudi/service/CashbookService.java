@@ -226,7 +226,7 @@ public class CashbookService {
 
         //ALL
         cbe.setFromDepartmentBalanceBefore(lastFromDepartmentEntry != null ? lastFromDepartmentEntry.getFromDepartmentBalanceAfter() : 0.0);
-        cbe.setToDepartmentBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getFromDepartmentBalanceAfter() : 0.0);
+        cbe.setToDepartmentBalanceBefore(lastToDepartmentEntry != null ? lastToDepartmentEntry.getToDepartmentBalanceAfter() : 0.0);
         cbe.setFromInstitutionBalanceBefore(lastFromInstitutionEntry != null ? lastFromInstitutionEntry.getFromInstitutionBalanceAfter() : 0.0);
         cbe.setToInstitutionBalanceBefore(lastToInstitutionEntry != null ? lastToInstitutionEntry.getToInstitutionBalanceAfter() : 0.0);
         cbe.setFromSiteBalanceBefore(lastFromSiteEntry != null ? lastFromSiteEntry.getFromSiteBalanceAfter() : 0.0);
