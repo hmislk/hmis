@@ -3536,42 +3536,53 @@ public class InwardReportController1 implements Serializable {
     }
 
     private void exportCreditCompanyDebtors(boolean excel) {
+        if ("individual".equals(reportType)) {
+            exportCreditCompanyDebtorSettlements(excel);
+            return;
+        }
         if (bills == null || bills.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to export. Please process the report first.");
             return;
         }
         TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
         TabularReportExporter.Align r = TabularReportExporter.Align.RIGHT;
-        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true)
-                .column("Commitment Bill No", 2.6f, l)
-                .column("Final Bill No", 2.4f, l)
+        TabularReportExporter ex = newCreditCompanyDebtorExporter()
+                .column("No.", 0.6f, TabularReportExporter.Align.CENTER)
+                .column("Commitment Bill No", 2.4f, l)
+                .column("Final Bill No", 2.2f, l)
                 .column("BHT No", 1.2f, l)
                 .column("Patient Name", 2.2f, l)
                 .column("Credit Company", 2.2f, l)
-                .column("Bill Date", 1.2f, l)
+                .column("CC Commitment Bill Date", 1.3f, l)
+                .column("Final Bill Created Date", 1.3f, l)
                 .column("Admitted", 1.2f, l)
                 .column("Discharged", 1.2f, l)
-                .column("Final Bill Value", 1.4f, r)
-                .column("Company Commitment", 1.4f, r)
-                .column("Settled by Company", 1.4f, r)
-                .column("Settled by Patient", 1.4f, r)
-                .column("Total Paid", 1.4f, r)
-                .column("Outstanding", 1.4f, r);
+                .column("Last Settlement Date", 1.3f, l)
+                .column("Final Bill Value", 1.5f, r)
+                .column("Company Commitment", 1.5f, r)
+                .column("Settled by Company", 1.5f, r)
+                .column("Settled by Patient", 1.5f, r)
+                .column("Total Paid", 1.5f, r)
+                .column("Outstanding", 1.5f, r);
         boolean hasActive = false;
+        int no = 1;
         for (Bill b : bills) {
             PatientEncounter pe = b.getPatientEncounter();
             Bill fb = b.getReferenceBill();
             if (fb == null && "(Active)".equals(b.getDeptId())) {
                 hasActive = true;
             }
-            ex.row(b.getDeptId(),
+            ex.row(String.valueOf(no++),
+                    b.getDeptId(),
                     fb == null ? "" : fb.getDeptId(),
                     pe == null ? "" : pe.getBhtNo(),
                     b.getPatient() == null || b.getPatient().getPerson() == null ? "" : b.getPatient().getPerson().getName(),
                     b.getCreditCompany() == null ? "" : b.getCreditCompany().getName(),
                     b.getBillDate(),
+                    fb == null ? null : fb.getCreatedAt(),
                     pe == null ? null : pe.getDateOfAdmission(),
                     pe == null ? null : pe.getDateOfDischarge(),
+                    b.getTransLastSettlementDate(),
                     fb == null ? null : fb.getNetTotal(),
                     b.getNetTotal(),
                     b.getSettledAmountBySponsor(),
@@ -3579,13 +3590,58 @@ public class InwardReportController1 implements Serializable {
                     b.getPaidAmount(),
                     b.getNetTotal() - b.getPaidAmount());
         }
-        ex.totals("Total", null, null, null, null, null, null, null, null, null,
+        ex.totals("Total", null, null, null, null, null, null, null, null, null, null, null, null,
                 debtorBillTotal, null, null, debtorPaidTotal, debtorOutstandingTotal);
+        ex.note("Rows are sorted by final bill.");
         ex.note("Final Bill Value is not totalled: a final bill shared by two or more credit companies appears once per company.");
         if (hasActive) {
             ex.note("(Active) rows are currently admitted patients with no final bill yet: Company Commitment shows running charges.");
         }
         writeExport(ex, excel, "inward_credit_company_debtors");
+    }
+
+    private void exportCreditCompanyDebtorSettlements(boolean excel) {
+        if (debtorSettlementItems == null || debtorSettlementItems.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to export. Please process the report first.");
+            return;
+        }
+        TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
+        SimpleDateFormat dtf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        TabularReportExporter ex = newCreditCompanyDebtorExporter()
+                .column("No.", 0.6f, TabularReportExporter.Align.CENTER)
+                .column("CC Commitment Bill No", 2.4f, l)
+                .column("BHT No", 1.2f, l)
+                .column("Patient Name", 2.4f, l)
+                .column("Credit Company", 2.4f, l)
+                .column("Final Bill Created Date", 1.4f, l)
+                .column("Settlement Bill No", 2.4f, l)
+                .column("Debtor Settlement Date", 1.8f, l)
+                .column("Amount", 1.6f, TabularReportExporter.Align.RIGHT);
+        int no = 1;
+        for (BillItem i : debtorSettlementItems) {
+            PatientEncounter pe = i.getPatientEncounter();
+            Bill cc = i.getReferenceBill();
+            Bill fb = cc == null ? null : cc.getReferenceBill();
+            Bill settlement = i.getBill();
+            ex.row(String.valueOf(no++),
+                    cc == null ? "" : cc.getDeptId(),
+                    pe == null ? "" : pe.getBhtNo(),
+                    pe == null || pe.getPatient() == null || pe.getPatient().getPerson() == null ? "" : pe.getPatient().getPerson().getName(),
+                    cc == null || cc.getCreditCompany() == null ? "" : cc.getCreditCompany().getName(),
+                    fb == null ? null : fb.getCreatedAt(),
+                    settlement == null ? "" : settlement.getDeptId(),
+                    settlement == null || settlement.getCreatedAt() == null ? "" : dtf.format(settlement.getCreatedAt()),
+                    i.getNetValue());
+        }
+        ex.totals("Total", null, null, null, null, null, null, null, null, debtorPaidTotal);
+        writeExport(ex, excel, "inward_credit_company_debtor_settlements");
+    }
+
+    private TabularReportExporter newCreditCompanyDebtorExporter() {
+        return newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true)
+                .filter("Admission Status", admissionStatus == null ? "Any status" : admissionStatus.getLabel())
+                .filter("Report Type", "individual".equals(reportType)
+                        ? "Individual (one row per settlement)" : "Aggregate (one row per bill)");
     }
 
     private void exportCreditCompanyCommitments(boolean excel) {
@@ -3646,6 +3702,8 @@ public class InwardReportController1 implements Serializable {
             dateBasisLabel = "Discharge Date";
         } else if ("admissionDate".equals(dateBasis)) {
             dateBasisLabel = "Admission Date";
+        } else if ("finalBillCreatedAt".equals(dateBasis)) {
+            dateBasisLabel = "Final Bill Created Date";
         } else {
             dateBasisLabel = "Payment/Bill Date";
         }

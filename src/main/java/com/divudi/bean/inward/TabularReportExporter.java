@@ -7,8 +7,11 @@ import com.lowagie.text.FontFactory;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.ColumnText;
+import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
@@ -258,19 +261,24 @@ public class TabularReportExporter {
         int colCount = headers.size();
         SimpleDateFormat df = new SimpleDateFormat(datePattern);
 
+        // Wide tables (e.g. the debtor report) drop a point so long bill numbers
+        // and amounts still fit their columns on A4 landscape.
+        float bodySize = colCount > 12 ? 7f : 8f;
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
         Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-        Font smallFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
-        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
-        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE);
-        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
-        Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE);
+        Font smallFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, bodySize, Color.WHITE);
+        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, bodySize);
+        Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, bodySize, Color.WHITE);
         Color headerBg = new Color(89, 89, 89);
+        Color stripeBg = new Color(242, 242, 242);
         Color totalBg = new Color(0, 77, 64);
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Document document = new Document(PageSize.A4.rotate(), 18, 18, 24, 18);
-            PdfWriter.getInstance(document, baos);
+            Document document = new Document(PageSize.A4.rotate(), 18, 18, 24, 30);
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            writer.setPageEvent(new PdfFooter(FontFactory.getFont(FontFactory.HELVETICA, 7, Color.DARK_GRAY)));
             document.open();
 
             Paragraph p1 = new Paragraph(institutionName, titleFont);
@@ -278,28 +286,26 @@ public class TabularReportExporter {
             document.add(p1);
             Paragraph p2 = new Paragraph(title, subtitleFont);
             p2.setAlignment(Element.ALIGN_CENTER);
+            p2.setSpacingAfter(4);
             document.add(p2);
-            Paragraph p3 = new Paragraph(printedLine(), smallFont);
-            p3.setAlignment(Element.ALIGN_CENTER);
-            document.add(p3);
 
-            PdfPTable filterTable = new PdfPTable(2);
-            filterTable.setWidthPercentage(60);
-            filterTable.setHorizontalAlignment(Element.ALIGN_LEFT);
-            filterTable.setSpacingBefore(8);
-            filterTable.setSpacingAfter(8);
-            filterTable.setWidths(new float[]{1f, 2f});
-            for (String[] f : filters) {
-                PdfPCell l = new PdfPCell(new Phrase(f[0], labelFont));
-                l.setBorder(PdfPCell.NO_BORDER);
-                l.setPadding(2f);
-                PdfPCell v = new PdfPCell(new Phrase(f[1] == null ? "" : f[1], smallFont));
-                v.setBorder(PdfPCell.NO_BORDER);
-                v.setPadding(2f);
-                filterTable.addCell(l);
-                filterTable.addCell(v);
+            // Filters in two label/value pairs per line, so ten filters take five lines.
+            if (!filters.isEmpty()) {
+                PdfPTable filterTable = new PdfPTable(4);
+                filterTable.setWidthPercentage(100);
+                filterTable.setSpacingBefore(4);
+                filterTable.setSpacingAfter(8);
+                filterTable.setWidths(new float[]{1.2f, 3f, 1.2f, 3f});
+                for (String[] f : filters) {
+                    filterTable.addCell(filterCell(f[0] + ":", labelFont));
+                    filterTable.addCell(filterCell(f[1], smallFont));
+                }
+                if (filters.size() % 2 != 0) {
+                    filterTable.addCell(filterCell("", smallFont));
+                    filterTable.addCell(filterCell("", smallFont));
+                }
+                document.add(filterTable);
             }
-            document.add(filterTable);
 
             PdfPTable table = new PdfPTable(colCount);
             table.setWidthPercentage(100);
@@ -310,28 +316,45 @@ public class TabularReportExporter {
             table.setWidths(w);
             table.setHeaderRows(1);
 
+            // Headers take their column's alignment, so amount headers sit over the amounts.
             for (int c = 0; c < colCount; c++) {
-                addCell(table, headers.get(c), headerFont, Element.ALIGN_CENTER, headerBg);
+                addCell(table, headers.get(c), headerFont, pdfAlign(aligns.get(c)), headerBg);
             }
+            int rowNo = 0;
             for (Object[] values : rows) {
+                Color bg = rowNo++ % 2 == 1 ? stripeBg : null;
                 for (int c = 0; c < colCount; c++) {
                     Object v = c < values.length ? values[c] : null;
-                    addCell(table, format(v, df), cellFont, pdfAlign(aligns.get(c)), null);
+                    addCell(table, format(v, df), cellFont, pdfAlign(aligns.get(c)), bg);
                 }
             }
             if (totals != null) {
-                for (int c = 0; c < colCount; c++) {
+                // The label spans the blank leading cells instead of squeezing into the first column.
+                int labelSpan = 0;
+                while (labelSpan < colCount && (labelSpan >= totals.length || totals[labelSpan] == null)) {
+                    labelSpan++;
+                }
+                if (labelSpan > 0) {
+                    PdfPCell label = createCell(totalLabel, totalFont, Element.ALIGN_LEFT, totalBg);
+                    label.setColspan(labelSpan);
+                    table.addCell(label);
+                }
+                for (int c = labelSpan; c < colCount; c++) {
                     Double v = c < totals.length ? totals[c] : null;
-                    String text = v != null ? format(v, df) : (c == 0 ? totalLabel : "");
-                    addCell(table, text, totalFont, v != null ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT, totalBg);
+                    addCell(table, v != null ? format(v, df) : "", totalFont, Element.ALIGN_RIGHT, totalBg);
                 }
             }
             document.add(table);
 
-            for (String n : notes) {
-                Paragraph np = new Paragraph(n, smallFont);
-                np.setSpacingBefore(4);
+            if (!notes.isEmpty()) {
+                Paragraph np = new Paragraph("Notes", labelFont);
+                np.setSpacingBefore(8);
                 document.add(np);
+                for (String n : notes) {
+                    Paragraph line = new Paragraph("- " + n, smallFont);
+                    line.setSpacingBefore(2);
+                    document.add(line);
+                }
             }
             document.close();
 
@@ -360,14 +383,48 @@ public class TabularReportExporter {
     }
 
     private void addCell(PdfPTable table, String text, Font font, int alignment, Color bg) {
+        table.addCell(createCell(text, font, alignment, bg));
+    }
+
+    private PdfPCell createCell(String text, Font font, int alignment, Color bg) {
         PdfPCell cell = new PdfPCell(new Phrase(text == null ? "" : text, font));
         cell.setHorizontalAlignment(alignment);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setPadding(3f);
+        cell.setBorderColor(Color.GRAY);
         if (bg != null) {
             cell.setBackgroundColor(bg);
         }
-        table.addCell(cell);
+        return cell;
+    }
+
+    private PdfPCell filterCell(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text == null ? "" : text, font));
+        cell.setBorder(PdfPCell.NO_BORDER);
+        cell.setPadding(1.5f);
+        return cell;
+    }
+
+    /**
+     * Writes the printed-by line and the page number at the foot of every page.
+     */
+    private class PdfFooter extends PdfPageEventHelper {
+
+        private final Font font;
+
+        PdfFooter(Font font) {
+            this.font = font;
+        }
+
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContent();
+            float y = document.bottom() - 14;
+            ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                    new Phrase(printedLine(), font), document.left(), y, 0);
+            ColumnText.showTextAligned(cb, Element.ALIGN_RIGHT,
+                    new Phrase("Page " + writer.getPageNumber(), font), document.right(), y, 0);
+        }
     }
 
     private int mergedRow(XSSFSheet sheet, int r, String value, CellStyle style, int colCount) {
