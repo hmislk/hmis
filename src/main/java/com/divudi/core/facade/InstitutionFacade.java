@@ -130,6 +130,33 @@ public class InstitutionFacade extends AbstractFacade<Institution> {
         getEntityManager().getEntityManagerFactory().getCache().evict(Institution.class, institution.getId());
     }
 
+    /**
+     * Adds delta to the stored balance in a single UPDATE, so a balance loaded
+     * earlier with a page cannot be written back over a newer one. The row
+     * stays locked until the transaction commits, so concurrent changes are
+     * applied one after the other. Returns {balanceBefore, balanceAfter} as
+     * stored, for the matching AgentHistory row, or null if there is no
+     * institution.
+     */
+    public double[] adjustBalance(Institution institution, double delta) {
+        if (institution == null || institution.getId() == null) {
+            return null;
+        }
+        getEntityManager().createQuery("update Institution i set i.ballance=coalesce(i.ballance, 0)+:delta where i.id=:id")
+                .setParameter("delta", delta)
+                .setParameter("id", institution.getId())
+                .setHint("eclipselink.cache-usage", "NoCache")
+                .executeUpdate();
+        Double after = getEntityManager().createQuery(
+                "select i.ballance from Institution i where i.id=:id", Double.class)
+                .setParameter("id", institution.getId())
+                .getSingleResult();
+        double balanceAfter = after == null ? 0.0 : after;
+        institution.setBallance(balanceAfter);
+        getEntityManager().getEntityManagerFactory().getCache().evict(Institution.class, institution.getId());
+        return new double[]{balanceAfter - delta, balanceAfter};
+    }
+
     private void protectBalanceAndAuditFinancialChanges(Institution entity, String operation) {
         try {
             if (entity == null || entity.getId() == null

@@ -1068,8 +1068,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
+        double[] balances = getInstitutionFacade().adjustBalance(collectingCentre, transactionValue);
+        if (balances != null) {
+            agentHistory.setBalanceBeforeTransaction(balances[0]);
+            agentHistory.setBalanceAfterTransaction(balances[1]);
+        }
         agentHistoryFacade.create(agentHistory);
-        getInstitutionFacade().updateBalance(collectingCentre, collectingCentre.getBallance() + transactionValue);
     }
 
     public boolean checkBillValues(Bill b) {

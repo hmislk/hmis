@@ -3529,9 +3529,12 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
+        double[] balances = getInstitutionFacade().adjustBalance(ins, transactionValue);
+        if (balances != null) {
+            agentHistory.setBalanceBeforeTransaction(balances[0]);
+            agentHistory.setBalanceAfterTransaction(balances[1]);
+        }
         agentHistoryFacade.create(agentHistory);
-
-        getInstitutionFacade().updateBalance(ins, ins.getBallance() + transactionValue);
 
     }
 
