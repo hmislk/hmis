@@ -599,3 +599,13 @@ DOM and submits together.
 
 Symptom: the page returns HTTP 500 with `TagAttributeException ... Error Parsing: #{bean.dto.empty}`.
 Fix: call the method instead (`#{bean.dto.isEmpty()}`), or name the getter something else (`isNoRows()`). The same applies to the other reserved EL words: `not`, `and`, `or`, `eq`, `ne`, `lt`, `gt`, `le`, `ge`, `div`, `mod`, `instanceof`.
+
+## 154. `p:dataExporter target=` 500s with "Cannot find component" when the table is inside a nested `p:tabView`/`p:accordionPanel`
+
+Symptom: `ComponentNotFoundException: Cannot find component for expressions "tableA,tableB"` when you click Excel/PDF, even though the tables are rendered.
+Fix: a nested `p:tabView` is a `NamingContainer`, so prefix each target with its id: `target="innerTabs:tableA,innerTabs:tableB"`.
+
+## 155. `p:dataExporter` writes `<br/>`, `HtmlPanelGroup@1a2b3c` or raw HTML into exported cells
+
+Symptom: the export works, but cells contain `<br/>`, `...HtmlPanelGroup@...`, `...CommandButton@...` or `<div ...>`.
+Fix: the exporter writes every non-`ValueHolder` child of a column as its `toString()`. Keep only `h:outputLabel`/`h:outputText` children (use `style="display: block"` instead of `<br/>`), give input/panel columns `exportValue="#{...}"`, and set `exportable="false"` on button columns.

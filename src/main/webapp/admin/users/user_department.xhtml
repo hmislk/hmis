@@ -75,7 +75,7 @@
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Department" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.code} - #{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <p:selectOneMenu 
@@ -86,7 +86,7 @@
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Department" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(userDepartmentController.currentSite)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(userDepartmentController.currentSite)}" var="d" itemLabel="#{d.code} - #{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <p:selectOneMenu 
@@ -97,7 +97,7 @@
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Department" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(userDepartmentController.currentInstitution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(userDepartmentController.currentInstitution)}" var="d" itemLabel="#{d.code} - #{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <p:selectOneMenu 
@@ -108,7 +108,7 @@
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Department" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(userDepartmentController.currentInstitution, userDepartmentController.currentSite)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(userDepartmentController.currentInstitution, userDepartmentController.currentSite)}" var="d" itemLabel="#{d.code} - #{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                         </h:panelGroup>

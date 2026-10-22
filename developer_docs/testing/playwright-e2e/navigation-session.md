@@ -23,6 +23,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
 - [136. Forcing `.click()` on a still-hidden PrimeFaces menu leaf (parent flyout never actually opened) can crash the JSF view state and log you out](#136-forcing-click-on-a-still-hidden-primefaces-menu-leaf-parent-flyout-never-actually-opened-can-crash-the-jsf-view-state-and-log-you-out)
 - [151. Dependent browser steps sent in one message race each other — send them one at a time](#151-dependent-browser-steps-sent-in-one-message-race-each-other--send-them-one-at-a-time)
+- [156. A menubar flyout left open covers buttons near the top of the page — press them with the keyboard](#156-a-menubar-flyout-left-open-covers-buttons-near-the-top-of-the-page--press-them-with-the-keyboard)
 
 ---
 
@@ -606,3 +607,17 @@ Medicines from Pharmacy*) while developing #24358/#24359/#24360.
 ## 151. Dependent browser steps sent in one message race each other — send them one at a time
 
 Tool calls in one message can run concurrently: waits overlap instead of adding up, and a click can fire before the page that a previous menu click requested has loaded ("does not match any elements"). Send each step that depends on the previous page in its own message, and wait for a real condition (`browser_wait_for` text) rather than stacking timed waits.
+
+## 156. A menubar flyout left open covers buttons near the top of the page — press them with the keyboard
+
+If you clicked a top-level menubar item to reach a page, its flyout can stay open on the new page. A click on a report's **Generate Report** or **Download as Excel** button then times out with `<span class="ui-menuitem-text">…</span> from <form id="…:menuForm"> subtree intercepts pointer events`. Escape, clicking elsewhere and moving the mouse away don't reliably close it. Focus the button and press Enter instead; this submits the same button a user would:
+
+```js
+const b = page.getByRole('button', { name: /Download as Excel/ });
+await b.focus();
+await page.keyboard.press('Enter');
+```
+
+For a `p:selectOneMenu` under the flyout, set its hidden `<select id="…_input">` and dispatch `change`.
+
+Verified 2026-10-21 on *Inward → Inpatient Analytics → Payment Reports → Combined Inward Payments* (#24443).

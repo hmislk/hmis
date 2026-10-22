@@ -5014,9 +5014,13 @@ public class ExcelController {
 
                 // Header Row
                 Row dateSummaryHeader = summarySheet.createRow(summaryRowIndex++);
-                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee", "Card Total", "Cash Total"};
+                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee"};
                 for (int i = 0; i < headers.length; i++) {
                     dateSummaryHeader.createCell(i).setCellValue(headers[i]);
+                }
+                List<ChannelReportController.PaymentMethodCollectionDto> collections = wrapperDto.getCollections();
+                for (int i = 0; i < collections.size(); i++) {
+                    dateSummaryHeader.createCell(headers.length + i).setCellValue(collections.get(i).getLabel());
                 }
 
                 // Data Rows
@@ -5030,23 +5034,26 @@ public class ExcelController {
                     row.createCell(col++).setCellValue(dto.getTotalAmount());
                     row.createCell(col++).setCellValue(dto.getTotalDocFee());
                     row.createCell(col++).setCellValue(dto.getTotalHosFee());
-                    row.createCell(col++).setCellValue(dto.getCardTotal());
-                    row.createCell(col++).setCellValue(dto.getCashTotal());
+                    for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                        row.createCell(col++).setCellValue(dto.getMethodTotal(c.getPaymentMethod()));
+                    }
                 }
 
                 Row dateSummaryFooter = summarySheet.createRow(summaryRowIndex++);
                 dateSummaryFooter.createCell(3).setCellValue(wrapperDto.getAllTotalAmount());
                 dateSummaryFooter.createCell(4).setCellValue(wrapperDto.getAllDoctorFeeTotal());
                 dateSummaryFooter.createCell(5).setCellValue(wrapperDto.getAllHosFeeTotal());
-                dateSummaryFooter.createCell(6).setCellValue(wrapperDto.getAllCardTotal());
-                dateSummaryFooter.createCell(7).setCellValue(wrapperDto.getAllCashTotal());
+                for (int i = 0; i < collections.size(); i++) {
+                    dateSummaryFooter.createCell(headers.length + i).setCellValue(collections.get(i).getAmount());
+                }
 
                 summaryRowIndex += 2;
                 
                 Map<String, Double> summaryData = new LinkedHashMap<>();
-                summaryData.put("Total Cash Collection",                wrapperDto.getAllCashTotal());
-                summaryData.put("Total Card Collection",                wrapperDto.getAllCardTotal());
-                summaryData.put("Total Credit Collection",              wrapperDto.getAllCreditTotal());
+                for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                    summaryData.put("Total " + c.getLabel() + " Collection", c.getAmount());
+                }
+                summaryData.put("Grand Total Collection",               wrapperDto.getGrandCollectionTotal());
                 summaryData.put("Total Valid Appointments",             wrapperDto.getTotalValidAppoinments());
                 summaryData.put("Cancel and Refund Collection",         wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal());
                 summaryData.put("Total Cancel Appointments",            wrapperDto.getAllCancelAppoinments());

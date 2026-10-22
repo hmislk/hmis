@@ -22,6 +22,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)](#146-clicks-register-as-no-ops-the-mcp-browser-profile-is-zoomed-devicepixelratio-075)
 - [148. Testing a failure path: inject the failure with a local DB trigger, never in code](#148-testing-a-failure-path-inject-the-failure-with-a-local-db-trigger-never-in-code)
 - [152. Room-charge totals never match the room table on a package admission](#152-room-charge-totals-never-match-the-room-table-on-a-package-admission)
+- [158. Every page shows only "Change Password" on a prod-copy DB](#158-every-page-shows-only-change-password-on-a-prod-copy-db)
 
 ---
 
@@ -473,6 +474,8 @@ Build only while `persistence.xml` holds local JNDI (`jdbc/coop` / `jdbc/ruhunuA
 Symptom: `browser_click` "succeeds" but no POST fires, checkboxes stay unticked, and an accordion opens then closes. Check `devicePixelRatio` and `innerWidth` in `browser_evaluate`. A stored per-host zoom (e.g. 0.75, `innerWidth` 2560 at a 1920 viewport) survives `Ctrl+0`, `browser_close` and the CDP metrics override.
 Fix: drive the flow with the local node rig (fresh `chromium.launch({ channel: 'chrome' })` context, no stored zoom).
 
+Screenshots under the same zoom: `getBoundingClientRect()` returns CSS px, but `page.screenshot({ fullPage: true, clip })` takes device px. Multiply the page coordinates (`rect + scrollX/Y`) by `devicePixelRatio` before clipping, or element/viewport crops land offset.
+
 ## 148. Testing a failure path: inject the failure with a local DB trigger, never in code
 
 To exercise a compensation/rollback path, add a temporary `BEFORE UPDATE`/`INSERT` trigger
@@ -486,3 +489,10 @@ An admission with `PATIENTENCOUNTER.INPATIENTPACKAGE_ID` set shows flat package
 allocations for Room/MO/Nursing Charges, not the calculated room charges. When
 picking a test admission for room-charge checks, filter
 `INPATIENTPACKAGE_ID IS NULL`.
+
+## 158. Every page shows only "Change Password" on a prod-copy DB
+
+The restored user's password is older than the 30-day limit, so each page
+renders the Change Password form under a live menu bar. Change it through
+that form (local test data), then record the new password in the
+credentials store under that DB's name.

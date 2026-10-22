@@ -3951,8 +3951,16 @@ public class PdfController {
                         .setMarginBottom(2);
                 document.add(tableTitle);
 
-                Table dateSummaryTable = new Table(new float[]{2f, 3f, 4f, 4f, 4f, 4f, 4f, 4f}).useAllAvailableWidth().setFixedLayout();
-                String[] headers = {"Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee", "Card Total", "Cash Total"};
+                List<ChannelReportController.PaymentMethodCollectionDto> collections = wrapperDto.getCollections();
+                List<String> headers = new ArrayList<>(Arrays.asList("Serial No", "Appointment Date", "Total Appointments", "Total Amount", "Total Doc Fee", "Total Hospital Fee"));
+                for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                    headers.add(c.getLabel());
+                }
+                float[] widths = new float[headers.size()];
+                Arrays.fill(widths, 4f);
+                widths[0] = 2f;
+                widths[1] = 3f;
+                Table dateSummaryTable = new Table(widths).useAllAvailableWidth().setFixedLayout();
 
                 for (String header : headers) {
                     Cell headerCell = new Cell()
@@ -3968,20 +3976,22 @@ public class PdfController {
                 for (ChannelReportController.ChannelIncomeSummeryDto dto : wrapperDto.getSummeryDtos()) {
                     dateSummaryTable.addCell(new Cell().add(new Paragraph(String.valueOf(serial++)).setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
                     dateSummaryTable.addCell(new Cell().add(new Paragraph(dto.getAppoimentDate() != null ? longDate.format(dto.getAppoimentDate()) : "").setTextAlignment(TextAlignment.LEFT).setFontSize(8)));
-                    dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getTotalActiveAppoinments())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                    dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.0f", dto.getTotalActiveAppoinments())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                     dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getTotalAmount())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                     dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getTotalDocFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
                     dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getTotalHosFee())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
-                    dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getCardTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
-                    dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getCashTotal())).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                    for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                        dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", dto.getMethodTotal(c.getPaymentMethod()))).setTextAlignment(TextAlignment.RIGHT).setFontSize(8)));
+                    }
                 }
 
                 dateSummaryTable.addCell(new Cell(1, 3).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
                 dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllTotalAmount())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
                 dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllDoctorFeeTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
                 dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllHosFeeTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-                dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCardTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
-                dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCashTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+                for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                    dateSummaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", c.getAmount())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+                }
 
                 document.add(dateSummaryTable);
 
@@ -3997,12 +4007,12 @@ public class PdfController {
 
                 Table summaryTable = new Table(new float[]{7f, 4f}).useAllAvailableWidth().setFixedLayout();
 
-                summaryTable.addCell(new Cell().add(new Paragraph("Total Cash Collection").setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
-                summaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCashTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-                summaryTable.addCell(new Cell().add(new Paragraph("Total Card Collection" ).setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
-                summaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCardTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
-                summaryTable.addCell(new Cell().add(new Paragraph("Total Credit Collection").setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
-                summaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getAllCreditTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+                for (ChannelReportController.PaymentMethodCollectionDto c : collections) {
+                    summaryTable.addCell(new Cell().add(new Paragraph("Total " + c.getLabel() + " Collection").setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+                    summaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", c.getAmount())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
+                }
+                summaryTable.addCell(new Cell().add(new Paragraph("Grand Total Collection").setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
+                summaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getGrandCollectionTotal())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
                 summaryTable.addCell(new Cell().add(new Paragraph("Total Valid Appointments").setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
                 summaryTable.addCell(new Cell().add(new Paragraph(String.format("%,.2f", wrapperDto.getTotalValidAppoinments())).setBold()).setTextAlignment(TextAlignment.RIGHT).setFontSize(8));
                 summaryTable.addCell(new Cell().add(new Paragraph("Cancel and Refund Collection").setBold()).setTextAlignment(TextAlignment.LEFT).setFontSize(8));
