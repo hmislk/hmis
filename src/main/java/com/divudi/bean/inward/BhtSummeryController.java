@@ -2140,6 +2140,7 @@ public class BhtSummeryController implements Serializable {
         getInwardTimedItemController().finalizeService(patientItem);
         createPatientItems();
         createChargeItemTotals();
+        updateTotal();
 
     }
 
@@ -2170,6 +2171,7 @@ public class BhtSummeryController implements Serializable {
         surgeryBillController.removeTimeService(patientItem);
         createPatientItems();
         createChargeItemTotals();
+        updateTotal();
         if (patientItem.isRetired()) {
             JsfUtil.addSuccessMessage("Timed service deleted.");
         }

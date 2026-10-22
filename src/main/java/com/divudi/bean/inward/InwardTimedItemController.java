@@ -366,11 +366,24 @@ public class InwardTimedItemController implements Serializable {
         if (bf == null || bf.getPatientItem() == null || bf.getPatientItem().getToTime() != null) {
             return;
         }
-        bf.getPatientItem().setToTime(new Date());
+        // Run updateTimedService's refusals before touching the row: this
+        // page's list holds the row in memory, so a refused stop would
+        // otherwise leave an unsaved End Time on screen and hide Stop.
+        if (batchBill != null && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+        if (generalChecking()) {
+            return;
+        }
+        Date now = new Date();
+        Date fromTime = bf.getPatientItem().getFromTime();
+        if (fromTime != null && !now.after(fromTime)) {
+            JsfUtil.addErrorMessage("This service's Start Time is in the future, so it cannot be stopped yet.");
+            return;
+        }
+        bf.getPatientItem().setToTime(now);
         updateTimedService(bf);
-        // updateTimedService returns early without reloading when refused;
-        // reload so a refused stop does not leave the unsaved time on screen.
-        surgeryBillController.refreshTimedEncounterComponents();
     }
 
     public void removeTimedEncFromList(EncounterComponent encounterComponent) {
