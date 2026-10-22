@@ -358,6 +358,21 @@ public class InwardTimedItemController implements Serializable {
         surgeryBillController.refreshTimedEncounterComponents();
     }
 
+    /**
+     * Stops a running surgery timed service now: records the current time as
+     * its End Time and re-prices it. The service stays on the bill (#23940).
+     */
+    public void stopTimedService(BillFee bf) {
+        if (bf == null || bf.getPatientItem() == null || bf.getPatientItem().getToTime() != null) {
+            return;
+        }
+        bf.getPatientItem().setToTime(new Date());
+        updateTimedService(bf);
+        // updateTimedService returns early without reloading when refused;
+        // reload so a refused stop does not leave the unsaved time on screen.
+        surgeryBillController.refreshTimedEncounterComponents();
+    }
+
     public void removeTimedEncFromList(EncounterComponent encounterComponent) {
         removeEncounterComponentFromList(encounterComponent, getTimedEncounterComponents());
     }
@@ -417,7 +432,7 @@ public class InwardTimedItemController implements Serializable {
 
             createPatientItems();
 
-            JsfUtil.addSuccessMessage("Removed successfully.");
+            JsfUtil.addSuccessMessage("Timed service deleted.");
         }
     }
 
@@ -968,6 +983,21 @@ public class InwardTimedItemController implements Serializable {
 
         JsfUtil.addSuccessMessage("Updated Successfully.");
 
+    }
+
+    /**
+     * Stops a running timed service now: records the current time as its
+     * Stopped Time and re-prices it. The service stays on the bill (#23940).
+     */
+    public void stopService(PatientItem pic) {
+        if (pic == null || pic.getToTime() != null) {
+            return;
+        }
+        pic.setToTime(new Date());
+        finalizeService(pic);
+        // finalizeService returns early without reloading when the service is
+        // locked; reload so a refused stop does not leave the unsaved time on screen.
+        createPatientItems();
     }
 
     public void createPatientItems() {
