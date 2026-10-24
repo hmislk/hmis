@@ -1060,7 +1060,7 @@ public class LimsMiddlewareController {
                 continue;
             }
 
-            boolean singleComponentInvestigation = isSingleSampleComponentInvestigation(ix);
+            Investigation singleComponentFormat = isSingleSampleComponentInvestigation(ix) ? ix : null;
 
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
@@ -1087,7 +1087,7 @@ public class LimsMiddlewareController {
                         if (testCodeFromDatabase.equalsIgnoreCase(testCodeFromUploadedDataBundle)) {
 
                             for (PatientSampleComponant patientSampleComponant : pscs) {
-                                if (sampleComponentMatches(patientSampleComponant, priv.getInvestigationItem(), pi, singleComponentInvestigation)) {
+                                if (sampleComponentMatches(patientSampleComponant, priv.getInvestigationItem(), pi, singleComponentFormat)) {
 
                                     priv.setLobValue(result);
                                     priv.setBaImage(base64TextToByteArray(result));
@@ -1131,7 +1131,7 @@ public class LimsMiddlewareController {
                             // // System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
                             // // System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
                             for (PatientSampleComponant patientSampleComponant : pscs) {
-                                if (sampleComponentMatches(patientSampleComponant, priv.getInvestigationItem(), pi, singleComponentInvestigation)) {
+                                if (sampleComponentMatches(patientSampleComponant, priv.getInvestigationItem(), pi, singleComponentFormat)) {
 
                                     // // System.out.println("0 result = " + result);
                                     priv.setStrValue(result);
@@ -1248,11 +1248,13 @@ public class LimsMiddlewareController {
      * component stored at sample collection may come from an earlier report
      * format (the investigation's Reported As format was changed afterwards),
      * so any component of the same patient investigation is accepted there.
-     * Multi-component investigations (time points, different sample types)
+     * The fallback applies only to report items of that single-component
+     * format; items of an older report (possibly multi-component) and
+     * multi-component investigations (time points, different sample types)
      * keep the strict match.
      */
     private boolean sampleComponentMatches(PatientSampleComponant psc, InvestigationItem reportItem,
-            PatientInvestigation pi, boolean singleComponentInvestigation) {
+            PatientInvestigation pi, Investigation singleComponentFormat) {
         if (psc == null || reportItem == null) {
             return false;
         }
@@ -1262,7 +1264,8 @@ public class LimsMiddlewareController {
                 && componentFromSample.equals(componentFromReportItem)) {
             return true;
         }
-        return singleComponentInvestigation
+        return singleComponentFormat != null
+                && singleComponentFormat.equals(reportItem.getItem())
                 && pi != null
                 && pi.equals(psc.getPatientInvestigation());
     }
