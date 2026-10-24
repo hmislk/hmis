@@ -28,7 +28,7 @@
             <div>
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}"/>
                 <h:outputLabel value=" / #{cc.attrs.bill.creater.department.telephone2}"
-                               rendered="#{not empty cc.attrs.bill.creater.department.telephone2}"/>
+                               rendered="#{not empty cc.attrs.bill.creater.department.telephone1 and not empty cc.attrs.bill.creater.department.telephone2}"/>
             </div>
 
             <div>
