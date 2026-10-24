@@ -38,6 +38,20 @@
                                             icon="fa fa-arrow-left"
                                             title="Go to Payment Bill Search">
                                         </p:commandButton>
+                                        <p:commandButton
+                                            id="btnInpatientDashboard"
+                                            ajax="false"
+                                            immediate="true"
+                                            value="Inpatient Dashboard"
+                                            icon="fas fa-id-card"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            title="Open the Inpatient Dashboard for this admission"
+                                            rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                                            action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                            <f:setPropertyActionListener
+                                                value="#{inwardSearch.bill.patientEncounter}"
+                                                target="#{admissionController.current}"/>
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>
@@ -254,6 +268,20 @@
                                             styleClass="ui-button-warning"
                                             icon="fa fa-arrow-left"
                                             title="Return to the payment bill list">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnInpatientDashboardAfterCancel"
+                                            ajax="false"
+                                            immediate="true"
+                                            value="Inpatient Dashboard"
+                                            icon="fas fa-id-card"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            title="Open the Inpatient Dashboard for this admission"
+                                            rendered="#{inwardSearch.bill.patientEncounter ne null}"
+                                            action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                            <f:setPropertyActionListener
+                                                value="#{inwardSearch.bill.patientEncounter}"
+                                                target="#{admissionController.current}"/>
                                         </p:commandButton>
                                     </div>
                                 </div>
