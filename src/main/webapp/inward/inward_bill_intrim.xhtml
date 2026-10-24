@@ -657,12 +657,6 @@
                                         </p:column>
                                         <p:column headerText="Creator" styleClass="text-start" >
                                             <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>
-                                            <br/>
-                                            <h:panelGroup rendered="#{pt.retired}" >
-                                                <h:outputLabel style="color: red;" value="Deleted By " />
-                                                <h:outputLabel style="color: red;"  value="#{pt.retirer.webUserPerson.name}" >
-                                                </h:outputLabel>
-                                            </h:panelGroup>
                                         </p:column>
                                         <!--
                                             #23606 - timed services are billed one BilledBill each
@@ -709,13 +703,33 @@
                                                     disabled="#{pt.bill.checkedBy ne null}"
                                                     action="#{bhtSummeryController.updatePatientItem(pt)}" >
                                                 </p:commandButton>
+                                                <!--
+                                                    #23940 - Stop and Delete are different actions.
+                                                    Stop ends a running service: it stays on the bill,
+                                                    charged up to the Stopped Time. Delete is only for a
+                                                    service entered by mistake: it and its charge leave
+                                                    the bill. Do not label either of them "Remove".
+                                                -->
                                                 <p:commandButton
                                                     ajax="false"
-                                                    icon="fa fa-times"
+                                                    icon="fa fa-stop"
+                                                    class="ui-button-secondary"
+                                                    value="Stop"
+                                                    rendered="#{pt.toTime eq null}"
+                                                    title="Stop #{pt.item.name} now. It stays on the bill, charged up to now."
+                                                    action="#{bhtSummeryController.stopTimedService(pt)}" >
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-trash"
                                                     class="ui-button-danger"
-                                                    value="Remove "
+                                                    value="Delete"
                                                     disabled="#{pt.bill.checkedBy ne null}"
-                                                    action="#{surgeryBillController.removeTimeService(pt)}" >
+                                                    title="Delete #{pt.item.name} entered by mistake. It and its charge leave the bill."
+                                                    action="#{bhtSummeryController.deleteTimedService(pt)}" >
+                                                    <p:confirm header="Delete Timed Service"
+                                                               message="This deletes #{pt.item.name} and its charge from the bill. To end a running service, press Stop instead."
+                                                               icon="pi pi-exclamation-triangle" />
                                                 </p:commandButton>
                                                 <!--
                                                     A service still running has no final amount to
@@ -731,7 +745,7 @@
                                                     value="Check"
                                                     rendered="#{pt.bill ne null and pt.bill.checkedBy eq null}"
                                                     disabled="#{pt.toTime eq null or not webUserController.hasPrivilege('InwardCheck')}"
-                                                    title="#{pt.toTime eq null ? 'Enter a Stopped Time and press Update before checking this service.' : 'Mark this timed service bill as checked'}"
+                                                    title="#{pt.toTime eq null ? 'Press Stop, or enter a Stopped Time and press Update, before checking this service.' : 'Mark this timed service bill as checked'}"
                                                     action="#{bhtSummeryController.markTimedServiceAsChecked(pt)}" >
                                                 </p:commandButton>
                                                 <p:commandButton
@@ -1824,6 +1838,11 @@
                             <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
                         </div>
                     </p:dialog>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                    </p:confirmDialog>
 
                 </h:form>
             </ui:define>
