@@ -5384,35 +5384,12 @@ public class ExcelController {
 
             summaryRowIndex += 2;
 
-            // Collection block: one line per payment method, then the grand total
-            Row collectionTitle = summarySheet.createRow(summaryRowIndex++);
-            Cell collectionTitleCell = collectionTitle.createCell(0);
-            collectionTitleCell.setCellValue("Collection by Payment Method");
-            collectionTitleCell.setCellStyle(centerSmallStyle);
-
-            Map<String, Double> summaryData = new LinkedHashMap<>();
-            if (wrapperDto.getCollections() != null) {
-                for (ChannelReportController.PaymentMethodCollectionDto c : wrapperDto.getCollections()) {
-                    summaryData.put(c.getLabel() + " Collection", c.getAmount());
-                }
-            }
-            summaryData.put("Grand Total", wrapperDto.getGrandCollectionTotal());
-            summaryData.put("Total Valid Appointments", wrapperDto.getTotalValidAppoinments());
-            summaryData.put("Cancel and Refund Collection", wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal());
-            summaryData.put("Total Cancel Appointments", wrapperDto.getAllCancelAppoinments());
-            summaryData.put("Total Refund Appointments", wrapperDto.getAllRefundAppoinments());
-
-            for (Map.Entry<String, Double> entry : summaryData.entrySet()) {
-                Row row = summarySheet.createRow(summaryRowIndex++);
-                Cell label = row.createCell(0);
-                label.setCellValue(entry.getKey());
-                label.setCellStyle(centerSmallStyle);
-                Cell data = row.createCell(1);
-                data.setCellValue(entry.getValue());
-                data.setCellStyle(centerSmallStyle);
-            }
+            writeShiftEndCollectionSummary(workbook, summarySheet, summaryRowIndex, wrapperDto);
 
         }
+
+        // Same block at the end of the detailed sheet, matching the print preview order
+        writeShiftEndCollectionSummary(workbook, dataSheet, currentRow + 1, wrapperDto);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         workbook.write(outputStream);
@@ -5428,6 +5405,56 @@ public class ExcelController {
                 .build();
 
         return excelSc;
+    }
+
+    /**
+     * Writes the "Shift End Collection Summary" block of the channel Summary
+     * Collection Report with the same rows and labels as the print preview.
+     */
+    private int writeShiftEndCollectionSummary(XSSFWorkbook workbook, XSSFSheet sheet, int rowIndex, ChannelReportController.WrapperDtoForChannelFutureIncome wrapperDto) {
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+
+        CellStyle labelStyle = workbook.createCellStyle();
+        labelStyle.setFont(boldFont);
+
+        CellStyle amountStyle = workbook.createCellStyle();
+        amountStyle.setFont(boldFont);
+        amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
+
+        CellStyle countStyle = workbook.createCellStyle();
+        countStyle.setFont(boldFont);
+        countStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0"));
+
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Shift End Collection Summary");
+        titleCell.setCellStyle(labelStyle);
+
+        // {label, value, isAmount}
+        List<Object[]> lines = new java.util.ArrayList<>();
+        if (wrapperDto.getCollections() != null) {
+            for (ChannelReportController.PaymentMethodCollectionDto c : wrapperDto.getCollections()) {
+                lines.add(new Object[]{"Total " + c.getLabel() + " Collection", c.getAmount(), true});
+            }
+        }
+        lines.add(new Object[]{"Grand Total Collection", wrapperDto.getGrandCollectionTotal(), true});
+        lines.add(new Object[]{"Total Valid Appointments", wrapperDto.getTotalValidAppoinments(), false});
+        lines.add(new Object[]{"Cancel and Refund Collection", wrapperDto.getAllCancelTotal() + wrapperDto.getAllRefundTotal(), true});
+        lines.add(new Object[]{"Total Cancel Appointments", wrapperDto.getAllCancelAppoinments(), false});
+        lines.add(new Object[]{"Total Refund Appointments", wrapperDto.getAllRefundAppoinments(), false});
+        lines.add(new Object[]{"Total Cancel And Refund Appointments", wrapperDto.getAllCancelAppoinments() + wrapperDto.getAllRefundAppoinments(), false});
+
+        for (Object[] line : lines) {
+            Row row = sheet.createRow(rowIndex++);
+            Cell label = row.createCell(0);
+            label.setCellValue((String) line[0]);
+            label.setCellStyle(labelStyle);
+            Cell data = row.createCell(1);
+            data.setCellValue(((Number) line[1]).doubleValue());
+            data.setCellStyle((Boolean) line[2] ? amountStyle : countStyle);
+        }
+        return rowIndex;
     }
 
     /**
