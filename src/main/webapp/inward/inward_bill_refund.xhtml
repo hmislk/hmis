@@ -11,7 +11,16 @@
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill"
                 xmlns:admcc="http://xmlns.jcp.org/jsf/composite/ezcomp/inpatient">
 
+    <f:metadata>
+        <f:viewParam
+            name="refundBillId"
+            value="#{inwardRefundController.preselectedBillId}" />
 
+        <f:viewAction
+            action="#{inwardRefundController.loadPreselectedRefundBill}"
+            onPostback="false" />
+    </f:metadata>
+    
     <ui:define name="content">
 
         <h:panelGroup >
