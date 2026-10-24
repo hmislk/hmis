@@ -1904,6 +1904,13 @@ public class InwardReportControllerBht implements Serializable {
         return jpql;
     }
 
+    // AJAX listener on the Institution / Site menus: the Department list is
+    // re-derived from them, so a previously chosen department no longer
+    // applies (and would otherwise still scope the BHT autocomplete).
+    public void clearProfessionalPaymentDepartment() {
+        professionalPaymentDepartment = null;
+    }
+
     // Issue #23307 - shared by both admission and fee-row query builders.
     private String appendProfessionalPaymentAdmissionTypePredicate(String jpql, Map<String, Object> params) {
         if (professionalPaymentAdmissionType == null) {
