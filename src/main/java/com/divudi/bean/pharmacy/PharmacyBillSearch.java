@@ -3661,7 +3661,9 @@ public class PharmacyBillSearch implements Serializable {
                 anyShort = true;
             }
         }
-        if (anyShort && (freshRequest.isFullyIssued() || freshRequest.isCompleted())) {
+        // Only reopen requests auto-completed by full issue; a manual force-complete
+        // (markInwardPharmacyRequestComplete sets completed only) stays completed.
+        if (anyShort && freshRequest.isFullyIssued()) {
             freshRequest.setFullyIssued(false);
             freshRequest.setFullyIssuedAt(null);
             freshRequest.setFullyIssuedBy(null);

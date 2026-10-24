@@ -93,6 +93,7 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private List<Bill> pharmacyRequestBillsToWard;
     private double pharmacyRequestBillsToWardNetTotal;
     private Map<Long, PharmacyRequestSummary> requestSummaries = new HashMap<>();
+    private Map<Long, PharmacyRequestSummary> wardRequestSummaries = new HashMap<>();
     private String wardPharmacyRequestStatusFilter;
     private Department wardPharmacyRequestDepartmentFilter;
     private String wardPharmacyRequestPatientFilter;
@@ -144,7 +145,7 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         try {
             pharmacyRequestBillsToPatientEncounter = fetchPharmacyRequestBills();
             requestSummaries = new HashMap<>();
-            buildRequestSummaries(pharmacyRequestBillsToPatientEncounter);
+            buildRequestSummaries(pharmacyRequestBillsToPatientEncounter, requestSummaries);
             for (Bill b : pharmacyRequestBillsToPatientEncounter) {
                 if (!b.isCancelled()) {
                     pharmacyRequestBillsToPatientEncounterNetTotal += getRequestSummary(b.getId()).getNetValue();
@@ -207,8 +208,23 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         }
     }
 
+    /**
+     * Summary for a row of the patient (encounter) Pharmacy Requests list.
+     */
     public PharmacyRequestSummary getRequestSummary(Long requestBillId) {
-        PharmacyRequestSummary s = requestBillId == null ? null : requestSummaries.get(requestBillId);
+        return summaryFrom(requestSummaries, requestBillId);
+    }
+
+    /**
+     * Summary for a row of the ward Pharmacy Requests list. Kept in its own
+     * map so loading one list never blanks the other (session-scoped bean).
+     */
+    public PharmacyRequestSummary getWardRequestSummary(Long requestBillId) {
+        return summaryFrom(wardRequestSummaries, requestBillId);
+    }
+
+    private static PharmacyRequestSummary summaryFrom(Map<Long, PharmacyRequestSummary> map, Long requestBillId) {
+        PharmacyRequestSummary s = requestBillId == null ? null : map.get(requestBillId);
         if (s == null) {
             s = new PharmacyRequestSummary();
             s.setRequestId(requestBillId);
@@ -229,7 +245,7 @@ public class InwardPharmacyEncounterReportController implements Serializable {
      * Builds status, issued value and returned value for each request using a
      * fixed number of batched queries (no per-row queries).
      */
-    private void buildRequestSummaries(List<Bill> requests) {
+    private void buildRequestSummaries(List<Bill> requests, Map<Long, PharmacyRequestSummary> target) {
         if (requests == null || requests.isEmpty()) {
             return;
         }
@@ -360,7 +376,7 @@ public class InwardPharmacyEncounterReportController implements Serializable {
             }
             s.setIssuedValue(issuedValueByRequest.getOrDefault(req.getId(), 0.0));
             s.setReturnedValue(returnedValueByRequest.getOrDefault(req.getId(), 0.0));
-            requestSummaries.put(req.getId(), s);
+            target.put(req.getId(), s);
         }
     }
 
@@ -409,12 +425,19 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         pharmacyRequestBillsToWard = new ArrayList<>();
         pharmacyRequestBillsToWardNetTotal = 0.0;
         try {
-            pharmacyRequestBillsToWard = fetchWardPharmacyRequestBills();
-            requestSummaries = new HashMap<>();
-            buildRequestSummaries(pharmacyRequestBillsToWard);
-            for (Bill b : pharmacyRequestBillsToWard) {
+            List<Bill> fetched = fetchWardPharmacyRequestBills();
+            wardRequestSummaries = new HashMap<>();
+            buildRequestSummaries(fetched, wardRequestSummaries);
+            for (Bill b : fetched) {
+                PharmacyRequestSummary s = getWardRequestSummary(b.getId());
+                if (wardPharmacyRequestStatusFilter != null
+                        && !"Cancelled".equals(wardPharmacyRequestStatusFilter)
+                        && !wardPharmacyRequestStatusFilter.equals(s.getStatus())) {
+                    continue;
+                }
+                pharmacyRequestBillsToWard.add(b);
                 if (!b.isCancelled()) {
-                    pharmacyRequestBillsToWardNetTotal += getRequestSummary(b.getId()).getNetValue();
+                    pharmacyRequestBillsToWardNetTotal += s.getNetValue();
                 }
             }
         } catch (Exception e) {
@@ -438,18 +461,15 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         params.put("dept", dept);
 
+        // Issued / Partially Issued / Not Issued are derived from quantities in
+        // buildRequestSummaries() and applied in filterWardPharmacyRequests().
         if (wardPharmacyRequestStatusFilter != null) {
             switch (wardPharmacyRequestStatusFilter) {
-                case "Issued":
-                    jpql.append("AND b.cancelled = false AND b.fullyIssued = true ");
-                    break;
-                case "Not Issued":
-                    jpql.append("AND b.cancelled = false AND b.fullyIssued = false ");
-                    break;
                 case "Cancelled":
                     jpql.append("AND b.cancelled = true ");
                     break;
                 default:
+                    jpql.append("AND b.cancelled = false ");
                     break;
             }
         }

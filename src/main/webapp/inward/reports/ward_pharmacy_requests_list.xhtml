@@ -67,6 +67,7 @@
                                              value="#{inwardPharmacyEncounterReportController.wardPharmacyRequestStatusFilter}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItem itemLabel="Issued" itemValue="Issued" />
+                                <f:selectItem itemLabel="Partially Issued" itemValue="Partially Issued" />
                                 <f:selectItem itemLabel="Not Issued" itemValue="Not Issued" />
                                 <f:selectItem itemLabel="Cancelled" itemValue="Cancelled" />
                             </p:selectOneMenu>
@@ -182,26 +183,26 @@
                             <p:tag
                                 value="Cancelled"
                                 severity="danger"
-                                rendered="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).status eq 'Cancelled'}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Cancelled'}" />
                             <p:tag
                                 value="Issued"
                                 severity="success"
-                                rendered="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).status eq 'Issued'}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Issued'}" />
                             <p:tag
                                 value="Partially Issued"
                                 severity="info"
-                                rendered="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).status eq 'Partially Issued'}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Partially Issued'}" />
                             <p:tag
                                 value="Not Issued"
                                 severity="warning"
-                                rendered="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).status eq 'Not Issued'}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Not Issued'}" />
                         </p:column>
 
                         <p:column width="7em" style="padding: 2px 12px 2px 2px; text-align: right">
                             <f:facet name="header">
                                 <h:outputLabel value="Issued" />
                             </f:facet>
-                            <h:outputText value="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).issuedValue}">
+                            <h:outputText value="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).issuedValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>
@@ -210,7 +211,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Returned" />
                             </f:facet>
-                            <h:outputText value="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).returnedValue}">
+                            <h:outputText value="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).returnedValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>
@@ -219,7 +220,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Net" />
                             </f:facet>
-                            <h:outputText value="#{inwardPharmacyEncounterReportController.getRequestSummary(b.id).netValue}">
+                            <h:outputText value="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).netValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </p:column>
