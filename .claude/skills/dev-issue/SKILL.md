@@ -247,8 +247,9 @@ retest (step 7). Repeat until the flow passes end-to-end.
 ## 9. Record learnings
 
 If a new Playwright/dev gotcha surfaced, add it to the matching topic file in
-`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use,
-and list it in the main guide's Contents. Write it as a symptom heading plus
+`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use
+on `origin/development` (`git fetch` first; other PRs add sections too), and
+recheck just before each push. List it in the main guide's Contents. Write it as a symptom heading plus
 1–3 lines of fix. Leave the story, dates and issue history out; they belong in
 the PR. Skip this step if nothing new came up.
 
@@ -393,6 +394,10 @@ Repeat, up to **3 cycles**:
      treating the PR as reviewed.
 4. If checks are green and there are no unresolved review comments, stop —
    this cycle is done.
+   - Checks green but `gh pr view <PR#> --json mergeStateStatus` says
+     `BLOCKED`? The ruleset requires every review thread resolved. Find the
+     open threads (`reviewThreads` in GraphQL), fix or answer each, then
+     resolve it before merging.
 
 If 3 cycles pass without convergence (flaky CI, unresolved disagreement with
 a reviewer, etc.), stop and ask the user how to proceed rather than looping
