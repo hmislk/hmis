@@ -425,6 +425,8 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
 
@@ -432,7 +434,7 @@ public class InwardReportControllerBht implements Serializable {
 
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                if (Boolean.TRUE.equals(dto.getCancellation()) || Boolean.TRUE.equals(dto.getRefund())) {
                     serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -491,12 +493,14 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
             serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                if (Boolean.TRUE.equals(dto.getCancellation()) || Boolean.TRUE.equals(dto.getRefund())) {
                     serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
