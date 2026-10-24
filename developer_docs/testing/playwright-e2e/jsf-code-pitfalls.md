@@ -21,6 +21,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [132. `Bill.referenceBill` means different things on different flows — don't branch on "is it set", branch on the bill's own type](#132-billreferencebill-means-different-things-on-different-flows--dont-branch-on-is-it-set-branch-on-the-bills-own-type)
 - [134. `f:validateRegex` on a `p:inputText` bound to a `Map<String,String>` entry fires even on a blank/untouched row — with no visible error](#134-fvalidateregex-on-a-pinputtext-bound-to-a-mapstringstring-entry-fires-even-on-a-blankuntouched-row--with-no-visible-error)
 - [152. `#{x.empty}` fails with "Encountered empty": `empty` is a reserved EL word](#152-xempty-fails-with-encountered-empty-empty-is-a-reserved-el-word)
+- [159. A growl added before a `?faces-redirect=true` return never shows](#159-a-growl-added-before-a-faces-redirecttrue-return-never-shows)
 
 ---
 
@@ -609,3 +610,9 @@ Fix: a nested `p:tabView` is a `NamingContainer`, so prefix each target with its
 
 Symptom: the export works, but cells contain `<br/>`, `...HtmlPanelGroup@...`, `...CommandButton@...` or `<div ...>`.
 Fix: the exporter writes every non-`ValueHolder` child of a column as its `toString()`. Keep only `h:outputLabel`/`h:outputText` children (use `style="display: block"` instead of `<br/>`), give input/panel columns `exportValue="#{...}"`, and set `exportable="false"` on button columns.
+
+---
+
+## 159. A growl added before a `?faces-redirect=true` return never shows
+
+The redirect starts a new request, so a `JsfUtil.addSuccessMessage(...)` added just before it is dropped and the landing page shows nothing. Call `FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true)` first (or use `JsfUtil.addErrorMessageForRedirect` for an error). Absence of the message on the landing page is not proof the action failed: check the DB.
