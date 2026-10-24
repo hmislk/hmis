@@ -100,6 +100,8 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ChannelService;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.time.LocalDateTime;
@@ -8060,24 +8062,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (settlePaymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend;
-                try {
-                    tend = Double.parseDouble(strTenderedValue);
-                } catch (NumberFormatException e) {
-                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
-                    return;
-                }
-                if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
-                    JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
-                    return;
-                }
-            }
+        if (errorCheckForSettleTenderedAmount()) {
+            return;
         }
 
         Bill b = savePaidBill();
@@ -8163,6 +8149,34 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSessionFacade().create(bs);
         return bs;
 
+    }
+
+    private boolean errorCheckForSettleTenderedAmount() {
+        if (settlePaymentMethod != PaymentMethod.Cash) {
+            return false;
+        }
+        boolean tenderedEntered = strTenderedValue != null && !strTenderedValue.trim().isEmpty();
+        if (!tenderedEntered) {
+            if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+                JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                return true;
+            }
+            return false;
+        }
+        BigDecimal tendered;
+        try {
+            tendered = new BigDecimal(strTenderedValue.trim()).setScale(2, RoundingMode.HALF_UP);
+        } catch (NumberFormatException e) {
+            JsfUtil.addErrorMessage("Please enter the correct tendered amount.");
+            return true;
+        }
+        // Compare against the amount savePaidBill() records as paid.
+        BigDecimal payable = BigDecimal.valueOf(getBillSession().getBill().getNetTotal()).setScale(2, RoundingMode.HALF_UP);
+        if (tendered.compareTo(payable) < 0) {
+            JsfUtil.addErrorMessage("Please enter the correct tendered amount.");
+            return true;
+        }
+        return false;
     }
 
     private Bill savePaidBill() {
