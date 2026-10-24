@@ -78,6 +78,11 @@ public class PatientInvestigationService {
                 jpql += " and pi.encounter=:en";
                 params.put("en", searchKeyword.getPatientEncounter());
             }
+
+            if (searchKeyword.getPatientInvestigationStatus() != null) {
+                jpql += " and pi.status=:pis ";
+                params.put("pis", searchKeyword.getPatientInvestigationStatus());
+            }
         }
 
         jpql += " order by pi.id desc";
