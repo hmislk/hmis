@@ -794,7 +794,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             return;
         }
         double requiredQty = Math.abs(bid.getQty());
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment(), requiredQty);
+        substituteStocks = pharmacySubstituteService.findAlternativeBrandStocks(item, sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {

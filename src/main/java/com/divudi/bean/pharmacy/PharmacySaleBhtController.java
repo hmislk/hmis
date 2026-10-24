@@ -2067,7 +2067,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
+        substituteStocks = pharmacySubstituteService.findAlternativeBrandStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {
