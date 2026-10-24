@@ -746,4 +746,4 @@ A `page.once('dialog', d => d.accept())` handler inside `browser_run_code` does 
 
 ## 159. `selectOneMenu` widget `selectValue()` changes the label but fires no `p:ajax`
 
-`PrimeFaces.widgets[...].selectValue(v)` selects silently: the label changes, but the `change` event and its `p:ajax` (e.g. refreshing a dependent Department list) never run, so the bean keeps the old value. To test a dependent dropdown, click the trigger and then the panel's `li[data-label="…"]`.
+`PrimeFaces.widgets[...].selectValue(v)` selects silently: the label changes, but the `change` event and its `p:ajax` (e.g. refreshing a dependent Department list) never run, so the bean keeps the old value. To test a dependent dropdown, click the trigger and then the option in its `_panel`: `li[data-label="…"]`, or `tr[data-label="…"]` for a table-based menu (§128). Check the panel markup first.
