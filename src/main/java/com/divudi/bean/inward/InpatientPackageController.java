@@ -71,7 +71,7 @@ public class InpatientPackageController implements Serializable {
         ejbFacade.edit(current);
         items = null;
         current = null;
-        JsfUtil.addSuccessMessage("Deleted Successfully");
+        JsfUtil.addSuccessMessage("Inpatient Package deleted successfully.");
     }
 
     public void saveSelected() {
