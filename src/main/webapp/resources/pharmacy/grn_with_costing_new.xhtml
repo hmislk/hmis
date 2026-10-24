@@ -149,7 +149,9 @@
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Discount Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Rate</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Last Purchase Rate</th>
-                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Profit %</th>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true)}">
+                                <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Profit %</th>
+                            </h:panelGroup>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Net Value</th>
                             
                         </tr>
@@ -209,11 +211,13 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-                                <td style="text-align: right;">
-                                    <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
-                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
-                                    </h:outputText>
-                                </td>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true)}">
+                                    <td style="text-align: right;">
+                                        <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
+                                            <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                        </h:outputText>
+                                    </td>
+                                </h:panelGroup>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.billItemFinanceDetails.lineNetTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
