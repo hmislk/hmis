@@ -5172,7 +5172,18 @@ public class ExcelController {
         shftEndLabel.setCellValue("Shift End At");
         shftEndLabel.setCellStyle(metaStyleBold);
         Cell shftEnd = criteriaRow1.createCell(7);
-        shftEnd.setCellValue(wrapperDto.getShiftEndAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(wrapperDto.getShiftEndAt()) : "N/A");
+        shftEnd.setCellValue(wrapperDto.getShiftEndAt() != null ? new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(wrapperDto.getShiftEndAt()) : "Not Ended");
+
+        Row processedRow = dataSheet.createRow(currentRow++);
+        Cell processedByLabel = processedRow.createCell(0);
+        processedByLabel.setCellValue("Processed By");
+        processedByLabel.setCellStyle(metaStyleBold);
+        processedRow.createCell(1).setCellValue(wrapperDto.getProcessedBy() != null ? wrapperDto.getProcessedBy() : "");
+
+        Cell processedAtLabel = processedRow.createCell(3);
+        processedAtLabel.setCellValue("Processed At");
+        processedAtLabel.setCellStyle(metaStyleBold);
+        processedRow.createCell(4).setCellValue(wrapperDto.getProcessDate() != null ? longDateTime.format(wrapperDto.getProcessDate()) : "");
 
         if (filter != null && !filter.isEmpty()) {
             Row criteriaRow2 = dataSheet.createRow(currentRow++);
