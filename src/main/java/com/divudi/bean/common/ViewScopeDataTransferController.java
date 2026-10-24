@@ -35,6 +35,7 @@ public class ViewScopeDataTransferController  implements Serializable {
     private Boolean needToFillMembershipDetails;
     private Boolean needToPrepareForNewBooking;
     private Boolean needToFillFeeTotalsByBillFees;
+    private Boolean needToOpenChangePatientTab;
 
 
     private String sessionInstanceFilter;
@@ -215,6 +216,14 @@ public class ViewScopeDataTransferController  implements Serializable {
 
     public Boolean getNeedToFillFeeTotalsByBillFees() {
         return needToFillFeeTotalsByBillFees;
+    }
+
+    public Boolean getNeedToOpenChangePatientTab() {
+        return needToOpenChangePatientTab;
+    }
+
+    public void setNeedToOpenChangePatientTab(Boolean needToOpenChangePatientTab) {
+        this.needToOpenChangePatientTab = needToOpenChangePatientTab;
     }
 
 
