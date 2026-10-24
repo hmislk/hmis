@@ -354,6 +354,10 @@ JNDI names noted in step 11 with `Edit`, leaving that change **unstaged**.
 
 ## 13. Create the PR
 
+Write the PR body with the Write tool to `tmp/<issue>/pr-body.md` and pass
+`--body-file`. Never build it in a shell heredoc: backticks in code spans
+break command substitution and the PR is created with a mangled body.
+
 Target `development`. The PR description should state what was implemented
 and summarize the Playwright + DB verification performed in steps 7-8
 (concrete enough that a reviewer trusts it was actually tested), and embed
