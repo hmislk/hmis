@@ -3248,9 +3248,12 @@ public class InwardReportControllerBht implements Serializable {
                 + " and bi.referanceBillItem.bill.referenceBill=:ref";
         HashMap<String, Object> reverseParams = new HashMap<>();
         reverseParams.put("ref", bill);
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the
+        // inward cancel page before #24679; the referenceBill join limits it to this request.
         reverseParams.put("btas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION));
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION));
         List<BillItem> reverseItems = billItemFacade.findByJpql(reverseJpql, reverseParams);
 
         Map<Long, Double> returnedByIssuedId = new HashMap<>();

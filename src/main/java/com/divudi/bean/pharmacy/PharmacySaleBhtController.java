@@ -2249,8 +2249,8 @@ public class PharmacySaleBhtController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("refId", referenceItem.getId());
         params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: the inward cancel page (cancelPharmacyDirectIssueToBht)
-        // stamps request-issue cancellations with this atomic; the two-hop join keeps it limited to request-issue items.
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the inward cancel
+        // page before #24679 carry this atomic; the two-hop join keeps it limited to request-issue items.
         params.put("reverseBtas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
