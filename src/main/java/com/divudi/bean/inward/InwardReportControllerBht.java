@@ -1975,10 +1975,14 @@ public class InwardReportControllerBht implements Serializable {
                 + "WHERE bf.retired = false "
                 + "AND b.retired = false "
                 + "AND b.cancelled = false "
-                + "AND b.billType = :billType ";
+                // Issue #23846 - staff fees on inward service bills are professional
+                // payables too, even though no separate professional fee bill exists.
+                + "AND (b.billType = :billType "
+                + "OR (b.billTypeAtomic = :serviceBillAtomic AND bf.staff IS NOT NULL AND bf.feeValue > 0)) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
+        params.put("serviceBillAtomic", BillTypeAtomic.INWARD_SERVICE_BILL);
 
         jpql = appendProfessionalPaymentScopePredicate(jpql, params);
         jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
