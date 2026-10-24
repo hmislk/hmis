@@ -12,6 +12,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -76,6 +77,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     // <editor-fold defaultstate="collapsed" desc="Controller">
     @Inject
     SessionController sessionController;
+    @Inject
+    WebUserController webUserController;
     @Inject
     BillBeanController billBean;
     @Inject
@@ -253,6 +256,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         return m;
     }
 
+    /**
+     * This removal is an immediate, independent soft-delete (sets {@code retired=true}
+     * and persists right away via the facade) — it does NOT wait for the page's "Save"
+     * button. The page's Save button only persists Payment Method / Discount Scheme /
+     * Claimable (see {@link #saveCurrent()}); it never touches credit companies. This is
+     * intentional by design, not a bug (ref: issue #24471).
+     */
     public void removeCreditCompany(EncounterCreditCompany ecc) {
         boolean removingPrimary = current.getCreditCompany() != null
                 && ecc.getInstitution() != null
@@ -814,6 +824,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToEditPaymentDetails() {
+        if (!webUserController.hasPrivilege("InwardEditPaymentDetails")) {
+            JsfUtil.addErrorMessage("You are not authorized to edit payment details.");
+            return "";
+        }
         if (current == null) {
             JsfUtil.addErrorMessage("No Admission selected");
             return "";

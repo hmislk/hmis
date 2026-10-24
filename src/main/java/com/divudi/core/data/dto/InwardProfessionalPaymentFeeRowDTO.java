@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.Title;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -21,6 +22,7 @@ public class InwardProfessionalPaymentFeeRowDTO implements Serializable {
     private String referenceBillDeptId;
     private Date referenceBillCreatedAt;
     private Date addedFeeDate;
+    private Title staffTitle;
 
     public InwardProfessionalPaymentFeeRowDTO() {
     }
@@ -49,6 +51,33 @@ public class InwardProfessionalPaymentFeeRowDTO implements Serializable {
         this(patientEncounterId, staffId, staffName, specialityId, specialityName, feeValue, paidValue,
                 referenceBillDeptId, referenceBillCreatedAt);
         this.addedFeeDate = addedFeeDate;
+    }
+
+    // Carries the doctor's Person.title (Dr, Prof, ...) so the report can show
+    // it before the consultant name. New constructor only - the ones above
+    // stay for backward compatibility.
+    public InwardProfessionalPaymentFeeRowDTO(Long patientEncounterId, Long staffId, String staffName,
+            Long specialityId, String specialityName, Double feeValue, Double paidValue,
+            String referenceBillDeptId, Date referenceBillCreatedAt, Date addedFeeDate, Title staffTitle) {
+        this(patientEncounterId, staffId, staffName, specialityId, specialityName, feeValue, paidValue,
+                referenceBillDeptId, referenceBillCreatedAt, addedFeeDate);
+        this.staffTitle = staffTitle;
+    }
+
+    // Consultant name prefixed with the title, e.g. "Dr. A Perera".
+    public String getStaffNameWithTitle() {
+        if (staffName == null || staffName.trim().isEmpty()) {
+            return "";
+        }
+        return staffTitle != null ? staffTitle.getLabel().trim() + " " + staffName.trim() : staffName.trim();
+    }
+
+    public Title getStaffTitle() {
+        return staffTitle;
+    }
+
+    public void setStaffTitle(Title staffTitle) {
+        this.staffTitle = staffTitle;
     }
 
     public Long getPatientEncounterId() {
