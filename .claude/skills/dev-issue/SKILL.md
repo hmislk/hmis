@@ -73,6 +73,9 @@ issue, sets the project board status to In Progress.
 - Identify: which entities/services/JSF pages are involved, which existing
   patterns to follow (DTOs, privileges, AJAX), and what's actually broken or
   missing.
+- If the issue or your plan relies on an existing page (e.g. the admin
+  screen users should use instead), open it once in the running app while
+  investigating. A page that errors on open changes the plan.
 - **If the issue is a bug report**, try to pin down the root cause by reading
   code first. Note explicitly whether this succeeded — that decides whether
   step 2a runs.
@@ -203,6 +206,9 @@ Rules that hold on every machine:
 ## 7. Test with Playwright + verify in DB
 
 Run the `playwright-e2e` skill workflow:
+- Before scripting a page, grep `developer_docs/testing/playwright-e2e/` for
+  its name (e.g. `grep -rn "Patient Admit"`) and read the matching §. Most
+  selector, growl and test-data traps are already there.
 - Login, select the department from step 4
 - If verifying the fix requires putting a record into a specific state first
   (e.g. a race-condition fix needs a room removed, a status changed, a second
