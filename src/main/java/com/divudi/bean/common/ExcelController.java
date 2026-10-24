@@ -5207,7 +5207,7 @@ public class ExcelController {
                 // Section title
                 Row sectionTitleRow = dataSheet.createRow(currentRow++);
                 Cell sectionTitleCell = sectionTitleRow.createCell(0);
-                sectionTitleCell.setCellValue(section.getLabel());
+                sectionTitleCell.setCellValue(section.getLabel() + " (" + section.getBillCount() + " bills)");
                 sectionTitleCell.setCellStyle(metaStyleBold);
 
                 // Header row
