@@ -3392,10 +3392,16 @@ public class PharmacyBillSearch implements Serializable {
         if (checkDepartment(getBill())) {
             return;
         }
-        // Discharge medicine issues cancel to the discharge cancellation atomic; all other inward direct issues to the regular one.
-        BillTypeAtomic cancellationAtomic = getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
-                ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
-                : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        // Discharge medicine issues and issues against a ward request cancel to their own atomic;
+        // all other inward direct issues to the regular one.
+        BillTypeAtomic cancellationAtomic;
+        if (getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE) {
+            cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION;
+        } else if (getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            cancellationAtomic = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION;
+        } else {
+            cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         // Bills settled through InpatientDirectIssueNativeSqlService write their real netTotal
         // and BillItem rows via native SQL after this session-scoped bean's `bill` reference was
@@ -3646,6 +3652,7 @@ public class PharmacyBillSearch implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("refId", item.getId());
             params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made before #24679.
             params.put("reverseBtas", java.util.Arrays.asList(
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,

@@ -156,7 +156,7 @@
                                 </div>
                                 <div class="col-6">
                                     <ui:repeat value="#{inwardReportControllerBht.requestIssueSummaryBills}" var="sb">
-                                        <h:outputLabel value="#{sb.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : sb.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION' ? 'Cancelled' : 'Issued'} :&#160;" class="fw-bold" />
+                                        <h:outputLabel value="#{sb.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : (sb.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION' or sb.billTypeAtomic eq 'DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION') ? 'Cancelled' : 'Issued'} :&#160;" class="fw-bold" />
                                         <h:outputText value="#{sb.deptId} from #{sb.department.name} by #{sb.creater.webUserPerson.nameWithTitle}" /><br/>
                                     </ui:repeat>
                                 </div>
