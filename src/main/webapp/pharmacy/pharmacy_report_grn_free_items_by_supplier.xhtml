@@ -272,19 +272,19 @@
                         <h:panelGrid columns="5" styleClass="w-100 mb-2" columnClasses="text-center,text-center,text-center,text-center,text-center"
                                      rendered="#{pharmacyProcurementReportController.freeItemLineCount gt 0}">
                             <h:panelGroup layout="block" styleClass="card p-2 m-1">
-                                <h:outputText value="Total Free Qty" styleClass="text-muted small"/><br/>
+                                <h:outputText value="Net Free Qty" styleClass="text-muted small"/><br/>
                                 <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalFreeQty}" styleClass="fw-bold fs-5">
                                     <f:convertNumber pattern="#,##0.##"/>
                                 </h:outputText>
                             </h:panelGroup>
                             <h:panelGroup layout="block" styleClass="card p-2 m-1">
-                                <h:outputText value="Total Free Value" styleClass="text-muted small"/><br/>
+                                <h:outputText value="Net Free Value" styleClass="text-muted small"/><br/>
                                 <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalFreeValue}" styleClass="fw-bold fs-5">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </h:panelGroup>
                             <h:panelGroup layout="block" styleClass="card p-2 m-1">
-                                <h:outputText value="Paid Qty" styleClass="text-muted small"/><br/>
+                                <h:outputText value="Net Paid Qty" styleClass="text-muted small"/><br/>
                                 <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalPaidQty}" styleClass="fw-bold fs-5">
                                     <f:convertNumber pattern="#,##0.##"/>
                                 </h:outputText>
@@ -351,8 +351,32 @@
                                 </h:outputText>
                             </p:column>
 
+                            <p:column headerText="Returned Paid Qty" styleClass="text-end" sortBy="#{r.returnedPaidQty}">
+                                <h:outputText value="#{r.returnedPaidQty}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Net Paid Qty" styleClass="text-end" sortBy="#{r.netPaidQty}">
+                                <h:outputText value="#{r.netPaidQty}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </p:column>
+
                             <p:column headerText="Free Qty" styleClass="text-end" sortBy="#{r.freeQty}">
                                 <h:outputText value="#{r.freeQty}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Returned Free Qty" styleClass="text-end" sortBy="#{r.returnedFreeQty}">
+                                <h:outputText value="#{r.returnedFreeQty}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Net Free Qty" styleClass="text-end" sortBy="#{r.netFreeQty}">
+                                <h:outputText value="#{r.netFreeQty}">
                                     <f:convertNumber pattern="#,##0.##"/>
                                 </h:outputText>
                             </p:column>
@@ -374,7 +398,35 @@
                                     <p:column colspan="8" styleClass="text-end" footerText="Total"/>
                                     <p:column styleClass="text-end">
                                         <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalReceivedPaidQty}">
+                                                <f:convertNumber pattern="#,##0.##"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column styleClass="text-end">
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalReturnedPaidQty}">
+                                                <f:convertNumber pattern="#,##0.##"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column styleClass="text-end">
+                                        <f:facet name="footer">
                                             <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalPaidQty}">
+                                                <f:convertNumber pattern="#,##0.##"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column styleClass="text-end">
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalReceivedFreeQty}">
+                                                <f:convertNumber pattern="#,##0.##"/>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column styleClass="text-end">
+                                        <f:facet name="footer">
+                                            <h:outputText value="#{pharmacyProcurementReportController.freeItemTotalReturnedFreeQty}">
                                                 <f:convertNumber pattern="#,##0.##"/>
                                             </h:outputText>
                                         </f:facet>
@@ -434,13 +486,13 @@
                                 <h:outputText value="#{s.lineCount}"/>
                             </p:column>
 
-                            <p:column headerText="Paid Qty" styleClass="text-end" sortBy="#{s.paidQty}">
+                            <p:column headerText="Net Paid Qty" styleClass="text-end" sortBy="#{s.paidQty}">
                                 <h:outputText value="#{s.paidQty}">
                                     <f:convertNumber pattern="#,##0.##"/>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Free Qty" styleClass="text-end" sortBy="#{s.freeQty}">
+                            <p:column headerText="Net Free Qty" styleClass="text-end" sortBy="#{s.freeQty}">
                                 <h:outputText value="#{s.freeQty}">
                                     <f:convertNumber pattern="#,##0.##"/>
                                 </h:outputText>

@@ -27,6 +27,9 @@ public class PharmacyFreeItemReceivedDTO implements Serializable {
     private Double paidQty;
     private Double freeQty;
     private Double purchaseRate;
+    private Long billItemId;
+    private double returnedPaidQty;
+    private double returnedFreeQty;
 
     public PharmacyFreeItemReceivedDTO() {
     }
@@ -52,10 +55,41 @@ public class PharmacyFreeItemReceivedDTO implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    public double getFreeValue() {
+    /**
+     * Same as the 15-argument constructor, plus the GRN / Direct Purchase bill
+     * item id so that returns against the line can be matched (issue #24667).
+     */
+    public PharmacyFreeItemReceivedDTO(Long billItemId, Long billId, Date receivedDate, String grnNo, String invoiceNo,
+            BillTypeAtomic billTypeAtomic, String departmentName, DepartmentType departmentType,
+            Long supplierId, String supplierName, Long itemId, String itemCode, String itemName,
+            Double paidQty, Double freeQty, Double purchaseRate) {
+        this(billId, receivedDate, grnNo, invoiceNo, billTypeAtomic, departmentName, departmentType,
+                supplierId, supplierName, itemId, itemCode, itemName, paidQty, freeQty, purchaseRate);
+        this.billItemId = billItemId;
+    }
+
+    /**
+     * Paid quantity received less the paid quantity returned to the supplier.
+     */
+    public double getNetPaidQty() {
+        double q = paidQty == null ? 0.0 : paidQty;
+        return q - returnedPaidQty;
+    }
+
+    /**
+     * Free quantity received less the free quantity returned to the supplier.
+     */
+    public double getNetFreeQty() {
         double q = freeQty == null ? 0.0 : freeQty;
+        return q - returnedFreeQty;
+    }
+
+    /**
+     * Value of the free quantity still held, i.e. after free returns.
+     */
+    public double getFreeValue() {
         double r = purchaseRate == null ? 0.0 : purchaseRate;
-        return q * r;
+        return getNetFreeQty() * r;
     }
 
     public String getBillTypeLabel() {
@@ -102,4 +136,10 @@ public class PharmacyFreeItemReceivedDTO implements Serializable {
     public void setFreeQty(Double freeQty) { this.freeQty = freeQty; }
     public Double getPurchaseRate() { return purchaseRate; }
     public void setPurchaseRate(Double purchaseRate) { this.purchaseRate = purchaseRate; }
+    public Long getBillItemId() { return billItemId; }
+    public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
+    public double getReturnedPaidQty() { return returnedPaidQty; }
+    public void setReturnedPaidQty(double returnedPaidQty) { this.returnedPaidQty = returnedPaidQty; }
+    public double getReturnedFreeQty() { return returnedFreeQty; }
+    public void setReturnedFreeQty(double returnedFreeQty) { this.returnedFreeQty = returnedFreeQty; }
 }
