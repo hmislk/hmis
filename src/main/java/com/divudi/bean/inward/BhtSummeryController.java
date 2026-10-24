@@ -175,6 +175,8 @@ public class BhtSummeryController implements Serializable {
     @Inject
     private InwardTimedItemController inwardTimedItemController;
     @Inject
+    private SurgeryBillController surgeryBillController;
+    @Inject
     private DischargeController dischargeController;
     @Inject
     BillController billController;
@@ -2138,7 +2140,41 @@ public class BhtSummeryController implements Serializable {
         getInwardTimedItemController().finalizeService(patientItem);
         createPatientItems();
         createChargeItemTotals();
+        updateTotal();
 
+    }
+
+    /**
+     * Stops a running timed service now: records the current time as its
+     * Stopped Time and re-prices it. The service stays on the bill. This is
+     * what staff mean to do when a service has ended - not Delete (#23940).
+     */
+    public void stopTimedService(PatientItem patientItem) {
+        if (patientItem == null || patientItem.getToTime() != null) {
+            return;
+        }
+        patientItem.setToTime(new Date());
+        updatePatientItem(patientItem);
+    }
+
+    /**
+     * Deletes a timed service entered by mistake, with its charge. It then
+     * drops off the list - a deleted service is not part of the bill. The
+     * list is reloaded here because SurgeryBillController#removeTimeService
+     * only refreshes its own list, which left the deleted row showing on
+     * this page as "Deleted By" until the page was reopened (#23940).
+     */
+    public void deleteTimedService(PatientItem patientItem) {
+        if (patientItem == null) {
+            return;
+        }
+        surgeryBillController.removeTimeService(patientItem);
+        createPatientItems();
+        createChargeItemTotals();
+        updateTotal();
+        if (patientItem.isRetired()) {
+            JsfUtil.addSuccessMessage("Timed service deleted.");
+        }
     }
 
     /**
@@ -2168,7 +2204,7 @@ public class BhtSummeryController implements Serializable {
         // what the checked-is-frozen rule exists to prevent. Verify a finished
         // charge, not a growing one.
         if (patientItem.getToTime() == null) {
-            JsfUtil.addErrorMessage("This timed service is still running. Enter a Stopped Time and press Update before checking it.");
+            JsfUtil.addErrorMessage("This timed service is still running. Press Stop, or enter a Stopped Time and press Update, before checking it.");
             return;
         }
         b.setCheckeAt(new Date());
