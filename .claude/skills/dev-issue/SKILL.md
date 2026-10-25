@@ -396,6 +396,11 @@ Repeat, up to **3 cycles**:
      says "Review limit reached", it reviewed nothing: say so in
      Notify, and wait for the limit reset or ask the user before
      treating the PR as reviewed.
+   - A Codex summary with status **Failed** plus a "You have reached
+     your Codex usage limits" comment reviewed nothing, even though its
+     hidden state says `has_unresolved_findings: true`. Treat it like
+     CodeRabbit's "Review limit reached": say so in Notify; don't hunt
+     for findings that don't exist.
 4. If checks are green and there are no unresolved review comments, stop —
    this cycle is done.
 
