@@ -496,3 +496,7 @@ The restored user's password is older than the 30-day limit, so each page
 renders the Change Password form under a live menu bar. Change it through
 that form (local test data), then record the new password in the
 credentials store under that DB's name.
+
+## 163. Stopping a build and hot-copying XHTML
+
+Stop a running Maven build by the PID of its `mvn` shell only. Killing `java` processes by name also kills Payara. An XHTML-only change can be copied into the deployed app directory without a rebuild, but a page whose Java class also changed needs a full rebuild and redeploy.
