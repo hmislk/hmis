@@ -703,6 +703,36 @@ public class IssueReturnController implements Serializable {
         return true;
     }
 
+    private boolean areOmittedItemsAlreadyFullyReturned(List<BillItem> processedReturnItems) {
+        List<BillItem> allOriginalItems = billService.fetchBillItems(getOriginalBill());
+        if (allOriginalItems == null) {
+            return true;
+        }
+        for (BillItem originalItem : allOriginalItems) {
+            boolean processed = false;
+            for (BillItem returnItem : processedReturnItems) {
+                BillItem ref = returnItem.getReferanceBillItem();
+                if (ref != null && ref.getId() != null && ref.getId().equals(originalItem.getId())) {
+                    processed = true;
+                    break;
+                }
+            }
+            if (processed) {
+                continue;
+            }
+            BillItemFinanceDetails fd = originalItem.getBillItemFinanceDetails();
+            if (fd == null) {
+                return false;
+            }
+            BigDecimal originalQty = BigDecimalUtil.valueOrZero(fd.getQuantity()).abs();
+            BigDecimal returnedQty = BigDecimalUtil.valueOrZero(fd.getReturnQuantity()).abs();
+            if (originalQty.compareTo(returnedQty) > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean saveSettlingBillComponents() {
         boolean fullyReturned = true;
         List<BillItem> itemsToProcess = new ArrayList<>(getReturnBillItems());
@@ -929,6 +959,11 @@ public class IssueReturnController implements Serializable {
 
             getPharmacyBean().addToStock(pbi.getStock(), Math.abs(pbi.getQty()), pbi, getSessionController().getDepartment());
 
+        }
+        // Items the user deleted from the return are not in the list processed above,
+        // so the original bill is only fully returned if they were already fully returned earlier.
+        if (fullyReturned && !areOmittedItemsAlreadyFullyReturned(itemsToProcess)) {
+            fullyReturned = false;
         }
         if (fullyReturned) {
             // Reload from DB so we don't trigger orphan-removal on billItems.
