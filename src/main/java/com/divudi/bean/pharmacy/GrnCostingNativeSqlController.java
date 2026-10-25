@@ -558,12 +558,16 @@ public class GrnCostingNativeSqlController implements Serializable {
         calDifference();
 
         grnCostingNativeSqlService.updateBillTotals(billId, getCurrentGrnBillPre().getNetTotal(), getCurrentGrnBillPre().getTotal());
+        grnCostingNativeSqlService.updateBillExpenseTotals(billId, getCurrentGrnBillPre().getExpenseTotal(),
+                getCurrentGrnBillPre().getExpensesTotalConsideredForCosting(),
+                getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
 
         BillFinanceDetails bfd = getCurrentGrnBillPre().getBillFinanceDetails();
         double totalDiscount = bfd != null && bfd.getTotalDiscount() != null ? bfd.getTotalDiscount().doubleValue() : 0.0;
         double totalExpense = bfd != null && bfd.getTotalExpense() != null ? bfd.getTotalExpense().doubleValue() : 0.0;
         double totalTax = bfd != null && bfd.getTotalTaxValue() != null ? bfd.getTotalTaxValue().doubleValue() : 0.0;
-        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax);
+        BigDecimal totalBillValue = bfd != null ? bfd.getTotalBillValue() : null;
+        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, totalBillValue);
 
         JsfUtil.addSuccessMessage("GRN Saved");
     }
@@ -747,6 +751,12 @@ public class GrnCostingNativeSqlController implements Serializable {
         request.setPrePositiveNetTotalForPayment(prePositiveNetTotalForPayment);
         request.setPostNegationNetTotal(postNegationNetTotal);
         request.setPostNegationTotal(postNegationTotal);
+        BillFinanceDetails approveBfd = getCurrentGrnBillPre().getBillFinanceDetails();
+        request.setTotalBillValue(approveBfd != null && approveBfd.getTotalBillValue() != null
+                ? approveBfd.getTotalBillValue().abs() : null);
+        request.setExpenseTotal(getCurrentGrnBillPre().getExpenseTotal());
+        request.setExpensesTotalConsideredForCosting(getCurrentGrnBillPre().getExpensesTotalConsideredForCosting());
+        request.setExpensesTotalNotConsideredForCosting(getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
         request.setBalanceValue(balanceValue);
         request.setPoFullyReceived(poFullyReceived);
 
