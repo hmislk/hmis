@@ -503,8 +503,8 @@ Stop a running Maven build by the PID of its `mvn` shell only. Killing `java` pr
 
 ## 164. Copied DB has fewer tables than the source
 
-`mysqldump src | mysql dst` stops at the first "Row size too large" table, and the copy looks fine. Pipe with `mysql --init-command="SET SESSION innodb_strict_mode=0"`, then compare `information_schema.tables` counts for both schemas before testing.
+`mysqldump src | mysql dst` stops at the first "Row size too large" table, and the copy looks fine. Use `mysqldump src | mysql --init-command="SET SESSION innodb_strict_mode=0" dst`, then compare `information_schema.tables` counts for both schemas before testing.
 
 ## 165. `pkill -f` / `pgrep -f` kills or finds your own shell
 
-The pattern also matches the shell running the command (exit 144). Find Payara with `ps -C java -o pid=,args= | grep domains/<domain>` and stop that PID.
+The pattern also matches the shell running the command (exit 144). Find Payara with `ps -C java -o pid=,args= | grep domains/rh` (replace `rh` with your domain) and stop that PID.
