@@ -12,6 +12,7 @@ import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UploadController;
 
+import com.divudi.core.data.UploadType;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.lab.ReportFormat;
 import com.divudi.core.facade.ReportFormatFacade;
@@ -59,6 +60,9 @@ public class ReportFormatController implements Serializable {
     private UploadedFile uploadedFile;
     private List<ReportFormat> items = null;
     private Upload upload;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
+    private int uploadPage = 1;
     String selectText = "";
 
     private String fileUrl;
@@ -220,11 +224,29 @@ public class ReportFormatController implements Serializable {
 
     public void setCurrent(ReportFormat current) {
         this.current = current;
+        uploadPage = 1;
+        loadUploadForPage();
+    }
+
+    /**
+     * Loads, or creates, the background row of the selected format for the
+     * selected page. Page 1 is the format's ordinary background; later pages
+     * use separate rows marked by upload type and page.
+     */
+    private void loadUploadForPage() {
         if (current != null && current.getId() != null) {
-            upload = uploadController.findUpload(current);
+            if (uploadPage <= 1) {
+                upload = uploadController.findUpload(current);
+            } else {
+                upload = uploadController.findPageUpload(current, uploadPage);
+            }
             if (upload == null) {
                 upload = new Upload();
                 upload.setCategory(current);
+                if (uploadPage > 1) {
+                    upload.setUploadType(UploadType.Lab_Report_Page_Background);
+                    upload.setComments("page=" + uploadPage);
+                }
                 upload.setCreater(sessionController.getLoggedUser());
                 upload.setCreatedAt(new Date());
                 uploadController.saveUpload(upload);
@@ -232,6 +254,28 @@ public class ReportFormatController implements Serializable {
         } else {
             upload = null;
         }
+    }
+
+    public boolean isMultiPageEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                com.divudi.core.data.lab.ReportPageSettings.CONFIG_KEY_ENABLED, false);
+    }
+
+    public List<Integer> getUploadPageChoices() {
+        List<Integer> pages = new ArrayList<>();
+        for (int p = 1; p <= 9; p++) {
+            pages.add(p);
+        }
+        return pages;
+    }
+
+    public int getUploadPage() {
+        return uploadPage;
+    }
+
+    public void setUploadPage(int uploadPage) {
+        this.uploadPage = uploadPage < 1 ? 1 : uploadPage;
+        loadUploadForPage();
     }
 
     public void delete() {

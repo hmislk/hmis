@@ -104,7 +104,9 @@ if creds and creds.expired and creds.refresh_token:
     except Exception as e:                      # Testing-mode refresh tokens die after 7 days
         print('token refresh failed, re-consenting:', e); creds = None
 if not creds or not creds.valid:
+    socket.setdefaulttimeout(None)              # the 120 s upload timeout would also cut off the consent page
     creds = InstalledAppFlow.from_client_secrets_file(SECRET, SCOPES).run_local_server(port=0)
+    socket.setdefaulttimeout(120)
     with open(TOKEN, 'w') as f:
         f.write(creds.to_json())
 yt = build('youtube', 'v3', credentials=creds)

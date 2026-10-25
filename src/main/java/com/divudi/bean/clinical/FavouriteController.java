@@ -20,6 +20,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -225,13 +226,15 @@ public class FavouriteController implements Serializable {
     }
 
     public void prepareAddingFavouriteDiagnosis() {
+        PrimeFaces.current().ajax().addCallbackParam("prepared", false);
         if (item == null) {
-            JsfUtil.addErrorMessage("No Diagnosis Selected");
+            JsfUtil.addErrorMessage("Please select a diagnosis before adding to favourites.");
             return;
         }
         current = new PrescriptionTemplate();
         current.setForItem(item);
         current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
+        PrimeFaces.current().ajax().addCallbackParam("prepared", true);
     }
 
     public String toViewFavouriteMedicines() {
@@ -704,8 +707,9 @@ public class FavouriteController implements Serializable {
      * Saves or updates a favourite diagnosis based on ID
      */
     public void saveFavDiagnosis(){
+        PrimeFaces.current().ajax().addCallbackParam("saved", false);
         if (item == null) {
-            JsfUtil.addErrorMessage("No Diagnosis Selected");
+            JsfUtil.addErrorMessage("Please select a diagnosis before adding to favourites.");
             return;
         }
         if (current == null) {
@@ -733,6 +737,7 @@ public class FavouriteController implements Serializable {
 
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
         current = null;
+        PrimeFaces.current().ajax().addCallbackParam("saved", true);
     }
 
     /**
