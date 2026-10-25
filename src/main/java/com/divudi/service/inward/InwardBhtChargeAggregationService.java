@@ -191,6 +191,38 @@ public class InwardBhtChargeAggregationService implements Serializable {
         return result;
     }
 
+    /**
+     * Net interim-bill charge per encounter: gross (all InwardChargeTypes from
+     * fetchChargesByEncounter) - discount + service charge (fetchDiscountAndMarginByEncounter).
+     * Same figure as InwardInvoiceJournalRowDto.getGrandTotal().
+     */
+    public Map<Long, Double> fetchNetChargesByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, Double> result = new HashMap<>();
+        if (encounters == null || encounters.isEmpty()) {
+            return result;
+        }
+
+        Map<Long, Map<InwardChargeType, Double>> charges = fetchChargesByEncounter(encounters);
+        Map<Long, double[]> discountMargin = fetchDiscountAndMarginByEncounter(encounters);
+
+        for (Map.Entry<Long, Map<InwardChargeType, Double>> e : charges.entrySet()) {
+            double gross = 0.0;
+            if (e.getValue() != null) {
+                for (Double v : e.getValue().values()) {
+                    gross += v == null ? 0.0 : v;
+                }
+            }
+            result.put(e.getKey(), gross);
+        }
+        for (Map.Entry<Long, double[]> e : discountMargin.entrySet()) {
+            double[] dm = e.getValue();
+            double discount = dm == null || dm.length < 1 ? 0.0 : dm[0];
+            double serviceCharge = dm == null || dm.length < 2 ? 0.0 : dm[1];
+            result.merge(e.getKey(), serviceCharge - discount, Double::sum);
+        }
+        return result;
+    }
+
     private List<InwardChargeType> chargeTypesByCalculationMethod(CalculationMethod method) {
         List<InwardChargeType> types = new ArrayList<>();
         for (InwardChargeType ct : InwardChargeType.values()) {

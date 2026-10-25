@@ -73,6 +73,9 @@ issue, sets the project board status to In Progress.
 - Identify: which entities/services/JSF pages are involved, which existing
   patterns to follow (DTOs, privileges, AJAX), and what's actually broken or
   missing.
+- If the issue or your plan relies on an existing page (e.g. the admin
+  screen users should use instead), open it once in the running app while
+  investigating. A page that errors on open changes the plan.
 - **If the issue is a bug report**, try to pin down the root cause by reading
   code first. Note explicitly whether this succeeded — that decides whether
   step 2a runs.
@@ -204,10 +207,22 @@ Rules that hold on every machine:
   PowerShell: Git Bash rewrites `/coop` into a Windows path.
 - After redeploy, check the app answers and the server log shows no deployment
   errors before moving on.
+- If Claude Code kills the build/redeploy for low memory, don't stop to ask:
+  run a background until-loop that waits for free RAM (e.g. > 3 GB), then
+  rerun the step and continue.
+  - Check free RAM every 60 s, with
+    `(Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory` (KB) on Windows
+    or `free -m` on Linux. Give up after 30 minutes and report to the user.
+  - Before retrying a redeploy, run `asadmin list-applications`. If `<app>` is
+    gone, use `deploy --force=true --name <app> --contextroot <root> <war>`
+    instead of `redeploy`.
 
 ## 7. Test with Playwright + verify in DB
 
 Run the `playwright-e2e` skill workflow:
+- Before scripting a page, grep `developer_docs/testing/playwright-e2e/` for
+  its name (e.g. `grep -rn "Patient Admit"`) and read the matching §. Most
+  selector, growl and test-data traps are already there.
 - Login, select the department from step 4
 - If verifying the fix requires putting a record into a specific state first
   (e.g. a race-condition fix needs a room removed, a status changed, a second
@@ -246,8 +261,9 @@ retest (step 7). Repeat until the flow passes end-to-end.
 ## 9. Record learnings
 
 If a new Playwright/dev gotcha surfaced, add it to the matching topic file in
-`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use,
-and list it in the main guide's Contents. Write it as a symptom heading plus
+`developer_docs/testing/playwright-e2e/`. Number it after the highest § in use
+on `origin/development` (`git fetch` first; other PRs add sections too), and
+recheck just before each push. List it in the main guide's Contents. Write it as a symptom heading plus
 1–3 lines of fix. Leave the story, dates and issue history out; they belong in
 the PR. Skip this step if nothing new came up.
 
@@ -377,6 +393,11 @@ corresponding page edit can't be reviewed properly. If step 10 concluded no
 page was needed (internal-only change), say that explicitly instead — an
 absent Documentation section reads as forgotten, not as deliberate.
 
+Then move each issue the PR closes to **Reviewing & Merging** on board #11 and read the status
+back ([Project Board, status at every stage](../../../developer_docs/github/project-board-integration.md#status-at-every-stage-qa-works-from-this-column)).
+QA works from board status; an issue left in Backlog or a sprint column is never tested. This
+applies even when you branched by hand instead of running `start-issue`.
+
 ## 14. Review loop (until mergeable)
 
 Repeat, up to **3 cycles**:
@@ -396,6 +417,10 @@ Repeat, up to **3 cycles**:
      treating the PR as reviewed.
 4. If checks are green and there are no unresolved review comments, stop —
    this cycle is done.
+   - Checks green but `gh pr view <PR#> --json mergeStateStatus` says
+     `BLOCKED`? The ruleset requires every review thread resolved. Find the
+     open threads (`reviewThreads` in GraphQL), fix or answer each, then
+     resolve it before merging.
 
 If 3 cycles pass without convergence (flaky CI, unresolved disagreement with
 a reviewer, etc.), stop and ask the user how to proceed rather than looping
@@ -410,6 +435,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
+5. **Follow-up issues keep the session open.** The session is not complete while an issue filed here has no merged PR. Fix each one on its own branch and PR (this skill again, per issue) and wait for the user to merge it. Skip this only when the user says the follow-ups will be handled in another session; ask with `AskUserQuestion` (Fix now / Another session), one question per issue.
 
 ## 15. Notify
 
