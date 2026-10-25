@@ -407,6 +407,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
+5. **Follow-up issues keep the session open.** The session is not complete while an issue filed here has no merged PR. Fix each one on its own branch and PR (this skill again, per issue) and wait for the user to merge it. Skip this only when the user says the follow-ups will be handled in another session; ask with `AskUserQuestion` (Fix now / Another session), one question per issue.
 
 ## 15. Notify
 

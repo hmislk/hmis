@@ -484,6 +484,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
+5. **Fix the follow-ups in the same run.** Add each filed issue to the batch and run steps 1–14 on it (its own branch and PR), unless it hits a hard limit. Never merge, so the session stays open: in Notify, list every follow-up without a merged PR under **Open follow-ups** and ask the user to merge them or say they will be handled in another session.
 
 ## 15. Notify
 
