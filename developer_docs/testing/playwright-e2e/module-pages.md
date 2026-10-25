@@ -31,6 +31,14 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [125. Setting up an inward final-bill test: charges are blocked after nursing discharge, and MRI items are billed from the Diagnostic Centre](#125-setting-up-an-inward-final-bill-test-charges-are-blocked-after-nursing-discharge-and-mri-items-are-billed-from-the-diagnostic-centre)
 - [130. A failed `errorCheck()` can look exactly like a dead Settle button](#130-a-failed-errorcheck-can-look-exactly-like-a-dead-settle-button)
 - [143. Creating an inward test admission with a finalised insurer bill on a staging box](#143-creating-an-inward-test-admission-with-a-finalised-insurer-bill-on-a-staging-box)
+- [144. Setting up a non-cash settlement test: payments must come through an accepted handover](#144-setting-up-a-non-cash-settlement-test-payments-must-come-through-an-accepted-handover)
+- [145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page](#145-reaching-the-pharmacy-sale-bill-reprint-page-specifically--search-sale-bill-and-view-bill-land-you-on-the-wrong-page)
+- [146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify](#146-cashier-float--handover--shift-end-flows-menu-paths-required-fields-and-what-to-verify)
+- [147. Patient Admit: "Admit" also matches "Provisional Emergency Admit"](#147-patient-admit-admit-also-matches-provisional-emergency-admit)
+- [149. Interim Bill search says "No results found" for an admission from another institution](#149-interim-bill-search-says-no-results-found-for-an-admission-from-another-institution)
+- [150. Interim Bill room charges are stale on the first open — open it twice before comparing totals](#150-interim-bill-room-charges-are-stale-on-the-first-open--open-it-twice-before-comparing-totals)
+- [153. Transfer request: issue and cancel act on the approved bill, not the PRE bill](#153-transfer-request-issue-and-cancel-act-on-the-approved-bill-not-the-pre-bill)
+- [157. Handover: the "Hand over to" autocomplete matches full names, and the accept list holds old handovers](#157-handover-the-hand-over-to-autocomplete-matches-full-names-and-the-accept-list-holds-old-handovers)
 
 ---
 
@@ -693,3 +701,71 @@ Record the BHT, final bill number and amounts in the delivery message.
 
 User B can then settle the payments. Settlement cannot be undone, so each retake needs new bills and a new handover. If `Allow Handover with Unmatched Balance` is off, the handover must include every collection in the shift. Use a new test user for A so the shift holds only the demo bills.
 
+## 145. Reaching the pharmacy sale bill reprint page specifically — "Search Sale Bill" and "View Bill" land you on the wrong page
+
+For issue #24479, there are three pharmacy-bill-search entry points under Pharmacy > Sale, and only one reaches the actual reprint page (`pharmacy_reprint_bill_sale.xhtml`, the `PharmacyBillSearch`-backed page rendering the real `Bill` JPA entity through `ph:saleBill`/`saleBill_Header`):
+
+- **Pharmacy > Sale > Search Sale Bill** (`pharmacy_search_sale_bill.xhtml`) — "View Bill" (`RetailSaleNativeSqlController.viewByBillId()`) reloads into a `PrintBillData` DTO and reopens `pharmacy_bill_retail_sale_native.xhtml`, the SAME page as the original settle-time print — not the reprint page.
+- **Pharmacy > Sale > Pharmacy Bill Search by Bill Type** (`pharmacy_search.xhtml`, per #53 above) → select "Pharmacy Sale Bill" → row's "View / Manage Bill" — **this is the one that lands on `pharmacy_reprint_bill_sale.xhtml`**.
+
+Before trusting what a "view" action shows for a reprint-specific bug, confirm you're on `pharmacy_reprint_bill_sale.xhtml` (page title "Reprint Sale Bill", a "**Duplicate**" marker on the bill) — the other page's similar-looking "view" renders from a different code path (DTO vs reloaded entity) and can silently fail to reproduce an entity-reload-specific bug.
+
+## 146. Cashier float / handover / shift-end flows: menu paths, required fields, and what to verify
+
+All under *Cashier → Financial Transaction Manager*. Design: [Handover Float Propagation](../../billing/handover-float-propagation.md).
+
+| Action | Menu path |
+|---|---|
+| Send float | Float Management → Float Transfer |
+| Receive float | Float Management → Float Transfers to Receive |
+| Cancel a sent float (only before it is received) | Float Management → My Float Outs → Cancel |
+| Hand over | Shift → Handover Current Shift |
+| Recall a handover (sender, only before accept) | Handover → My Handovers → Recall |
+| Accept or reject a handover | Handover → Shift Handovers to Accept → To Accept |
+| Record excess / shortage | Shift → Record Shift Excess / Record Shift Shortage |
+| Shift-end cash, end shift | Shift → Record Shift End Cash in Hand, then End Shift |
+| Drawer history | Drawer → My Drawer History |
+| Reset a drawer (no API yet, #24433) | Admin → Adjust Drawer Balance (needs `DrawerAdjustmentDirect`) |
+
+- **Float receive needs a comment and a denomination count.** Fill both before clicking Receive.
+- **A handover's counted denominations must equal expected cash.** Record any excess or shortage bill first; never test a "handover with a difference".
+- **An accepted handover cannot be cancelled.** "Handover cancel" means Recall (sender) or Reject (receiver) while it is still pending.
+- **OPD Billing** is under *OPD → Billing*; hover "Billing" to open the submenu. The same item can't be added twice to one bill, so build amounts from different items or quantities.
+- **Accept `confirm()` guards** by setting `window.confirm = () => true` before each click (see [§4](../playwright-e2e-workflow.md#4-confirmations-and-double-click-protection)).
+- **Verify three things after every step**, not just the screen you are on:
+  1. *My Drawer History* for **both** users. An accept adds one Cash row (the counted cash, float included) and no separate float row (#24428). Each non-cash payment in the handover (Card, Cheque, …) adds its own row.
+  2. The next *Handover Current Shift* screen: Net Float (Cash) must equal the user's own signed floats plus the signed net floats carried in from accepted handovers.
+  3. *Record Shift End Cash in Hand*: if the drawer started the shift at 0, expected cash should equal the drawer's cash balance.
+
+## 147. Patient Admit: "Admit" also matches "Provisional Emergency Admit"
+
+`getByRole('button', { name: 'Admit' })` matches both buttons, so `.click()` throws a
+strict-mode violation, and `.first()` (or picking by name in a snapshot) clicks *Provisional
+Emergency Admit*, which comes first and opens its confirm dialog. Click `[id$=":admt"]`.
+Consultant and Medical Officer are required.
+
+## 149. Interim Bill search says "No results found" for an admission from another institution
+
+The Interim Bill patient search only covers the institution in its **Institution** dropdown, which defaults to the logged-in institution. Before typing the BHT, pick the admission's institution (`PATIENTENCOUNTER.INSTITUTION_ID`) from that dropdown.
+
+## 150. Interim Bill room charges are stale on the first open — open it twice before comparing totals
+
+The first Interim Bill open after time has passed shows the room charge last saved, while saving the up-to-date one (#24582). Open it a second time before comparing its totals with a report or the DB. Reports that read `PATIENTROOM.CALCULATED*CHARGE` (Invoice Journal, Professional & Other Fee Summary) only pick up the new value after that first open.
+
+## 153. Transfer request: issue and cancel act on the approved bill, not the PRE bill
+
+A `PHARMACY_TRANSFER_REQUEST_PRE` bill points to its approved
+`PHARMACY_TRANSFER_REQUEST` bill via `forwardReferenceBill`. Issues set
+`backwardReferenceBill` on the **approved** bill, and "View Request" in
+Issue for Requests opens that approved bill. When querying for an un-issued
+request, join PRE → `FORWARDREFERENCEBILL_ID` and check the approved bill's
+issues. Cancel Request marks whichever bill the page opened: the approved bill
+from Issue for Requests, the PRE bill from Approved Requests. Check that
+bill's `CANCELLED`.
+
+## 157. Handover: the "Hand over to" autocomplete matches full names, and the accept list holds old handovers
+
+- Typing a username also matches other staff whose full name contains it (`anjali` lists `...Dulanjali...` first). Pick the suggestion by the receiver's full name and check `bill.TOWEBUSER_ID` after the handover. A handover to the wrong user is undone with *Handover → My Handovers → Recall*.
+- On a copied production DB, *Shift Handovers to Accept* can list thousands of old pending rows. Pick the row by its date or bill number, never the first row.
+- The *Shift* section of the Financial Transaction Manager is open on load; clicking its header closes it.
+- An OPD payment sits on the batch bill, whose to-department is empty, so the cash book entry written at accept takes the receiver's logged-in department as its "to" side.

@@ -267,7 +267,7 @@
 
                                             <ui:repeat value="#{investigationItemController.items}" var="myIi" >
 
-                                                <h:panelGroup id="gpIi" >
+                                                <h:panelGroup id="gpIi" rendered="#{myIi.name ne '@page-settings'}" >
                                                     <div style="#{myIi.outerCssStyle}; position:absolute; overflow: hidden!important; " >
                                                         <h:outputLabel 
                                                             id="lblViewModeIi"

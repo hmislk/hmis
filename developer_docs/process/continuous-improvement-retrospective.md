@@ -73,6 +73,16 @@ for cases where a future session would hit the exact same wall.
    rule out would cause mistakes in every session. Otherwise put it in the
    relevant skill or topic doc. See [Anthropic's skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
 
+## Follow-up issues keep the session open
+
+A session that files follow-up issues (defects found along the way) is not
+complete until each one is fixed and its PR merged, or the user says the
+follow-ups will be handled in another session. In an interactive session, ask
+that question explicitly and never end with filed follow-ups and no answer.
+In an unattended run no answer can arrive, so list the open follow-ups in the
+final Notify and ask the user to merge or defer them. See `dev-issue` and
+`dev-issue-unattended` step 14a.
+
 ## Relationship to the private memory system
 
 This is separate from, and complementary to, the user's private

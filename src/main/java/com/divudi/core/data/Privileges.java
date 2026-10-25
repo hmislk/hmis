@@ -235,6 +235,7 @@ public enum Privileges {
     CashierHandoverStatusReport("Cashier Handover Status Report"),
     SettleHandoverProofMissing("Settle Handover Proof Missing"),
     SettleNonCashPayments("Settle Non-Cash Payments"),
+    ApproveNonCashSettlement("Approve Non-Cash Settlement"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -1671,6 +1672,7 @@ public enum Privileges {
             case CashierHandoverStatusReport:
             case SettleHandoverProofMissing:
             case SettleNonCashPayments:
+            case ApproveNonCashSettlement:
                 return "Finance";
 
             case IssueFundTransfer:

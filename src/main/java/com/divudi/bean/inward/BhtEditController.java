@@ -56,6 +56,7 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.EmailFacade;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.service.AuditService;
 import java.util.Map;
@@ -117,6 +118,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     EmailFacade emailFacade;
     @EJB
     AuditService auditService;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -518,16 +521,39 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setComments(comment);
         getEjbFacade().edit(current);
 
+        // Give the BHT number back to its series when it is still the last one
+        // issued, as staff used to do by lowering the admission type's count. (#24672)
+        boolean bhtNumberReturned = false;
+        boolean returnBhtNumber = configOptionApplicationController.getBooleanValueByKey(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued", false);
+        if (returnBhtNumber) {
+            boolean institutionBasedBht = configOptionApplicationController
+                    .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
+            bhtNumberReturned = billNumberGenerator.returnAdmissionNumber(current.getAdmissionType(),
+                    current.getInstitution(), institutionBasedBht, current.getBhtLong());
+        }
+
         Map<String, Object> afterCancel = new HashMap<>();
         admissionToAuditMap(afterCancel, current);
         afterCancel.put("retired", current.isRetired());
         afterCancel.put("cancellationReason", comment);
         afterCancel.put("retiredRoomCount", retiredRoomCount);
         afterCancel.put("reversedAdmissionChargeBills", reversedChargeBills.size());
+        afterCancel.put("bhtNumberReturned", bhtNumberReturned);
         auditService.logEncounterAudit(current, "Admission Cancelled",
                 beforeCancel, afterCancel, sessionController.getLoggedUser());
 
+        // Keep the messages across the redirect below, or they never show. (#24672)
+        FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
         JsfUtil.addSuccessMessage("Bht Successfully Cancelled");
+        if (bhtNumberReturned) {
+            JsfUtil.addSuccessMessage("BHT number " + current.getBhtNo()
+                    + " was returned to the sequence. The next admission will reuse it.");
+        } else if (returnBhtNumber) {
+            JsfUtil.addWarningMessage("BHT number " + current.getBhtNo()
+                    + " was not returned to the sequence because a later BHT number has already been issued"
+                    + " or it was entered by hand. Adjust the sequence in Administration > Manage Inpatient Services > BHT Number Management if needed.");
+        }
         prepereForNew();
         return "/inward/inward_edit_bht?faces-redirect=true";
     }

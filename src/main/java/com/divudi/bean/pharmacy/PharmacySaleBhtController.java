@@ -2067,7 +2067,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
+        substituteStocks = pharmacySubstituteService.findAlternativeBrandStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {
@@ -2249,8 +2249,11 @@ public class PharmacySaleBhtController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("refId", referenceItem.getId());
         params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the inward cancel
+        // page before #24679 carry this atomic; the two-hop join keeps it limited to request-issue items.
         params.put("reverseBtas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
         double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
         double remaining = Math.max(0.0, referenceItem.getQty() - alreadyIssued);
@@ -3147,6 +3150,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
         freshBill.setPatientEncounter(preservedEncounter);
         bhtRequestBill = freshBill;
+        // Session-scoped: clear the previous issue's bill preview so the issue form shows.
+        billPreview = false;
         generateIssueBillComponentsForBhtRequest(freshBill);
         return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }

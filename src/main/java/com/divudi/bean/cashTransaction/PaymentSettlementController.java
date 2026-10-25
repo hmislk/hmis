@@ -6,7 +6,9 @@ import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Request;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.NonCashSettlementException;
 import com.divudi.service.PaymentSettlementService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,7 +19,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * Backing bean for the Settle Non-Cash page (issue #17964).
+ * Backing bean for the Settle Non-Cash page (#17964). Submissions go for
+ * approval (#24541).
  *
  * @see com.divudi.service.PaymentSettlementService
  */
@@ -46,6 +49,8 @@ public class PaymentSettlementController implements Serializable {
     private List<Payment> lastSettledPayments = new ArrayList<>();
     private boolean settling;
     private boolean printPreview;
+    private List<Request> myPendingRequests = new ArrayList<>();
+    private Request lastRequest;
 
     /**
      * Loads the list of departments where the logged-in user has pending
@@ -56,11 +61,13 @@ public class PaymentSettlementController implements Serializable {
         // (or back-button) lands on the form, not on a stale preview.
         printPreview = false;
         lastSettlementBill = null;
+        lastRequest = null;
         lastSettledPayments = new ArrayList<>();
         if (!webUserController.hasPrivilege(PRIVILEGE)) {
             JsfUtil.addErrorMessage("You do not have the required privilege to settle non-cash payments.");
             availableDepartments = new ArrayList<>();
             pendingPayments = new ArrayList<>();
+            myPendingRequests = new ArrayList<>();
             return;
         }
         availableDepartments = paymentSettlementService.findPendingSettlementDepartments(
@@ -70,6 +77,7 @@ public class PaymentSettlementController implements Serializable {
         selectedPayments = new ArrayList<>();
         referenceNumber = null;
         comments = null;
+        myPendingRequests = paymentSettlementService.findPendingRequestsOf(sessionController.getLoggedUser());
     }
 
     /**
@@ -115,31 +123,51 @@ public class PaymentSettlementController implements Serializable {
         }
         try {
             settling = true;
-            // Snapshot the list before settlePayments mutates the Payment objects.
-            // NOTE: this is a SHALLOW copy — the snapshot holds references to the
-            // same Payment instances the service then mutates (it sets
-            // paymentSettled=true and currentHolder=null on each). The preview only
-            // reads fields the service does NOT touch (paymentMethod, bill.deptId,
+            // Snapshot the list before requestSettlement touches the Payment objects.
+            // NOTE: this is a SHALLOW copy - the snapshot holds references to the
+            // same Payment instances the service then updates (it only links each
+            // payment to the pending settlement bill; paymentSettled and
+            // currentHolder change later, on approval). The preview only reads
+            // fields the service does NOT touch (paymentMethod, bill.deptId,
             // referenceNo, bank.name, paidValue, createdAt). Do not add any
             // currentHolder / paymentSettled bindings to the preview without
             // first deep-copying or projecting to a DTO.
             List<Payment> snapshot = new ArrayList<>(selectedPayments);
-            lastSettlementBill = paymentSettlementService.settlePayments(
+            lastSettlementBill = paymentSettlementService.requestSettlement(
                     selectedPayments,
                     referenceNumber.trim(),
                     comments,
                     sessionController.getLoggedUser());
             lastSettledPayments = snapshot;
-            JsfUtil.addSuccessMessage("Settled " + snapshot.size() + " payment(s) for "
-                    + selectedDepartment.getName() + ".");
+            lastRequest = paymentSettlementService.findPendingRequestsOf(sessionController.getLoggedUser())
+                    .stream()
+                    .filter(r -> r.getBill() != null && r.getBill().equals(lastSettlementBill))
+                    .findFirst().orElse(null);
+            myPendingRequests = paymentSettlementService.findPendingRequestsOf(sessionController.getLoggedUser());
+            JsfUtil.addSuccessMessage("Settlement request " + (lastRequest == null ? "" : lastRequest.getRequestNo() + " ")
+                    + "submitted for approval (" + snapshot.size() + " payment(s), "
+                    + selectedDepartment.getName() + "). You cannot end your shift or create a handover until it is approved or rejected.");
             printPreview = true;
             return "";
-        } catch (IllegalArgumentException | IllegalStateException e) {
+        } catch (NonCashSettlementException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return "";
         } finally {
             settling = false;
         }
+    }
+
+    public void withdraw(Request request) {
+        if (request == null) {
+            return;
+        }
+        try {
+            paymentSettlementService.withdrawSettlement(request.getId(), sessionController.getLoggedUser());
+            JsfUtil.addSuccessMessage("Request " + request.getRequestNo() + " withdrawn. The payments are back in your pending list.");
+        } catch (NonCashSettlementException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        }
+        loadPending();
     }
 
     /**
@@ -223,6 +251,14 @@ public class PaymentSettlementController implements Serializable {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public List<Request> getMyPendingRequests() {
+        return myPendingRequests;
+    }
+
+    public Request getLastRequest() {
+        return lastRequest;
     }
 
     public Bill getLastSettlementBill() {

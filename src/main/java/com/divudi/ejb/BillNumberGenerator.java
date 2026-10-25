@@ -4650,6 +4650,82 @@ public class BillNumberGenerator {
         }
     }
 
+    /**
+     * Gives a cancelled admission's BHT number back to its series, so the next
+     * admission reuses it (#24672). Only the last number issued can be given
+     * back: if a later number has already been drawn, the counter is left alone
+     * so the sequence never rewinds past a BHT in use.
+     *
+     * @param bhtLong the cancelled admission's counter value (0 when staff typed
+     *        the BHT in by hand, which never came from the counter)
+     * @return true when the counter was moved back by one
+     */
+    public boolean returnAdmissionNumber(AdmissionType admissionType, Institution institution,
+            boolean institutionBased, long bhtLong) {
+        if (bhtLong <= 0 || (institutionBased && institution == null)) {
+            return false;
+        }
+        String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased);
+            if (an == null || an.getLastAdmissionNumber() == null
+                    || an.getLastAdmissionNumber() != bhtLong) {
+                return false;
+            }
+            an.setLastAdmissionNumber(bhtLong - 1);
+            admissionNumberFacade.editAndFlush(an);
+            return true;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Compare-and-set reset of an existing counter row, for the BHT Number
+     * Management page. Rows there may carry only an admission type enum and/or
+     * an institution, so the lock key is built from the row itself, in the same
+     * format as {@link #getBhtLockKey}.
+     *
+     * @return the previous lastAdmissionNumber
+     * @throws java.util.ConcurrentModificationException if the counter no longer
+     *         holds expectedLastAdmissionNumber
+     */
+    public Long resetAdmissionNumberRecord(AdmissionNumber row, Long newLastAdmissionNumber,
+            Long expectedLastAdmissionNumber) {
+        String typeKey;
+        if (row.getAdmissionType() != null) {
+            typeKey = "AT-" + (row.getAdmissionType().getId() != null ? row.getAdmissionType().getId().toString() : "null");
+        } else {
+            typeKey = "ATE-" + (row.getAdmissionTypeEnum() != null ? row.getAdmissionTypeEnum().name() : "null");
+        }
+        String insKey = row.getInstitution() != null ? row.getInstitution().getId().toString() : "global";
+        String lockKey = "BHT-" + typeKey + "-" + insKey;
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            HashMap<String, Object> hm = new HashMap<>();
+            hm.put("id", row.getId());
+            AdmissionNumber an = admissionNumberFacade.findFreshByJpql(
+                    "SELECT an FROM AdmissionNumber an WHERE an.id=:id", hm);
+            if (an == null) {
+                throw new java.util.ConcurrentModificationException("Counter record no longer exists.");
+            }
+            Long previous = an.getLastAdmissionNumber();
+            if (expectedLastAdmissionNumber != null && !expectedLastAdmissionNumber.equals(previous)) {
+                throw new java.util.ConcurrentModificationException(
+                        "Counter changed since it was last read: expected " + expectedLastAdmissionNumber
+                        + " but current value is " + previous);
+            }
+            an.setLastAdmissionNumber(newLastAdmissionNumber);
+            admissionNumberFacade.editAndFlush(an);
+            return previous;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     private AdmissionNumber findAdmissionNumberRecord(AdmissionType admissionType, Institution institution, boolean institutionBased) {
         StringBuilder sql = new StringBuilder("SELECT an FROM AdmissionNumber an WHERE an.retired=false");
         HashMap<String, Object> hm = new HashMap<>();

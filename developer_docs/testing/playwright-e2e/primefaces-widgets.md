@@ -32,6 +32,8 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [131. `p:autoComplete` gives no suggestions to `fill`/`pressSequentially` — drive the widget's `search()`, and pick the right widget id](#131-pautocomplete-gives-no-suggestions-to-fillpresssequentially--drive-the-widgets-search-and-pick-the-right-widget-id)
 - [137. `button[title="…"]` locator works once, then finds nothing](#137-buttontitle-locator-works-once-then-finds-nothing)
 - [140. A `confirm()` raised inside `browser_run_code` is left pending, then dismissed — the action silently never runs](#140-a-confirm-raised-inside-browser_run_code-is-left-pending-then-dismissed--the-action-silently-never-runs)
+- [160. `selectOneMenu` widget `selectValue()` changes the label but fires no `p:ajax`](#160-selectonemenu-widget-selectvalue-changes-the-label-but-fires-no-pajax)
+- [161. Re-selecting the already-selected `p:selectOneMenu` option fires no `p:ajax` — the listener never runs](#161-re-selecting-the-already-selected-pselectonemenu-option-fires-no-pajax--the-listener-never-runs)
 
 ---
 
@@ -742,3 +744,11 @@ PrimeFaces' global tooltip removes a button's `title` on its first hover. Locate
 ## 140. A `confirm()` raised inside `browser_run_code` is left pending, then dismissed — the action silently never runs
 
 A `page.once('dialog', d => d.accept())` handler inside `browser_run_code` does not reliably accept an `onclick="return confirm(...)"` guard. The MCP can hold the dialog as modal state instead, and the next tool call dismisses it, so the cancel/settle never posts and no error appears. Click guarded buttons with `browser_click`, then call `browser_handle_dialog` in the next step, and confirm the result in the DB.
+
+## 160. `selectOneMenu` widget `selectValue()` changes the label but fires no `p:ajax`
+
+`PrimeFaces.widgets[...].selectValue(v)` selects silently: the label changes, but the `change` event and its `p:ajax` (e.g. refreshing a dependent Department list) never run, so the bean keeps the old value. To test a dependent dropdown, click the trigger and then the option in its `_panel`: `li[data-label="…"]`, or `tr[data-label="…"]` for a table-based menu (§128). Check the panel markup first.
+
+## 161. Re-selecting the already-selected `p:selectOneMenu` option fires no `p:ajax` — the listener never runs
+
+Picking the option that is already selected raises no `change` event, so `<p:ajax listener=...>` and its `update` do not run. When testing a listener that resets dependent fields, select a *different* option (e.g. "All Institutions" instead of the default institution).

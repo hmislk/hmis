@@ -356,6 +356,11 @@ button on that same Application Options page: it re-runs `loadApplicationOptions
 and the new value takes effect immediately. Used on #23651 to flip
 `Inward Final Bill - Bundle Grouped Charge Types` between runs.
 
+This works only for a **new** row. After an SQL `UPDATE` of an existing row, Reload
+Config still returns the old value (the L2 cache serves the stale entity, §48); change
+existing rows with **Edit Option** on the same page. Hit on #24624 with
+`Legacy Functions Allowed`.
+
 Note the department-scoped-key-first resolution (`feedback_config_option_scope_resolution`):
 `getBooleanValueByKeyReadOnly("X", …)` with a department selected looks up
 `"<Dept> - X"` before the plain `"X"`, so an admin who saved the toggle from a
@@ -449,3 +454,7 @@ ext(){ grep -oE '^\s*[A-Z][A-Za-z0-9_]*\s*\(' | sed -E 's/[ (\t]//g' | sort -u; 
 comm -23 <(git show origin/development:$F | ext) <(ext < $F)
 ```
 To make them grantable in the UI, also wire them into `UserPrivilageController` (§135).
+
+## 162. Local test user: grant the page's privileges for the session department, and expect hidden errors
+
+A page opens only if the logged-in user holds its privilege for the department selected at login (§20, §124), so before testing a page, check the user's `Privileges` rows for that department and insert any that are missing (local DB only), then log in again (§135). Likewise set any `ConfigOption` the flow depends on (§107). Some pages have no `p:messages`/`p:growl`, so a failed action looks like a no-op; read `server.log` and the DB instead of the screen.

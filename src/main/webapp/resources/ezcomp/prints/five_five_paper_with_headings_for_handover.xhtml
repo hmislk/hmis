@@ -387,8 +387,8 @@
                     var="summary">
 
                     <p:column headerText="Institution / Type" style="font-weight: normal">
-                        <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and (summary.paymentHandover == null or summary.paymentHandover.name() != 'FLOATS')}" />
-                        <h:outputText value="Shift Shortage"        rendered="#{summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOATS'}" style="color:#dc3545; font-style:italic;" />
+                        <h:outputText value="#{summary.department.institution.name}" rendered="#{!summary.floatRow and !summary.shortageRelated}" />
+                        <h:outputText value="Shift Shortage"        rendered="#{summary.shortageRelated}" style="color:#dc3545; font-style:italic;" />
                         <h:outputText value="Float Sent (Cash)"     rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_OUT'}" style="color: red; font-weight: bold;" />
                         <h:outputText value="Net Float (Cash)"      rendered="#{summary.floatRow and summary.paymentHandover ne null and summary.paymentHandover.name() eq 'FLOAT_IN'}"  style="color: green; font-weight: bold;" />
                     </p:column>
