@@ -5715,7 +5715,14 @@ public class PharmacyBillSearch implements Serializable {
         if (bt == null) {
             return null;
         }
-        if (bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+        // These inward request flows are declared PharmacyIssue but stored as PreBill/RefundBill/BilledBill
+        // with billType PharmacyBhtPre, so the "issue" view (BilledBill + PharmacyIssue) never finds them.
+        if (bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                || bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+                || bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                || bta == com.divudi.core.data.BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD
+                || bta == com.divudi.core.data.BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
+                || bta == com.divudi.core.data.BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION) {
             return "generic";
         }
         if (bta == com.divudi.core.data.BillTypeAtomic.PHARMACY_ORDER_APPROVAL
