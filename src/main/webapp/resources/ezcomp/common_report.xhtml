@@ -13,6 +13,10 @@
         <cc:attribute  name="patientReport" type="com.divudi.core.entity.lab.PatientReport" />
         <cc:attribute  name="showBorders" type="java.lang.Boolean" />
         <cc:attribute  name="showBackground" type="java.lang.Boolean" />
+        <!-- Multi-page reports only. Without pageNo every common item prints, as before. -->
+        <cc:attribute  name="pageNo" type="java.lang.Integer" />
+        <cc:attribute  name="backgroundPage" type="java.lang.Integer" />
+        <cc:attribute  name="backgroundOnly" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -21,24 +25,25 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
         <h:panelGroup rendered="#{cc.attrs.showBackground}">
-            <h:panelGroup rendered="#{empty uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}">
+            <h:panelGroup rendered="#{empty uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr, empty cc.attrs.backgroundPage ? 1 : cc.attrs.backgroundPage)}">
                 <p:graphicImage
                     value="#{uploadViewController.categoryUploadById}"
                     cache="false"
                     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; ">
                     <f:param name="id" value="#{cc.attrs.commonReportFormat.idStr}" />
+                    <f:param name="page" value="#{empty cc.attrs.backgroundPage ? 1 : cc.attrs.backgroundPage}" />
                 </p:graphicImage>
             </h:panelGroup >
-            <h:panelGroup rendered="#{not empty uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}">
+            <h:panelGroup rendered="#{not empty uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr, empty cc.attrs.backgroundPage ? 1 : cc.attrs.backgroundPage)}">
                 <p:graphicImage
-                    value="#{uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}"
+                    value="#{uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr, empty cc.attrs.backgroundPage ? 1 : cc.attrs.backgroundPage)}"
                     cache="false"
                     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
                 </p:graphicImage>
             </h:panelGroup>
         </h:panelGroup >
 
-        <ui:repeat rendered="#{cc.attrs.patientReport ne null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
+        <ui:repeat rendered="#{cc.attrs.patientReport ne null and not cc.attrs.backgroundOnly}" value="#{empty cc.attrs.pageNo ? commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat) : commonReportItemController.listCommonReportItemsForPage(cc.attrs.commonReportFormat, cc.attrs.pageNo)}" var="myCli" >
             <div style="#{myCli.outerCssStyle}">
 
                 <h:panelGroup
@@ -308,7 +313,7 @@
             </div>
         </ui:repeat>
 
-        <ui:repeat rendered="#{cc.attrs.patientReport eq null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
+        <ui:repeat rendered="#{cc.attrs.patientReport eq null and not cc.attrs.backgroundOnly}" value="#{empty cc.attrs.pageNo ? commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat) : commonReportItemController.listCommonReportItemsForPage(cc.attrs.commonReportFormat, cc.attrs.pageNo)}" var="myCli" >
             <div style="#{myCli.cssStyle}; position:absolute; overflow: hidden; #{cc.attrs.showBorders eq true ? 'border: 1px solid green;':''} ">
 
                 <h:panelGroup

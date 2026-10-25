@@ -19,7 +19,7 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="pharmacypos_header.css" ></h:outputStylesheet>
-        <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" onclick="printBill()" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"/>
+        <p:commandButton class="ui-button-info no-print" icon="fas fa-print" value="Print" onclick="printBill()" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"/>
         <div id="printAll" class="posbillheader" style="page-break-after: always!important; max-width: 72mm; width: 72mm;">
             <link rel="stylesheet" href="../../resources/css/pharmacypos_header.css"/>
             <div style="display: flex; align-items: center;">

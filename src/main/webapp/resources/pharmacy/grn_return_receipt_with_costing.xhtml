@@ -37,8 +37,9 @@
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}"/>
+                    <h:outputLabel value=" / #{cc.attrs.bill.creater.department.telephone2}"
+                                   rendered="#{not empty cc.attrs.bill.creater.department.telephone1 and not empty cc.attrs.bill.creater.department.telephone2}"/>
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>
@@ -72,7 +73,7 @@
                     </h:outputLabel>
 
                     <h:outputLabel value="Invoice No" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.invoiceNumber}" class="billDetailsFiveFive"/>
+                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.invoiceNumber}" class="billDetailsFiveFive"/>
                     <h:outputLabel value="Return By" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" class="billDetailsFiveFive"/>
 

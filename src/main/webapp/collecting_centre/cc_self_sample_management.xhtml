@@ -30,7 +30,8 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Sample Management"
-                                highlight="#{sessionController.institution.code} - #{sessionController.institution.name}"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
                                 pageIcon="fa-solid fa-vials"
                                 backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                                 backLabel="Back to Dashboard"/>
@@ -96,7 +97,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-2 d-flex flex-column gap-2">
+                                    <div class="col-md-2 d-flex flex-column gap-2 mt-2 mt-md-0">
                                         <p:commandButton
                                             id="btnBills"
                                             ajax="false"
@@ -137,6 +138,7 @@
                                 </f:facet>
                                 <p:dataTable
                                     id="tblBills"
+                                    styleClass="cc-card-table" reflow="true"
                                     rowIndexVar="i"
                                     value="#{patientInvestigationController.bills}"
                                     var="b"
@@ -150,12 +152,12 @@
                                     <p:column headerText="No" style="width: 3em; padding: 6px;">
                                         <h:outputText value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" style="width: 13em; padding: 6px;">
-                                        <h:outputText value="#{b.deptId}"/>
+                                    <p:column headerText="Bill No" style="padding: 6px; white-space: nowrap; width: 18em;" >
+                                        <h:outputText value="#{b.deptId}" style="white-space: nowrap;"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(b)}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(b)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING' or (b.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(b))}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{b.ccBillingType eq 'HOSPITAL_BILLING' or (b.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBill(b))}"/>
                                     </p:column>
                                     <p:column headerText="Billed At" style="width: 11em; padding: 6px;">
                                         <h:outputText value="#{b.createdAt}">
@@ -170,46 +172,49 @@
                                     <p:column headerText="Patient Phone" style="width: 9em; padding: 6px;">
                                         <h:outputText value="#{b.patient.person.phone}"/>
                                     </p:column>
-                                    <p:column headerText="Status" style="width: 12em; padding: 6px;" class="text-center">
+                                    <p:column headerText="Status" style="width: 10rem; padding: 6px;" class="text-center">
                                         <p:badge rendered="#{b.cancelled}" value="Bill Cancelled" severity="danger"/>
                                         <p:badge rendered="#{not b.cancelled and b.status ne null}" value="#{b.status.label}" severity="info"/>
                                     </p:column>
-                                    <p:column headerText="Actions" style="width: 22em; padding: 6px;">
-                                        <div class="d-flex gap-1">
+                                    <p:column headerText="Actions" style="width: 13rem; padding: 6px;">
+                                        <div class="d-flex flex-nowrap justify-content-start gap-1">
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Barcode"
                                                 icon="fas fa-barcode"
                                                 class="ui-button-success"
                                                 title="#{collectingCentreSelfCommonController.isSelfBill(b) ? 'Generate and print sample barcodes' : 'Hospital Billing - barcodes cannot be generated here'}"
                                                 disabled="#{b.cancelled or not collectingCentreSelfCommonController.isSelfBill(b)}"
+                                                rendered="#{webUserController.hasPrivilege('CcSelfSampleBarcodePrint')}"
                                                 action="#{collectingCentreSelfCommonController.generateSelfBarcodes(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Samples"
                                                 icon="fas fa-vial"
                                                 class="ui-button-warning"
+                                                title="View samples of this bill"
                                                 action="#{collectingCentreSelfCommonController.listSelfSamplesOfBill(b)}"/>
                                             <p:commandButton
                                                 ajax="false"
-                                                value="Reports"
                                                 icon="fas fa-file-medical"
                                                 class="ui-button-danger"
+                                                title="View reports of this bill"
                                                 action="#{collectingCentreSelfCommonController.listSelfReportsOfBill(b)}"/>
                                         </div>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
 
-                            <!--BILL_BARCODES-->
-                            <sm:sm_barCodes/>
+                            <div class="cc-scroll-x">
+                                <!--BILL_BARCODES-->
+                                <sm:sm_barCodes/>
 
-                            <!--INDIVIDUAL_BARCODES (re-generated samples)-->
-                            <sm:sm_individual_barcode/>
+                                <!--INDIVIDUAL_BARCODES (re-generated samples)-->
+                                <sm:sm_individual_barcode/>
+                            </div>
 
                             <!--SAMPLES-->
-                            <h:panelGroup layout="block" class="row" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
-                                <div class="col-md-9">
+                            <!-- g-0: no negative row margins (the page has no container), which caused a horizontal scrollbar; pe-md-3 keeps the column gap. -->
+                            <h:panelGroup layout="block" class="row g-0 cc-stack-gap" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+                                <div class="col-md-9 pe-md-3">
                                     <p:panel styleClass="cc-bill-card cc-c-orange">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa-solid fa-vial"/>
@@ -217,6 +222,7 @@
                                         </f:facet>
                                         <p:dataTable
                                             id="tblSamples"
+                                            styleClass="cc-card-table" reflow="true"
                                             value="#{patientInvestigationController.patientSamples}"
                                             var="ps"
                                             rowKey="#{ps.id}"
@@ -240,8 +246,12 @@
                                                     value="#{ps.id}"
                                                     title="View barcode of this sample"
                                                     styleClass="mx-2 fw-bold"
-                                                    rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"
+                                                    rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps) and webUserController.hasPrivilege('CcSelfSampleBarcodePrint')}"
                                                     action="#{collectingCentreSelfCommonController.viewSelfSampleBarcode(ps)}"/>
+                                                <h:outputText
+                                                    value="#{ps.id}"
+                                                    class="mx-2 fw-bold"
+                                                    rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps) and not webUserController.hasPrivilege('CcSelfSampleBarcodePrint')}"/>
                                                 <h:outputText
                                                     value="#{ps.id}"
                                                     title="Hospital Billing - barcode cannot be printed here"
@@ -269,8 +279,8 @@
                                             </p:column>
 
                                             <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                                <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
-                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}"/>
+                                                <p:badge value="Agent Billing" severity="success" rendered="#{ps.bill.ccBillingType eq 'AGENT_BILLING' or (ps.bill.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBilledSample(ps))}"/>
+                                                <p:badge value="Hospital Billing" severity="secondary" rendered="#{ps.bill.ccBillingType eq 'HOSPITAL_BILLING' or (ps.bill.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBilledSample(ps))}"/>
                                                 <h:panelGroup rendered="#{not collectingCentreSelfCommonController.isSelfBilledSample(ps)}" layout="block" class="small text-secondary mt-1">
                                                     <i class="fa-solid fa-lock me-1"></i>View only
                                                 </h:panelGroup>
@@ -282,7 +292,7 @@
                                                 <h:outputText value="#{ps.bill.patient.person.ageAsString} / #{ps.bill.patient.person.sex.label}" class="text-secondary"/>
                                             </p:column>
 
-                                            <p:column headerText="Status" style="width: 13em; vertical-align: top; padding: 6px;" class="text-center">
+                                            <p:column headerText="Status" style="width: 11rem; vertical-align: top; padding: 6px;" class="text-center">
                                                 <p:badge rendered="#{ps.bill.cancelled}" value="Bill Cancelled" severity="danger"/>
                                                 <h:panelGroup rendered="#{not ps.bill.cancelled}">
                                                     <p:badge value="#{ps.status.label}" severity="info"/>
@@ -313,79 +323,82 @@
                                 </div>
 
                                 <div class="col-md-3">
-                                    <p:panel styleClass="cc-bill-card cc-c-purple">
+                                    <p:panel styleClass="cc-bill-card cc-c-purple"
+                                             rendered="#{webUserController.hasPrivilege('CcSelfSampleCollect') or webUserController.hasPrivilege('CcSelfSampleSend') or webUserController.hasPrivilege('CcSelfSampleReject') or webUserController.hasPrivilege('CcSelfSampleRegenerate')}">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa-solid fa-list-check"/>
                                             <h:outputText value="Sample Actions" class="mx-2"/>
                                         </f:facet>
 
-                                        <p:commandButton
-                                            id="btnCollectSamples"
-                                            ajax="false"
-                                            value="Collect Samples"
-                                            icon="pi pi-plus-circle"
-                                            class="ui-button-primary w-100"
-                                            action="#{collectingCentreSelfCommonController.collectSelfSamples}"/>
-
-                                        <hr/>
-
-                                        <h:outputLabel value="Sample Transporter" for="acTransporter"/>
-                                        <p:autoComplete
-                                            id="acTransporter"
-                                            completeMethod="#{staffController.completeStaff}"
-                                            value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
-                                            var="mys"
-                                            class="w-100"
-                                            maxResults="25"
-                                            placeholder="Search transporter"
-                                            inputStyleClass="form-control"
-                                            itemLabel="#{mys.person.nameWithTitle}"
-                                            itemValue="#{mys}">
-                                            <p:column headerText="Code" style="padding: 6px;">#{mys.code}</p:column>
-                                            <p:column headerText="Name" style="padding: 6px;">#{mys.person.nameWithTitle}</p:column>
-                                        </p:autoComplete>
-                                        <p:commandButton
-                                            id="btnSendSamples"
-                                            ajax="false"
-                                            value="Send Samples"
-                                            icon="fa fa-paper-plane"
-                                            class="ui-button-warning w-100 mt-2"
-                                            action="#{collectingCentreSelfCommonController.sendSelfSamples}"/>
-
-                                        <hr/>
-
-                                        <h:outputLabel value="Reject Reason" for="txtRejectReason"/>
-                                        <p:inputText
-                                            id="txtRejectReason"
-                                            class="w-100"
-                                            placeholder="Sample reject reason"
-                                            value="#{patientInvestigationController.sampleRejectionComment}"/>
-                                        <div class="d-flex align-items-center gap-2 my-2">
-                                            <p:toggleSwitch
-                                                id="tglReCollect"
-                                                value="#{patientInvestigationController.requestReCollected}"
-                                                onIcon="pi pi-check"
-                                                offIcon="pi pi-times"/>
-                                            <h:outputLabel value="Request Re-Collect Sample" for="tglReCollect"/>
-                                        </div>
-                                        <p:commandButton
-                                            id="btnRejectSamples"
-                                            ajax="false"
-                                            value="Reject Samples"
-                                            icon="pi pi-times-circle"
-                                            class="ui-button-danger w-100"
-                                            action="#{collectingCentreSelfCommonController.rejectSelfSamples}"/>
-
-                                        <hr/>
-
-                                        <p:commandButton
-                                            id="btnReGenerateSamples"
-                                            ajax="false"
-                                            value="Re-Generate Samples"
-                                            icon="pi pi-refresh"
-                                            class="ui-button-success w-100"
-                                            title="Re-generate samples rejected with a re-collect request"
-                                            action="#{collectingCentreSelfCommonController.reGenerateSelfSamples}"/>
+                                        <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CcSelfSampleCollect')}">
+                                            <p:commandButton
+                                                id="btnCollectSamples"
+                                                ajax="false"
+                                                value="Collect Samples"
+                                                icon="pi pi-plus-circle"
+                                                class="ui-button-primary w-100"
+                                                action="#{collectingCentreSelfCommonController.collectSelfSamples}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CcSelfSampleSend')}">
+                                            <hr/>
+                                            <h:outputLabel value="Sample Transporter" for="acTransporter"/>
+                                            <p:autoComplete
+                                                id="acTransporter"
+                                                completeMethod="#{staffController.completeStaff}"
+                                                value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
+                                                var="mys"
+                                                class="w-100"
+                                                maxResults="25"
+                                                placeholder="Search transporter"
+                                                inputStyleClass="form-control"
+                                                itemLabel="#{mys.person.nameWithTitle}"
+                                                itemValue="#{mys}">
+                                                <p:column headerText="Code" style="padding: 6px;">#{mys.code}</p:column>
+                                                <p:column headerText="Name" style="padding: 6px;">#{mys.person.nameWithTitle}</p:column>
+                                            </p:autoComplete>
+                                            <p:commandButton
+                                                id="btnSendSamples"
+                                                ajax="false"
+                                                value="Send Samples"
+                                                icon="fa fa-paper-plane"
+                                                class="ui-button-warning w-100 mt-2"
+                                                action="#{collectingCentreSelfCommonController.sendSelfSamples}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CcSelfSampleReject')}">
+                                            <hr/>
+                                            <h:outputLabel value="Reject Reason" for="txtRejectReason"/>
+                                            <p:inputText
+                                                id="txtRejectReason"
+                                                class="w-100"
+                                                placeholder="Sample reject reason"
+                                                value="#{patientInvestigationController.sampleRejectionComment}"/>
+                                            <div class="d-flex align-items-center gap-2 my-2">
+                                                <p:toggleSwitch
+                                                    id="tglReCollect"
+                                                    value="#{patientInvestigationController.requestReCollected}"
+                                                    onIcon="pi pi-check"
+                                                    offIcon="pi pi-times"/>
+                                                <h:outputLabel value="Request Re-Collect Sample" for="tglReCollect"/>
+                                            </div>
+                                            <p:commandButton
+                                                id="btnRejectSamples"
+                                                ajax="false"
+                                                value="Reject Samples"
+                                                icon="pi pi-times-circle"
+                                                class="ui-button-danger w-100"
+                                                action="#{collectingCentreSelfCommonController.rejectSelfSamples}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CcSelfSampleRegenerate')}">
+                                            <hr/>
+                                            <p:commandButton
+                                                id="btnReGenerateSamples"
+                                                ajax="false"
+                                                value="Re-Generate Samples"
+                                                icon="pi pi-refresh"
+                                                class="ui-button-success w-100"
+                                                title="Re-generate samples rejected with a re-collect request"
+                                                action="#{collectingCentreSelfCommonController.reGenerateSelfSamples}"/>
+                                        </h:panelGroup>
                                     </p:panel>
                                 </div>
                             </h:panelGroup>
@@ -398,6 +411,7 @@
                                 </f:facet>
                                 <p:dataTable
                                     id="tblReports"
+                                    styleClass="cc-card-table" reflow="true"
                                     rowIndexVar="i"
                                     value="#{patientInvestigationController.items}"
                                     var="pi"
@@ -423,8 +437,8 @@
                                     </p:column>
 
                                     <p:column headerText="Type" style="width: 9em; vertical-align: top; padding: 6px;" class="text-center">
-                                        <p:badge value="Agent Billing" severity="success" rendered="#{collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
-                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill)}"/>
+                                        <p:badge value="Agent Billing" severity="success" rendered="#{pi.billItem.bill.ccBillingType eq 'AGENT_BILLING' or (pi.billItem.bill.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill))}"/>
+                                        <p:badge value="Hospital Billing" severity="secondary" rendered="#{pi.billItem.bill.ccBillingType eq 'HOSPITAL_BILLING' or (pi.billItem.bill.ccBillingType eq null and not collectingCentreSelfCommonController.isSelfBill(pi.billItem.bill))}"/>
                                     </p:column>
 
                                     <p:column headerText="Patient" style="vertical-align: top; padding: 6px;">
@@ -464,40 +478,49 @@
                                         </ui:repeat>
                                     </p:column>
 
-                                    <p:column headerText="Status" style="width: 11em; vertical-align: top; padding: 6px;">
-                                        <h:outputText
+                                    <p:column headerText="Status" style="width: 10rem; vertical-align: top; padding: 6px;" class="text-center">
+                                        <p:badge
                                             value="#{pi.status.label}"
-                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled}"/>
+                                            severity="#{pi.status eq 'SAMPLE_REJECTED' or pi.status eq 'SAMPLE_RECOLLECTION_REQUESTED' or pi.status eq 'SAMPLE_RECOLLECTION_PENDING' ? 'danger'
+                                                        : pi.status eq 'SAMPLE_APPROVED' or (pi.status.toString().startsWith('REPORT_') and pi.status ne 'REPORT_CREATED') ? 'success'
+                                                        : pi.status eq 'ORDERED' or pi.status eq 'SAMPLE_GENERATED' or pi.status eq 'SAMPLE_REGENERATED' or pi.status eq 'SEPARATE_AND_SAMPLE_GENERATED' ? 'secondary'
+                                                        : 'warning'}"
+                                            rendered="#{not pi.billItem.refunded and not pi.billItem.bill.cancelled and pi.status ne null}"/>
                                         <p:badge value="Item Refunded" severity="warning" rendered="#{pi.billItem.refunded}"/>
                                         <p:badge value="Bill Cancelled" severity="danger" rendered="#{pi.billItem.bill.cancelled}"/>
                                     </p:column>
 
                                     <p:column headerText="Actions" style="width: 30em; vertical-align: top; padding: 6px;">
                                         <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
-                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="w-50"/>
+                                            <p:badge value="Bill Cancelled" severity="danger" size="large" class="text-nowrap"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{pi.billItem.refunded and not pi.billItem.bill.cancelled}" class="d-flex justify-content-center">
-                                            <p:badge value="Item Refunded" severity="info" size="large" class="w-50"/>
+                                            <p:badge value="Item Refunded" severity="info" size="large" class="text-nowrap"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{not pi.billItem.bill.cancelled and not pi.billItem.refunded}">
                                             <h:panelGroup rendered="#{empty collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" class="d-flex justify-content-center">
-                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="w-50"/>
+                                                <p:badge value="Sample Processing.." severity="warning" size="large" class="text-nowrap"/>
                                             </h:panelGroup>
 
                                             <ui:repeat value="#{collectingCentreSelfCommonController.findSelfReportsOfInvestigation(pi)}" var="dpr">
-                                                <div class="d-flex justify-content-between">
+                                                <h:panelGroup rendered="#{not dpr.approved}" class="d-flex justify-content-center">
+                                                    <p:badge value="Pending Approval.." severity="success" size="large" class="text-nowrap"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{dpr.approved}">
+                                                    <div class="d-flex justify-content-between">
                                                     <div class="d-flex gap-2 mb-2">
+                                                        <!-- process="@this": a full-form submit re-sets the bill dates, whose setters clear the items behind this table, so the click would be lost -->
                                                         <p:commandButton
-                                                            ajax="false"
-                                                            value="Print"
+                                                            process="@this"
+                                                            update=":form:msg"
+                                                            value="To Print"
                                                             icon="fa fa-print"
                                                             class="ui-button-info"
                                                             disabled="#{not dpr.approved}"
-                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}"/>
-                                                        <p:badge value="Approved" severity="success" class="mt-2" rendered="#{dpr.approved}"/>
-                                                        <p:badge value="Pending" severity="warning" class="mt-2" rendered="#{not dpr.approved}"/>
+                                                            action="#{collectingCentreSelfCommonController.navigateToSelfReportPrint(dpr)}">
+                                                        </p:commandButton>
                                                     </div>
 
                                                     <div class="d-flex justify-content-end gap-2">
@@ -505,12 +528,10 @@
                                                         <p:graphicImage library="image" name="print_done.png" title="Report Printed" rendered="#{dpr.printComplete}" style="height: 40px; width: 40px;"/>
                                                         <p:graphicImage library="image" name="handover_pending.png" title="Not Issued" rendered="#{not dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
                                                         <p:graphicImage library="image" name="handover_done.png" title="Report Issued" rendered="#{dpr.handoverComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="sms_send_pending.png" title="SMS Send Pending" rendered="#{not dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="sms_send_complete.png" title="SMS Send Complete" rendered="#{dpr.sendSMSComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="email_sending_pending.png" title="Email Send Pending" rendered="#{not dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
-                                                        <p:graphicImage library="image" name="email_sending_complete.png" title="Email Send Complete" rendered="#{dpr.sendEmailComplete}" style="height: 40px; width: 40px;"/>
                                                     </div>
                                                 </div>
+                                                </h:panelGroup>
+                                                
                                             </ui:repeat>
                                         </h:panelGroup>
                                     </p:column>

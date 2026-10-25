@@ -23,4 +23,19 @@ public class CommonFunctionsTest {
     public void checkOnlyNumericHandlesNull() {
         assertFalse(CommonFunctions.checkOnlyNumeric(null));
     }
+
+    @Test
+    public void isValidEmailAcceptsLongTopLevelDomains() {
+        assertTrue(CommonFunctions.isValidEmail("claims@insurer.lk"));
+        assertTrue(CommonFunctions.isValidEmail("claims@insurer.healthcare"));
+        assertTrue(CommonFunctions.isValidEmail("claims@insurer.technology"));
+    }
+
+    @Test
+    public void isValidEmailRejectsFreeText() {
+        assertFalse(CommonFunctions.isValidEmail("No. 12, Main Street, Galle"));
+        assertFalse(CommonFunctions.isValidEmail("claims@insurer"));
+        assertFalse(CommonFunctions.isValidEmail(""));
+        assertFalse(CommonFunctions.isValidEmail(null));
+    }
 }

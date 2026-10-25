@@ -21,7 +21,6 @@
 
                             <p:selectOneMenu
                                 id="timeFilter"
-                                value=""
                                 class="w-100">
                                 <f:selectItem itemLabel="Please Select" itemValue="" />
                                 <f:selectItem itemLabel="Hourly" itemValue="hourly" />
@@ -148,7 +147,7 @@
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>

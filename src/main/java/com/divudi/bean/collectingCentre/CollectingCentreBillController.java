@@ -12,6 +12,7 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -61,6 +62,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FeeValue;
 import com.divudi.core.entity.lab.Investigation;
@@ -139,6 +141,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      */
     @Inject
     WebUserController webUserController;
+    @Inject
+    CollectingCentreSelfCommonController collectingCentreSelfCommonController;
     @Inject
     ItemFeeManager itemFeeManager;
     @Inject
@@ -835,6 +839,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String settleCcBill() {
+        if (ccSelfServiceBilling && !collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfBilling)) {
+            return null;
+        }
         if (!ccBillSettlingStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Bill Settling Already Started.");
             return null;
@@ -1061,9 +1068,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
+        double[] balances = getInstitutionFacade().adjustBalance(collectingCentre, transactionValue);
+        if (balances != null) {
+            agentHistory.setBalanceBeforeTransaction(balances[0]);
+            agentHistory.setBalanceAfterTransaction(balances[1]);
+        }
         agentHistoryFacade.create(agentHistory);
-        collectingCentre.setBallance(collectingCentre.getBallance() + transactionValue);
-        getInstitutionFacade().edit(collectingCentre);
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1185,6 +1195,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         ccBill.setDepartment(sessionController.getDepartment());
 
         ccBill.setCollectingCentre(collectingCentre);
+
+        if (sessionController.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+            ccBill.setCcBillingType(CollectingCentreBillingType.AGENT_BILLING);
+        } else {
+            ccBill.setCcBillingType(CollectingCentreBillingType.HOSPITAL_BILLING);
+        }
 
         ccBill.setToDepartment(bt);
         ccBill.setToInstitution(bt.getInstitution());
@@ -1789,6 +1805,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      * institution the user is logged in as.
      */
     public String navigateToCollectingCentreSelfBilling() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBilling)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBilling);
+        }
         prepareNewBill();
         collectingCentre = sessionController.getInstitution();
         loadCCFinancialData(collectingCentre);
@@ -1806,6 +1825,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String navigateToCollectingCentreSelfBillingKeepingCollectingCentre() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBilling)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBilling);
+        }
         collectingCentre = sessionController.getInstitution();
         loadCCFinancialData(collectingCentre);
         prepareNewBillKeepingCollectingCenter();

@@ -28,6 +28,7 @@ rendered="#{configOptionApplicationController.getBooleanValueByKey('Feature Key'
 - Use descriptive, hierarchical names
 - Module prefix: `Pharmacy Transfer Issue - Show Rate and Value`
 - Report columns: `Pharmacy Disbursement Reports - Display Serial Number`
+- **🚨 Never change the meaning of an existing key**: no added/removed `!`, no new default, no conflicting defaults. Create a new key named after what `true` does. CI `config-semantics-guard` enforces this; see [Changing existing options](../../../developer_docs/configuration/application-options.md#changing-existing-options).
 
 ## Configuration Categories
 

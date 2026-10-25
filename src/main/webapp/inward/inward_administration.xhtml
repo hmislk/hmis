@@ -164,6 +164,11 @@
                                                 class="w-100"
                                                 action="#{documentTemplateController.navigateToListLetterTemplates()}" >
                                             </p:commandButton>
+                                            <h:outputText value="Covering Letters" styleClass="fw-bold text-muted small mt-2"/>
+                                            <p:commandButton ajax="false" value="Add Covering Letter Template" class="w-100" action="#{documentTemplateController.navigateToAddCoveringLetterTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton ajax="false" value="List Covering Letter Templates" class="w-100" action="#{documentTemplateController.navigateToListCoveringLetterTemplates()}" >
+                                            </p:commandButton>
                                             <h:outputText value="Legacy Uploaded Templates" styleClass="fw-bold text-muted small mt-2"/>
                                             <p:commandButton
                                                 ajax="false"

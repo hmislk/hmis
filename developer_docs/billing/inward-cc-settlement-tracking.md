@@ -32,6 +32,10 @@ Admission bill (INWARD_FINAL_BILL)  netTotal = 100,000
 
 Each commitment bill's `referenceBill` points back to the main `INWARD_FINAL_BILL`.
 
+> **Re-versioned final bills:** when a final bill is cancelled and re-saved as a new version, the commitment
+> bills of the earlier version are **not** cancelled. Summing `INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY` bills
+> by `patientEncounter` therefore double counts. Scope by `b.referenceBill = encounter.finalBill`.
+
 ---
 
 ## Settlement Paths

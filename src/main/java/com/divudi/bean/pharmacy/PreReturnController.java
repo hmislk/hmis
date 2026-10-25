@@ -435,7 +435,10 @@ public class PreReturnController implements Serializable {
 
         saveReturnBill();
         saveComponent();
-        getBill().getReturnPreBills().add(getReturnBill());
+        // The lazy inverse list may already hold the just-persisted return; adding it again duplicated the row (issue #24483, #24109).
+        if (!getBill().getReturnPreBills().contains(getReturnBill())) {
+            getBill().getReturnPreBills().add(getReturnBill());
+        }
         getReturnBill().setReferenceBill(getBill());
         getBillFacade().edit(getReturnBill());
 

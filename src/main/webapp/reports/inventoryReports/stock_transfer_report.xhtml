@@ -128,7 +128,7 @@
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.fromInstitution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyController.fromInstitution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
@@ -232,7 +232,7 @@
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.toInstitution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyController.toInstitution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>

@@ -545,6 +545,49 @@ public class CollectingCentreController implements Serializable {
         return departmentFacade.findFirstByJpql(jpql, m);
     }
 
+    // A Collecting Centre may have only one active department, whatever its type
+    public void createSingleDepartmentForCollectingCentre() {
+        if (current != null && current.getId() != null
+                && findAnyDepartmentForCollectingCentre(current) != null) {
+            JsfUtil.addErrorMessage("A Department already exists for this Collecting Centre");
+            return;
+        }
+        createDepartmentForCollectingCentre();
+    }
+
+    public Department getDepartmentOfCurrentCollectingCentre() {
+        return findAnyDepartmentForCollectingCentre(current);
+    }
+
+    public List<Department> getDepartmentsOfCurrentCollectingCentre() {
+        if (current == null || current.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " and d.institution=:ins "
+                + " order by d.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ins", current);
+        return departmentFacade.findByJpql(jpql, m);
+    }
+
+    private Department findAnyDepartmentForCollectingCentre(Institution cc) {
+        if (cc == null || cc.getId() == null) {
+            return null;
+        }
+        String jpql = "select d "
+                + " from Department d "
+                + " where d.retired=:ret "
+                + " and d.institution=:ins";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ins", cc);
+        return departmentFacade.findFirstByJpql(jpql, m);
+    }
+
     public void save(Institution cc) {
         if (cc == null) {
             return;

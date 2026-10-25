@@ -2,6 +2,16 @@
 
 This document lists the configuration options used in the application and their purpose.
 
+## Changing existing options
+
+Every hospital already has a stored value for each existing key (the row is created with the code default the first time the key is read). So:
+
+- **Never change what an existing key means.** Do not add or remove a `!` / `not` around its read, change its default, or move it into the opposite branch. The same stored value would then do the opposite at every hospital. If behaviour must change, create a **new key** and stop reading the old one.
+- **Name a key after what `true` does**, including the condition, so the safe value is obvious, e.g. "Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample". Avoid vague names like "Enable the Special Privilege of ...".
+- **Use one default everywhere** a key is read.
+
+The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -99,6 +109,7 @@ Inactive items are excluded in all four modes.
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Pharmacy - Allow Cross-Department PO Receiving`                | Boolean   | `false` | Institution-wide toggle. When `true`, the Purchase Orders for Receiving list (and its wholesale/with-approval/DTO variants) drops the same-department restriction, so a PO created in one department (e.g. Pharmacy) can be received/GRN'd from any other department in the same institution (e.g. Store). Institution isolation is unaffected — POs from a different institution never appear. Added for RMH Hambantota, which creates POs in Pharmacy but receives into Store. See issue #21848. |
 | `Pharmacy - List Packs (AMPPs) in Item Selection`               | Boolean   | `true`  | When `false`, Packs (AMPPs) are excluded from every pharmacy item autocomplete that offers them — Purchase Order Request (JPA and native), Direct Purchase, Purchase, Donation, Batch Create and Transfer Request — so only AMPs (plus VMPs/VMPPs on Transfer Request) can be chosen. On the Purchase Order page the supplier-item dropdown and the *Add All Supplier Items* / *Below ROL* buttons also drop AMPPs from the supplier's item list (`ItemController.removeAmppsIfNotListed()`). GRN, Issue and Transfer Issue have no AMPP picker of their own (they take items from the PO, the request or stock), so they follow automatically. Bills that already contain AMPPs are unaffected. Implemented in `ItemController.isAmppListedInItemSelection()`. See issue #24164. |
+| `Print Profit % in GRN Bill`                                    | Boolean   | `true`  | Prints the profit column on GRN prints: Profit % on *A4 Paper Format Two* (`grn_with_costing_new`, shown after Finalize/Approve and on the costing reprint) and GP Profit% on `grn.xhtml` (no-costing layout, used by GRN reprint) and `grn_wholesale.xhtml`. Set `false` to leave the column out (e.g. when the GRN print goes to the supplier). Independent of `Show Profit Percentage in GRN`, which controls the column on the GRN entry screen. See issue #24357. |
 
 ### GRN Item Table Columns (native GRN page)
 
