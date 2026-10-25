@@ -1903,7 +1903,7 @@ public class InwardBeanController implements Serializable {
     }
 
     public boolean billTheatreTimeAsOt() {
-        return configOptionApplicationController.getBooleanValueByKey("Inward Bill - Bill Theatre Room Time Under Operation Theatre Charges", false);
+        return configOptionApplicationController.getBooleanValueByKey(com.divudi.service.inward.InwardRoomChargeCalculationService.THEATRE_TIME_AS_OT_KEY, false);
     }
 
     public boolean isTheatreTimeAsOt(PatientRoom pr) {
@@ -3928,25 +3928,7 @@ public class InwardBeanController implements Serializable {
      * way they did in issue #23871 (a porter-flow return counted in the
      * total but missing from the list).
      */
-    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
-        BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
-        BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-        // Porter-based ward return flow (#21466/#21470) - see issue #22990.
-        BillTypeAtomic.RETURN_MEDICINE_INWARD,
-        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
-    );
+    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = com.divudi.core.data.inward.InwardMedicineBillTypes.ALL;
 
     /**
      * Exposes {@link #INWARD_MEDICINE_BILL_TYPES} so callers such as
