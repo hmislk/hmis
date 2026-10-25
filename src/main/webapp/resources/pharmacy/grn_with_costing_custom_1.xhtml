@@ -442,7 +442,7 @@
                         </div>-->
 
             <div style="display: flex; flex-direction: column; width: 100%; font-size: 12px; margin-top: 5px;">
-                <h:outputLabel value="Amount in words : #{grnCostingController.convertToWord(cc.attrs.bill.billFinanceDetails.totalBillValue)} only." rendered="#{cc.attrs.bill.billFinanceDetails.totalBillValue ne null}"/>
+                <h:outputLabel value="Amount in words : #{grnCostingController.convertToWord(cc.attrs.bill.billFinanceDetails.totalBillValue lt 0 ? -cc.attrs.bill.billFinanceDetails.totalBillValue : cc.attrs.bill.billFinanceDetails.totalBillValue)} only." rendered="#{cc.attrs.bill.billFinanceDetails.totalBillValue ne null}"/>
                 <div style="font-size: 12px">
                     <h:outputLabel value="Comments" />
                     <h:outputLabel value=":" style="width: 15px; text-align: center"/>
