@@ -187,6 +187,19 @@ PrimeFaces also supports the same `preProcessor`/`postProcessor` attributes on `
 ### Reference implementation
 `ReportsStock.postProcessXLSStockReportByItem` + `pharmacy_report_department_stock_by_item_DTO.xhtml`.
 
+### Adding a sheet that opens first
+To make a sheet created in the `postProcessor` the tab Excel opens on, deselect the exported sheet and select the new one explicitly, then set the active sheet and first visible tab. `setActiveSheet` alone leaves the exported sheet selected too, and Excel opens both tabs grouped, so edits apply to both.
+```java
+Sheet dataSheet = workbook.getSheetAt(0);
+Sheet extra = workbook.createSheet("By Bill Type");
+workbook.setSheetOrder("By Bill Type", 0);
+dataSheet.setSelected(false);
+extra.setSelected(true);
+workbook.setActiveSheet(0);
+workbook.setFirstVisibleTab(0);
+```
+Check the result in the downloaded file: only one `xl/worksheets/sheetN.xml` may have `tabSelected="true"`. Reference: `InwardCombinedPaymentReportController.postProcessExport`.
+
 ---
 
 ## Reference implementations

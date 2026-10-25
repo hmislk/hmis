@@ -41,13 +41,15 @@ public enum TriggerType {
     PURCHASE_ORDER_APPROVAL("Purchase Order Approval - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     PURCHASE_ORDER_APPROVAL_SMS("Purchase Order Approval - SMS", NotificationMedium.SMS, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
     PURCHASE_ORDER_APPROVAL_EMAIL("Purchase Order Approval - Email", NotificationMedium.EMAIL, TriggerTypeParent.PURCHASE_ORDER_APPROVAL),
-    // Final/physical discharge — patient leaves the hospital; typically notifies the Guest Relations Officer.
+    // Administrative (final) discharge — fired when the patient is discharged from the final bill
+    // page (BhtSummeryController.discharge()); typically notifies the Guest Relations Officer. The
+    // patient physically leaving is the separate INWARD_PATIENT_PHYSICAL_DISCHARGED stage below.
     // Kept in its ORIGINAL ordinal position: this enum is persisted via @Enumerated(ORDINAL) on
     // Notification.triggerType and TriggerSubscription.triggerType, so existing constants must never be
     // reordered. The clinical and room discharge stages are appended at the END of the enum instead.
-    INWARD_PATIENT_DISCHARGED("Inward Patient Final Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
-    INWARD_PATIENT_DISCHARGED_SMS("Inward Patient Final Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
-    INWARD_PATIENT_DISCHARGED_EMAIL("Inward Patient Final Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED("Inward Patient Administrative (Final) Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED_SMS("Inward Patient Administrative (Final) Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
+    INWARD_PATIENT_DISCHARGED_EMAIL("Inward Patient Administrative (Final) Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_DISCHARGED),
     OPD_BILL_CANCELLATION("Bill Cancellation - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_SMS("Bill Cancellation - SMS", NotificationMedium.SMS, TriggerTypeParent.OPD_BILL_CANCELLATION),
     OPD_BILL_CANCELLATION_EMAIL("Bill Cancellation - Email", NotificationMedium.EMAIL, TriggerTypeParent.OPD_BILL_CANCELLATION),
@@ -79,7 +81,15 @@ public enum TriggerType {
     // Inward discharge — stage 5: physical discharge (patient physically leaves the hospital)
     INWARD_PATIENT_PHYSICAL_DISCHARGED("Inward Patient Physical Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED),
     INWARD_PATIENT_PHYSICAL_DISCHARGED_SMS("Inward Patient Physical Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED),
-    INWARD_PATIENT_PHYSICAL_DISCHARGED_EMAIL("Inward Patient Physical Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED);
+    INWARD_PATIENT_PHYSICAL_DISCHARGED_EMAIL("Inward Patient Physical Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED),
+    // Inward final bill — a final bill version is settled (created); typically notifies the final bill approver
+    INWARD_FINAL_BILL_CREATED("Inward Final Bill Created - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_FINAL_BILL_CREATED),
+    INWARD_FINAL_BILL_CREATED_SMS("Inward Final Bill Created - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_FINAL_BILL_CREATED),
+    INWARD_FINAL_BILL_CREATED_EMAIL("Inward Final Bill Created - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_FINAL_BILL_CREATED),
+    // Inward final bill — a final bill version is approved; typically notifies the cashier / discharge desk
+    INWARD_FINAL_BILL_APPROVED("Inward Final Bill Approved - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_FINAL_BILL_APPROVED),
+    INWARD_FINAL_BILL_APPROVED_SMS("Inward Final Bill Approved - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_FINAL_BILL_APPROVED),
+    INWARD_FINAL_BILL_APPROVED_EMAIL("Inward Final Bill Approved - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_FINAL_BILL_APPROVED);
 
     private final String label;
     private final NotificationMedium medium;

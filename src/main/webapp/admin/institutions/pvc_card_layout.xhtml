@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pvc="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <h:head>
+        <title>PVC Card Layout</title>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="pvcCardLayoutForm">
+                    <p:growl id="messages" showDetail="true"/>
+                    <p:panel header="PVC Card Layout">
+                        <p:tabView activeIndex="#{pvcCardLayoutController.activeTabIndex}">
+                            <!-- remember the open tab: every field change re-renders @form -->
+                            <p:ajax event="tabChange"/>
+
+                            <p:tab title="Front">
+                                <p:panelGrid columns="2" styleClass="w-100">
+                                    <h:panelGroup layout="block">
+                                        <p:outputLabel for="frontWidthInput" value="Card width (mm)"/>
+                                        <p:inputNumber id="frontWidthInput" value="#{pvcCardLayoutController.front.widthMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontHeightInput" value="Card height (mm)"/>
+                                        <p:inputNumber id="frontHeightInput" value="#{pvcCardLayoutController.front.heightMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontMarginInput" value="Margin (mm)"/>
+                                        <p:inputNumber id="frontMarginInput" value="#{pvcCardLayoutController.front.marginMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+
+                                        <!-- Print on a larger page (e.g. A4 for a disc/ID card tray): leave page size 0 to print the card alone -->
+                                        <p:outputLabel for="frontPageWidthInput" value="Page width (mm, 0 = card only)"/>
+                                        <p:inputNumber id="frontPageWidthInput" value="#{pvcCardLayoutController.front.pageWidthMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontPageHeightInput" value="Page height (mm, 0 = card only)"/>
+                                        <p:inputNumber id="frontPageHeightInput" value="#{pvcCardLayoutController.front.pageHeightMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontRotationInput" value="Card rotation on page"/>
+                                        <p:selectOneMenu id="frontRotationInput" value="#{pvcCardLayoutController.front.rotationDeg}">
+                                            <f:selectItem itemLabel="0 (as drawn)" itemValue="0"/>
+                                            <f:selectItem itemLabel="90 clockwise" itemValue="90"/>
+                                            <f:selectItem itemLabel="180" itemValue="180"/>
+                                            <f:selectItem itemLabel="270 clockwise" itemValue="270"/>
+                                            <p:ajax update="@form"/>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel for="frontCardLeftInput" value="Card left on page (mm)"/>
+                                        <p:inputNumber id="frontCardLeftInput" value="#{pvcCardLayoutController.front.cardLeftMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="frontCardTopInput" value="Card top on page (mm)"/>
+                                        <p:inputNumber id="frontCardTopInput" value="#{pvcCardLayoutController.front.cardTopMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+
+                                        <p:dataTable value="#{pvcCardLayoutController.front.slots.entrySet().toArray()}" var="entry"
+                                                     id="frontSlotsTable" widgetVar="frontSlotsTable" rowKey="#{entry.key}">
+                                            <p:column headerText="Field">
+                                                <h:outputText value="#{entry.key}"/>
+                                            </p:column>
+                                            <p:column headerText="Visible">
+                                                <p:selectBooleanCheckbox value="#{entry.value.visible}">
+                                                    <p:ajax update="@form"/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                            <p:column headerText="X (mm)">
+                                                <p:inputNumber value="#{entry.value.leftMm}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Y (mm)">
+                                                <p:inputNumber value="#{entry.value.topMm}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font size (pt)">
+                                                <p:inputNumber value="#{entry.value.fontSizePt}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font color">
+                                                <p:colorPicker value="#{entry.value.fontColor}">
+                                                    <p:ajax update="@form"/>
+                                                </p:colorPicker>
+                                            </p:column>
+                                            <p:column headerText="Barcode type/size">
+                                                <p:inputText value="#{entry.value.type}" style="width:6rem;"
+                                                             rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputText>
+                                                <p:inputNumber value="#{entry.value.widthMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                                <p:inputNumber value="#{entry.value.heightMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <p:fileUpload listener="#{pvcCardLayoutController.uploadFrontBackground}"
+                                                      mode="advanced" auto="true" update="@form"
+                                                      label="Upload front background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
+                                        <p:outputLabel for="frontUrlInputField" value="or external URL:"/>
+                                        <p:inputText id="frontUrlInputField" value="#{pvcCardLayoutController.frontUrlInput}" style="width:20rem;">
+                                            <p:ajax update="@form"/>
+                                        </p:inputText>
+                                        <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveFrontBackgroundUrl}"
+                                                         update="@form"/>
+
+                                        <p:commandButton value="Save Front Layout" action="#{pvcCardLayoutController.saveFrontLayout}"
+                                                          update="@form" styleClass="ui-button-success"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="frontPreview" layout="block" style="position:sticky; top:10px; zoom:#{pvcCardLayoutController.front.placedOnPage ? 0.8 : 1.5};">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.front.placedOnPage ? 0 : pvcCardLayoutController.front.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.front}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.frontBackgroundExternalUrl}"
+                                                                 side="front"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab title="Back">
+                                <p:panelGrid columns="2" styleClass="w-100">
+                                    <h:panelGroup layout="block">
+                                        <p:outputLabel for="backWidthInput" value="Card width (mm)"/>
+                                        <p:inputNumber id="backWidthInput" value="#{pvcCardLayoutController.back.widthMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backHeightInput" value="Card height (mm)"/>
+                                        <p:inputNumber id="backHeightInput" value="#{pvcCardLayoutController.back.heightMm}" minValue="1">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backMarginInput" value="Margin (mm)"/>
+                                        <p:inputNumber id="backMarginInput" value="#{pvcCardLayoutController.back.marginMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+
+                                        <!-- Print on a larger page (e.g. A4 for a disc/ID card tray): leave page size 0 to print the card alone -->
+                                        <p:outputLabel for="backPageWidthInput" value="Page width (mm, 0 = card only)"/>
+                                        <p:inputNumber id="backPageWidthInput" value="#{pvcCardLayoutController.back.pageWidthMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backPageHeightInput" value="Page height (mm, 0 = card only)"/>
+                                        <p:inputNumber id="backPageHeightInput" value="#{pvcCardLayoutController.back.pageHeightMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backRotationInput" value="Card rotation on page"/>
+                                        <p:selectOneMenu id="backRotationInput" value="#{pvcCardLayoutController.back.rotationDeg}">
+                                            <f:selectItem itemLabel="0 (as drawn)" itemValue="0"/>
+                                            <f:selectItem itemLabel="90 clockwise" itemValue="90"/>
+                                            <f:selectItem itemLabel="180" itemValue="180"/>
+                                            <f:selectItem itemLabel="270 clockwise" itemValue="270"/>
+                                            <p:ajax update="@form"/>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel for="backCardLeftInput" value="Card left on page (mm)"/>
+                                        <p:inputNumber id="backCardLeftInput" value="#{pvcCardLayoutController.back.cardLeftMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+                                        <p:outputLabel for="backCardTopInput" value="Card top on page (mm)"/>
+                                        <p:inputNumber id="backCardTopInput" value="#{pvcCardLayoutController.back.cardTopMm}" minValue="0">
+                                            <p:ajax update="@form"/>
+                                        </p:inputNumber>
+
+                                        <p:dataTable value="#{pvcCardLayoutController.back.slots.entrySet().toArray()}" var="entry"
+                                                     id="backSlotsTable" widgetVar="backSlotsTable" rowKey="#{entry.key}">
+                                            <p:column headerText="Field">
+                                                <h:outputText value="#{entry.key}"/>
+                                            </p:column>
+                                            <p:column headerText="Visible">
+                                                <p:selectBooleanCheckbox value="#{entry.value.visible}">
+                                                    <p:ajax update="@form"/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                            <p:column headerText="X (mm)">
+                                                <p:inputNumber value="#{entry.value.leftMm}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Y (mm)">
+                                                <p:inputNumber value="#{entry.value.topMm}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font size (pt)">
+                                                <p:inputNumber value="#{entry.value.fontSizePt}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                            <p:column headerText="Font color">
+                                                <p:colorPicker value="#{entry.value.fontColor}">
+                                                    <p:ajax update="@form"/>
+                                                </p:colorPicker>
+                                            </p:column>
+                                            <p:column headerText="Barcode type/size">
+                                                <p:inputText value="#{entry.value.type}" style="width:6rem;"
+                                                             rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputText>
+                                                <p:inputNumber value="#{entry.value.widthMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                                <p:inputNumber value="#{entry.value.heightMm}" style="width:5rem;"
+                                                               rendered="#{entry.key eq 'barcode'}">
+                                                    <p:ajax update="@form"/>
+                                                </p:inputNumber>
+                                            </p:column>
+                                        </p:dataTable>
+
+                                        <p:fileUpload listener="#{pvcCardLayoutController.uploadBackBackground}"
+                                                      mode="advanced" auto="true" update="@form"
+                                                      label="Upload back background" allowTypes="/(\.|\/)(gif|jpe?g|png)$/"/>
+                                        <p:outputLabel for="backUrlInputField" value="or external URL:"/>
+                                        <p:inputText id="backUrlInputField" value="#{pvcCardLayoutController.backUrlInput}" style="width:20rem;">
+                                            <p:ajax update="@form"/>
+                                        </p:inputText>
+                                        <p:commandButton value="Save Background URL" action="#{pvcCardLayoutController.saveBackBackgroundUrl}"
+                                                         update="@form"/>
+
+                                        <p:commandButton value="Save Back Layout" action="#{pvcCardLayoutController.saveBackLayout}"
+                                                          update="@form" styleClass="ui-button-success"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="backPreview" layout="block" style="position:sticky; top:10px; zoom:#{pvcCardLayoutController.back.placedOnPage ? 0.8 : 1.5};">
+                                        <div style="display:inline-block; outline:1px dashed #9e9e9e; padding:#{pvcCardLayoutController.back.placedOnPage ? 0 : pvcCardLayoutController.back.marginMm}mm;" title="Dashed line: card edge. Inner white strip: margin the printer leaves blank.">
+                                            <pvc:pvc_card_panel layout="#{pvcCardLayoutController.back}"
+                                                                 backgroundExternalUrl="#{pvcCardLayoutController.backBackgroundExternalUrl}"
+                                                                 side="back"
+                                                                 patient="#{pvcCardLayoutController.previewPatient}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:tab>
+
+                        </p:tabView>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

@@ -114,6 +114,69 @@
 
 
                                     </h:panelGroup>
+
+                                    <h:panelGroup id="unmatchedPanel" rendered="#{not empty pharmacyStockTakeController.unmatchedRows}">
+                                        <p:separator/>
+                                        <div class="alert alert-warning" role="alert">
+                                            <h3 class="h5 mb-1">
+                                                <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                                                Rows not in the snapshot (#{pharmacyStockTakeController.unmatchedRows.size()})
+                                            </h3>
+                                            <span>These counted rows match no line of this stock take and will not be adjusted.
+                                                Tick "Add as new batch" for a row to create that batch in this department with the counted quantity when you approve.
+                                                Rates come from the row, or from the item's most recent batch.</span>
+                                        </div>
+                                        <div class="d-flex justify-content-end mb-2">
+                                            <p:commandButton value="Download as Excel" icon="fa fa-file-excel"
+                                                             styleClass="ui-button-success" ajax="false">
+                                                <p:dataExporter type="xlsx" target="tblUnmatched" fileName="stock_take_rows_not_in_snapshot"/>
+                                            </p:commandButton>
+                                        </div>
+                                        <p:dataTable id="tblUnmatched" value="#{pharmacyStockTakeController.unmatchedRows}" var="ur"
+                                                     rows="25" paginator="true" paginatorPosition="bottom"
+                                                     paginatorAlwaysVisible="false"
+                                                     rowsPerPageTemplate="10,25,50,100"
+                                                     styleClass="ui-datatable-striped ui-datatable-gridlines">
+                                            <p:column headerText="Sheet Row" style="width: 80px; text-align:right;">
+                                                <h:outputText value="#{ur.rowNo}"/>
+                                            </p:column>
+                                            <p:column headerText="Code" style="min-width: 110px;">
+                                                <h:outputText value="#{ur.code}"/>
+                                            </p:column>
+                                            <p:column headerText="Name" style="min-width: 200px;">
+                                                <h:outputText value="#{empty ur.itemName ? ur.name : ur.itemName}"/>
+                                            </p:column>
+                                            <p:column headerText="Batch" style="width: 120px; text-align:center;">
+                                                <h:outputText value="#{ur.batchNo}"/>
+                                            </p:column>
+                                            <p:column headerText="Expiry" style="width: 110px; text-align:center;">
+                                                <h:outputText value="#{ur.expiryDate}">
+                                                    <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Counted Qty" style="width: 110px; text-align:right;">
+                                                <h:outputText value="#{ur.quantity}">
+                                                    <f:convertNumber maxFractionDigits="3"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Retail Rate" style="width: 110px; text-align:right;">
+                                                <h:outputText value="#{ur.retailRate}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Status" style="min-width: 200px;">
+                                                <h:outputText value="#{ur.reason}"
+                                                              styleClass="#{ur.resolvable ? 'text-success' : 'text-danger'}"/>
+                                            </p:column>
+                                            <p:column headerText="Add as new batch" exportable="false" style="width: 110px; text-align:center;">
+                                                <p:selectBooleanCheckbox value="#{ur.addAsNewBatch}"
+                                                                         rendered="#{ur.resolvable}"
+                                                                         title="Add sheet row #{ur.rowNo} as a new batch">
+                                                    <p:ajax/>
+                                                </p:selectBooleanCheckbox>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </div>
                         </div>

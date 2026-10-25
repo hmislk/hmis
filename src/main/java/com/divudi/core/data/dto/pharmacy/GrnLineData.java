@@ -59,6 +59,13 @@ public class GrnLineData {
     private double valueAtCostRate;
     private double totalCostRate;
 
+    // Previous-GRN rate (per unit / per pack) and profit %, shown on the GRN
+    // print. Not written by the Save-stage native SQL before, so both were
+    // always NULL on saved lines.
+    private double lastPurchaseRate;
+    private double lastPurchaseRatePack;
+    private double profitMargin;
+
     // Date of Expiry / Batch No, entered at Save time -- carried through to
     // pharmaceuticalbillitem.doe/stringValue so they survive a reload before
     // Finalize/Approve. Missing from this DTO was the root cause of #22892
@@ -343,6 +350,30 @@ public class GrnLineData {
 
     public void setTotalCostRate(double totalCostRate) {
         this.totalCostRate = totalCostRate;
+    }
+
+    public double getLastPurchaseRate() {
+        return lastPurchaseRate;
+    }
+
+    public void setLastPurchaseRate(double lastPurchaseRate) {
+        this.lastPurchaseRate = lastPurchaseRate;
+    }
+
+    public double getLastPurchaseRatePack() {
+        return lastPurchaseRatePack;
+    }
+
+    public void setLastPurchaseRatePack(double lastPurchaseRatePack) {
+        this.lastPurchaseRatePack = lastPurchaseRatePack;
+    }
+
+    public double getProfitMargin() {
+        return profitMargin;
+    }
+
+    public void setProfitMargin(double profitMargin) {
+        this.profitMargin = profitMargin;
     }
 
     public boolean isConsideredForCosting() {

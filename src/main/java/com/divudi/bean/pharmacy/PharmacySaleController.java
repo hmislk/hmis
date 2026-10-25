@@ -655,7 +655,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             } else {
                 setBillSettlingStarted(false);
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             }
         } else {
@@ -1227,7 +1227,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 setBillSettlingStarted(false);
                 return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -1266,7 +1266,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return navigateToPharmacyRetailSaleAfterCashierCheck(pt, ps);
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -1301,7 +1301,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return navigateToPharmacyRetailSaleAfterCashierCheckForCashier(pt, ps);
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -3884,10 +3884,29 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         paymentService.updateBalances(payments);
 
+        linkIssuedPharmacyTokenToPreBill();
+
         resetAll();
         billSettlingStarted = false;
         billPreview = true;
 
+    }
+
+    /**
+     * Links a token issued from Token Management (PHARMACY_TOKEN) to the
+     * pre-bill of this retail sale. The pre-bill references the settled sale
+     * bill, so Manage Pharmacy Tokens shows the token as paid.
+     */
+    private void linkIssuedPharmacyTokenToPreBill() {
+        Token t = getToken();
+        if (t == null || t.getTokenType() != TokenType.PHARMACY_TOKEN) {
+            return;
+        }
+        if (getPreBill() == null || getPreBill().getId() == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        tokenController.save(t);
     }
 
     /**

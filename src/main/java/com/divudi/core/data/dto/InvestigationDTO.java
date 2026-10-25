@@ -9,6 +9,7 @@ public class InvestigationDTO implements Serializable {
     private String code;
     private String name;
     private String categoryName;
+    private String legacyCategoryName;
     private String institutionName;
     private String machineName;
     private Boolean retired;
@@ -65,6 +66,31 @@ public class InvestigationDTO implements Serializable {
         this.institutionName = institutionName;
         this.departmentName = departmentName;
         this.retired = retired;
+    }
+
+    /**
+     * Investigation list row showing both the stored category and the legacy
+     * {@code investigationCategory} (issue #24038).
+     */
+    public InvestigationDTO(
+            Long id,
+            String code,
+            String name,
+            String categoryName,
+            String legacyCategoryName,
+            String institutionName,
+            String departmentName,
+            Boolean retired) {
+        this(id, code, name, categoryName, institutionName, departmentName, retired);
+        this.legacyCategoryName = legacyCategoryName;
+    }
+
+    public String getLegacyCategoryName() {
+        return legacyCategoryName;
+    }
+
+    public void setLegacyCategoryName(String legacyCategoryName) {
+        this.legacyCategoryName = legacyCategoryName;
     }
 
     public String getCode() {

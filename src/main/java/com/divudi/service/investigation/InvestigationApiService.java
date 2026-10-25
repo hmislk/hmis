@@ -33,18 +33,51 @@ public class InvestigationApiService implements Serializable {
     @EJB private MachineFacade machineFacade;
 
     public List<InvestigationSearchResultDTO> search(String query, Boolean inactive, int limit) {
+        return search(query, inactive, limit, 0);
+    }
+
+    /**
+     * Search investigations, returning one page starting at {@code offset}.
+     *
+     * Rows are ordered by name then id. The id tiebreaker is what makes paging safe:
+     * two investigations can share a name, and without it the database is free to order
+     * them differently from one page request to the next, so a row could appear on
+     * two pages or on none.
+     */
+    public List<InvestigationSearchResultDTO> search(String query, Boolean inactive, int limit, int offset) {
         Map<String, Object> m = new HashMap<>();
-        StringBuilder j = new StringBuilder("select i from Investigation i where i.retired=false ");
+        String where = buildSearchWhere(m, query, inactive);
+        // Strict: a failed query must surface as an error, not as an empty page that a paging
+        // client would read as "end of the list".
+        List<Investigation> rows = investigationFacade.findByJpqlWithRangeStrict(
+                "select i from Investigation i " + where + "order by i.name, i.id", m, offset, limit);
+        List<InvestigationSearchResultDTO> out = new ArrayList<>();
+        for (Investigation i : rows) out.add(toSearch(i));
+        return out;
+    }
+
+    /**
+     * Number of investigations matching the same filters as
+     * {@link #search(String, Boolean, int, int)}, ignoring limit and offset, so a paging
+     * caller knows when it has seen them all.
+     */
+    public long count(String query, Boolean inactive) {
+        Map<String, Object> m = new HashMap<>();
+        String where = buildSearchWhere(m, query, inactive);
+        // COUNT returns a Long — findLongByJpql, never findDoubleByJpql (which would
+        // swallow the ClassCastException and report 0 every time).
+        return investigationFacade.findLongByJpql("select count(i) from Investigation i " + where, m);
+    }
+
+    /** WHERE clause shared by the page query and the count query, so they cannot disagree. */
+    private String buildSearchWhere(Map<String, Object> m, String query, Boolean inactive) {
+        StringBuilder j = new StringBuilder("where i.retired=false ");
         if (query != null && !query.trim().isEmpty()) {
             j.append("and (lower(i.name) like :q or lower(i.code) like :q or lower(i.printName) like :q) ");
             m.put("q", "%" + query.trim().toLowerCase() + "%");
         }
         if (inactive != null) { j.append("and i.inactive=:inactive "); m.put("inactive", inactive); }
-        j.append("order by i.name");
-        List<Investigation> rows = investigationFacade.findByJpql(j.toString(), m, TemporalType.TIMESTAMP, limit);
-        List<InvestigationSearchResultDTO> out = new ArrayList<>();
-        for (Investigation i : rows) out.add(toSearch(i));
-        return out;
+        return j.toString();
     }
 
     public InvestigationResponseDTO findById(Long id) throws Exception { return toResponse(load(id), "Investigation found successfully"); }

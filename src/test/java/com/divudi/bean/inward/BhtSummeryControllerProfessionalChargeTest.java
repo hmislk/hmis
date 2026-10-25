@@ -1,7 +1,11 @@
 package com.divudi.bean.inward;
 
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
 import org.junit.jupiter.api.Test;
 
@@ -10,8 +14,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Regression tests for issue #23723's ProfessionalCharge money fix: adjusting
@@ -104,6 +111,77 @@ class BhtSummeryControllerProfessionalChargeTest {
         assertEquals(2, sums.size());
         assertEquals(1_000.0, sums.get(docA)[0], 0.001);
         assertEquals(2_000.0, sums.get(docB)[0], 0.001);
+    }
+
+    // ---- staffWithFreeOfChargeFees (issue #24085) -----------------------
+
+    private static BillFee onBill(BillFee bf, Bill bill) {
+        bf.setBill(bill);
+        return bf;
+    }
+
+    private static BilledBill billed(boolean cancelled) {
+        BilledBill b = new BilledBill();
+        b.setCancelled(cancelled);
+        return b;
+    }
+
+    @Test
+    void staffWithFreeOfChargeFees_keepsFlaggedFreeFeeOnActiveBill() {
+        Staff doctor = staff(10L);
+        BillFee free = onBill(fee(doctor, 0.0, 0.0, 0), billed(false));
+        free.setFreeOfCharge(true);
+
+        Set<Staff> result = BhtSummeryController.staffWithFreeOfChargeFees(Collections.singletonList(free));
+
+        assertTrue(result.contains(doctor));
+    }
+
+    @Test
+    void staffWithFreeOfChargeFees_dropsFreeFeeOnCancelledBill() {
+        Staff doctor = staff(11L);
+        BillFee free = onBill(fee(doctor, 0.0, 0.0, 0), billed(true));
+        free.setFreeOfCharge(true);
+        BillFee contra = onBill(fee(doctor, 0.0, 0.0, 1), new CancelledBill());
+        contra.setFreeOfCharge(true);
+
+        Set<Staff> result = BhtSummeryController.staffWithFreeOfChargeFees(Arrays.asList(free, contra));
+
+        assertFalse(result.contains(doctor), "a cancelled free fee must stay off the final bill");
+    }
+
+    @Test
+    void staffWithFreeOfChargeFees_dropsPaidFeeRefundedToZero() {
+        Staff doctor = staff(12L);
+        BillFee paid = onBill(fee(doctor, 5_000.0, 0.0, 0), billed(false));
+        BillFee refund = onBill(fee(doctor, -5_000.0, 0.0, 1), new RefundBill());
+
+        Set<Staff> result = BhtSummeryController.staffWithFreeOfChargeFees(Arrays.asList(paid, refund));
+
+        assertFalse(result.contains(doctor), "a fully refunded paid fee is not free of charge");
+    }
+
+    @Test
+    void staffWithFreeOfChargeFees_keepsLegacyZeroFeeWithoutFlag() {
+        Staff doctor = staff(13L);
+        BillFee legacy = onBill(fee(doctor, 0.0, 0.0, 0), billed(false));
+
+        Set<Staff> result = BhtSummeryController.staffWithFreeOfChargeFees(Collections.singletonList(legacy));
+
+        assertTrue(result.contains(doctor));
+    }
+
+    @Test
+    void billItem_hasFreeOfChargeProFee_onlyForZeroFlaggedFee() {
+        BillItem item = new BillItem();
+        BillFee paid = fee(staff(14L), 1_000.0, 1_000.0, 0);
+        item.getProFees().add(paid);
+        assertFalse(item.isHasFreeOfChargeProFee());
+
+        BillFee free = fee(staff(15L), 0.0, 0.0, 1);
+        free.setFreeOfCharge(true);
+        item.getProFees().add(free);
+        assertTrue(item.isHasFreeOfChargeProFee());
     }
 
     // ---- professionalAdjustedTotal --------------------------------------

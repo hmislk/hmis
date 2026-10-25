@@ -327,7 +327,9 @@ public class ItemMappingApi {
                 applyTarget(mapping, target);
                 mapping.setCreater(user);
                 mapping.setCreatedAt(new Date());
-                itemMappingFacade.create(mapping);
+                // createAndFlush so the generated id (Item uses GenerationType.IDENTITY,
+                // and ItemMapping follows the same pattern) is available immediately below.
+                itemMappingFacade.createAndFlush(mapping);
 
                 outcomeMap.put("itemId", itemId);
                 outcomeMap.put("outcome", "created");
@@ -424,7 +426,8 @@ public class ItemMappingApi {
         applyTarget(mapping, target);
         mapping.setCreater(user);
         mapping.setCreatedAt(new Date());
-        itemMappingFacade.create(mapping);
+        // createAndFlush so the generated id is available immediately below.
+        itemMappingFacade.createAndFlush(mapping);
 
         outcome.result = "created";
         outcome.mapping = mapping;

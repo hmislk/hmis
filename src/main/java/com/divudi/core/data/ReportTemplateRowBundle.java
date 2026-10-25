@@ -124,6 +124,9 @@ public class ReportTemplateRowBundle implements Serializable {
     private double floatInTotal;
     private double cashFloatOutTotal;
     private double cashFloatInTotal;
+    // Fund transfer payments actually counted into floatIn/floatOut totals, so the handover
+    // can mark exactly these as handed over (#24170)
+    private List<Payment> countedFundTransferPayments;
 
     // Booleans to track transactions
     private boolean hasOnCallTransaction;
@@ -2413,6 +2416,44 @@ public class ReportTemplateRowBundle implements Serializable {
         return paymentHandover == PaymentHandover.FLOAT_OUT || paymentHandover == PaymentHandover.FLOAT_IN;
     }
 
+    /**
+     * True when any payment in this bundle belongs to a shift shortage bill or its
+     * cancellation. Views use this, not PaymentHandover.FLOATS, to show the shortage
+     * label: FLOATS also holds bank deposits/withdrawals and float movements (#24555).
+     */
+    public boolean isShortageRelated() {
+        for (ReportTemplateRow row : getReportTemplateRows()) {
+            if (row == null || row.getPayment() == null || row.getPayment().getBill() == null) {
+                continue;
+            }
+            if (isShortageBillType(row.getPayment().getBill().getBillTypeAtomic())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Only the rows whose payment belongs to a shift shortage bill or its cancellation.
+     * A handover saved before #24555 can hold a shortage and a bank deposit in one
+     * bundle; the "Shortage Transactions" print sections list these rows only.
+     */
+    public List<ReportTemplateRow> getShortageRows() {
+        List<ReportTemplateRow> rows = new ArrayList<>();
+        for (ReportTemplateRow row : getReportTemplateRows()) {
+            if (row != null && row.getPayment() != null && row.getPayment().getBill() != null
+                    && isShortageBillType(row.getPayment().getBill().getBillTypeAtomic())) {
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
+    public static boolean isShortageBillType(BillTypeAtomic bta) {
+        return bta == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL
+                || bta == BillTypeAtomic.FUND_SHIFT_SHORTAGE_BILL_CANCELLED;
+    }
+
     public double getFloatOutTotal() {
         return floatOutTotal;
     }
@@ -2447,6 +2488,23 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setCashFloatInTotal(double cashFloatInTotal) {
         this.cashFloatInTotal = cashFloatInTotal;
+    }
+
+    public List<Payment> getCountedFundTransferPayments() {
+        // Do not lazily assign — isCountedFundTransferPaymentsTracked() relies on null
+        return countedFundTransferPayments == null ? new ArrayList<>() : countedFundTransferPayments;
+    }
+
+    public void setCountedFundTransferPayments(List<Payment> countedFundTransferPayments) {
+        this.countedFundTransferPayments = countedFundTransferPayments;
+    }
+
+    /**
+     * True when this bundle was built by a flow that records the counted fund transfer
+     * payments (even if none were counted); false for bundles built by older flows.
+     */
+    public boolean isCountedFundTransferPaymentsTracked() {
+        return countedFundTransferPayments != null;
     }
 
     public double getCashFloatNetTotal() {

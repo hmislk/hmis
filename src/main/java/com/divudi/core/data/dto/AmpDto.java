@@ -154,6 +154,23 @@ public class AmpDto implements Serializable {
     }
 
     /**
+     * API search constructor - full relationships plus business rule flags.
+     * Used by the /api/pharmaceutical_items/amp/search JPQL query.
+     */
+    public AmpDto(Long id, String name, String code, String barcode, Boolean inactive,
+                  Long vmpId, String vmpName, Long categoryId, String categoryName,
+                  Long dosageFormId, String dosageFormName,
+                  Boolean discountAllowed, Boolean allowFractions,
+                  Boolean consumptionAllowed, Boolean refundsAllowed) {
+        this(id, name, code, barcode, inactive, vmpId, vmpName, categoryId, categoryName,
+                dosageFormId, dosageFormName);
+        this.discountAllowed = discountAllowed;
+        this.allowFractions = allowFractions;
+        this.consumptionAllowed = consumptionAllowed;
+        this.refundsAllowed = refundsAllowed;
+    }
+
+    /**
      * Business rules constructor - includes business rule flags
      * Used for bulk editing and business rule management operations
      *

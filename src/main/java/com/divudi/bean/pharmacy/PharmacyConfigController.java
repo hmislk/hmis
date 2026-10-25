@@ -60,7 +60,8 @@ public class PharmacyConfigController implements Serializable {
     private boolean settlePaymentPosHeaderPaper;
 
     // GRN Settings
-    private boolean grnReceiptA4;
+    private boolean grnReceiptA4One;
+    private boolean grnReceiptA4Two;
     private boolean grnReceiptCustom1;
     private boolean grnReceiptCustom2;
     private boolean grnReceiptCustom3;
@@ -272,7 +273,11 @@ public class PharmacyConfigController implements Serializable {
         settlePaymentPosHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", true);
 
         // GRN Settings
-        grnReceiptA4 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true);
+        // A4 One replaces the old "GRN Receipt Paper is A4" key -- inherit its
+        // stored value so hospitals that disabled A4 keep it disabled.
+        grnReceiptA4One = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4 One",
+                configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4", true));
+        grnReceiptA4Two = configOptionController.getBooleanValueByKey("GRN Receipt Paper is A4 Two", false);
         grnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 1", true);
         grnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 2", true);
         grnReceiptCustom3 = configOptionController.getBooleanValueByKey("GRN Receipt Paper is Custom 3", true);
@@ -483,7 +488,8 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper", settlePaymentPosHeaderPaper);
 
             // GRN Settings
-            configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4", grnReceiptA4);
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4 One", grnReceiptA4One);
+            configOptionController.setBooleanValueByKey("GRN Receipt Paper is A4 Two", grnReceiptA4Two);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 1", grnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 2", grnReceiptCustom2);
             configOptionController.setBooleanValueByKey("GRN Receipt Paper is Custom 3", grnReceiptCustom3);
@@ -1221,12 +1227,12 @@ public class PharmacyConfigController implements Serializable {
         this.settlePaymentPosHeaderPaper = settlePaymentPosHeaderPaper;
     }
 
-    public boolean isGrnReceiptA4() {
-        return grnReceiptA4;
+    public boolean isGrnReceiptA4One() {
+        return grnReceiptA4One;
     }
 
-    public void setGrnReceiptA4(boolean grnReceiptA4) {
-        this.grnReceiptA4 = grnReceiptA4;
+    public void setGrnReceiptA4One(boolean grnReceiptA4One) {
+        this.grnReceiptA4One = grnReceiptA4One;
     }
 
     public boolean isGrnReceiptCustom1() {
@@ -2143,6 +2149,14 @@ public class PharmacyConfigController implements Serializable {
 
     public void setFastSaleCashierCustom3Paper(boolean fastSaleCashierCustom3Paper) {
         this.fastSaleCashierCustom3Paper = fastSaleCashierCustom3Paper;
+    }
+
+    public boolean isGrnReceiptA4Two() {
+        return grnReceiptA4Two;
+    }
+
+    public void setGrnReceiptA4Two(boolean grnReceiptA4Two) {
+        this.grnReceiptA4Two = grnReceiptA4Two;
     }
 
 }

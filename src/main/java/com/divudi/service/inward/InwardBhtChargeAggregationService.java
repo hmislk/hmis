@@ -7,14 +7,16 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,6 +40,13 @@ import javax.persistence.TemporalType;
  * All methods (except fetchEncounters) take an already-fetched
  * List&lt;PatientEncounter&gt; and return bulk-fetched Maps keyed by
  * PatientEncounter.id — no N+1 per-encounter queries.
+ *
+ * Cancelled bills are deliberately NOT filtered out (no {@code cancelled = false}).
+ * Cancelling a bill sets {@code cancelled=true} on the original and writes a
+ * separate CancelledBill (same billType, negated values, {@code cancelled=false}).
+ * Summing both nets the cancelled charge to zero, which is what the interim
+ * bill (InwardBeanController) does. Filtering on {@code cancelled = false} kept
+ * only the negative half and showed a cancelled charge as a deduction (#24548).
  */
 @Stateless
 public class InwardBhtChargeAggregationService implements Serializable {
@@ -48,6 +57,10 @@ public class InwardBhtChargeAggregationService implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private PatientItemFacade patientItemFacade;
+    @EJB
+    private TimedItemPricingService timedItemPricingService;
     @EJB
     private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
 
@@ -163,14 +176,50 @@ public class InwardBhtChargeAggregationService implements Serializable {
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
 
         mergeChargeMaps(result, fetchBillItemCharges(encounters));
+        mergeChargeMaps(result, fetchUnbilledTimedItemCharges(encounters));
+        mergeChargeMaps(result, fetchRunningTimedItemTopUps(encounters));
         mergeChargeMaps(result, fetchAdmissionFeeCharges(encounters));
         mergeChargeMaps(result, fetchPatientRoomCalculatedCharges(encounters));
         mergeChargeMaps(result, fetchPatientRoomServiceItemCharges(encounters));
+        mergeChargeMaps(result, fetchServiceItemsUnderOtherChargeTypes(encounters));
         mergeChargeMaps(result, fetchProfessionalFeeCharges(encounters));
         mergeChargeMaps(result, fetchAssistingFeeCharges(encounters));
+        mergeChargeMaps(result, fetchTechnicianFeeCharges(encounters));
         mergeChargeMaps(result, fetchPharmacyBillCharges(encounters));
         mergeChargeMaps(result, fetchStoreBillCharges(encounters));
 
+        return result;
+    }
+
+    /**
+     * Net interim-bill charge per encounter: gross (all InwardChargeTypes from
+     * fetchChargesByEncounter) - discount + service charge (fetchDiscountAndMarginByEncounter).
+     * Same figure as InwardInvoiceJournalRowDto.getGrandTotal().
+     */
+    public Map<Long, Double> fetchNetChargesByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, Double> result = new HashMap<>();
+        if (encounters == null || encounters.isEmpty()) {
+            return result;
+        }
+
+        Map<Long, Map<InwardChargeType, Double>> charges = fetchChargesByEncounter(encounters);
+        Map<Long, double[]> discountMargin = fetchDiscountAndMarginByEncounter(encounters);
+
+        for (Map.Entry<Long, Map<InwardChargeType, Double>> e : charges.entrySet()) {
+            double gross = 0.0;
+            if (e.getValue() != null) {
+                for (Double v : e.getValue().values()) {
+                    gross += v == null ? 0.0 : v;
+                }
+            }
+            result.put(e.getKey(), gross);
+        }
+        for (Map.Entry<Long, double[]> e : discountMargin.entrySet()) {
+            double[] dm = e.getValue();
+            double discount = dm == null || dm.length < 1 ? 0.0 : dm[0];
+            double serviceCharge = dm == null || dm.length < 2 ? 0.0 : dm[1];
+            result.merge(e.getKey(), serviceCharge - discount, Double::sum);
+        }
         return result;
     }
 
@@ -225,7 +274,6 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
                 + " and b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billType in :btps"
                 + " and enc in :encs"
                 + " and bi.inwardChargeType in :types"
@@ -241,8 +289,93 @@ public class InwardBhtChargeAggregationService implements Serializable {
     }
 
     /**
-     * ADMISSION_FEE: a flat AdmissionType.admissionFee value, never persisted as
-     * a BillItem — read straight off the already-loaded encounter list.
+     * Timed services that have no BillItem yet (PatientItem.billItem is null).
+     * New timed services get an InwardBill BillItem when they are added, which
+     * fetchBillItemCharges already counts; older ones may only exist as a
+     * PatientItem. Mirrors InwardBeanController.calTimedPatientItemByInwardChargeType,
+     * which the interim bill adds for the same rows (#19760).
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchUnbilledTimedItemCharges(List<PatientEncounter> encounters) {
+        String jpql = "select enc.id, i.item.inwardChargeType, sum(i.serviceValue)"
+                + " from PatientItem i join i.patientEncounter enc"
+                + " where i.retired = false"
+                + " and type(i.item) = :cls"
+                + " and i.billItem is null"
+                + " and i.item.inwardChargeType is not null"
+                + " and enc in :encs"
+                + " group by enc.id, i.item.inwardChargeType";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("cls", TimedItem.class);
+        params.put("encs", encounters);
+
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return collectChargeTypeRows(rows);
+    }
+
+    /**
+     * Live accrual of timed services that are still running (toTime is null),
+     * billed or not. Their saved value (PatientItem.serviceValue, mirrored on the
+     * BillItem) is priced once when the service is added and does not grow, so
+     * each running service is re-priced as of now and only the positive
+     * difference is added. Mirrors BhtSummeryController.addRunningTimedServiceLiveTopUp,
+     * so the journal matches the interim bill while a service runs.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchRunningTimedItemTopUps(List<PatientEncounter> encounters) {
+        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+
+        // Skip a service whose bill was cancelled or retired: its bill rows net to
+        // zero, so it must not accrue. Left joins keep unbilled services.
+        String jpql = "select i from PatientItem i"
+                + " left join i.billItem bi"
+                + " left join bi.bill b"
+                + " where i.retired = false"
+                + " and type(i.item) = :cls"
+                + " and i.toTime is null"
+                + " and i.item.inwardChargeType is not null"
+                + " and i.patientEncounter in :encs"
+                + " and (bi is null or (bi.retired = false and (b is null or (b.retired = false and b.cancelled = false))))";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("cls", TimedItem.class);
+        params.put("encs", encounters);
+
+        List<PatientItem> running = patientItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (running == null) {
+            return result;
+        }
+        Date now = new Date();
+        for (PatientItem pi : running) {
+            PatientEncounter enc = pi.getPatientEncounter();
+            if (enc == null || enc.getId() == null || !(pi.getItem() instanceof TimedItem)) {
+                continue;
+            }
+            // A start time in the future has not accrued anything yet.
+            if (pi.getFromTime() == null || now.before(pi.getFromTime())) {
+                continue;
+            }
+            TimedItem item = (TimedItem) pi.getItem();
+            // No configured fee would price at zero; keep the saved value.
+            if (timedItemPricingService.getAllTimedItemFees(item).isEmpty()) {
+                continue;
+            }
+            double liveValue = timedItemPricingService.calTotalTimedChargeForItem(
+                    item, pi.getFromTime(), now, enc.isForiegner());
+            double savedValue = pi.getServiceValue() != null ? pi.getServiceValue() : 0.0;
+            double delta = liveValue - savedValue;
+            if (delta <= 0.0) {
+                continue;
+            }
+            result.computeIfAbsent(enc.getId(), k -> new EnumMap<>(InwardChargeType.class))
+                  .merge(item.getInwardChargeType(), delta, Double::sum);
+        }
+        return result;
+    }
+
+    /**
+     * ADMISSION_FEE: a flat AdmissionType.admissionFee value, not persisted as
+     * a BillItem — read straight off the already-loaded encounter list. Services
+     * filed under Admission Fee are added by fetchServiceItemsUnderOtherChargeTypes.
      */
     private Map<Long, Map<InwardChargeType, Double>> fetchAdmissionFeeCharges(List<PatientEncounter> encounters) {
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
@@ -309,7 +442,43 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
                 + " and b.retired = false"
-                + " and b.cancelled = false"
+                + " and b.billType = :btp"
+                + " and enc in :encs"
+                + " and bi.inwardChargeType in :types"
+                + " group by enc.id, bi.inwardChargeType";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardBill);
+        params.put("encs", encounters);
+        params.put("types", types);
+
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return collectChargeTypeRows(rows);
+    }
+
+    /**
+     * Service BillItems on InwardBill filed under a charge type whose main source
+     * is not a BillItem (ADMISSION_FEE, BILL_FEE, PHARMACY_BILL, STORE_BILL), for
+     * example an "Admission Fee" service. The interim bill adds every InwardBill
+     * item to its charge type on top of that type's main source
+     * (BhtSummeryController.setServiceTotCategoryWise), so the journal must too.
+     * No overlap with the other sources: BillFee reads InwardProfessional bills
+     * and the pharmacy/store queries read their own bill types.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchServiceItemsUnderOtherChargeTypes(List<PatientEncounter> encounters) {
+        List<InwardChargeType> types = new ArrayList<>();
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.ADMISSION_FEE));
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.BILL_FEE));
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.PHARMACY_BILL));
+        types.addAll(chargeTypesByCalculationMethod(CalculationMethod.STORE_BILL));
+        if (types.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
+                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
+                + " where bi.retired = false"
+                + " and b.retired = false"
                 + " and b.billType = :btp"
                 + " and enc in :encs"
                 + " and bi.inwardChargeType in :types"
@@ -337,6 +506,11 @@ public class InwardBhtChargeAggregationService implements Serializable {
         return fetchBillFeeCharges(encounters, InwardChargeType.DoctorAndNurses);
     }
 
+    /** BILL_FEE — technician/paramedical fees. Their own bucket whether or not the hospital merges (issue #23982). */
+    private Map<Long, Map<InwardChargeType, Double>> fetchTechnicianFeeCharges(List<PatientEncounter> encounters) {
+        return fetchBillFeeCharges(encounters, InwardChargeType.TechnicianAndParamedicalCharge);
+    }
+
     private Map<Long, Map<InwardChargeType, Double>> fetchBillFeeCharges(
             List<PatientEncounter> encounters, InwardChargeType targetType) {
 
@@ -348,7 +522,6 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillFee bf"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
-                + " and bf.bill.cancelled = false"
                 + " and bf.bill.billType = :btp"
                 + " and bf.fee.feeType = :ftp"
                 + professionalFeeClassificationService.staffCondition("bf", targetType, params)
@@ -395,7 +568,6 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
                 + " and b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billTypeAtomic in :btas"
                 + " and enc in :encs"
                 + " and bi.inwardChargeType in :types"
@@ -421,7 +593,6 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillItem bi join bi.bill b join b.patientEncounter enc"
                 + " where bi.retired = false"
                 + " and b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billType = :btp"
                 + " and enc in :encs"
                 + " and bi.inwardChargeType in :types"
@@ -453,7 +624,6 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillFee bf"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
-                + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
@@ -477,14 +647,18 @@ public class InwardBhtChargeAggregationService implements Serializable {
 
     /**
      * Same filter as fetchDiscountAndMarginByEncounter(), but split by the SAME
-     * criterion the gross charge split uses (fetchProfessionalFeeCharges /
-     * fetchBillFeeCharges(consultantOnly=true)): a BillFee counts as "professional"
+     * criterion the gross charge split uses (fetchProfessionalFeeCharges →
+     * fetchBillFeeCharges(ProfessionalCharge)): a BillFee counts as "professional"
      * only if its bill is InwardProfessional AND its fee is Staff-type AND its
-     * staff is a Consultant — i.e. exactly the ProfessionalCharge criterion, not
-     * "any BillFee on an InwardProfessional bill" (which would also catch
-     * DoctorAndNurses/assisting-staff fees and misroute their discount). Used by
-     * the Professional & Other Fee Summary report (2026-08-15) to net each bucket
-     * independently, consistently with how the gross totals are bucketed.
+     * saved fee category is Consultant Fee (or Consultant/Assistant when merged)
+     * — i.e. exactly InwardProfessionalFeeClassificationService.staffCondition
+     * for ProfessionalCharge, not "any BillFee on an InwardProfessional bill"
+     * (which would also catch assistant and technician fees and misroute their
+     * discount). The staff subtype is no longer used: since #23874 the category
+     * is persisted per fee, and a technician is often a Consultant record
+     * (issue #23982). Used by the Professional & Other Fee Summary report
+     * (2026-08-15) to net each bucket independently, consistently with how the
+     * gross totals are bucketed.
      *
      * otherJpql uses explicit LEFT JOINs on bf.fee/bf.staff, not the implicit
      * inner-join path navigation professionalJpql uses (BillFee.fee and
@@ -495,26 +669,28 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * for professionalJpql (a null-staff row genuinely isn't professional), but
      * would have been wrong here: it silently dropped those rows from BOTH
      * buckets instead of counting them as "other" (CodeRabbit review, PR #22964).
+     * Its category test is notProfessionalChargeCategory(), the exact complement
+     * of the professional side's, so the two buckets never overlap or leak.
      * Returns Map&lt;encounterId, double[]{professionalDiscount, professionalServiceCharge,
      * otherDiscount, otherServiceCharge}&gt;.
      */
     public Map<Long, double[]> fetchDiscountAndMarginSplitByProfessional(List<PatientEncounter> encounters) {
         Map<Long, double[]> result = new HashMap<>();
 
-        // When the hospital merges assisting fees into professional, "professional"
-        // widens to every staffed professional fee and "other" narrows by exactly the
-        // same rows, so the two buckets stay complementary in both configurations.
-        boolean merged = professionalFeeClassificationService.isMerged();
+        // The merge toggle is handled inside the classification service: when
+        // merged, "professional" widens to every staffed non-technician fee and
+        // "other" narrows by exactly the same rows, so the two buckets stay
+        // complementary in both configurations.
+        Map<String, Object> params = new HashMap<>();
 
         String professionalJpql = "select bf.bill.patientEncounter.id, sum(bf.feeDiscount), sum(bf.feeMargin)"
-                + " from BillFee bf left join bf.staff s"
+                + " from BillFee bf"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
-                + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and bf.bill.billType = :btp"
                 + " and bf.fee.feeType = :ftp"
-                + (merged ? " and s.id is not null" : " and type(s) = :staffClass")
+                + professionalFeeClassificationService.staffCondition("bf", InwardChargeType.ProfessionalCharge, params)
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
@@ -522,22 +698,17 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " from BillFee bf left join bf.fee f left join bf.staff s"
                 + " where bf.retired = false"
                 + " and bf.bill.retired = false"
-                + " and bf.bill.cancelled = false"
                 + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic not in :excludedTypes)"
                 + " and (bf.bill.billType != :btp or f.id is null or f.feeType != :ftp or s.id is null"
-                + (merged ? ")" : " or type(s) != :staffClass)")
+                + " or" + professionalFeeClassificationService.notProfessionalChargeCategory("bf") + ")"
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 
-        Map<String, Object> params = new HashMap<>();
         params.put("encs", encounters);
         params.put("excludedTypes", Arrays.asList(
                 BillTypeAtomic.INWARD_FINAL_BILL, BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL));
         params.put("btp", BillType.InwardProfessional);
         params.put("ftp", FeeType.Staff);
-        if (!merged) {
-            params.put("staffClass", Consultant.class);
-        }
 
         List<Object[]> professionalRows = patientEncounterFacade.findObjectArrayByJpql(professionalJpql, params, TemporalType.TIMESTAMP);
         if (professionalRows != null) {

@@ -146,6 +146,10 @@ public class InwardBillReceiptDTO implements Serializable {
         return billDate;
     }
 
+    public void setBillDate(Date billDate) {
+        this.billDate = billDate;
+    }
+
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
@@ -160,6 +164,10 @@ public class InwardBillReceiptDTO implements Serializable {
 
     public String getReferenceBillDeptId() {
         return referenceBillDeptId;
+    }
+
+    public void setReferenceBillDeptId(String referenceBillDeptId) {
+        this.referenceBillDeptId = referenceBillDeptId;
     }
 
     public String getDepartmentPrintingName() {

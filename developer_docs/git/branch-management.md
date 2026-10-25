@@ -5,7 +5,7 @@ Standard approach for creating, maintaining, and merging branches in the HMIS re
 ## Naming Convention
 - Use issue-centric names: `<issueNumber>-short-description` (e.g. `12875-implement-full-lab-workflow`).
 - Keep names lowercase with hyphens; avoid personal initials or ambiguous abbreviations.
-- Reserve long-running environment branches (`ruhunu-dev`, `rh-stg`, etc.) for deployment automation only.
+- Reserve long-running environment branches (`*-production`, `*-staging`, `home-qa*`) for deployment automation only.
 
 ## Daily Workflow
 1. Create branches from the active development base (`development` unless the issue specifies otherwise).

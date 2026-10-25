@@ -242,7 +242,9 @@ public class TimedItemApiService implements Serializable {
         item.setCreater(user);
         item.setCreatedAt(Calendar.getInstance().getTime());
 
-        timedItemFacade.create(item);
+        // Flush so the IDENTITY id is assigned now: a plain persist leaves it
+        // null until commit, and the create response would omit "id" (#24143).
+        timedItemFacade.createAndFlush(item);
 
         // Self-references set after initial persist (ID now available)
         item.setBilledAs(item);

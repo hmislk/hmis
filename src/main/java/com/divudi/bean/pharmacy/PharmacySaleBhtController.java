@@ -2003,10 +2003,17 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
-        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-        // Calculation Margin
+        // Calculation Margin — must run BEFORE the finance details are built.
+        // updateMargin() is the only code that sets Bill.total/netTotal on this path
+        // (savePreBillFinallyRequest() does not), and it also finalises each item's
+        // netValue. createBillFinancialDetailsForInpatientDirectIssueBill() copies
+        // those values straight into BillFinanceDetails/BillItemFinanceDetails and
+        // nothing refreshes them afterwards, so building them first stored a net and
+        // gross total of zero on every bill. Issue #23952.
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+
+        billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -2060,7 +2067,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
+        substituteStocks = pharmacySubstituteService.findAlternativeBrandStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {
@@ -2242,8 +2249,11 @@ public class PharmacySaleBhtController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("refId", referenceItem.getId());
         params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the inward cancel
+        // page before #24679 carry this atomic; the two-hop join keeps it limited to request-issue items.
         params.put("reverseBtas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
         double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
         double remaining = Math.max(0.0, referenceItem.getQty() - alreadyIssued);
@@ -2296,7 +2306,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (!getBillItems().isEmpty()) {
-            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
+            getPreBill().setReferenceBill(bhtRequestBill);
         }
 
         for (BillItem tbi : tmpBillItems) {
@@ -2329,11 +2339,13 @@ public class PharmacySaleBhtController implements Serializable {
             savePreBillFinally(pt, matrixDepartment, btp, bta);
             savePreBillItemsFinally(tmpBillItems);
             transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
-            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
-            // Calculation Margin
+            // Calculation Margin — must run BEFORE the finance details are built,
+            // for the reason recorded at the other call site. Issue #23952.
             updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
             //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
+
+            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
             setPrintBill(getBillFacade().find(getPreBill().getId()));
 
@@ -2940,20 +2952,6 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        if (bi.isFromPackage() && bi.getOverriddenRate() != null) {
-            double packageRate = bi.getOverriddenRate();
-            double quantity = bi.getQty() != null ? bi.getQty() : 0.0;
-            bi.setRate(packageRate);
-            bi.setGrossValue(packageRate * quantity);
-            bi.setMarginValue(0.0);
-            bi.setNetValue(packageRate * quantity);
-            bi.setMarginRate(0.0);
-            bi.setNetRate(packageRate);
-            bi.setAdjustedValue(packageRate * quantity);
-            bi.setDiscount(0);
-            return;
-        }
-
         if (selectedStockDto != null
                 && bi.getPharmaceuticalBillItem().getStock() != null
                 && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
@@ -2981,7 +2979,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         quantity = bi.getQty();
         originalRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
-        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate * quantity;
+        // The matrix price band is a per-unit price band (issue #24245), the same
+        // value issue-on-request uses — not the line value (rate x quantity).
+        estimatedValueBeforeAddingMarginToCalculateMatrix = originalRate;
 
         PaymentMethod paymentMethod = null;
         if (getPatientEncounter() != null) {
@@ -3038,7 +3038,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department matrixDept = resolveMatrixDepartment();
         double quantity = bi.getQty();
-        double estimatedValue = retailRate * quantity;
+        // Per-unit price band, not line value (issue #24245).
+        double estimatedValue = retailRate;
         PaymentMethod paymentMethod = getPatientEncounter() != null ? getPatientEncounter().getPaymentMethod() : null;
 
         PriceMatrix priceMatrix = null;
@@ -3149,6 +3150,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
         freshBill.setPatientEncounter(preservedEncounter);
         bhtRequestBill = freshBill;
+        // Session-scoped: clear the previous issue's bill preview so the issue form shows.
+        billPreview = false;
         generateIssueBillComponentsForBhtRequest(freshBill);
         return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
@@ -3174,6 +3177,13 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
         }
+        // Keep the session-scoped bhtRequestBill in sync with whichever request is
+        // actually being generated here — settleBhtIssueRequestAccept() derives the
+        // settled bill's reference from this field, so a caller that reaches this
+        // method without updating it first (e.g. the legacy issue_for_bht_request_list
+        // page's direct actionListener) would otherwise settle against a stale,
+        // previously-selected request.
+        bhtRequestBill = b;
 
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
@@ -3445,11 +3455,6 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.setInwardChargeType(InwardChargeType.Medicine);
                     billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                     billItem.setReferanceBillItem(i);
-                    if (i.isFromPackage()) {
-                        billItem.setFromPackage(true);
-                        billItem.setOverriddenRate(i.getOverriddenRate());
-                        billItem.setSourcePackageItem(i.getSourcePackageItem());
-                    }
                     billItem.setSearialNo(getBillItems().size() + 1);
                     if (isSubstitute) {
                         billItem.setAutoSubstituted(true);
@@ -3494,11 +3499,6 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setDescreption(i.getDescreption());
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
                 billItem.setReferanceBillItem(i);
-                if (i.isFromPackage()) {
-                    billItem.setFromPackage(true);
-                    billItem.setOverriddenRate(i.getOverriddenRate());
-                    billItem.setSourcePackageItem(i.getSourcePackageItem());
-                }
                 billItem.setSearialNo(getBillItems().size() + 1);
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 calculateRates(billItem);
