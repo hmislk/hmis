@@ -77,8 +77,10 @@ for cases where a future session would hit the exact same wall.
 
 A session that files follow-up issues (defects found along the way) is not
 complete until each one is fixed and its PR merged, or the user says the
-follow-ups will be handled in another session. Ask that question explicitly;
-never end with filed follow-ups and no answer. See `dev-issue` and
+follow-ups will be handled in another session. In an interactive session, ask
+that question explicitly and never end with filed follow-ups and no answer.
+In an unattended run no answer can arrive, so list the open follow-ups in the
+final Notify and ask the user to merge or defer them. See `dev-issue` and
 `dev-issue-unattended` step 14a.
 
 ## Relationship to the private memory system
