@@ -206,6 +206,11 @@ reporter bring it back with a live discussion if it's still happening.
 
 ## 1. Setup
 
+**Develop only against `origin/development`.** Run `git fetch origin`, branch
+from `origin/development`, build and test on that base, and target the PR at
+`development`. Never branch from or target `master` or a production/staging
+branch here (hotfixes use `hotfix-deploy`, not this skill).
+
 **If given an issue number:** run the `start-issue` skill for it, as
 `dev-issue` step 1 does.
 
@@ -331,6 +336,12 @@ Check the server log for deploy errors before moving on.
 
 ## 7. Test with Playwright + verify in DB
 
+**Mandatory gate.** In unattended mode no PR is opened until an end-to-end test
+of the changed workflow has passed against the rebuilt local deployment
+(Playwright through the menus and/or the API, with DB or API read-back). Record
+the evidence. If it cannot be run or does not pass after step 8, do not push
+or open a PR: end the issue as a stop and report why.
+
 Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
 **Reach every page through the menus, never by URL** — a URL-loaded page renders
@@ -440,6 +451,9 @@ commit body is published the moment it's pushed: redact it per the hard
 limit above before writing it, same as an issue or PR body.
 
 ## 13. Create the PR
+
+Precondition: the step 7 end-to-end test passed and its evidence is in the
+PR body. Without it, do not create the PR. Base is `development`.
 
 Same as `dev-issue` step 13 — including its required **Documentation**
 section linking the wiki page(s) updated in step 10 (or stating that none was
