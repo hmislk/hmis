@@ -41,6 +41,7 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.inward.InwardBhtChargeAggregationService;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -125,6 +126,8 @@ public class InwardReportController1 implements Serializable {
     PatientRoomFacade patientRoomFacade;
     @EJB
     BillFacade billFacade;
+    @EJB
+    InwardBhtChargeAggregationService chargeAggregationService;
 
     double billFreeGross;
     double billFeeMargin;
@@ -3175,22 +3178,6 @@ public class InwardReportController1 implements Serializable {
             return;
         }
 
-        List<BillTypeAtomic> chargeTypes = Arrays.asList(
-                BillTypeAtomic.INWARD_SERVICE_BILL,
-                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
-                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
-                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL,
-                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION,
-                BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL,
-                BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
-        );
-
         List<BillTypeAtomic> ccPaymentTypes = Arrays.asList(
                 BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT,
                 BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION,
@@ -3251,8 +3238,12 @@ public class InwardReportController1 implements Serializable {
 
             List<PatientEncounter> nonDischargedEncounters = patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
 
+            // Same net charge the interim bill / Invoice Journal shows (rooms, services, timed
+            // services, professional fees, every medicine flow).
+            Map<Long, Double> netCharges = chargeAggregationService.fetchNetChargesByEncounter(nonDischargedEncounters);
+
             for (PatientEncounter pe : nonDischargedEncounters) {
-                addSyntheticDebtorRow(pe, chargeTypes, ccPaymentTypes, paymentAndDepositTypes, "(Active)", pe.getDateOfAdmission());
+                addSyntheticDebtorRow(pe, netCharges.getOrDefault(pe.getId(), 0.0), ccPaymentTypes, paymentAndDepositTypes, "(Active)", pe.getDateOfAdmission());
             }
         }
 
@@ -3300,8 +3291,12 @@ public class InwardReportController1 implements Serializable {
 
             List<PatientEncounter> dischargedNotFinalizedEncounters = patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
 
+            // Same net charge the interim bill / Invoice Journal shows (rooms, services, timed
+            // services, professional fees, every medicine flow).
+            Map<Long, Double> netCharges = chargeAggregationService.fetchNetChargesByEncounter(dischargedNotFinalizedEncounters);
+
             for (PatientEncounter pe : dischargedNotFinalizedEncounters) {
-                addSyntheticDebtorRow(pe, chargeTypes, ccPaymentTypes, paymentAndDepositTypes, "(Discharged - Bill Pending)", pe.getDateOfDischarge());
+                addSyntheticDebtorRow(pe, netCharges.getOrDefault(pe.getId(), 0.0), ccPaymentTypes, paymentAndDepositTypes, "(Discharged - Bill Pending)", pe.getDateOfDischarge());
             }
         }
     }
@@ -3313,18 +3308,9 @@ public class InwardReportController1 implements Serializable {
      * encounter since the per-company commitment bill this report otherwise reads
      * from doesn't exist until the final bill is settled.
      */
-    private void addSyntheticDebtorRow(PatientEncounter pe, List<BillTypeAtomic> chargeTypes,
+    private void addSyntheticDebtorRow(PatientEncounter pe, double chargeTotal,
             List<BillTypeAtomic> ccPaymentTypes, List<BillTypeAtomic> paymentAndDepositTypes,
             String label, Date rowDate) {
-        String chargeSql = "Select sum(b.netTotal) from Bill b"
-                + " where b.retired=false"
-                + " and b.patientEncounter=:pe"
-                + " and b.billTypeAtomic in :chargeTypes";
-        HashMap<String, Object> chargeParams = new HashMap<>();
-        chargeParams.put("pe", pe);
-        chargeParams.put("chargeTypes", chargeTypes);
-        double chargeTotal = billFacade.findDoubleByJpql(chargeSql, chargeParams);
-
         String ccPaidSql = "Select sum(b.netTotal) from Bill b"
                 + " where b.retired=false"
                 + " and b.patientEncounter=:pe"

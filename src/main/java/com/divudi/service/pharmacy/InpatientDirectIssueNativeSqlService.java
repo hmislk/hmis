@@ -231,11 +231,37 @@ public class InpatientDirectIssueNativeSqlService {
         cache.evict(PharmaceuticalBillItem.class);
         cache.evict(BillFinanceDetails.class);
         cache.evict(BillItemFinanceDetails.class);
+        // The commit re-caches the bill with zero totals; callers evict it once
+        // more after this method returns - see evictSettledBillFromCache (#24671).
         LOGGER.log(Level.INFO, "[NativeSettle] cache reconcile done ms={0} reconcileMs={1}",
                 new Object[]{System.currentTimeMillis() - t0, System.currentTimeMillis() - tReconcile});
 
         LOGGER.log(Level.INFO, "[NativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
+    }
+
+    /**
+     * Evicts a bill settled by {@link #settle(Bill, List)} from the shared
+     * cache. Call it after {@code settle} has returned, i.e. after its
+     * transaction has committed.
+     *
+     * <p>The evictions inside {@code settle} run before the commit, and the
+     * commit then caches the bill as it was persisted, with total and netTotal
+     * still 0 because the native UPDATE never touched the entity. Cache-aware
+     * readers such as the Interim Bill's Medicine and Consumable Charges table
+     * then showed the issue with a zero Bill Total until the cache was cleared
+     * (issue #24671). An after-commit {@code Synchronization} registered inside
+     * {@code settle} was tried and is not enough: it runs before EclipseLink
+     * merges the bill into the shared cache.
+     *
+     * @param billId id of the bill that {@code settle} created
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void evictSettledBillFromCache(Long billId) {
+        if (billId == null) {
+            return;
+        }
+        em.getEntityManagerFactory().getCache().evict(Bill.class, billId);
     }
 
     // -----------------------------------------------------------------------

@@ -542,6 +542,16 @@ public class TransferReceiveNativeSqlService {
         printDto.setTotalWholesaleValue(totals[4]);
         printDto.setComments(bill.getComments());
 
+        printDto.setItems(buildPrintItems(itemsToProcess));
+        return printDto;
+    }
+
+    /**
+     * Converts receive rows into print rows (receiving qty, rate and value per
+     * line). Rows with no receiving qty are printed with zero, so callers that
+     * only want received lines must filter first.
+     */
+    public List<TransferReceiveItemPrintDto> buildPrintItems(List<TransferReceiveItemRowDto> itemsToProcess) {
         List<TransferReceiveItemPrintDto> printItems = new ArrayList<>();
         for (int i = 0; i < itemsToProcess.size(); i++) {
             TransferReceiveItemRowDto src = itemsToProcess.get(i);
@@ -551,7 +561,7 @@ public class TransferReceiveNativeSqlService {
             pi.setItemCode(src.getItemCode());
             pi.setBatchNo(src.getBatchNo());
             pi.setDateOfExpire(src.getDateOfExpire());
-            double packs = src.getReceivingQty().doubleValue();
+            double packs = src.getReceivingQty() != null ? src.getReceivingQty().doubleValue() : 0;
             double units = packs * src.getUnitsPerPack();
             pi.setQty(packs);
             pi.setQtyInUnits(units);
@@ -571,8 +581,7 @@ public class TransferReceiveNativeSqlService {
             pi.setLineGrossTotal(grossRate.multiply(BigDecimal.valueOf(packs)));
             printItems.add(pi);
         }
-        printDto.setItems(printItems);
-        return printDto;
+        return printItems;
     }
 
     /**

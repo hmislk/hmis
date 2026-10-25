@@ -52,21 +52,36 @@ for cases where a future session would hit the exact same wall.
 
 ## Workflow when something is found
 
-1. **State the finding plainly**: what happened, why it's a reusable lesson
+1. **Check the docs first.** Grep `developer_docs/` and `.claude/skills/` for
+   the fact. If it is already documented, drop it and say so in one line; it
+   is a "read the docs" miss, not a proposal.
+2. **State the finding plainly**: what happened, why it's a reusable lesson
    (not a one-off), and the specific doc/skill change proposed — quoting the
    file and the exact text to add or fix.
-2. **Ask before opening a PR.** Never auto-create it — PR creation is already
-   a visible/shared action that requires confirmation (see CLAUDE.md's general
-   "Executing actions with care" guidance).
-3. **If approved**, branch from `origin/development` (or the relevant
+3. **Ask before opening a PR**, with `AskUserQuestion`: one question per
+   finding, Add / Skip, the exact text as the option preview. Never end the
+   session with a finding left "awaiting yes/no". Never auto-create the PR —
+   PR creation is already a visible/shared action that requires confirmation
+   (see CLAUDE.md's general "Executing actions with care" guidance).
+4. **If approved**, branch from `origin/development` (or the relevant
    `-hotfix` base if the lesson came from a hotfix flow), make the scoped
    doc/skill change **only** — never bundled into the feature/fix branch that
    surfaced the lesson — and open a PR targeting `development`.
-4. **Write the lesson as a rule, not a story**: a symptom → fix line, with no
+5. **Write the lesson as a rule, not a story**: a symptom → fix line, with no
    background, dates or issue history (those go in the PR description).
    `CLAUDE.md` is loaded on every message, so add to it only if leaving the
    rule out would cause mistakes in every session. Otherwise put it in the
    relevant skill or topic doc. See [Anthropic's skill-authoring guidance](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
+
+## Follow-up issues keep the session open
+
+A session that files follow-up issues (defects found along the way) is not
+complete until each one is fixed and its PR merged, or the user says the
+follow-ups will be handled in another session. In an interactive session, ask
+that question explicitly and never end with filed follow-ups and no answer.
+In an unattended run no answer can arrive, so list the open follow-ups in the
+final Notify and ask the user to merge or defer them. See `dev-issue` and
+`dev-issue-unattended` step 14a.
 
 ## Relationship to the private memory system
 

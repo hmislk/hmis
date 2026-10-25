@@ -25,13 +25,6 @@
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
-                                value="Save"
-                                icon="fa fa-check"
-                                ajax="false"
-                                action="#{bhtEditController.saveCurrent}"
-                                class="ui-button-success">
-                            </p:commandButton>
-                            <p:commandButton
                                 value="Inpatient Dashboard"
                                 icon="fa fa-id-card"
                                 ajax="false"
@@ -56,8 +49,18 @@
                         <div class="col-12 col-lg-6">
                             <p:panel class="mb-3">
                                 <f:facet name="header">
-                                    <h:outputText styleClass="fa-solid fa-money-bill-wave" />
-                                    <h:outputLabel value="Payment Details" class="mx-3" />
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h:outputText styleClass="fa-solid fa-money-bill-wave" />
+                                            <h:outputLabel value="Payment Details" class="mx-3" />
+                                        </div>
+                                        <p:commandButton
+                                            value="Save"
+                                            icon="fa fa-check"
+                                            ajax="false"
+                                            action="#{bhtEditController.saveCurrent}"
+                                            class="ui-button-success" />
+                                    </div>
                                 </f:facet>
                                 <h:panelGrid columns="2" class="w-100">
 
@@ -94,6 +97,11 @@
                         </div>
                     </div>
                 </h:panelGroup>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                </p:confirmDialog>
             </p:panel>
         </h:form>
     </ui:define>

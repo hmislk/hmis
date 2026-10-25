@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
@@ -19,8 +20,8 @@
                     <h:outputText styleClass="cc-hero-title" value="Collecting Centre Self Billing"/>
                     <h:outputText 
                         styleClass="cc-hero-subtitle"
-                        value="#{sessionController.institution.name} &#8250; #{sessionController.department.name}"
-                        rendered="#{sessionController.department != null}"/>
+                        value="#{sessionController.institution.name}"
+                        rendered="#{sessionController.institution != null}"/>
                 </div>
                 <div class="cc-hero-right" rendered="#{sessionController.loggedUser != null}">
                     <div class="cc-hero-chip">
@@ -35,73 +36,43 @@
                             <h:outputText styleClass="cc-user-role" value="#{sessionController.loggedUser.name}"/>
                         </div>
                     </div>
-                    <div class="cc-hero-actions">
+                    <h:panelGroup id="ccHeroActions" layout="block" styleClass="cc-hero-actions">
+                        <!-- Notifications open in a popup; the full notifications page uses the
+                             menu template, which collecting centre self-billing users don't get. -->
                         <p:badge value="#{userNotificationController.unseenCount}" severity="danger" rendered="#{userNotificationController.unseenCount > 0}">
                             <p:commandButton id="btnCcNotifications"
-                                             ajax="false"
                                              icon="pi pi-bell"
                                              styleClass="cc-hero-icon-btn"
                                              title="Notifications"
-                                             action="#{userNotificationController.navigateToRecivedNotification()}"/>
+                                             process="@this"
+                                             update="ccNotificationList"
+                                             actionListener="#{userNotificationController.resetFilters()}"
+                                             action="#{userNotificationController.filterNotificationsByCriteria()}"
+                                             oncomplete="PF('dlgCcNotifications').show();"/>
                         </p:badge>
                         <p:commandButton id="btnCcNotificationsNoBadge"
-                                         ajax="false"
                                          icon="pi pi-bell"
                                          styleClass="cc-hero-icon-btn"
                                          title="Notifications"
                                          rendered="#{userNotificationController.unseenCount le 0}"
-                                         action="#{userNotificationController.navigateToRecivedNotification()}"/>
+                                         process="@this"
+                                         update="ccNotificationList"
+                                         actionListener="#{userNotificationController.resetFilters()}"
+                                         action="#{userNotificationController.filterNotificationsByCriteria()}"
+                                         oncomplete="PF('dlgCcNotifications').show();"/>
                         <p:commandButton id="btnCcLogout"
                                          ajax="false"
                                          icon="pi pi-sign-out"
                                          styleClass="cc-hero-icon-btn"
                                          title="Logout"
                                          action="#{sessionController.logout}"/>
-                    </div>
+                    </h:panelGroup>
                 </div>
             </div>
 
-            <div class="cc-stat-grid" rendered="#{sessionController.loggedUser != null}">
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-city"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Institution"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.institution.name}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-sitemap"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Department"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.name}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-tag"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Department Type"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.department.departmentType.label}"/>
-                    </div>
-                </div>
-                <div class="cc-stat-card">
-                    <div class="cc-stat-icon">
-                        <h:outputText styleClass="fas fa-id-badge"/>
-                    </div>
-                    <div>
-                        <h:outputText styleClass="cc-stat-label" value="Username"/>
-                        <h:outputText styleClass="cc-stat-value" value="#{sessionController.loggedUser.name}"/>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cc-body-grid">
+            <div class="cc-body-grid" style="margin-top: 60px;">
                 <div>
+                    
                     <div class="cc-card">
                         <h:panelGroup layout="block" styleClass="cc-section-title">
                             <h:outputText styleClass="fas fa-bolt"/>
@@ -109,8 +80,9 @@
                         </h:panelGroup>
                         <div class="cc-action-grid">
                             <h:commandLink 
-                                styleClass="cc-action-card cc-c-blue" ajax="false"
-                                           action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
+                                styleClass="cc-action-card cc-c-blue" 
+                                ajax="false"
+                                action="#{collectingCentreBillController.navigateToCollectingCentreSelfBilling()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-file-invoice-dollar"/>
                                 </div>
@@ -146,20 +118,17 @@
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Statements"/>
                             </h:commandLink>
-                            <div class="cc-action-card cc-c-red">
-                                <span class="cc-action-badge">Soon</span>
+                            <h:commandLink
+                                styleClass="cc-action-card cc-c-red"
+                                action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfSampleManagement()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-vials"/>
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Sample Management"/>
-                            </div>
+                            </h:commandLink>
                         </div>
                     </div>
 
-                    <div class="cc-notice">
-                        <h:outputText styleClass="fas fa-info-circle"/>
-                        <h:outputText value="Self-billing tools for this Collecting Centre are being rolled out. The actions above will become available here soon."/>
-                    </div>
                 </div>
 
                 <div>
@@ -177,7 +146,7 @@
                                     <h:outputText value=" Logged User"/>
                                 </span>
                                 <h:outputText styleClass="cc-detail-value"
-                                              value="#{sessionController.loggedUser.webUserPerson.name}"
+                                              value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"
                                               rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
                             </div>
                             <div class="cc-detail-row">
@@ -189,23 +158,14 @@
                                 </span>
                                 <h:outputText styleClass="cc-detail-value" value="#{sessionController.loggedUser.name}"/>
                             </div>
-                            <div class="cc-detail-row">
+                            <div class="cc-detail-row cc-detail-row-stacked">
                                 <span class="cc-detail-label">
                                     <span class="cc-detail-icon cc-c-orange">
                                         <h:outputText styleClass="fas fa-city"/>
                                     </span>
-                                    <h:outputText value=" Institution"/>
+                                    <h:outputText value=" Collecting Centre"/>
                                 </span>
                                 <h:outputText styleClass="cc-detail-value" value="#{sessionController.institution.name}"/>
-                            </div>
-                            <div class="cc-detail-row">
-                                <span class="cc-detail-label">
-                                    <span class="cc-detail-icon cc-c-green">
-                                        <h:outputText styleClass="fas fa-sitemap"/>
-                                    </span>
-                                    <h:outputText value=" Department"/>
-                                </span>
-                                <h:outputText styleClass="cc-detail-value" value="#{sessionController.department.name}"/>
                             </div>
                         </h:panelGroup>
                     </div>
@@ -224,9 +184,29 @@
                                 <h:outputText styleClass="cc-timeline-title" value="Create &amp; search own bills"/>
                                 <h:outputText styleClass="cc-timeline-desc" value="Raise and look up your centre's bills"/>
                             </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Bill cancellation &amp; refunds"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Cancel whole bills or refund selected items"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Account statements"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="View your centre's statement and export to Excel or PDF"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Sample management"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Print barcodes, collect, send and reject samples"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Lab reports"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="View, print and download approved reports"/>
+                            </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Mobile friendly"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Use every page on a phone or tablet"/>
+                            </li>
                             <li class="cc-c-purple">
-                                <h:outputText styleClass="cc-timeline-title" value="Payments &amp; statements"/>
-                                <h:outputText styleClass="cc-timeline-desc" value="Track deposits and account statements"/>
+                                <h:outputText styleClass="cc-timeline-title" value="Payments"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Track deposits and payments to the hospital"/>
                             </li>
                             <li class="cc-c-orange">
                                 <h:outputText styleClass="cc-timeline-title" value="Reports"/>
@@ -236,6 +216,187 @@
                     </div>
                 </div>
             </div>
+
+            <p:dialog id="dlgCcNotifications"
+                      widgetVar="dlgCcNotifications"
+                      styleClass="cc-notif-dialog"
+                      modal="true"
+                      responsive="true"
+                      fitViewport="true"
+                      width="1200"
+                      style="max-width: 95vw;"
+                      closeOnEscape="true">
+                <f:facet name="header">
+                    <span class="cc-notif-title">
+                        <span class="cc-notif-title-icon">
+                            <h:outputText styleClass="pi pi-bell"/>
+                        </span>
+                        <h:outputText value="Notifications"/>
+                    </span>
+                </f:facet>
+                <h:panelGroup id="ccNotificationList" layout="block" styleClass="cc-notif-body">
+                    <p:messages id="ccNotificationMessages" closable="true"/>
+
+                    <h:panelGroup layout="block" styleClass="cc-notif-summary"
+                                  rendered="#{not empty userNotificationController.items}">
+                        <h:outputText value="Showing #{userNotificationController.items.size()} notification(s)"/>
+                        <h:outputText styleClass="cc-notif-chip cc-notif-chip-new"
+                                      value="#{userNotificationController.unseenCount} unread"
+                                      rendered="#{userNotificationController.unseenCount > 0}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block" styleClass="cc-notif-empty"
+                                  rendered="#{empty userNotificationController.items}">
+                        <span class="cc-notif-empty-icon">
+                            <h:outputText styleClass="pi pi-bell-slash"/>
+                        </span>
+                        <h:outputText styleClass="cc-notif-empty-title" value="You're all caught up"/>
+                        <h:outputText styleClass="cc-notif-empty-desc" value="There are no notifications for you right now."/>
+                    </h:panelGroup>
+
+                    <!-- p:dataTable (not ui:repeat) so each row's Remove button gets its own id (see #21538). -->
+                    <p:dataTable id="tblCcNotifications"
+                                 value="#{userNotificationController.items}"
+                                 var="un"
+                                 rowKey="#{un.id}"
+                                 styleClass="cc-notif-list"
+                                 rendered="#{not empty userNotificationController.items}">
+                        <p:column>
+                            <!-- Clicking anywhere on the card (except its buttons) opens the view popup. -->
+                            <div class="cc-notif-item #{un.seen ? 'cc-notif-seen' : 'cc-notif-unseen'}"
+                                 title="Click to view"
+                                 tabindex="0"
+                                 role="button"
+                                 onkeydown="if ((event.key === 'Enter' || event.key === ' ') &amp;&amp; event.target === this) { event.preventDefault(); this.querySelector('.cc-notif-view').click(); }"
+                                 onclick="if (!event.target.closest('.ui-button')) { this.querySelector('.cc-notif-view').click(); }">
+                                <span class="cc-notif-icon">
+                                    <h:outputText styleClass="#{un.notification.completed ? 'pi pi-check-circle' : 'pi pi-bell'}"/>
+                                </span>
+                                <div class="cc-notif-content">
+                                    <h:outputText styleClass="cc-notif-message" value="#{un.notification.message}" title="#{un.notification.message}"/>
+                                    <div class="cc-notif-meta">
+                                        <span class="cc-notif-date">
+                                            <h:outputText styleClass="pi pi-clock"/>
+                                            <h:outputText value="#{un.notification.createdAt}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat} hh:mm a" timeZone="Asia/Colombo"/>
+                                            </h:outputText>
+                                        </span>
+                                        <h:outputText styleClass="cc-notif-chip cc-notif-chip-new" value="New" rendered="#{not un.seen}"/>
+                                        <h:outputText styleClass="cc-notif-chip cc-notif-chip-seen" value="Seen" rendered="#{un.seen}"/>
+                                        <h:outputText styleClass="cc-notif-chip cc-notif-chip-done" value="Completed" rendered="#{un.notification.completed}"/>
+                                    </div>
+                                </div>
+                                <div class="cc-notif-actions">
+                                    <!-- Hidden: the card's onclick triggers it, so the whole card opens the view popup. -->
+                                    <p:commandButton id="btnCcViewNotification"
+                                                     icon="pi pi-eye"
+                                                     styleClass="cc-notif-view ui-button-flat ui-button-rounded"
+                                                     title="View"
+                                                     process="@this"
+                                                     update=":#{cc.clientId}:ccNotificationList :#{cc.clientId}:ccHeroActions :#{cc.clientId}:ccNotificationView"
+                                                     action="#{collectingCentreSelfCommonController.viewSelfNotification(un)}"
+                                                     oncomplete="PF('dlgCcNotificationView').show();"/>
+                                    <!-- Enabled only once the notification has been viewed (seen). -->
+                                    <p:commandButton id="btnCcRemoveNotification"
+                                                     icon="pi pi-trash"
+                                                     styleClass="cc-notif-remove ui-button-danger ui-button-flat ui-button-rounded"
+                                                     title="#{un.seen ? 'Remove' : 'View the notification to enable Remove'}"
+                                                     disabled="#{not un.seen}"
+                                                     process="@this"
+                                                     update=":#{cc.clientId}:ccNotificationList :#{cc.clientId}:ccHeroActions"
+                                                     action="#{collectingCentreSelfCommonController.removeSelfNotification(un)}"/>
+                                </div>
+                            </div>
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGroup>
+            </p:dialog>
+
+            <!-- Single notification view. Opening it marks the notification seen. -->
+            <p:dialog id="dlgCcNotificationView"
+                      widgetVar="dlgCcNotificationView"
+                      styleClass="cc-notif-dialog cc-notif-view-dialog"
+                      modal="true"
+                      responsive="true"
+                      fitViewport="true"
+                      width="640"
+                      style="max-width: 95vw;"
+                      closeOnEscape="true">
+                <f:facet name="header">
+                    <span class="cc-notif-title">
+                        <span class="cc-notif-title-icon">
+                            <h:outputText styleClass="pi pi-envelope"/>
+                        </span>
+                        <h:outputText value="Notification"/>
+                    </span>
+                </f:facet>
+                <h:panelGroup id="ccNotificationView" layout="block" styleClass="cc-notif-view-body">
+                    <h:panelGroup layout="block" rendered="#{collectingCentreSelfCommonController.viewingNotification != null}">
+
+                        <div class="cc-notif-view-hero #{collectingCentreSelfCommonController.viewingNotification.notification.completed ? 'cc-notif-view-done' : ''}">
+                            <span class="cc-notif-view-icon">
+                                <h:outputText styleClass="#{collectingCentreSelfCommonController.viewingNotification.notification.completed ? 'pi pi-check-circle' : 'pi pi-bell'}"/>
+                            </span>
+                            <div class="cc-notif-view-heading">
+                                <h:outputText styleClass="cc-notif-view-label" value="Notification details"/>
+                                <div class="cc-notif-view-chips">
+                                    <h:outputText styleClass="cc-notif-chip cc-notif-chip-seen" value="Seen"/>
+                                    <h:outputText styleClass="cc-notif-chip cc-notif-chip-done" value="Completed"
+                                                  rendered="#{collectingCentreSelfCommonController.viewingNotification.notification.completed}"/>
+                                    <h:outputText styleClass="cc-notif-chip cc-notif-chip-new" value="Pending"
+                                                  rendered="#{not collectingCentreSelfCommonController.viewingNotification.notification.completed}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cc-notif-view-message-card">
+                            <h:outputText styleClass="pi pi-comment cc-notif-view-quote"/>
+                            <h:outputText styleClass="cc-notif-view-message"
+                                          value="#{collectingCentreSelfCommonController.viewingNotification.notification.message}"/>
+                        </div>
+
+                        <div class="cc-notif-view-info">
+                            <div class="cc-notif-view-info-item">
+                                <span class="cc-detail-icon cc-c-blue">
+                                    <h:outputText styleClass="pi pi-calendar"/>
+                                </span>
+                                <div>
+                                    <h:outputText styleClass="cc-notif-view-info-label" value="Received"/>
+                                    <h:outputText styleClass="cc-notif-view-info-value" value="#{collectingCentreSelfCommonController.viewingNotification.notification.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat} hh:mm a" timeZone="Asia/Colombo"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+                            <div class="cc-notif-view-info-item">
+                                <span class="cc-detail-icon #{collectingCentreSelfCommonController.viewingNotification.notification.completed ? 'cc-c-green' : 'cc-c-orange'}">
+                                    <h:outputText styleClass="#{collectingCentreSelfCommonController.viewingNotification.notification.completed ? 'pi pi-check' : 'pi pi-hourglass'}"/>
+                                </span>
+                                <div>
+                                    <h:outputText styleClass="cc-notif-view-info-label" value="Status"/>
+                                    <h:outputText styleClass="cc-notif-view-info-value"
+                                                  value="#{collectingCentreSelfCommonController.viewingNotification.notification.completed ? 'Completed' : 'Pending'}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cc-notif-view-footer">
+                            <p:commandButton id="btnCcViewRemoveNotification"
+                                             value="Remove"
+                                             icon="pi pi-trash"
+                                             styleClass="ui-button-danger ui-button-outlined"
+                                             process="@this"
+                                             update=":#{cc.clientId}:ccNotificationList :#{cc.clientId}:ccHeroActions :#{cc.clientId}:ccNotificationView"
+                                             action="#{collectingCentreSelfCommonController.removeSelfNotification(collectingCentreSelfCommonController.viewingNotification)}"
+                                             oncomplete="PF('dlgCcNotificationView').hide();"/>
+                            <p:commandButton value="Close"
+                                             icon="pi pi-times"
+                                             type="button"
+                                             styleClass="cc-notif-view-close"
+                                             onclick="PF('dlgCcNotificationView').hide();"/>
+                        </div>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </p:dialog>
         </div>
 
     </cc:implementation>

@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -274,6 +275,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "BHT Number can be edited at the time of admission",
                 "Allow editing of the auto-generated BHT number during admission (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued",
+                "When enabled, cancelling an admission whose BHT number is still the last one issued in its series moves the counter back, so the next admission reuses that number (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -528,7 +538,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         if (encounterCreditCompany != null) {
-            encounterCreditCompanies.remove(encounterCreditCompany);
+            Iterator<EncounterCreditCompany> it = encounterCreditCompanies.iterator();
+            while (it.hasNext()) {
+                if (it.next() == encounterCreditCompany) {
+                    it.remove();
+                    break;
+                }
+            }
             encounterCreditCompany = new EncounterCreditCompany();
         }
     }
@@ -2267,46 +2283,51 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // by design; blank name/address are placeholder-filled and the required
         // patient-detail checks below are skipped. (Issue #21183)
         if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission", false)) {
+            // Each check below is independent of the others, so all of them are
+            // evaluated and reported together instead of stopping at the first
+            // miss — otherwise a form missing several fields takes one
+            // submit/fix round-trip per field. (Issue #24564)
+            boolean patientDetailsHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getTitle() == null) {
                     JsfUtil.addErrorMessage("Patient Title is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getSex() == null) {
                     JsfUtil.addErrorMessage("Patient Gender is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Age is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getDob() == null) {
                     JsfUtil.addErrorMessage("Patient Age is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Name is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getName() == null || getCurrent().getPatient().getPerson().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Name is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Address is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getAddress() == null || getCurrent().getPatient().getPerson().getAddress().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Address is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Area is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getArea() == null || getCurrent().getPatient().getPerson().getArea().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Area is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Mail is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getEmail() == null || getCurrent().getPatient().getPerson().getEmail().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Mail is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             // Baby admissions typically have no NIC of their own yet, so this
@@ -2314,7 +2335,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getNic() == null || getCurrent().getPatient().getPerson().getNic().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient NIC is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             // Baby admissions typically have no phone number of their own yet either
@@ -2324,8 +2345,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getPhone() == null || getCurrent().getPatient().getPerson().getPhone().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
+            }
+            if (patientDetailsHasError) {
+                return true;
             }
         }
 
@@ -2353,59 +2377,65 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Mandatory Fields Enabled", false)) {
+            // Independent per-field checks — accumulate and report all of them
+            // together rather than stopping at the first. (Issue #24564)
+            boolean mandatoryFieldsHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Medical Officer Required", false)) {
                 if (getCurrent().getOpdDoctor() == null) {
                     JsfUtil.addErrorMessage("Medical Officer is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Primary Reason Required", false)) {
                 if (getCurrent().getPrimaryReason() == null) {
                     JsfUtil.addErrorMessage("Primary Reason is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Comments Required", false)) {
                 if (getCurrent().getComments() == null || getCurrent().getComments().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Comments / Reference No is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
                 if (getCurrent().getReferringDoctor() == null) {
                     JsfUtil.addErrorMessage("Doctor who referred the patient is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
                 if (getCurrent().getReferringStaff() == null) {
                     JsfUtil.addErrorMessage("Staff who referred the patient is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
                 if (getCurrent().getReferredByInstitution() == null) {
                     JsfUtil.addErrorMessage("Referral Institution is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Workplace Required", false)) {
                 if (getCurrent().getWorkplace() == null) {
                     JsfUtil.addErrorMessage("Workplace is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
                 if (getCurrent().getReferralId() == null || getCurrent().getReferralId().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referral Number is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
                 if (getCurrent().getReferringMethod() == null || getCurrent().getReferringMethod().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referred From is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
+            }
+            if (mandatoryFieldsHasError) {
+                return true;
             }
         }
 
@@ -2414,47 +2444,55 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 JsfUtil.addErrorMessage("Guardian is Required");
                 return true;
             }
+            // Each sub-field check below is independent of the others, so all of
+            // them are evaluated and reported together instead of stopping at the
+            // first miss — otherwise a form missing several guardian fields takes
+            // one submit/fix round-trip per field. (Issue #24564)
+            boolean guardianHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getTitle() == null) {
                     JsfUtil.addErrorMessage("Guardian Title is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Name is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian NIC is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Address is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardianRelationshipToPatient() == null) {
                     JsfUtil.addErrorMessage("Guardian Relationship is Required");
-                    return true;
+                    guardianHasError = true;
                 }
+            }
+            if (guardianHasError) {
+                return true;
             }
         }
 

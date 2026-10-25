@@ -25,14 +25,12 @@
             <h:outputLabel value="#{iss.createdAt}">
                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
             </h:outputLabel>
-            <br/>
-            <h:panelGroup rendered="#{iss.cancelled}" >
-                <h:outputLabel style="color: red;" value="Cancelled at " />
-                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                               value="#{iss.cancelledBill.createdAt}" >
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                </h:outputLabel>
-            </h:panelGroup>
+            <!-- Single block-level labels, no raw <br/> or h:panelGroup: the DataExporter
+                 writes a non-ValueHolder child as its toString() (issue #23970). -->
+            <h:outputLabel style="color: red; display: block;" rendered="#{iss.cancelled}"
+                           value="#{iss.cancelledBill.createdAt}" >
+                <f:convertDateTime pattern="' Cancelled at '#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+            </h:outputLabel>
         </p:column>
 
         <p:column headerText="Bill Total" class="text-end">
@@ -43,13 +41,8 @@
 
         <p:column headerText="Billed By">
             <h:outputLabel value="#{iss.creater.webUserPerson.nameWithTitle}"/>
-            <br/>
-            <h:panelGroup rendered="#{iss.cancelled}" >
-                <h:outputLabel style="color: red;" value="Cancelled By " />
-                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                               value="#{iss.cancelledBill.creater.webUserPerson.nameWithTitle}" >
-                </h:outputLabel>
-            </h:panelGroup>
+            <h:outputLabel style="color: red; display: block;" rendered="#{iss.cancelled}"
+                           value=" Cancelled By #{iss.cancelledBill.creater.webUserPerson.nameWithTitle}" />
         </p:column>
 
         <p:column headerText="Checked By">
@@ -62,7 +55,7 @@
             </h:outputLabel>
         </p:column>
 
-        <p:column headerText="Comments">
+        <p:column headerText="Comments" exportValue="#{iss.comments}">
             <h:panelGroup id="commentContainer" layout="block" class="row">
                 <div class="d-flex gap-2" >
                     <p:inputText 
@@ -83,7 +76,7 @@
             </h:panelGroup>
         </p:column>
 
-        <p:column style="width: 14em;" headerText="Action" class="text-center">
+        <p:column style="width: 14em;" headerText="Action" class="text-center" exportable="false">
             <div class="d-flex gap-2 justify-content-center">
                 <p:commandButton
                     ajax="false"
