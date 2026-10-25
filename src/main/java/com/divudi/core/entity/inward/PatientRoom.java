@@ -102,7 +102,6 @@ public class PatientRoom implements Serializable, RetirableEntity {
     double calculatedAdministrationCharge = 0;
     double calculatedMedicalCareCharge = 0;
 
-    private boolean fromPackage;
     private Double includedRoomDurationHours;
 
 //Discount
@@ -778,14 +777,6 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     public void setAdmitted(boolean admitted) {
         this.admitted = admitted;
-    }
-
-    public boolean isFromPackage() {
-        return fromPackage;
-    }
-
-    public void setFromPackage(boolean fromPackage) {
-        this.fromPackage = fromPackage;
     }
 
     public Double getIncludedRoomDurationHours() {

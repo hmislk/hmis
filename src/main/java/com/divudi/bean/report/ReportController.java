@@ -6885,6 +6885,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.department = department;
     }
 
+    public boolean hasFromDate() {
+        return fromDate != null;
+    }
+
+    public boolean hasToDate() {
+        return toDate != null;
+    }
+
     @Override
     public Date getFromDate() {
         if (fromDate == null) {

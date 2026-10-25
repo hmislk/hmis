@@ -22,30 +22,6 @@
 
                     <h:panelGroup class="row" layout="block">
                         <div class="col-md-3">
-                            <p:outputLabel class="mt-1" value="Select Patient"></p:outputLabel>
-                        </div>
-                        <div class="col-md-6">
-                            <p:autoComplete
-                                value="#{inpatientPackageAdmissionController.patient}"
-                                forceSelection="true"
-                                id="acPatient"
-                                completeMethod="#{inpatientPackageAdmissionController.completePatient}"
-                                var="pt"
-                                itemLabel="#{pt.person.name}"
-                                itemValue="#{pt}"
-                                maxResults="15"
-                                class="w-100 mb-1"
-                                required="true"
-                                requiredMessage="Patient is Required"
-                                placeholder="Search by patient name"
-                                inputStyleClass="form-control">
-                                <p:column headerText="Patient Name" style="padding: 6px;">#{pt.person.name}</p:column>
-                            </p:autoComplete>
-                        </div>
-                    </h:panelGroup>
-
-                    <h:panelGroup class="row" layout="block">
-                        <div class="col-md-3">
                             <p:outputLabel class="mt-1" value="Select Inpatient Package"></p:outputLabel>
                         </div>
                         <div class="col-md-6">

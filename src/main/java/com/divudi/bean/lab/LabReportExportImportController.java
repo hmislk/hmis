@@ -221,7 +221,7 @@ public class LabReportExportImportController implements Serializable {
             "Name", "IxItemType", "IxItemValueType", "HtmlText", "RiLeft", "RiTop", "RiWidth", "RiHeight",
             "HtPix", "WtPix", "CssTextAlign", "CssVerticalAlign", "CssFontFamily", "RiFontSize",
             "CssFontStyle", "CssFontWeight", "CssTextDecoration", "CustomCss", "CssBackColor", "CssColor",
-            "Automated"
+            "Automated", "PageNo"
         };
 
         // Create the header row
@@ -259,6 +259,7 @@ public class LabReportExportImportController implements Serializable {
             row.createCell(18).setCellValue(defaultIfNullOrEmpty(item.getCssBackColor(), ""));
             row.createCell(19).setCellValue(defaultIfNullOrEmpty(item.getCssColor(), ""));
             row.createCell(20).setCellValue(item.isAutomated());
+            row.createCell(21).setCellValue(item.getPageNo());
 
             successItems.add(item);
         }
@@ -706,6 +707,12 @@ public class LabReportExportImportController implements Serializable {
             newItem.setCustomCss(customCss);
             newItem.setCssBackColor(cssBackColor);
             newItem.setCssColor(cssColor);
+
+            // PageNo is the last column; files exported before pages existed do not have it.
+            Cell pageNoCell = row.getCell(21);
+            if (pageNoCell != null && pageNoCell.getCellType() == CellType.NUMERIC) {
+                newItem.setPageNo((int) pageNoCell.getNumericCellValue());
+            }
 
             newItem.setCreatedAt(new Date());
             newItem.setCreater(sessionController.getLoggedUser());

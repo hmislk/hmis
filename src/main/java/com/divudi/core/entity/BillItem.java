@@ -152,7 +152,6 @@ public class BillItem implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     InwardChargeType inwardChargeType;
     private Double overriddenRate;
-    private boolean fromPackage;
     @ManyToOne
     private InpatientPackageItem sourcePackageItem;
     String agentRefNo;
@@ -318,7 +317,6 @@ public class BillItem implements Serializable, RetirableEntity {
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
         overriddenRate = billItem.getOverriddenRate();
-        fromPackage = billItem.isFromPackage();
         sourcePackageItem = billItem.getSourcePackageItem();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
@@ -366,7 +364,6 @@ public class BillItem implements Serializable, RetirableEntity {
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
         overriddenRate = billItem.getOverriddenRate();
-        fromPackage = billItem.isFromPackage();
         sourcePackageItem = billItem.getSourcePackageItem();
 
         // Access field directly to avoid auto-creation, then use getter for cloning
@@ -401,7 +398,6 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
-        fromPackage = billItem.isFromPackage();
         sourcePackageItem = billItem.getSourcePackageItem();
     }
 
@@ -841,14 +837,6 @@ public class BillItem implements Serializable, RetirableEntity {
         this.overriddenRate = overriddenRate;
     }
 
-    public boolean isFromPackage() {
-        return fromPackage;
-    }
-
-    public void setFromPackage(boolean fromPackage) {
-        this.fromPackage = fromPackage;
-    }
-
     public InpatientPackageItem getSourcePackageItem() {
         return sourcePackageItem;
     }
@@ -1022,6 +1010,24 @@ public class BillItem implements Serializable, RetirableEntity {
         }
         double result = adjustedValue - proFeesTotal;
         return result < 0.005 ? 0 : result;
+    }
+
+    /**
+     * True when this line lists at least one doctor free of charge (a zero
+     * fee flagged {@code freeOfCharge}). Final-bill print templates use it to
+     * print a ProfessionalCharge line whose total is 0 because every doctor
+     * on it was free (issue #24085).
+     */
+    public boolean isHasFreeOfChargeProFee() {
+        if (proFees == null) {
+            return false;
+        }
+        for (BillFee bf : proFees) {
+            if (bf != null && bf.isFreeOfCharge() && Math.abs(bf.getFeeAdjusted()) < 0.005) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getDescreption() {

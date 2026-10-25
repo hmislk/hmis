@@ -23,7 +23,7 @@ When Claude pushes commits that complete an issue, automatically include the app
 ## Branch Naming Conventions
 
 ### Hotfix Branches
-When creating hotfix branches targeting production branches (e.g., `ruhunu-prod`), the branch name **must** end with `-hotfix`. This is required for the PR to be mergeable.
+When creating hotfix branches targeting production branches (e.g., `rh-production`), the branch name **must** end with `-hotfix`. CI (`check-branch`) enforces this only for the retired `*-prod` targets; for `*-production` / `*-staging` it is a team rule until #24453 lands.
 
 **Format:** `<issue-number>-<description>-hotfix`
 

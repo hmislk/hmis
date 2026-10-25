@@ -57,6 +57,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.pharmacy.RetailSaleNativeSqlService;
 
+import java.text.DecimalFormat;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -76,6 +77,7 @@ import javax.faces.convert.Converter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -154,6 +156,7 @@ public class RetailSaleNativeSqlController2 implements Serializable, ControllerW
     private List<BillItemData> printBillItems;
     private BillItem billItem;
     private Integer intQty;
+    private String stockShortageMessage;
     private StockDTO stockDto;
     private Long selectedStockId;
     private List<StockDTO> lastAutocompleteResults;
@@ -854,6 +857,7 @@ public class RetailSaleNativeSqlController2 implements Serializable, ControllerW
     // -----------------------------------------------------------------------
 
     public void addBillItem() {
+        stockShortageMessage = null;
         if (stockDto == null || selectedStockId == null || stockDto.getItemId() == null) {
             JsfUtil.addErrorMessage("No stock selected.");
             return;
@@ -966,9 +970,11 @@ public class RetailSaleNativeSqlController2 implements Serializable, ControllerW
             return;
         }
         if (remainingQty > 0) {
-            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty)
+            // Shown in a centred modal dialog (not a growl) so the cashier cannot miss it.
+            stockShortageMessage = "Only " + new DecimalFormat("0.##").format(addedQty)
                     + " of the requested " + String.format("%.0f", requestedQty)
-                    + " is available across all batches.");
+                    + " is available across all batches.";
+            PrimeFaces.current().ajax().addCallbackParam("stockShortage", true);
         }
 
         calTotal();
@@ -1561,6 +1567,20 @@ public class RetailSaleNativeSqlController2 implements Serializable, ControllerW
     public void setPatient(Patient patient) {
         this.patient = patient;
         allergyListOfPatient = null;
+        selectPaymentSchemeAsPerPatientMembership();
+    }
+
+    // A member's pharmacy discount scheme comes from their membership; a non-member clears it (same as PharmacySaleController).
+    private void selectPaymentSchemeAsPerPatientMembership() {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+        if (patient.getPerson().getMembershipScheme() == null) {
+            paymentScheme = null;
+        } else {
+            paymentScheme = patient.getPerson().getMembershipScheme().getPaymentScheme();
+        }
+        listnerForPaymentMethodChange();
     }
 
     public Bill getPreBill() {
@@ -1602,6 +1622,10 @@ public class RetailSaleNativeSqlController2 implements Serializable, ControllerW
 
     public void setIntQty(Integer intQty) {
         this.intQty = intQty;
+    }
+
+    public String getStockShortageMessage() {
+        return stockShortageMessage;
     }
 
     public StockDTO getStockDto() {

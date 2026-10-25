@@ -58,6 +58,18 @@ public enum InwardChargeType {
     LensFee("Lense Fee", true),
     @Deprecated
     PackageFee("PackageFee", true),
+
+    /**
+     * Computed at final-bill time only: the amount a package admission's real usage exceeds the package's
+     * total price. Never assigned to an Item, never entered by an admin —
+     * allowToSetItems=false keeps it out of both the Inpatient Package
+     * "Charge Type Amounts" admin screen and the automatic
+     * getInwardChargeTypesForSetting() seeding loop that final-bill totals
+     * are built from; BhtSummeryController.applyPackagePricingIfApplicable()
+     * appends it to chargeItemTotals directly when needed, the same way the
+     * existing CancelledReturnedMedicine value is computed outside that loop.
+     */
+    PackageExcessCharges("Package Excess Charges", false),
     HospitalSupportService("Hospital Support Service Charges", true),
     ExtraMedicine("Extra Medicine Charges", true),
     DialysisTreatment("Dialysis Treatment Charges", true),
