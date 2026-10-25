@@ -22,12 +22,29 @@ assignee edits, board moves, closing issues, and the PRs that
 comment (see the
 [public content policy](../../../developer_docs/git/github-public-content-policy.md)).
 
+**Never ask for a go-ahead.** Do not ask "shall I proceed?", "on that basis?" or
+how to narrow the run, however long the list or the work. Invocation is the
+go-ahead. Workload is bounded by the caps below, not by asking. Ask only if
+`reporter` or `count` is missing.
+
+**Cap:** `count` above **5** is reduced to 5; say so in the report.
+
+**Never stop early.** Keep triaging until either `count` issues have a PR
+(or a recorded `dev-issue-unattended` stop) or the matching issues run out.
+Never end a run with candidates "not yet triaged" or a PR "not yet done".
+Triage is cheap, so work through the whole list; a long list is not a reason
+to stop.
+
+**Everything runs against `origin/development`.** Fetch it first. Check each
+defect, branch, build, test and PR target against it, never `master` or a
+production/staging branch. An issue already fixed there follows step 6.
+
 ## Inputs
 
 | Input | Required | Meaning |
 |---|---|---|
 | `reporter` | yes | GitHub login of the issue author (`Irani96`). If a display name is given, resolve it from recent issue authors and say which login you used. |
-| `count` | yes | How many PRs to ship. |
+| `count` | yes | How many PRs to ship (maximum 5). |
 | `assignee` | no | Only issues assigned to this login. |
 
 ## State kept on GitHub (labels)
@@ -88,6 +105,12 @@ Then move on to the next candidate.
 
 ## 3. Confirm by reading the code
 
+**Read the business rules first.** Before judging any issue, read the relevant
+pages in `../hmis.wiki` and the matching `developer_docs/` files (billing,
+pharmacy, inward, reports, etc.). If the fix would change a business rule
+(what a figure means, who may do what, how a bill type behaves, a calculation,
+a privilege), do not pick it: handle it as step 5 (`triage: needs-human`).
+A fix that makes the system follow an already documented rule is fine.
 Find the controller, service and XHTML involved, and the git history
 (`git log -S`, `git blame`, related issues). If the code clearly shows the
 defect, or clearly lacks the requested feature, the issue is **confirmed**:
@@ -119,6 +142,8 @@ causes:
   terminals, third-party APIs without local credentials.
 - Needs production-scale data, real concurrency or timing, more than one live
   user session, or a non-Linux client.
+- The fix would change a business rule documented in the wiki or `developer_docs/`,
+  or one they do not cover, so the correct behaviour is a business decision.
 - The fix needs a schema migration, a privilege or security change, or a
   business decision. These are hard limits of `dev-issue-unattended`.
 
@@ -128,10 +153,19 @@ go at the top of the final report for the user.
 
 ## 6. Ship the picked issues
 
+**No PR without end-to-end proof.** Every PR must be preceded by a passing
+end-to-end test of the changed workflow, using Playwright (menus only) and/or
+the API, against the rebuilt local deployment, with DB or API read-back of the
+result. XHTML-only changes still need the browser check. If the test cannot be
+run or does not pass, do not open the PR: report the issue under
+`triage: needs-human` or as a stop. Put the test evidence in the PR body.
+
 Run the `dev-issue-unattended` skill once, giving it the picked issue numbers
 as a batch. If it stops on an issue it was given (cannot reproduce, needs
-info, a hard limit), the stop counts against `count`. Do not top up the
-batch. Report the shortfall instead.
+info, a hard limit, failed end-to-end test), that stop gets its step 2-5
+outcome on GitHub and does **not** count toward `count`. Take the next
+candidate and run `dev-issue-unattended` again. Repeat until `count` PRs are
+open or the matching issues run out; only then report any shortfall.
 
 If triage finds the defect **already fixed on `development`**, comment asking the reporter to
 re-verify, then set the board Status to **Dev Completed** (read it back) so QA re-checks it.

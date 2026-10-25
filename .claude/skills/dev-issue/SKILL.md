@@ -360,6 +360,10 @@ JNDI names noted in step 11 with `Edit`, leaving that change **unstaged**.
 
 ## 13. Create the PR
 
+Precondition: the step 7 end-to-end test (Playwright and/or API, with DB or API
+read-back) has passed against the rebuilt local deployment. Base is
+`development`, branched from `origin/development`.
+
 Target `development`. The PR description should state what was implemented
 and summarize the Playwright + DB verification performed in steps 7-8
 (concrete enough that a reviewer trusts it was actually tested), and embed
