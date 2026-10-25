@@ -133,6 +133,14 @@ as a batch. If it stops on an issue it was given (cannot reproduce, needs
 info, a hard limit), the stop counts against `count`. Do not top up the
 batch. Report the shortfall instead.
 
+If triage finds the defect **already fixed on `development`**, comment asking the reporter to
+re-verify, then set the board Status to **Dev Completed** (read it back) so QA re-checks it.
+Do not leave it in Backlog.
+
+Before reporting, read back the board Status of every issue you touched. Shipped issues must be in
+**Reviewing & Merging**, per
+[Project board: status at every stage](../../../developer_docs/github/project-board-integration.md#status-at-every-stage-qa-works-from-this-column).
+
 ## 7. Report
 
 Write `tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` and give the same
@@ -154,4 +162,5 @@ summary in chat:
 | Taking up a needs-info issue again because the user commented from the same account | Look for the marker. A reply is any later comment without it. |
 | Closing an issue that Playwright simply cannot reach | That is `triage: needs-human`, not "could not demonstrate". |
 | Asking for everything in a fixed template | Ask only for what is missing. |
+| Reporting an issue as shipped while its board Status is still Backlog or a sprint | QA never sees it. Set and read back the Status. |
 | Picking from a reporter's issues that another developer is assigned to | Skip them unless the user named that assignee. |
