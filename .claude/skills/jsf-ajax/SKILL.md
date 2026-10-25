@@ -18,6 +18,7 @@ user-invocable: true
 2. **RENDERED ATTRIBUTE RULE**: NEVER use `rendered` on plain HTML elements - JSF ignores it; use `h:panelGroup layout="block"` instead
 3. **COMPONENT REFERENCES**: Use `p:resolveFirstComponentWithId` for updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"`
 4. **NO CSS/jQuery SELECTORS**: NEVER use `@(.class)`, `@(#id)`, `@parent` in `update` or `process` attributes. Use `@this`, `@form`, explicit IDs, or `:#{p:resolveFirstComponentWithId(...)}`
+5. **`empty` IS A RESERVED EL KEYWORD**: `#{bean.list.empty}` fails with "Error Parsing" (HTTP 500). Use `#{empty bean.list}`, `#{bean.list.size() gt 0}` or call `#{bean.isEmpty()}`
 
 ## Wrong vs Correct
 

@@ -16,6 +16,8 @@ This guide documents the mandatory steps and patterns for adding any new REST AP
 
 > **No-service-layer rule**: For thin CRUD over a single entity, inject facades directly into the REST class. Only add a `@Stateless` service EJB when there is real business logic or multi-entity coordination.
 
+> 🚨 **Validate request input in the REST class, not inside the `@Stateless` service.** By default, a `catch (IllegalArgumentException ex)` in the `ws/` class will not catch an `IllegalArgumentException` thrown from inside an injected `@EJB` service method — unchecked exceptions are system exceptions unless the exception class is annotated `@ApplicationException` (none of this repo's exceptions are), so the container wraps it (e.g. as `EJBException`) before it reaches the caller, and it falls through to the generic `catch (Exception ex)` branch and comes back as `500` instead of the intended `400`. Do the input-shape checks (missing/invalid fields, bad references) in the REST class *before* calling the service; keep the same guard in the service too if it has other direct callers, but never rely on it there for the HTTP status mapping. Found while building the drawer-balance reset API (issue #24433, PR #24437).
+
 ---
 
 ## Auth Pattern

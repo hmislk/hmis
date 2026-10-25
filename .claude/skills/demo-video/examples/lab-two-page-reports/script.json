@@ -1,0 +1,110 @@
+[
+ {
+  "id": "intro",
+  "say": "This video shows how to set up a two page lab report in HMIS, and how to enter results and print it. We use the Full Blood Count report as the example."
+ },
+ {
+  "id": "adminMenu",
+  "say": "First, turn the feature on. Open the Administration menu and click Manage Institutions."
+ },
+ {
+  "id": "appOptions",
+  "say": "Open Preferences, then click Application Options."
+ },
+ {
+  "id": "findOption",
+  "say": "Search for the option named Lab Report, Multi-page templates enabled. It is currently off, so reports are single page."
+ },
+ {
+  "id": "turnOn",
+  "say": "Click Edit Option, switch the value on, and click Save."
+ },
+ {
+  "id": "labAdmin",
+  "say": "Now open the Administration menu again, and click Manage Lab Services."
+ },
+ {
+  "id": "listIx",
+  "say": "Open Manage Investigations, and click List Investigation."
+ },
+ {
+  "id": "findIx",
+  "say": "Search for the investigation. Type the name of the Full Blood Count test."
+ },
+ {
+  "id": "manageIx",
+  "say": "Click Manage Investigation on its row, and then on the Manage tab, click Manage Format, Single Item."
+ },
+ {
+  "id": "pagesPanel",
+  "say": "This is the report format designer. With the option on, a Pages panel appears. Only General formats can have more than one page, so you will not see it for HTML template, pathology or microbiology reports."
+ },
+ {
+  "id": "page2",
+  "say": "Page 1 and Page 2 are shown as buttons. Click Page 2. The preview now shows page 2 only."
+ },
+ {
+  "id": "commonReport",
+  "say": "Each page has its own settings. Tick Show the common report on this page, so the patient details print on page 2 as well."
+ },
+ {
+  "id": "pageNumber",
+  "say": "The page number text can be changed. The words page and pages in curly brackets are filled in automatically. Here we change the wording, and click Save Page Settings."
+ },
+ {
+  "id": "background",
+  "say": "The Background list decides which background image this page uses. Choose the page's own image, the same image as page 1, or none."
+ },
+ {
+  "id": "itemPage",
+  "say": "To put something on this page, click Label. New items go to the page you have selected. Type the text under Item Details, set the position, and click Save. In the Positioning section, the Page list shows which page the item belongs to, and lets you move it to another page."
+ },
+ {
+  "id": "analyzerImage",
+  "say": "New items you add with the buttons at the top go to the page you have selected. Analyzer Image places a histogram or scattergram from the analyzer."
+ },
+ {
+  "id": "addPage",
+  "say": "Add Page creates another page, and Remove Page deletes the last page when it has no items. Let us add a page and remove it again."
+ },
+ {
+  "id": "dataEntryIntro",
+  "say": "Now we enter results. The patient has already been billed for the test. Open the Lab menu and click Report Management."
+ },
+ {
+  "id": "search",
+  "say": "Click Selected Department Only to list today's patients."
+ },
+ {
+  "id": "sample",
+  "say": "On the patient's row, click the first button to mark the sample as collected."
+ },
+ {
+  "id": "receive",
+  "say": "Then click the second button to receive the sample in the lab."
+ },
+ {
+  "id": "newReport",
+  "say": "Click the report button to open the data entry screen."
+ },
+ {
+  "id": "enter",
+  "say": "Type each result into its box. The calculated values and flags are worked out for you."
+ },
+ {
+  "id": "saveApprove",
+  "say": "Click Calculate, then Save, and then Approve."
+ },
+ {
+  "id": "backToList",
+  "say": "Open Report Management again and search. The report now appears under the patient. Click its print button to open the report view."
+ },
+ {
+  "id": "twoPages",
+  "say": "The report view shows one block for each page. Page 1 has the results, and page 2 has the second page we configured, each with its own page number."
+ },
+ {
+  "id": "outro",
+  "say": "Print puts each page on its own sheet, and Export PDF creates one PDF page for each report page. That is how a two page lab report is set up and used."
+ }
+]

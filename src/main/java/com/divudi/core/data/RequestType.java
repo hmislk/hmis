@@ -22,6 +22,7 @@ public enum RequestType {
 
     // Adjustment types
     DRAWER_ADJUSTMENT("Drawer Adjustment", RequestCategory.ADJUSTMENT, "DRADJ"),
+    NON_CASH_SETTLEMENT_APPROVAL("Non-Cash Settlement Approval", RequestCategory.APROVEL, "NC-SET-APV"),
     
     PETTYCASH_APROVEL("Petty Cash Request" ,RequestCategory.APROVEL, "PTY-CH"),
     PETTYCASH_CANCELLATION("Cancel Petty Cash" ,RequestCategory.APROVEL, "CAN-PTY-CH"),

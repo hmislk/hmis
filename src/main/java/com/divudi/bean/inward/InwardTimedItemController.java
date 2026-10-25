@@ -358,6 +358,34 @@ public class InwardTimedItemController implements Serializable {
         surgeryBillController.refreshTimedEncounterComponents();
     }
 
+    /**
+     * Stops a running surgery timed service now: records the current time as
+     * its End Time and re-prices it. The service stays on the bill (#23940).
+     */
+    public void stopTimedService(BillFee bf) {
+        if (bf == null || bf.getPatientItem() == null || bf.getPatientItem().getToTime() != null) {
+            return;
+        }
+        // Run updateTimedService's refusals before touching the row: this
+        // page's list holds the row in memory, so a refused stop would
+        // otherwise leave an unsaved End Time on screen and hide Stop.
+        if (batchBill != null && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+        if (generalChecking()) {
+            return;
+        }
+        Date now = new Date();
+        Date fromTime = bf.getPatientItem().getFromTime();
+        if (fromTime != null && !now.after(fromTime)) {
+            JsfUtil.addErrorMessage("This service's Start Time is in the future, so it cannot be stopped yet.");
+            return;
+        }
+        bf.getPatientItem().setToTime(now);
+        updateTimedService(bf);
+    }
+
     public void removeTimedEncFromList(EncounterComponent encounterComponent) {
         removeEncounterComponentFromList(encounterComponent, getTimedEncounterComponents());
     }
@@ -417,7 +445,7 @@ public class InwardTimedItemController implements Serializable {
 
             createPatientItems();
 
-            JsfUtil.addSuccessMessage("Removed successfully.");
+            JsfUtil.addSuccessMessage("Timed service deleted.");
         }
     }
 
@@ -968,6 +996,21 @@ public class InwardTimedItemController implements Serializable {
 
         JsfUtil.addSuccessMessage("Updated Successfully.");
 
+    }
+
+    /**
+     * Stops a running timed service now: records the current time as its
+     * Stopped Time and re-prices it. The service stays on the bill (#23940).
+     */
+    public void stopService(PatientItem pic) {
+        if (pic == null || pic.getToTime() != null) {
+            return;
+        }
+        pic.setToTime(new Date());
+        finalizeService(pic);
+        // finalizeService returns early without reloading when the service is
+        // locked; reload so a refused stop does not leave the unsaved time on screen.
+        createPatientItems();
     }
 
     public void createPatientItems() {

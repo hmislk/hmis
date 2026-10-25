@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui">
+
+    <!-- Raw Text (dot-matrix .prn) paper type and layout for the logged department.
+         Placed inside the Inpatient deposit/payment Settings dialog form; saved by
+         inwardRawTextReceiptController.saveSettings on Apply. -->
+    <div class="card config-section mt-3">
+        <div class="card-header">
+            <i class="fas fa-file-lines me-2"/>
+            <h:outputText value="Raw Text (Dot-Matrix) - #{sessionController.department.name}"/>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <h:selectBooleanCheckbox id="rawTextPaper" value="#{inwardRawTextReceiptController.rawTextPaper}"/>
+                <h:outputLabel for="rawTextPaper" value="Use Raw Text paper in this department" class="ms-2"/>
+                <div class="text-muted" style="font-size: 0.85em;">
+                    Replaces the paper formats above for this department. Receipts download as a .prn file
+                    that the print agent sends straight to the dot-matrix printer.
+                </div>
+            </div>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-7">
+                    <p:outputLabel for="rawTextTopMargin" value="Top margin (lines)"/>
+                </div>
+                <div class="col-5">
+                    <p:inputNumber id="rawTextTopMargin" value="#{inwardRawTextReceiptController.topMarginLines}"
+                                   decimalPlaces="0" minValue="0" maxValue="40" inputStyle="width: 6em;"/>
+                </div>
+                <div class="col-7">
+                    <p:outputLabel for="rawTextLineWidth" value="Line width (characters)"/>
+                </div>
+                <div class="col-5">
+                    <p:inputNumber id="rawTextLineWidth" value="#{inwardRawTextReceiptController.lineWidth}"
+                                   decimalPlaces="0" minValue="24" maxValue="136" inputStyle="width: 6em;"/>
+                </div>
+            </div>
+            <div class="mb-2">
+                <h:selectBooleanCheckbox id="rawTextPreprinted" value="#{inwardRawTextReceiptController.preprintedStationery}"/>
+                <h:outputLabel for="rawTextPreprinted" value="Pre-printed stationery (no hospital header)" class="ms-2"/>
+            </div>
+            <div class="mb-2">
+                <h:selectBooleanCheckbox id="rawTextAdmissionType" value="#{inwardRawTextReceiptController.showAdmissionType}"/>
+                <h:outputLabel for="rawTextAdmissionType" value="Show admission type" class="ms-2"/>
+            </div>
+            <div class="mb-2">
+                <h:selectBooleanCheckbox id="rawTextAddress" value="#{inwardRawTextReceiptController.showPatientAddress}"/>
+                <h:outputLabel for="rawTextAddress" value="Show patient address" class="ms-2"/>
+            </div>
+            <div class="mb-2">
+                <h:selectBooleanCheckbox id="rawTextPhone" value="#{inwardRawTextReceiptController.showPatientPhone}"/>
+                <h:outputLabel for="rawTextPhone" value="Show patient phone" class="ms-2"/>
+            </div>
+            <div class="text-muted" style="font-size: 0.85em;">
+                If the ends of lines are cut off at the right edge of the paper, lower the line width.
+            </div>
+        </div>
+    </div>
+</ui:composition>

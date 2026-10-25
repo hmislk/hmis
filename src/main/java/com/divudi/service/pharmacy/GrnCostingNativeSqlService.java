@@ -141,6 +141,41 @@ public class GrnCostingNativeSqlService {
     }
 
     /**
+     * Persists the bill-level expense totals. Nothing else in the native save
+     * or approve path writes them, so the GRN print showed the expense rows
+     * as 0.00 once the bill was reloaded (#24709).
+     */
+    public void updateBillExpenseTotals(long billId, double expenseTotal,
+            double expensesConsideredForCosting, double expensesNotConsideredForCosting) {
+        em.createNativeQuery(
+            "UPDATE " + billTable() + " SET expenseTotal=?, expensesTotalConsideredForCosting=?,"
+            + " expensesTotalNotConsideredForCosting=? WHERE ID=?")
+            .setParameter(1, expenseTotal)
+            .setParameter(2, expensesConsideredForCosting)
+            .setParameter(3, expensesNotConsideredForCosting)
+            .setParameter(4, billId)
+            .executeUpdate();
+        evictCache();
+    }
+
+    /**
+     * Stores the bill-level totalBillValue on the bill's existing
+     * BillFinanceDetails. Nothing else in the native approve path writes it,
+     * so the GRN print showed it blank after approval (#24709). Does nothing
+     * if the bill has no BillFinanceDetails yet.
+     */
+    public void updateTotalBillValue(long billId, BigDecimal totalBillValue) {
+        Bill billRef = em.find(Bill.class, billId);
+        BillFinanceDetails bfd = billRef != null ? billRef.getBillFinanceDetails() : null;
+        if (bfd == null || bfd.getId() == null) {
+            return;
+        }
+        bfd.setTotalBillValue(totalBillValue);
+        em.merge(bfd);
+        evictCache();
+    }
+
+    /**
      * Carries back both generated/resolved primary keys from {@link #saveLine}
      * so the caller can set them on its in-memory BillItem AND
      * PharmaceuticalBillItem entities -- a native INSERT never reports a
@@ -234,7 +269,7 @@ public class GrnCostingNativeSqlService {
                 // columns behind #22892 -- entered here at Save time but never
                 // written, so they silently reverted to blank on any reload
                 // before Finalize/Approve.
-                + " doe=?, stringValue=?"
+                + " doe=?, stringValue=?, lastPurchaseRate=?, lastPurchaseRatePack=?"
                 + " WHERE billItem_ID=?")
                 .setParameter(1, line.getQuantityByUnits())
                 .setParameter(2, line.getFreeQuantityByUnits())
@@ -248,7 +283,9 @@ public class GrnCostingNativeSqlService {
                 .setParameter(10, line.getWholesaleRate())
                 .setParameter(11, line.getDoe())
                 .setParameter(12, line.getBatchNumber())
-                .setParameter(13, billItemId)
+                .setParameter(13, line.getLastPurchaseRate())
+                .setParameter(14, line.getLastPurchaseRatePack())
+                .setParameter(15, billItemId)
                 .executeUpdate();
 
         long pharmaceuticalBillItemId;
@@ -257,9 +294,9 @@ public class GrnCostingNativeSqlService {
                 "INSERT INTO " + pharmBillItemTable()
                 + " (billItem_ID, qty, freeQty, purchaseRate, purchaseRatePack, purchaseValue,"
                 + " retailRate, retailRatePack, retailValue, wholesaleRate, wholesaleRatePack,"
-                + " doe, stringValue,"
+                + " doe, stringValue, lastPurchaseRate, lastPurchaseRatePack,"
                 + " costRate, costRatePack, costValue, createdAt, creater_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,?,?)")
                 .setParameter(1, billItemId)
                 .setParameter(2, line.getQuantityByUnits())
                 .setParameter(3, line.getFreeQuantityByUnits())
@@ -273,8 +310,10 @@ public class GrnCostingNativeSqlService {
                 .setParameter(11, line.getWholesaleRate())
                 .setParameter(12, line.getDoe())
                 .setParameter(13, line.getBatchNumber())
-                .setParameter(14, new Timestamp(new Date().getTime()))
-                .setParameter(15, line.getCreaterId())
+                .setParameter(14, line.getLastPurchaseRate())
+                .setParameter(15, line.getLastPurchaseRatePack())
+                .setParameter(16, new Timestamp(new Date().getTime()))
+                .setParameter(17, line.getCreaterId())
                 .executeUpdate();
             pharmaceuticalBillItemId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
         } else {
@@ -339,6 +378,7 @@ public class GrnCostingNativeSqlService {
         bifd.setLineCostRate(BigDecimal.valueOf(line.getLineCostRate()));
         bifd.setValueAtCostRate(BigDecimal.valueOf(line.getValueAtCostRate()));
         bifd.setTotalCostRate(BigDecimal.valueOf(line.getTotalCostRate()));
+        bifd.setProfitMargin(BigDecimal.valueOf(line.getProfitMargin()));
 
         if (bifd.getId() == null) {
             bifd.setCreatedAt(new Date());
@@ -419,6 +459,17 @@ public class GrnCostingNativeSqlService {
      * as saveBillItemFinanceDetails().
      */
     public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax) {
+        saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, null);
+    }
+
+    /**
+     * Same as {@link #saveBillFinanceDetails(long, double, double, double)},
+     * and also stores totalBillValue so the GRN print shows it after the bill
+     * is reloaded (issue #24709). A null totalBillValue leaves the stored
+     * value unchanged.
+     */
+    public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax,
+            BigDecimal totalBillValue) {
         Bill billRef = em.find(Bill.class, billId);
         BillFinanceDetails bfd = billRef != null ? billRef.getBillFinanceDetails() : null;
         boolean isNew = (bfd == null || bfd.getId() == null);
@@ -429,6 +480,9 @@ public class GrnCostingNativeSqlService {
         bfd.setTotalDiscount(BigDecimal.valueOf(totalDiscount));
         bfd.setTotalExpense(BigDecimal.valueOf(totalExpense));
         bfd.setTotalTaxValue(BigDecimal.valueOf(totalTax));
+        if (totalBillValue != null) {
+            bfd.setTotalBillValue(totalBillValue);
+        }
 
         if (isNew) {
             bfd.setCreatedAt(new Date());
