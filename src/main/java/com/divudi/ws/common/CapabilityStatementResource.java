@@ -121,6 +121,10 @@ public class CapabilityStatementResource {
                         "Bill data correction operations",
                         "API Key",
                         "POST"))
+                .add(resource("Drawer Balance", "/api/drawer",
+                        "Read and reset a cashier's drawer balance per payment method, for QA/E2E test setup (issue #24433)",
+                        "API Key",
+                        "GET", "POST"))
                 .add(resource("Costing Data", "/api/costing_data",
                         "Cost accounting data",
                         "API Key",

@@ -331,7 +331,12 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Action" width="14em;" style="padding: 8px;">
+                        <p:column headerText="Action" width="20em;" style="padding: 8px;">
+                            <!--
+                                #23940 - Stop ends a running service; it stays on the
+                                bill. Delete is only for a service entered by mistake;
+                                it and its charge leave the bill. Never call either "Remove".
+                            -->
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                     value="Update"
@@ -342,12 +347,26 @@
                                     disabled="#{ti.bill.checkedBy ne null}" >
                                 </p:commandButton>
                                 <p:commandButton
+                                    value="Stop"
+                                    class="ui-button-secondary"
+                                    icon="fa fa-stop"
+                                    ajax="false"
+                                    rendered="#{ti.toTime eq null}"
+                                    title="Stop #{ti.item.name} now. It stays on the bill, charged up to now."
+                                    action="#{inwardTimedItemController.stopService(ti)}"
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
+                                </p:commandButton>
+                                <p:commandButton
                                     icon="fa-solid fa-trash"
                                     class="ui-button-danger"
                                     ajax="false"
-                                    value="Remove"
+                                    value="Delete"
+                                    title="Delete #{ti.item.name} entered by mistake. It and its charge leave the bill."
                                     action="#{inwardTimedItemController.removePatientItem(ti)}"
                                     disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized or ti.bill.checkedBy ne null}" >
+                                    <p:confirm header="Delete Timed Service"
+                                               message="This deletes #{ti.item.name} and its charge from the bill. To end a running service, press Stop instead."
+                                               icon="pi pi-exclamation-triangle" />
                                 </p:commandButton>
                             </div>
 
@@ -357,6 +376,11 @@
                 </p:panel>
 
             </p:panel>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+            </p:confirmDialog>
         </h:form>
 
     </ui:define>
