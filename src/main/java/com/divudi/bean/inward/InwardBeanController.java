@@ -1848,6 +1848,10 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientRoom p"
                 + " WHERE p.retired=false"
                 + " AND p.patientEncounter IN :pe";
+        boolean theatreAsOt = billTheatreTimeAsOt();
+        if (theatreAsOt) {
+            sql += " AND TYPE(p) <> :theatreClass";
+        }
         HashMap hm = new HashMap();
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
@@ -1855,6 +1859,9 @@ public class InwardBeanController implements Serializable {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
+        if (theatreAsOt) {
+            hm.put("theatreClass", TheatreRoom.class);
+        }
 
         Map<InwardChargeType, Double> result = new EnumMap<>(InwardChargeType.class);
         List<Object> rows = getPatientRoomFacade().findObjectByJpql(sql, hm, TemporalType.TIMESTAMP);
@@ -1871,11 +1878,36 @@ public class InwardBeanController implements Serializable {
                 result.put(InwardChargeType.LinenCharges,         toDoubleOrZero(arr[6]));
             }
         }
+        if (theatreAsOt) {
+            String otSql = "SELECT SUM((p.calculatedRoomCharge - p.discountRoomCharge)"
+                    + " + (p.calculatedMoCharge - p.discountMoCharge)"
+                    + " + (p.calculatedNursingCharge - p.discountNursingCharge)"
+                    + " + (p.calculatedMaintainCharge - p.discountMaintainCharge)"
+                    + " + (p.calculatedMedicalCareCharge - p.discountMedicalCareCharge)"
+                    + " + (p.calculatedAdministrationCharge - p.discountAdministrationCharge)"
+                    + " + (p.calculatedLinenCharge - p.discountLinenCharge))"
+                    + " FROM PatientRoom p"
+                    + " WHERE p.retired=false"
+                    + " AND p.patientEncounter IN :pe"
+                    + " AND TYPE(p) = :theatreClass";
+            List<Object> otRows = getPatientRoomFacade().findObjectByJpql(otSql, hm, TemporalType.TIMESTAMP);
+            if (otRows != null && !otRows.isEmpty()) {
+                result.merge(InwardChargeType.OperationTheatreCharges, toDoubleOrZero(otRows.get(0)), Double::sum);
+            }
+        }
         Map<InwardChargeType, Double> timedItemSums = getTimedItemChargeSumsBulk(patientEncounter, cpts);
         for (Map.Entry<InwardChargeType, Double> entry : timedItemSums.entrySet()) {
             result.merge(entry.getKey(), entry.getValue(), Double::sum);
         }
         return result;
+    }
+
+    public boolean billTheatreTimeAsOt() {
+        return configOptionApplicationController.getBooleanValueByKey("Inward Bill - Bill Theatre Room Time Under Operation Theatre Charges", false);
+    }
+
+    public boolean isTheatreTimeAsOt(PatientRoom pr) {
+        return pr instanceof TheatreRoom && billTheatreTimeAsOt();
     }
 
     private double toDoubleOrZero(Object value) {
