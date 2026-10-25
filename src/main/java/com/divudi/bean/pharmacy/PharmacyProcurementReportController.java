@@ -210,6 +210,10 @@ public class PharmacyProcurementReportController implements Serializable {
     private double freeItemTotalPaidQty;
     private double freeItemTotalFreeQty;
     private double freeItemTotalFreeValue;
+    private double freeItemTotalReturnedPaidQty;
+    private double freeItemTotalReceivedPaidQty;
+    private double freeItemTotalReceivedFreeQty;
+    private double freeItemTotalReturnedFreeQty;
     private long freeItemLineCount;
     private long freeItemBillCount;
 
@@ -294,6 +298,10 @@ public class PharmacyProcurementReportController implements Serializable {
         freeItemTotalPaidQty = 0;
         freeItemTotalFreeQty = 0;
         freeItemTotalFreeValue = 0;
+        freeItemTotalReturnedPaidQty = 0;
+        freeItemTotalReceivedPaidQty = 0;
+        freeItemTotalReceivedFreeQty = 0;
+        freeItemTotalReturnedFreeQty = 0;
         freeItemLineCount = 0;
         freeItemBillCount = 0;
     }
@@ -308,6 +316,10 @@ public class PharmacyProcurementReportController implements Serializable {
         freeItemTotalPaidQty = 0;
         freeItemTotalFreeQty = 0;
         freeItemTotalFreeValue = 0;
+        freeItemTotalReturnedPaidQty = 0;
+        freeItemTotalReceivedPaidQty = 0;
+        freeItemTotalReceivedFreeQty = 0;
+        freeItemTotalReturnedFreeQty = 0;
         freeItemLineCount = 0;
         freeItemBillCount = 0;
         try {
@@ -316,7 +328,7 @@ public class PharmacyProcurementReportController implements Serializable {
             btas.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             Map<String, Object> m = new HashMap<>();
             String jpql = "select new com.divudi.core.data.dto.PharmacyFreeItemReceivedDTO("
-                    + " b.id, b.createdAt, b.deptId, b.invoiceNumber, b.billTypeAtomic, d.name, d.departmentType,"
+                    + " bi.id, b.id, b.createdAt, b.deptId, b.invoiceNumber, b.billTypeAtomic, d.name, d.departmentType,"
                     + " s.id, s.name, i.id, i.code, i.name, pbi.qty, pbi.freeQty, pbi.purchaseRate) "
                     + " from BillItem bi join bi.pharmaceuticalBillItem pbi join bi.bill b join b.department d join bi.item i"
                     + " left join b.fromInstitution s "
@@ -354,9 +366,84 @@ public class PharmacyProcurementReportController implements Serializable {
             for (Object o : res) {
                 freeItemRows.add((PharmacyFreeItemReceivedDTO) o);
             }
+            applyFreeItemReturns();
             buildFreeItemSummaries();
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, "Error in processing the free items received report");
+        }
+    }
+
+    /**
+     * Deducts quantities returned to the supplier from each received line
+     * (issue #24667). A return line is matched to the GRN / Direct Purchase line
+     * through {@code referanceBillItem}, regardless of the return date, so the
+     * report shows what is still held from each receipt.
+     *
+     * <p>Counted returns: GRN Returns ({@code PHARMACY_GRN_RETURN}) and Direct
+     * Purchase Returns ({@code PHARMACY_DIRECT_PURCHASE_REFUND}) whose bill is
+     * neither retired nor cancelled (a cancelled return gives the stock back)
+     * and that actually left stock: either the bill is completed (approval
+     * workflows) or the line has a stock history entry (legacy returns that
+     * never set {@code completed}). Unapproved drafts are ignored.
+     *
+     * <p>A returned quantity is capped at what the line received; paid units
+     * returned beyond the paid quantity received are counted as free (see
+     * "Purchase Return by Total Quantity"), so net quantities never go below 0.
+     *
+     * <p>Quantities are pharmaceutical bill item units, the same unit as the
+     * received {@code pbi.qty} / {@code pbi.freeQty}. Return lines are not
+     * stored with one sign (older returns are positive, newer ones negative),
+     * so each line's absolute value is summed.
+     */
+    private void applyFreeItemReturns() {
+        Map<Long, PharmacyFreeItemReceivedDTO> byBillItemId = new HashMap<>();
+        for (PharmacyFreeItemReceivedDTO r : freeItemRows) {
+            if (r.getBillItemId() != null) {
+                byBillItemId.put(r.getBillItemId(), r);
+            }
+        }
+        if (byBillItemId.isEmpty()) {
+            return;
+        }
+        List<BillTypeAtomic> returnTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN_RETURN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        List<Long> ids = new ArrayList<>(byBillItemId.keySet());
+        int chunk = 500;
+        for (int i = 0; i < ids.size(); i += chunk) {
+            List<Long> part = ids.subList(i, Math.min(i + chunk, ids.size()));
+            String jpql = "select rbi.referanceBillItem.id, sum(abs(rp.qty)), sum(abs(rp.freeQty))"
+                    + " from BillItem rbi join rbi.pharmaceuticalBillItem rp join rbi.bill rb"
+                    + " where rbi.retired=false and rb.retired=false and rb.cancelled=false"
+                    + " and rb.billTypeAtomic in :rbtas"
+                    + " and rbi.referanceBillItem.id in :ids"
+                    + " and (rb.completed=true or exists (select sh.id from StockHistory sh where sh.pbItem=rp))"
+                    + " group by rbi.referanceBillItem.id";
+            Map<String, Object> m = new HashMap<>();
+            m.put("rbtas", returnTypes);
+            m.put("ids", part);
+            List<?> res = billItemFacade.findLightsByJpql(jpql, m);
+            for (Object o : res) {
+                Object[] row = (Object[]) o;
+                if (row == null || row[0] == null) {
+                    continue;
+                }
+                PharmacyFreeItemReceivedDTO r = byBillItemId.get(((Number) row[0]).longValue());
+                if (r == null) {
+                    continue;
+                }
+                double rawPaid = row[1] == null ? 0.0 : ((Number) row[1]).doubleValue();
+                double rawFree = row[2] == null ? 0.0 : ((Number) row[2]).doubleValue();
+                double receivedPaid = r.getPaidQty() == null ? 0.0 : r.getPaidQty();
+                double receivedFree = r.getFreeQty() == null ? 0.0 : r.getFreeQty();
+                // With "Purchase Return by Total Quantity" a return stores paid and
+                // free units together in qty (freeQty 0). Anything returned beyond
+                // the paid quantity received must therefore be free stock.
+                double returnedPaid = Math.min(rawPaid, receivedPaid);
+                double returnedFree = Math.min(rawFree + (rawPaid - returnedPaid), receivedFree);
+                r.setReturnedPaidQty(returnedPaid);
+                r.setReturnedFreeQty(returnedFree);
+            }
         }
     }
 
@@ -366,12 +453,16 @@ public class PharmacyProcurementReportController implements Serializable {
         Map<String, Set<Long>> groupBills = new HashMap<>();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         for (PharmacyFreeItemReceivedDTO r : freeItemRows) {
-            double paid = r.getPaidQty() == null ? 0.0 : r.getPaidQty();
-            double free = r.getFreeQty() == null ? 0.0 : r.getFreeQty();
+            double paid = r.getNetPaidQty();
+            double free = r.getNetFreeQty();
             double value = r.getFreeValue();
             freeItemTotalPaidQty += paid;
             freeItemTotalFreeQty += free;
             freeItemTotalFreeValue += value;
+            freeItemTotalReturnedPaidQty += r.getReturnedPaidQty();
+            freeItemTotalReceivedPaidQty += r.getPaidQty() == null ? 0.0 : r.getPaidQty();
+            freeItemTotalReceivedFreeQty += r.getFreeQty() == null ? 0.0 : r.getFreeQty();
+            freeItemTotalReturnedFreeQty += r.getReturnedFreeQty();
             freeItemLineCount++;
             allBills.add(r.getBillId());
 
@@ -1456,6 +1547,22 @@ public class PharmacyProcurementReportController implements Serializable {
 
     public double getFreeItemTotalFreeValue() {
         return freeItemTotalFreeValue;
+    }
+
+    public double getFreeItemTotalReturnedPaidQty() {
+        return freeItemTotalReturnedPaidQty;
+    }
+
+    public double getFreeItemTotalReturnedFreeQty() {
+        return freeItemTotalReturnedFreeQty;
+    }
+
+    public double getFreeItemTotalReceivedPaidQty() {
+        return freeItemTotalReceivedPaidQty;
+    }
+
+    public double getFreeItemTotalReceivedFreeQty() {
+        return freeItemTotalReceivedFreeQty;
     }
 
     public long getFreeItemLineCount() {

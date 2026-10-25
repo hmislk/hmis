@@ -425,6 +425,8 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
 
@@ -432,7 +434,7 @@ public class InwardReportControllerBht implements Serializable {
 
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                if (Boolean.TRUE.equals(dto.getCancellation()) || Boolean.TRUE.equals(dto.getRefund())) {
                     serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -491,12 +493,14 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
             serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                if (Boolean.TRUE.equals(dto.getCancellation()) || Boolean.TRUE.equals(dto.getRefund())) {
                     serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -1975,10 +1979,14 @@ public class InwardReportControllerBht implements Serializable {
                 + "WHERE bf.retired = false "
                 + "AND b.retired = false "
                 + "AND b.cancelled = false "
-                + "AND b.billType = :billType ";
+                // Issue #23846 - staff fees on inward service bills are professional
+                // payables too, even though no separate professional fee bill exists.
+                + "AND (b.billType = :billType "
+                + "OR (b.billTypeAtomic = :serviceBillAtomic AND bf.staff IS NOT NULL AND bf.feeValue > 0)) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
+        params.put("serviceBillAtomic", BillTypeAtomic.INWARD_SERVICE_BILL);
 
         jpql = appendProfessionalPaymentScopePredicate(jpql, params);
         jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
@@ -3248,9 +3256,12 @@ public class InwardReportControllerBht implements Serializable {
                 + " and bi.referanceBillItem.bill.referenceBill=:ref";
         HashMap<String, Object> reverseParams = new HashMap<>();
         reverseParams.put("ref", bill);
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the
+        // inward cancel page before #24679; the referenceBill join limits it to this request.
         reverseParams.put("btas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION));
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION));
         List<BillItem> reverseItems = billItemFacade.findByJpql(reverseJpql, reverseParams);
 
         Map<Long, Double> returnedByIssuedId = new HashMap<>();
