@@ -431,7 +431,10 @@ Wait for **every** check on the head commit: `validate-compilation`,
 
 - `pending` is **not** a stopping point. Poll it out — `ScheduleWakeup`
   ~270s (same cadence as `dev-issue` §14) and recheck; don't block with
-  `gh pr checks --watch` past a couple of minutes.
+  `gh pr checks --watch` past a couple of minutes. A background poll loop
+  must break only when the output lists the checks and none is `pending`;
+  `gh` errors (e.g. a transient `HTTP 401`) contain no `pending` either and
+  would end a "loop while pending" early.
 - On a **check failure**: read the failing job's log, fix the cause, commit,
   push (step 6's `finally` rule for `persistence.xml` applies to every push),
   go back to the top of this step.
