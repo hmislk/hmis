@@ -35,6 +35,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardFee;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
@@ -2245,6 +2246,44 @@ public class InwardBeanController implements Serializable {
         cpt = encounterFacade.findByJpql(sql, hm);
 
         return cpt;
+    }
+
+    /**
+     * The earliest theatre stay (TheatreRoom) still open on this admission or
+     * one of its child (surgery procedure) encounters, or null. A theatre stay
+     * bills by the hour until the patient is returned to the ward from theatre
+     * (PatientTransferController.returnToWard), so discharge must not proceed
+     * while one is open (#24718).
+     */
+    public PatientRoom findOpenTheatreRoom(PatientEncounter admission) {
+        if (admission == null || admission.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT pr FROM PatientRoom pr"
+                + " LEFT JOIN pr.patientEncounter e"
+                + " LEFT JOIN e.parentEncounter par"
+                + " WHERE TYPE(pr) = :theatreClass"
+                + " AND pr.retired = false"
+                + " AND (pr.discharged = false OR pr.discharged IS NULL)"
+                + " AND (e = :pe OR par = :pe)"
+                + " ORDER BY pr.admittedAt";
+        Map<String, Object> params = new HashMap<>();
+        params.put("theatreClass", TheatreRoom.class);
+        params.put("pe", admission);
+        return getPatientRoomFacade().findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * User message for a theatre stay that blocks {@code action}, e.g.
+     * "nursing discharge".
+     */
+    public String openTheatreRoomMessage(PatientRoom theatreRoom, String action) {
+        String theatre = theatreRoom.getRoomFacilityCharge() != null
+                ? theatreRoom.getRoomFacilityCharge().getName() : "theatre";
+        String since = theatreRoom.getAdmittedAt() != null
+                ? CommonFunctions.getDateFormat(theatreRoom.getAdmittedAt(), "dd MMM yyyy hh:mm a") : "an unknown time";
+        return "Patient is still in theatre (" + theatre + ", since " + since + "). Theatre charges keep running until the"
+                + " patient is returned to the ward from the Theatre Dashboard. Complete Return to Ward before " + action + ".";
     }
 
     public List<PatientItem> fetchPatientItem(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {

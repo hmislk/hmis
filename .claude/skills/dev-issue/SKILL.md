@@ -375,6 +375,10 @@ JNDI names noted in step 11 with `Edit`, leaving that change **unstaged**.
 
 ## 13. Create the PR
 
+Precondition: the step 7 end-to-end test (Playwright and/or API, with DB or API
+read-back) has passed against the rebuilt local deployment. Base is
+`development`, branched from `origin/development`.
+
 Run `mkdir -p "tmp/<issue>"` first, then write the PR body with the Write tool
 to `tmp/<issue>/pr-body.md` and pass
 `--body-file`. Never build it in a shell heredoc: backticks in code spans
