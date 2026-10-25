@@ -202,6 +202,11 @@ appending to, and give the same summary in chat:
 5. **Skipped**: issue numbers with a reason (open PR, owned by someone else).
 6. The retrospective from `dev-issue-unattended`.
 
+**Links.** Every issue, PR, comment and retro doc PR in the report file and in
+the chat summary is a full clickable URL (`https://github.com/hmislk/hmis/...`),
+never a bare `#N`. If the retrospective needs a doc PR, open it (after the user
+agrees) and put its link at the top of the report file's retrospective section.
+
 ## Common mistakes
 
 | Mistake | Fix |
