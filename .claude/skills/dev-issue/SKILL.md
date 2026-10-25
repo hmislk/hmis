@@ -127,6 +127,11 @@ Enter Plan Mode. Present:
 - The proposed change (files to touch, approach)
 - Anything uncertain (per CLAUDE.md rule "discuss uncertainties")
 
+If the plan reuses an existing calculation or report as the source of
+truth, check its output on one real local record against the screen
+users trust (e.g. the interim bill) before presenting the plan, and
+state the result in the plan.
+
 Exit Plan Mode only once the user approves or adjusts the plan.
 
 ## 4. Gather test context
