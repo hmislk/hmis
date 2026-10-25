@@ -171,6 +171,13 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
         try {
             nativeSqlService.settle(bill, billItemDataList);
+            try {
+                // settle() has committed; drop the copy its commit cached with zero totals (#24671)
+                nativeSqlService.evictSettledBillFromCache(bill.getId());
+            } catch (RuntimeException evictFailure) {
+                // The bill is already saved; a failed eviction must not be reported as a failed settle
+                LOGGER.log(Level.WARNING, "Post-settle cache eviction failed for bill id=" + bill.getId(), evictFailure);
+            }
 
             PrintBillData pbd = new PrintBillData();
             Department issuingDept = sessionController.getLoggedUser().getDepartment();
