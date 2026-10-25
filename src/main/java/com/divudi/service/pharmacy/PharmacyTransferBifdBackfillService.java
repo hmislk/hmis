@@ -148,7 +148,7 @@ public class PharmacyTransferBifdBackfillService {
             }
             processedBills++;
             createdBfds += bill.bfdId == null ? 1 : 0;
-            filledBfds += bill.bfdId != null ? 1 : 0;
+            filledBfds += bill.bfdId != null && bill.bfdIncomplete ? 1 : 0;
             for (ItemRow item : bill.items) {
                 if (item.needsWrite) {
                     if (item.bifdId == null) {
@@ -479,7 +479,8 @@ public class PharmacyTransferBifdBackfillService {
         sb.append("[Transfer BIFD Backfill]")
                 .append("\nTime: ").append(now)
                 .append("\nBillType: ").append(bill.type)
-                .append("\nAction: ").append(newBfd ? "Created BFD" : "Filled BFD")
+                .append("\nAction: ").append(newBfd ? "Created BFD"
+                        : bill.bfdIncomplete ? "Filled BFD" : "BFD unchanged")
                 .append(", created ").append(createdBifds).append(" BIFD(s)")
                 .append(", filled ").append(filledBifds).append(" empty BIFD(s)")
                 .append("\nSaleValue: ").append(sign * bill.retailSum)

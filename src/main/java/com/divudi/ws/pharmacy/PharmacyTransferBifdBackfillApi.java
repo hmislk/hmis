@@ -8,8 +8,9 @@ import com.divudi.service.pharmacy.PharmacyTransferBifdBackfillService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -96,8 +97,6 @@ public class PharmacyTransferBifdBackfillApi {
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
     /**
      * Backfill BIFD/BFD for stock transfer bills missing finance details.
      *
@@ -140,11 +139,12 @@ public class PharmacyTransferBifdBackfillApi {
             Date fromDate;
             Date toDate;
             try {
-                synchronized (DATE_FORMAT) {
-                    fromDate = DATE_FORMAT.parse(request.getFromDate().trim());
-                    toDate = DATE_FORMAT.parse(request.getToDate().trim());
-                }
-            } catch (ParseException ex) {
+                // LocalDate.parse is strict: rejects 2025-02-30 and trailing text
+                fromDate = Date.from(LocalDate.parse(request.getFromDate().trim())
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant());
+                toDate = Date.from(LocalDate.parse(request.getToDate().trim())
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant());
+            } catch (DateTimeParseException ex) {
                 return errorResponse("Invalid date format. Use yyyy-MM-dd", 400);
             }
             if (fromDate.after(toDate)) {
