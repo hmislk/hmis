@@ -495,7 +495,7 @@
                                                          class="ui-button-success mx-1"
                                                          ajax="false">
                                             <p:dataExporter type="xlsx"
-                                                            target="roomCharges"
+                                                            target="#{inwardBeanController.billTheatreTimeAsOt() ? 'roomCharges,theatreRoomCharges' : 'roomCharges'}"
                                                             fileName="Room_Charges" />
                                         </p:commandButton>
                                         <p:commandButton value="PDF"
@@ -503,7 +503,7 @@
                                                          class="ui-button-danger"
                                                          ajax="false">
                                             <p:dataExporter type="pdf"
-                                                            target="roomCharges"
+                                                            target="#{inwardBeanController.billTheatreTimeAsOt() ? 'roomCharges,theatreRoomCharges' : 'roomCharges'}"
                                                             fileName="Room_Charges" />
                                         </p:commandButton>
                                     </div>
