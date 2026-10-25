@@ -453,8 +453,9 @@ other publication point.
 
 Repeat, up to **3 cycles**:
 
-1. Use `Monitor` (poll `gh pr checks <PR#> --json name,bucket`, emit each
-   newly-resolved check) to wait for CI instead of a synchronous watch. Use
+1. Use `Monitor` (poll plain `gh pr checks <PR#>` and parse its
+   tab-separated output, column 2 = pass/fail/pending; older `gh` such as
+   2.45 has no `--json` here; emit each newly-resolved check) to wait for CI instead of a synchronous watch. Use
    `ScheduleWakeup` as a fallback heartbeat (~20 min) in case the monitor is
    missed, per this project's autonomous-session pattern.
 2. If checks fail: investigate, fix, push, go to 1.

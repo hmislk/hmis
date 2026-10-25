@@ -1,0 +1,157 @@
+---
+name: pick-and-ship-issues
+description: >
+  Use when asked to pick N open issues filed by a given person (optionally
+  only those assigned to a given user) and ship mergeable PRs for them
+  without the user's input, e.g. "take the 5 latest issues Irani raised and
+  make mergeable PRs", "/pick-and-ship-issues reporter=Irani96 count=5
+  assignee=buddhika75". Also use to re-run that selection later, since it
+  re-checks issues parked on an earlier run.
+---
+
+# Pick and Ship Issues
+
+Choose issues by evidence, then hand them to `dev-issue-unattended`. An issue
+is picked only if it is **clear** and its defect is **confirmed** in the code or
+**demonstrated** in the app. Every issue that is not picked gets a visible
+outcome on GitHub, so the next run knows what to skip.
+
+Invoking this skill authorizes everything below: issue comments, labels,
+assignee edits, board moves, closing issues, and the PRs that
+`dev-issue-unattended` opens. Never merge. Never put hospital data in a
+comment (see the
+[public content policy](../../../developer_docs/git/github-public-content-policy.md)).
+
+## Inputs
+
+| Input | Required | Meaning |
+|---|---|---|
+| `reporter` | yes | GitHub login of the issue author (`Irani96`). If a display name is given, resolve it from recent issue authors and say which login you used. |
+| `count` | yes | How many PRs to ship. |
+| `assignee` | no | Only issues assigned to this login. |
+
+## State kept on GitHub (labels)
+
+Create a label with `gh label create` if it is missing.
+
+| Label | Set when | Re-eligible when |
+|---|---|---|
+| `triage: needs-info` | The issue is not clear (step 2). | A comment without the triage marker is posted after the latest marker comment. Remove the label, then triage again. |
+| `triage: needs-human` | The issue is clear but cannot be confirmed or demonstrated with the tools here, or it needs a decision this workflow cannot make (step 5). | Never automatically. Only when the user removes the label. |
+
+Every comment this skill posts ends with a hidden marker, either
+`<!-- pick-and-ship:needs-info -->` or `<!-- pick-and-ship:needs-human -->`.
+The user's own replies come from the same `gh` account, so the marker is the
+only way to tell the skill's comments apart from replies.
+
+## 1. Build the candidate list
+
+```bash
+gh issue list --repo hmislk/hmis --state open --author <reporter> \
+  [--assignee <assignee>] --limit 100 \
+  --json number,title,labels,assignees,createdAt --jq 'sort_by(.createdAt) | reverse'
+```
+
+Walk the list newest first. Skip the issue without commenting if any of these
+holds:
+- It has an open PR (`gh pr list --state open --search "<n> in:body"`, or a
+  branch named `<n>-*` on origin).
+- With no `assignee` input: it is assigned to someone other than the current
+  `gh` user. Another developer owns it.
+- It is labelled `triage: needs-human`.
+- It is labelled `triage: needs-info` and nobody has replied since the latest
+  marker comment. If somebody has replied, remove the label and triage it.
+
+Triage issues one at a time until `count` issues are picked or the list runs
+out. Triage outcomes do not count toward `count`; only picked issues do.
+
+## 2. Gate: clear, detailed and unambiguous
+
+The issue must state all of the following, either in its body or in later
+comments:
+1. **Where:** the page or menu path, report name, or API.
+2. **Current vs expected behaviour**, specific enough to tell pass from fail.
+3. **How to reach it:** steps or conditions to trigger it. For reports and
+   features, the filters, columns or acceptance criteria.
+4. **No open question** with two plausible answers that the code cannot
+   settle.
+
+If any is missing:
+- Comment `@<author>`. Say what was looked at, then list **only** the missing
+  items, using the same wording as
+  `dev-issue-unattended` › "Insufficient issue description". Ask for a
+  redacted example, never a real bill or BHT number.
+- Add the `triage: needs-info` label. Add the author as an assignee
+  alongside any existing assignees. Set the board Status to **Backlog**.
+
+Then move on to the next candidate.
+
+## 3. Confirm by reading the code
+
+Find the controller, service and XHTML involved, and the git history
+(`git log -S`, `git blame`, related issues). If the code clearly shows the
+defect, or clearly lacks the requested feature, the issue is **confirmed**:
+pick it and go to step 6. Record the file:line evidence; the PR uses it.
+
+## 4. Otherwise, demonstrate it
+
+Use local Payara with Playwright, reaching pages through the menus only, as
+in the `playwright-e2e` skill. Use or create local test data as
+`dev-issue-unattended` step 4 describes. If you see the defect, pick the
+issue and keep the screenshots.
+
+If a reasonable, documented attempt does not show the defect, and the gate in
+step 2 has passed:
+- Comment `@<author>` with what you tried and what you saw. Ask them to
+  **reopen with fresh steps and details, or schedule a meeting** to go through
+  it live.
+- `gh issue close <n> --reason "not planned"`, set the board Status to
+  **Dev Completed**, and read the status back (see
+  [Project board §4](../../../developer_docs/github/project-board-integration.md#4-closing-an-issue-without-a-pr)).
+
+## 5. Not suitable for this workflow
+
+Apply this instead of step 4's close when the defect cannot be confirmed or
+demonstrated **because of the tooling**, not because of the report. Typical
+causes:
+- Hardware, or an external device or service: printers, receipt layouts on
+  paper, barcode scanners, lab analyzers, SMS or email gateways, card
+  terminals, third-party APIs without local credentials.
+- Needs production-scale data, real concurrency or timing, more than one live
+  user session, or a non-Linux client.
+- The fix needs a schema migration, a privilege or security change, or a
+  business decision. These are hard limits of `dev-issue-unattended`.
+
+Comment with the reason (what blocks automation, not a request to the
+author), add `triage: needs-human`, and do not close the issue. These issues
+go at the top of the final report for the user.
+
+## 6. Ship the picked issues
+
+Run the `dev-issue-unattended` skill once, giving it the picked issue numbers
+as a batch. If it stops on an issue it was given (cannot reproduce, needs
+info, a hard limit), the stop counts against `count`. Do not top up the
+batch. Report the shortfall instead.
+
+## 7. Report
+
+Write `tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` and give the same
+summary in chat:
+
+1. **Needs your intervention**: every open `triage: needs-human` issue from
+   this reporter, this run's first, each with a one-line reason.
+2. **Shipped**: the `dev-issue-unattended` step 15 summary.
+3. **Waiting for the reporter**: needs-info issues with comment links.
+4. **Closed, could not demonstrate**: with comment links.
+5. **Skipped**: issue numbers with a reason (open PR, owned by someone else).
+6. The retrospective from `dev-issue-unattended`.
+
+## Common mistakes
+
+| Mistake | Fix |
+|---|---|
+| Counting a needs-info or closed issue toward `count` | Only picked issues count. |
+| Taking up a needs-info issue again because the user commented from the same account | Look for the marker. A reply is any later comment without it. |
+| Closing an issue that Playwright simply cannot reach | That is `triage: needs-human`, not "could not demonstrate". |
+| Asking for everything in a fixed template | Ask only for what is missing. |
+| Picking from a reporter's issues that another developer is assigned to | Skip them unless the user named that assignee. |
