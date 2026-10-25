@@ -419,7 +419,9 @@ public class RoomChangeController implements Serializable {
      * Theatre and guardian stays themselves can still be discharged here.
      */
     private boolean isTheatreOpenForLastWardRoom(PatientRoom pR) {
-        if (pR == null || pR.getNextRoom() != null || pR.getPatientEncounter() == null
+        // A removed (retired) next room leaves the link in place, so only an
+        // active next room means this is not the last ward room.
+        if (pR == null || (pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) || pR.getPatientEncounter() == null
                 || pR instanceof TheatreRoom || pR instanceof GuardianRoom) {
             return false;
         }
