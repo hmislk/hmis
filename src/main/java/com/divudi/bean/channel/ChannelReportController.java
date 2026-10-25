@@ -484,7 +484,7 @@ public class ChannelReportController implements Serializable {
             return;
         }
 
-        bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getName());
+        bookingsByShiftDto.setProcessedBy(sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle());
 
         if (bookingsByShiftDto.isEmpty()) {
             JsfUtil.addErrorMessage("No bills match the selected filters for this shift.");

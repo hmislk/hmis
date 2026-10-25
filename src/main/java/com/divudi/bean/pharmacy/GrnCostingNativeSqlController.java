@@ -428,6 +428,24 @@ public class GrnCostingNativeSqlController implements Serializable {
     }
 
     /**
+     * Inserts or updates every non-retired expense row of the current GRN.
+     */
+    private void saveExpenseLines(long billId) {
+        if (getCurrentGrnBillPre().getBillExpenses() == null) {
+            return;
+        }
+        for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
+            if (expense == null || expense.isRetired()) {
+                continue;
+            }
+            expense.setExpenseBill(getCurrentGrnBillPre());
+            GrnLineData expenseLine = toExpenseLineData(expense);
+            long expenseId = grnCostingNativeSqlService.saveExpenseLine(billId, expenseLine);
+            expense.setId(expenseId);
+        }
+    }
+
+    /**
      * Unguarded core of {@link #requestWithSaveApprove()}. Called directly
      * (bypassing the PharmacyGrnSave check) by {@link #finalizeGrnWithSaveApprove()}
      * and {@link #approveGrnWithSaveApprove()}, which auto-save a not-yet-
@@ -525,17 +543,7 @@ public class GrnCostingNativeSqlController implements Serializable {
             }
         }
 
-        if (getCurrentGrnBillPre().getBillExpenses() != null) {
-            for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
-                if (expense == null || expense.isRetired()) {
-                    continue;
-                }
-                expense.setExpenseBill(getCurrentGrnBillPre());
-                GrnLineData expenseLine = toExpenseLineData(expense);
-                long expenseId = grnCostingNativeSqlService.saveExpenseLine(billId, expenseLine);
-                expense.setId(expenseId);
-            }
-        }
+        saveExpenseLines(billId);
 
         grnCostingNativeSqlService.updateDraftBillHeader(
                 billId,
@@ -558,12 +566,16 @@ public class GrnCostingNativeSqlController implements Serializable {
         calDifference();
 
         grnCostingNativeSqlService.updateBillTotals(billId, getCurrentGrnBillPre().getNetTotal(), getCurrentGrnBillPre().getTotal());
+        grnCostingNativeSqlService.updateBillExpenseTotals(billId, getCurrentGrnBillPre().getExpenseTotal(),
+                getCurrentGrnBillPre().getExpensesTotalConsideredForCosting(),
+                getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
 
         BillFinanceDetails bfd = getCurrentGrnBillPre().getBillFinanceDetails();
         double totalDiscount = bfd != null && bfd.getTotalDiscount() != null ? bfd.getTotalDiscount().doubleValue() : 0.0;
         double totalExpense = bfd != null && bfd.getTotalExpense() != null ? bfd.getTotalExpense().doubleValue() : 0.0;
         double totalTax = bfd != null && bfd.getTotalTaxValue() != null ? bfd.getTotalTaxValue().doubleValue() : 0.0;
-        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax);
+        BigDecimal totalBillValue = bfd != null ? bfd.getTotalBillValue() : null;
+        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, totalBillValue);
 
         JsfUtil.addSuccessMessage("GRN Saved");
     }
@@ -680,6 +692,11 @@ public class GrnCostingNativeSqlController implements Serializable {
 
         if (getCurrentGrnBillPre().getId() == null) {
             doRequestWithSaveApprove();
+        } else {
+            // Expenses added or edited since the last Save exist only in memory;
+            // write them now so the expense totals stored at approval match the
+            // stored expense rows (#24709).
+            saveExpenseLines(getCurrentGrnBillPre().getId());
         }
 
         // Ensure bill discount distribution and totals are current BEFORE processing
@@ -747,6 +764,12 @@ public class GrnCostingNativeSqlController implements Serializable {
         request.setPrePositiveNetTotalForPayment(prePositiveNetTotalForPayment);
         request.setPostNegationNetTotal(postNegationNetTotal);
         request.setPostNegationTotal(postNegationTotal);
+        BillFinanceDetails approveBfd = getCurrentGrnBillPre().getBillFinanceDetails();
+        request.setTotalBillValue(approveBfd != null && approveBfd.getTotalBillValue() != null
+                ? approveBfd.getTotalBillValue().abs() : null);
+        request.setExpenseTotal(getCurrentGrnBillPre().getExpenseTotal());
+        request.setExpensesTotalConsideredForCosting(getCurrentGrnBillPre().getExpensesTotalConsideredForCosting());
+        request.setExpensesTotalNotConsideredForCosting(getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
         request.setBalanceValue(balanceValue);
         request.setPoFullyReceived(poFullyReceived);
 

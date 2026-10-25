@@ -44,7 +44,8 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
                 + " from PharmaceuticalBillItem p "
                 + " JOIN FETCH p.billItem bi "
                 + " where p.billItem.bill=:b "
-                + " and p.billItem.retired=false";
+                + " and p.billItem.retired=false"
+                + " order by p.billItem.id";
         HashMap hm = new HashMap();
         hm.put("b", bill);
         List<PharmaceuticalBillItem> btm = findByJpql(sql, hm);

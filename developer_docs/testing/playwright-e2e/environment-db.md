@@ -22,6 +22,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [146. Clicks register as no-ops: the MCP browser profile is zoomed (`devicePixelRatio` 0.75)](#146-clicks-register-as-no-ops-the-mcp-browser-profile-is-zoomed-devicepixelratio-075)
 - [148. Testing a failure path: inject the failure with a local DB trigger, never in code](#148-testing-a-failure-path-inject-the-failure-with-a-local-db-trigger-never-in-code)
 - [152. Room-charge totals never match the room table on a package admission](#152-room-charge-totals-never-match-the-room-table-on-a-package-admission)
+- [158. Every page shows only "Change Password" on a prod-copy DB](#158-every-page-shows-only-change-password-on-a-prod-copy-db)
 
 ---
 
@@ -488,3 +489,22 @@ An admission with `PATIENTENCOUNTER.INPATIENTPACKAGE_ID` set shows flat package
 allocations for Room/MO/Nursing Charges, not the calculated room charges. When
 picking a test admission for room-charge checks, filter
 `INPATIENTPACKAGE_ID IS NULL`.
+
+## 158. Every page shows only "Change Password" on a prod-copy DB
+
+The restored user's password is older than the 30-day limit, so each page
+renders the Change Password form under a live menu bar. Change it through
+that form (local test data), then record the new password in the
+credentials store under that DB's name.
+
+## 163. Stopping a build and hot-copying XHTML
+
+Stop a running Maven build by the PID of its `mvn` shell only. Killing `java` processes by name also kills Payara. An XHTML-only change can be copied into the deployed app directory without a rebuild, but a page whose Java class also changed needs a full rebuild and redeploy.
+
+## 164. Copied DB has fewer tables than the source
+
+`mysqldump src | mysql dst` stops at the first "Row size too large" table, and the copy looks fine. Use `mysqldump src | mysql --init-command="SET SESSION innodb_strict_mode=0" dst`, then compare `information_schema.tables` counts for both schemas before testing.
+
+## 165. `pkill -f` / `pgrep -f` kills or finds your own shell
+
+The pattern also matches the shell running the command (exit 144). Find Payara with `ps -C java -o pid=,args= | grep domains/rh` (replace `rh` with your domain) and stop that PID.

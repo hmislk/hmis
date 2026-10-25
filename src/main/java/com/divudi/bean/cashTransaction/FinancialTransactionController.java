@@ -1448,6 +1448,7 @@ public class FinancialTransactionController implements Serializable {
         resetClassVariables();
         prepareToAddNewFundDepositBill();
         loadDepositableNonCashPayments();
+        depositCashBook = findLoggedDepartmentCashBook();
         return "/cashier/deposit_funds?faces-redirect=true";
     }
 
@@ -9444,7 +9445,16 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.WithdrawalFundBill);
         currentBill.setBillTypeAtomic(BillTypeAtomic.FUND_WITHDRAWAL_BILL);
         currentBill.setBillClassType(BillClassType.Bill);
-        withdrawalCashBook = null;
+        withdrawalCashBook = findLoggedDepartmentCashBook();
+    }
+
+    // Default cash book for deposits and withdrawals; the user may still pick any other.
+    private CashBook findLoggedDepartmentCashBook() {
+        Department loggedDepartment = sessionController.getDepartment();
+        if (loggedDepartment == null) {
+            return null;
+        }
+        return cashBookController.findAndSaveCashBookBySite(loggedDepartment.getSite(), loggedDepartment.getInstitution(), loggedDepartment);
     }
 
     //Damith
