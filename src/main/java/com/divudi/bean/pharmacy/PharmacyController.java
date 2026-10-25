@@ -6897,16 +6897,20 @@ public class PharmacyController implements Serializable {
 
     public void generateReportByDepartmentWiseBill(List<BillTypeAtomic> billTypeAtomics) {
         Map<String, Object> parameters = new HashMap<>();
+        // LEFT JOINs keep bills whose optional relations are null; a path in SELECT would inner-join and drop them
         StringBuilder sql = new StringBuilder(
-                "SELECT b.toDepartment, "
-                + "b.department, "
+                "SELECT td, "
+                + "d, "
                 + "b.deptId, "
                 + "b.createdAt, "
-                + "b.backwardReferenceBill, "
-                + "b.backwardReferenceBill.deptId, "
+                + "brb, "
+                + "brb.deptId, "
                 + "SUM(b.netTotal), "
                 + "b "
                 + "FROM Bill b "
+                + "LEFT JOIN b.toDepartment td "
+                + "LEFT JOIN b.department d "
+                + "LEFT JOIN b.backwardReferenceBill brb "
                 + "WHERE b.retired = false "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND b.billTypeAtomic IN :billTypeAtomics "
@@ -6918,7 +6922,7 @@ public class PharmacyController implements Serializable {
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
+        sql.append(" GROUP BY td, d, b.deptId, b.createdAt, brb, brb.deptId, b");
         sql.append(" ORDER BY b.id");
 
         Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
@@ -6981,7 +6985,7 @@ public class PharmacyController implements Serializable {
             }
 
             departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
+                    .sorted(Map.Entry.comparingByKey(Comparator.nullsLast(Comparator.comparing(Department::getName, Comparator.nullsLast(Comparator.naturalOrder())))))
                     .flatMap(entry -> entry.getValue().stream())
                     .collect(Collectors.toList());
 
@@ -7357,14 +7361,19 @@ public class PharmacyController implements Serializable {
         StringBuilder sql = new StringBuilder();
 
         // Select all department information plus aggregate values
+        // LEFT JOINs keep bills whose department or finance details are null; a path in SELECT would inner-join and drop them
         sql.append("SELECT ")
-                .append("b.department.name, ")
-                .append("b.fromDepartment.name, ")
-                .append("b.toDepartment.name, ")
-                .append("SUM(b.billFinanceDetails.totalPurchaseValue), ")
-                .append("SUM(b.billFinanceDetails.totalCostValue), ")
-                .append("SUM(b.billFinanceDetails.totalRetailSaleValue) ")
+                .append("d.name, ")
+                .append("fd.name, ")
+                .append("td.name, ")
+                .append("SUM(bfd.totalPurchaseValue), ")
+                .append("SUM(bfd.totalCostValue), ")
+                .append("SUM(bfd.totalRetailSaleValue) ")
                 .append("FROM Bill b ")
+                .append("LEFT JOIN b.department d ")
+                .append("LEFT JOIN b.fromDepartment fd ")
+                .append("LEFT JOIN b.toDepartment td ")
+                .append("LEFT JOIN b.billFinanceDetails bfd ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billTypeAtomic IN :btAtomics ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -7376,8 +7385,8 @@ public class PharmacyController implements Serializable {
         additionalCommonFilltersForBillEntity(sql, parameters);
 
         // Group by all three department fields to satisfy MySQL ONLY_FULL_GROUP_BY
-        sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
-        sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
+        sql.append(" GROUP BY d.name, fd.name, td.name ");
+        sql.append(" ORDER BY SUM(bfd.totalRetailSaleValue) DESC");
 
         try {
             List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -7398,6 +7407,9 @@ public class PharmacyController implements Serializable {
                 String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
                 if (keyDepartment == null) {
                     keyDepartment = mainDepartment;
+                }
+                if (keyDepartment == null) {
+                    keyDepartment = "(No department)";
                 }
 
                 // Create or update main summary entry
