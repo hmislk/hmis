@@ -99,6 +99,9 @@
                                     <ph:grn_with_costing_custom_2
                                         rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 2', true)}"
                                         bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                    <ph:grn_with_costing_custom_3
+                                        rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 3', true)}"
+                                        bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                                 </h:panelGroup>
                             </h:panelGroup>
                         </div>
@@ -149,6 +152,14 @@
                                                 value="#{pharmacyConfigController.grnReceiptCustom2}" />
                                             <p:outputLabel for="grnReceiptCustom2" value="Custom Format 2" class="ms-2" />
                                             <small class="form-text text-muted d-block">Custom GRN receipt format 2</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="grnReceiptCustom3"
+                                                value="#{pharmacyConfigController.grnReceiptCustom3}" />
+                                            <p:outputLabel for="grnReceiptCustom3" value="Custom Format 3" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Custom GRN receipt format 3</small>
                                         </div>
 
                                     </div>
