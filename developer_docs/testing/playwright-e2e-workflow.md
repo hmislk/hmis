@@ -401,12 +401,13 @@ patient details, credentials, or other sensitive data. Prefer capturing
 configuration screens, reports with non-sensitive rows, or cropped states that
 show the fixed control without private information.
 
-On a local DB restored from production, also blank staff names (e.g. To Staff,
-Issued By) and bill/BHT numbers in screenshots before they leave `tmp/` — they
-are real records even when you created the test bill.
+On a local DB restored from production, blank staff names (e.g. To Staff,
+Issued By) and bill/BHT numbers before invoking `browser_take_screenshot`.
+The screenshot written to `tmp/` must already be redacted — these are real
+records even when you created the test bill.
 
-1. Capture verification screenshots with `browser_take_screenshot` into the
-   project `tmp/` folder.
+1. Capture only redacted verification screenshots with
+   `browser_take_screenshot` into the project `tmp/` folder.
 2. For user-facing documentation, copy final screenshots into the sibling wiki
    repo under `../hmis.wiki/images/`.
 3. **Embed each image in the wiki page for the feature** — this is the step
