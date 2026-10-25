@@ -49,11 +49,11 @@
                                             <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
                                         </p:column>
                                         <p:ajax event="itemSelect" process="acPt" 
-                                                update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
+                                                update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} :#{p:resolveFirstComponentWithId('pPagesHolder',view).clientId} "/>
                                     </p:autoComplete> 
 
                                     <p:panel header="Add New ...">
-                                        <div class="d-flex gap-2">
+                                        <div class="d-flex flex-wrap gap-2">
                                             <!--                                            <p:commandButton 
                                                                                                                                         id="btnToNewTestFirst" 
                                                                                                                                         value="Test-1" 
@@ -75,9 +75,63 @@
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Flag" action="#{investigationItemController.addNewFlag() }"/>
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Image" action="#{investigationItemController.addNewImage() }"/>
                                             <p:commandButton ajax="false" icon="fa fa-plus" value="Html" action="#{investigationItemController.addNewHtml() }"/>
+                                            <p:commandButton ajax="false" icon="fa fa-plus" value="Analyzer Image" rendered="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General'}" action="#{investigationItemController.addNewReportImage()}"/>
                                         </div>
 
                                     </p:panel>
+
+                                    <h:panelGroup id="pPagesHolder" layout="block">
+                                    <p:panel id="pPages" header="Pages" rendered="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General'}" class="mt-2">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <p:selectOneButton id="btnDesignerPage" value="#{investigationItemController.designerPage}">
+                                                <f:selectItems value="#{investigationItemController.designerPageItems}" var="pg" itemLabel="Page #{pg}" itemValue="#{pg}"/>
+                                                <p:ajax process="@this" update="pPageSettings :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"/>
+                                            </p:selectOneButton>
+                                            <p:commandButton value="Add Page" icon="fa fa-plus" action="#{investigationItemController.addPage()}" ajax="false"/>
+                                            <p:commandButton value="Remove Page" icon="fa fa-trash" ajax="false"
+                                                             disabled="#{not investigationItemController.lastDesignerPageEmpty}"
+                                                             action="#{investigationItemController.removeLastPage()}"
+                                                             onclick="return confirm('Remove the last (empty) page?');"/>
+                                        </div>
+                                        <h:panelGroup id="pPageSettings" layout="block" class="mt-2">
+                                            <div>
+                                                <p:selectBooleanCheckbox itemLabel="Show the common report (patient details) on this page" value="#{investigationItemController.designerPageSettings.commonReport}">
+                                                    <p:ajax process="@this" update="pPageSettings :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"/>
+                                                </p:selectBooleanCheckbox>
+                                            </div>
+                                            <h:outputText rendered="#{not investigationItemController.designerPageSettings.commonReport}"
+                                                          style="color: #b45309;"
+                                                          value="Patient identification will not print on this page unless you add it as items of the page."/>
+                                            <div class="mt-1">
+                                                <p:selectBooleanCheckbox itemLabel="Print the page number on this page" value="#{investigationItemController.designerPageSettings.pageNumber}">
+                                                    <p:ajax process="@this" update="pPageSettings :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"/>
+                                                </p:selectBooleanCheckbox>
+                                            </div>
+                                            <h:panelGroup rendered="#{investigationItemController.designerPageSettings.pageNumber}" layout="block" class="mt-1">
+                                                <h:outputText value="Text ({page} and {pages} are replaced) " class="me-2"/>
+                                                <p:inputText value="#{investigationItemController.designerPageSettings.pageNumberText}" autocomplete="off" style="width: 12em;">
+                                                    <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}"/>
+                                                </p:inputText>
+                                                <p:commandButton value="Position" icon="fa fa-arrows" class="ms-2" process="@this" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('dtbItem',view).clientId}" action="#{investigationItemController.editPageNumberPlacement()}"/>
+                                                <p:commandButton value="Save Position" icon="fa fa-save" class="ms-2"
+                                                                 process="@this :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"
+                                                                 update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}"
+                                                                 action="#{investigationItemController.saveSelected()}"/>
+                                            </h:panelGroup>
+                                            <div class="mt-1">
+                                                <h:outputText value="Background " class="me-2"/>
+                                                <p:selectOneMenu value="#{investigationItemController.designerPageSettings.background}">
+                                                    <f:selectItem itemLabel="This page's own (falls back to page 1's)" itemValue="own"/>
+                                                    <f:selectItem itemLabel="Same as page 1" itemValue="page1"/>
+                                                    <f:selectItem itemLabel="None" itemValue="none"/>
+                                                    <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}"/>
+                                                </p:selectOneMenu>
+                                                <small>Upload a page's own background under Report Template Image Upload.</small>
+                                            </div>
+                                            <p:commandButton value="Save Page Settings" icon="fa fa-save" class="mt-2" process="pPageSettings" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" action="#{investigationItemController.saveDesignerPageSettings()}"/>
+                                        </h:panelGroup>
+                                    </p:panel>
+                                    </h:panelGroup>
 
 
                                     <!--                                    <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
@@ -311,7 +365,7 @@
                                             class="w-100"
                                             filter="true">
                                             <f:selectItem itemLabel="Select" />
-                                            <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
+                                            <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General' ? (' (page ' += (ii.pageNo lt 1 ? 1 : ii.pageNo) += ')') : ''}" itemValue="#{ii}" />
                                             <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                         </p:selectOneMenu>
                                         <p:commandButton 
@@ -416,6 +470,13 @@
                                                             <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                                         </p:inputText>
                                                     </div>
+                                                    <h:panelGroup layout="block" class="col-3 d-flex gap-1" rendered="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General'}" title="0 or 1 is page 1">
+                                                        <h:outputText value="Page" class="mt-2"/>
+                                                        <p:selectOneMenu style="width: 80px;" id="cmbItemPage" value="#{investigationItemController.current.pageNo}">
+                                                            <f:selectItems value="#{investigationItemController.designerPageItems}" var="pg" itemLabel="#{pg}" itemValue="#{pg}"/>
+                                                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('divPrint',view).clientId} :#{p:resolveFirstComponentWithId('dtbItem',view).clientId}" />
+                                                        </p:selectOneMenu>
+                                                    </h:panelGroup>
                                                 </div>
 
                                                 <div class="row mt-2">
@@ -716,12 +777,22 @@
                                         <p:ajax process="btnModes"  update="divPrint" ></p:ajax>
                                     </p:selectOneButton>
 
+                                    <p:selectBooleanButton id="btnPreviewBackground" rendered="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General'}"
+                                                           value="#{investigationItemController.previewBackground}"
+                                                           onLabel="Background shown" offLabel="Background hidden" class="ms-2">
+                                        <p:ajax process="@this" update="divPrint"/>
+                                    </p:selectBooleanButton>
+
                                     <h:panelGroup id="divPrint" class="w-100">
                                         <div style="border: 1px solid black; margin: 0px; padding: 0px;background-color: white!important;width:21.0cm!important; height: 29.7cm!important; position: relative; " >
-                                            <ez:common_report commonReportFormat="#{investigationItemController.currentInvestigation.reportFormat}"/>
+                                            <ez:common_report commonReportFormat="#{investigationItemController.currentInvestigation.reportFormat}"
+                                                              showBackground="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General' and investigationItemController.previewBackground and investigationItemController.designerPageSettings.background ne 'none'}"
+                                                              pageNo="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General' and investigationItemController.designerPageCount gt 1 ? investigationItemController.designerPage : null}"
+                                                              backgroundPage="#{investigationItemController.designerPageSettings.background eq 'page1' ? 1 : investigationItemController.designerPage}"
+                                                              backgroundOnly="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General' and investigationItemController.designerPageCount gt 1 and not investigationItemController.designerPageSettings.commonReport}"/>
 
                                             <ui:repeat value="#{investigationItemController.items}" rendered="#{investigationItemController.currentInvestigation.reportType eq 'General'}" var="myIi" >
-                                                <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
+                                                <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation' and myIi.name ne '@page-settings' and (not investigationItemController.multiPageEnabled or investigationItemController.designerPage eq (myIi.pageNo lt 1 ? 1 : myIi.pageNo))}">
 
 
                                                     <h:panelGroup rendered="#{investigationItemController.editMode eq 'View_Mode'}" >
@@ -802,6 +873,10 @@
                                                 </h:panelGroup>
 
                                             </h:panelGroup>
+
+                                            <h:outputText rendered="#{investigationItemController.multiPageEnabled and investigationItemController.currentInvestigation.reportType eq 'General' and investigationItemController.designerPageCount gt 1 and investigationItemController.designerPageSettings.pageNumber}"
+                                                          value="#{investigationItemController.designerPageNumberText}"
+                                                          style="#{investigationItemController.designerPageNumberStyle}"/>
                                         </div>
                                     </h:panelGroup>
 

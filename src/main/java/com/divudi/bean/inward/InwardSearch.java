@@ -28,6 +28,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -40,6 +41,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
@@ -106,8 +108,12 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     private com.divudi.service.AuditService auditService;
+    @EJB
+    private PatientItemFacade patientItemFacade;
     @Inject
     private NotificationController notificationController;
+    @Inject
+    private InwardRawTextReceiptController inwardRawTextReceiptController;
     @EJB
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
@@ -164,6 +170,7 @@ public class InwardSearch implements Serializable {
      */
     private Long appointmentReceiptBillId;
     private InwardBillReceiptDTO appointmentBillReceipt;
+    private InwardBillReceiptDTO cancelledBillReceipt;
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     @Temporal(TemporalType.TIME)
@@ -390,7 +397,10 @@ public class InwardSearch implements Serializable {
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_PAYMENT_REFUND:
-                return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
+                // Same page the refund reprint's Cancel opens; cancelBillRefund() works on this bill.
+                paymentMethodData = new PaymentMethodData();
+                printPreview = false;
+                return "inward_cancel_bill_refund?faces-redirect=true";
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
@@ -2671,6 +2681,7 @@ public class InwardSearch implements Serializable {
         }
 
         cancelBillItems(cb, source);
+        retireTimedServicesOfCancelledBill(source);
 
         source.setCancelled(true);
         source.setCancelledBill(cb);
@@ -2684,6 +2695,46 @@ public class InwardSearch implements Serializable {
         getBillBean().updateBatchBill(source.getForwardReferenceBill());
 
         return cb;
+    }
+
+    /**
+     * Retires the timed services whose charge sits on a bill being cancelled,
+     * the same way the Timed Services page's Remove does. The bill and its
+     * contra-bill already net the charge to zero; without this the service
+     * itself kept running, so the interim bill and the Invoice Journal added
+     * live accrual for it, nursing discharge was blocked by it, and the
+     * discharge auto-stop re-priced it onto the cancelled bill (#24548).
+     */
+    private void retireTimedServicesOfCancelledBill(Bill source) {
+        String jpql = "select i from PatientItem i"
+                + " where i.retired = false"
+                + " and type(i.item) = :cls"
+                + " and i.billItem.bill = :bill";
+        Map<String, Object> params = new HashMap<>();
+        params.put("cls", com.divudi.core.entity.inward.TimedItem.class);
+        params.put("bill", source);
+        List<PatientItem> items = patientItemFacade.findByJpql(jpql, params);
+        if (items == null) {
+            return;
+        }
+        Date now = new Date();
+        for (PatientItem pi : items) {
+            Map<String, Object> before = new java.util.LinkedHashMap<>();
+            before.put("item", pi.getItem() != null ? pi.getItem().getName() : null);
+            before.put("fromTime", pi.getFromTime());
+            before.put("toTime", pi.getToTime());
+            before.put("serviceValue", pi.getServiceValue());
+            pi.setRetired(true);
+            pi.setRetiredAt(now);
+            pi.setRetirer(getSessionController().getLoggedUser());
+            pi.setRetireComments("Bill " + source.getDeptId() + " cancelled");
+            patientItemFacade.edit(pi);
+            Map<String, Object> after = new java.util.LinkedHashMap<>();
+            after.put("retired", true);
+            after.put("cancelledBill", source.getDeptId());
+            auditService.logEncounterAudit(pi.getPatientEncounter(), "Timed Service Retired With Cancelled Bill",
+                    before, after, getSessionController().getLoggedUser(), "PatientItem", pi.getId());
+        }
     }
 
     /**
@@ -2875,7 +2926,7 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelBill(getBill(), comment, paymentMethod, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
 
             //Copy & paste
             if (cb.getId() == null) {
@@ -3210,6 +3261,30 @@ public class InwardSearch implements Serializable {
             appointmentBillReceipt = billFacade.findInwardBillReceiptDTO(appointmentReceiptBillId);
         }
         return appointmentBillReceipt;
+    }
+
+    /**
+     * DTO of the cancellation bill of {@link #bill}, for the 5x5 and A4
+     * cancellation receipts on the inward deposit/payment cancel pages.
+     * Cached per cancellation bill id, because the receipt templates read it
+     * many times per render.
+     */
+    public InwardBillReceiptDTO getCancelledBillReceipt() {
+        Bill cb = bill == null ? null : bill.getCancelledBill();
+        if (cb == null || cb.getId() == null) {
+            return null;
+        }
+        if (cancelledBillReceipt == null || !cb.getId().equals(cancelledBillReceipt.getBillId())) {
+            cancelledBillReceipt = billFacade.findInwardBillReceiptDTO(cb.getId());
+            if (cancelledBillReceipt != null) {
+                // A cancellation bill points at its original through billedBill, not
+                // referenceBill.
+                if (cancelledBillReceipt.getReferenceBillDeptId() == null && cb.getBilledBill() != null) {
+                    cancelledBillReceipt.setReferenceBillDeptId(cb.getBilledBill().getDeptId());
+                }
+            }
+        }
+        return cancelledBillReceipt;
     }
 
     public void markAsChecked() {
@@ -3671,61 +3746,29 @@ public class InwardSearch implements Serializable {
 
     /**
      * Streams the selected (reprint) inward receipt as a raw .prn for dot-matrix
-     * printing. Always a duplicate. Heading derived from the bill type.
+     * printing, marked as a duplicate. Heading derived from the bill type.
      */
     public void streamReprintReceiptAsRawText() {
+        streamReprintRawText(true);
+    }
+
+    /**
+     * Streams the selected (reprint) inward receipt as a raw .prn without the
+     * duplicate marker, for reprinting the original when the first print
+     * failed (e.g. printer breakdown).
+     */
+    public void streamReprintOriginalReceiptAsRawText() {
+        streamReprintRawText(false);
+    }
+
+    private void streamReprintRawText(boolean duplicate) {
         if (getBill() == null || getBill().getId() == null) {
             JsfUtil.addErrorMessage("Select a bill to reprint first.");
             return;
         }
-        com.divudi.core.entity.Department dept = getBill().getDepartment();
-        boolean preprinted = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt Preprinted Stationery", dept, false);
-        Long topMarginRaw = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Top Margin Lines", dept, 8L);
-        int topMargin = topMarginRaw == null ? 8 : topMarginRaw.intValue();
-        boolean emitEscP = configOptionApplicationController
-                .getBooleanValueByKey("Inward Raw Text Receipt Emit ESC/P Codes", true);
-        Long lineWidthRaw = configOptionApplicationController
-                .getLongValueByKeyForDepartment("Inward Raw Text Receipt Line Width", dept, 40L);
-        int lineWidth = lineWidthRaw == null ? com.divudi.core.util.InwardReceiptTextRenderer.WIDTH
-                : com.divudi.core.util.InwardReceiptTextRenderer.clampWidth(lineWidthRaw);
-        boolean showAdmissionType = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Admission Type", dept, true);
-        boolean showPatientAddress = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Address", dept, true);
-        boolean showPatientPhone = configOptionApplicationController
-                .getBooleanValueByKeyForDepartment("Inward Raw Text Receipt - Show Patient Phone", dept, true);
-
-        String heading = com.divudi.core.util.InwardReceiptTextRenderer
-                .headingFor(getBill().getBillTypeAtomic());
-
-        java.util.List<com.divudi.core.entity.Payment> multiplePayments =
-                getBill().getPaymentMethod() == com.divudi.core.data.PaymentMethod.MultiplePaymentMethods
-                        ? billService.fetchBillPayments(getBill()) : null;
-        String text = com.divudi.core.util.InwardReceiptTextRenderer.render(getBill(), heading,
-                true, preprinted, topMargin, emitEscP, multiplePayments,
-                showAdmissionType, showPatientAddress, showPatientPhone, lineWidth);
-
-        String fileName = "inward-reprint-"
-                + (getBill().getDeptId() == null ? String.valueOf(getBill().getId())
-                        : getBill().getDeptId().replaceAll("[^A-Za-z0-9._-]", "_"))
-                + ".prn";
-
-        javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();
-        javax.servlet.http.HttpServletResponse response =
-                (javax.servlet.http.HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-        try (java.io.OutputStream os = response.getOutputStream()) {
-            os.write(text.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
-            os.flush();
-        } catch (java.io.IOException e) {
-            JsfUtil.addErrorMessage("Could not generate the raw text receipt: " + e.getMessage());
-            context.responseComplete();
-            return;
-        }
-        context.responseComplete();
+        inwardRawTextReceiptController.streamReceipt(getBill(), getBill().getBillTypeAtomic(),
+                duplicate, getBill().getDepartment(),
+                duplicate ? "inward-reprint-" : "inward-reprint-original-");
     }
 
 }

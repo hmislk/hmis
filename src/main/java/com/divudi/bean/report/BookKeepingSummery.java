@@ -36,6 +36,23 @@ import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPTableEvent;
+import com.lowagie.text.pdf.PdfWriter;
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -52,6 +69,21 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -4425,6 +4457,525 @@ public class BookKeepingSummery implements Serializable {
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
 
         createFinalSummery();
+    }
+
+    // ------------------------------------------------------------------
+    // Excel and PDF downloads for report_cash_category_with_pro_day_dto.xhtml.
+    // Both are built from buildBookKeepingReportSections() so they always show
+    // the same sections, rows and totals, in the same layout as the print view
+    // (printArea): header, From/To details, one outlined table per section with
+    // alternate row shading, and the Grand Summary.
+    // ------------------------------------------------------------------
+
+    /**
+     * One table of the Book Keeping Summary export. Every row has three values:
+     * {String label, Long billCount or null, Double amount or null}. When
+     * hasCountColumn is false the label spans the first two columns.
+     */
+    private static class BookKeepingReportSection {
+
+        final String title;
+        final String[] headers;
+        final boolean hasCountColumn;
+        final List<Object[]> rows = new ArrayList<>();
+        Object[] totalRow;
+        boolean grandTotal;
+
+        BookKeepingReportSection(String title, boolean hasCountColumn, String... headers) {
+            this.title = title;
+            this.hasCountColumn = hasCountColumn;
+            this.headers = headers;
+        }
+    }
+
+    private List<BookKeepingReportSection> buildBookKeepingReportSections() {
+        List<BookKeepingReportSection> sections = new ArrayList<>();
+        sections.add(categorySection("OPD Cash Collections (Cash, Card, Cheque, Slip)", opdCashDtoList, opdCashDtoTotal, "Total"));
+        sections.add(categorySection("OPD Credit Collections", opdCreditDtoList, opdCreditDtoTotal, "Total"));
+        sections.add(categorySection("Pharmacy Sales", pharmacySalesDtoList, null, null));
+        sections.add(categorySection("Pharmacy Wholesale", pharmacyWholeSalesDtoList, pharmacyDtoTotal, "Pharmacy Total (Sales + Wholesale)"));
+        sections.add(categorySection("Channel Collections", channelBillsDtoList, channelDtoTotal, "Total"));
+        sections.add(categorySection("Inward Collections", inwardCollectionsDtoList, inwardDtoTotal, "Total"));
+        sections.add(billSection("Agent Collections", agentCollections, getAgentPaymentTotal()));
+        sections.add(billSection("Collecting Centre Collections", collectingCentreCollections, getCollectingCentrePaymentTotal()));
+
+        // Grand Summary (Agent and Collecting Centre collections are not included)
+        BookKeepingReportSection summary = new BookKeepingReportSection("Grand Summary", false, "Collection", "Amount");
+        summary.rows.add(new Object[]{"OPD Cash Collections", null, opdCashDtoTotal});
+        summary.rows.add(new Object[]{"OPD Credit Collections", null, opdCreditDtoTotal});
+        summary.rows.add(new Object[]{"Pharmacy (Sales + Wholesale)", null, pharmacyDtoTotal});
+        summary.rows.add(new Object[]{"Channel Collections", null, channelDtoTotal});
+        summary.rows.add(new Object[]{"Inward Collections", null, inwardDtoTotal});
+        summary.totalRow = new Object[]{"Grand Total", null, grandDtoTotal};
+        summary.grandTotal = true;
+        sections.add(summary);
+        return sections;
+    }
+
+    private BookKeepingReportSection categorySection(String title, List<CategoryDayEndReportDto> dtos, Double total, String totalLabel) {
+        BookKeepingReportSection section = new BookKeepingReportSection(title, true, "Category", "Bill Count", "Total Value");
+        if (dtos != null) {
+            for (CategoryDayEndReportDto dto : dtos) {
+                section.rows.add(new Object[]{dto.getCategoryName(), dto.getBillCount(), dto.getTotalValue()});
+            }
+        }
+        if (total != null) {
+            section.totalRow = new Object[]{totalLabel, null, total};
+        }
+        return section;
+    }
+
+    private BookKeepingReportSection billSection(String title, List<Bill> bills, double total) {
+        BookKeepingReportSection section = new BookKeepingReportSection(title, false, "Bill Number", "Net Total");
+        if (bills != null) {
+            for (Bill b : bills) {
+                section.rows.add(new Object[]{b.getDeptId(), null, b.getNetTotal()});
+            }
+        }
+        section.totalRow = new Object[]{"Total", null, total};
+        return section;
+    }
+
+    private SimpleDateFormat bookKeepingDateFormat() {
+        String pattern = sessionController.getApplicationPreference() != null
+                && sessionController.getApplicationPreference().getLongDateTimeFormat() != null
+                ? sessionController.getApplicationPreference().getLongDateTimeFormat()
+                : "dd MMM yyyy HH:mm:ss";
+        return new SimpleDateFormat(pattern);
+    }
+
+    /**
+     * Header values shared by Excel and PDF: institution, From, To, Printed By,
+     * Printed At.
+     */
+    private String[] bookKeepingHeaderValues() {
+        SimpleDateFormat sdf = bookKeepingDateFormat();
+        String institutionName = institution != null && institution.getName() != null ? institution.getName().toUpperCase() : "";
+        String printedBy = sessionController.getLoggedUser() != null && sessionController.getLoggedUser().getWebUserPerson() != null
+                ? sessionController.getLoggedUser().getWebUserPerson().getName() : "";
+        return new String[]{
+            institutionName,
+            fromDate != null ? sdf.format(fromDate) : "",
+            toDate != null ? sdf.format(toDate) : "",
+            printedBy != null ? printedBy : "",
+            sdf.format(new Date())};
+    }
+
+    private static final String BOOK_KEEPING_REPORT_TITLE = "Book Keeping Summary (With Professional)";
+
+    private void streamBookKeepingFile(byte[] bytes, String contentType, String extension) throws IOException {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        String filename = "Book_Keeping_Summary_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + extension;
+        response.reset();
+        response.setContentType(contentType);
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.setContentLength(bytes.length);
+        try (OutputStream out = response.getOutputStream()) {
+            out.write(bytes);
+        }
+        facesContext.responseComplete();
+    }
+
+    // ----------------------------- Excel -----------------------------
+
+    public void downloadBookKeepingExcel() {
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Book Keeping Summary");
+            BookKeepingExcelStyles st = new BookKeepingExcelStyles(workbook);
+            String[] head = bookKeepingHeaderValues();
+
+            int r = 0;
+            r = writeExcelTitle(sheet, r, head[0], st.title);
+            r = writeExcelTitle(sheet, r, BOOK_KEEPING_REPORT_TITLE, st.subTitle);
+            r++;
+            r = writeExcelMetaRow(sheet, r, "From", head[1], "Printed By", head[3], st);
+            r = writeExcelMetaRow(sheet, r, "To", head[2], "Printed At", head[4], st);
+
+            for (BookKeepingReportSection section : buildBookKeepingReportSections()) {
+                r = writeExcelSection(sheet, r, section, st);
+            }
+
+            sheet.setColumnWidth(0, 50 * 256);
+            sheet.setColumnWidth(1, 14 * 256);
+            sheet.setColumnWidth(2, 18 * 256);
+
+            workbook.write(baos);
+            streamBookKeepingFile(baos.toByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx");
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Failed to generate Excel file: " + e.getMessage());
+        }
+    }
+
+    private int writeExcelTitle(XSSFSheet sheet, int r, String text, CellStyle style) {
+        Row row = sheet.createRow(r);
+        // Style every cell in the merged range; Excel draws a merged region's
+        // borders from each underlying cell, not just the first one.
+        for (int c = 0; c <= 2; c++) {
+            row.createCell(c).setCellStyle(style);
+        }
+        row.getCell(0).setCellValue(text);
+        sheet.addMergedRegion(new CellRangeAddress(r, r, 0, 2));
+        return r + 1;
+    }
+
+    private int writeExcelMetaRow(XSSFSheet sheet, int r, String label1, String value1, String label2, String value2, BookKeepingExcelStyles st) {
+        Row row = sheet.createRow(r);
+        Cell c0 = row.createCell(0);
+        c0.setCellValue(boldLabel(label1, value1, st.bold));
+        c0.setCellStyle(st.meta);
+        Cell c1 = row.createCell(1);
+        c1.setCellValue(boldLabel(label2, value2, st.bold));
+        c1.setCellStyle(st.meta);
+        sheet.addMergedRegion(new CellRangeAddress(r, r, 1, 2));
+        return r + 1;
+    }
+
+    private XSSFRichTextString boldLabel(String label, String value, org.apache.poi.ss.usermodel.Font bold) {
+        XSSFRichTextString text = new XSSFRichTextString(label + "   " + (value != null ? value : ""));
+        text.applyFont(0, label.length(), bold);
+        return text;
+    }
+
+    private int writeExcelSection(XSSFSheet sheet, int r, BookKeepingReportSection section, BookKeepingExcelStyles st) {
+        boolean merge = !section.hasCountColumn;
+        r++;
+        Row titleRow = sheet.createRow(r);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(section.title);
+        titleCell.setCellStyle(st.sectionTitle);
+        r++;
+
+        Object[] header = section.hasCountColumn
+                ? new Object[]{section.headers[0], section.headers[1], section.headers[2]}
+                : new Object[]{section.headers[0], null, section.headers[1]};
+        r = writeExcelTableRow(sheet, r, header, st.header, merge);
+        if (section.rows.isEmpty()) {
+            r = writeExcelTableRow(sheet, r, new Object[]{"No data available", null, null}, st.empty, true);
+        }
+        for (int i = 0; i < section.rows.size(); i++) {
+            r = writeExcelTableRow(sheet, r, section.rows.get(i), i % 2 == 1 ? st.even : st.odd, merge);
+        }
+        if (section.totalRow != null) {
+            r = writeExcelTableRow(sheet, r, section.totalRow, section.grandTotal ? st.grand : st.total, true);
+        } else {
+            // close the outline when there is no total row
+            Row last = sheet.getRow(r - 1);
+            for (int c = 0; c < 3; c++) {
+                CellStyle s = sheet.getWorkbook().createCellStyle();
+                s.cloneStyleFrom(last.getCell(c).getCellStyle());
+                s.setBorderBottom(BorderStyle.THIN);
+                last.getCell(c).setCellStyle(s);
+            }
+        }
+        return r;
+    }
+
+    /**
+     * Writes one 3-column table row. Strings go left-aligned, Long as a count
+     * and Double as an amount. mergeFirstTwo spans the first value across
+     * columns A-B.
+     */
+    private int writeExcelTableRow(XSSFSheet sheet, int r, Object[] values, RowStyles rs, boolean mergeFirstTwo) {
+        Row row = sheet.createRow(r);
+        for (int c = 0; c < 3; c++) {
+            Cell cell = row.createCell(c);
+            Object v = values[c];
+            if (v instanceof Double) {
+                cell.setCellValue((Double) v);
+                cell.setCellStyle(rs.amount[c]);
+            } else if (v instanceof Long) {
+                cell.setCellValue((Long) v);
+                cell.setCellStyle(rs.count[c]);
+            } else {
+                if (v != null) {
+                    cell.setCellValue(v.toString());
+                }
+                cell.setCellStyle(c == 0 ? rs.text[c] : rs.count[c]);
+            }
+        }
+        if (mergeFirstTwo) {
+            sheet.addMergedRegion(new CellRangeAddress(r, r, 0, 1));
+        }
+        return r + 1;
+    }
+
+    /**
+     * Per-column cell styles for one row type. Column 0 gets the left outline
+     * border and column 2 the right one, so each table has an outline like the
+     * print view.
+     */
+    private static class RowStyles {
+
+        final CellStyle[] text = new CellStyle[3];
+        final CellStyle[] count = new CellStyle[3];
+        final CellStyle[] amount = new CellStyle[3];
+
+        RowStyles(XSSFWorkbook wb, org.apache.poi.ss.usermodel.Font font, byte[] fillRgb, boolean topBorder, boolean bottomBorder) {
+            short amountFormat = wb.createDataFormat().getFormat("#,##0.00");
+            short countFormat = wb.createDataFormat().getFormat("0");
+            for (int c = 0; c < 3; c++) {
+                text[c] = create(wb, font, fillRgb, topBorder, bottomBorder, c, HorizontalAlignment.LEFT, (short) -1);
+                count[c] = create(wb, font, fillRgb, topBorder, bottomBorder, c, HorizontalAlignment.RIGHT, countFormat);
+                amount[c] = create(wb, font, fillRgb, topBorder, bottomBorder, c, HorizontalAlignment.RIGHT, amountFormat);
+            }
+        }
+
+        private static CellStyle create(XSSFWorkbook wb, org.apache.poi.ss.usermodel.Font font, byte[] fillRgb, boolean top, boolean bottom, int col,
+                HorizontalAlignment align, short format) {
+            XSSFCellStyle s = wb.createCellStyle();
+            s.setFont(font);
+            s.setAlignment(align);
+            if (format >= 0) {
+                s.setDataFormat(format);
+            }
+            if (fillRgb != null) {
+                s.setFillForegroundColor(new XSSFColor(fillRgb, null));
+                s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            }
+            if (top) {
+                s.setBorderTop(BorderStyle.THIN);
+            }
+            if (bottom) {
+                s.setBorderBottom(BorderStyle.THIN);
+            }
+            if (col == 0) {
+                s.setBorderLeft(BorderStyle.THIN);
+            }
+            if (col == 2) {
+                s.setBorderRight(BorderStyle.THIN);
+            }
+            return s;
+        }
+    }
+
+    private static class BookKeepingExcelStyles {
+
+        final CellStyle title;
+        final CellStyle subTitle;
+        final CellStyle meta;
+        final CellStyle sectionTitle;
+        final org.apache.poi.ss.usermodel.Font bold;
+        final RowStyles header;
+        final RowStyles odd;
+        final RowStyles even;
+        final RowStyles empty;
+        final RowStyles total;
+        final RowStyles grand;
+
+        BookKeepingExcelStyles(XSSFWorkbook wb) {
+            org.apache.poi.ss.usermodel.Font normal = wb.createFont();
+            bold = wb.createFont();
+            bold.setBold(true);
+            org.apache.poi.ss.usermodel.Font italicGrey = wb.createFont();
+            italicGrey.setItalic(true);
+            italicGrey.setColor(IndexedColors.GREY_50_PERCENT.getIndex());
+            org.apache.poi.ss.usermodel.Font titleFont = wb.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            org.apache.poi.ss.usermodel.Font subTitleFont = wb.createFont();
+            subTitleFont.setBold(true);
+            subTitleFont.setFontHeightInPoints((short) 11);
+            org.apache.poi.ss.usermodel.Font grandFont = wb.createFont();
+            grandFont.setBold(true);
+            grandFont.setFontHeightInPoints((short) 11);
+
+            title = wb.createCellStyle();
+            title.setFont(titleFont);
+            title.setAlignment(HorizontalAlignment.CENTER);
+            subTitle = wb.createCellStyle();
+            subTitle.setFont(subTitleFont);
+            subTitle.setAlignment(HorizontalAlignment.CENTER);
+            subTitle.setBorderBottom(BorderStyle.MEDIUM);
+            meta = wb.createCellStyle();
+            sectionTitle = wb.createCellStyle();
+            sectionTitle.setFont(bold);
+
+            // Same greys as the print view: #E4E4E4 header/total, #F3F3F3 alternate rows
+            byte[] grey = new byte[]{(byte) 0xE4, (byte) 0xE4, (byte) 0xE4};
+            byte[] lightGrey = new byte[]{(byte) 0xF3, (byte) 0xF3, (byte) 0xF3};
+            header = new RowStyles(wb, bold, grey, true, true);
+            odd = new RowStyles(wb, normal, null, false, false);
+            even = new RowStyles(wb, normal, lightGrey, false, false);
+            empty = new RowStyles(wb, italicGrey, null, false, true);
+            total = new RowStyles(wb, bold, grey, true, true);
+            grand = new RowStyles(wb, grandFont, grey, true, true);
+        }
+    }
+
+    // ------------------------------ PDF ------------------------------
+
+    private static final Color BK_PDF_BORDER = new Color(0x88, 0x88, 0x88);
+    private static final Color BK_PDF_GREY = new Color(0xE4, 0xE4, 0xE4);
+    private static final Color BK_PDF_LIGHT_GREY = new Color(0xF3, 0xF3, 0xF3);
+    private static final Color BK_PDF_TEXT = new Color(0x22, 0x22, 0x22);
+
+    public void downloadBookKeepingPdf() {
+        // A4 portrait, 12mm margins (as @page in the print view)
+        float margin = 12f * 72f / 25.4f;
+        Document document = new Document(PageSize.A4, margin, margin, margin, margin);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font fTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, BK_PDF_TEXT);
+            com.lowagie.text.Font fSubTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, BK_PDF_TEXT);
+            com.lowagie.text.Font fSection = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10.5f, BK_PDF_TEXT);
+            com.lowagie.text.Font fMetaLabel = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, BK_PDF_TEXT);
+            com.lowagie.text.Font fMeta = FontFactory.getFont(FontFactory.HELVETICA, 9, BK_PDF_TEXT);
+            com.lowagie.text.Font fBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9.5f, BK_PDF_TEXT);
+            com.lowagie.text.Font fNormal = FontFactory.getFont(FontFactory.HELVETICA, 9.5f, BK_PDF_TEXT);
+            com.lowagie.text.Font fEmpty = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9.5f, new Color(0x66, 0x66, 0x66));
+            com.lowagie.text.Font fGrand = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10.5f, BK_PDF_TEXT);
+
+            String[] head = bookKeepingHeaderValues();
+
+            // Header: institution + title, 2px line underneath
+            PdfPTable headTable = new PdfPTable(1);
+            headTable.setWidthPercentage(100);
+            PdfPCell headCell = new PdfPCell();
+            headCell.setBorder(Rectangle.BOTTOM);
+            headCell.setBorderWidthBottom(1.5f);
+            headCell.setBorderColorBottom(new Color(0x33, 0x33, 0x33));
+            headCell.setPaddingBottom(6);
+            Paragraph inst = new Paragraph(head[0], fTitle);
+            inst.setAlignment(Element.ALIGN_CENTER);
+            Paragraph title = new Paragraph(BOOK_KEEPING_REPORT_TITLE, fSubTitle);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingBefore(3);
+            headCell.addElement(inst);
+            headCell.addElement(title);
+            headTable.addCell(headCell);
+            headTable.setSpacingAfter(4);
+            document.add(headTable);
+
+            // From / To details
+            PdfPTable meta = new PdfPTable(new float[]{25, 70, 25, 66});
+            meta.setWidthPercentage(100);
+            meta.setSpacingAfter(4);
+            addPdfMetaCell(meta, "From", fMetaLabel);
+            addPdfMetaCell(meta, head[1], fMeta);
+            addPdfMetaCell(meta, "Printed By", fMetaLabel);
+            addPdfMetaCell(meta, head[3], fMeta);
+            addPdfMetaCell(meta, "To", fMetaLabel);
+            addPdfMetaCell(meta, head[2], fMeta);
+            addPdfMetaCell(meta, "Printed At", fMetaLabel);
+            addPdfMetaCell(meta, head[4], fMeta);
+            document.add(meta);
+
+            for (BookKeepingReportSection section : buildBookKeepingReportSections()) {
+                // keep the section title with the first rows of its table
+                if (writer.getVerticalPosition(true) - document.bottom() < 70) {
+                    document.newPage();
+                }
+                Paragraph sectionTitle = new Paragraph(section.title, fSection);
+                sectionTitle.setSpacingBefore(9);
+                sectionTitle.setSpacingAfter(3);
+                document.add(sectionTitle);
+                document.add(buildPdfSectionTable(section, fBold, fNormal, fEmpty, fGrand));
+            }
+
+            document.close();
+            streamBookKeepingFile(baos.toByteArray(), "application/pdf", ".pdf");
+        } catch (IOException | DocumentException e) {
+            JsfUtil.addErrorMessage("Failed to generate PDF file: " + e.getMessage());
+        }
+    }
+
+    private void addPdfMetaCell(PdfPTable table, String text, com.lowagie.text.Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(1.5f);
+        table.addCell(cell);
+    }
+
+    private PdfPTable buildPdfSectionTable(BookKeepingReportSection section, com.lowagie.text.Font fBold,
+            com.lowagie.text.Font fNormal, com.lowagie.text.Font fEmpty, com.lowagie.text.Font fGrand) {
+        // 186mm usable width; number columns 32mm as in the print CSS
+        PdfPTable table = section.hasCountColumn
+                ? new PdfPTable(new float[]{122, 32, 32})
+                : new PdfPTable(new float[]{154, 32});
+        table.setWidthPercentage(100);
+        table.setHeaderRows(1);
+        table.setSplitLate(true);
+        table.setTableEvent(new PdfOutlineEvent());
+
+        for (int i = 0; i < section.headers.length; i++) {
+            PdfPCell cell = pdfCell(section.headers[i], fBold, BK_PDF_GREY, i == 0 ? Element.ALIGN_LEFT : Element.ALIGN_RIGHT);
+            cell.setBorder(Rectangle.BOTTOM);
+            cell.setBorderColor(BK_PDF_BORDER);
+            cell.setBorderWidth(0.75f);
+            table.addCell(cell);
+        }
+
+        if (section.rows.isEmpty()) {
+            PdfPCell cell = pdfCell("No data available", fEmpty, null, Element.ALIGN_LEFT);
+            cell.setColspan(section.headers.length);
+            table.addCell(cell);
+        }
+        for (int i = 0; i < section.rows.size(); i++) {
+            addPdfRow(table, section, section.rows.get(i), fNormal, i % 2 == 1 ? BK_PDF_LIGHT_GREY : null, false);
+        }
+        if (section.totalRow != null) {
+            addPdfRow(table, section, section.totalRow, section.grandTotal ? fGrand : fBold, BK_PDF_GREY, true);
+        }
+        return table;
+    }
+
+    private void addPdfRow(PdfPTable table, BookKeepingReportSection section, Object[] values,
+            com.lowagie.text.Font font, Color background, boolean totalRow) {
+        List<PdfPCell> cells = new ArrayList<>();
+        cells.add(pdfCell(values[0] != null ? values[0].toString() : "", font, background, Element.ALIGN_LEFT));
+        if (section.hasCountColumn) {
+            cells.add(pdfCell(values[1] != null ? String.valueOf(values[1]) : "", font, background, Element.ALIGN_RIGHT));
+        }
+        cells.add(pdfCell(values[2] != null ? new DecimalFormat("#,##0.00").format(values[2]) : "", font, background, Element.ALIGN_RIGHT));
+        if (totalRow && section.hasCountColumn) {
+            // total label spans Category + Bill Count, as in the print view
+            cells.get(0).setColspan(2);
+            cells.remove(1);
+        }
+        for (PdfPCell cell : cells) {
+            if (totalRow) {
+                cell.setBorder(Rectangle.TOP);
+                cell.setBorderColor(BK_PDF_BORDER);
+                cell.setBorderWidth(0.75f);
+            }
+            table.addCell(cell);
+        }
+    }
+
+    private PdfPCell pdfCell(String text, com.lowagie.text.Font font, Color background, int align) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setHorizontalAlignment(align);
+        // 4px 10px padding from the print CSS
+        cell.setPaddingTop(3);
+        cell.setPaddingBottom(4);
+        cell.setPaddingLeft(7.5f);
+        cell.setPaddingRight(7.5f);
+        if (background != null) {
+            cell.setBackgroundColor(background);
+        }
+        return cell;
+    }
+
+    /**
+     * Draws the 1px outline around each table on every page it spans.
+     */
+    private static class PdfOutlineEvent implements PdfPTableEvent {
+
+        @Override
+        public void tableLayout(PdfPTable table, float[][] widths, float[] heights, int headerRows, int rowStart, PdfContentByte[] canvases) {
+            float[] w = widths[0];
+            PdfContentByte cb = canvases[PdfPTable.LINECANVAS];
+            cb.saveState();
+            cb.setLineWidth(0.75f);
+            cb.setColorStroke(BK_PDF_BORDER);
+            cb.rectangle(w[0], heights[heights.length - 1], w[w.length - 1] - w[0], heights[0] - heights[heights.length - 1]);
+            cb.stroke();
+            cb.restoreState();
+        }
     }
 
     /**

@@ -2067,7 +2067,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
+        substituteStocks = pharmacySubstituteService.findAlternativeBrandStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {
@@ -2249,8 +2249,11 @@ public class PharmacySaleBhtController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("refId", referenceItem.getId());
         params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the inward cancel
+        // page before #24679 carry this atomic; the two-hop join keeps it limited to request-issue items.
         params.put("reverseBtas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
         double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
         double remaining = Math.max(0.0, referenceItem.getQty() - alreadyIssued);
@@ -2303,7 +2306,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         if (!getBillItems().isEmpty()) {
-            getPreBill().setReferenceBill(getBillItems().get(0).getReferanceBillItem().getBill());
+            getPreBill().setReferenceBill(bhtRequestBill);
         }
 
         for (BillItem tbi : tmpBillItems) {
@@ -3147,6 +3150,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
         freshBill.setPatientEncounter(preservedEncounter);
         bhtRequestBill = freshBill;
+        // Session-scoped: clear the previous issue's bill preview so the issue form shows.
+        billPreview = false;
         generateIssueBillComponentsForBhtRequest(freshBill);
         return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
@@ -3172,6 +3177,13 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
         }
+        // Keep the session-scoped bhtRequestBill in sync with whichever request is
+        // actually being generated here — settleBhtIssueRequestAccept() derives the
+        // settled bill's reference from this field, so a caller that reaches this
+        // method without updating it first (e.g. the legacy issue_for_bht_request_list
+        // page's direct actionListener) would otherwise settle against a stale,
+        // previously-selected request.
+        bhtRequestBill = b;
 
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 

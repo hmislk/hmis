@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CoveringLetters')}">
+                    <h:form id="frmClList">
+                        <p:growl id="msgClList" showDetail="true"/>
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <h:outputText value="Saved Covering Letters" styleClass="fw-bold"/>
+                                    <p:commandButton value="New Covering Letter" icon="fa fa-plus" ajax="false"
+                                                     immediate="true"
+                                                     styleClass="ui-button-info ui-button-outlined"
+                                                     action="#{coveringLetterController.navigateToCoveringLetterBatch()}"/>
+                                </div>
+                            </f:facet>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
+                                    <p:outputLabel for="calSFrom" value="From" styleClass="fw-bold d-block"/>
+                                    <p:calendar id="calSFrom" styleClass="w-100" inputStyleClass="w-100"
+                                                value="#{coveringLetterController.searchFromDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="calSTo" value="To" styleClass="fw-bold d-block"/>
+                                    <p:calendar id="calSTo" styleClass="w-100" inputStyleClass="w-100"
+                                                value="#{coveringLetterController.searchToDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="acSCc" value="Credit Company" styleClass="fw-bold d-block"/>
+                                    <p:autoComplete id="acSCc" styleClass="w-100" inputStyleClass="w-100"
+                                                    value="#{coveringLetterController.searchCreditCompany}"
+                                                    completeMethod="#{institutionController.completeCreditCompany}"
+                                                    var="crCo" itemLabel="#{crCo.name}" itemValue="#{crCo}"
+                                                    forceSelection="true"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="txtSRef" value="Reference No" styleClass="fw-bold d-block"/>
+                                    <p:inputText id="txtSRef" styleClass="w-100"
+                                                 value="#{coveringLetterController.searchReferenceNo}"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:commandButton value="Search" icon="fa fa-search"
+                                                     styleClass="ui-button-success"
+                                                     process="@form"
+                                                     update="tblLetters msgClList"
+                                                     action="#{coveringLetterController.searchLetters()}"/>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <p:dataTable id="tblLetters" var="l" styleClass="mt-2"
+                                     value="#{coveringLetterController.letters}"
+                                     rowKey="#{l.id}"
+                                     rows="25" paginator="true" paginatorPosition="bottom"
+                                     reflow="true"
+                                     emptyMessage="No covering letters found.">
+                            <p:column headerText="Ref No">
+                                <h:outputText value="#{l.referenceNo}"/>
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputText value="#{l.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Issuer">
+                                <h:outputText value="#{l.issuingInstitution.name}"/>
+                            </p:column>
+                            <p:column headerText="Credit Company">
+                                <h:outputText value="#{l.creditCompany.name}"/>
+                            </p:column>
+                            <p:column headerText="Type">
+                                <h:outputText value="#{l.recordType.label}"/>
+                            </p:column>
+                            <p:column headerText="Rows" style="text-align: right;">
+                                <h:outputText value="#{l.rowCount}"/>
+                            </p:column>
+                            <p:column headerText="Total" style="text-align: right;">
+                                <h:outputText value="#{l.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Template">
+                                <h:outputText value="#{l.documentTemplate.name}"/>
+                            </p:column>
+                            <p:column headerText="Created by">
+                                <h:outputText value="#{l.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Actions" style="white-space: nowrap;">
+                                <p:commandButton value="Reprint" icon="fa fa-print" ajax="false"
+                                                 styleClass="ui-button-info"
+                                                 title="Open the letter for printing"
+                                                 action="#{coveringLetterController.reprint(l)}"/>
+                                <p:commandButton value="Cancel" icon="fa fa-times"
+                                                 styleClass="ui-button-danger ms-1"
+                                                 title="Cancel this covering letter"
+                                                 process="@this"
+                                                 update=":frmClCancel:pnlCancel"
+                                                 oncomplete="PF('dlgCancelLetter').show()">
+                                    <f:setPropertyActionListener value="#{l}" target="#{coveringLetterController.selectedLetter}"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+
+                    <p:dialog widgetVar="dlgCancelLetter" header="Cancel Covering Letter" modal="true"
+                              resizable="false" width="450">
+                        <h:form id="frmClCancel">
+                            <h:panelGroup id="pnlCancel" layout="block">
+                                <div class="mb-2">
+                                    <h:outputText value="Reference No: " styleClass="fw-bold"/>
+                                    <h:outputText value="#{coveringLetterController.selectedLetter.referenceNo}"/>
+                                </div>
+                                <p:outputLabel for="txtCancelComment" value="Reason for cancellation" styleClass="fw-bold d-block"/>
+                                <p:inputTextarea id="txtCancelComment" rows="3" styleClass="w-100"
+                                                 value="#{coveringLetterController.cancelComment}"
+                                                 required="true"
+                                                 requiredMessage="A cancellation reason is required"/>
+                                <p:message for="txtCancelComment"/>
+                            </h:panelGroup>
+                            <div class="d-flex gap-2 mt-2">
+                                <p:commandButton value="Cancel Letter" icon="fa fa-times"
+                                                 styleClass="ui-button-danger"
+                                                 process="@form"
+                                                 update="pnlCancel :frmClList:tblLetters :frmClList:msgClList"
+                                                 action="#{coveringLetterController.cancelSelectedLetter()}"
+                                                 oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlgCancelLetter').hide()"/>
+                                <p:commandButton value="Close" type="button" icon="fa fa-arrow-left"
+                                                 styleClass="ui-button-secondary"
+                                                 onclick="PF('dlgCancelLetter').hide()"/>
+                            </div>
+                        </h:form>
+                    </p:dialog>
+                </h:panelGroup>
+                <h:outputText value="You do not have the privilege to use Covering Letters."
+                              rendered="#{not webUserController.hasPrivilege('CoveringLetters')}"/>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

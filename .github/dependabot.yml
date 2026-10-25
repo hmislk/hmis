@@ -10,7 +10,8 @@ version: 2
 updates:
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "development"
+    # No target-branch: development is the repo's default branch, and setting
+    # target-branch would stop this entry's groups applying to security updates
     schedule:
       interval: "weekly"
     ignore:
@@ -19,5 +20,11 @@ updates:
     groups:
       # All Jackson artifacts share ${jackson.version} in pom.xml and must move together
       jackson:
+        patterns:
+          - "com.fasterxml.jackson*"
+      # Groups apply to version updates only by default; without this, each Jackson
+      # artifact gets its own security-update PR with an identical pom.xml diff
+      jackson-security:
+        applies-to: security-updates
         patterns:
           - "com.fasterxml.jackson*"

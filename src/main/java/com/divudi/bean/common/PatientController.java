@@ -910,6 +910,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToInpatientDashboard() {
         navigatedFromAdmissionProfile = false;
+        admissionController.refreshDashboardFinancials();
         return "/inward/admission_profile?faces-redirect=true";
     }
 

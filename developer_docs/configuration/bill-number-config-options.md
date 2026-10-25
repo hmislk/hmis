@@ -57,7 +57,9 @@ public static final String BILL_NUMBER_GENERATION_STRATEGY_FOR_INSTITUTION_ID_IS
 **Description**: When enabled, inward deposits, payments and post-final payments, and their cancellations and refunds, get a separate yearly serial per `AdmissionType` (e.g. "BHT" vs "OPD Card"). The admission type code is inserted after the `Bill Number Suffix for <BillTypeAtomic>` suffix. Only applies when the bill's `PatientEncounter` has an `AdmissionType`. Deposits and payments are numbered by `BillNumberGenerator.departmentInwardPaymentBillNumberGenerator` / `institutionInwardPaymentBillNumberGenerator`. Post-final payments keep the legacy `INWPFP` generator unless option 7 is on.
 
 **Example Output (enabled, suffix `DE`, admission type code `BHT`)**: `Inward/DE/BHT/26/000001`
-**Example Output (disabled)**: `Inward/DE/26/000001`
+**Example Output (disabled)**: `Inward/DE/26/<serial>`. The serial does not belong to deposits.
+
+> **🚨 Disabled means no separate deposit/payment series** (unless option 5 is on). The serial then comes from the general `Bill Number Generation Strategy - ...` counters. If none of those is on, every bill in the institution shares one counter: pharmacy issues, service bills, theatre, and so on. Consecutive deposits then read `IW/DE/26/060197`, `IW/DE/26/060202`. On builds without option 5, **this option is the only way to give deposits, payments, cancellations and refunds their own serials**. Turn it on whenever the requirement is "separate numbers for deposits, payments, ...", even if the admission type code is not wanted in the number. Option 6 removes the code later.
 
 ### 5. Inward Payment Bill Numbers - Omit Year
 

@@ -37,6 +37,14 @@
                                     <p:ajax event="change" process="@this" update="results" listener="#{pharmacyBillSearch.clearResultView()}"/>
                                 </p:selectOneMenu>
                             </div>
+                            <div class="pharma-search-filter">
+                                <p:outputLabel for="itemName" value="Item Name"/>
+                                <p:inputText id="itemName" autocomplete="off" value="#{searchController.billSearchItemName}" placeholder="Contains item name"/>
+                            </div>
+                            <div class="pharma-search-filter">
+                                <p:outputLabel for="itemCode" value="Item Code"/>
+                                <p:inputText id="itemCode" autocomplete="off" value="#{searchController.billSearchItemCode}" placeholder="Contains item code"/>
+                            </div>
                             <div class="pharma-search-filter pharma-search-filter-count">
                                 <p:outputLabel for="listCount" value="List Count"/>
                                 <p:inputText id="listCount" autocomplete="off" value="#{searchController.maxResult}"/>
@@ -53,7 +61,9 @@
                             </div>
                         </div>
 
-                        <se:bill_search_results id="results"/>
+                        <p:messages id="searchMessages" closable="true" showDetail="false"/>
+
+                        <se:bill_search_results id="results" showPurchaseReturnSearchInputs="false"/>
 
                         <p:defaultCommand target="btnSearch"/>
 

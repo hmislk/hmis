@@ -397,6 +397,10 @@ public class InwardServiceBillService implements Serializable {
         if (tmp.getId() == null) {
             billFacade.create(tmp);
         }
+        // Published before the linking below, which can throw: without this a
+        // committed batch bill would never reach the caller and so could never be
+        // retired. Kept off the collector on purpose - see the field's javadoc.
+        request.setCreatedBatchBill(tmp);
 
         for (Bill b : request.getBillCollector()) {
             b.setBackwardReferenceBill(tmp);

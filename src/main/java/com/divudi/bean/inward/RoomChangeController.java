@@ -17,6 +17,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.GuardianRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
@@ -342,6 +343,10 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        if (isTheatreOpenForLastWardRoom(pR)) {
+            return;
+        }
+
         Map<String, Object> beforeState = roomStateMap(pR);
 
         pR.setDischarged(true);
@@ -362,6 +367,10 @@ public class RoomChangeController implements Serializable {
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
+        if (isTheatreOpenForLastWardRoom(pR)) {
+            return;
+        }
+
         if (pR.getDischargedAt() == null) {
             pR.setDischargedAt(new Date());
         }
@@ -402,6 +411,28 @@ public class RoomChangeController implements Serializable {
         bhtSummeryController.invalidateUnifiedGanttBarsCache();
 
         JsfUtil.addSuccessMessage("Successfully Discharged from Room");
+    }
+
+    /**
+     * Discharging the patient's last ward room while a theatre stay is still
+     * open would leave theatre charges running after the patient left (#24718).
+     * Theatre and guardian stays themselves can still be discharged here.
+     */
+    private boolean isTheatreOpenForLastWardRoom(PatientRoom pR) {
+        // A removed (retired) next room leaves the link in place, so only an
+        // active next room means this is not the last ward room.
+        if (pR == null || (pR.getNextRoom() != null && !pR.getNextRoom().isRetired()) || pR.getPatientEncounter() == null
+                || pR instanceof TheatreRoom || pR instanceof GuardianRoom) {
+            return false;
+        }
+        PatientEncounter admission = pR.getPatientEncounter().getParentEncounter() != null
+                ? pR.getPatientEncounter().getParentEncounter() : pR.getPatientEncounter();
+        PatientRoom openTheatreRoom = inwardBean.findOpenTheatreRoom(admission);
+        if (openTheatreRoom == null) {
+            return false;
+        }
+        JsfUtil.addErrorMessage(inwardBean.openTheatreRoomMessage(openTheatreRoom, "room discharge"));
+        return true;
     }
 
     public void dischargeCancel(PatientRoom pR) {

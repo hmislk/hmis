@@ -307,11 +307,11 @@ public class BhtDepositDetailWithCreditCompaniesReportController implements Seri
             case INWARD_PAYMENT_REFUND_CANCELLATION:
                 return "Payment Refund Cancellation";
             case POST_FINAL_BILL_INWARD_PAYMENT:
-                return "Post Discharge Payment";
+                return "Post Final Bill Payment";
             case POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION:
-                return "Post Discharge Payment Cancellation";
+                return "Post Final Bill Payment Cancellation";
             case POST_FINAL_BILL_INWARD_PAYMENT_REFUND:
-                return "Post Discharge Payment Refund";
+                return "Post Final Bill Payment Refund";
             default:
                 return bta.getLabel();
         }

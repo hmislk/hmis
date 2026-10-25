@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CoveringLetters')}">
+                    <h:form id="frmCl">
+                        <p:growl id="msgCl" showDetail="true"/>
+
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <h:outputText value="Covering Letters" styleClass="fw-bold"/>
+                                    <p:commandButton value="Saved Letters"
+                                                     icon="fa fa-list"
+                                                     ajax="false"
+                                                     immediate="true"
+                                                     styleClass="ui-button-info ui-button-outlined"
+                                                     title="View, reprint or cancel previously generated covering letters"
+                                                     action="#{coveringLetterController.navigateToCoveringLetterList()}"/>
+                                </div>
+                            </f:facet>
+
+                            <!-- Filters -->
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
+                                    <p:outputLabel for="selRecordType" value="Record Type" styleClass="fw-bold d-block"/>
+                                    <p:selectOneMenu id="selRecordType" styleClass="w-100"
+                                                     value="#{coveringLetterController.recordType}">
+                                        <f:selectItems value="#{coveringLetterController.recordTypes}"
+                                                       var="rt" itemLabel="#{rt.label}" itemValue="#{rt}"/>
+                                        <p:ajax event="change" process="@this"
+                                                listener="#{coveringLetterController.recordTypeChanged()}"
+                                                update="pnlAdmissionFilters pnlUnsettled pnlResults pnlSelectedTotal"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="acIssuer" value="Issuing Institution" styleClass="fw-bold d-block"/>
+                                    <p:autoComplete id="acIssuer" styleClass="w-100" inputStyleClass="w-100"
+                                                    value="#{coveringLetterController.issuingInstitution}"
+                                                    completeMethod="#{institutionController.completeCompany}"
+                                                    var="iss" itemLabel="#{iss.name}" itemValue="#{iss}"
+                                                    forceSelection="true"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="acCc" value="Credit Company" styleClass="fw-bold d-block"/>
+                                    <p:autoComplete id="acCc" styleClass="w-100" inputStyleClass="w-100"
+                                                    value="#{coveringLetterController.creditCompany}"
+                                                    completeMethod="#{institutionController.completeCreditCompany}"
+                                                    var="crCo" itemLabel="#{crCo.name}" itemValue="#{crCo}"
+                                                    forceSelection="true"
+                                                    required="true"
+                                                    requiredMessage="Credit company is required"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="acPatient" value="Patient (optional)" styleClass="fw-bold d-block"/>
+                                    <p:autoComplete id="acPatient" styleClass="w-100" inputStyleClass="w-100"
+                                                    value="#{coveringLetterController.patient}"
+                                                    completeMethod="#{patientController.completePatient}"
+                                                    var="pt" itemLabel="#{pt.person.nameWithTitle}" itemValue="#{pt}"
+                                                    forceSelection="true"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="calFrom" value="From" styleClass="fw-bold d-block"/>
+                                    <p:calendar id="calFrom" styleClass="w-100" inputStyleClass="w-100"
+                                                value="#{coveringLetterController.fromDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:outputLabel for="calTo" value="To" styleClass="fw-bold d-block"/>
+                                    <p:calendar id="calTo" styleClass="w-100" inputStyleClass="w-100"
+                                                value="#{coveringLetterController.toDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </div>
+                                <h:panelGroup id="pnlAdmissionFilters" layout="block" styleClass="col-md-6">
+                                    <h:panelGroup layout="block" styleClass="row g-2"
+                                                  rendered="#{coveringLetterController.recordType eq 'Admission'}">
+                                        <div class="col-md-6">
+                                            <p:outputLabel for="selAdmType" value="Admission Type" styleClass="fw-bold d-block"/>
+                                            <p:selectOneMenu id="selAdmType" styleClass="w-100"
+                                                             value="#{coveringLetterController.admissionType}">
+                                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{admissionTypeController.items}"
+                                                               var="at" itemLabel="#{at.name}" itemValue="#{at}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p:outputLabel for="acDept" value="Department" styleClass="fw-bold d-block"/>
+                                            <p:autoComplete id="acDept" styleClass="w-100" inputStyleClass="w-100"
+                                                            value="#{coveringLetterController.department}"
+                                                            completeMethod="#{departmentController.completeDept}"
+                                                            var="dp" itemLabel="#{dp.name}" itemValue="#{dp}"
+                                                            forceSelection="true"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <h:panelGroup id="pnlUnsettled" layout="block" styleClass="col-md-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-2">
+                                        <p:selectBooleanCheckbox id="chkUnsettled"
+                                                                 value="#{coveringLetterController.onlyUnsettled}"/>
+                                        <p:outputLabel for="chkUnsettled" value="Only unsettled" styleClass="fw-bold"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <div class="col-md-3">
+                                    <p:commandButton id="btnFill" value="Fill" icon="fa fa-search"
+                                                     styleClass="ui-button-success"
+                                                     title="List the records matching the filters"
+                                                     process="@form"
+                                                     update="pnlResults pnlSelectedTotal msgCl"
+                                                     action="#{coveringLetterController.fillRows()}"/>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <!-- Results -->
+                        <h:panelGroup id="pnlResults" layout="block" styleClass="mt-2">
+                            <p:dataTable id="tblRows" var="r"
+                                         value="#{coveringLetterController.rows}"
+                                         rowKey="#{r.id}"
+                                         selection="#{coveringLetterController.selectedRows}"
+                                         selectionMode="multiple"
+                                         rowSelectMode="checkbox"
+                                         reflow="true"
+                                         rows="50" paginator="true"
+                                         paginatorPosition="bottom"
+                                         rowsPerPageTemplate="25,50,100,200"
+                                         emptyMessage="No records. Choose the filters and press Fill.">
+                                <p:ajax event="rowSelectCheckbox" process="@this" update=":frmCl:pnlSelectedTotal"/>
+                                <p:ajax event="rowUnselectCheckbox" process="@this" update=":frmCl:pnlSelectedTotal"/>
+                                <p:ajax event="rowSelect" process="@this" update=":frmCl:pnlSelectedTotal"/>
+                                <p:ajax event="rowUnselect" process="@this" update=":frmCl:pnlSelectedTotal"/>
+                                <p:ajax event="toggleSelect" process="@this" update=":frmCl:pnlSelectedTotal"/>
+
+                                <p:column selectionBox="true" style="width: 3rem; text-align: center;"/>
+                                <p:column headerText="#{coveringLetterController.recordType eq 'Admission' ? 'BHT No' : 'Bill No'}">
+                                    <h:outputText value="#{r.refNo}"/>
+                                </p:column>
+                                <p:column headerText="Date">
+                                    <h:outputText value="#{r.date}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Patient">
+                                    <h:outputText value="#{r.patientName}"/>
+                                </p:column>
+                                <p:column headerText="Policy No">
+                                    <h:outputText value="#{r.policyNo}"/>
+                                </p:column>
+                                <p:column headerText="Bill Amount" styleClass="text-end" style="text-align: right;">
+                                    <h:outputText value="#{r.amount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Company Amount" styleClass="text-end" style="text-align: right;">
+                                    <h:outputText value="#{r.companyAmount}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Already sent">
+                                    <h:outputText value="#{r.alreadyInLetterRef}"
+                                                  rendered="#{not empty r.alreadyInLetterRef}"
+                                                  styleClass="badge bg-warning text-dark"
+                                                  title="Already included in a saved covering letter with this Reference No"/>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+
+                        <!-- Selected total + generate -->
+                        <p:panel styleClass="mt-2">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
+                                    <h:panelGroup id="pnlSelectedTotal" layout="block">
+                                        <h:outputText value="Selected: " styleClass="fw-bold"/>
+                                        <h:outputText value="#{coveringLetterController.selectedRows.size()}"/>
+                                        <h:outputText value=" | Selected total: " styleClass="fw-bold"/>
+                                        <h:outputText value="#{coveringLetterController.selectedTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:outputLabel for="selTemplate" value="Template" styleClass="fw-bold d-block"/>
+                                    <p:selectOneMenu id="selTemplate" styleClass="w-100"
+                                                     value="#{coveringLetterController.selectedTemplate}">
+                                        <f:selectItem itemLabel="-- Select Template --" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{coveringLetterController.templates}"
+                                                       var="tpl" itemLabel="#{tpl.name}" itemValue="#{tpl}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:commandButton id="btnGenerate" value="Generate Letter" icon="fa fa-file-text"
+                                                     ajax="false"
+                                                     styleClass="ui-button-success"
+                                                     title="Create the covering letter for the selected records"
+                                                     action="#{coveringLetterController.generateLetter()}"/>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+                <h:outputText value="You do not have the privilege to use Covering Letters."
+                              rendered="#{not webUserController.hasPrivilege('CoveringLetters')}"/>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
