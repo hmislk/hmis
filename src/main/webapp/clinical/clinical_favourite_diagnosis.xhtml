@@ -45,7 +45,7 @@
                                 <p:commandButton value="Add New"
                                                  styleClass="ui-button-success"
                                                  icon="fas fa-plus"
-                                                 process="@this"
+                                                 process="@this acDiagnosis"
                                                  update="dlgFavouriteDiagnosis favGrowl"
                                                  oncomplete="if (args &amp;&amp; args.prepared) PF('dlgDiagnosis').show()"
                                                  action="#{favouriteController.prepareAddingFavouriteDiagnosis()}" >
