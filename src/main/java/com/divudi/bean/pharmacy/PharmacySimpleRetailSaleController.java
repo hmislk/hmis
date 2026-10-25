@@ -237,7 +237,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 setBillSettlingStarted(false);
                 return "/pharmacy/pharmacy_simple_retail_sale?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {

@@ -38,10 +38,12 @@ import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.service.AuditService;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -94,6 +96,9 @@ public class ServiceApiService implements Serializable {
     @EJB
     private AuditService auditService;
 
+    @Inject
+    private ItemApplicationController itemApplicationController;
+
     // =========================================================================
     // Service Search
     // =========================================================================
@@ -117,58 +122,94 @@ public class ServiceApiService implements Serializable {
      */
     public List<ServiceSearchResultDTO> searchServices(String query, String code, String serviceType,
             Long categoryId, Boolean inactive, int limit) throws Exception {
+        return searchServices(query, code, serviceType, categoryId, inactive, limit, 0);
+    }
+
+    /**
+     * Search services, returning one page starting at {@code offset}.
+     *
+     * Rows are ordered by name then id. The id tiebreaker is what makes paging safe:
+     * two services can share a name, and without it the database is free to order
+     * them differently from one page request to the next, so a row could appear on
+     * two pages or on none.
+     */
+    public List<ServiceSearchResultDTO> searchServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive, int limit, int offset) throws Exception {
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + (query != null ? query : "") + "%");
+        String where = buildServiceSearchWhere(params, query, code, serviceType, categoryId, inactive);
 
-        StringBuilder jpql = new StringBuilder();
-        // Query FROM Service covers both Service (OPD) and InwardService (Inward)
-        // since InwardService extends Service. Type filter narrows if needed.
-        jpql.append("SELECT i FROM Service i ")
-            .append("WHERE i.retired = false ");
-
-        // Type filter using DTYPE discriminator
-        if ("OPD".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = Service ");
-        } else if ("Inward".equalsIgnoreCase(serviceType)) {
-            jpql.append("AND type(i) = InwardService ");
-        } else {
-            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
-            jpql.append("AND (type(i) = Service OR type(i) = InwardService) ");
-        }
-
-        if (query != null && !query.trim().isEmpty()) {
-            jpql.append("AND i.name LIKE :query ");
-        } else {
-            params.remove("query");
-        }
-
-        if (code != null && !code.trim().isEmpty()) {
-            jpql.append("AND i.code LIKE :code ");
-            params.put("code", "%" + code.trim() + "%");
-        }
-
-        if (categoryId != null) {
-            jpql.append("AND i.category.id = :categoryId ");
-            params.put("categoryId", categoryId);
-        }
-
-        if (inactive != null) {
-            jpql.append("AND i.inactive = :inactive ");
-            params.put("inactive", inactive);
-        }
-
-        jpql.append("ORDER BY i.name");
-
-        @SuppressWarnings("unchecked")
-        List<Service> results = serviceFacade.findByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP, limit);
+        // Strict: a failed query must surface as an error. Callers use this search to decide
+        // "already loaded?" before creating a service, and a paging client reads a short page
+        // as "end of the list" — an empty list produced by a swallowed error would be
+        // mistaken for "not found" / "no more rows".
+        List<Service> results = serviceFacade.findByJpqlWithRangeStrict(
+                "SELECT i FROM Service i " + where + "ORDER BY i.name, i.id",
+                params, offset, limit);
 
         List<ServiceSearchResultDTO> dtos = new ArrayList<>();
         for (Service item : results) {
             dtos.add(buildSearchResultDTO(item));
         }
         return dtos;
+    }
+
+    /**
+     * Number of services matching the same filters as
+     * {@link #searchServices(String, String, String, Long, Boolean, int, int)},
+     * ignoring limit and offset, so a paging caller knows when it has seen them all.
+     */
+    public long countServices(String query, String code, String serviceType,
+            Long categoryId, Boolean inactive) throws Exception {
+        Map<String, Object> params = new HashMap<>();
+        String where = buildServiceSearchWhere(params, query, code, serviceType, categoryId, inactive);
+        // COUNT returns a Long — findLongByJpql, never findDoubleByJpql (which would
+        // swallow the ClassCastException and report 0 every time).
+        return serviceFacade.findLongByJpql("SELECT COUNT(i) FROM Service i " + where, params);
+    }
+
+    /**
+     * WHERE clause shared by the page query and the count query, so the two can never
+     * disagree about which rows match. Fills {@code params} with the bind values.
+     */
+    private String buildServiceSearchWhere(Map<String, Object> params, String query, String code,
+            String serviceType, Long categoryId, Boolean inactive) {
+
+        // Query FROM Service covers both Service (OPD) and InwardService (Inward)
+        // since InwardService extends Service. Type filter narrows if needed.
+        StringBuilder where = new StringBuilder("WHERE i.retired = false ");
+
+        // Type filter using DTYPE discriminator
+        if ("OPD".equalsIgnoreCase(serviceType)) {
+            where.append("AND type(i) = Service ");
+        } else if ("Inward".equalsIgnoreCase(serviceType)) {
+            where.append("AND type(i) = InwardService ");
+        } else {
+            // Default: restrict to OPD and Inward only, excluding other subtypes (e.g. TheatreService)
+            where.append("AND (type(i) = Service OR type(i) = InwardService) ");
+        }
+
+        if (query != null && !query.trim().isEmpty()) {
+            where.append("AND i.name LIKE :query ");
+            params.put("query", "%" + query + "%");
+        }
+
+        if (code != null && !code.trim().isEmpty()) {
+            where.append("AND i.code LIKE :code ");
+            params.put("code", "%" + code.trim() + "%");
+        }
+
+        if (categoryId != null) {
+            where.append("AND i.category.id = :categoryId ");
+            params.put("categoryId", categoryId);
+        }
+
+        if (inactive != null) {
+            where.append("AND i.inactive = :inactive ");
+            params.put("inactive", inactive);
+        }
+
+        return where.toString();
     }
 
     // =========================================================================
@@ -202,12 +243,20 @@ public class ServiceApiService implements Serializable {
 
         String svcType = request.getServiceType().trim();
 
-        // Validate inwardChargeType for Inward services
+        // inwardChargeType is required for Inward services, and optional-but-honored
+        // for OPD services (some OPD services are also billed from the inward side
+        // and need the same charge-type classification).
         InwardChargeType inwardChargeType = null;
         if ("Inward".equalsIgnoreCase(svcType)) {
             if (request.getInwardChargeType() == null || request.getInwardChargeType().trim().isEmpty()) {
                 throw new Exception("inwardChargeType is required when serviceType is Inward");
             }
+            try {
+                inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+            }
+        } else if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
             try {
                 inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
             } catch (IllegalArgumentException e) {
@@ -291,20 +340,25 @@ public class ServiceApiService implements Serializable {
         service.setCreatedAt(Calendar.getInstance().getTime());
         service.setRetired(false);
 
-        // Persist
+        // Persist. createAndFlush (rather than create) is required here because Item
+        // uses GenerationType.IDENTITY: a plain persist() without a flush leaves the
+        // generated id null until the transaction commits, so the response DTO built
+        // below would come back with no id.
         if ("Inward".equalsIgnoreCase(svcType)) {
-            inwardServiceFacade.create((InwardService) service);
+            inwardServiceFacade.createAndFlush((InwardService) service);
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             inwardServiceFacade.edit((InwardService) service);
         } else {
-            serviceFacade.create(service);
+            serviceFacade.createAndFlush(service);
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             serviceFacade.edit(service);
         }
+
+        itemApplicationController.invalidateItems();
 
         return buildServiceResponseDTO(service, new ArrayList<>(), "Service created successfully");
     }
@@ -562,10 +616,13 @@ public class ServiceApiService implements Serializable {
             itemFee.setStaff(staff);
         }
 
-        itemFeeFacade.create(itemFee);
+        // createAndFlush so the generated id (Item/ItemFee use GenerationType.IDENTITY)
+        // is available immediately in the response DTO.
+        itemFeeFacade.createAndFlush(itemFee);
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee added successfully");
@@ -663,6 +720,7 @@ public class ServiceApiService implements Serializable {
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee updated successfully");
@@ -687,6 +745,7 @@ public class ServiceApiService implements Serializable {
 
         // Recalculate item totals
         recalculateItemTotal(item);
+        itemApplicationController.invalidateItems();
 
         List<ItemFee> fees = fetchFeesForItem(item);
         return buildServiceResponseDTO(item, fees, "Fee removed successfully");
@@ -865,7 +924,10 @@ public class ServiceApiService implements Serializable {
     }
 
     /**
-     * Find fees with marginAllowed disabled (false or null) for items in a category.
+     * Find fees with marginAllowed explicitly disabled (false) for items in a
+     * category. Billing (InwardBeanController.setBillFeeMargin) treats a null
+     * marginAllowed as allowed (!Boolean.FALSE.equals(...)), so a null value is
+     * NOT margin-disabled and must not be listed here (issue #24155).
      */
     public List<ItemFeeDTO> findFeesWithMarginDisabled(Long categoryId) throws Exception {
         if (categoryId == null) {
@@ -875,7 +937,7 @@ public class ServiceApiService implements Serializable {
         String jpql = "SELECT f FROM ItemFee f "
                 + "WHERE f.item.category.id = :catId "
                 + "AND f.retired = false "
-                + "AND (f.marginAllowed = false OR f.marginAllowed IS NULL)";
+                + "AND f.marginAllowed = false";
         Map<String, Object> params = new HashMap<>();
         params.put("catId", categoryId);
 
@@ -951,7 +1013,9 @@ public class ServiceApiService implements Serializable {
         category.setCreatedAt(Calendar.getInstance().getTime());
         category.setRetired(false);
 
-        serviceCategoryFacade.create(category);
+        // createAndFlush so the generated id (ServiceCategory uses GenerationType.IDENTITY)
+        // is available immediately in the response DTO.
+        serviceCategoryFacade.createAndFlush(category);
 
         return buildServiceCategoryDTO(category, "Category created successfully");
     }
@@ -1102,6 +1166,7 @@ public class ServiceApiService implements Serializable {
         } else {
             serviceFacade.edit(service);
         }
+        itemApplicationController.invalidateItems();
     }
 
     /**

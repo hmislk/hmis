@@ -4,7 +4,8 @@ description: >
   Delete all merged local branches and fast-forward development to origin.
   Handles both feature branches (merged to development) and hotfix branches
   (ending in -hotfix, merged to any production branch). Stashes and restores
-  persistence.xml local JNDI settings automatically. Use after PRs are merged
+  persistence.xml local JNDI settings automatically, and drops leftover
+  stashes that hold only the JNDI swap. Use after PRs are merged
   to clean up local git state in one command.
 allowed-tools: Bash
 ---
@@ -50,7 +51,7 @@ For each branch, determine whether it is safe to delete.
 ### Protected branches — never delete, never classify
 
 Before the feature/hotfix split, skip any branch that is `master` or ends with
-`-prod` (the local mirrors of admin-managed / production branches — see Notes
+`-production` or `-staging` (the local mirrors of admin-managed / production branches — see Notes
 for the full list). They diverge from `development` by design, so a naïve
 patch-equivalence check could still misfire on them; the explicit skip is the
 guarantee. List them in the report under their own "Protected — not touched"
@@ -127,9 +128,23 @@ git merge-base --is-ancestor <branch> <base> && echo CONTAINED || echo AHEAD
     `git branch -D <branch>` manually; otherwise inspect for unmerged work
     first*".
 
-  (If the touched-file list is empty — the branch's commits change nothing —
-  the command degrades to a full-tree diff and will exit `1`; skip and warn,
-  which is the safe outcome for that oddity.)
+  **Empty touched-file list gotcha**: if `git diff --name-only "$mb" <branch>`
+  is empty, the command above degrades to a full-tree `git diff --quiet <base>
+  <branch>` (no pathspec) and will almost always exit `1` — not because
+  `<branch>` differs from `<base>`, but because `<base>` has since changed
+  unrelated files `<branch>` never touched. Don't trust that exit code in this
+  case. Instead compare tree hashes directly:
+
+  ```bash
+  [ "$(git rev-parse <branch>^{tree})" = "$(git rev-parse "$mb"^{tree})" ] && echo IDENTICAL || echo DIVERGED
+  ```
+
+  - **IDENTICAL** — `<branch>`'s tree is byte-identical to the merge-base (its
+    "ahead" commits are no-ops, e.g. an empty merge), and the merge-base is by
+    definition an ancestor of `<base>`. The branch holds zero unique content.
+    **Mark for deletion.**
+  - **DIVERGED** — genuinely different content despite the empty per-commit
+    diff (rare). **Skip** and warn.
 
 ## Step 4 — Switch to development
 
@@ -188,7 +203,31 @@ user and stop — do not resolve conflicts automatically.
 
 If no stash was created, leave `persistence.xml` as-is.
 
-## Step 8 — Report
+## Step 8 — Drop Leftover JNDI-Only Stashes
+
+Old `persistence.xml` stashes pile up from earlier branch switches. Drop, without
+asking, every stash whose only change is the `<jta-data-source>` JNDI swap — it
+carries nothing that the restored working copy doesn't already have. Run this
+**after** Step 7 so the stash made in Step 1 is already popped.
+
+```bash
+for ref in $(git stash list --format='%gd' | sort -t'{' -k2 -rn); do
+  [ "$(git stash show --name-only "$ref")" = "src/main/resources/META-INF/persistence.xml" ] || continue
+  git rev-parse -q --verify "$ref^3" >/dev/null && continue   # has untracked files
+  other=$(git stash show -p "$ref" | grep -E '^[+-][^+-]|^(old|new) mode' | grep -v '<jta-data-source>')
+  [ -z "$other" ] && git stash list | grep -F "$ref:" && git stash drop "$ref"
+done
+```
+
+- Indexes are processed highest first, so dropping one never renumbers a stash
+  still to be checked.
+- The match is by content, not message: default `WIP on <branch>: …` stashes
+  that hold only the swap are dropped too.
+- Keep any stash that touches another file, holds untracked files, or changes
+  any other `persistence.xml` line or its file mode — that is real WIP; list it in the report
+  instead of dropping it.
+
+## Step 9 — Report
 
 Print a summary:
 
@@ -206,10 +245,13 @@ Print a summary:
   ...
 
 • Protected — not touched:
-  - master, <name>-prod
+  - master, <name>-production, <name>-staging
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
+✓ Dropped JNDI-only stashes:
+  - stash@{N}: On <branch>: <message>
+  ...
 ```
 
 Each *vetted* deleted / skipped line carries the branch's real PR reference (or
@@ -221,10 +263,10 @@ any section with no entries. If nothing was stashed, replace the last line with:
 
 ## Notes
 
-- Never delete `development`, `master`, or any `*-prod` branch.
-- The known production branches are:
-  `coop-prod`, `ruhunu-prod`, `southernlanka-prod`, `rmh-prod`,
-  `digasiri-prod`, `mp-prod`, `roseth-prod`, `horizon-prod`,
-  `asiripharmacy-prod`, `engagewellness-prod`
+- Never delete `development`, `master`, any `*-production` / `*-staging`
+  branch, `home-qa*` or `rh-local-staging`.
+- The deploy branches are listed in
+  `developer_docs/deployment/ci-cd-pipeline-overview.md`. The old `*-prod`,
+  `*-prod-migrated` and `*-stg-migrated` branches were retired on 2026-10-11.
 - After this skill completes the developer is on `development`, up to date,
   with only unmerged feature branches remaining locally.

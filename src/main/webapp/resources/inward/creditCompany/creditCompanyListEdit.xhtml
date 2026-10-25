@@ -108,8 +108,13 @@
                         icon="fa fa-trash"
                         title="Remove"
                         class="ui-button-danger"
-                        ajax="false"
-                        action="#{cc.attrs.controller.removeCreditCompany(ecc)}" />
+                        process="tblCom"
+                        update="tblCom"
+                        action="#{cc.attrs.controller.removeCreditCompany(ecc)}">
+                        <p:confirm header="Confirm Remove"
+                                   message="Remove this credit company?"
+                                   icon="pi pi-exclamation-triangle" />
+                    </p:commandButton>
                 </div>
             </p:column>
         </p:dataTable>

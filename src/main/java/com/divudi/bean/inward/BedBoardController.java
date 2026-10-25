@@ -76,6 +76,8 @@ public class BedBoardController implements Serializable {
     SessionController sessionController;
     @Inject
     BhtSummeryController bhtSummeryController;
+    @Inject
+    AdmissionController admissionController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -214,8 +216,7 @@ public class BedBoardController implements Serializable {
             JsfUtil.addErrorMessage("No patient is currently admitted in this bed");
             return "";
         }
-        bhtSummeryController.setPatientEncounter(rooms.get(0).getPatientEncounter());
-        return bhtSummeryController.navigateToInpatientProfile();
+        return admissionController.navigateToInpatientDashboard(rooms.get(0).getPatientEncounter());
     }
 
     // -------------------------------------------------------------------------

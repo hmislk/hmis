@@ -1,0 +1,13 @@
+[
+  {"id": "intro", "say": "This video shows how to print a patient's PVC card in HMIS. The front and the back are printed separately, one side at a time."},
+  {"id": "opdMenu", "say": "Open the OPD menu and click Patient Lookup and Registration."},
+  {"id": "search", "say": "Find the patient. Here we type the phone number into Quick Search."},
+  {"id": "patient", "say": "The patient profile opens. At the top are two buttons: Print Front, and Print Back."},
+  {"id": "printFront", "say": "Put a blank card in the card printer, and click Print Front."},
+  {"id": "dialog", "say": "The browser's print dialog opens. Choose your card printer, set Margins to None and Scale to 100 percent, then click Print."},
+  {"id": "frontResult", "say": "This is the printed front: the artwork, with the patient's name, date of birth, phone number, gender and PHN."},
+  {"id": "flip", "say": "Now turn the card over and put it back in the printer."},
+  {"id": "printBack", "say": "Click Print Back, and print it with the same settings."},
+  {"id": "backResult", "say": "The back carries the barcode and the PHN. Staff can scan the barcode at the counter to find the patient."},
+  {"id": "outro", "say": "To change what is printed, or where, use PVC Card Layout under Administration, shown in the previous video."}
+]

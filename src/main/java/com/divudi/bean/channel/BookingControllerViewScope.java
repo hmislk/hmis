@@ -113,6 +113,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
@@ -139,6 +140,17 @@ import org.primefaces.model.ScheduleModel;
 @Named
 @ViewScoped
 public class BookingControllerViewScope implements Serializable, ControllerWithPatientViewScope, ControllerWithMultiplePayments {
+
+    // Striped JVM-wide locks for settleCredit(), keyed by the booking bill id.
+    // Static so a double-submit, a second tab and a second cashier all contend on
+    // the same lock; striped so the set stays bounded (issue #23776).
+    private static final Object[] SETTLE_LOCKS = new Object[64];
+
+    static {
+        for (int i = 0; i < SETTLE_LOCKS.length; i++) {
+            SETTLE_LOCKS[i] = new Object();
+        }
+    }
 
     /**
      * EJBs
@@ -2284,7 +2296,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2319,7 +2331,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 prepareForNewChannellingBill();
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -2362,7 +2374,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
                 return "/channel/channel_booking_by_date?faces-redirect=true";
             } else {
-                JsfUtil.addErrorMessage("Start Your Shift First !");
+                JsfUtil.addStartShiftFirstMessageForRedirect();
                 return "/cashier/index?faces-redirect=true";
             }
         } else {
@@ -4253,13 +4265,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend = Double.valueOf(strTenderedValue);
-                if (feeNetTotalForSelectedBill > tend) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                String tenderedError = ChannelTenderedAmountRules.tenderedAmountError(strTenderedValue, feeNetTotalForSelectedBill, true);
+                if (tenderedError != null) {
+                    JsfUtil.addErrorMessage(tenderedError);
                     return;
                 }
             }
@@ -6580,10 +6588,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
+        double[] balances = getInstitutionFacade().adjustBalance(ins, transactionValue);
+        if (balances != null) {
+            agentHistory.setBalanceBeforeTransaction(balances[0]);
+            agentHistory.setBalanceAfterTransaction(balances[1]);
+        }
         agentHistoryFacade.create(agentHistory);
-
-        ins.setBallance(ins.getBallance() + transactionValue);
-        getInstitutionFacade().edit(ins);
 
     }
 
@@ -7611,7 +7621,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return selectedBillSession;
     }
 
+    private static Long idOf(BillSession billSession) {
+        return billSession == null ? null : billSession.getId();
+    }
+
     public void setSelectedBillSession(BillSession selectedBillSession) {
+        if (!Objects.equals(idOf(this.selectedBillSession), idOf(selectedBillSession))) {
+            // A tendered amount typed for another booking must not be validated against this one.
+            setStrTenderedValue(null);
+        }
         this.selectedBillSession = selectedBillSession;
         if (selectedBillSession != null) {
             Bill bill = selectedBillSession.getBill();
@@ -7965,7 +7983,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean errorCheckForSettle() {
 
         if (settlePaymentMethod == null) {
-            settlePaymentMethod = paymentMethod.Cash;
+            JsfUtil.addErrorMessage("Please select a payment method for settling.");
+            return true;
+        }
+
+        // Fresh DB read; runs inside settleCredit()'s per-bill lock, so a concurrent
+        // settle of the same booking has either fully saved its paid bill or not started.
+        Bill currentBookingBill = getBillFacade().findWithoutCache(getBillSession().getBill().getId());
+        if (currentBookingBill != null && (currentBookingBill.getPaidAmount() != 0 || currentBookingBill.getPaidBill() != null)) {
+            JsfUtil.addErrorMessage("Payment Already Settled.");
             return true;
         }
 
@@ -7997,6 +8023,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void settleCredit() {
+        if (getBillSession() == null || getBillSession().getBill() == null || getBillSession().getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No booking selected to settle.");
+            return;
+        }
+        // Hold the lock across the already-paid check AND every settlement write,
+        // otherwise two submits can both pass the check before either saves (#23776).
+        Long bookingBillId = getBillSession().getBill().getId();
+        synchronized (SETTLE_LOCKS[(int) Math.floorMod(bookingBillId, (long) SETTLE_LOCKS.length)]) {
+            settleCreditUnderLock();
+        }
+    }
+
+    private void settleCreditUnderLock() {
         if (errorCheckForSettle()) {
             return;
         }
@@ -8026,24 +8065,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (settlePaymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend;
-                try {
-                    tend = Double.parseDouble(strTenderedValue);
-                } catch (NumberFormatException e) {
-                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
-                    return;
-                }
-                if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
-                    JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
-                    return;
-                }
-            }
+        if (errorCheckForSettleTenderedAmount()) {
+            return;
         }
 
         Bill b = savePaidBill();
@@ -8115,6 +8138,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreviewForReprintingAsOriginal = false;
         creditCompany = null;
         toStaff = null;
+        setStrTenderedValue(null);
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
@@ -8129,6 +8153,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSessionFacade().create(bs);
         return bs;
 
+    }
+
+    private boolean errorCheckForSettleTenderedAmount() {
+        if (settlePaymentMethod != PaymentMethod.Cash) {
+            return false;
+        }
+        boolean tenderedRequired = configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking");
+        if (!tenderedRequired && !configOptionApplicationController.getBooleanValueByKey("Reject cash settlement of an on-call channel booking when the entered tendered amount is less than the net total", true)) {
+            return false;
+        }
+        // Compare against the amount savePaidBill() records as paid.
+        String tenderedError = ChannelTenderedAmountRules.tenderedAmountError(strTenderedValue, getBillSession().getBill().getNetTotal(), tenderedRequired);
+        if (tenderedError != null) {
+            JsfUtil.addErrorMessage(tenderedError);
+            return true;
+        }
+        return false;
     }
 
     private Bill savePaidBill() {

@@ -39,7 +39,10 @@ public enum UploadType {
     Inward_Insurance_Document("Insurance Document"),
     Inward_Referral_Letter("Referral Letter"),
     Inward_GOP("GOP"),
-    Inward_Other("Other Document");
+    Inward_Other("Other Document"),
+    PVC_Card_Front_Background("PVC Card Front Background"),
+    PVC_Card_Back_Background("PVC Card Back Background"),
+    Lab_Report_Page_Background("Lab Report Page Background");
 
     private final String label;
 

@@ -15,18 +15,20 @@
             <ui:define name="content">
 
                 <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                <h:outputScript library="js" name="cc_self_billing_fit_screen.js" target="body"/>
 
                 <div class="cc-bill-page">
                     <h:form id="form">
                         <ez:cc_self_billing_header
                             pageTitle="Bill Print View"
-                            highlight="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
+                            highlightCode="#{collectingCentreBillController.collectingCentre.code}"
+                            highlightName="#{collectingCentreBillController.collectingCentre.name}"
                             pageIcon="fa-solid fa-print"
                             backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                             backLabel="Back to Dashboard">
                         </ez:cc_self_billing_header>
 
-                        <div class="d-flex justify-content-end mb-3 mx-2">
+                        <div class="d-flex gap-2 justify-content-end mb-3 mx-2 cc-actions-wrap">
                             <p:commandButton
                                 value="New Bill"
                                 icon="fa fa-plus"
@@ -34,11 +36,21 @@
                                 immediate="true"
                                 style="width: 200px;"
                                 action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                rendered="#{webUserController.hasPrivilege('CcSelfBilling')}"
                                 class="ui-button-warning mx-1">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="To Sample Management"
+                                icon="fas fa-flask"
+                                ajax="false"
+                                style="width: 200px;"
+                                action="#{collectingCentreSelfCommonController.navigateToSelfSampleManagementFromBills(collectingCentreBillController.bills)}"
+                                rendered="#{webUserController.hasPrivilege('CcSelfSampleManagement')}"
+                                class="ui-button-info mx-1">
                             </p:commandButton>
                         </div>
 
-                        <div class="row">
+                        <div class="row cc-stack-gap">
                             <div class="col-md-6">
                                 <p:panel>
                                     <f:facet name="header">
@@ -56,15 +68,19 @@
                                         </p:commandButton>
                                     </f:facet>
 
-                                    <h:panelGroup id="centerBillPriview">
+                                    <div class="cc-scroll-x cc-fit-screen">
+                                        <div class="cc-fit-inner">
+                                            <h:panelGroup id="centerBillPriview">
 
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Center(CC) : Size is FiveFiveCustom1 paper',true)}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Center(CC) : Size is FiveFiveCustom1 paper',true)}">
+                                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                        <bi:ccSelfBilling_fiveFiveCCBill_CC_Custom1 bill="#{pp}" duplicate="false"/>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
 
-                                    </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
                                 </p:panel>
                             </div>
 
@@ -85,15 +101,19 @@
                                         </p:commandButton>
                                     </f:facet>
 
-                                    <h:panelGroup id="parinetBillPriview">
+                                    <div class="cc-scroll-x cc-fit-screen">
+                                        <div class="cc-fit-inner">
+                                            <h:panelGroup id="parinetBillPriview">
 
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Patient : Size is FiveFiveCustom1 paper',true)}">
-                                            <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
-                                                <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>
-                                            </ui:repeat>
-                                        </h:panelGroup>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('CC Self Billing - Bill For Patient : Size is FiveFiveCustom1 paper',true)}">
+                                                    <ui:repeat value="#{collectingCentreBillController.bills}" var="pp">
+                                                        <bi:ccSelfBilling_fiveFiveCCBill_Patient_Custom1 bill="#{pp}" duplicate="false"/>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
 
-                                    </h:panelGroup>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
                                 </p:panel>
                             </div>
                         </div>
