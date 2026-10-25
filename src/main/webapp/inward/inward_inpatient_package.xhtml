@@ -17,7 +17,7 @@
         <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}" layout="block">
 
         <h:form id="formInpatientPackage">
-            <p:growl id="growlInpatientPackage"/>
+            <p:growl id="growl"/>
             <p:focus id="selectFocus" for="lstSelectPackage"/>
             <p:focus id="detailFocus" for="txtPackageName"/>
 
@@ -50,7 +50,7 @@
                                     title="Delete Inpatient Package"
                                     icon="fa fa-trash"
                                     process="btnDeletePackage"
-                                    update="lstSelectPackage gpPackageDetail growlInpatientPackage">
+                                    update="lstSelectPackage gpPackageDetail growl">
                                 </p:commandButton>
                             </div>
                         </div>
