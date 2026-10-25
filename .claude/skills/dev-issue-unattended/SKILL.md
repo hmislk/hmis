@@ -449,6 +449,10 @@ exactly what to double-check first. Any wiki prose you rewrote belongs in
 that list. Redact this body per the hard limit above too — same as every
 other publication point.
 
+After the PR opens, set every issue it closes to **Reviewing & Merging** on board #11 and read the
+status back (dev-issue step 13). In batch mode check the board for the whole batch before step 15;
+the summary quotes the read-back status per issue.
+
 ## 14. Review loop (until mergeable) — waiting without the user present
 
 Repeat, up to **3 cycles**:

@@ -374,6 +374,11 @@ corresponding page edit can't be reviewed properly. If step 10 concluded no
 page was needed (internal-only change), say that explicitly instead — an
 absent Documentation section reads as forgotten, not as deliberate.
 
+Then move each issue the PR closes to **Reviewing & Merging** on board #11 and read the status
+back ([Project Board, status at every stage](../../../developer_docs/github/project-board-integration.md#status-at-every-stage-qa-works-from-this-column)).
+QA works from board status; an issue left in Backlog or a sprint column is never tested. This
+applies even when you branched by hand instead of running `start-issue`.
+
 ## 14. Review loop (until mergeable)
 
 Repeat, up to **3 cycles**:
