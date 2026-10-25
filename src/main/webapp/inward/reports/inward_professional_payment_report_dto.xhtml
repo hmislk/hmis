@@ -141,6 +141,49 @@
                                 </h:panelGroup>
                                 </h:panelGroup>
 
+                                <h:outputLabel value="Institution" for="ppInstitution" class="mt-2 d-block"/>
+                                <p:selectOneMenu
+                                    id="ppInstitution"
+                                    autoWidth="false"
+                                    value="#{inwardReportControllerBht.professionalPaymentInstitution}"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    class="w-100">
+                                    <f:selectItem itemLabel="All Institutions"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                    <p:ajax process="@this" update="ppDepartment" listener="#{inwardReportControllerBht.clearProfessionalPaymentDepartment()}"/>
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="Site" for="ppSite" class="mt-2 d-block"/>
+                                <p:selectOneMenu
+                                    id="ppSite"
+                                    autoWidth="false"
+                                    value="#{inwardReportControllerBht.professionalPaymentSite}"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    class="w-100">
+                                    <f:selectItem itemLabel="All Sites"/>
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                    <p:ajax process="@this" update="ppDepartment" listener="#{inwardReportControllerBht.clearProfessionalPaymentDepartment()}"/>
+                                </p:selectOneMenu>
+
+                                <h:outputLabel value="Department" for="ppDepartment" class="mt-2 d-block"/>
+                                <p:selectOneMenu
+                                    id="ppDepartment"
+                                    autoWidth="false"
+                                    value="#{inwardReportControllerBht.professionalPaymentDepartment}"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    class="w-100">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportControllerBht.professionalPaymentInstitution, inwardReportControllerBht.professionalPaymentSite)}"
+                                        var="dept"
+                                        itemLabel="#{dept.name}"
+                                        itemValue="#{dept}"/>
+                                    <p:ajax process="@this"/>
+                                </p:selectOneMenu>
+
                                 <h:outputLabel value="Admission Type" for="admissionType" class="mt-2 d-block"/>
                                 <p:selectOneMenu 
                                     id="admissionType" 

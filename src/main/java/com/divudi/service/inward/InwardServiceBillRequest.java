@@ -89,6 +89,18 @@ public class InwardServiceBillRequest implements Serializable {
     private List<Bill> billCollector;
 
     /**
+     * The batch bill, published the moment it is persisted rather than on return.
+     *
+     * <p>{@code saveBatchBill()} creates the row and only then links the children
+     * to it, so a failure in that linking never returns the batch bill to the
+     * caller - leaving a committed row nothing can find. This field closes that
+     * window. It is deliberately not the {@link #billCollector}: the batch bill
+     * must not appear in the hand-driven path's {@code bills} list, which
+     * {@code cancellAll()} and {@code saveEncounterComponents(...)} iterate.</p>
+     */
+    private Bill createdBatchBill;
+
+    /**
      * Whether to apply the inward price matrix to the generated fees. False for
      * automatic admission charges, whose price comes from the configuration and
      * must not be re-derived - which also suppresses the inward discount matrix,
@@ -190,6 +202,14 @@ public class InwardServiceBillRequest implements Serializable {
 
     public void setBillCollector(List<Bill> billCollector) {
         this.billCollector = billCollector;
+    }
+
+    public Bill getCreatedBatchBill() {
+        return createdBatchBill;
+    }
+
+    public void setCreatedBatchBill(Bill createdBatchBill) {
+        this.createdBatchBill = createdBatchBill;
     }
 
     public boolean isApplyInwardMargin() {

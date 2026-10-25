@@ -20,6 +20,8 @@ import javax.ejb.EJB;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -182,6 +184,54 @@ public class AgentAndCcApplicationController {
         return balance != null ? balance : 0.0;
     }
 
+    /**
+     * Reads the balance back after an update and records an ERROR audit event
+     * if the stored value is not the one just written (#24603). By then the
+     * AgentHistory row is already saved, so a mismatch means the CC statement
+     * and the CC balance no longer agree.
+     */
+    private void verifyBalanceWritten(Long collectingCentreId, double expectedBalance, AgentHistory agentHistory) {
+        try {
+            double storedBalance = fetchCurrentBalance(collectingCentreId);
+            if (Math.abs(storedBalance - expectedBalance) < 0.005) {
+                return;
+            }
+            Bill bill = agentHistory != null ? agentHistory.getBill() : null;
+            Map<String, Object> errorInfo = new LinkedHashMap<>();
+            errorInfo.put("fileName", "AgentAndCcApplicationController.java");
+            errorInfo.put("methodName", "verifyBalanceWritten");
+            errorInfo.put("collectingCentreId", collectingCentreId);
+            errorInfo.put("expectedBalance", expectedBalance);
+            errorInfo.put("storedBalance", storedBalance);
+            errorInfo.put("historyType", agentHistory != null && agentHistory.getHistoryType() != null
+                    ? agentHistory.getHistoryType().name() : null);
+            errorInfo.put("agentHistoryId", agentHistory != null ? agentHistory.getId() : null);
+            errorInfo.put("billId", bill != null ? bill.getId() : null);
+
+            AuditEvent auditEvent = new AuditEvent();
+            if (bill != null) {
+                if (bill.getDepartment() != null && bill.getDepartment().getId() != null) {
+                    auditEvent.setDepartmentId(bill.getDepartment().getId());
+                }
+                if (bill.getCreater() != null && bill.getCreater().getId() != null) {
+                    auditEvent.setWebUserId(bill.getCreater().getId());
+                }
+            }
+            auditEvent.setEntityType("Institution");
+            auditEvent.setObjectId(collectingCentreId);
+            auditEvent.setEventTrigger("Collecting Centre Balance Update Not Stored");
+            auditEvent.setEventDataTime(new Date());
+            auditEvent.setEventStatus("ERROR");
+            auditEvent.setAfterJson(new Gson().toJson(errorInfo));
+            if (auditEventApplicationController != null) {
+                auditEventApplicationController.saveAuditEvent(auditEvent);
+            }
+        } catch (Exception e) {
+            Logger.getLogger(AgentAndCcApplicationController.class.getName())
+                    .log(Level.WARNING, "Could not verify Collecting Centre balance update", e);
+        }
+    }
+
     private void handleCcBalanceUpdateBill(Institution collectingCentre, double hospitalFee, double collectingCentreFee, double staffFee, double transactionValue, Bill bill, String comments) {
 
         Long collectingCentreId = collectingCentre.getId(); // Assuming each Institution has a unique ID
@@ -217,8 +267,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
         } finally {
             lock.unlock();
         }
@@ -259,8 +310,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -301,8 +353,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
 
         } finally {
@@ -344,8 +397,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -385,8 +439,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -428,8 +483,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -471,8 +527,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -513,8 +570,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -555,8 +613,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -601,8 +660,9 @@ public class AgentAndCcApplicationController {
             bill.setAgentHistory(agentHistory);
             billFacade.edit(bill);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -644,8 +704,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -688,8 +749,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();
@@ -735,8 +797,9 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
-            institutionFacade.editAndCommit(collectingCentre);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
+            institutionFacade.editCcBalanceAndCommit(collectingCentre);
+            verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
         } finally {
             lock.unlock();

@@ -19,7 +19,10 @@ function labReportTrimPdf(pdf, element) {
         margin: [0, 0, 0, 0],
         image: {type: 'jpeg', quality: 1.0},
         html2canvas: {scale: 2, useCORS: true},
-        jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
+        jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'},
+        // each box is already one page; html2pdf's default css mode would see
+        // .labReportNext's break-before and push the box down by a blank page
+        pagebreak: {mode: []}
     };
     while (pdf.internal.getNumberOfPages() > 1) {
         pdf.deletePage(pdf.internal.getNumberOfPages());

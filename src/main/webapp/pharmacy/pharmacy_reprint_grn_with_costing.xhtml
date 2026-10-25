@@ -93,7 +93,10 @@
                             <div class="col-6 d-flex justify-content-center border border-light boder-1">    
                                 <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                                         <ph:grn_with_costing
-                                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One', configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true))}"
+                                            bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                        <ph:grn_with_costing_new
+                                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two', false)}"
                                             bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                                         <ph:grn_with_costing_custom_1
                                             rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
@@ -109,7 +112,10 @@
                             <div class="col-6 d-flex justify-content-center border border-light boder-1">
                                 <h:panelGroup  id="gpOriginalBillPreview"   style="border: none; width: 214mm;" rendered="#{webUserController.hasPrivilege('PrintOriginalGrnBillFromReprint')}">
                                         <ph:grn_with_costing
-                                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One', configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true))}"
+                                            bill="#{pharmacyBillSearch.bill}" />
+                                        <ph:grn_with_costing_new
+                                            rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two', false)}"
                                             bill="#{pharmacyBillSearch.bill}" />
                                         <ph:grn_with_costing_custom_1
                                             rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
@@ -150,10 +156,18 @@
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <p:selectBooleanCheckbox
-                                                id="grnReceiptA4"
-                                                value="#{pharmacyConfigController.grnReceiptA4}" />
-                                            <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
-                                            <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
+                                                id="grnReceiptA4One"
+                                                value="#{pharmacyConfigController.grnReceiptA4One}" />
+                                            <p:outputLabel for="grnReceiptA4One" value="A4 Paper Format One" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 GRN receipt format One</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p:selectBooleanCheckbox
+                                                id="grnReceiptA4Two"
+                                                value="#{pharmacyConfigController.grnReceiptA4Two}" />
+                                            <p:outputLabel for="grnReceiptA4Two" value="A4 Paper Format Two" class="ms-2" />
+                                            <small class="form-text text-muted d-block">Standard A4 GRN receipt format Two</small>
                                         </div>
 
                                         <div class="mb-3">
