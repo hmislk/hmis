@@ -7,6 +7,7 @@ import com.divudi.core.data.dto.PendingLabInvestigationDTO;
 import com.divudi.core.data.dto.PendingPharmacyItemDTO;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
@@ -238,8 +239,12 @@ public class NursingDischargeController implements Serializable {
      * discharge (issue #21935).
      */
     private boolean hasActiveRoom() {
+        // Child encounters too: a theatre stay sits on the surgery's procedure
+        // encounter, a child of the admission (#24718).
         String jpql = "SELECT COUNT(pr) FROM PatientRoom pr"
-                + " WHERE pr.patientEncounter = :pe"
+                + " LEFT JOIN pr.patientEncounter e"
+                + " LEFT JOIN e.parentEncounter par"
+                + " WHERE (e = :pe OR par = :pe)"
                 + " AND pr.retired = false"
                 + " AND pr.discharged = false";
         Map<String, Object> params = new HashMap<>();
@@ -254,6 +259,11 @@ public class NursingDischargeController implements Serializable {
         }
         if (currentEncounter.isNursingDischarged()) {
             JsfUtil.addErrorMessage("Nursing discharge already confirmed.");
+            return;
+        }
+        PatientRoom openTheatreRoom = inwardBean.findOpenTheatreRoom(currentEncounter);
+        if (openTheatreRoom != null) {
+            JsfUtil.addErrorMessage(inwardBean.openTheatreRoomMessage(openTheatreRoom, "nursing discharge"));
             return;
         }
         if (hasActiveRoom()) {
