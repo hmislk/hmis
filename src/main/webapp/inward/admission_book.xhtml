@@ -265,7 +265,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="BHT No" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="BHT No" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
                                         </div>
@@ -274,7 +274,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Payment Method" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Payment Method" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.paymentMethord}" />
                                         </div>
@@ -283,7 +283,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Credit Company" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Credit Company" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.creditCompany}" />
                                         </div>
@@ -292,7 +292,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Patient Details" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Patient Details" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.person}" />
                                         </div>
@@ -301,7 +301,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Guardian Details" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Guardian Details" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.guardian}" />
                                         </div>
@@ -310,7 +310,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Room" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Room" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.room}" />
                                         </div>
@@ -319,7 +319,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Refering Doctor" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Referring Doctor" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.refDoctor}" />
                                         </div>
@@ -328,7 +328,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Admit Date" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Admit Date" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.addmitDetails}" />
                                         </div>
@@ -337,7 +337,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Billed By" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Billed By" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.billedBy}" />
                                         </div>
@@ -346,7 +346,7 @@
 
                                 <div class="col-md-3 mb-2">
                                     <div class="row align-items-center">
-                                        <p:outputLabel value="Totals" styleClass="col-6 text-nowrap" />
+                                        <p:outputLabel value="Totals" styleClass="col-6" />
                                         <div class="col-6">
                                             <p:selectBooleanCheckbox value="#{inwardReportController.finalBillTotal}" />
                                         </div>
@@ -357,6 +357,12 @@
 
                         </p:panel>
 
+                        <style>
+                            .admission-book-table-container { overflow-x: auto; }
+                            @media print {
+                                .admission-book-table-container { overflow: visible !important; }
+                            }
+                        </style>
                         <h:panelGroup id="gpBillPreview">
                             <div class="admission-book-table-container mb-3">
 
@@ -365,9 +371,7 @@
                                              styleClass="noBorder normalFont text-nowrap admission-book-table"
                                              value="#{inwardReportController.patientEncounters}"
                                              var="i"
-                                             rowIndexVar="a"
-                                             scrollable="true"
-                                             scrollWidth="100%">
+                                             rowIndexVar="a">
 
                                     <!--                                <p:column headerText="View">
                                                                                 <p:commandButton ajax="false" value="View Detail"
@@ -381,7 +385,7 @@
 
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <h:outputLabel value="Inward Payment Bill Item - #{inwardReportController.institution != null ? inwardReportController.institution.name : inwardReportController.department != null ? inwardReportController.department.institution.name : 'All Institutions'}" />
+                                                <h:outputLabel value="Inward Payment Bill Item - #{inwardReportController.institution != null ? inwardReportController.institution.name : inwardReportController.department != null ? inwardReportController.department.institution.name : inwardReportController.site != null ? inwardReportController.site.name : 'All Institutions'}" />
                                             </div>
                                         </div>
 
@@ -395,7 +399,7 @@
                                                 <h:outputText value="#{inwardReportController.fromDate}">
                                                     <f:convertDateTime
                                                         timeZone="Asia/Colombo"
-                                                        pattern="dd MMM yyyy HH:mm:ss" />
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
                                             </div>
 
@@ -407,7 +411,7 @@
                                                 <h:outputText value="#{inwardReportController.toDate}">
                                                     <f:convertDateTime
                                                         timeZone="Asia/Colombo"
-                                                        pattern="dd MMM yyyy HH:mm:ss" />
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
                                             </div>
 
