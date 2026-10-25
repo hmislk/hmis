@@ -208,7 +208,9 @@
                                         icon="fas fa-print"
                                         class="ui-button-info me-1"
                                         ajax="false">
-                                        <p:printer target="tblAdmissions" />
+                                        <p:printer
+                                            target="printAdmissions"
+                                            configuration="stylesheet: '#{resource['css:printing/reportprint.css']}'" />
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Excel"
@@ -227,30 +229,100 @@
                                 </div>
                             </div>
                         </f:facet>
+                        
+                        <h:panelGroup id="printAdmissions" layout="block" styleClass="small">
+                            
+                            <h:outputText
+                                value="Admission Report"
+                                styleClass="d-block text-center fw-bold fs-4 mb-2" />
 
+                            <div class="row g-0 mb-2">
+
+                                <div class="col-2 fw-bold">From Date:</div>
+                                <div class="col-4">
+                                    <h:outputText value="#{admissionReportController.fromDate}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </div>
+
+                                <div class="col-2 fw-bold">To Date:</div>
+                                <div class="col-4">
+                                    <h:outputText value="#{admissionReportController.toDate}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    </h:outputText>
+                                </div>
+
+                                <div class="col-2 fw-bold">Admission Type:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.admissionType ne null ? admissionReportController.admissionType.name : 'All'}" />
+                                </div>
+
+                                <div class="col-2 fw-bold">Payment Method:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.paymentMethod ne null ? admissionReportController.paymentMethod : 'All'}" />
+                                </div>
+
+                                <div class="col-2 fw-bold">Date Basis:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : 'Created Date'}" />
+                                </div>
+
+                                <div class="col-2 fw-bold">Generated:</div>
+                                <div class="col-4">
+                                    <h:outputText value="#{sessionController.currentDate}">
+                                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                    </h:outputText>
+                                </div>
+
+                                <div class="col-2 fw-bold">Institution:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.institution ne null ? admissionReportController.institution.name : 'All'}" />
+                                </div>
+
+                                <div class="col-2 fw-bold">Site:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.site ne null ? admissionReportController.site.name : 'All'}" />
+                                </div>
+
+                                <div class="col-2 fw-bold">Department:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.department ne null ? admissionReportController.department.name : 'All'}" />
+                                </div>
+
+                                <div class="col-2 fw-bold">Records:</div>
+                                <div class="col-4">
+                                    <h:outputText
+                                        value="#{admissionReportController.admissions.size()}" />
+                                </div>
+
+                            </div>
+                            
                         <p:dataTable
                             id="tblAdmissions"
                             value="#{admissionReportController.admissions}"
                             var="ad"
                             emptyMessage="No records found"
-                            paginator="true"
-                            rows="20"
-                            paginatorAlwaysVisible="false"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                            size="small"
+                            stripedRows="true"
                             styleClass="w-100">
 
                             <!-- BHT No — screen: link to inpatient profile; export: plain text via exportValue -->
-                            <p:column headerText="BHT No" style="white-space:nowrap;" exportValue="#{ad.bhtNo}">
+                            <p:column headerText="BHT No" styleClass="text-wrap"  exportValue="#{ad.bhtNo}">
                                 <p:commandButton
                                     value="#{ad.bhtNo}"
-                                    icon="fas fa-bed"
-                                    styleClass="ui-button-link p-0"
+                                    styleClass="ui-button-link p-0 bht-screen"
                                     ajax="false"
                                     action="#{admissionController.navigateToAdmissionProfileById(ad.admissionId)}"
                                     title="Open Inpatient Dashboard" />
+                                <h:outputText
+                                    value="#{ad.bhtNo}"
+                                    styleClass="d-none bht-print" />
                             </p:column>
 
                             <p:column headerText="Patient Name">
@@ -265,13 +337,13 @@
                                 <h:outputText value="#{not empty ad.address ? ad.address : 'N/A'}" />
                             </p:column>
 
-                            <p:column headerText="Date of Admission" style="white-space:nowrap;">
+                            <p:column headerText="Date of Admission" styleClass="text-wrap">
                                 <h:outputText value="#{ad.dateOfAdmission}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Discharged Date" style="white-space:nowrap;">
+                            <p:column headerText="Discharged Date" styleClass="text-wrap">
                                 <h:outputText value="#{ad.dateOfDischarge}" rendered="#{ad.dateOfDischarge ne null}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputText>
@@ -319,7 +391,7 @@
                             </p:column>
 
                         </p:dataTable>
-
+                        </h:panelGroup>    
                     </p:panel>
 
                 </h:form>

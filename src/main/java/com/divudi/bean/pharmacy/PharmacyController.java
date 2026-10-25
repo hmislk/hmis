@@ -3796,14 +3796,6 @@ public class PharmacyController implements Serializable {
 
             switch (reportType) {
                 case "byBill":
-                    if (item != null) {
-                        JsfUtil.addErrorMessage("You can not use List By Bill when an item is selected");
-                        return;
-                    }
-                    if (category != null) {
-                        JsfUtil.addErrorMessage("You can not use List By Bill when a category is selected");
-                        return;
-                    }
                     generateConsumptionByBillDto(disposalBillTypes);
                     break;
                 case "byBillItem":
@@ -3832,24 +3824,44 @@ public class PharmacyController implements Serializable {
 
     public void generateConsumptionByBillDto(List<BillTypeAtomic> billTypeAtomics) {
         try {
+            // With an item-level filter, each bill's values are the sum of its matching items only,
+            // so the totals reconcile with the By Bill Item report under the same filters.
+            boolean itemLevelFilter = item != null || category != null || dosageForm != null;
+            String groupedColumns = "b.id, b.deptId, b.invoiceNumber, "
+                    + "toDept.name, "
+                    + "b.cancelled, b.fullReturned, "
+                    + "cb.id, cb.deptId, "
+                    + "rb.id, rb.deptId, "
+                    + "obb.id, obb.deptId, ";
+            String trailingColumns = "b.createdAt, wu.name, b.comments, b.billTypeAtomic ";
+
             StringBuilder jpql = new StringBuilder();
-            jpql.append("SELECT b.id, b.deptId, b.invoiceNumber, ");
-            jpql.append("toDept.name, ");
-            jpql.append("b.cancelled, b.fullReturned, ");
-            jpql.append("cb.id, cb.deptId, ");
-            jpql.append("rb.id, rb.deptId, ");
-            jpql.append("obb.id, obb.deptId, ");
-            jpql.append("bfd.totalPurchaseValue, bfd.totalCostValue, bfd.totalRetailSaleValue, ");
-            jpql.append("b.createdAt, wu.name, b.comments, b.billTypeAtomic ");
-            jpql.append("FROM Bill b ");
+            jpql.append("SELECT ").append(groupedColumns);
+            if (itemLevelFilter) {
+                jpql.append("SUM(bifd.valueAtPurchaseRate), SUM(bifd.valueAtCostRate), SUM(bifd.valueAtRetailRate), ");
+            } else {
+                jpql.append("bfd.totalPurchaseValue, bfd.totalCostValue, bfd.totalRetailSaleValue, ");
+            }
+            jpql.append(trailingColumns);
+            if (itemLevelFilter) {
+                jpql.append("FROM BillItem bi ");
+                jpql.append("JOIN bi.bill b ");
+                jpql.append("LEFT JOIN bi.item i ");
+                jpql.append("LEFT JOIN bi.billItemFinanceDetails bifd ");
+            } else {
+                jpql.append("FROM Bill b ");
+                jpql.append("LEFT JOIN b.billFinanceDetails bfd ");
+            }
             jpql.append("LEFT JOIN b.toDepartment toDept ");
             jpql.append("LEFT JOIN b.cancelledBill cb ");
             jpql.append("LEFT JOIN b.refundedBill rb ");
             jpql.append("LEFT JOIN b.billedBill obb ");
-            jpql.append("LEFT JOIN b.billFinanceDetails bfd ");
             jpql.append("LEFT JOIN b.creater cr ");
             jpql.append("LEFT JOIN cr.webUserPerson wu ");
             jpql.append("WHERE (b.retired = false OR b.retired IS NULL) ");
+            if (itemLevelFilter) {
+                jpql.append("AND (bi.retired = false OR bi.retired IS NULL) ");
+            }
             jpql.append("AND b.completed = true ");
             jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
             jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -3871,8 +3883,16 @@ public class PharmacyController implements Serializable {
                 jpql.append("AND b.department = :dept ");
                 params.put("dept", dept);
             }
+            if (item != null) {
+                jpql.append("AND bi.item = :item ");
+                params.put("item", item);
+            }
+            if (category != null) {
+                jpql.append("AND i.category = :category ");
+                params.put("category", category);
+            }
             if (dosageForm != null) {
-                jpql.append("AND EXISTS (SELECT bi2 FROM BillItem bi2 WHERE bi2.bill = b AND bi2.item.dosageForm = :df) ");
+                jpql.append("AND i.dosageForm = :df ");
                 params.put("df", dosageForm);
             }
             if (toDepartment != null) {
@@ -3882,6 +3902,9 @@ public class PharmacyController implements Serializable {
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 jpql.append("AND b.departmentType IN :departmentTypes ");
                 params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (itemLevelFilter) {
+                jpql.append("GROUP BY ").append(groupedColumns).append(trailingColumns);
             }
             jpql.append("ORDER BY b.createdAt ASC");
 
@@ -6874,16 +6897,20 @@ public class PharmacyController implements Serializable {
 
     public void generateReportByDepartmentWiseBill(List<BillTypeAtomic> billTypeAtomics) {
         Map<String, Object> parameters = new HashMap<>();
+        // LEFT JOINs keep bills whose optional relations are null; a path in SELECT would inner-join and drop them
         StringBuilder sql = new StringBuilder(
-                "SELECT b.toDepartment, "
-                + "b.department, "
+                "SELECT td, "
+                + "d, "
                 + "b.deptId, "
                 + "b.createdAt, "
-                + "b.backwardReferenceBill, "
-                + "b.backwardReferenceBill.deptId, "
+                + "brb, "
+                + "brb.deptId, "
                 + "SUM(b.netTotal), "
                 + "b "
                 + "FROM Bill b "
+                + "LEFT JOIN b.toDepartment td "
+                + "LEFT JOIN b.department d "
+                + "LEFT JOIN b.backwardReferenceBill brb "
                 + "WHERE b.retired = false "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND b.billTypeAtomic IN :billTypeAtomics "
@@ -6895,7 +6922,7 @@ public class PharmacyController implements Serializable {
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
+        sql.append(" GROUP BY td, d, b.deptId, b.createdAt, brb, brb.deptId, b");
         sql.append(" ORDER BY b.id");
 
         Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
@@ -6958,7 +6985,7 @@ public class PharmacyController implements Serializable {
             }
 
             departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
+                    .sorted(Map.Entry.comparingByKey(Comparator.nullsLast(Comparator.comparing(Department::getName, Comparator.nullsLast(Comparator.naturalOrder())))))
                     .flatMap(entry -> entry.getValue().stream())
                     .collect(Collectors.toList());
 
@@ -7334,14 +7361,19 @@ public class PharmacyController implements Serializable {
         StringBuilder sql = new StringBuilder();
 
         // Select all department information plus aggregate values
+        // LEFT JOINs keep bills whose department or finance details are null; a path in SELECT would inner-join and drop them
         sql.append("SELECT ")
-                .append("b.department.name, ")
-                .append("b.fromDepartment.name, ")
-                .append("b.toDepartment.name, ")
-                .append("SUM(b.billFinanceDetails.totalPurchaseValue), ")
-                .append("SUM(b.billFinanceDetails.totalCostValue), ")
-                .append("SUM(b.billFinanceDetails.totalRetailSaleValue) ")
+                .append("d.name, ")
+                .append("fd.name, ")
+                .append("td.name, ")
+                .append("SUM(bfd.totalPurchaseValue), ")
+                .append("SUM(bfd.totalCostValue), ")
+                .append("SUM(bfd.totalRetailSaleValue) ")
                 .append("FROM Bill b ")
+                .append("LEFT JOIN b.department d ")
+                .append("LEFT JOIN b.fromDepartment fd ")
+                .append("LEFT JOIN b.toDepartment td ")
+                .append("LEFT JOIN b.billFinanceDetails bfd ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billTypeAtomic IN :btAtomics ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -7353,8 +7385,8 @@ public class PharmacyController implements Serializable {
         additionalCommonFilltersForBillEntity(sql, parameters);
 
         // Group by all three department fields to satisfy MySQL ONLY_FULL_GROUP_BY
-        sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
-        sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
+        sql.append(" GROUP BY d.name, fd.name, td.name ");
+        sql.append(" ORDER BY SUM(bfd.totalRetailSaleValue) DESC");
 
         try {
             List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -7375,6 +7407,9 @@ public class PharmacyController implements Serializable {
                 String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
                 if (keyDepartment == null) {
                     keyDepartment = mainDepartment;
+                }
+                if (keyDepartment == null) {
+                    keyDepartment = "(No department)";
                 }
 
                 // Create or update main summary entry

@@ -2,7 +2,7 @@
 name: hotfix-deploy
 description: >
   Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-prod, ruhunu-prod, southernlanka-prod, etc.). Covers branch creation,
+  (coop-production, rh-production, southernlanka-staging, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
   through the normal development → QA → prod pipeline. The agent may invoke
@@ -19,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`)
+- `$0` — Target production branch (e.g., `coop-production`, `rh-production`, `southernlanka-staging`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -117,9 +117,13 @@ git branch -d $1-hotfix
 
 | Hospital/Environment | Branch         |
 |----------------------|----------------|
-| COOP hospitals       | `coop-prod`    |
-| Ruhunu hospital      | `ruhunu-prod`  |
-| Southern Lanka       | `southernlanka-prod` |
+| COOP pharmacy        | `coop-production` |
+| COOP inward          | `coop-staging`    |
+| Ruhunu hospital      | `rh-production`   |
+| Southern Lanka (live)| `southernlanka-staging` |
+
+Full map: `developer_docs/deployment/ci-cd-pipeline-overview.md`. CI's `-hotfix`
+head check does not yet run for these targets (#24453); follow the naming rule anyway.
 
 ## Reference
 
