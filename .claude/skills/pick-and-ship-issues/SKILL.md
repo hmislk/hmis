@@ -35,6 +35,20 @@ Never end a run with candidates "not yet triaged" or a PR "not yet done".
 Triage is cheap, so work through the whole list; a long list is not a reason
 to stop.
 
+**Finish what you start; no local-only leftovers.** Every change this run
+makes is pushed and in a PR before the run ends: code fixes, and also any edit
+to a skill, `CLAUDE.md` or doc (own branch from `origin/development`, PR to
+`development`, never merge). Do not leave commits on a local branch, and do not
+end with a "loose ends" list of things you chose not to push. Invoking this
+skill is the authorization; do not hold back for permission.
+
+**The report is written as you go.** Create
+`tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` at the start of the run and
+append one line after every issue outcome (picked, PR opened, needs-info,
+needs-human, closed, skipped). If the run is cut off (out of memory, context
+limit, tool failure), the file already records everything that happened and
+where to resume.
+
 **Everything runs against `origin/development`.** Fetch it first. Check each
 defect, branch, build, test and PR target against it, never `master` or a
 production/staging branch. An issue already fixed there follows step 6.
@@ -177,8 +191,8 @@ Before reporting, read back the board Status of every issue you touched. Shipped
 
 ## 7. Report
 
-Write `tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` and give the same
-summary in chat:
+Finish the `tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` file you have been
+appending to, and give the same summary in chat:
 
 1. **Needs your intervention**: every open `triage: needs-human` issue from
    this reporter, this run's first, each with a one-line reason.
