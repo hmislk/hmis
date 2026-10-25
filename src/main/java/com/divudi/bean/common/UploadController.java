@@ -153,12 +153,33 @@ public class UploadController implements Serializable {
         String j = "select u "
                 + " from Upload u "
                 + " where u.retired=:ret"
-                + " and u.category=:cat";
+                + " and u.category=:cat"
+                + " and (u.uploadType is null or u.uploadType<>:pb)";
         Map m = new HashMap();
         m.put("ret", false);
         m.put("cat", category);
+        m.put("pb", UploadType.Lab_Report_Page_Background);
 
+        return getFacade().findFirstByJpql(j, m, TemporalType.DATE);
+    }
 
+    /**
+     * Background of a report format for page 2 or later; null if that page has
+     * none. Page 1 uses {@link #findUpload(Category)}.
+     */
+    public Upload findPageUpload(Category category, int page) {
+        String j = "select u "
+                + " from Upload u "
+                + " where u.retired=:ret"
+                + " and u.category=:cat"
+                + " and u.uploadType=:pb"
+                + " and u.comments=:pg"
+                + " order by u.id desc";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("cat", category);
+        m.put("pb", UploadType.Lab_Report_Page_Background);
+        m.put("pg", "page=" + page);
         return getFacade().findFirstByJpql(j, m, TemporalType.DATE);
     }
 

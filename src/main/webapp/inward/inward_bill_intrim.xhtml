@@ -76,7 +76,7 @@
                                                     forceSelection="true"
                                                     required="true"
                                                     requiredMessage="Please select a patient"
-                                                    value="#{bhtSummeryController.patientEncounter}"
+                                                    value="#{bhtSummeryController.admissionToOpen}"
                                                     completeMethod="#{bhtSummeryController.completeAdmissionNotFinalized}"
                                                     var="myItem"
                                                     itemValue="#{myItem}"
@@ -127,7 +127,7 @@
                                         </div>
 
                                         <h:panelGroup id="pnlPatientPreview">
-                                            <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
+                                            <h:panelGroup rendered="#{bhtSummeryController.admissionToOpen ne null}" layout="block">
                                                 <div class="card border-primary mt-3 mb-3">
                                                     <div class="card-header bg-primary text-white py-2">
                                                         <div class="d-flex align-items-center">
@@ -139,29 +139,29 @@
                                                         <div class="row">
                                                             <div class="col-md-3 mb-2">
                                                                 <small class="text-muted d-block">Patient Name</small>
-                                                                <strong>#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}</strong>
+                                                                <strong>#{bhtSummeryController.admissionToOpen.patient.person.nameWithTitle}</strong>
                                                             </div>
                                                             <div class="col-md-2 mb-2">
                                                                 <small class="text-muted d-block">BHT No</small>
-                                                                <strong class="text-primary">#{bhtSummeryController.patientEncounter.bhtNo}</strong>
+                                                                <strong class="text-primary">#{bhtSummeryController.admissionToOpen.bhtNo}</strong>
                                                             </div>
                                                             <div class="col-md-2 mb-2">
                                                                 <small class="text-muted d-block">PHN</small>
-                                                                <strong>#{bhtSummeryController.patientEncounter.patient.phn}</strong>
+                                                                <strong>#{bhtSummeryController.admissionToOpen.patient.phn}</strong>
                                                             </div>
                                                             <div class="col-md-2 mb-2">
                                                                 <small class="text-muted d-block">Room</small>
-                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom ne null}">
-                                                                    <strong>#{bhtSummeryController.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                                <h:panelGroup rendered="#{bhtSummeryController.admissionToOpen.currentPatientRoom ne null}">
+                                                                    <strong>#{bhtSummeryController.admissionToOpen.currentPatientRoom.roomFacilityCharge.name}</strong>
                                                                 </h:panelGroup>
-                                                                <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.currentPatientRoom eq null}">
+                                                                <h:panelGroup rendered="#{bhtSummeryController.admissionToOpen.currentPatientRoom eq null}">
                                                                     <span class="text-muted">Not assigned</span>
                                                                 </h:panelGroup>
                                                             </div>
                                                             <div class="col-md-3 mb-2">
                                                                 <small class="text-muted d-block">Status</small>
-                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtSummeryController.patientEncounter.discharged}" />
-                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtSummeryController.patientEncounter.discharged}" />
+                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{bhtSummeryController.admissionToOpen.discharged}" />
+                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!bhtSummeryController.admissionToOpen.discharged}" />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -657,12 +657,6 @@
                                         </p:column>
                                         <p:column headerText="Creator" styleClass="text-start" >
                                             <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>
-                                            <br/>
-                                            <h:panelGroup rendered="#{pt.retired}" >
-                                                <h:outputLabel style="color: red;" value="Deleted By " />
-                                                <h:outputLabel style="color: red;"  value="#{pt.retirer.webUserPerson.name}" >
-                                                </h:outputLabel>
-                                            </h:panelGroup>
                                         </p:column>
                                         <!--
                                             #23606 - timed services are billed one BilledBill each
@@ -709,13 +703,33 @@
                                                     disabled="#{pt.bill.checkedBy ne null}"
                                                     action="#{bhtSummeryController.updatePatientItem(pt)}" >
                                                 </p:commandButton>
+                                                <!--
+                                                    #23940 - Stop and Delete are different actions.
+                                                    Stop ends a running service: it stays on the bill,
+                                                    charged up to the Stopped Time. Delete is only for a
+                                                    service entered by mistake: it and its charge leave
+                                                    the bill. Do not label either of them "Remove".
+                                                -->
                                                 <p:commandButton
                                                     ajax="false"
-                                                    icon="fa fa-times"
+                                                    icon="fa fa-stop"
+                                                    class="ui-button-secondary"
+                                                    value="Stop"
+                                                    rendered="#{pt.toTime eq null}"
+                                                    title="Stop #{pt.item.name} now. It stays on the bill, charged up to now."
+                                                    action="#{bhtSummeryController.stopTimedService(pt)}" >
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-trash"
                                                     class="ui-button-danger"
-                                                    value="Remove "
+                                                    value="Delete"
                                                     disabled="#{pt.bill.checkedBy ne null}"
-                                                    action="#{surgeryBillController.removeTimeService(pt)}" >
+                                                    title="Delete #{pt.item.name} entered by mistake. It and its charge leave the bill."
+                                                    action="#{bhtSummeryController.deleteTimedService(pt)}" >
+                                                    <p:confirm header="Delete Timed Service"
+                                                               message="This deletes #{pt.item.name} and its charge from the bill. To end a running service, press Stop instead."
+                                                               icon="pi pi-exclamation-triangle" />
                                                 </p:commandButton>
                                                 <!--
                                                     A service still running has no final amount to
@@ -731,7 +745,7 @@
                                                     value="Check"
                                                     rendered="#{pt.bill ne null and pt.bill.checkedBy eq null}"
                                                     disabled="#{pt.toTime eq null or not webUserController.hasPrivilege('InwardCheck')}"
-                                                    title="#{pt.toTime eq null ? 'Enter a Stopped Time and press Update before checking this service.' : 'Mark this timed service bill as checked'}"
+                                                    title="#{pt.toTime eq null ? 'Press Stop, or enter a Stopped Time and press Update, before checking this service.' : 'Mark this timed service bill as checked'}"
                                                     action="#{bhtSummeryController.markTimedServiceAsChecked(pt)}" >
                                                 </p:commandButton>
                                                 <p:commandButton
@@ -991,7 +1005,7 @@
                                                          class="ui-button-success mx-1"
                                                          ajax="false">
                                             <p:dataExporter type="xlsx"
-                                                            target="#{configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false) ? 'medIssueEtu,medIssuePharmacy,medIssueInward,medIssueTheatre,medIssueStore,medIssueInventory' : 'medIssueFlat'}"
+                                                            target="#{configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false) ? 'medIssueDeptTabs:medIssueEtu,medIssueDeptTabs:medIssuePharmacy,medIssueDeptTabs:medIssueInward,medIssueDeptTabs:medIssueTheatre,medIssueDeptTabs:medIssueStore,medIssueDeptTabs:medIssueInventory' : 'medIssueFlat'}"
                                                             fileName="Medicine_and_Consumable_Charges" />
                                         </p:commandButton>
                                         <p:commandButton value="PDF"
@@ -999,7 +1013,7 @@
                                                          class="ui-button-danger"
                                                          ajax="false">
                                             <p:dataExporter type="pdf"
-                                                            target="#{configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false) ? 'medIssueEtu,medIssuePharmacy,medIssueInward,medIssueTheatre,medIssueStore,medIssueInventory' : 'medIssueFlat'}"
+                                                            target="#{configOptionApplicationController.getBooleanValueByKey('Medicine, Sort by the type of department that issued it.', false) ? 'medIssueDeptTabs:medIssueEtu,medIssueDeptTabs:medIssuePharmacy,medIssueDeptTabs:medIssueInward,medIssueDeptTabs:medIssueTheatre,medIssueDeptTabs:medIssueStore,medIssueDeptTabs:medIssueInventory' : 'medIssueFlat'}"
                                                             fileName="Medicine_and_Consumable_Charges" />
                                         </p:commandButton>
                                     </div>
@@ -1024,14 +1038,12 @@
                                                 <h:outputLabel value="#{iss.createdAt}">
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                                 </h:outputLabel>
-                                                <br/>
-                                                <h:panelGroup rendered="#{iss.cancelled}" >
-                                                    <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                    <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                                                                   value="#{iss.cancelledBill.createdAt}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                                    </h:outputLabel>
-                                                </h:panelGroup>
+                                                <!-- Single block-level labels, no raw <br/> or h:panelGroup: the DataExporter
+                                                     writes a non-ValueHolder child as its toString() (issue #23970). -->
+                                                <h:outputLabel style="color: red; display: block;" rendered="#{iss.cancelled}"
+                                                               value="#{iss.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime pattern="' Cancelled at '#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Bill Total" class="text-end">
                                                 <h:outputLabel  value="#{iss.netTotal}">
@@ -1040,13 +1052,8 @@
                                             </p:column>
                                             <p:column headerText="Billed By">
                                                 <h:outputLabel value="#{iss.creater.webUserPerson.nameWithTitle}"/>
-                                                <br/>
-                                                <h:panelGroup rendered="#{iss.cancelled}" >
-                                                    <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                    <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                                                                   value="#{iss.cancelledBill.creater.webUserPerson.nameWithTitle}" >
-                                                    </h:outputLabel>
-                                                </h:panelGroup>
+                                                <h:outputLabel style="color: red; display: block;" rendered="#{iss.cancelled}"
+                                                               value=" Cancelled By #{iss.cancelledBill.creater.webUserPerson.nameWithTitle}" />
                                             </p:column>
                                             <p:column headerText="Checked By">
                                                 <h:outputLabel value="#{iss.checkedBy.webUserPerson.nameWithTitle}"/>
@@ -1056,7 +1063,7 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Comments"> 
+                                            <p:column headerText="Comments" exportValue="#{iss.comments}">
                                                 <h:panelGroup id="commentContainer" layout="block" class="row">
                                                     <div class="row" >
                                                         <div class="col-8" >
@@ -1080,9 +1087,9 @@
 
                                                 </h:panelGroup>
                                             </p:column>
-                                            <p:column>
-                                                <p:commandButton 
-                                                    ajax="false" 
+                                            <p:column exportable="false">
+                                                <p:commandButton
+                                                    ajax="false"
                                                     action="pharmacy_reprint_bill_sale_bht?faces-redirect=true"
                                                     rendered="#{iss.billClass eq 'class com.divudi.core.entity.PreBill'}" 
                                                     value="View Issue"  >
@@ -1831,6 +1838,11 @@
                             <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
                         </div>
                     </p:dialog>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                    </p:confirmDialog>
 
                 </h:form>
             </ui:define>

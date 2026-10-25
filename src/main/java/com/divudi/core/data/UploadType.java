@@ -41,7 +41,8 @@ public enum UploadType {
     Inward_GOP("GOP"),
     Inward_Other("Other Document"),
     PVC_Card_Front_Background("PVC Card Front Background"),
-    PVC_Card_Back_Background("PVC Card Back Background");
+    PVC_Card_Back_Background("PVC Card Back Background"),
+    Lab_Report_Page_Background("Lab Report Page Background");
 
     private final String label;
 

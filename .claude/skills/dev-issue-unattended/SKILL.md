@@ -193,8 +193,11 @@ reporter bring it back with a live discussion if it's still happening.
    observe the described behavior. Closing for now — if this is still
    occurring, let's discuss and file a fresh issue with updated repro
    details."
-3. `gh issue close <n> --repo hmislk/hmis --reason "not planned"`.
-4. Check that both the comment and the close actually succeeded before
+3. `gh issue close <n> --repo hmislk/hmis --reason "not planned"`, then set
+   the board status to **Dev Completed** and read it back. QA works from
+   board status, so a closed issue left in Backlog is never checked. See
+   [Project Board §4](../../../developer_docs/github/project-board-integration.md#4-closing-an-issue-without-a-pr).
+4. Check that the comment, the close and the status change all succeeded before
    calling this outcome final — if the close command errors after the
    comment posted, note that in the batch summary rather than assuming the
    issue is closed.
@@ -446,12 +449,17 @@ exactly what to double-check first. Any wiki prose you rewrote belongs in
 that list. Redact this body per the hard limit above too — same as every
 other publication point.
 
+After the PR opens, set every issue it closes to **Reviewing & Merging** on board #11 and read the
+status back (dev-issue step 13). In batch mode check the board for the whole batch before step 15;
+the summary quotes the read-back status per issue.
+
 ## 14. Review loop (until mergeable) — waiting without the user present
 
 Repeat, up to **3 cycles**:
 
-1. Use `Monitor` (poll `gh pr checks <PR#> --json name,bucket`, emit each
-   newly-resolved check) to wait for CI instead of a synchronous watch. Use
+1. Use `Monitor` (poll plain `gh pr checks <PR#>` and parse its
+   tab-separated output, column 2 = pass/fail/pending; older `gh` such as
+   2.45 has no `--json` here; emit each newly-resolved check) to wait for CI instead of a synchronous watch. Use
    `ScheduleWakeup` as a fallback heartbeat (~20 min) in case the monitor is
    missed, per this project's autonomous-session pattern.
 2. If checks fail: investigate, fix, push, go to 1.
@@ -480,6 +488,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
+5. **Fix the follow-ups in the same run.** Run steps 1–14 on each filed issue (its own branch and PR), unless it hits a hard limit: in batch mode add it to the batch; in a single free-text run, process it after the main issue. Never merge, so the session stays open: in Notify, list every follow-up without a merged PR under **Open follow-ups** and ask the user to merge them or say they will be handled in another session.
 
 ## 15. Notify
 

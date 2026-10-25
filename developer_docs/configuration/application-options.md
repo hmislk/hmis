@@ -2,6 +2,16 @@
 
 This document lists the configuration options used in the application and their purpose.
 
+## Changing existing options
+
+Every hospital already has a stored value for each existing key (the row is created with the code default the first time the key is read). So:
+
+- **Never change what an existing key means.** Do not add or remove a `!` / `not` around its read, change its default, or move it into the opposite branch. The same stored value would then do the opposite at every hospital. If behaviour must change, create a **new key** and stop reading the old one.
+- **Name a key after what `true` does**, including the condition, so the safe value is obvious, e.g. "Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample". Avoid vague names like "Enable the Special Privilege of ...".
+- **Use one default everywhere** a key is read.
+
+The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -31,6 +41,12 @@ This document lists the configuration options used in the application and their 
 | `Pharmacy Transfer Issue - Show Rate and Value`                  | Boolean   | `false` | Used in combination with `PharmacyTransferViewRates` to control visibility of rate and value columns. |
 | `Pharmacy Transfer Issue Bill Footer CSS`                        | String    | `''`    | CSS for the footer of the transfer issue bill.                                                            |
 | `Pharmacy Transfer Issue Bill Footer Text`                       | String    | `''`    | Text for the footer of the transfer issue bill.                                                             |
+
+## Pharmacy GRN Return
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `GRN Return - Prefill Returning Quantities on Create`            | Boolean   | `true`  | When `true`, a GRN Return created from a GRN opens with Returning Qty / Returning Free Qty / Returning Total Qty filled with the remaining-to-return quantity of each item. When `false`, those columns start at 0 and the user enters the quantities to return. Lines left at 0 are dropped on finalize. The Remaining Qty columns are shown either way. See issue #24402. |
 
 ## Pharmacy Retail Sale
 
@@ -93,6 +109,7 @@ Inactive items are excluded in all four modes.
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Pharmacy - Allow Cross-Department PO Receiving`                | Boolean   | `false` | Institution-wide toggle. When `true`, the Purchase Orders for Receiving list (and its wholesale/with-approval/DTO variants) drops the same-department restriction, so a PO created in one department (e.g. Pharmacy) can be received/GRN'd from any other department in the same institution (e.g. Store). Institution isolation is unaffected — POs from a different institution never appear. Added for RMH Hambantota, which creates POs in Pharmacy but receives into Store. See issue #21848. |
 | `Pharmacy - List Packs (AMPPs) in Item Selection`               | Boolean   | `true`  | When `false`, Packs (AMPPs) are excluded from every pharmacy item autocomplete that offers them — Purchase Order Request (JPA and native), Direct Purchase, Purchase, Donation, Batch Create and Transfer Request — so only AMPs (plus VMPs/VMPPs on Transfer Request) can be chosen. On the Purchase Order page the supplier-item dropdown and the *Add All Supplier Items* / *Below ROL* buttons also drop AMPPs from the supplier's item list (`ItemController.removeAmppsIfNotListed()`). GRN, Issue and Transfer Issue have no AMPP picker of their own (they take items from the PO, the request or stock), so they follow automatically. Bills that already contain AMPPs are unaffected. Implemented in `ItemController.isAmppListedInItemSelection()`. See issue #24164. |
+| `Print Profit % in GRN Bill`                                    | Boolean   | `true`  | Prints the profit column on GRN prints: Profit % on *A4 Paper Format Two* (`grn_with_costing_new`, shown after Finalize/Approve and on the costing reprint) and GP Profit% on `grn.xhtml` (no-costing layout, used by GRN reprint) and `grn_wholesale.xhtml`. Set `false` to leave the column out (e.g. when the GRN print goes to the supplier). Independent of `Show Profit Percentage in GRN`, which controls the column on the GRN entry screen. See issue #24357. |
 
 ### GRN Item Table Columns (native GRN page)
 
@@ -127,4 +144,4 @@ Columns of the added-items table on `pharmacy/pharmacy_grn_costing_native.xhtml`
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Block cancellation and refund of OPD, package and collecting centre bills once a lab sample is collected` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once a sample of any investigation on the bill is collected (rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |
+| `Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once the laboratory has accepted a sample of any investigation on the bill (received at the lab or processed further; a sample that is only collected or sent does not lock; rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |

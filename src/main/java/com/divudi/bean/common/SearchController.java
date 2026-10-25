@@ -3191,8 +3191,16 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            // Bound to a String param it never matched; return bills store negative totals and users type the positive amount (issue #24483).
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                sql += " and abs(abs(b.netTotal) - :netTotal) < 0.01 ";
+                m.put("netTotal", Math.abs(netTotalValue));
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                bills = new ArrayList<>(); // don't run the search without the filter the user typed
+                return;
+            }
         }
 
         sql += " order by b.createdAt desc  ";
@@ -10386,14 +10394,22 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            // Tolerance compare: stored totals carry float noise (e.g. 1940.0000000000002); strip thousands separators (issue #24427).
+            String netTotalString = getSearchKeyword().getNetTotal().trim().replace(",", "");
             try {
                 Double netTotalValue = Double.parseDouble(netTotalString);
-                jpql += "and b.netTotal = :netTotal ";
+                jpql += "and abs(b.netTotal - :netTotal) < 0.01 ";
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
+        }
+
+        // The page binds an Item autocomplete to searchKeyword.item (issue #24427).
+        if (getSearchKeyword().getItem() != null) {
+            jpql += "and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item = :item) ";
+            params.put("item", getSearchKeyword().getItem());
         }
 
         jpql += "order by b.createdAt desc ";
@@ -10433,14 +10449,22 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            // Tolerance compare: stored totals carry float noise (e.g. 1940.0000000000002); strip thousands separators (issue #24427).
+            String netTotalString = getSearchKeyword().getNetTotal().trim().replace(",", "");
             try {
                 Double netTotalValue = Double.parseDouble(netTotalString);
-                jpql += "and b.netTotal = :netTotal ";
+                jpql += "and abs(b.netTotal - :netTotal) < 0.01 ";
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
+        }
+
+        // The page binds an Item autocomplete to searchKeyword.item (issue #24427).
+        if (getSearchKeyword().getItem() != null) {
+            jpql += "and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item = :item) ";
+            params.put("item", getSearchKeyword().getItem());
         }
 
         jpql += "order by b.createdAt desc ";

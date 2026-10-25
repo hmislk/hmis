@@ -51,7 +51,7 @@
                                                      title="Select the document template type">
                                         <f:selectItem itemLabel="-- Select Type --" itemValue=""/>
                                         <f:selectItems value="#{documentTemplateController.documentTemplateTypes}"/>
-                                        <p:ajax event="change" update="subjectPanel"/>
+                                        <p:ajax event="change" update="subjectPanel columnsPanel placeholdersCoveringLetter"/>
                                     </p:selectOneMenu>
                                 </h:panelGroup>
 
@@ -65,6 +65,21 @@
                                                      required="#{documentTemplateController.current.type == 'InpatientEmail'}"
                                                      requiredMessage="Email subject is required for email templates"
                                                      title="Subject line used when this template is selected on the Send Email page"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <h:panelGroup layout="block" id="columnsPanel" styleClass="mb-3">
+                                    <h:panelGroup rendered="#{documentTemplateController.current.type eq 'CoveringLetter'}">
+                                        <p:outputLabel for="rowColumns" value="Table columns" styleClass="form-label fw-bold d-block"/>
+                                        <p:selectManyCheckbox id="rowColumns"
+                                                              value="#{documentTemplateController.current.rowColumnList}"
+                                                              layout="pageDirection"
+                                                              title="Columns shown in the {rows_table} of the covering letter">
+                                            <f:selectItems value="#{documentTemplateController.coveringLetterColumns}"
+                                                           var="col"
+                                                           itemValue="#{col.name()}"
+                                                           itemLabel="#{col.label}"/>
+                                        </p:selectManyCheckbox>
                                     </h:panelGroup>
                                 </h:panelGroup>
 
@@ -241,6 +256,8 @@
                                                 <li><code>{policy_no}</code> - Policy number</li>
                                                 <li><code>{reference_no}</code> - Reference number</li>
                                                 <li><code>{credit_limit}</code> - Credit limit</li>
+                                                <li><code>{credit_company_contact}</code> - Credit company contact person name</li>
+                                                <li><code>{company_amount}</code> - Amount the credit company committed to pay (final bill allocation, else credit limit)</li>
                                             </ul>
                                         </div>
                                         <div class="col-md-4">
@@ -256,12 +273,52 @@
                                             <h6 class="fw-bold text-secondary">Billing</h6>
                                             <ul class="list-unstyled small">
                                                 <li><code>{final_bill}</code> - Final bill / net total value for the admission</li>
+                                                <li><code>{final_bill_no}</code> - Final bill number</li>
                                                 <li><code>{patient_name}</code> - Patient name (alias of {name})</li>
                                                 <li><code>{patient_age}</code> - Patient age (alias of {age})</li>
                                                 <li><code>{patient_sex}</code> - Patient sex (alias of {sex})</li>
                                             </ul>
                                         </div>
                                     </div>
+                                    <h:panelGroup id="placeholdersCoveringLetter" layout="block">
+                                        <h:panelGroup layout="block" styleClass="row mt-3" rendered="#{documentTemplateController.current.type eq 'CoveringLetter'}">
+                                            <div class="col-12">
+                                                <h6 class="fw-bold text-success">Covering Letter Placeholders (multiple BHTs / bills)</h6>
+                                                <p class="small text-muted">{name} and {policy_no} are filled only when all selected rows share the same value (for example a single patient's P/F/M No); otherwise they are left blank.</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <ul class="list-unstyled small">
+                                                    <li><code>{rows_table}</code> - Table of the selected records (columns as ticked in Table columns)</li>
+                                                    <li><code>{letter_date}</code> - Date of the letter</li>
+                                                    <li><code>{reference_no}</code> - Covering letter reference number</li>
+                                                    <li><code>{total}</code> - Total bill amount of all rows</li>
+                                                    <li><code>{company_total}</code> - Total company amount for all rows (an admission's credit company commitment, or the bill amount for OPD bills and admissions without one)</li>
+                                                    <li><code>{count}</code> - Number of rows</li>
+                                                    <li><code>{from_date}</code> - Start of the selected date range</li>
+                                                    <li><code>{to_date}</code> - End of the selected date range</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <ul class="list-unstyled small">
+                                                    <li><code>{credit_company}</code> - Credit company name</li>
+                                                    <li><code>{credit_company_address}</code> - Credit company address</li>
+                                                    <li><code>{credit_company_contact}</code> - Credit company contact person</li>
+                                                    <li><code>{name}</code> - Patient name (only when all rows share one patient)</li>
+                                                    <li><code>{policy_no}</code> - Policy / P/F/M No (only when all rows share it)</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <ul class="list-unstyled small">
+                                                    <li><code>{issuer}</code> - Issuing institution name</li>
+                                                    <li><code>{issuer_address}</code> - Issuing institution address</li>
+                                                    <li><code>{issuer_phone}</code> - Issuing institution phone</li>
+                                                    <li><code>{issuer_bank}</code> - Issuing institution bank</li>
+                                                    <li><code>{issuer_branch}</code> - Issuing institution bank branch</li>
+                                                    <li><code>{issuer_account_no}</code> - Issuing institution account number</li>
+                                                </ul>
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </p:panel>
                             </div>
                         </div>
