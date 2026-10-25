@@ -152,8 +152,8 @@
                                     <p:column headerText="No" style="width: 3em; padding: 6px;">
                                         <h:outputText value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Bill No" style="width: 13em; padding: 6px;">
-                                        <h:outputText value="#{b.deptId}"/>
+                                    <p:column headerText="Bill No" style="padding: 6px; white-space: nowrap; width: 18em;" >
+                                        <h:outputText value="#{b.deptId}" style="white-space: nowrap;"/>
                                     </p:column>
                                     <p:column headerText="Type" style="width: 9em; padding: 6px;" class="text-center">
                                         <p:badge value="Agent Billing" severity="success" rendered="#{b.ccBillingType eq 'AGENT_BILLING' or (b.ccBillingType eq null and collectingCentreSelfCommonController.isSelfBill(b))}"/>
@@ -212,8 +212,9 @@
                             </div>
 
                             <!--SAMPLES-->
-                            <h:panelGroup layout="block" class="row cc-stack-gap" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
-                                <div class="col-md-9">
+                            <!-- g-0: no negative row margins (the page has no container), which caused a horizontal scrollbar; pe-md-3 keeps the column gap. -->
+                            <h:panelGroup layout="block" class="row g-0 cc-stack-gap" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
+                                <div class="col-md-9 pe-md-3">
                                     <p:panel styleClass="cc-bill-card cc-c-orange">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa-solid fa-vial"/>

@@ -311,12 +311,27 @@
                                         ajax="false"
                                         action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
                                         disabled="#{ti.billFee.id eq null or ti.billFee.retired or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
+                                    <!--
+                                        #23940 - Stop ends a running service; it stays on the
+                                        bill. Delete is only for a service entered by mistake;
+                                        it and its charge leave the bill. Never call either "Remove".
+                                    -->
+                                    <p:commandButton
+                                        id="btnStop"
+                                        icon="fa fa-stop"
+                                        class="ui-button-secondary"
+                                        ajax="false"
+                                        value="Stop"
+                                        rendered="#{ti.billFee.id ne null and not ti.billFee.retired and ti.billFee.patientItem.toTime eq null}"
+                                        title="Stop #{ti.billFee.patientItem.item.name} now. It stays on the bill, charged up to now."
+                                        action="#{inwardTimedItemController.stopTimedService(ti.billFee)}"
+                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
                                     <p:commandButton
                                         id="btnRemoveFromList"
                                         icon="fa-solid fa-trash"
                                         class="ui-button-danger"
                                         ajax="false"
-                                        value="Remove"
+                                        value="Delete"
                                         rendered="#{ti.billFee.id eq null}"
                                         action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
                                         disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
@@ -325,16 +340,26 @@
                                         icon="fa-solid fa-trash"
                                         class="ui-button-danger"
                                         ajax="false"
-                                        value="Remove"
+                                        value="Delete"
                                         rendered="#{ti.billFee.id ne null and not ti.billFee.retired}"
+                                        title="Delete #{ti.billFee.patientItem.item.name} entered by mistake. It and its charge leave the bill."
                                         action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
-                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}"/>
+                                        disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized or inwardTimedItemController.batchBill.completed}">
+                                        <p:confirm header="Delete Timed Service"
+                                                   message="This deletes #{ti.billFee.patientItem.item.name} and its charge from the bill. To end a running service, press Stop instead."
+                                                   icon="pi pi-exclamation-triangle" />
+                                    </p:commandButton>
                                 </div>
                             </p:column>
                         </p:dataTable>
                     </p:panel>
                 </p:panel>
             </h:panelGroup>
+
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+            </p:confirmDialog>
 
         </h:form>
     </ui:define>

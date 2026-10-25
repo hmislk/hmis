@@ -85,6 +85,7 @@ public class RequestController implements Serializable {
     private String requestNo;
     private RequestType requestType;
     private RequestStatus status;
+    private String visitType;
 
     private PatientEncounter patientEncounter;
     private PettyCashType pettyCashPayeeType;
@@ -718,7 +719,7 @@ public class RequestController implements Serializable {
 
     public void searchRequest() {
         requests = new ArrayList<>();
-        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, null);
+        requests = requestService.fillAllRequest(fromDate, toDate, billNo, bhtNo, requestNo, requestType, status, null, visitType);
     }
 
     public void approveRequest() {
@@ -1529,6 +1530,14 @@ public class RequestController implements Serializable {
 
     public void setStatus(RequestStatus status) {
         this.status = status;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
     }
 
     // </editor-fold>

@@ -4,7 +4,8 @@ description: >
   Delete all merged local branches and fast-forward development to origin.
   Handles both feature branches (merged to development) and hotfix branches
   (ending in -hotfix, merged to any production branch). Stashes and restores
-  persistence.xml local JNDI settings automatically. Use after PRs are merged
+  persistence.xml local JNDI settings automatically, and drops leftover
+  stashes that hold only the JNDI swap. Use after PRs are merged
   to clean up local git state in one command.
 allowed-tools: Bash
 ---
@@ -202,7 +203,31 @@ user and stop — do not resolve conflicts automatically.
 
 If no stash was created, leave `persistence.xml` as-is.
 
-## Step 8 — Report
+## Step 8 — Drop Leftover JNDI-Only Stashes
+
+Old `persistence.xml` stashes pile up from earlier branch switches. Drop, without
+asking, every stash whose only change is the `<jta-data-source>` JNDI swap — it
+carries nothing that the restored working copy doesn't already have. Run this
+**after** Step 7 so the stash made in Step 1 is already popped.
+
+```bash
+for ref in $(git stash list --format='%gd' | sort -t'{' -k2 -rn); do
+  [ "$(git stash show --name-only "$ref")" = "src/main/resources/META-INF/persistence.xml" ] || continue
+  git rev-parse -q --verify "$ref^3" >/dev/null && continue   # has untracked files
+  other=$(git stash show -p "$ref" | grep -E '^[+-][^+-]|^(old|new) mode' | grep -v '<jta-data-source>')
+  [ -z "$other" ] && git stash list | grep -F "$ref:" && git stash drop "$ref"
+done
+```
+
+- Indexes are processed highest first, so dropping one never renumbers a stash
+  still to be checked.
+- The match is by content, not message: default `WIP on <branch>: …` stashes
+  that hold only the swap are dropped too.
+- Keep any stash that touches another file, holds untracked files, or changes
+  any other `persistence.xml` line or its file mode — that is real WIP; list it in the report
+  instead of dropping it.
+
+## Step 9 — Report
 
 Print a summary:
 
@@ -224,6 +249,9 @@ Print a summary:
 
 ✓ development is now at <short-sha> (<commit subject>)
 ✓ persistence.xml restored to local JNDI settings (unstaged)
+✓ Dropped JNDI-only stashes:
+  - stash@{N}: On <branch>: <message>
+  ...
 ```
 
 Each *vetted* deleted / skipped line carries the branch's real PR reference (or

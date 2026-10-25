@@ -770,7 +770,9 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
-        if (comment == null) {
+        // A blank inputText submits "" (not null), so a null check alone let the
+        // request be cancelled without a comment (#24517).
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Provide Comment To Cancel !");
             return "";
         }
@@ -787,6 +789,8 @@ public class PharmacyBillSearch implements Serializable {
         // same bill id (this bean is session-scoped) re-reads the now-cancelled
         // status instead of serving the stale pre-cancellation snapshot.
         bhtIssueRequestPrintDtoBillId = null;
+        // Session-scoped: clear so this comment is not reused for the next cancellation.
+        comment = null;
         return navigateBackFromInwardPharmacyRequestReprint();
     }
 
@@ -906,7 +910,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
-        if (comment == null || comment.isEmpty()) {
+        if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
             return "";
         }
@@ -973,6 +977,8 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
+        // Session-scoped: clear so this comment is not reused for the next cancellation.
+        comment = null;
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
@@ -3386,10 +3392,16 @@ public class PharmacyBillSearch implements Serializable {
         if (checkDepartment(getBill())) {
             return;
         }
-        // Discharge medicine issues cancel to the discharge cancellation atomic; all other inward direct issues to the regular one.
-        BillTypeAtomic cancellationAtomic = getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
-                ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
-                : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        // Discharge medicine issues and issues against a ward request cancel to their own atomic;
+        // all other inward direct issues to the regular one.
+        BillTypeAtomic cancellationAtomic;
+        if (getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE) {
+            cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION;
+        } else if (getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            cancellationAtomic = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION;
+        } else {
+            cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
+        }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         // Bills settled through InpatientDirectIssueNativeSqlService write their real netTotal
         // and BillItem rows via native SQL after this session-scoped bean's `bill` reference was
@@ -3416,6 +3428,10 @@ public class PharmacyBillSearch implements Serializable {
         billToCancel.setCancelledBill(newlyCreatedCancellationBill);
         getBillFacade().edit(billToCancel);
         setBill(billToCancel);
+        if (billToCancel.getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                && billToCancel.getReferenceBill() != null) {
+            reopenPharmacyRequestAfterIssueCancellation(billToCancel.getReferenceBill());
+        }
         JsfUtil.addSuccessMessage("Cancelled");
 
         printPreview = true;
@@ -3579,10 +3595,90 @@ public class PharmacyBillSearch implements Serializable {
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);
         getBillFacade().edit(getBill());
+        if (getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                && getBill().getReferenceBill() != null) {
+            reopenPharmacyRequestAfterIssueCancellation(getBill().getReferenceBill());
+        }
         JsfUtil.addSuccessMessage("Cancelled");
 
         printPreview = true;
 
+    }
+
+    /**
+     * After an issue made against a pharmacy request is cancelled, refresh the
+     * request items' remainingQty (same semantics as
+     * PharmacySaleBhtController.getRemainingQuantityForItem) and, if any item is
+     * no longer fully issued, re-open the request so it is not left marked
+     * fully issued / completed.
+     */
+    private void reopenPharmacyRequestAfterIssueCancellation(Bill requestBill) {
+        if (requestBill == null || requestBill.getId() == null) {
+            return;
+        }
+        Bill freshRequest = getBillFacade().findWithoutCache(requestBill.getId());
+        if (freshRequest == null || freshRequest.getBillItems() == null) {
+            return;
+        }
+        // Non-cancelled issued quantity per request item, in one query.
+        Map<String, Object> issuedParams = new HashMap<>();
+        issuedParams.put("req", freshRequest);
+        issuedParams.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        List<Object[]> issuedRows = getBillItemFacade().findObjectArrayByJpql(
+                "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) FROM BillItem bi "
+                + "WHERE bi.bill.billTypeAtomic = :issueBta "
+                + "AND bi.bill.cancelled = false AND bi.bill.retired = false "
+                + "AND bi.referanceBillItem.bill = :req "
+                + "GROUP BY bi.referanceBillItem.id", issuedParams, TemporalType.TIMESTAMP);
+        Map<Long, Double> issuedByItem = new HashMap<>();
+        if (issuedRows != null) {
+            for (Object[] row : issuedRows) {
+                if (row[0] != null && row[1] != null) {
+                    issuedByItem.put(((Number) row[0]).longValue(), ((Number) row[1]).doubleValue());
+                }
+            }
+        }
+        String remainingJpql = "SELECT SUM("
+                + "CASE WHEN bi.bill.billTypeAtomic = :issueBta THEN ABS(bi.qty) "
+                + "ELSE -ABS(bi.qty) END) FROM BillItem bi "
+                + "WHERE ((bi.bill.billTypeAtomic = :issueBta AND bi.referanceBillItem.id = :refId) "
+                + "OR (bi.bill.billTypeAtomic IN :reverseBtas AND bi.referanceBillItem.referanceBillItem.id = :refId)) "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)";
+        boolean anyShort = false;
+        for (BillItem item : freshRequest.getBillItems()) {
+            if (item == null || item.isRetired() || item.getId() == null) {
+                continue;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("refId", item.getId());
+            params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made before #24679.
+            params.put("reverseBtas", java.util.Arrays.asList(
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
+            double netIssued = getBillItemFacade().findDoubleByJpql(remainingJpql, params);
+            double remaining = Math.max(0.0, item.getQty() - netIssued);
+            if (Math.abs(item.getRemainingQty() - remaining) > 0.0001) {
+                item.setRemainingQty(remaining);
+                getBillItemFacade().edit(item);
+            }
+            Double issued = issuedByItem.get(item.getId());
+            if ((issued == null ? 0.0 : issued) < item.getQty() - 0.001) {
+                anyShort = true;
+            }
+        }
+        // Only reopen requests auto-completed by full issue; a manual force-complete
+        // (markInwardPharmacyRequestComplete sets completed only) stays completed.
+        if (anyShort && freshRequest.isFullyIssued()) {
+            freshRequest.setFullyIssued(false);
+            freshRequest.setFullyIssuedAt(null);
+            freshRequest.setFullyIssuedBy(null);
+            freshRequest.setCompleted(false);
+            freshRequest.setCompletedAt(null);
+            freshRequest.setCompletedBy(null);
+            getBillFacade().edit(freshRequest);
+        }
     }
 
     public void storeRetailCancelBillWithStockBht() {
@@ -5619,7 +5715,14 @@ public class PharmacyBillSearch implements Serializable {
         if (bt == null) {
             return null;
         }
-        if (bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+        // These inward request flows are declared PharmacyIssue but stored as PreBill/RefundBill/BilledBill
+        // with billType PharmacyBhtPre, so the "issue" view (BilledBill + PharmacyIssue) never finds them.
+        if (bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                || bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+                || bta == com.divudi.core.data.BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                || bta == com.divudi.core.data.BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD
+                || bta == com.divudi.core.data.BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
+                || bta == com.divudi.core.data.BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION) {
             return "generic";
         }
         if (bta == com.divudi.core.data.BillTypeAtomic.PHARMACY_ORDER_APPROVAL
