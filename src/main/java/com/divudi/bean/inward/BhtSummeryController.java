@@ -5190,8 +5190,49 @@ public class BhtSummeryController implements Serializable {
 
         setPatientRoomData();
         // totalLinen = getInwardBean().calTotalLinen(tmp);
+        syncCurrentPatientRoom();
 
         return patientRooms;
+    }
+
+    /**
+     * Points the session admission's currentPatientRoom at the room the database
+     * holds as current, using the row object shown in {@link #patientRooms}.
+     *
+     * <p>The session admission keeps its own copy of the current room. A room
+     * edited on Patient Room Details (opened from the Interim Bill) or changed
+     * through another controller is saved on a different object, so the Interim
+     * Bill header and the Final Bill built from this admission kept showing the
+     * old room (issue #24688). Reusing the displayed row means later edits to
+     * that row also reach the admission.
+     */
+    private void syncCurrentPatientRoom() {
+        PatientEncounter encounter = getPatientEncounter();
+        if (encounter == null || encounter.getId() == null) {
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", encounter.getId());
+        long currentRoomId = getPatientEncounterFacade().findLongByJpql(
+                "select pe.currentPatientRoom.id from PatientEncounter pe where pe.id = :id", m);
+        if (currentRoomId == 0L) {
+            return;
+        }
+        PatientRoom current = null;
+        if (patientRooms != null) {
+            for (PatientRoom pr : patientRooms) {
+                if (pr != null && pr.getId() != null && pr.getId() == currentRoomId) {
+                    current = pr;
+                    break;
+                }
+            }
+        }
+        if (current == null) {
+            current = getPatientRoomFacade().find(currentRoomId);
+        }
+        if (current != null) {
+            encounter.setCurrentPatientRoom(current);
+        }
     }
 
     private void setPatientRoomData() {
