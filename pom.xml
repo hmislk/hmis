@@ -580,6 +580,14 @@
                 <version>3.3.1</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webResources>
+                        <!-- Client print agent, offered as a zip download on the
+                             Inpatient deposit/payment pages (InwardRawTextReceiptController). -->
+                        <resource>
+                            <directory>tools/client-print-agent</directory>
+                            <targetPath>WEB-INF/print-agent</targetPath>
+                        </resource>
+                    </webResources>
                 </configuration>
             </plugin>
 
@@ -632,12 +640,6 @@
 
 
     <repositories>
-        <repository>
-            <url>https://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <id>eclipselink</id>
-            <layout>default</layout>
-            <name>Repository for library EclipseLink (JPA 2.1)</name>
-        </repository>
         <repository>
             <id>central</id>
             <name>Central Repository</name>

@@ -1,84 +1,61 @@
 # QA Environment Deployment Guide
 
-> **This guide was rewritten on 2026-09-09.** The old `hims-qa1` / `hims-qa2` /
-> `hims-qa3` / `hims-qa4` branches on `qa.carecode.org` and the
-> `git push origin development:hims-qa1 --force` flow they used are **retired**.
-> QA now runs on the migrated Azure estate via the `hims-qaN-migrated` branches.
+> **Rewritten 2026-10-11.** All QA instances are home-hosted. The Azure QA
+> estate (`hims-qaN-migrated` branches, `qa-migrated.carecode.org`) and the
+> older `hims-qaN` branches on `qa.carecode.org` are **retired**.
 
-> **🚧 2026-09-12: migration off Azure to home-hosted machines is in
-> progress.** QA1-3 are already live on home machines (QA4 close behind);
-> everything below this point still describes the Azure estate, which
-> remains the working environment until cutover. The home setup — trigger
-> branches (`home-qaN`, not `hims-qaN-home` — that pattern collides with
-> the `QA Branches Rules` ruleset below), self-hosted-runner workflows
-> (`hims_qaN_home_ci_cd.yml`), per-machine runbooks, and all the gotchas
-> hit along the way — is tracked separately in the private
-> [`hmislk/qa-home-infra`](https://github.com/hmislk/qa-home-infra) repo
-> (`MASTER-PLAN.md` for status, `GOTCHAS.md` for the detail). This guide
-> will be rewritten again once cutover completes and the Azure
-> `hims-qaN-migrated` branches are retired.
+## How QA deployment works
 
-## How QA deployment works now
+Each QA instance runs on its own home machine and deploys through a
+self-hosted GitHub Actions runner on that machine. Machine set-up, runbooks
+and known gotchas live in the private
+[`hmislk/qa-home-infra`](https://github.com/hmislk/qa-home-infra) repo.
 
-Four QA apps (`qa1`–`qa4`) run on **one** Payara domain on the migrated Azure
-estate, served from `https://qa-migrated.carecode.org/qaN`. Each has its own
-deploy pipeline:
+| Environment | Branch     | Workflow                  | URL                                  | Data |
+|-------------|------------|---------------------------|--------------------------------------|------|
+| QA1         | `home-qa1` | `hims_qa1_home_ci_cd.yml` | https://qa1.carecode.org/qa1         | see qa-home-infra |
+| QA2         | `home-qa2` | `hims_qa2_home_ci_cd.yml` | https://qa2.carecode.org/qa2         | copy of a COOP database |
+| QA3         | `home-qa3` | `hims_qa3_home_ci_cd.yml` | https://qa3.carecode.org/qa3         | copy of a Southern Lanka database |
+| QA4         | `home-qa4` | `hims_qa4_home_ci_cd.yml` | https://qa4.carecode.org/qa4         | see qa-home-infra |
 
-| Environment | Branch              | Workflow                          | URL                                        |
-|-------------|---------------------|-----------------------------------|--------------------------------------------|
-| QA1         | `hims-qa1-migrated` | `hims_qa1_migrated_ci_cd.yml`     | https://qa-migrated.carecode.org/qa1       |
-| QA2         | `hims-qa2-migrated` | `hims_qa2_migrated_ci_cd.yml`     | https://qa-migrated.carecode.org/qa2       |
-| QA3         | `hims-qa3-migrated` | `hims_qa3_migrated_ci_cd.yml`     | https://qa-migrated.carecode.org/qa3       |
-| QA4         | `hims-qa4-migrated` | `hims_qa4_migrated_ci_cd.yml`     | https://qa-migrated.carecode.org/qa4       |
-
-All four workflow files live on `development` and are reviewed there like any
-other code. Each triggers only on `push` to its own `hims-qaN-migrated` branch,
-and each also accepts a manual `workflow_dispatch` run.
-
-The four workflows use a **per-branch** concurrency group
-(`payara-qa-migrated-${{ github.ref_name }}`), so deploying one environment
-never cancels another — but a rapid re-push to the *same* branch still queues
-rather than aborting a deploy in flight.
+Each workflow builds and deploys in one job on its machine's runner, and
+triggers on `push` to its own branch (plus manual `workflow_dispatch`).
 
 ## Deploying
 
-Use the **`deploy-qa`** skill — it opens a `development → hims-qaN-migrated`
-PR, waits for `check-branch` to pass, and merges it (a merge commit, both
-branches kept). GitHub Actions then builds with Maven, deploys to the target
-QA server, and restarts Payara.
+Use the **`deploy-qa`** skill (`/deploy-qa qa1`, `/deploy-qa all`), or open a
+`development → home-qaN` PR and merge it. Either way the push to `home-qaN`
+starts the deploy.
 
-```
-/deploy-qa qa1        # one environment
-/deploy-qa all        # rh-local-staging + all four hims-qaN-migrated
-```
-
-Manual single deploy without a code change (redeploy current branch content):
+Manual redeploy of the current branch content:
 
 ```bash
-gh workflow run hims_qa2_migrated_ci_cd.yml --repo hmislk/hmis --ref hims-qa2-migrated
+gh workflow run hims_qa3_home_ci_cd.yml --repo hmislk/hmis --ref home-qa3
 ```
 
-### Merge rules (`branch_merge_validation.yml`)
+## Refreshing QA data
 
-- Only `development` may merge into a `hims-qaN-migrated` branch.
-- A conflict-resolution or sync branch as the PR head will **fail
-  `check-branch`** — the head must be `development`. If a `hims-qaN-migrated`
-  branch has drifted such that `development` no longer merges cleanly, an
-  admin must reconcile it (temporarily bypass the `QA Branches Rules` ruleset
-  and `git push --force origin origin/development:hims-qaN-migrated`), not
-  work around the merge check.
+A QA database is refreshed from a production copy by the developer who
+manages that machine (see the `restore-local-db` skill). Data entered by
+testers before a refresh is lost from the QA instance.
+
+A refreshed QA database **contains real patient data**. Handle it, its dump
+files and any rollback copy with the same care as production data: keep them
+on the QA machine owner's disk only and never share or upload them. Once
+testers confirm the refreshed instance works, delete the temporary dump and
+rollback files (not the live QA database). Testers get their QA logins from the QA
+instance owner, not from production staff.
 
 ## persistence.xml
 
-Feature branches keep the local JNDI names (`jdbc/coop`, `jdbc/ruhunuAudit`);
-`development` carries the CI/CD placeholders `${JDBC_DATASOURCE}` /
-`${JDBC_AUDIT_DATASOURCE}`, which each workflow substitutes for its
-environment's real datasource JNDI names at build time. A hardcoded local JNDI
-name reaching a QA branch is the most common cause of a post-deploy 404 — see
+`development` carries the placeholders `${JDBC_DATASOURCE}` /
+`${JDBC_AUDIT_DATASOURCE}`, which each workflow substitutes with its
+environment's JNDI names at build time. A hardcoded local JNDI name reaching a
+deploy branch is the most common cause of a post-deploy 404 — see
 [qa-troubleshooting.md](qa-troubleshooting.md).
 
 ## Related
 
-- [`deploy-qa` skill](../../.claude/skills/deploy-qa/SKILL.md) — the branch map and the exact PR/merge steps
-- [qa-troubleshooting.md](qa-troubleshooting.md) — 404s, JNDI misconfiguration, health checks
+- [`deploy-qa` skill](../../.claude/skills/deploy-qa/SKILL.md) — branch map and exact steps
+- [Deployment map](ci-cd-pipeline-overview.md) — every production/staging pipeline
 - [persistence-verification.md](persistence-verification.md) — dev vs production JNDI settings

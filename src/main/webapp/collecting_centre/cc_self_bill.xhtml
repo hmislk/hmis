@@ -27,15 +27,16 @@
                         <h:form id="form">
                             <ez:cc_self_billing_header
                                 pageTitle="Collecting Centre Billing"
-                                highlight="#{collectingCentreBillController.collectingCentre.code} - #{collectingCentreBillController.collectingCentre.name}"
+                                highlightCode="#{collectingCentreBillController.collectingCentre.code}"
+                                highlightName="#{collectingCentreBillController.collectingCentre.name}"
                                 pageIcon="fa-solid fa-file-invoice-dollar"
                                 backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
                                 backLabel="Back to Dashboard"/>
 
                             <p:growl id="msg"/>
 
-                            <div class="row">
-                                <div class="col-7">
+                            <div class="row cc-stack-gap-lg">
+                                <div class="col-12 col-lg-7">
                                     <ez:cc_self_billing_patient_details
                                         editable="#{webUserController.hasPrivilege('OpdEditPatientDetails')}"
                                         controller="#{collectingCentreBillController}"/>
@@ -95,7 +96,7 @@
                                                     </p:autoComplete>
 
                                                 </div>
-                                                <div class="col-md-2">
+                                                <div class="col-md-2 mt-2 mt-md-0">
                                                     <h:panelGrid id="txtQty">
                                                         <h:inputText 
                                                             autocomplete="off"
@@ -127,6 +128,7 @@
                                                     <p:tab id="tabBillItems" title="Bill Items">
                                                         <p:dataTable
                                                             id="tblRequests"
+                                                            styleClass="cc-card-table" reflow="true"
                                                             rowIndexVar="rowIndex"
                                                             value="#{collectingCentreBillController.lstBillEntries}" 
                                                             var="bi">
@@ -183,7 +185,8 @@
                                                     <p:tab id="tabBillIx" title="Tests">
                                                         <p:dataTable 
                                                             rowIndexVar="rowIndex" 
-                                                            value="#{collectingCentreBillController.lstBillComponents}" 
+                                                            value="#{collectingCentreBillController.lstBillComponents}"
+                                                            styleClass="cc-card-table" reflow="true"
                                                             var="bix">
                                                             <p:column width="2em;" style="padding: 7px;">
                                                                 <f:facet name="header">No</f:facet>
@@ -198,7 +201,7 @@
                                                     </p:tab>
 
                                                     <p:tab id="tabBillFee" title="Fees">
-                                                        <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillFees}" var="bif">
+                                                        <p:dataTable rowIndexVar="rowIndex" value="#{collectingCentreBillController.lstBillFees}" var="bif" styleClass="cc-card-table" reflow="true">
                                                             <p:column  style="padding: 7px;">
                                                                 <f:facet name="header">Item Name</f:facet>
                                                                 <h:outputLabel value="#{bif.billItem.item.name}"/>
@@ -257,7 +260,7 @@
 
                                 </div>
 
-                                <div class="col-5">
+                                <div class="col-12 col-lg-5">
 
                                     <div class="row m-1 mt-1">
                                         <p:panel styleClass="cc-bill-card cc-c-red">
@@ -293,7 +296,7 @@
                                         </p:panel>
                                     </div>
 
-                                    <div class="d-flex gap-2 justify-content-end mb-4 mx-2">
+                                    <div class="d-flex gap-2 justify-content-end mb-4 mx-2 cc-actions-wrap">
                                         <p:commandButton
                                             value="New Bill"
                                             icon="fa fa-plus"
@@ -301,6 +304,7 @@
                                             immediate="true"
                                             ajax="false"
                                             action="#{collectingCentreBillController.navigateToCollectingCentreSelfBillingKeepingCollectingCentre()}"
+                                            rendered="#{webUserController.hasPrivilege('CcSelfBilling')}"
                                             class="ui-button-warning mx-1">
                                         </p:commandButton>
 
@@ -311,6 +315,7 @@
                                             icon="fa fa-check "
                                             style="width: 150px;"
                                             action="#{collectingCentreBillController.settleCcBill()}"
+                                            rendered="#{webUserController.hasPrivilege('CcSelfBilling')}"
                                             ajax="false"
                                             class="ui-button-success ">
                                             <p:confirm header="Confirm Settle" message="Are you sure you want to settle this bill? This cannot be undone." icon="pi pi-exclamation-triangle"/>
@@ -336,14 +341,14 @@
 
                                     <p:panel styleClass="cc-bill-card cc-c-orange m-1">
                                         <f:facet name="header">
-                                            <div class="d-flex justify-content-between">
+                                            <div class="d-flex flex-wrap gap-2 justify-content-between">
                                                 <div class="d-flex gap-2 mt-2">
                                                     <h:outputText styleClass="fas fa-bullseye"/>
                                                     <h:outputText value="Collecting Centre Details"></h:outputText>
                                                 </div>
 
                                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Collecting Centre Billing Requires Referance Numbers', true)}">
-                                                    <div class="cc-ref-select" style="width: 250px;">
+                                                    <div class="cc-ref-select" style="width: 250px; max-width: 100%;">
                                                         <p:selectOneMenu
                                                             filter="true"
                                                             filterMatchMode="contains"
@@ -497,7 +502,7 @@
                                                         process="btnAddNewDoc"
                                                         update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}"/>
 
-                                                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">
+                                                    <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" responsive="true">
                                                         <p:growl id="msgs"></p:growl>
                                                         <h:panelGrid columns="2" style="margin-bottom:10px">
                                                             <h:outputText id="lblNameD" value="Name"></h:outputText>

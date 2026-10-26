@@ -23,10 +23,10 @@
                                         rendered="#{financialTransactionController.selectedBundle.floatRow and financialTransactionController.selectedBundle.paymentHandover ne null and financialTransactionController.selectedBundle.paymentHandover.name() eq 'FLOAT_IN'}" />
                                     <h:outputText
                                         value="Shift Shortage — Payments"
-                                        rendered="#{financialTransactionController.selectedBundle.paymentHandover ne null and financialTransactionController.selectedBundle.paymentHandover.name() eq 'FLOATS'}" />
+                                        rendered="#{financialTransactionController.selectedBundle.shortageRelated}" />
                                     <h:outputText
                                         value="Row Payments"
-                                        rendered="#{!financialTransactionController.selectedBundle.floatRow and (financialTransactionController.selectedBundle.paymentHandover == null or financialTransactionController.selectedBundle.paymentHandover.name() eq 'NONE')}" />
+                                        rendered="#{!financialTransactionController.selectedBundle.floatRow and !financialTransactionController.selectedBundle.shortageRelated}" />
                                     <span class="mx-2 text-muted"
                                           style="display: inline;">
                                         <h:outputText

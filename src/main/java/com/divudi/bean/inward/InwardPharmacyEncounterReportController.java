@@ -80,6 +80,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     // 1) Pharmacy Requests list (InwardPharmacyRequest bills) - entity-based,
     // since Bill.isFullyIssued() and the nested "issued" bill list are
     // entity-only concerns (not expressible as pure DTO projections).
+    // Request bills always have netTotal 0, so status and issued/returned
+    // values come from requestSummaries, built with batched JPQL per list load.
     private List<Bill> pharmacyRequestBillsToPatientEncounter;
     private double pharmacyRequestBillsToPatientEncounterNetTotal;
 
@@ -90,6 +92,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     // all patients/encounters in that ward, with filters.
     private List<Bill> pharmacyRequestBillsToWard;
     private double pharmacyRequestBillsToWardNetTotal;
+    private Map<Long, PharmacyRequestSummary> requestSummaries = new HashMap<>();
+    private Map<Long, PharmacyRequestSummary> wardRequestSummaries = new HashMap<>();
     private String wardPharmacyRequestStatusFilter;
     private Department wardPharmacyRequestDepartmentFilter;
     private String wardPharmacyRequestPatientFilter;
@@ -140,8 +144,12 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         pharmacyRequestBillsToPatientEncounterNetTotal = 0.0;
         try {
             pharmacyRequestBillsToPatientEncounter = fetchPharmacyRequestBills();
+            requestSummaries = new HashMap<>();
+            buildRequestSummaries(pharmacyRequestBillsToPatientEncounter, requestSummaries);
             for (Bill b : pharmacyRequestBillsToPatientEncounter) {
-                pharmacyRequestBillsToPatientEncounterNetTotal += b.getNetTotal();
+                if (!b.isCancelled()) {
+                    pharmacyRequestBillsToPatientEncounterNetTotal += getRequestSummary(b.getId()).getNetValue();
+                }
             }
         } catch (Exception e) {
             Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
@@ -150,6 +158,226 @@ public class InwardPharmacyEncounterReportController implements Serializable {
             return null;
         }
         return "/inward/reports/inpatient_pharmacy_requests_list?faces-redirect=true";
+    }
+
+    /**
+     * Per-request status and issued/returned values for the Pharmacy Requests
+     * lists. Request bills themselves always carry netTotal 0.
+     */
+    public static class PharmacyRequestSummary implements Serializable {
+
+        private Long requestId;
+        private String status;
+        private double issuedValue;
+        private double returnedValue;
+
+        public Long getRequestId() {
+            return requestId;
+        }
+
+        public void setRequestId(Long requestId) {
+            this.requestId = requestId;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public double getIssuedValue() {
+            return issuedValue;
+        }
+
+        public void setIssuedValue(double issuedValue) {
+            this.issuedValue = issuedValue;
+        }
+
+        public double getReturnedValue() {
+            return returnedValue;
+        }
+
+        public void setReturnedValue(double returnedValue) {
+            this.returnedValue = returnedValue;
+        }
+
+        public double getNetValue() {
+            return issuedValue - returnedValue;
+        }
+    }
+
+    /**
+     * Summary for a row of the patient (encounter) Pharmacy Requests list.
+     */
+    public PharmacyRequestSummary getRequestSummary(Long requestBillId) {
+        return summaryFrom(requestSummaries, requestBillId);
+    }
+
+    /**
+     * Summary for a row of the ward Pharmacy Requests list. Kept in its own
+     * map so loading one list never blanks the other (session-scoped bean).
+     */
+    public PharmacyRequestSummary getWardRequestSummary(Long requestBillId) {
+        return summaryFrom(wardRequestSummaries, requestBillId);
+    }
+
+    private static PharmacyRequestSummary summaryFrom(Map<Long, PharmacyRequestSummary> map, Long requestBillId) {
+        PharmacyRequestSummary s = requestBillId == null ? null : map.get(requestBillId);
+        if (s == null) {
+            s = new PharmacyRequestSummary();
+            s.setRequestId(requestBillId);
+            s.setStatus("Not Issued");
+        }
+        return s;
+    }
+
+    private static double toDouble(Object o) {
+        return o instanceof Number ? ((Number) o).doubleValue() : 0.0;
+    }
+
+    private static Long toLong(Object o) {
+        return o instanceof Number ? ((Number) o).longValue() : null;
+    }
+
+    /**
+     * Builds status, issued value and returned value for each request using a
+     * fixed number of batched queries (no per-row queries).
+     */
+    private void buildRequestSummaries(List<Bill> requests, Map<Long, PharmacyRequestSummary> target) {
+        if (requests == null || requests.isEmpty()) {
+            return;
+        }
+        // a) requested qty per request item, grouped by request
+        Map<String, Object> params = new HashMap<>();
+        params.put("reqs", requests);
+        List<Object[]> rows = billItemFacade.findObjectArrayByJpql(
+                "SELECT bi.bill.id, bi.id, bi.qty FROM BillItem bi "
+                + "WHERE bi.bill IN :reqs AND bi.retired = false", params, TemporalType.TIMESTAMP);
+        Map<Long, Map<Long, Double>> requestedQtyByRequest = new HashMap<>();
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long reqId = toLong(r[0]);
+                Long itemId = toLong(r[1]);
+                if (reqId == null || itemId == null) {
+                    continue;
+                }
+                requestedQtyByRequest.computeIfAbsent(reqId, k -> new HashMap<>()).put(itemId, toDouble(r[2]));
+            }
+        }
+
+        // b) issued (non-cancelled) qty per request item
+        params = new HashMap<>();
+        params.put("reqs", requests);
+        params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        rows = billItemFacade.findObjectArrayByJpql(
+                "SELECT bi.referanceBillItem.id, SUM(ABS(bi.qty)) FROM BillItem bi "
+                + "WHERE bi.bill.billTypeAtomic = :issueBta "
+                + "AND bi.bill.cancelled = false AND bi.bill.retired = false "
+                + "AND bi.referanceBillItem.bill IN :reqs "
+                + "GROUP BY bi.referanceBillItem.id", params, TemporalType.TIMESTAMP);
+        Map<Long, Double> issuedQtyByItem = new HashMap<>();
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long itemId = toLong(r[0]);
+                if (itemId != null) {
+                    issuedQtyByItem.put(itemId, toDouble(r[1]));
+                }
+            }
+        }
+
+        // c) issued value per request
+        params = new HashMap<>();
+        params.put("reqs", requests);
+        params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        rows = billFacade.findObjectArrayByJpql(
+                "SELECT b.referenceBill.id, SUM(b.netTotal) FROM Bill b "
+                + "WHERE b.billTypeAtomic = :issueBta "
+                + "AND b.cancelled = false AND b.retired = false "
+                + "AND b.referenceBill IN :reqs "
+                + "GROUP BY b.referenceBill.id", params, TemporalType.TIMESTAMP);
+        Map<Long, Double> issuedValueByRequest = new HashMap<>();
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long reqId = toLong(r[0]);
+                if (reqId != null) {
+                    issuedValueByRequest.put(reqId, toDouble(r[1]));
+                }
+            }
+        }
+
+        // d) returned value per request: (i) pharmacy refunds of issues
+        Map<Long, Double> returnedValueByRequest = new HashMap<>();
+        params = new HashMap<>();
+        params.put("reqs", requests);
+        params.put("retBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        rows = billItemFacade.findObjectArrayByJpql(
+                "SELECT bi.referanceBillItem.bill.referenceBill.id, SUM(ABS(bi.netValue)) FROM BillItem bi "
+                + "WHERE bi.bill.billTypeAtomic = :retBta "
+                + "AND bi.bill.retired = false AND bi.bill.cancelled = false "
+                + "AND bi.referanceBillItem.bill.referenceBill IN :reqs "
+                + "GROUP BY bi.referanceBillItem.bill.referenceBill.id", params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long reqId = toLong(r[0]);
+                if (reqId != null) {
+                    returnedValueByRequest.merge(reqId, toDouble(r[1]), Double::sum);
+                }
+            }
+        }
+        // (ii) ward returns to pharmacy (via the accepted-issue item)
+        params = new HashMap<>();
+        params.put("reqs", requests);
+        params.put("retBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        rows = billItemFacade.findObjectArrayByJpql(
+                "SELECT bi.referanceBillItem.referanceBillItem.bill.referenceBill.id, SUM(ABS(bi.netValue)) FROM BillItem bi "
+                + "WHERE bi.bill.billTypeAtomic = :retBta "
+                + "AND bi.bill.retired = false AND bi.bill.cancelled = false "
+                + "AND bi.referanceBillItem.referanceBillItem.bill.referenceBill IN :reqs "
+                + "GROUP BY bi.referanceBillItem.referanceBillItem.bill.referenceBill.id", params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long reqId = toLong(r[0]);
+                if (reqId != null) {
+                    returnedValueByRequest.merge(reqId, toDouble(r[1]), Double::sum);
+                }
+            }
+        }
+
+        for (Bill req : requests) {
+            if (req == null || req.getId() == null) {
+                continue;
+            }
+            Map<Long, Double> items = requestedQtyByRequest.get(req.getId());
+            boolean allIssued = items != null && !items.isEmpty();
+            boolean anyIssued = false;
+            if (items != null) {
+                for (Map.Entry<Long, Double> e : items.entrySet()) {
+                    double issued = issuedQtyByItem.getOrDefault(e.getKey(), 0.0);
+                    if (issued < e.getValue() - 0.001) {
+                        allIssued = false;
+                    }
+                    if (issued > 0.001) {
+                        anyIssued = true;
+                    }
+                }
+            }
+            PharmacyRequestSummary s = new PharmacyRequestSummary();
+            s.setRequestId(req.getId());
+            if (req.isCancelled()) {
+                s.setStatus("Cancelled");
+            } else if (allIssued) {
+                s.setStatus("Issued");
+            } else if (anyIssued) {
+                s.setStatus("Partially Issued");
+            } else {
+                s.setStatus("Not Issued");
+            }
+            s.setIssuedValue(issuedValueByRequest.getOrDefault(req.getId(), 0.0));
+            s.setReturnedValue(returnedValueByRequest.getOrDefault(req.getId(), 0.0));
+            target.put(req.getId(), s);
+        }
     }
 
     private List<Bill> fetchPharmacyRequestBills() {
@@ -197,9 +425,20 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         pharmacyRequestBillsToWard = new ArrayList<>();
         pharmacyRequestBillsToWardNetTotal = 0.0;
         try {
-            pharmacyRequestBillsToWard = fetchWardPharmacyRequestBills();
-            for (Bill b : pharmacyRequestBillsToWard) {
-                pharmacyRequestBillsToWardNetTotal += b.getNetTotal();
+            List<Bill> fetched = fetchWardPharmacyRequestBills();
+            wardRequestSummaries = new HashMap<>();
+            buildRequestSummaries(fetched, wardRequestSummaries);
+            for (Bill b : fetched) {
+                PharmacyRequestSummary s = getWardRequestSummary(b.getId());
+                if (wardPharmacyRequestStatusFilter != null
+                        && !"Cancelled".equals(wardPharmacyRequestStatusFilter)
+                        && !wardPharmacyRequestStatusFilter.equals(s.getStatus())) {
+                    continue;
+                }
+                pharmacyRequestBillsToWard.add(b);
+                if (!b.isCancelled()) {
+                    pharmacyRequestBillsToWardNetTotal += s.getNetValue();
+                }
             }
         } catch (Exception e) {
             Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
@@ -222,18 +461,15 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         params.put("dept", dept);
 
+        // Issued / Partially Issued / Not Issued are derived from quantities in
+        // buildRequestSummaries() and applied in filterWardPharmacyRequests().
         if (wardPharmacyRequestStatusFilter != null) {
             switch (wardPharmacyRequestStatusFilter) {
-                case "Issued":
-                    jpql.append("AND b.cancelled = false AND b.fullyIssued = true ");
-                    break;
-                case "Not Issued":
-                    jpql.append("AND b.cancelled = false AND b.fullyIssued = false ");
-                    break;
                 case "Cancelled":
                     jpql.append("AND b.cancelled = true ");
                     break;
                 default:
+                    jpql.append("AND b.cancelled = false ");
                     break;
             }
         }
