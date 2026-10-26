@@ -705,8 +705,10 @@ public class IssueReturnController implements Serializable {
 
     private boolean areOmittedItemsAlreadyFullyReturned(List<BillItem> processedReturnItems) {
         List<BillItem> allOriginalItems = billService.fetchBillItems(getOriginalBill());
-        if (allOriginalItems == null) {
-            return true;
+        // An issued bill always has items; fetchBillItems swallows query failures and returns an empty
+        // list, so an empty result means the check cannot be trusted and the bill must not be marked fully returned.
+        if (allOriginalItems == null || allOriginalItems.isEmpty()) {
+            return false;
         }
         for (BillItem originalItem : allOriginalItems) {
             boolean processed = false;
