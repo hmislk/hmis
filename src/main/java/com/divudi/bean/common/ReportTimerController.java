@@ -24,8 +24,9 @@ public class ReportTimerController implements Serializable {
     @EJB
     private ReportLogAsyncService reportLogAsyncService;
 
-    // No transaction: a report must not write. Inside one, entities a report touches
-    // (e.g. auto-created finance details) are saved at commit (#24735).
+    // No transaction: entities a report only reads must not be saved. Inside one, those it
+    // touches (e.g. auto-created finance details) are saved at commit (#24735).
+    // Explicit service writes still commit in their own transaction.
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, WebUser loggedUser) {
         trackReportExecution(reportGenerationLogic, reportType, reportType.getReportName(), loggedUser);

@@ -511,4 +511,4 @@ The pattern also matches the shell running the command (exit 144). Find Payara w
 
 ## 166. A page saves rows it shouldn't: find the writer with a temporary `@PrePersist` trace
 
-Add a `@PrePersist` method to the entity that logs `new Exception("trace")`, rebuild, reproduce, and read the stack in `server.log`. It names the transaction and the caller. Revert it before committing.
+Add a `@PrePersist` method to the entity that logs `new Exception("trace")`, rebuild and redeploy ([§0a](../playwright-e2e-workflow.md#0a-rebuild-and-redeploy-local-code-changes-before-testing)), reproduce, and read the stack in `server.log`. It shows the caller and the persistence path, e.g. a cascade at commit. Revert it before committing.
