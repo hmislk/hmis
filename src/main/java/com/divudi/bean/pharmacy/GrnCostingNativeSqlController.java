@@ -28,6 +28,7 @@ import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
@@ -46,6 +47,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -61,6 +63,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -140,6 +143,9 @@ public class GrnCostingNativeSqlController implements Serializable {
     private Institution referenceInstitution;
     private BillItem currentExpense;
     private Item freeItemToAdd;
+    private BillItem billItemPendingDuplication;
+    private Bill grnBillPendingDuplication;
+    private String duplicateComment;
 
     @PostConstruct
     public void init() {
@@ -255,6 +261,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         currentExpense = null;
         difference = 0;
         insTotal = 0;
+        cancelDuplicatePrompt();
     }
 
     // synchronized: same double-click double-submit guard as finalize/approve below
@@ -421,6 +428,24 @@ public class GrnCostingNativeSqlController implements Serializable {
     }
 
     /**
+     * Inserts or updates every non-retired expense row of the current GRN.
+     */
+    private void saveExpenseLines(long billId) {
+        if (getCurrentGrnBillPre().getBillExpenses() == null) {
+            return;
+        }
+        for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
+            if (expense == null || expense.isRetired()) {
+                continue;
+            }
+            expense.setExpenseBill(getCurrentGrnBillPre());
+            GrnLineData expenseLine = toExpenseLineData(expense);
+            long expenseId = grnCostingNativeSqlService.saveExpenseLine(billId, expenseLine);
+            expense.setId(expenseId);
+        }
+    }
+
+    /**
      * Unguarded core of {@link #requestWithSaveApprove()}. Called directly
      * (bypassing the PharmacyGrnSave check) by {@link #finalizeGrnWithSaveApprove()}
      * and {@link #approveGrnWithSaveApprove()}, which auto-save a not-yet-
@@ -518,17 +543,7 @@ public class GrnCostingNativeSqlController implements Serializable {
             }
         }
 
-        if (getCurrentGrnBillPre().getBillExpenses() != null) {
-            for (BillItem expense : getCurrentGrnBillPre().getBillExpenses()) {
-                if (expense == null || expense.isRetired()) {
-                    continue;
-                }
-                expense.setExpenseBill(getCurrentGrnBillPre());
-                GrnLineData expenseLine = toExpenseLineData(expense);
-                long expenseId = grnCostingNativeSqlService.saveExpenseLine(billId, expenseLine);
-                expense.setId(expenseId);
-            }
-        }
+        saveExpenseLines(billId);
 
         grnCostingNativeSqlService.updateDraftBillHeader(
                 billId,
@@ -551,12 +566,16 @@ public class GrnCostingNativeSqlController implements Serializable {
         calDifference();
 
         grnCostingNativeSqlService.updateBillTotals(billId, getCurrentGrnBillPre().getNetTotal(), getCurrentGrnBillPre().getTotal());
+        grnCostingNativeSqlService.updateBillExpenseTotals(billId, getCurrentGrnBillPre().getExpenseTotal(),
+                getCurrentGrnBillPre().getExpensesTotalConsideredForCosting(),
+                getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
 
         BillFinanceDetails bfd = getCurrentGrnBillPre().getBillFinanceDetails();
         double totalDiscount = bfd != null && bfd.getTotalDiscount() != null ? bfd.getTotalDiscount().doubleValue() : 0.0;
         double totalExpense = bfd != null && bfd.getTotalExpense() != null ? bfd.getTotalExpense().doubleValue() : 0.0;
         double totalTax = bfd != null && bfd.getTotalTaxValue() != null ? bfd.getTotalTaxValue().doubleValue() : 0.0;
-        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax);
+        BigDecimal totalBillValue = bfd != null ? bfd.getTotalBillValue() : null;
+        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, totalBillValue);
 
         JsfUtil.addSuccessMessage("GRN Saved");
     }
@@ -673,6 +692,11 @@ public class GrnCostingNativeSqlController implements Serializable {
 
         if (getCurrentGrnBillPre().getId() == null) {
             doRequestWithSaveApprove();
+        } else {
+            // Expenses added or edited since the last Save exist only in memory;
+            // write them now so the expense totals stored at approval match the
+            // stored expense rows (#24709).
+            saveExpenseLines(getCurrentGrnBillPre().getId());
         }
 
         // Ensure bill discount distribution and totals are current BEFORE processing
@@ -740,6 +764,12 @@ public class GrnCostingNativeSqlController implements Serializable {
         request.setPrePositiveNetTotalForPayment(prePositiveNetTotalForPayment);
         request.setPostNegationNetTotal(postNegationNetTotal);
         request.setPostNegationTotal(postNegationTotal);
+        BillFinanceDetails approveBfd = getCurrentGrnBillPre().getBillFinanceDetails();
+        request.setTotalBillValue(approveBfd != null && approveBfd.getTotalBillValue() != null
+                ? approveBfd.getTotalBillValue().abs() : null);
+        request.setExpenseTotal(getCurrentGrnBillPre().getExpenseTotal());
+        request.setExpensesTotalConsideredForCosting(getCurrentGrnBillPre().getExpensesTotalConsideredForCosting());
+        request.setExpensesTotalNotConsideredForCosting(getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
         request.setBalanceValue(balanceValue);
         request.setPoFullyReceived(poFullyReceived);
 
@@ -874,6 +904,18 @@ public class GrnCostingNativeSqlController implements Serializable {
         line.setLineCostRate(BigDecimalUtil.valueOrZero(f.getLineCostRate()).doubleValue());
         line.setValueAtCostRate(BigDecimalUtil.valueOrZero(f.getValueAtCostRate()).doubleValue());
         line.setTotalCostRate(BigDecimalUtil.valueOrZero(f.getTotalCostRate()).doubleValue());
+        // Recompute rather than copy f.getProfitMargin(): several edit
+        // listeners (e.g. qtyChangedListner) redistribute bill discounts/
+        // expenses into totalCost without refreshing the margin, so the
+        // stored value can be stale.
+        BigDecimal currentProfitMargin = calculateProfitMarginForPurchasesBigDecimal(bi);
+        f.setProfitMargin(currentProfitMargin);
+        line.setProfitMargin(currentProfitMargin.doubleValue());
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+        if (pbi != null) {
+            line.setLastPurchaseRate(pbi.getLastPurchaseRate());
+            line.setLastPurchaseRatePack(pbi.getLastPurchaseRatePack());
+        }
     }
 
     private GrnLineData toLineData(BillItem bi) {
@@ -955,7 +997,13 @@ public class GrnCostingNativeSqlController implements Serializable {
         return tmpBillItems;
     }
 
-    public void duplicateItem(BillItem originalBillItemToDuplicate) {
+    /**
+     * Stages a row for duplication and clears any previous comment, then the
+     * page shows a confirmation dialog requiring a reason before the row is
+     * actually added -- a fast double-click or an accidental click on this
+     * button previously created a duplicate GRN line with no prompt at all.
+     */
+    public void promptDuplicateItem(BillItem originalBillItemToDuplicate) {
         if (originalBillItemToDuplicate == null) {
             return;
         }
@@ -963,6 +1011,39 @@ public class GrnCostingNativeSqlController implements Serializable {
             JsfUtil.addInfoMessage("Cannot duplicate an ad-hoc free item line");
             return;
         }
+        billItemPendingDuplication = originalBillItemToDuplicate;
+        grnBillPendingDuplication = currentGrnBillPre;
+        duplicateComment = null;
+    }
+
+    public void confirmDuplicateItem() {
+        if (billItemPendingDuplication == null) {
+            return;
+        }
+        // Session-scoped bean: the GRN in view can change (tab reuse, navigation)
+        // between staging and confirming a duplication -- reject a stale prompt
+        // rather than adding the staged row to a different GRN's item list.
+        if (grnBillPendingDuplication != currentGrnBillPre) {
+            JsfUtil.addErrorMessage("The GRN changed since this row was staged for duplication. Please try again.");
+            cancelDuplicatePrompt();
+            return;
+        }
+        if (duplicateComment == null || duplicateComment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a comment explaining why this row is being duplicated.");
+            return;
+        }
+        performDuplicateItem(billItemPendingDuplication, duplicateComment.trim());
+        cancelDuplicatePrompt();
+        PrimeFaces.current().executeScript("PF('dlgConfirmDuplicateGrnRow').hide();");
+    }
+
+    public void cancelDuplicatePrompt() {
+        billItemPendingDuplication = null;
+        grnBillPendingDuplication = null;
+        duplicateComment = null;
+    }
+
+    private void performDuplicateItem(BillItem originalBillItemToDuplicate, String comment) {
         BigDecimal totalQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
         BigDecimal totalFreeQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
 
@@ -972,6 +1053,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         BillItem newBillItemCreatedByDuplication = new BillItem();
         newBillItemCreatedByDuplication.copy(originalBillItemToDuplicate);
         newBillItemCreatedByDuplication.setId(null);
+        newBillItemCreatedByDuplication.setDescreption(comment);
 
         BillItemFinanceDetails newBifd = originalBillItemToDuplicate.getBillItemFinanceDetails().clone();
         newBifd.setId(null);
@@ -1064,9 +1146,11 @@ public class GrnCostingNativeSqlController implements Serializable {
         freeBillItem.setBillItemFinanceDetails(fd);
         recalculateFinancialsBeforeAddingBillItem(fd);
 
-        freePbi.setLastPurchaseRate(lastPr);
-        freePbi.setLastPurchaseRateInUnit(lastPr);
-        freePbi.setLastPurchaseRatePack(lastPr * fd.getUnitsPerPack().doubleValue());
+        double lastGrnUnitRate = buildLastGrnUnitRateMap(singleItemList, getSessionController().getDepartment())
+                .getOrDefault(freeItemToAdd.getId(), 0.0);
+        freePbi.setLastPurchaseRate(lastGrnUnitRate);
+        freePbi.setLastPurchaseRateInUnit(lastGrnUnitRate);
+        freePbi.setLastPurchaseRatePack(lastGrnUnitRate * fd.getUnitsPerPack().doubleValue());
 
         getBillItems().add(freeBillItem);
 
@@ -1317,6 +1401,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calDifference();
+        recalculateProfitMarginsForAllItems();
     }
 
     // ==================================================================
@@ -2704,6 +2789,50 @@ public class GrnCostingNativeSqlController implements Serializable {
     }
 
     /**
+     * Per-unit gross purchase rate of each item on its most recent finalized
+     * GRN or Direct Purchase in the given department -- the "Last Purchase
+     * Rate" shown on the GRN print. Filters on billTypeAtomic rather than
+     * billType, which would also match unfinished PHARMACY_GRN_PRE drafts.
+     * Lines with no recorded rate (older purchases) are skipped so the next
+     * earlier priced purchase is used instead.
+     */
+    private Map<Long, Double> buildLastGrnUnitRateMap(List<Item> items, Department department) {
+        Map<Long, Double> result = new HashMap<>();
+        if (items == null || items.isEmpty() || department == null) {
+            return result;
+        }
+        String jpql = "SELECT bi.item.id,"
+                + " bi.billItemFinanceDetails.lineGrossRate,"
+                + " bi.billItemFinanceDetails.unitsPerPack"
+                + " FROM BillItem bi"
+                + " WHERE bi.retired = false"
+                + " AND bi.bill.retired = false"
+                + " AND bi.bill.cancelled = false"
+                + " AND bi.bill.billTypeAtomic IN :btas"
+                + " AND bi.bill.department = :dept"
+                + " AND bi.item IN :items"
+                + " AND bi.billItemFinanceDetails.lineGrossRate > 0"
+                + " ORDER BY bi.id DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE));
+        params.put("dept", department);
+        params.put("items", items);
+        List<Object> rows = billItemFacade.findObjects(jpql, params);
+        if (rows != null) {
+            for (Object row : rows) {
+                Object[] cols = (Object[]) row;
+                Long itemId = ((Number) cols[0]).longValue();
+                if (!result.containsKey(itemId)) {
+                    double rate = cols[1] instanceof Number ? ((Number) cols[1]).doubleValue() : 0.0;
+                    double upp = cols[2] instanceof Number ? ((Number) cols[2]).doubleValue() : 0.0;
+                    result.put(itemId, upp > 0 ? rate / upp : rate);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Builds new in-memory GRN lines from the source purchase order's
      * remaining (ordered minus already-GRN'd) quantities. In-memory only, no
      * persistence. Ported verbatim from
@@ -2728,6 +2857,7 @@ public class GrnCostingNativeSqlController implements Serializable {
             }
         }
         Map<Long, double[]> lastRatesMap = buildLastRatesMap(allPoItems);
+        Map<Long, Double> lastGrnUnitRateMap = buildLastGrnUnitRateMap(allPoItems, getSessionController().getDepartment());
 
         for (PharmaceuticalBillItem pbiInApprovedOrder : poBillItems) {
 
@@ -2822,9 +2952,10 @@ public class GrnCostingNativeSqlController implements Serializable {
                 newlyCreatedBillItemForGrn.setBillItemFinanceDetails(fd);
                 recalculateFinancialsBeforeAddingBillItem(fd);
 
-                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRate(pr);
-                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRateInUnit(pr);
-                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRatePack(pr * fd.getUnitsPerPack().doubleValue());
+                double lastGrnUnitRate = lastGrnUnitRateMap.getOrDefault(newlyCreatedBillItemForGrn.getItem().getId(), 0.0);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRate(lastGrnUnitRate);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRateInUnit(lastGrnUnitRate);
+                newlyCreatedBillItemForGrn.getPharmaceuticalBillItem().setLastPurchaseRatePack(lastGrnUnitRate * fd.getUnitsPerPack().doubleValue());
 
                 getBillItems().add(newlyCreatedBillItemForGrn);
             }
@@ -2933,6 +3064,22 @@ public class GrnCostingNativeSqlController implements Serializable {
 
     public void setFreeItemToAdd(Item freeItemToAdd) {
         this.freeItemToAdd = freeItemToAdd;
+    }
+
+    public BillItem getBillItemPendingDuplication() {
+        return billItemPendingDuplication;
+    }
+
+    public void setBillItemPendingDuplication(BillItem billItemPendingDuplication) {
+        this.billItemPendingDuplication = billItemPendingDuplication;
+    }
+
+    public String getDuplicateComment() {
+        return duplicateComment;
+    }
+
+    public void setDuplicateComment(String duplicateComment) {
+        this.duplicateComment = duplicateComment;
     }
 
     public SearchKeyword getSearchKeyword() {

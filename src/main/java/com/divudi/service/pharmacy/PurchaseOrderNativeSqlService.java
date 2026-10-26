@@ -33,6 +33,24 @@ public class PurchaseOrderNativeSqlService {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
+    // Resolved, deployment-actual table names (case detected via
+    // INFORMATION_SCHEMA, cached after first call) - some local dev DBs use
+    // UPPERCASE table names while production uses lowercase, and this native
+    // SQL previously hardcoded lowercase literals, so it 500'd on any
+    // deployment whose MySQL has lower_case_table_names=0 and uppercase
+    // tables (case-sensitive comparison). Same pattern already established
+    // in TransferReceiveNativeSqlService/TransferIssueNativeSqlService -
+    // followed here rather than reinvented.
+    private volatile String tBill = null;
+    private volatile String tBillItem = null;
+    private volatile String tWebUser = null;
+    private volatile String tPerson = null;
+    private volatile String tDepartment = null;
+    private volatile String tInstitution = null;
+    private volatile String tItem = null;
+    private volatile String tCategory = null;
+    private volatile String tBillItemFinanceDetails = null;
+
     /**
      * Loads the full print DTO for a PO approval bill.
      * Works for both PHARMACY_ORDER and PHARMACY_ORDER_APPROVAL atomics —
@@ -68,7 +86,7 @@ public class PurchaseOrderNativeSqlService {
         // First resolve whether this is an approval bill or request bill,
         // and get the approval bill ID either way.
         String resolveAtomicSql =
-            "SELECT billTypeAtomic, referenceBill_ID FROM bill WHERE ID = ?1 AND retired = 0 LIMIT 1";
+            "SELECT billTypeAtomic, referenceBill_ID FROM " + billTable() + " WHERE ID = ?1 AND retired = 0 LIMIT 1";
         List<Object[]> atomicRows;
         try {
             atomicRows = em.createNativeQuery(resolveAtomicSql)
@@ -129,19 +147,19 @@ public class PurchaseOrderNativeSqlService {
             "  reqCreaterInst.fax             AS instFax, " +
             "  reqCreaterDept.telephone1      AS reqDeptTel1, " +
             "  reqCreaterDept.email           AS reqDeptEmail " +
-            "FROM bill ab " +
-            "LEFT JOIN bill rb                ON rb.ID = ab.referenceBill_ID " +
-            "LEFT JOIN webuser approverWU      ON approverWU.ID = ab.creater_ID " +
-            "LEFT JOIN person  approverPerson  ON approverPerson.ID = approverWU.webUserPerson_ID " +
-            "LEFT JOIN department orderDept    ON orderDept.ID = ab.department_ID " +
-            "LEFT JOIN institution orderInst   ON orderInst.ID = orderDept.institution_ID " +
-            "LEFT JOIN institution orderSite    ON orderSite.ID = orderDept.site_ID " +
-            "LEFT JOIN institution supplier    ON supplier.ID = ab.toInstitution_ID " +
-            "LEFT JOIN webuser checkedByWU     ON checkedByWU.ID = rb.checkedBy_ID " +
-            "LEFT JOIN person  preparerPerson  ON preparerPerson.ID = checkedByWU.webUserPerson_ID " +
-            "LEFT JOIN webuser reqCreaterWU    ON reqCreaterWU.ID = rb.creater_ID " +
-            "LEFT JOIN department reqCreaterDept ON reqCreaterDept.ID = reqCreaterWU.department_ID " +
-            "LEFT JOIN institution reqCreaterInst ON reqCreaterInst.ID = reqCreaterDept.institution_ID " +
+            "FROM " + billTable() + " ab " +
+            "LEFT JOIN " + billTable() + " rb                ON rb.ID = ab.referenceBill_ID " +
+            "LEFT JOIN " + webUserTable() + " approverWU      ON approverWU.ID = ab.creater_ID " +
+            "LEFT JOIN " + personTable() + "  approverPerson  ON approverPerson.ID = approverWU.webUserPerson_ID " +
+            "LEFT JOIN " + departmentTable() + " orderDept    ON orderDept.ID = ab.department_ID " +
+            "LEFT JOIN " + institutionTable() + " orderInst   ON orderInst.ID = orderDept.institution_ID " +
+            "LEFT JOIN " + institutionTable() + " orderSite    ON orderSite.ID = orderDept.site_ID " +
+            "LEFT JOIN " + institutionTable() + " supplier    ON supplier.ID = ab.toInstitution_ID " +
+            "LEFT JOIN " + webUserTable() + " checkedByWU     ON checkedByWU.ID = rb.checkedBy_ID " +
+            "LEFT JOIN " + personTable() + "  preparerPerson  ON preparerPerson.ID = checkedByWU.webUserPerson_ID " +
+            "LEFT JOIN " + webUserTable() + " reqCreaterWU    ON reqCreaterWU.ID = rb.creater_ID " +
+            "LEFT JOIN " + departmentTable() + " reqCreaterDept ON reqCreaterDept.ID = reqCreaterWU.department_ID " +
+            "LEFT JOIN " + institutionTable() + " reqCreaterInst ON reqCreaterInst.ID = reqCreaterDept.institution_ID " +
             "WHERE ab.ID = ?1 AND ab.retired = 0 " +
             "LIMIT 1";
 
@@ -161,6 +179,7 @@ public class PurchaseOrderNativeSqlService {
         int col = 0;
 
         PurchaseOrderPrintDto dto = new PurchaseOrderPrintDto();
+        dto.setApprovalBillId(approvalBillId);
         col++; // ab.ID — skip, just used for routing
         dto.setPoNumber(str(r[col++]));
         dto.setPaymentMethod(str(r[col++]));
@@ -214,10 +233,10 @@ public class PurchaseOrderNativeSqlService {
             "  COALESCE(bifd.quantity, 0)         AS quantity, " +
             "  COALESCE(bifd.freeQuantity, 0)     AS freeQuantity, " +
             "  COALESCE(bifd.lineGrossTotal, 0)   AS lineTotal " +
-            "FROM billitem bi " +
-            "LEFT JOIN item i                    ON i.ID = bi.item_ID " +
-            "LEFT JOIN category iu               ON iu.ID = i.issueUnit_ID " +
-            "LEFT JOIN billitemfinancedetails bifd ON bifd.ID = bi.BILLITEMFINANCEDETAILS_ID " +
+            "FROM " + billItemTable() + " bi " +
+            "LEFT JOIN " + itemTable() + " i                    ON i.ID = bi.item_ID " +
+            "LEFT JOIN " + categoryTable() + " iu               ON iu.ID = i.issueUnit_ID " +
+            "LEFT JOIN " + billItemFinanceDetailsTable() + " bifd ON bifd.ID = bi.BILLITEMFINANCEDETAILS_ID " +
             "WHERE bi.bill_ID = ?1 " +
             "  AND bi.retired = 0 " +
             "ORDER BY bi.ID";
@@ -281,5 +300,63 @@ public class PurchaseOrderNativeSqlService {
             return java.util.Date.from((java.time.Instant) o);
         }
         return null;
+    }
+
+    // -----------------------------------------------------------------------
+    // Table name resolution (INFORMATION_SCHEMA, cached after first call)
+    // -----------------------------------------------------------------------
+
+    private String resolveTable(String upperName) {
+        Object name = em.createNativeQuery(
+                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES"
+                + " WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = ? LIMIT 1")
+                .setParameter(1, upperName)
+                .getSingleResult();
+        return name.toString();
+    }
+
+    private String billTable() {
+        if (tBill == null) tBill = resolveTable("BILL");
+        return tBill;
+    }
+
+    private String billItemTable() {
+        if (tBillItem == null) tBillItem = resolveTable("BILLITEM");
+        return tBillItem;
+    }
+
+    private String webUserTable() {
+        if (tWebUser == null) tWebUser = resolveTable("WEBUSER");
+        return tWebUser;
+    }
+
+    private String personTable() {
+        if (tPerson == null) tPerson = resolveTable("PERSON");
+        return tPerson;
+    }
+
+    private String departmentTable() {
+        if (tDepartment == null) tDepartment = resolveTable("DEPARTMENT");
+        return tDepartment;
+    }
+
+    private String institutionTable() {
+        if (tInstitution == null) tInstitution = resolveTable("INSTITUTION");
+        return tInstitution;
+    }
+
+    private String itemTable() {
+        if (tItem == null) tItem = resolveTable("ITEM");
+        return tItem;
+    }
+
+    private String categoryTable() {
+        if (tCategory == null) tCategory = resolveTable("CATEGORY");
+        return tCategory;
+    }
+
+    private String billItemFinanceDetailsTable() {
+        if (tBillItemFinanceDetails == null) tBillItemFinanceDetails = resolveTable("BILLITEMFINANCEDETAILS");
+        return tBillItemFinanceDetails;
     }
 }

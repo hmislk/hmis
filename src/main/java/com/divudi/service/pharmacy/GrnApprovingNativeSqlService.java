@@ -121,6 +121,12 @@ public class GrnApprovingNativeSqlService {
         grnCostingNativeSqlService.updateBillTotals(
                 request.getBillId(), request.getPostNegationNetTotal(), request.getPostNegationTotal());
 
+        grnCostingNativeSqlService.updateBillExpenseTotals(request.getBillId(), request.getExpenseTotal(),
+                request.getExpensesTotalConsideredForCosting(), request.getExpensesTotalNotConsideredForCosting());
+        if (request.getTotalBillValue() != null) {
+            grnCostingNativeSqlService.updateTotalBillValue(request.getBillId(), request.getTotalBillValue());
+        }
+
         updateBalance(request.getBillId(), request.getBalanceValue());
 
         if (request.isGeneratePayment()) {

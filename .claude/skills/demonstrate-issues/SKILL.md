@@ -106,7 +106,7 @@ picture of each one is understood.
   local credentials file for this machine (`C:\Credentials\credentials.txt`
   or equivalent) — never assume the defaults (4848 / 8080). Multiple Payara
   installs can coexist on one box on non-default ports (see
-  [playwright-e2e-workflow §27](../../../developer_docs/testing/playwright-e2e-workflow.md#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)).
+  [playwright-e2e-workflow §27](../../../developer_docs/testing/playwright-e2e/environment-db.md#27-multi-payara-machines-asadmin-without---port-may-hit-another-users-domain)).
   **Don't `Read` the whole credentials file into context** — it may hold
   passwords/tokens alongside the ports. Extract just the port line(s) (e.g.
   `grep`/`findstr` for the admin-port/http-port keys) and use only those

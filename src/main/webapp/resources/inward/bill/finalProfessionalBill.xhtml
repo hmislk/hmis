@@ -298,7 +298,7 @@
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted eq 0.0
                                                                   and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
-                                            <h:outputLabel value="Free of Charge"/>
+                                            <h:outputLabel value="#{configOptionApplicationController.getShortTextValueByKey('Inward Final Bill - Label For Free Professional Fee', 'Free of Charge')}"/>
                                         </h:panelGroup>
                                     </p:column>
                                     <p:columnGroup type="footer">

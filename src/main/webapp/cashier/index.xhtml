@@ -153,6 +153,15 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        class="my-1 w-100 ui-button-success"
+                                        value="Non-Cash Settlement Approvals (#{nonCashSettlementApprovalController.pendingCount})"
+                                        icon="pi pi-verified"
+                                        ajax="false"
+                                        action="#{nonCashSettlementApprovalController.navigateToApprovals()}"
+                                        rendered="#{webUserController.hasPrivilege('ApproveNonCashSettlement')}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
                                         class="my-1 w-100 ui-button-danger"
                                         value="Withdrawals"
                                         icon="pi pi-upload"
@@ -448,15 +457,6 @@
                                 <!-- LEGACY (always visible)                 -->
                                 <!-- ═══════════════════════════════════════ -->
                                 <p:tab title="Legacy">
-                                    <p:commandButton
-                                        class="my-1 w-100 ui-button-secondary"
-                                        value="End Shift (OLD)"
-                                        icon="pi pi-power-off"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Legacy Handover is enabled')}"
-                                        ajax="false"
-                                        action="#{financialTransactionController.navigateToCreateShiftEndSummaryBill()}">
-                                    </p:commandButton>
-
                                     <p:commandButton
                                         class="my-1 w-100 ui-button-secondary"
                                         value="Handover (OLD)"

@@ -410,6 +410,11 @@ public class SearchController implements Serializable {
     private PatientEncounter patientEncounter;
     private Staff staff;
     private Item item;
+    // Item selected on the Pharmacy Bill Search by Item report (issue #24250).
+    private Item billSearchItem;
+    // Free-text item name / code entered on Pharmacy Bill Search by Bill Type Atomic (issue #24366).
+    private String billSearchItemName;
+    private String billSearchItemCode;
     private double dueTotal;
     private double doneTotal;
     private double netTotal;
@@ -3186,8 +3191,16 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            // Bound to a String param it never matched; return bills store negative totals and users type the positive amount (issue #24483).
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                sql += " and abs(abs(b.netTotal) - :netTotal) < 0.01 ";
+                m.put("netTotal", Math.abs(netTotalValue));
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                bills = new ArrayList<>(); // don't run the search without the filter the user typed
+                return;
+            }
         }
 
         sql += " order by b.createdAt desc  ";
@@ -4288,7 +4301,7 @@ public class SearchController implements Serializable {
         sql += " order by b.createdAt desc  ";
 //
         //     //////
-        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 50);
+        bills = getBillFacade().findByJpqlWithoutCache(sql, m, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -10381,14 +10394,22 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            // Tolerance compare: stored totals carry float noise (e.g. 1940.0000000000002); strip thousands separators (issue #24427).
+            String netTotalString = getSearchKeyword().getNetTotal().trim().replace(",", "");
             try {
                 Double netTotalValue = Double.parseDouble(netTotalString);
-                jpql += "and b.netTotal = :netTotal ";
+                jpql += "and abs(b.netTotal - :netTotal) < 0.01 ";
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
+        }
+
+        // The page binds an Item autocomplete to searchKeyword.item (issue #24427).
+        if (getSearchKeyword().getItem() != null) {
+            jpql += "and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item = :item) ";
+            params.put("item", getSearchKeyword().getItem());
         }
 
         jpql += "order by b.createdAt desc ";
@@ -10428,14 +10449,22 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            String netTotalString = getSearchKeyword().getNetTotal().trim();
+            // Tolerance compare: stored totals carry float noise (e.g. 1940.0000000000002); strip thousands separators (issue #24427).
+            String netTotalString = getSearchKeyword().getNetTotal().trim().replace(",", "");
             try {
                 Double netTotalValue = Double.parseDouble(netTotalString);
-                jpql += "and b.netTotal = :netTotal ";
+                jpql += "and abs(b.netTotal - :netTotal) < 0.01 ";
                 params.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid number format for Net Total");
+                return new ArrayList<>(); // don't run the search without the filter the user typed
             }
+        }
+
+        // The page binds an Item autocomplete to searchKeyword.item (issue #24427).
+        if (getSearchKeyword().getItem() != null) {
+            jpql += "and exists (select bi from BillItem bi where bi.bill = b and bi.retired = false and bi.item = :item) ";
+            params.put("item", getSearchKeyword().getItem());
         }
 
         jpql += "order by b.createdAt desc ";
@@ -10560,7 +10589,83 @@ public class SearchController implements Serializable {
     public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
+        billSearchItemName = null;
+        billSearchItemCode = null;
+        // Result tables on this page hide their own keyword inputs, so clear any
+        // keywords left over from other search pages (issue #24366).
+        searchKeyword = null;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyBillSearchByItem() {
+        printPreview = true;
+        duplicateBillView = true;
+        billSearchItem = null;
+        pharmacyBillSearch.setResultView(null);
+        return "/pharmacy/pharmacy_bill_search_by_item?faces-redirect=true";
+    }
+
+    /**
+     * Pharmacy Bill Search by Bill Type page (issue #24250).
+     */
+    public void searchPharmacyBillsByBillType() {
+        if (billType == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(billType, null, null, maxResult);
+    }
+
+    /**
+     * Pharmacy Bill Search by Bill Type Atomic page (issue #24250).
+     */
+    public void searchPharmacyBillsByBillTypeAtomic() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, null,
+                billSearchItemName, billSearchItemCode, maxResult);
+    }
+
+    /**
+     * Pharmacy Bill Search by Item report (issue #24250): bills of the selected
+     * bill type atomic that contain the selected item.
+     */
+    public void searchPharmacyBillsByItem() {
+        if (billTypeAtomic == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        if (billSearchItem == null) {
+            JsfUtil.addErrorMessage("Please Select an Item");
+            return;
+        }
+        pharmacyBillSearch.searchPharmacyBills(null, billTypeAtomic, billSearchItem, maxResult);
+    }
+
+    public Item getBillSearchItem() {
+        return billSearchItem;
+    }
+
+    public void setBillSearchItem(Item billSearchItem) {
+        this.billSearchItem = billSearchItem;
+    }
+
+    public String getBillSearchItemName() {
+        return billSearchItemName;
+    }
+
+    public void setBillSearchItemName(String billSearchItemName) {
+        this.billSearchItemName = billSearchItemName;
+    }
+
+    public String getBillSearchItemCode() {
+        return billSearchItemCode;
+    }
+
+    public void setBillSearchItemCode(String billSearchItemCode) {
+        this.billSearchItemCode = billSearchItemCode;
     }
 
     public String navigateToItemizedSaleSummary() {
@@ -18180,7 +18285,10 @@ public class SearchController implements Serializable {
             double opdDepositTotal = opdPatientDepositPayments.getTotal();
             opdPatientDepositPayments.setTotal(-opdDepositTotal);
             bundle.getBundles().add(opdPatientDepositPayments);
-            collectionForTheDay -= Math.abs(getSafeTotal(opdPatientDepositPayments));
+            // Deduct the raw signed utilization (the bundle total above is inverted for display), not
+            // Math.abs(): on a day where deposit-paid cancellations return more to deposits than was used,
+            // net utilization is negative and must be added back, not deducted (issue #23968).
+            collectionForTheDay -= opdDepositTotal;
 
             // Pharmacy Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
             ReportTemplateRowBundle pharmacyPatientDepositPayments = generatePharmacyPatientDepositPayments();
@@ -18190,7 +18298,7 @@ public class SearchController implements Serializable {
             pharmacyPatientDepositPayments.setTotal(-pharmacyDepositTotal);
             bundle.getBundles().add(pharmacyPatientDepositPayments);
             double collectionBeforeDeduction = collectionForTheDay;
-            double deductionAmount = Math.abs(getSafeTotal(pharmacyPatientDepositPayments));
+            double deductionAmount = pharmacyDepositTotal; // raw signed utilization - see OPD above
             collectionForTheDay -= deductionAmount;
 
             // Inpatient Patient Deposit Payments - bills paid using deposits (deducted from collection for the day)
@@ -18200,7 +18308,7 @@ public class SearchController implements Serializable {
             double inwardDepositTotal = inwardPatientDepositPayments.getTotal();
             inwardPatientDepositPayments.setTotal(-inwardDepositTotal);
             bundle.getBundles().add(inwardPatientDepositPayments);
-            collectionForTheDay -= Math.abs(getSafeTotal(inwardPatientDepositPayments));
+            collectionForTheDay -= inwardDepositTotal; // raw signed utilization - see OPD above
 
             // Final collection for the day
             ReportTemplateRowBundle collectionForTheDayBundle = new ReportTemplateRowBundle();
@@ -18325,7 +18433,7 @@ public class SearchController implements Serializable {
             bundle.getBundles().add(patientDepositUtilization);
 
             // 3. Carried out Patient Deposit Value (Receipts - Utilization)
-            double carriedOutDepositValue = patientDepositReceiptsSummary.getTotal() - Math.abs(getSafeTotal(patientDepositUtilization));
+            double carriedOutDepositValue = patientDepositReceiptsSummary.getTotal() - getSafeTotal(patientDepositUtilization); // signed (this bundle is not inverted) - see OPD above
             ReportTemplateRowBundle carriedOutPatientDeposit = new ReportTemplateRowBundle();
             carriedOutPatientDeposit.setName("Carried out Patient Deposit Value");
             carriedOutPatientDeposit.setBundleType("carriedOutPatientDeposit");

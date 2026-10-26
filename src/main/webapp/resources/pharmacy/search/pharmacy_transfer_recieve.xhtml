@@ -12,7 +12,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel>
+        <p:panel styleClass="pharma-search-results">
             <f:facet name="header">
                 <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
                     <span>Pharmacy Transfer Receive</span>
@@ -36,9 +36,11 @@
 
             <div class="pharma-search-wrapper">
                 <p:dataTable rowIndexVar="i" id="tblBills" value="#{pharmacyBillSearch.transferReceiveSearchDtos}" var="dto"
-                             paginator="true" rows="10"
+                             paginator="true" rows="25" paginatorPosition="bottom"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="10,20,50,100">
+                             rowsPerPageTemplate="25,50,100,200"
+                             stickyHeader="true"
+                             styleClass="p-datatable-sm">
 
                     <p:column headerText="Receive No">
                         <h:outputLabel value="#{dto.insId}"/>

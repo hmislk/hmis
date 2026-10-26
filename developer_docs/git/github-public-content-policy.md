@@ -31,6 +31,10 @@ attached file:
 - **Production data-fix logs** — "reset 1,635 rows on <schema> at 20:50". The
   fact that rows were repaired, the count, and the schema together describe a
   live hospital's database contents.
+- **Supplier and pricing data from a production copy** — supplier names,
+  purchase rates, line values and totals in screenshots taken from a local
+  copy of a hospital database. Blur them (CSS `filter: blur(9px)` on the
+  cells before the screenshot); 5px is still readable.
 
 ## Publish instead
 
@@ -52,7 +56,7 @@ script, per-user statistics — belongs in one of these, none of which is public
 
 A GitHub issue may still say **which hospital reported it** when that is needed
 to route the work: the hospital-name **labels** and the hospital-named branches
-(`southernlanka-prod-migrated`) are part of how this repo is organised. The line
+(`southernlanka-staging`) are part of how this repo is organised. The line
 is between naming the reporter and publishing that hospital's data. Naming the
 hospital plus a bug is fine; naming the hospital plus its record counts,
 identifiers, dates and schema is not.

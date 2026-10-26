@@ -13,6 +13,7 @@
 
             <ui:define name="content">
                 <h:form id="form">
+                    <p:defaultCommand target="btnSearch" rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsGeneralSearch')}"/>
                     <p:panel>
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -58,6 +59,7 @@
                                 </p:datePicker>
 
                                 <p:commandButton
+                                    id="btnSearch"
                                     ajax="false"
                                     value="Search"
                                     icon="fas fa-search"

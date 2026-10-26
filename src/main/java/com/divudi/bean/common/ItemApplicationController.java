@@ -82,6 +82,22 @@ public class ItemApplicationController {
         reloaded = null;
     }
 
+    /**
+     * Cheaply invalidates every cached list so the next getter call lazily
+     * refills it. Callers that create/update/retire an Item (e.g. REST APIs
+     * that persist outside a JSF flow) should call this instead of
+     * {@link #reloadItems()} so the app-scoped cache doesn't go stale for
+     * every other session until someone happens to touch a page that reloads
+     * it.
+     */
+    public void invalidateItems() {
+        items = null;
+        services = null;
+        investigations = null;
+        investigationsAndServices = null;
+        packages = null;
+    }
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Other">
     // </editor-fold>

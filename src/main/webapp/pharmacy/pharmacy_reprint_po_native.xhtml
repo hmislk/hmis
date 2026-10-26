@@ -57,6 +57,14 @@
                                         action="#{purchaseOrderSmsController.prepareSmsDialog(purchaseOrderNativeSqlController.currentBillId)}"
                                         update=":poSmsDialogForm"
                                         oncomplete="PF('poSmsDialog').show();"/>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Purchase Order Bill can be Cancelled', true)}">
+                                        <p:commandButton
+                                            class="ui-button-danger mx-2"
+                                            icon="fas fa-ban" ajax="false"
+                                            value="Cancel" action="#{purchaseOrderNativeSqlController.navigateToCancelPo()}"
+                                            disabled="#{purchaseOrderNativeSqlController.printDto.cancelled or !webUserController.hasPrivilege('PharmacyOrderCancellation')}">
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                     <!-- Small non-prominent fallback to legacy entity-based page -->
                                     <p:commandButton
                                         ajax="false"

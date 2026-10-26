@@ -33,8 +33,12 @@ import org.apache.poi.ss.usermodel.Workbook;
  * post-final-bill payments listed together with their refunds, which the
  * application otherwise only offers on three separate per-type search pages.
  *
- * Refunds are signed negative rather than given a column of their own, so one
- * amount column nets correctly over a period. The same result set is presented
+ * Every row is signed by the direction the money moves (refunds and the
+ * cancellation of a receipt are negative), so one amount column nets correctly
+ * over a period. A cancelled bill stays on its own date with its original
+ * amount, flagged Cancelled; the cancellation bill is listed as a separate
+ * signed row on the date it was made. Net is therefore the true cash movement
+ * for any date range. The same result set is presented
  * four ways through the View selector - a per-type summary, grouped by bill
  * type, grouped by BHT, or a flat detail list - rather than as four reports.
  */
@@ -45,11 +49,12 @@ public class InwardCombinedPaymentReportController implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * The money movements this report covers: the three inward payment kinds
-     * and the refund of each. Cancellation bills are deliberately not listed -
-     * a cancelled bill already appears here flagged as cancelled and
-     * contributing zero, so listing its contra bill as well would double the
-     * reversal.
+     * The money movements this report covers: the three inward payment kinds,
+     * the refund of each, and the cancellation bills that reverse them. The
+     * original of a cancelled bill keeps its amount on its own date and the
+     * cancellation bill is a separate signed row on the cancel date, so a
+     * period that sees only one of the two still reports the cash that really
+     * moved in it.
      */
     private static final List<BillTypeAtomic> REPORTED_TYPES = Arrays.asList(
             BillTypeAtomic.INWARD_DEPOSIT,
@@ -57,7 +62,12 @@ public class InwardCombinedPaymentReportController implements Serializable {
             BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT,
             BillTypeAtomic.INWARD_DEPOSIT_REFUND,
             BillTypeAtomic.INWARD_PAYMENT_REFUND,
-            BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND);
+            BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_REFUND,
+            BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+            BillTypeAtomic.INWARD_PAYMENT_CANCELLATION,
+            BillTypeAtomic.POST_FINAL_BILL_INWARD_PAYMENT_CANCELLATION,
+            BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION,
+            BillTypeAtomic.INWARD_PAYMENT_REFUND_CANCELLATION);
 
     public static final String VIEW_SUMMARY = "SUMMARY";
     public static final String VIEW_GROUPED_TYPE = "GROUPED_TYPE";
@@ -74,12 +84,19 @@ public class InwardCombinedPaymentReportController implements Serializable {
     private Department department;
     private Institution institution;
     private String viewMode = VIEW_SUMMARY;
+    /**
+     * The view the current results were built for. The download submits the
+     * View dropdown too, so viewMode may already hold a different choice when
+     * the export runs; the workbook must be labelled for the data it holds.
+     */
+    private String generatedViewMode;
 
     private List<InwardCombinedPaymentRowDto> reportRows;
     private List<InwardCombinedPaymentGroupDto> groups;
     private double grandTotal;
     private double totalCashIn;
     private double totalCashOut;
+    private double totalCancelled;
     private int cancelledCount;
     private boolean reportGenerated;
 
@@ -89,11 +106,14 @@ public class InwardCombinedPaymentReportController implements Serializable {
         grandTotal = 0;
         totalCashIn = 0;
         totalCashOut = 0;
+        totalCancelled = 0;
         cancelledCount = 0;
         reportGenerated = false;
+        generatedViewMode = null;
     }
 
     public void generateReport() {
+        generatedViewMode = viewMode;
         reportRows = fetchRows();
         buildGroups();
         reportGenerated = true;
@@ -151,15 +171,19 @@ public class InwardCombinedPaymentReportController implements Serializable {
         grandTotal = 0;
         totalCashIn = 0;
         totalCashOut = 0;
+        totalCancelled = 0;
         cancelledCount = 0;
 
         Map<String, InwardCombinedPaymentGroupDto> byKey = new LinkedHashMap<>();
-        boolean groupByBht = VIEW_GROUPED_BHT.equals(viewMode);
+        boolean groupByBht = VIEW_GROUPED_BHT.equals(generatedViewMode);
 
         for (InwardCombinedPaymentRowDto row : reportRows) {
             double signed = row.getSignedAmount();
             grandTotal += signed;
-            if (signed < 0) {
+            // By kind, not by sign: a deposit cancellation is negative but is not a refund.
+            if (row.isCancellation()) {
+                totalCancelled += signed;
+            } else if (row.isRefund()) {
                 totalCashOut += signed;
             } else {
                 totalCashIn += signed;
@@ -188,7 +212,7 @@ public class InwardCombinedPaymentReportController implements Serializable {
     }
 
     /**
-     * Rows in the order the selected view shows them: grouped together under
+     * Rows in the order the generated view shows them: grouped together under
      * their group in a grouped view, plain chronological order otherwise. The
      * grouped order comes from walking the groups rather than re-sorting, so
      * rows keep their chronological order inside each group.
@@ -212,23 +236,47 @@ public class InwardCombinedPaymentReportController implements Serializable {
      * grouped by.
      */
     public String getGroupColumnHeader() {
-        return VIEW_GROUPED_BHT.equals(viewMode) ? "BHT No" : "Bill Type";
+        return VIEW_GROUPED_BHT.equals(generatedViewMode) ? "BHT No" : "Bill Type";
     }
 
     /**
-     * postProcessor for the rows export. In a grouped view the screen shows a
-     * subtotals table above the rows, but p:dataExporter only writes the one
-     * table it targets - so the group totals are added here as a second
-     * "Totals" sheet, with a grand total line, keeping the workbook in step
-     * with what is displayed. The Details view has no subtotals and is left
-     * as exported.
+     * Name of the downloaded Excel file, so it says which view it holds. Follows
+     * generatedViewMode, the view the exported data was built for, not the
+     * View dropdown, which the download submits and may have changed.
      */
-    public void postProcessRowsExport(Object document) {
-        if (!(document instanceof Workbook) || !isGroupedView() || groups == null) {
+    public String getExportFileName() {
+        String base = "Combined Inward Payments";
+        if (VIEW_SUMMARY.equals(generatedViewMode)) {
+            return base + " Summary";
+        }
+        if (VIEW_GROUPED_TYPE.equals(generatedViewMode)) {
+            return base + " Grouped by Bill Type";
+        }
+        if (VIEW_GROUPED_BHT.equals(generatedViewMode)) {
+            return base + " Grouped by BHT";
+        }
+        if (VIEW_DETAIL.equals(generatedViewMode)) {
+            return base + " Details";
+        }
+        return base;
+    }
+
+    /**
+     * postProcessor shared by both Excel exports. p:dataExporter writes only
+     * the one table it targets, so the Received / Refunded / Cancelled / Net
+     * cards shown above the tables would otherwise be missing from the
+     * workbook. They are appended to the first sheet below the exported table.
+     * In a grouped view the subtotals table is also shown above the rows, so
+     * its group totals are added as a "By Bill Type" / "By BHT" sheet with a
+     * grand total line, placed first and opened by default as on screen.
+     * Labels follow generatedViewMode, the view the exported data was built
+     * for.
+     */
+    public void postProcessExport(Object document) {
+        if (!(document instanceof Workbook)) {
             return;
         }
         Workbook workbook = (Workbook) document;
-        Sheet sheet = workbook.createSheet("Totals");
 
         Font bold = workbook.createFont();
         bold.setBold(true);
@@ -240,7 +288,48 @@ public class InwardCombinedPaymentReportController implements Serializable {
         boldMoney.setFont(bold);
         boldMoney.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
 
-        String[] headers = {getGroupColumnHeader(), "Bills", "Received", "Refunded", "Net"};
+        boolean groupedByBht = VIEW_GROUPED_BHT.equals(generatedViewMode);
+        boolean grouped = groupedByBht || VIEW_GROUPED_TYPE.equals(generatedViewMode);
+
+        Sheet dataSheet = workbook.getSheetAt(0);
+        workbook.setSheetName(0, VIEW_SUMMARY.equals(generatedViewMode) ? "Summary" : "Payments");
+        int r = dataSheet.getLastRowNum() + 2;
+        Cell periodHeader = dataSheet.createRow(r++).createCell(0);
+        periodHeader.setCellValue("Period totals");
+        periodHeader.setCellStyle(boldStyle);
+
+        Row received = dataSheet.createRow(r++);
+        received.createCell(0).setCellValue("Received");
+        writeMoney(received, 1, totalCashIn, money);
+        Row refunded = dataSheet.createRow(r++);
+        refunded.createCell(0).setCellValue("Refunded");
+        writeMoney(refunded, 1, totalCashOut, money);
+        Row cancelledRow = dataSheet.createRow(r++);
+        cancelledRow.createCell(0).setCellValue("Cancelled");
+        writeMoney(cancelledRow, 1, totalCancelled, money);
+        Row net = dataSheet.createRow(r++);
+        Cell netLabel = net.createCell(0);
+        netLabel.setCellValue("Net");
+        netLabel.setCellStyle(boldStyle);
+        writeMoney(net, 1, grandTotal, boldMoney);
+        Row cancelledBills = dataSheet.createRow(r);
+        cancelledBills.createCell(0).setCellValue("Cancelled bills");
+        cancelledBills.createCell(1).setCellValue(cancelledCount);
+
+        if (!grouped || groups == null) {
+            return;
+        }
+        String sheetName = groupedByBht ? "By BHT" : "By Bill Type";
+        Sheet sheet = workbook.createSheet(sheetName);
+        workbook.setSheetOrder(sheetName, 0);
+        // setActiveSheet alone leaves the exported sheet selected too, which
+        // opens both tabs grouped in Excel.
+        dataSheet.setSelected(false);
+        sheet.setSelected(true);
+        workbook.setActiveSheet(0);
+        workbook.setFirstVisibleTab(0);
+
+        String[] headers = {groupedByBht ? "BHT No" : "Bill Type", "Bills", "Received", "Refunded", "Cancelled", "Net"};
         Row header = sheet.createRow(0);
         for (int c = 0; c < headers.length; c++) {
             Cell cell = header.createCell(c);
@@ -248,19 +337,20 @@ public class InwardCombinedPaymentReportController implements Serializable {
             cell.setCellStyle(boldStyle);
         }
 
-        int r = 1;
+        int gr = 1;
         int totalBills = 0;
         for (InwardCombinedPaymentGroupDto g : groups) {
-            Row row = sheet.createRow(r++);
+            Row row = sheet.createRow(gr++);
             row.createCell(0).setCellValue(g.getGroupLabel());
             row.createCell(1).setCellValue(g.getCount());
             writeMoney(row, 2, g.getCashIn(), money);
             writeMoney(row, 3, g.getCashOut(), money);
-            writeMoney(row, 4, g.getTotal(), money);
+            writeMoney(row, 4, g.getCancelled(), money);
+            writeMoney(row, 5, g.getTotal(), money);
             totalBills += g.getCount();
         }
 
-        Row total = sheet.createRow(r);
+        Row total = sheet.createRow(gr);
         Cell label = total.createCell(0);
         label.setCellValue("Total");
         label.setCellStyle(boldStyle);
@@ -269,7 +359,8 @@ public class InwardCombinedPaymentReportController implements Serializable {
         bills.setCellStyle(boldStyle);
         writeMoney(total, 2, totalCashIn, boldMoney);
         writeMoney(total, 3, totalCashOut, boldMoney);
-        writeMoney(total, 4, grandTotal, boldMoney);
+        writeMoney(total, 4, totalCancelled, boldMoney);
+        writeMoney(total, 5, grandTotal, boldMoney);
 
         for (int c = 0; c < headers.length; c++) {
             sheet.autoSizeColumn(c);
@@ -283,15 +374,15 @@ public class InwardCombinedPaymentReportController implements Serializable {
     }
 
     public boolean isSummaryView() {
-        return VIEW_SUMMARY.equals(viewMode);
+        return VIEW_SUMMARY.equals(generatedViewMode);
     }
 
     public boolean isDetailView() {
-        return VIEW_DETAIL.equals(viewMode);
+        return VIEW_DETAIL.equals(generatedViewMode);
     }
 
     public boolean isGroupedView() {
-        return VIEW_GROUPED_TYPE.equals(viewMode) || VIEW_GROUPED_BHT.equals(viewMode);
+        return VIEW_GROUPED_TYPE.equals(generatedViewMode) || VIEW_GROUPED_BHT.equals(generatedViewMode);
     }
 
     public boolean isNoResults() {
@@ -374,6 +465,10 @@ public class InwardCombinedPaymentReportController implements Serializable {
 
     public double getTotalCashOut() {
         return totalCashOut;
+    }
+
+    public double getTotalCancelled() {
+        return totalCancelled;
     }
 
     public int getCancelledCount() {

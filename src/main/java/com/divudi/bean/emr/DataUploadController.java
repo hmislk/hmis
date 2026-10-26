@@ -8145,7 +8145,7 @@ public class DataUploadController implements Serializable {
             Cell dosageFormCell = row.getCell(3);
             if (dosageFormCell != null && dosageFormCell.getCellType() == CellType.STRING) {
                 dosageFormName = dosageFormCell.getStringCellValue();
-                dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName);
+                dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName, com.divudi.core.data.CategoryType.DOSAGE_FORM);
             }
 
             // Read Strength Unit

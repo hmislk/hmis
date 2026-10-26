@@ -23,7 +23,9 @@ public class BatchCreateRequestDTO implements Serializable {
     private Double costRate; // Optional - equals purchase if null
     private Double wholesaleRate; // Optional
     private Long departmentId; // Required
-    private String comment; // Optional
+    private String comment; // Optional - also used as the adjustment comment for initialQuantity
+    private Boolean allowPastExpiry; // Optional - true allows an expiry date before today (stock takes)
+    private Double initialQuantity; // Optional - sets the department stock to this quantity via a stock adjustment
 
     public BatchCreateRequestDTO() {
     }
@@ -114,5 +116,21 @@ public class BatchCreateRequestDTO implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Boolean getAllowPastExpiry() {
+        return allowPastExpiry;
+    }
+
+    public void setAllowPastExpiry(Boolean allowPastExpiry) {
+        this.allowPastExpiry = allowPastExpiry;
+    }
+
+    public Double getInitialQuantity() {
+        return initialQuantity;
+    }
+
+    public void setInitialQuantity(Double initialQuantity) {
+        this.initialQuantity = initialQuantity;
     }
 }

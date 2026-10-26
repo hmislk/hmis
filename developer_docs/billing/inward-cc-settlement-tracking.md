@@ -32,6 +32,10 @@ Admission bill (INWARD_FINAL_BILL)  netTotal = 100,000
 
 Each commitment bill's `referenceBill` points back to the main `INWARD_FINAL_BILL`.
 
+> **Re-versioned final bills:** when a final bill is cancelled and re-saved as a new version, the commitment
+> bills of the earlier version are **not** cancelled. Summing `INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY` bills
+> by `patientEncounter` therefore double counts. Scope by `b.referenceBill = encounter.finalBill`.
+
 ---
 
 ## Settlement Paths
@@ -200,7 +204,9 @@ String dateField = resolveDateField(dateBasis, "b.bill.createdAt", "b.patientEnc
 | `bean/inward/InwardReportController1.java` | Payment + debtor report controller |
 | `webapp/credit/credit_compnay_bill_payment_inward.xhtml` | Path 1 settlement UI |
 | `webapp/credit/credit_compnay_bill_inward_all.xhtml` | Path 2 settlement UI |
-| `webapp/credit/inward_credit_company_debtor_report.xhtml` | Debtor report UI |
+| `webapp/credit/inward_credit_company_debtor_report.xhtml` | Debtor report UI (commitment bill no + final bill no/value via `referenceBill`) |
+| `webapp/credit/inward_credit_company_commitment_report.xhtml` | Commitment report UI: finalized commitment bills only, no settlement columns |
+| `bean/inward/TabularReportExporter.java` | Excel/PDF export (title, filters, numeric cells, totals) for the debtor and commitment reports |
 | `webapp/credit/inward_credit_company_payment_report.xhtml` | Payment transaction report UI |
 
 ---
@@ -210,3 +216,4 @@ String dateField = resolveDateField(dateBasis, "b.bill.createdAt", "b.patientEnc
 - **#19770** — Payment report not reflecting cancelled CC payments → RECEIVED+CANCELLATION types, drop `cancelled=false`, align total date field with dateBasis
 - **#19771** — Debtor report not reflecting cancelled CC payments → report fix + Path 2 `referenceBill` fix
 - **#19772** — BHT credit settlement report not reflecting cancelled CC payments → signed netValue fix in `BhtPaymentSummaryReportController`
+- **#23974** — Debtor report: Final Bill No / Final Bill Value columns, sort by final bill creation order, custom Excel/PDF; new Credit Company Commitment Report
