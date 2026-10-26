@@ -187,6 +187,16 @@ public class InwardReportControllerBht implements Serializable {
     // other reports on this same bean via getReportKeyWord()) to avoid collisions.
     private AdmissionType professionalPaymentAdmissionType;
 
+    // Issue #24441 - Institution / Site / Department scope, each null = All.
+    // Replaces the hard-coded logged-in department, which hid admissions made
+    // while logged into another department (e.g. a lab) under every date basis.
+    // Separate from the bean's shared `department` field, which nurse,
+    // admission-profile and pharmacy pages also set.
+    private Institution professionalPaymentInstitution;
+    private Institution professionalPaymentSite;
+    private Department professionalPaymentDepartment;
+    private boolean professionalPaymentScopeInitialized;
+
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
 
@@ -415,6 +425,8 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
 
@@ -422,7 +434,7 @@ public class InwardReportControllerBht implements Serializable {
 
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                if (Boolean.TRUE.equals(dto.getCancellation()) || Boolean.TRUE.equals(dto.getRefund())) {
                     serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -481,12 +493,14 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
             serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
             serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (Boolean.TRUE.equals(dto.getCancellation())) {
+                if (Boolean.TRUE.equals(dto.getCancellation()) || Boolean.TRUE.equals(dto.getRefund())) {
                     serviceIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     serviceIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -848,12 +862,10 @@ public class InwardReportControllerBht implements Serializable {
     // Issue #22800 - department-wide, date-filtered Inpatient Professional
     // Payment Report, grouped by admission with one row per doctor+speciality.
     public String navigateToInwardProfessionalPaymentReport() {
-        if (department == null) {
-            department = sessionController.getDepartment();
-        }
-        if (department == null) {
-            JsfUtil.addErrorMessage("No department");
-            return null;
+        // First entry only, so a later "All Institutions" choice is kept on Search.
+        if (!professionalPaymentScopeInitialized) {
+            professionalPaymentInstitution = sessionController.getInstitution();
+            professionalPaymentScopeInitialized = true;
         }
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
@@ -1863,11 +1875,11 @@ public class InwardReportControllerBht implements Serializable {
                 + "COALESCE(fb.deptId, '')) "
                 + "FROM PatientEncounter pe "
                 + (filterByFinalBillCreated ? "JOIN pe.finalBill fb " : "LEFT JOIN pe.finalBill fb ")
-                + "WHERE pe.department = :department ";
+                + "WHERE 1=1 ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("department", department);
 
+        jpql = appendProfessionalPaymentScopePredicate(jpql, params);
         jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
         jpql = appendProfessionalPaymentRangePredicate(jpql, params);
 
@@ -1875,6 +1887,32 @@ public class InwardReportControllerBht implements Serializable {
 
         List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #24441 - shared by every query on this report (admissions, fee
+    // rows, BHT autocomplete), so the Institution / Site / Department scope
+    // can't drift between them.
+    private String appendProfessionalPaymentScopePredicate(String jpql, Map<String, Object> params) {
+        if (professionalPaymentInstitution != null) {
+            params.put("ppInstitution", professionalPaymentInstitution);
+            jpql += "AND pe.institution = :ppInstitution ";
+        }
+        if (professionalPaymentSite != null) {
+            params.put("ppSite", professionalPaymentSite);
+            jpql += "AND pe.department.site = :ppSite ";
+        }
+        if (professionalPaymentDepartment != null) {
+            params.put("ppDepartment", professionalPaymentDepartment);
+            jpql += "AND pe.department = :ppDepartment ";
+        }
+        return jpql;
+    }
+
+    // AJAX listener on the Institution / Site menus: the Department list is
+    // re-derived from them, so a previously chosen department no longer
+    // applies (and would otherwise still scope the BHT autocomplete).
+    public void clearProfessionalPaymentDepartment() {
+        professionalPaymentDepartment = null;
     }
 
     // Issue #23307 - shared by both admission and fee-row query builders.
@@ -1901,12 +1939,12 @@ public class InwardReportControllerBht implements Serializable {
                 + "COALESCE(fb.deptId, '')) "
                 + "FROM PatientEncounter pe "
                 + "LEFT JOIN pe.finalBill fb "
-                + "WHERE pe.department = :department "
-                + "AND pe.id IN :encounterIds "
+                + "WHERE pe.id IN :encounterIds "
                 + "ORDER BY pe.dateOfAdmission, pe.id";
 
+        // encounterIds come from the fee-rows query, which already applied
+        // the Institution / Site / Department scope.
         Map<String, Object> params = new HashMap<>();
-        params.put("department", department);
         params.put("encounterIds", encounterIds);
 
         List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
@@ -1941,13 +1979,16 @@ public class InwardReportControllerBht implements Serializable {
                 + "WHERE bf.retired = false "
                 + "AND b.retired = false "
                 + "AND b.cancelled = false "
-                + "AND b.billType = :billType "
-                + "AND pe.department = :department ";
+                // Issue #23846 - staff fees on inward service bills are professional
+                // payables too, even though no separate professional fee bill exists.
+                + "AND (b.billType = :billType "
+                + "OR (b.billTypeAtomic = :serviceBillAtomic AND bf.staff IS NOT NULL AND bf.feeValue > 0)) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
-        params.put("department", department);
+        params.put("serviceBillAtomic", BillTypeAtomic.INWARD_SERVICE_BILL);
 
+        jpql = appendProfessionalPaymentScopePredicate(jpql, params);
         jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
 
         if (filterByFeeAdded) {
@@ -2076,25 +2117,24 @@ public class InwardReportControllerBht implements Serializable {
         return new ArrayList<>(rowsByStaffAndSpeciality.values());
     }
 
-    // Issue #22803 - Department-scoped BHT-range autocomplete for the
-    // "Admission From" / "Admission To" fields (BHT-range search mode).
+    // Issue #22803 - BHT-range autocomplete for the "Admission From" /
+    // "Admission To" fields (BHT-range search mode). Scoped by the report's
+    // Institution / Site / Department filters (#24441).
     // Deliberately not reusing AdmissionController.completeBht /
     // completePatientEncounter - both are unfiltered by department and use a
     // broken "c.patient" alias.
     public List<PatientEncounter> completeAdmissionForProfessionalPaymentReport(String query) {
-        Department dept = department != null ? department : sessionController.getDepartment();
-        if (dept == null || query == null || query.trim().isEmpty()) {
+        if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
         String jpql = "SELECT pe FROM PatientEncounter pe "
-                + "WHERE pe.department = :department "
-                + "AND pe.retired = false "
-                + "AND pe.bhtNo LIKE :bhtNo "
-                + "ORDER BY pe.bhtNo";
+                + "WHERE pe.retired = false "
+                + "AND pe.bhtNo LIKE :bhtNo ";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("department", dept);
         params.put("bhtNo", "%" + query.trim() + "%");
+        jpql = appendProfessionalPaymentScopePredicate(jpql, params);
+        jpql += "ORDER BY pe.bhtNo";
 
         List<PatientEncounter> result = (List<PatientEncounter>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 20);
         return result != null ? result : new ArrayList<>();
@@ -3216,9 +3256,12 @@ public class InwardReportControllerBht implements Serializable {
                 + " and bi.referanceBillItem.bill.referenceBill=:ref";
         HashMap<String, Object> reverseParams = new HashMap<>();
         reverseParams.put("ref", bill);
+        // DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION: request-issue cancellations made from the
+        // inward cancel page before #24679; the referenceBill join limits it to this request.
         reverseParams.put("btas", Arrays.asList(
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION));
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION));
         List<BillItem> reverseItems = billItemFacade.findByJpql(reverseJpql, reverseParams);
 
         Map<Long, Double> returnedByIssuedId = new HashMap<>();
@@ -4054,6 +4097,30 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setProfessionalPaymentDateBasis(String professionalPaymentDateBasis) {
         this.professionalPaymentDateBasis = professionalPaymentDateBasis;
+    }
+
+    public Institution getProfessionalPaymentInstitution() {
+        return professionalPaymentInstitution;
+    }
+
+    public void setProfessionalPaymentInstitution(Institution professionalPaymentInstitution) {
+        this.professionalPaymentInstitution = professionalPaymentInstitution;
+    }
+
+    public Institution getProfessionalPaymentSite() {
+        return professionalPaymentSite;
+    }
+
+    public void setProfessionalPaymentSite(Institution professionalPaymentSite) {
+        this.professionalPaymentSite = professionalPaymentSite;
+    }
+
+    public Department getProfessionalPaymentDepartment() {
+        return professionalPaymentDepartment;
+    }
+
+    public void setProfessionalPaymentDepartment(Department professionalPaymentDepartment) {
+        this.professionalPaymentDepartment = professionalPaymentDepartment;
     }
 
     public AdmissionType getProfessionalPaymentAdmissionType() {

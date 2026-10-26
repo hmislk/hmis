@@ -149,7 +149,9 @@
                         <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
                         <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
                         <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
-                        <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true)}">
+                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>
+                        </h:panelGroup>
                         <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Purchase Value</th>
                         <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
                     </tr>
@@ -274,12 +276,14 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </td>
-                            <td style="text-align: right;">
-                                <h:outputText
-                                        value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}">
-                                    <f:convertNumber pattern="0.0"/>
-                                </h:outputText>
-                            </td>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true)}">
+                                <td style="text-align: right;">
+                                    <h:outputText
+                                            value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}">
+                                        <f:convertNumber pattern="0.0"/>
+                                    </h:outputText>
+                                </td>
+                            </h:panelGroup>
                             <td style="text-align: right;">
                                 <h:outputText
                                         value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">

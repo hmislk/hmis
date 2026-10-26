@@ -597,9 +597,17 @@
                                                                rendered="#{ti.billFee.patientItem.retired eq true}"/>
                                             </p:column>
                                             <p:column headerText="Action">
-                                                <p:commandButton ajax="false" value="Remove"
+                                                <!-- #23940 - "Delete", never "Remove": this takes the service and its charge off the bill. -->
+                                                <p:commandButton ajax="false" value="Delete"
+                                                                 icon="fa fa-trash"
+                                                                 class="ui-button-danger"
+                                                                 title="Delete #{ti.billFee.patientItem.item.name} entered by mistake. It and its charge leave the bill."
                                                                  action="#{surgeryBillController.removeTimeService(ti.billFee.patientItem)}"
-                                                                 disabled="#{ti.billFee.patientItem.retired eq true or ti.billFee.bill.forwardReferenceBill.completed eq true}"/>
+                                                                 disabled="#{ti.billFee.patientItem.retired eq true or ti.billFee.bill.forwardReferenceBill.completed eq true}">
+                                                    <p:confirm header="Delete Timed Service"
+                                                               message="This deletes #{ti.billFee.patientItem.item.name} and its charge from the bill."
+                                                               icon="pi pi-exclamation-triangle" />
+                                                </p:commandButton>
                                             </p:column>
                                         </p:dataTable>
                                     </p:tab>
@@ -765,6 +773,11 @@
                     </p:dialog>
 
                 </p:panel>
+
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                </p:confirmDialog>
 
             </h:form>
         </h:panelGroup>
