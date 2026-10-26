@@ -11,7 +11,6 @@ package com.divudi.bean.inward;
 import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -45,7 +44,7 @@ import javax.inject.Named;
  * Acting Consultant (Health Informatics)
  */
 @Named
-@ViewScoped
+@SessionScoped
 public class InwardRefundController implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -65,8 +64,6 @@ public class InwardRefundController implements Serializable {
     private AdmissionController admissionController;
     @Inject
     private BhtSummeryController bhtSummeryController;
-    @Inject
-    private WebUserController webUserController;
     private double paidAmount;
     double netTotal;
     private Bill current;
@@ -79,10 +76,7 @@ public class InwardRefundController implements Serializable {
     private List<Bill> eligiblePaymentBills;
     private Bill originalBillToRefund;
     private Map<Long, Double> remainingRefundableAmountCache;
-    
-    private Long preselectedBillId;
-    private boolean preselectedBillLoaded;
-    
+
     public void makeNull() {
         current = null;
         paidAmount = 0.0;
@@ -132,7 +126,9 @@ public class InwardRefundController implements Serializable {
             JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
             return "";
         }
-        return "/inward/inward_bill_refund?faces-redirect=true&refundBillId=" + originPaymentBill.getId();
+        originalBillToRefund = originPaymentBill;
+        selectBillToRefundListener();
+        return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
     /**
@@ -159,7 +155,9 @@ public class InwardRefundController implements Serializable {
             JsfUtil.addErrorMessage("This bill is not eligible for refund (already cancelled or fully refunded).");
             return "";
         }
-        return "/inward/inward_bill_refund?faces-redirect=true&refundBillId=" + originDepositBill.getId();
+        originalBillToRefund = originDepositBill;
+        selectBillToRefundListener();
+        return "/inward/inward_bill_refund?faces-redirect=true";
     }
 
     public PaymentMethod[] getPaymentMethods() {
@@ -210,8 +208,9 @@ public class InwardRefundController implements Serializable {
         }
 
         // Read fresh from the DB, not remainingRefundableAmountCache: this
-        // guard runs at click time, and the cache can hold a balance from
-        // before another cashier refunded the same bill. A stale value here would let this refund exceed what is left.
+        // guard runs at click time, and on a @SessionScoped bean the cache
+        // can hold a balance from before another cashier refunded the same
+        // bill. A stale value here would let this refund exceed what is left.
         double remaining = calculateFreshRemainingRefundableAmount(getOriginalBillToRefund());
 
         if (Math.abs(remaining) < getCurrent().getTotal()) {
@@ -454,7 +453,7 @@ public class InwardRefundController implements Serializable {
      * "Refund" button is still live after one or more partial refunds
      * (issue #23646). Deliberately does NOT read or write
      * remainingRefundableAmountCache - that cache belongs to the bill-picker
-     * render loop and can still hold a value from
+     * render loop and, on a @SessionScoped bean, can still hold a value from
      * an earlier visit to the refund page.
      */
     public double calculateFreshRemainingRefundableAmount(Bill originalBill) {
@@ -624,66 +623,5 @@ public class InwardRefundController implements Serializable {
 
     public void setCashTransactionBean(CashTransactionBean cashTransactionBean) {
         this.cashTransactionBean = cashTransactionBean;
-    }
-    
-    public Long getPreselectedBillId() {
-        return preselectedBillId;
-    }
-
-    public void setPreselectedBillId(Long preselectedBillId) {
-        this.preselectedBillId = preselectedBillId;
-    }
-
-    public void loadPreselectedRefundBill() {
-        if (preselectedBillLoaded || preselectedBillId == null) {
-            return;
-        }
-
-        preselectedBillLoaded = true;
-
-        // refundBillId comes straight from the URL, so apply the same gates
-        // as the menu/reprint entry points before touching the bill: the
-        // Refund privilege and an open cashier shift.
-        if (!webUserController.hasPrivilege("InwardBilling")) {
-            JsfUtil.addErrorMessage("You are not authorized to process inward refunds.");
-            return;
-        }
-        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-            JsfUtil.addErrorMessage("Start Your Shift First !");
-            return;
-        }
-
-        Bill billToRefund = getBillFacade().find(preselectedBillId);
-
-        if (billToRefund == null || billToRefund.getPatientEncounter() == null) {
-            JsfUtil.addErrorMessage("Selected bill was not found.");
-            return;
-        }
-
-        // Set the selected BHT in this tab's new ViewScoped controller
-        getCurrent().setPatientEncounter(billToRefund.getPatientEncounter());
-
-        // Load bills belonging only to this BHT
-        loadEligiblePaymentBills();
-
-        // Confirm this bill is still refundable
-        Bill eligibleBill = null;
-        for (Bill bill : getEligiblePaymentBills()) {
-            if (bill.getId().equals(billToRefund.getId())) {
-                eligibleBill = bill;
-                break;
-            }
-        }
-
-        if (eligibleBill == null) {
-            JsfUtil.addErrorMessage(
-                "This bill is not eligible for refund."
-            );
-            return;
-        }
-
-        setOriginalBillToRefund(eligibleBill);
-        selectBillToRefundListener();
     }
 }
