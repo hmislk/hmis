@@ -508,3 +508,7 @@ Stop a running Maven build by the PID of its `mvn` shell only. Killing `java` pr
 ## 165. `pkill -f` / `pgrep -f` kills or finds your own shell
 
 The pattern also matches the shell running the command (exit 144). Find Payara with `ps -C java -o pid=,args= | grep domains/rh` (replace `rh` with your domain) and stop that PID.
+
+## 166. A page saves rows it shouldn't: find the writer with a temporary `@PrePersist` trace
+
+Add a `@PrePersist` method to the entity that logs `new Exception("trace")`, rebuild, reproduce, and read the stack in `server.log`. It names the transaction and the caller. Revert it before committing.
