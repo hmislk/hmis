@@ -629,3 +629,7 @@ Verified 2026-10-21 on *Inward → Inpatient Analytics → Payment Reports → C
 ## 162. `browser_run_code_unsafe` has no `require` — parameterise by generating the script file
 
 The code runs without Node's `require`/`fs` (`ReferenceError: require is not defined`), so it can't read a JSON of inputs. Keep one template with a placeholder, write a filled copy per scenario from Bash, and pass it as `filename`.
+
+## 167. `run_code` times out on a slow non-AJAX report
+
+Click Process with `click({ noWaitAfter: true })` and return. Wait outside the browser (e.g. until `jstack` no longer shows the report method), then take the screenshot.
