@@ -23,6 +23,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [148. Testing a failure path: inject the failure with a local DB trigger, never in code](#148-testing-a-failure-path-inject-the-failure-with-a-local-db-trigger-never-in-code)
 - [152. Room-charge totals never match the room table on a package admission](#152-room-charge-totals-never-match-the-room-table-on-a-package-admission)
 - [158. Every page shows only "Change Password" on a prod-copy DB](#158-every-page-shows-only-change-password-on-a-prod-copy-db)
+- [170. Local DB lacks a table the code needs: check the published DDL file first](#170-local-db-lacks-a-table-the-code-needs-check-the-published-ddl-file-first)
 
 ---
 
@@ -512,3 +513,7 @@ The pattern also matches the shell running the command (exit 144). Find Payara w
 ## 166. A page saves rows it shouldn't: find the writer with a temporary `@PrePersist` trace
 
 Add a `@PrePersist` method to the entity that logs `new Exception("trace")`, rebuild and redeploy ([§0a](../playwright-e2e-workflow.md#0a-rebuild-and-redeploy-local-code-changes-before-testing)), reproduce, and read the stack in `server.log`. It shows the caller and the persistence path, e.g. a cascade at commit. Revert it before committing.
+
+## 170. Local DB lacks a table the code needs: check the published DDL file first
+
+The full schema is `../hmis.wiki/files/createDDL.sql` (linked from Database-Schema-DDL-Generation-Guide; not inline in any `.md`). `grep -n "CREATE TABLE <NAME>"` there before calling it a schema gap. If it is there, the local DB is just behind: apply that statement locally and carry on.
