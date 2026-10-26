@@ -31,8 +31,8 @@
                                                             scrollHeight="200"
                                                             class="w-100">
                                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
-                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
-                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerStaffListForRowSelect}"/> 
+                                            <p:ajax  event="change" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerSpecialityChangeForAppointmentCount}"/> 
+                                            <p:ajax  event="click" process="@this" update="scStaff tblSessionsOfSelectedConsultant" listener="#{bookingController.listnerSpecialityChangeForAppointmentCount}"/> 
                                         </p:selectOneListbox>
                     </h:panelGroup>
                     </div>

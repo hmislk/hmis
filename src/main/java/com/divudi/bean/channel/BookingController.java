@@ -4149,6 +4149,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         billSessions = null;
     }
 
+    public void listnerSpecialityChangeForAppointmentCount() {
+        setStaff(null);
+        listnerStaffListForRowSelect();
+    }
+
     public void listnerStaffRowSelect() {
         getSelectedConsultants();
         setSelectedServiceSession(null);
