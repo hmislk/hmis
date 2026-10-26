@@ -98,6 +98,7 @@
                                 scrollHeight="350px"
                                 id="itemList"
                                 selectionMode="multiple"
+                                rowStyleClass="#{configOptionApplicationController.getBooleanValueByKey('GRN - Highlight Rows With Expiry Date and Batch No Entered', false) and bi.pharmaceuticalBillItem.doe ne null and not empty bi.pharmaceuticalBillItem.stringValue and not (bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin) ? 'grn-row-complete' : ''}"
                                 editable="true">
                                 <p:focus id="focusPrate" for="pRate"></p:focus>
 
@@ -374,6 +375,29 @@
                                 </p:column>
 
                             </p:dataTable>
+
+                            <!-- Highlight rows whose Date of Expiry and Batch No are both
+                                 entered. rowStyleClass covers the initial render (incl.
+                                 reopening a saved GRN); the script keeps it in sync while
+                                 typing, since the batch field has no AJAX. Low-profit-margin
+                                 rows (ui-messages-fatal cells) are never highlighted, so the
+                                 red warning stays visible. -->
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Highlight Rows With Expiry Date and Batch No Entered', false)}">
+                            <style>
+                                .ui-datatable .ui-datatable-data > tr.grn-row-complete:not(.ui-state-highlight) > td {
+                                    background-color: #d1e7dd;
+                                }
+                            </style>
+                            <script>
+                                $(document).on('input change', 'tr input[id$=":batch"], tr input[id$=":doeDateOnlyShort_input"]', function () {
+                                    var row = $(this).closest('tr');
+                                    var batch = $.trim(row.find('input[id$=":batch"]').val());
+                                    var doe = $.trim(row.find('input[id$=":doeDateOnlyShort_input"]').val());
+                                    var lowMargin = row.children('td.ui-messages-fatal').length > 0;
+                                    row.toggleClass('grn-row-complete', batch !== '' &amp;&amp; doe !== '' &amp;&amp; !lowMargin);
+                                });
+                            </script>
+                            </h:panelGroup>
                         </div>
                     </div>
 
