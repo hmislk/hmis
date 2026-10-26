@@ -3758,6 +3758,19 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        // A baby's charges go on the mother's bill, so the mother cannot be
+        // discharged while her baby is still on the ward (#24743).
+        List<PatientEncounter> babiesOnWard = getInwardBean().findBabyAdmissionsNotNursingDischarged(getPatientEncounter());
+        if (!babiesOnWard.isEmpty()) {
+            List<String> bhtNos = new ArrayList<>();
+            for (PatientEncounter baby : babiesOnWard) {
+                bhtNos.add(baby.getBhtNo() != null ? baby.getBhtNo() : "(no BHT number)");
+            }
+            JsfUtil.addErrorMessage("Cannot discharge the mother: baby admission " + String.join(", ", bhtNos)
+                    + " has not been nursing discharged. Complete the baby's nursing discharge first.");
+            return;
+        }
+
         finalizeRunningTimedServices(date);
 
         if (!getPatientEncounter().isClinicallyDischarged()) {
