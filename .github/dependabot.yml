@@ -17,6 +17,18 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # 2.1.0 and later are compiled for Java 17 (class file 61); 2.0.x runs on JDK 11
+      - dependency-name: "fr.opensagres.xdocreport*"
+        versions: [">=2.1.0"]
+      # Minor releases rename model classes (2.9.1: Legend -> LegendOptions), which
+      # breaks the report controllers that build charts; upgrade deliberately
+      - dependency-name: "software.xdev:chartjs-java-model"
+        update-types: ["version-update:semver-minor"]
+      # From 2.20, jackson-annotations is versioned "2.N" while core/databind stay "2.N.P",
+      # so the shared ${jackson.version} in pom.xml cannot hold both; stay on 2.18.x
+      # until pom.xml gives annotations its own version property
+      - dependency-name: "com.fasterxml.jackson*"
+        versions: [">=2.20"]
     groups:
       # All Jackson artifacts share ${jackson.version} in pom.xml and must move together
       jackson:

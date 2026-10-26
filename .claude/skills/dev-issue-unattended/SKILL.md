@@ -206,6 +206,11 @@ reporter bring it back with a live discussion if it's still happening.
 
 ## 1. Setup
 
+**Develop only against `origin/development`.** Run `git fetch origin`, branch
+from `origin/development`, build and test on that base, and target the PR at
+`development`. Never branch from or target `master` or a production/staging
+branch here (hotfixes use `hotfix-deploy`, not this skill).
+
 **If given an issue number:** run the `start-issue` skill for it, as
 `dev-issue` step 1 does.
 
@@ -331,6 +336,12 @@ Check the server log for deploy errors before moving on.
 
 ## 7. Test with Playwright + verify in DB
 
+**Mandatory gate.** In unattended mode no PR is opened until an end-to-end test
+of the changed workflow has passed against the rebuilt local deployment
+(Playwright through the menus and/or the API, with DB or API read-back). Record
+the evidence. If it cannot be run or does not pass after step 8, do not push
+or open a PR: end the issue as a stop and report why.
+
 Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
 **Reach every page through the menus, never by URL** — a URL-loaded page renders
@@ -441,6 +452,9 @@ limit above before writing it, same as an issue or PR body.
 
 ## 13. Create the PR
 
+Precondition: the step 7 end-to-end test passed and its evidence is in the
+PR body. Without it, do not create the PR. Base is `development`.
+
 Same as `dev-issue` step 13 — including its required **Documentation**
 section linking the wiki page(s) updated in step 10 (or stating that none was
 needed, and why) — plus a **"Decisions made without approval"** section up
@@ -449,12 +463,17 @@ exactly what to double-check first. Any wiki prose you rewrote belongs in
 that list. Redact this body per the hard limit above too — same as every
 other publication point.
 
+After the PR opens, set every issue it closes to **Reviewing & Merging** on board #11 and read the
+status back (dev-issue step 13). In batch mode check the board for the whole batch before step 15;
+the summary quotes the read-back status per issue.
+
 ## 14. Review loop (until mergeable) — waiting without the user present
 
 Repeat, up to **3 cycles**:
 
-1. Use `Monitor` (poll `gh pr checks <PR#> --json name,bucket`, emit each
-   newly-resolved check) to wait for CI instead of a synchronous watch. Use
+1. Use `Monitor` (poll plain `gh pr checks <PR#>` and parse its
+   tab-separated output, column 2 = pass/fail/pending; older `gh` such as
+   2.45 has no `--json` here; emit each newly-resolved check) to wait for CI instead of a synchronous watch. Use
    `ScheduleWakeup` as a fallback heartbeat (~20 min) in case the monitor is
    missed, per this project's autonomous-session pattern.
 2. If checks fail: investigate, fix, push, go to 1.
@@ -483,6 +502,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
+5. **Fix the follow-ups in the same run.** Run steps 1–14 on each filed issue (its own branch and PR), unless it hits a hard limit: in batch mode add it to the batch; in a single free-text run, process it after the main issue. Never merge, so the session stays open: in Notify, list every follow-up without a merged PR under **Open follow-ups** and ask the user to merge them or say they will be handled in another session.
 
 ## 15. Notify
 

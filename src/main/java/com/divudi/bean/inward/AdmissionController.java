@@ -280,6 +280,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         configOptionApplicationController.getBooleanValueByKey(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued",
+                "When enabled, cancelling an admission whose BHT number is still the last one issued in its series moves the counter back, so the next admission reuses that number (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
                 "Generate Separate BHT Number Series for Each Institution", false);
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Generate Separate BHT Number Series for Each Institution",

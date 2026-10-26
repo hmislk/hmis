@@ -111,6 +111,8 @@ public class InwardReceiptTextRendererTest {
                 false, false, 0, true, null);
         assertEquals(0x1B, out.charAt(0), "ESC @ init expected at start");
         assertEquals('@', out.charAt(1));
+        assertTrue(out.startsWith("\u001B@\u001BU\u0001\u001Bp\u0000"),
+                "ESC U 1 (unidirectional) and ESC p 0 (proportional off) expected after ESC @");
         assertTrue(out.endsWith("\f"), "form feed expected at end");
     }
 

@@ -1060,6 +1060,8 @@ public class LimsMiddlewareController {
                 continue;
             }
 
+            Investigation singleComponentFormat = isSingleSampleComponentInvestigation(ix) ? ix : null;
+
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
@@ -1085,11 +1087,7 @@ public class LimsMiddlewareController {
                         if (testCodeFromDatabase.equalsIgnoreCase(testCodeFromUploadedDataBundle)) {
 
                             for (PatientSampleComponant patientSampleComponant : pscs) {
-                                Item investigationComponentFromPatientSampleComponant = patientSampleComponant.getInvestigationComponant();
-                                Item investigationComponentFromPatientReportItem = priv.getInvestigationItem().getSampleComponent();
-                                if (investigationComponentFromPatientSampleComponant != null
-                                        && investigationComponentFromPatientReportItem != null
-                                        && investigationComponentFromPatientSampleComponant.equals(investigationComponentFromPatientReportItem)) {
+                                if (sampleComponentMatches(patientSampleComponant, priv.getInvestigationItem(), pi, singleComponentFormat)) {
 
                                     priv.setLobValue(result);
                                     priv.setBaImage(base64TextToByteArray(result));
@@ -1133,11 +1131,7 @@ public class LimsMiddlewareController {
                             // // System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
                             // // System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
                             for (PatientSampleComponant patientSampleComponant : pscs) {
-                                Item investigationComponentFromPatientSampleComponant = patientSampleComponant.getInvestigationComponant();
-                                Item investigationComponentFromPatientReportItem = priv.getInvestigationItem().getSampleComponent();
-                                if (investigationComponentFromPatientSampleComponant != null
-                                        && investigationComponentFromPatientReportItem != null
-                                        && investigationComponentFromPatientSampleComponant.equals(investigationComponentFromPatientReportItem)) {
+                                if (sampleComponentMatches(patientSampleComponant, priv.getInvestigationItem(), pi, singleComponentFormat)) {
 
                                     // // System.out.println("0 result = " + result);
                                     priv.setStrValue(result);
@@ -1246,6 +1240,51 @@ public class LimsMiddlewareController {
         }
 
         return temFlag;
+    }
+
+    /**
+     * A patient sample component matches a report item when both point to the
+     * same investigation component. For a single-component investigation the
+     * component stored at sample collection may come from an earlier report
+     * format (the investigation's Reported As format was changed afterwards),
+     * so any component of the same patient investigation is accepted there.
+     * The fallback applies only to report items of that single-component
+     * format; items of an older report (possibly multi-component) and
+     * multi-component investigations (time points, different sample types)
+     * keep the strict match.
+     */
+    private boolean sampleComponentMatches(PatientSampleComponant psc, InvestigationItem reportItem,
+            PatientInvestigation pi, Investigation singleComponentFormat) {
+        if (psc == null || reportItem == null) {
+            return false;
+        }
+        Item componentFromSample = psc.getInvestigationComponant();
+        Item componentFromReportItem = reportItem.getSampleComponent();
+        if (componentFromSample != null && componentFromReportItem != null
+                && componentFromSample.equals(componentFromReportItem)) {
+            return true;
+        }
+        return singleComponentFormat != null
+                && singleComponentFormat.equals(reportItem.getItem())
+                && pi != null
+                && pi.equals(psc.getPatientInvestigation());
+    }
+
+    private boolean isSingleSampleComponentInvestigation(Investigation ix) {
+        if (ix == null || ix.isHasMoreThanOneComponant()) {
+            return false;
+        }
+        Set<Item> components = new HashSet<>();
+        for (InvestigationItem ii : ix.getReportItems()) {
+            if (ii.isRetired() || ii.getSampleComponent() == null) {
+                continue;
+            }
+            if (ii.getIxItemType() == InvestigationItemType.Value
+                    || ii.getIxItemType() == InvestigationItemType.ReportImage) {
+                components.add(ii.getSampleComponent());
+            }
+        }
+        return components.size() <= 1;
     }
 
     public byte[] base64TextToByteArray(String base64Text) {

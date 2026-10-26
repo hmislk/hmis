@@ -495,7 +495,7 @@
                                                          class="ui-button-success mx-1"
                                                          ajax="false">
                                             <p:dataExporter type="xlsx"
-                                                            target="roomCharges"
+                                                            target="#{inwardBeanController.billTheatreTimeAsOt() ? 'roomCharges,theatreRoomCharges' : 'roomCharges'}"
                                                             fileName="Room_Charges" />
                                         </p:commandButton>
                                         <p:commandButton value="PDF"
@@ -503,7 +503,7 @@
                                                          class="ui-button-danger"
                                                          ajax="false">
                                             <p:dataExporter type="pdf"
-                                                            target="roomCharges"
+                                                            target="#{inwardBeanController.billTheatreTimeAsOt() ? 'roomCharges,theatreRoomCharges' : 'roomCharges'}"
                                                             fileName="Room_Charges" />
                                         </p:commandButton>
                                     </div>
@@ -514,7 +514,8 @@
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
-                                        <p:dataTable id="roomCharges" value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
+                                        <h:outputText value="Room Stays" styleClass="fw-bold" rendered="#{inwardBeanController.billTheatreTimeAsOt()}"/>
+                                        <p:dataTable id="roomCharges" value="#{inwardBeanController.billTheatreTimeAsOt() ? bhtSummeryController.wardPatientRooms : bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
                                             <p:column headerText="Room" styleClass="text-start">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
@@ -595,6 +596,90 @@
                                                 </h:outputLabel>
                                             </p:column>
                                         </p:dataTable>
+                                        <h:panelGroup rendered="#{inwardBeanController.billTheatreTimeAsOt()}">
+                                          <h:outputText value="Theatre Stays (billed under Operation Theatre Charges)" styleClass="fw-bold d-block mt-3"/>
+                                          <p:dataTable id="theatreRoomCharges" value="#{bhtSummeryController.theatrePatientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
+                                              <p:column headerText="Room" styleClass="text-start">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                      <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
+                                                      <h:panelGroup rendered="#{rm.discharged}">
+                                                          <p:badge value="Left" severity="info"/>
+                                                      </h:panelGroup>
+                                                      <h:panelGroup rendered="#{not rm.discharged}">
+                                                          <p:badge value="Active" severity="warning"/>
+                                                      </h:panelGroup>
+                                                      <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                          <p:badge value="Guardian" severity="success"/>
+                                                      </h:panelGroup>
+                                                      <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.TheatreRoom'}">
+                                                          <p:badge value="Theatre" severity="danger"/>
+                                                      </h:panelGroup>
+                                                  </div>
+                                              </p:column>
+                                              <p:column headerText="Admission" style="min-width:10em;" styleClass="text-start">
+                                                  <h:outputText value="#{rm.admittedAt}">
+                                                      <f:convertDateTime timeZone="Asia/Colombo"
+                                                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                  </h:outputText>
+                                              </p:column>
+                                              <p:column headerText="Discharge" style="min-width:10em;" styleClass="text-start">
+                                                  <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                      <h:outputText value="#{rm.dischargedAt}">
+                                                          <f:convertDateTime timeZone="Asia/Colombo"
+                                                                             pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                      </h:outputText>
+                                                  </h:panelGroup>
+                                                  <h:panelGroup rendered="#{rm.dischargedAt eq null}">
+                                                      <span class="text-muted fst-italic">—</span>
+                                                  </h:panelGroup>
+                                              </p:column>
+                                              <p:column headerText="Room" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedRoomCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Maintain" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedMaintainCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="MO" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedMoCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Nursing" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedNursingCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Linen" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedLinenCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Admin" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Medical" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Discount" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Net" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                          </p:dataTable>
+                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </p:tab>
 
