@@ -230,6 +230,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
     private List<Admission> childAdmissions;
+    /** Id of the admission childAdmissions was loaded for. */
+    private Long childAdmissionsParentId;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
@@ -4153,11 +4155,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         HashMap<String, Object> params = new HashMap<>();
         params.put("parent", current);
         childAdmissions = getFacade().findByJpql(jpql, params);
+        childAdmissionsParentId = current.getId();
     }
 
+    /**
+     * The current admission's baby admissions. Many pages open the Inpatient
+     * Dashboard by setting {@code current} directly (e.g. the Interim Bill's
+     * Inpatient Dashboard button), so the list is reloaded whenever it was
+     * loaded for a different admission (issue #24749).
+     */
     public List<Admission> getChildAdmissions() {
-        if (childAdmissions == null) {
-            childAdmissions = new ArrayList<>();
+        Long currentId = current != null ? current.getId() : null;
+        if (childAdmissions == null || !java.util.Objects.equals(childAdmissionsParentId, currentId)) {
+            fetchChildAdmissions();
+            if (childAdmissions == null) {
+                childAdmissions = new ArrayList<>();
+            }
+            childAdmissionsParentId = currentId;
         }
         return childAdmissions;
     }
