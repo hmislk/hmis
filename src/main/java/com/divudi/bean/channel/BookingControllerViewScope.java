@@ -19,6 +19,7 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ViewScopeDataTransferController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.BillClassType;
@@ -247,6 +248,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
     @Inject
+    WebUserController webUserController;
+    @Inject
     OpdBillController opdBillController;
     @Inject
     ChannelScheduleController channelScheduleController;
@@ -298,6 +301,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
     private boolean printPreviewC;
+    // Position of the "Change Patient" tab in manage_booking_by_date.xhtml; the tabs before it are always rendered
+    private static final int CHANGE_PATIENT_TAB_INDEX = 5;
+    private int manageBookingTabIndex;
 
     private double absentCount;
     private int serealNo;
@@ -2279,6 +2285,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             viewScopeDataTransferController.setNeedToFillFeeTotalsByBillFees(false);
         }
 
+        if (Boolean.TRUE.equals(viewScopeDataTransferController.getNeedToOpenChangePatientTab())) {
+            viewScopeDataTransferController.setNeedToOpenChangePatientTab(false);
+            if (isChangePatientTabAvailable()) {
+                manageBookingTabIndex = CHANGE_PATIENT_TAB_INDEX;
+            }
+        }
+
+    }
+
+    // Mirrors the rendered condition of the "Change Patient" tab in manage_booking_by_date.xhtml
+    private boolean isChangePatientTabAvailable() {
+        if (selectedBillSession == null || selectedBillSession.getBill() == null) {
+            return false;
+        }
+        return webUserController.hasPrivilege("ChannelBookingChange")
+                && selectedBillSession.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
@@ -2517,6 +2539,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.edit(bs);
         }
 
+    }
+
+    public String navigateToChangePatient(BillSession bs) {
+        String outcome = navigateToManageBooking(bs);
+        if (outcome != null && !outcome.isEmpty()) {
+            viewScopeDataTransferController.setNeedToOpenChangePatientTab(true);
+        }
+        return outcome;
     }
 
     public String navigateToManageBooking(BillSession bs) {
@@ -10061,6 +10091,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPrintPreviewC(boolean printPreviewC) {
         this.printPreviewC = printPreviewC;
+    }
+
+    public int getManageBookingTabIndex() {
+        return manageBookingTabIndex;
+    }
+
+    public void setManageBookingTabIndex(int manageBookingTabIndex) {
+        this.manageBookingTabIndex = manageBookingTabIndex;
     }
 
     public String getEncryptedBillSessionId() {
