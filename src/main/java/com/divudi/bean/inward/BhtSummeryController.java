@@ -31,7 +31,6 @@ import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.dataStructure.InwardBillItem;
 import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.AdmissionTypeEnum;
-import com.divudi.core.data.inward.InpatientPackageComponentType;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
@@ -52,7 +51,6 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.InpatientPackage;
-import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
@@ -65,7 +63,6 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
-import com.divudi.core.facade.InpatientPackageItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
@@ -200,7 +197,7 @@ public class BhtSummeryController implements Serializable {
     @EJB
     private com.divudi.service.inward.InwardRoomChargeCalculationService inwardRoomChargeCalculationService;
     @EJB
-    private InpatientPackageItemFacade inpatientPackageItemFacade;
+    private com.divudi.service.inward.InpatientPackagePricingService inpatientPackagePricingService;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
     private Map<Long, BillItem> latestCheckedBillItemsByItem;
@@ -1644,12 +1641,8 @@ public class BhtSummeryController implements Serializable {
      * so both agree on exactly which charge types the package covers.
      */
     private Map<InwardChargeType, Double> resolvePackageChargeTypeAllocationsIfApplicable(InpatientPackage inpatientPackage) {
-        if (inpatientPackage == null) {
-            return new HashMap<>();
-        }
-        Map<InwardChargeType, Double> componentAllocations = resolveComponentChargeTypeAllocations(inpatientPackage);
-        return InpatientPackagePricing.calculateChargeTypeAllocations(
-                inpatientPackage.getChargeTypeAmounts(), componentAllocations);
+        // Shared with the inward charge aggregation service (issue #24744).
+        return inpatientPackagePricingService.allocationsFor(inpatientPackage);
     }
 
     public double discountSet(ChargeItemTotal cit, double discountPercent) {
@@ -5655,39 +5648,6 @@ public class BhtSummeryController implements Serializable {
         cit.setDiscount(0.0);
         cit.setMargin(0.0);
         cit.setVat(0.0);
-    }
-
-    /**
-     * Each active component's fixed price, keyed by the InwardChargeType it
-     * resolves to: the component's Item's own inwardChargeType for
-     * SERVICE/TIMED_ITEM/OUTSIDE_CHARGE/PHARMACY_ITEM, or the same
-     * staff-independent default category a professional fee entry form would
-     * preselect (professionalFeeClassificationService.defaultCategoryFor with
-     * a null staff) for PROFESSIONAL_FEE_ROLE, whose real BillFee has no
-     * category until a specific staff member is later assigned.
-     */
-    private Map<InwardChargeType, Double> resolveComponentChargeTypeAllocations(InpatientPackage inpatientPackage) {
-        Map<InwardChargeType, Double> result = new HashMap<>();
-        Map<String, Object> params = new HashMap<>();
-        params.put("pkg", inpatientPackage);
-        List<InpatientPackageItem> components = inpatientPackageItemFacade.findByJpql(
-                "SELECT i FROM InpatientPackageItem i WHERE i.retired = false AND i.inpatientPackage = :pkg",
-                params);
-        for (InpatientPackageItem component : components) {
-            InwardChargeType type;
-            if (component.getComponentType() == InpatientPackageComponentType.PROFESSIONAL_FEE_ROLE) {
-                type = professionalFeeClassificationService.defaultCategoryFor(null, component.getSpeciality());
-            } else if (component.getItem() != null) {
-                type = component.getItem().getInwardChargeType();
-            } else {
-                continue;
-            }
-            if (type == null || component.getFixedPrice() == null) {
-                continue;
-            }
-            result.merge(type, component.getFixedPrice(), Double::sum);
-        }
-        return result;
     }
 
     /**

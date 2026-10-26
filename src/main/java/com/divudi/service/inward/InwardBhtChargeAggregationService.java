@@ -12,6 +12,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.inward.InpatientPackage;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
 import com.divudi.core.entity.inward.TheatreRoom;
@@ -20,6 +21,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.util.InpatientPackagePricing;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,6 +77,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
     private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     @EJB
     private InwardRoomChargeCalculationService roomChargeCalculationService;
+    @EJB
+    private InpatientPackagePricingService packagePricingService;
 
     /** Filter parameters for fetchEncounters(), mirroring the report filter panels. */
     public static class EncounterFilter {
@@ -196,11 +200,27 @@ public class InwardBhtChargeAggregationService implements Serializable {
     public Map<Long, Map<InwardChargeType, Double>> fetchChargesByEncounter(
             List<PatientEncounter> encounters) {
 
-        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
         if (encounters == null || encounters.isEmpty()) {
-            return result;
+            return new HashMap<>();
         }
         Family family = family(encounters);
+        Map<Long, Map<InwardChargeType, Double>> result = rawCharges(family);
+        // Package admissions show each covered charge type at the package's
+        // price, as on the interim bill (issue #24744).
+        for (Map.Entry<Long, InpatientPackagePricing.PackageAdjustment> e : packageAdjustments(family, result).entrySet()) {
+            Map<InwardChargeType, Double> adjusted = new EnumMap<>(InwardChargeType.class);
+            adjusted.putAll(e.getValue().getGross());
+            result.put(e.getKey(), adjusted);
+        }
+        return result;
+    }
+
+    /**
+     * Gross per charge type before package pricing, child encounters folded
+     * into their mother admission.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> rawCharges(Family family) {
+        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
         List<PatientEncounter> all = family.all;
 
         mergeChargeMaps(result, fetchInwardBillItemCharges(all));
@@ -816,7 +836,142 @@ public class InwardBhtChargeAggregationService implements Serializable {
         addIssueMargins(result, fetchIssueBillTotals(family.all, InwardMedicineBillTypes.ALL, null));
         addIssueMargins(result, fetchIssueBillTotals(family.all, null, BillType.StoreBhtPre));
 
-        return family.foldArrays(result);
+        Map<Long, double[]> folded = family.foldArrays(result);
+        // A package-covered charge type carries no margin or discount of its
+        // own on the interim bill (issue #24744).
+        for (Map.Entry<Long, InpatientPackagePricing.PackageAdjustment> e : packageAdjustments(family, null).entrySet()) {
+            double[] bucket = folded.computeIfAbsent(e.getKey(), k -> new double[4]);
+            for (Map.Entry<InwardChargeType, Double> m : e.getValue().getDroppedDiscount().entrySet()) {
+                bucket[m.getKey() == InwardChargeType.ProfessionalCharge ? 0 : 2] -= m.getValue();
+            }
+            for (Map.Entry<InwardChargeType, Double> m : e.getValue().getDroppedMargin().entrySet()) {
+                bucket[m.getKey() == InwardChargeType.ProfessionalCharge ? 1 : 3] -= m.getValue();
+            }
+        }
+        return folded;
+    }
+
+    // -------------------------------------------------------------------------
+    // Inpatient packages
+    // -------------------------------------------------------------------------
+
+    /**
+     * Package pricing for the package admissions among the family's mothers,
+     * keyed by mother id; empty when there are none, so other admissions cost
+     * nothing extra. Uses the interim bill's own allocation lookup
+     * (InpatientPackagePricingService) and netting rule
+     * (InpatientPackagePricing.applyPackage).
+     *
+     * @param charges the family's folded gross per charge type, or null to
+     *                compute it for the package admissions only
+     */
+    private Map<Long, InpatientPackagePricing.PackageAdjustment> packageAdjustments(
+            Family family, Map<Long, Map<InwardChargeType, Double>> charges) {
+        Map<Long, InpatientPackagePricing.PackageAdjustment> result = new HashMap<>();
+        List<PatientEncounter> packageMothers = new ArrayList<>();
+        for (PatientEncounter pe : family.all) {
+            if (!family.parentOf.containsKey(pe.getId()) && pe.getInpatientPackage() != null) {
+                packageMothers.add(pe);
+            }
+        }
+        if (packageMothers.isEmpty()) {
+            return result;
+        }
+        Family packageFamily = family(packageMothers);
+        Map<Long, Map<InwardChargeType, Double>> gross = charges != null ? charges : rawCharges(packageFamily);
+        Map<Long, Map<InwardChargeType, Double>> margin = new HashMap<>();
+        Map<Long, Map<InwardChargeType, Double>> discount = new HashMap<>();
+        fetchMarginAndDiscountByChargeType(packageFamily, margin, discount);
+
+        for (PatientEncounter mother : packageMothers) {
+            InpatientPackage pkg = mother.getInpatientPackage();
+            Map<InwardChargeType, Double> allocations = packagePricingService.allocationsFor(pkg);
+            double packageTotal = pkg.getTotalPrice() != null ? pkg.getTotalPrice() : 0.0;
+            result.put(mother.getId(), InpatientPackagePricing.applyPackage(
+                    gross.get(mother.getId()), margin.get(mother.getId()), discount.get(mother.getId()),
+                    allocations, packageTotal));
+        }
+        return result;
+    }
+
+    /**
+     * Margin and discount per charge type, child encounters folded into their
+     * mother, from the same sources as fetchDiscountAndMarginSplitByProfessional:
+     * InwardBill items by their item's charge type, medicine and store issue
+     * margins, and InwardProfessional staff fees by their fee category.
+     */
+    private void fetchMarginAndDiscountByChargeType(Family family,
+            Map<Long, Map<InwardChargeType, Double>> margin, Map<Long, Map<InwardChargeType, Double>> discount) {
+        Map<Long, Map<InwardChargeType, Double>> rawMargin = new HashMap<>();
+        Map<Long, Map<InwardChargeType, Double>> rawDiscount = new HashMap<>();
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardBill);
+        params.put("encs", family.all);
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(
+                "select enc.id, i.inwardChargeType, sum(bi.marginValue), sum(bi.discount)"
+                + " from BillItem bi join bi.bill b join b.patientEncounter enc join bi.item i"
+                + " where bi.retired = false"
+                + " and b.retired = false"
+                + " and b.billType = :btp"
+                + " and enc in :encs"
+                + " and i.inwardChargeType is not null"
+                + " group by enc.id, i.inwardChargeType",
+                params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Long encId = (Long) r[0];
+                InwardChargeType type = (InwardChargeType) r[1];
+                rawMargin.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
+                        .merge(type, r[2] == null ? 0.0 : ((Number) r[2]).doubleValue(), Double::sum);
+                rawDiscount.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
+                        .merge(type, r[3] == null ? 0.0 : ((Number) r[3]).doubleValue(), Double::sum);
+            }
+        }
+
+        for (Map.Entry<Long, double[]> e : fetchIssueBillTotals(family.all, InwardMedicineBillTypes.ALL, null).entrySet()) {
+            rawMargin.computeIfAbsent(e.getKey(), k -> new EnumMap<>(InwardChargeType.class))
+                    .merge(InwardChargeType.Medicine, e.getValue()[1] - e.getValue()[0], Double::sum);
+        }
+        for (Map.Entry<Long, double[]> e : fetchIssueBillTotals(family.all, null, BillType.StoreBhtPre).entrySet()) {
+            rawMargin.computeIfAbsent(e.getKey(), k -> new EnumMap<>(InwardChargeType.class))
+                    .merge(InwardChargeType.GeneralIssuing, e.getValue()[1] - e.getValue()[0], Double::sum);
+        }
+
+        List<InwardChargeType> feeTypes = new ArrayList<>();
+        feeTypes.add(InwardChargeType.ProfessionalCharge);
+        if (!professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+            feeTypes.add(InwardChargeType.DoctorAndNurses);
+        }
+        feeTypes.add(InwardChargeType.TechnicianAndParamedicalCharge);
+        for (InwardChargeType feeType : feeTypes) {
+            Map<String, Object> fp = new HashMap<>();
+            String jpql = "select bf.bill.patientEncounter.id, sum(bf.feeMargin), sum(bf.feeDiscount)"
+                    + " from BillFee bf"
+                    + " where bf.retired = false"
+                    + " and bf.bill.retired = false"
+                    + " and bf.bill.billType = :btp"
+                    + " and bf.fee.feeType = :ftp"
+                    + professionalFeeClassificationService.staffCondition("bf", feeType, fp)
+                    + " and bf.bill.patientEncounter in :encs"
+                    + " group by bf.bill.patientEncounter.id";
+            fp.put("btp", BillType.InwardProfessional);
+            fp.put("ftp", FeeType.Staff);
+            fp.put("encs", family.all);
+            List<Object[]> feeRows = billFeeFacade.findObjectArrayByJpql(jpql, fp, TemporalType.TIMESTAMP);
+            if (feeRows != null) {
+                for (Object[] r : feeRows) {
+                    Long encId = (Long) r[0];
+                    rawMargin.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
+                            .merge(feeType, r[1] == null ? 0.0 : ((Number) r[1]).doubleValue(), Double::sum);
+                    rawDiscount.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
+                            .merge(feeType, r[2] == null ? 0.0 : ((Number) r[2]).doubleValue(), Double::sum);
+                }
+            }
+        }
+
+        margin.putAll(family.foldCharges(rawMargin));
+        discount.putAll(family.foldCharges(rawDiscount));
     }
 
     private void addDiscountMarginRows(Map<Long, double[]> result, List<Object[]> rows, int offset) {

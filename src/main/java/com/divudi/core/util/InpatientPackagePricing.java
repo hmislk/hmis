@@ -98,4 +98,88 @@ public class InpatientPackagePricing {
         double excess = actualCovered - packageTotal;
         return excess > 0.0 ? excess : 0.0;
     }
+
+    /**
+     * A package admission's per-charge-type figures after package pricing,
+     * as the interim bill shows them (BhtSummeryController.applyPackagePricingIfApplicable):
+     * each covered charge type is held at its allocated amount with no margin
+     * or discount of its own, and a PackageExcessCharges line carries any usage
+     * above the package price.
+     */
+    public static final class PackageAdjustment {
+
+        private final Map<InwardChargeType, Double> gross;
+        private final Map<InwardChargeType, Double> droppedMargin;
+        private final Map<InwardChargeType, Double> droppedDiscount;
+
+        private PackageAdjustment(Map<InwardChargeType, Double> gross,
+                Map<InwardChargeType, Double> droppedMargin, Map<InwardChargeType, Double> droppedDiscount) {
+            this.gross = gross;
+            this.droppedMargin = droppedMargin;
+            this.droppedDiscount = droppedDiscount;
+        }
+
+        /** Gross per charge type after package pricing. */
+        public Map<InwardChargeType, Double> getGross() {
+            return gross;
+        }
+
+        /** Margin of the covered charge types, no longer charged. */
+        public Map<InwardChargeType, Double> getDroppedMargin() {
+            return droppedMargin;
+        }
+
+        /** Discount of the covered charge types, no longer given. */
+        public Map<InwardChargeType, Double> getDroppedDiscount() {
+            return droppedDiscount;
+        }
+    }
+
+    /**
+     * Applies package pricing to one admission's figures.
+     *
+     * @param gross          gross per charge type (before margin and discount)
+     * @param margin         margin (service charge) per charge type
+     * @param discount       discount per charge type
+     * @param allocations    the package's price per covered charge type
+     * @param packageTotal   the package's total price
+     */
+    public static PackageAdjustment applyPackage(Map<InwardChargeType, Double> gross,
+            Map<InwardChargeType, Double> margin, Map<InwardChargeType, Double> discount,
+            Map<InwardChargeType, Double> allocations, double packageTotal) {
+        Map<InwardChargeType, Double> adjusted = new HashMap<>();
+        if (gross != null) {
+            adjusted.putAll(gross);
+        }
+        Map<InwardChargeType, Double> droppedMargin = new HashMap<>();
+        Map<InwardChargeType, Double> droppedDiscount = new HashMap<>();
+        if (allocations == null || allocations.isEmpty()) {
+            return new PackageAdjustment(adjusted, droppedMargin, droppedDiscount);
+        }
+
+        // Actual usage per covered type is gross + margin, the interim bill's
+        // row total (its discount is shown separately).
+        Map<InwardChargeType, Double> actual = new HashMap<>();
+        for (InwardChargeType type : allocations.keySet()) {
+            double g = adjusted.getOrDefault(type, 0.0);
+            double m = margin != null ? margin.getOrDefault(type, 0.0) : 0.0;
+            actual.put(type, g + m);
+        }
+        double excess = calculatePackageExcess(allocations, actual, packageTotal);
+
+        for (Map.Entry<InwardChargeType, Double> e : allocations.entrySet()) {
+            InwardChargeType type = e.getKey();
+            adjusted.put(type, e.getValue());
+            if (margin != null && margin.containsKey(type)) {
+                droppedMargin.put(type, margin.get(type));
+            }
+            if (discount != null && discount.containsKey(type)) {
+                droppedDiscount.put(type, discount.get(type));
+            }
+        }
+        if (excess > 0.0) {
+            adjusted.merge(InwardChargeType.PackageExcessCharges, excess, Double::sum);
+        }
+        return new PackageAdjustment(adjusted, droppedMargin, droppedDiscount);
+    }
 }
