@@ -320,6 +320,9 @@ public class InwardReportController implements Serializable {
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
     private List<AdmissionDischargeDTO> admissionDischargesList;
+    // Criteria of the last Process, so the header above the rows (screen, Excel,
+    // PDF, print) describes those rows even if the filters were edited since.
+    private List<String[]> admissionDischargeCriteriaSnapshot;
     // Admission & Discharge report (#21582)
     private static final String BHT_CANCEL_RETIRE_COMMENT = "BHT Cancel";
     private static final String ADMISSION_DISCHARGE_STATUS_CANCELLED = "CANCELLED";
@@ -3357,6 +3360,7 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select Admission From and To dates.");
             return;
         }
+        admissionDischargeCriteriaSnapshot = buildAdmissionDischargeCriteria();
 
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -3634,6 +3638,12 @@ public class InwardReportController implements Serializable {
      * and in the Excel, PDF and print outputs.
      */
     public List<String[]> getAdmissionDischargeCriteria() {
+        return admissionDischargeCriteriaSnapshot != null
+                ? admissionDischargeCriteriaSnapshot
+                : buildAdmissionDischargeCriteria();
+    }
+
+    private List<String[]> buildAdmissionDischargeCriteria() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         List<String[]> criteria = new ArrayList<>();
         criteria.add(new String[]{"Admission Date", formatAdmissionDischargeRange(fromDate, toDate, sdf)});
