@@ -207,9 +207,9 @@ public class InwardBhtChargeAggregationService implements Serializable {
         Map<Long, Map<InwardChargeType, Double>> result = rawCharges(family);
         // Package admissions show each covered charge type at the package's
         // price, as on the interim bill (issue #24744).
-        for (Map.Entry<Long, InpatientPackagePricing.PackageAdjustment> e : packageAdjustments(family, result).entrySet()) {
+        for (Map.Entry<Long, PackagePricing> e : packageAdjustments(family, result).entrySet()) {
             Map<InwardChargeType, Double> adjusted = new EnumMap<>(InwardChargeType.class);
-            adjusted.putAll(e.getValue().getGross());
+            adjusted.putAll(e.getValue().adjustment.getGross());
             result.put(e.getKey(), adjusted);
         }
         return result;
@@ -839,13 +839,22 @@ public class InwardBhtChargeAggregationService implements Serializable {
         Map<Long, double[]> folded = family.foldArrays(result);
         // A package-covered charge type carries no margin or discount of its
         // own on the interim bill (issue #24744).
-        for (Map.Entry<Long, InpatientPackagePricing.PackageAdjustment> e : packageAdjustments(family, null).entrySet()) {
+        // A dropped Professional Charge amount can hold both consultant staff
+        // fees (counted in the professional bucket) and service items filed
+        // under Professional Charge (counted in the other bucket), so each part
+        // comes off the bucket that holds it.
+        for (Map.Entry<Long, PackagePricing> e : packageAdjustments(family, null).entrySet()) {
             double[] bucket = folded.computeIfAbsent(e.getKey(), k -> new double[4]);
-            for (Map.Entry<InwardChargeType, Double> m : e.getValue().getDroppedDiscount().entrySet()) {
-                bucket[m.getKey() == InwardChargeType.ProfessionalCharge ? 0 : 2] -= m.getValue();
+            PackagePricing pp = e.getValue();
+            for (Map.Entry<InwardChargeType, Double> m : pp.adjustment.getDroppedDiscount().entrySet()) {
+                double staffPart = m.getKey() == InwardChargeType.ProfessionalCharge ? pp.professionalFeeDiscount : 0.0;
+                bucket[0] -= staffPart;
+                bucket[2] -= m.getValue() - staffPart;
             }
-            for (Map.Entry<InwardChargeType, Double> m : e.getValue().getDroppedMargin().entrySet()) {
-                bucket[m.getKey() == InwardChargeType.ProfessionalCharge ? 1 : 3] -= m.getValue();
+            for (Map.Entry<InwardChargeType, Double> m : pp.adjustment.getDroppedMargin().entrySet()) {
+                double staffPart = m.getKey() == InwardChargeType.ProfessionalCharge ? pp.professionalFeeMargin : 0.0;
+                bucket[1] -= staffPart;
+                bucket[3] -= m.getValue() - staffPart;
             }
         }
         return folded;
@@ -865,9 +874,9 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * @param charges the family's folded gross per charge type, or null to
      *                compute it for the package admissions only
      */
-    private Map<Long, InpatientPackagePricing.PackageAdjustment> packageAdjustments(
+    private Map<Long, PackagePricing> packageAdjustments(
             Family family, Map<Long, Map<InwardChargeType, Double>> charges) {
-        Map<Long, InpatientPackagePricing.PackageAdjustment> result = new HashMap<>();
+        Map<Long, PackagePricing> result = new HashMap<>();
         List<PatientEncounter> packageMothers = new ArrayList<>();
         for (PatientEncounter pe : family.all) {
             if (!family.parentOf.containsKey(pe.getId()) && pe.getInpatientPackage() != null) {
@@ -881,17 +890,38 @@ public class InwardBhtChargeAggregationService implements Serializable {
         Map<Long, Map<InwardChargeType, Double>> gross = charges != null ? charges : rawCharges(packageFamily);
         Map<Long, Map<InwardChargeType, Double>> margin = new HashMap<>();
         Map<Long, Map<InwardChargeType, Double>> discount = new HashMap<>();
-        fetchMarginAndDiscountByChargeType(packageFamily, margin, discount);
+        Map<Long, double[]> professionalFeePart = new HashMap<>();
+        fetchMarginAndDiscountByChargeType(packageFamily, margin, discount, professionalFeePart);
 
         for (PatientEncounter mother : packageMothers) {
             InpatientPackage pkg = mother.getInpatientPackage();
             Map<InwardChargeType, Double> allocations = packagePricingService.allocationsFor(pkg);
             double packageTotal = pkg.getTotalPrice() != null ? pkg.getTotalPrice() : 0.0;
-            result.put(mother.getId(), InpatientPackagePricing.applyPackage(
+            double[] feePart = professionalFeePart.getOrDefault(mother.getId(), new double[2]);
+            result.put(mother.getId(), new PackagePricing(InpatientPackagePricing.applyPackage(
                     gross.get(mother.getId()), margin.get(mother.getId()), discount.get(mother.getId()),
-                    allocations, packageTotal));
+                    allocations, packageTotal), feePart[0], feePart[1]));
         }
         return result;
+    }
+
+    /**
+     * A package admission's adjustment, plus the consultant staff-fee part of
+     * its Professional Charge discount and margin (the part held in the
+     * professional bucket of fetchDiscountAndMarginSplitByProfessional).
+     */
+    private static final class PackagePricing {
+
+        private final InpatientPackagePricing.PackageAdjustment adjustment;
+        private final double professionalFeeDiscount;
+        private final double professionalFeeMargin;
+
+        private PackagePricing(InpatientPackagePricing.PackageAdjustment adjustment,
+                double professionalFeeDiscount, double professionalFeeMargin) {
+            this.adjustment = adjustment;
+            this.professionalFeeDiscount = professionalFeeDiscount;
+            this.professionalFeeMargin = professionalFeeMargin;
+        }
     }
 
     /**
@@ -899,9 +929,13 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * mother, from the same sources as fetchDiscountAndMarginSplitByProfessional:
      * InwardBill items by their item's charge type, medicine and store issue
      * margins, and InwardProfessional staff fees by their fee category.
+     *
+     * @param professionalFeePart filled with {discount, margin} of the
+     *                            Professional Charge staff fees alone, per mother
      */
     private void fetchMarginAndDiscountByChargeType(Family family,
-            Map<Long, Map<InwardChargeType, Double>> margin, Map<Long, Map<InwardChargeType, Double>> discount) {
+            Map<Long, Map<InwardChargeType, Double>> margin, Map<Long, Map<InwardChargeType, Double>> discount,
+            Map<Long, double[]> professionalFeePart) {
         Map<Long, Map<InwardChargeType, Double>> rawMargin = new HashMap<>();
         Map<Long, Map<InwardChargeType, Double>> rawDiscount = new HashMap<>();
 
@@ -962,10 +996,17 @@ public class InwardBhtChargeAggregationService implements Serializable {
             if (feeRows != null) {
                 for (Object[] r : feeRows) {
                     Long encId = (Long) r[0];
+                    double feeMargin = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+                    double feeDiscount = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
                     rawMargin.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
-                            .merge(feeType, r[1] == null ? 0.0 : ((Number) r[1]).doubleValue(), Double::sum);
+                            .merge(feeType, feeMargin, Double::sum);
                     rawDiscount.computeIfAbsent(encId, k -> new EnumMap<>(InwardChargeType.class))
-                            .merge(feeType, r[2] == null ? 0.0 : ((Number) r[2]).doubleValue(), Double::sum);
+                            .merge(feeType, feeDiscount, Double::sum);
+                    if (feeType == InwardChargeType.ProfessionalCharge) {
+                        double[] part = professionalFeePart.computeIfAbsent(family.billingIdOf(encId), k -> new double[2]);
+                        part[0] += feeDiscount;
+                        part[1] += feeMargin;
+                    }
                 }
             }
         }
