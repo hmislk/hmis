@@ -91,6 +91,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     @Inject
     private InwardBeanController inwardBean;
     @Inject
+    private AdmissionController admissionController;
+    @Inject
     private BillBeanController billBean;
     @Inject
     private SessionController sessionController;
@@ -116,6 +118,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     private Patient patient;
     private PaymentMethodData paymentMethodData;
     private List<Bill> eligiblePostFinalPaymentBills;
+    private List<Bill> postFinalPaymentBillsForCurrentEncounter;
     private Bill originalBillToRefund;
     private Map<Long, Double> remainingRefundableAmountCache;
     // </editor-fold>
@@ -179,6 +182,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             current.setPatientEncounter(null);
             return;
         }
+        postFinalPaymentBillsForCurrentEncounter = null;
         paymentListener();
     }
 
@@ -292,7 +296,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     // </editor-fold>
 
     public String navigateToInpationDashbord() {
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                current == null ? null : current.getPatientEncounter());
     }
 
     private boolean errorCheck() {
@@ -622,7 +627,51 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
 
         JsfUtil.addSuccessMessage("Payment Bill Saved");
         paymentMethod = null;
+        postFinalPaymentBillsForCurrentEncounter = null;
         printPreview = true;
+    }
+
+    /**
+     * Opens the Post Final Bill Payment Reprint page (View / Cancel / Refund /
+     * Print) for one post-final payment bill. Lets the cashier reach those
+     * actions from the Post Final Payment page itself (issue #24163) - before
+     * this, the only route was the Interim Bill's "Post Final Payment" tab,
+     * which is no longer offered once the final bill is confirmed.
+     */
+    public String navigateToViewPostFinalPayment(Bill bill) {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (!(bill instanceof BilledBill)) {
+            JsfUtil.addErrorMessage("Only a post final payment bill can be viewed here");
+            return "";
+        }
+        current = (BilledBill) bill;
+        printPreview = false;
+        postFinalPaymentBillsForCurrentEncounter = null;
+        return "/inward/inward_reprint_bill_post_final_payment?faces-redirect=true";
+    }
+
+    /**
+     * The current encounter's post-final payment bills (originals only, not
+     * their cancellation/refund rows), newest first, for the "Previous Post
+     * Final Payments" list on the Post Final Payment page.
+     */
+    public List<Bill> getPostFinalPaymentBillsForCurrentEncounter() {
+        if (postFinalPaymentBillsForCurrentEncounter == null) {
+            postFinalPaymentBillsForCurrentEncounter = new ArrayList<>();
+            PatientEncounter pe = getCurrent().getPatientEncounter();
+            if (pe != null) {
+                for (Bill b : getInwardBean().fetchPostFinalPaymentBill(pe, null)) {
+                    if (b instanceof BilledBill) {
+                        postFinalPaymentBillsForCurrentEncounter.add(b);
+                    }
+                }
+                postFinalPaymentBillsForCurrentEncounter.sort((a, b) -> Long.compare(b.getId(), a.getId()));
+            }
+        }
+        return postFinalPaymentBillsForCurrentEncounter;
     }
 
     private void saveBill() {
@@ -1124,6 +1173,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     public void makeNull() {
         current = null;
         printPreview = false;
+        postFinalPaymentBillsForCurrentEncounter = null;
         comment = null;
         paymentMethod = null;
         total = 0.0;

@@ -146,7 +146,6 @@ public class BillFee implements Serializable, RetirableEntity {
     int orderNo;
 
     private Double overriddenRate;
-    private boolean fromPackage;
     @ManyToOne
     private InpatientPackageItem sourcePackageItem;
 
@@ -206,14 +205,6 @@ public class BillFee implements Serializable, RetirableEntity {
         this.overriddenRate = overriddenRate;
     }
 
-    public boolean isFromPackage() {
-        return fromPackage;
-    }
-
-    public void setFromPackage(boolean fromPackage) {
-        this.fromPackage = fromPackage;
-    }
-
     public InpatientPackageItem getSourcePackageItem() {
         return sourcePackageItem;
     }
@@ -256,7 +247,6 @@ public class BillFee implements Serializable, RetirableEntity {
         feeUnitMargin = billFee.getFeeUnitMargin();
         feeUnitDiscount = billFee.getFeeUnitDiscount();
         overriddenRate = billFee.getOverriddenRate();
-        fromPackage = billFee.isFromPackage();
         sourcePackageItem = billFee.getSourcePackageItem();
         professionalFeeCategory = billFee.getProfessionalFeeCategory();
     }
@@ -271,7 +261,6 @@ public class BillFee implements Serializable, RetirableEntity {
         department = billFee.getDepartment();
         speciality = billFee.getSpeciality();
         FeeAt = billFee.getFeeAt();
-        fromPackage = billFee.isFromPackage();
         sourcePackageItem = billFee.getSourcePackageItem();
         professionalFeeCategory = billFee.getProfessionalFeeCategory();
     }

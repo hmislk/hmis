@@ -35,6 +35,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardFee;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
@@ -60,6 +61,7 @@ import com.divudi.core.facade.PriceMatrixFacade;
 import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.inward.TimedItemPricingService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +108,8 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
+    @EJB
+    private TimedItemPricingService timedItemPricingService;
     @EJB
     private RoomFacilityTimedItemFacade roomFacilityTimedItemFacade;
     @EJB
@@ -502,7 +506,47 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", pts);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
-    
+
+    /**
+     * Same filter as {@link #calCostOfIssueByBill(PatientEncounter, List, List)}, but sums
+     * {@code Bill.total} (gross, pre-margin) instead of {@code Bill.netTotal}. Exists so the
+     * Medicine charge category can report gross and margin as their own breakout lines —
+     * previously only {@code .setTotal(...)} (net) was ever called for Medicine in
+     * {@code BhtSummeryController.setKnownChargeTot()}, so the Interim Bill's "Service Charge
+     * (Margin)" line always showed 0.00 for Medicine even though the margin was correctly
+     * applied to every pharmacy bill (QA report, 2026-10-01).
+     *
+     * <p>Margin is deliberately derived as {@code netTotal - gross} by the caller rather than
+     * summed from a third {@code Bill.margin} field: margin is set independently by close to
+     * a dozen different pharmacy issue/return/cancellation controllers, several of which (e.g.
+     * ward-to-pharmacy returns) compute it as its own separate expression rather than as
+     * {@code netTotal - total}, so a row-by-row rounding/computation drift between
+     * {@code Bill.margin} and {@code Bill.netTotal - Bill.total} is plausible even though
+     * {@code total}/{@code netTotal} themselves are trustworthy (they drive the actual amount
+     * due everywhere else in the app). Deriving margin from the two already-reliable fields
+     * instead of trusting a third, independently-maintained one removes that whole class of
+     * drift — caught in review on #24213's follow-up by a second Claude session cross-checking
+     * live {@code coop} data, 2026-10-01.
+     */
+    public double calGrossCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.total)"
+                + " FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and  b.patientEncounter IN :pe";
+        hm = new HashMap();
+        hm.put("btp", btas);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
     /**
      * Sums the value of cancelled/returned issue bills as a positive magnitude, so it can be
      * printed as its own breakup line instead of silently netting out of the parent charge
@@ -543,6 +587,41 @@ public class InwardBeanController implements Serializable {
         String sql;
         HashMap hm;
         sql = "SELECT  sum(b.netTotal)"
+                + " FROM Bill b "
+                + " LEFT JOIN b.billedBill bb "
+                + " LEFT JOIN b.referenceBill rb "
+                + " LEFT JOIN rb.fromDepartment rbFromDept "
+                + " LEFT JOIN rb.department rbDept "
+                + " LEFT JOIN bb.department bbDept "
+                + " WHERE b.retired=false "
+                + " AND b.billTypeAtomic IN :btp "
+                + " AND b.patientEncounter IN :pe "
+                + " AND ("
+                + "      (bb IS NOT NULL AND bbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NOT NULL AND rbFromDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND type(b) = BilledBill AND rb IS NOT NULL AND rbFromDept IS NULL AND rbDept.departmentType = :type) "
+                + "   OR (bb IS NULL AND (type(b) <> BilledBill OR rb IS NULL) AND b.department.departmentType = :type) "
+                + "     )";
+        hm = new HashMap();
+        hm.put("btp", btas);
+        hm.put("type", billingDepartmentType);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+        return getBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    /**
+     * Department-split sibling of {@link #calGrossCostOfIssueByBill(PatientEncounter, List, List)}
+     * — same issuing-department resolution as {@link #calCostOfIssueByBill(PatientEncounter, List, List, DepartmentType)}.
+     */
+    public double calGrossCostOfIssueByBill(PatientEncounter patientEncounter, List<BillTypeAtomic> btas, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        String sql;
+        HashMap hm;
+        sql = "SELECT  sum(b.total)"
                 + " FROM Bill b "
                 + " LEFT JOIN b.billedBill bb "
                 + " LEFT JOIN b.referenceBill rb "
@@ -855,8 +934,7 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Timed-service BillItems for one charge type, excluding package-locked
-     * ones (their price is fixed by the package and must not be discounted).
+     * Timed-service BillItems for one charge type.
      * These are priced from the PatientItem duration, so their discount is
      * applied straight to the BillItem rather than through BillFees.
      */
@@ -866,7 +944,6 @@ public class InwardBeanController implements Serializable {
                 + " and s.bill.billType=:btp "
                 + " and s.bill.patientEncounter=:pe"
                 + " and type(s.item)=:cls "
-                + " and s.fromPackage=false "
                 + " and s.item.inwardChargeType=:inw ";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -903,11 +980,16 @@ public class InwardBeanController implements Serializable {
      * baby's running service has to be stopped and repriced along with hers.
      */
     public List<PatientItem> fetchRunningTimedPatientItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        // A timed service whose bill was cancelled before cancellation retired
+        // it (#24548) must not count as running: left joins keep unbilled ones.
         String sql = "Select i From PatientItem i"
+                + " left join i.billItem bi"
+                + " left join bi.bill b"
                 + " where i.retired=false"
                 + " and type(i.item)=:cls"
                 + " and i.patientEncounter IN :pe"
-                + " and i.toTime is null";
+                + " and i.toTime is null"
+                + " and (bi is null or (bi.retired=false and (b is null or (b.retired=false and b.cancelled=false))))";
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
         if (cpts != null && !cpts.isEmpty()) {
@@ -938,7 +1020,6 @@ public class InwardBeanController implements Serializable {
                 + " AND s.bill.billType = :btp"
                 + " AND s.bill.patientEncounter = :pe"
                 + " AND type(s.item) = :cls"
-                + " AND s.fromPackage = false"
                 + " AND s.item.inwardChargeType = :inw";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -946,12 +1027,6 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         getBillItemFacade().updateByJpql(sql, hm);
-
-        // Deliberately not filtered on billItem.fromPackage. A package item's
-        // price is fixed and never discounted, so its mirrored discount is
-        // already zero and clearing it changes nothing — and avoiding that
-        // navigation keeps this a plain bulk update over PatientItem's own
-        // columns, matching bulkClearPatientItemsWithOutMatrix.
         String piSql = "UPDATE PatientItem s SET s.discount = 0.0"
                 + " WHERE s.retired = false"
                 + " AND type(s.item) = :cls"
@@ -1773,6 +1848,10 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientRoom p"
                 + " WHERE p.retired=false"
                 + " AND p.patientEncounter IN :pe";
+        boolean theatreAsOt = billTheatreTimeAsOt();
+        if (theatreAsOt) {
+            sql += " AND TYPE(p) <> :theatreClass";
+        }
         HashMap hm = new HashMap();
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
@@ -1780,6 +1859,9 @@ public class InwardBeanController implements Serializable {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
+        if (theatreAsOt) {
+            hm.put("theatreClass", TheatreRoom.class);
+        }
 
         Map<InwardChargeType, Double> result = new EnumMap<>(InwardChargeType.class);
         List<Object> rows = getPatientRoomFacade().findObjectByJpql(sql, hm, TemporalType.TIMESTAMP);
@@ -1796,11 +1878,36 @@ public class InwardBeanController implements Serializable {
                 result.put(InwardChargeType.LinenCharges,         toDoubleOrZero(arr[6]));
             }
         }
+        if (theatreAsOt) {
+            String otSql = "SELECT SUM((p.calculatedRoomCharge - p.discountRoomCharge)"
+                    + " + (p.calculatedMoCharge - p.discountMoCharge)"
+                    + " + (p.calculatedNursingCharge - p.discountNursingCharge)"
+                    + " + (p.calculatedMaintainCharge - p.discountMaintainCharge)"
+                    + " + (p.calculatedMedicalCareCharge - p.discountMedicalCareCharge)"
+                    + " + (p.calculatedAdministrationCharge - p.discountAdministrationCharge)"
+                    + " + (p.calculatedLinenCharge - p.discountLinenCharge))"
+                    + " FROM PatientRoom p"
+                    + " WHERE p.retired=false"
+                    + " AND p.patientEncounter IN :pe"
+                    + " AND TYPE(p) = :theatreClass";
+            List<Object> otRows = getPatientRoomFacade().findObjectByJpql(otSql, hm, TemporalType.TIMESTAMP);
+            if (otRows != null && !otRows.isEmpty()) {
+                result.merge(InwardChargeType.OperationTheatreCharges, toDoubleOrZero(otRows.get(0)), Double::sum);
+            }
+        }
         Map<InwardChargeType, Double> timedItemSums = getTimedItemChargeSumsBulk(patientEncounter, cpts);
         for (Map.Entry<InwardChargeType, Double> entry : timedItemSums.entrySet()) {
             result.merge(entry.getKey(), entry.getValue(), Double::sum);
         }
         return result;
+    }
+
+    public boolean billTheatreTimeAsOt() {
+        return configOptionApplicationController.getBooleanValueByKey("Inward Bill - Bill Theatre Room Time Under Operation Theatre Charges", false);
+    }
+
+    public boolean isTheatreTimeAsOt(PatientRoom pr) {
+        return pr instanceof TheatreRoom && billTheatreTimeAsOt();
     }
 
     private double toDoubleOrZero(Object value) {
@@ -2171,6 +2278,44 @@ public class InwardBeanController implements Serializable {
         cpt = encounterFacade.findByJpql(sql, hm);
 
         return cpt;
+    }
+
+    /**
+     * The earliest theatre stay (TheatreRoom) still open on this admission or
+     * one of its child (surgery procedure) encounters, or null. A theatre stay
+     * bills by the hour until the patient is returned to the ward from theatre
+     * (PatientTransferController.returnToWard), so discharge must not proceed
+     * while one is open (#24718).
+     */
+    public PatientRoom findOpenTheatreRoom(PatientEncounter admission) {
+        if (admission == null || admission.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT pr FROM PatientRoom pr"
+                + " LEFT JOIN pr.patientEncounter e"
+                + " LEFT JOIN e.parentEncounter par"
+                + " WHERE TYPE(pr) = :theatreClass"
+                + " AND pr.retired = false"
+                + " AND (pr.discharged = false OR pr.discharged IS NULL)"
+                + " AND (e = :pe OR par = :pe)"
+                + " ORDER BY pr.admittedAt";
+        Map<String, Object> params = new HashMap<>();
+        params.put("theatreClass", TheatreRoom.class);
+        params.put("pe", admission);
+        return getPatientRoomFacade().findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * User message for a theatre stay that blocks {@code action}, e.g.
+     * "nursing discharge".
+     */
+    public String openTheatreRoomMessage(PatientRoom theatreRoom, String action) {
+        String theatre = theatreRoom.getRoomFacilityCharge() != null
+                ? theatreRoom.getRoomFacilityCharge().getName() : "theatre";
+        String since = theatreRoom.getAdmittedAt() != null
+                ? CommonFunctions.getDateFormat(theatreRoom.getAdmittedAt(), "dd MMM yyyy hh:mm a") : "an unknown time";
+        return "Patient is still in theatre (" + theatre + ", since " + since + "). Theatre charges keep running until the"
+                + " patient is returned to the ward from the Theatre Dashboard. Complete Return to Ward before " + action + ".";
     }
 
     public List<PatientItem> fetchPatientItem(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
@@ -3395,8 +3540,7 @@ public class InwardBeanController implements Serializable {
             if (cc != null && billFee.getBillItem() != null) {
                 BillItem bi = billFee.getBillItem();
                 double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
-                Department dept = item.getDepartment() != null ? item.getDepartment()
-                        : (bi.getBill() != null ? bi.getBill().getDepartment() : null);
+                Department dept = resolveFeeDepartment(patientEncounter);
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
                         patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
@@ -3457,6 +3601,26 @@ public class InwardBeanController implements Serializable {
             return null;
         }
         return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
+    /**
+     * The department the inward margin matrix is looked up against, mirroring
+     * {@code BillBhtController.feeDepartment(PatientEncounter)}: the current
+     * room's facility-charge department when the patient is in a room,
+     * otherwise the encounter's own department. The credit-company-specific
+     * override in {@link #setBillFeeMargin} must use this same ward
+     * department as the base lookup — using the item's or bill's department
+     * instead meant a per-ward CC-specific row was never found (issue #24155).
+     */
+    private Department resolveFeeDepartment(PatientEncounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+        if (encounter.getCurrentPatientRoom() != null
+                && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+            return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        }
+        return encounter.getDepartment();
     }
 
     /**
@@ -3647,58 +3811,19 @@ public class InwardBeanController implements Serializable {
         return tmp;
     }
 
+    /** Delegates to {@link TimedItemPricingService#getAllTimedItemFees}. */
     public List<TimedItemFee> getAllTimedItemFees(TimedItem ti) {
-        if (ti == null || ti.getId() == null) {
-            return new ArrayList<>();
-        }
-        HashMap hm = new HashMap();
-        hm.put("id", ti.getId());
-        // The id tiebreak matters: getFeeForBlock() indexes into this list positionally,
-        // so any two fees sharing a sortOrder would otherwise order arbitrarily and the
-        // same stay could be billed at a different tier on different runs. New fees can
-        // no longer collide (TimedItemFeeRules), but rows saved before that still can.
-        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC, tif.id ASC";
-        List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
-        return fees != null ? fees : new ArrayList<>();
+        return timedItemPricingService.getAllTimedItemFees(ti);
     }
 
+    /** Delegates to {@link TimedItemPricingService#getFeeForBlock}. */
     public TimedItemFee getFeeForBlock(List<TimedItemFee> fees, int blockNumber) {
-        if (fees == null || fees.isEmpty()) {
-            return null;
-        }
-        if (blockNumber <= fees.size()) {
-            return fees.get(blockNumber - 1);
-        }
-        TimedItemFee lastFee = fees.get(fees.size() - 1);
-        if (lastFee.isRepeating() || fees.size() == 1) {
-            return lastFee;
-        }
-        return null;
+        return timedItemPricingService.getFeeForBlock(fees, blockNumber);
     }
 
+    /** Delegates to {@link TimedItemPricingService#calTotalTimedChargeForItem}. */
     public double calTotalTimedChargeForItem(TimedItem ti, Date fromTime, Date toTime, boolean foreigner) {
-        List<TimedItemFee> fees = getAllTimedItemFees(ti);
-        if (fees.isEmpty()) {
-            return 0.0;
-        }
-        TimedItemFee firstFee = fees.get(0);
-        double count = calCount(firstFee, fromTime, toTime);
-        int wholeBlocks = (int) count;
-        double total = 0.0;
-        for (int b = 1; b <= wholeBlocks; b++) {
-            TimedItemFee fee = getFeeForBlock(fees, b);
-            if (fee != null) {
-                total += foreigner ? fee.getFfee() : fee.getFee();
-            }
-        }
-        double remainder = count - wholeBlocks;
-        if (remainder > 0) {
-            TimedItemFee fee = getFeeForBlock(fees, wholeBlocks + 1);
-            if (fee != null) {
-                total += (foreigner ? fee.getFfee() : fee.getFee()) * remainder;
-            }
-        }
-        return total;
+        return timedItemPricingService.calTotalTimedChargeForItem(ti, fromTime, toTime, foreigner);
     }
 
     public TimedItemFeeFacade getTimedItemFeeFacade() {
@@ -3883,54 +4008,9 @@ public class InwardBeanController implements Serializable {
     }
     
 
+    /** Delegates to {@link TimedItemPricingService#calCount}. */
     public double calCount(TimedItemFee tif, Date admittedDate, Date dischargedDate) {
-
-        // No fee configured at all counts the same as a fee with no duration set:
-        // nothing to bill. RoomFacilityCharge.timedItemFee is a nullable mapping,
-        // so this is reachable from the room paths, and a missing configuration
-        // should not break the page that is rendering the bill.
-        if (tif == null) {
-            return 0;
-        }
-
-        // A one-time fee is charged once for the whole service, however long it
-        // ran — no block counting, and no dependency on elapsed time at all.
-        if (tif.isOneTime()) {
-            return 1;
-        }
-
-        double duration = tif.getDurationMinutes();
-        double overShoot = tif.getOverShootMinutes();
-        //  double tempFee = tif.getFee();
-        double consumeTime = 0;
-
-        if (dischargedDate == null) {
-            dischargedDate = new Date();
-        }
-
-        consumeTime = CommonFunctions.calculateDurationMin(admittedDate, dischargedDate);
-        if (consumeTime == 0) {
-            return 0;
-        }
-        double count = 0;
-        double calculation = 0;
-
-        if (consumeTime != 0 && duration != 0) {
-            if (tif.isBooleanValue()) {
-                //For Minut Calculation (Theatre Charges)
-                count = (consumeTime / duration);
-            } else {
-                //For Room Calculation Hour(For Room Charges)
-                count = (long) (consumeTime / duration);
-            }
-
-            calculation = (consumeTime - (count * duration));
-            if ((overShoot != 0 && overShoot <= calculation) || count == 0) {
-                count++;
-            }
-        }
-
-        return count;
+        return timedItemPricingService.calCount(tif, admittedDate, dischargedDate);
     }
 
     public ItemFeeFacade getItemFeeFacade() {

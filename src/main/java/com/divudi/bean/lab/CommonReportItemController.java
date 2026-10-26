@@ -23,6 +23,8 @@ import com.divudi.core.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.lab.ReportPageSettings;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +57,8 @@ public class CommonReportItemController implements Serializable {
     @EJB
     CategoryFacade categoryFacade;
 //  Controllers
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     SessionController sessionController;
     @Inject
@@ -168,6 +172,51 @@ public class CommonReportItemController implements Serializable {
 //        System.err.println("m = " + m);
         items = getFacade().findByJpql(temSql, m);
         return items;
+    }
+
+    /**
+     * Common report items that print on the given page of a multi-page report.
+     * An item with page 0 prints on every page; otherwise only on its own page.
+     */
+    public List<CommonReportItem> listCommonReportItemsForPage(Category commenReportFormat, int page) {
+        List<CommonReportItem> onPage = new ArrayList<>();
+        for (CommonReportItem i : listCommonRportItems(commenReportFormat)) {
+            if (i.getPageNo() < 1 || i.getPageNo() == page) {
+                onPage.add(i);
+            }
+        }
+        return onPage;
+    }
+
+    private int bulkPageNo;
+
+    public boolean isMultiPageEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(ReportPageSettings.CONFIG_KEY_ENABLED, false);
+    }
+
+    public int getBulkPageNo() {
+        return bulkPageNo;
+    }
+
+    public void setBulkPageNo(int bulkPageNo) {
+        this.bulkPageNo = bulkPageNo;
+    }
+
+    /**
+     * Sets "Show on" (0 = all pages, n = page n only) for every item of the
+     * selected common report format. A format is shared by every investigation
+     * that uses it, so use a format made for two-page reports.
+     */
+    public void applyPageToAllItems() {
+        if (category == null) {
+            JsfUtil.addErrorMessage("Select a report format");
+            return;
+        }
+        for (CommonReportItem i : listCommonRportItems(category)) {
+            i.setPageNo(bulkPageNo);
+            getFacade().edit(i);
+        }
+        JsfUtil.addSuccessMessage("Show on updated for all items of the format");
     }
 
     public void addNewValue() {

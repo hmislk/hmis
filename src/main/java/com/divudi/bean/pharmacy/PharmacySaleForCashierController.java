@@ -97,7 +97,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -1992,8 +1992,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
      */
     private List<StockDTO> executeFullSearchAndCacheMetadata(String qry, SearchConfig searchConfig, String cacheKey) {
         try {
-            // Use LinkedHashSet to maintain ordering and eliminate duplicates
-            Set<StockDTO> orderedResults = new LinkedHashSet<>();
+            // Keyed by stock id to keep relevance order and drop duplicates: StockDTO has no
+            // equals/hashCode, and a stock can match both queries (code prefix + name contains)
+            Map<Long, StockDTO> orderedResults = new LinkedHashMap<>();
 
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("department", getSessionController().getLoggedUser().getDepartment());
@@ -2004,7 +2005,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             // Step 1: Get prefix matches first (highest relevance)
             List<StockDTO> prefixResults = executeSearchQuery(qry, searchConfig, parameters, true);
             if (prefixResults != null) {
-                orderedResults.addAll(prefixResults);
+                for (StockDTO dto : prefixResults) {
+                    orderedResults.putIfAbsent(dto.getId(), dto);
+                }
             }
 
             // Step 2: Get contains matches if we need more results (lower relevance)
@@ -2012,12 +2015,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 parameters.put("searchContains", "%" + qry + "%");
                 List<StockDTO> containsResults = executeSearchQuery(qry, searchConfig, parameters, false);
                 if (containsResults != null) {
-                    orderedResults.addAll(containsResults); // Set automatically handles duplicates
+                    for (StockDTO dto : containsResults) {
+                        orderedResults.putIfAbsent(dto.getId(), dto);
+                    }
                 }
             }
 
             // Convert to list maintaining the insertion order (relevance order)
-            List<StockDTO> finalResults = new ArrayList<>(orderedResults);
+            List<StockDTO> finalResults = new ArrayList<>(orderedResults.values());
 
             // Limit to 20 results
             if (finalResults.size() > 20) {
@@ -3849,6 +3854,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 }
             }
 
+            linkIssuedPharmacyTokenToPreBill();
             if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
                 if (getPatient() != null) {
                     Token t = tokenController.findPharmacyTokens(getPreBill());
@@ -4087,6 +4093,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         }
 //        setPrintBill(getBillFacade().find(id));
 
+        linkIssuedPharmacyTokenToPreBill();
         if (configOptionController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
 
             if (getPatient() != null) {
@@ -4113,6 +4120,23 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         resetAll();
         setPrintBill(billService.reloadBill(id));
         billPreview = true;
+    }
+
+    /**
+     * Links a token issued from Token Management (PHARMACY_TOKEN) to the
+     * pre-bill created for it, so Manage Pharmacy Tokens can show the bill and
+     * offer Pay at Cashier.
+     */
+    private void linkIssuedPharmacyTokenToPreBill() {
+        Token t = getToken();
+        if (t == null || t.getTokenType() != TokenType.PHARMACY_TOKEN) {
+            return;
+        }
+        if (getPreBill() == null || getPreBill().getId() == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        tokenController.save(t);
     }
 
     public void markInprogress() {

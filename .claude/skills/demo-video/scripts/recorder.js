@@ -25,12 +25,18 @@ async function login(page, dept = DEPT) {
   await page.fill('[id$=txtUserName]', c.user);
   await page.fill('[id$=pwd]', c.pass);
   await Promise.all([page.waitForLoadState('networkidle'), page.click('button:has-text("Login")')]);
-  // department picker: filterable selectOneMenu whose items are table rows
-  await page.click('[id$=formDept] .ui-selectonemenu');
-  await page.locator('.ui-selectonemenu-filter:visible').pressSequentially(dept, { delay: 40 });
-  await sleep(400);
-  await page.locator(`tr.ui-selectonemenu-row:visible:has(td:text-is("${dept}")), tr.ui-selectonemenu-item:visible:has(td:text-is("${dept}"))`).first().click();
-  await Promise.all([page.waitForLoadState('networkidle'), page.click('[id$="formDept:btnSelect"]')]);
+  // department picker: filterable selectOneMenu whose items are table rows.
+  // A WebUser with only one department skips the picker and lands straight on the
+  // app, so don't hang forever waiting for an element that will never appear.
+  const pickerShown = await page.locator('[id$=formDept] .ui-selectonemenu')
+    .waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
+  if (pickerShown) {
+    await page.click('[id$=formDept] .ui-selectonemenu');
+    await page.locator('.ui-selectonemenu-filter:visible').pressSequentially(dept, { delay: 40 });
+    await sleep(400);
+    await page.locator(`tr.ui-selectonemenu-row:visible:has(td:text-is("${dept}")), tr.ui-selectonemenu-item:visible:has(td:text-is("${dept}"))`).first().click();
+    await Promise.all([page.waitForLoadState('networkidle'), page.click('[id$="formDept:btnSelect"]')]);
+  }
   await sleep(800);
 }
 
@@ -49,7 +55,7 @@ async function menuQuiet(page, top, item) {
   await Promise.all([page.waitForLoadState('networkidle'), li.locator(`a:has-text("${item}")`).first().click()]);
 }
 
-async function run(chromium, { setup, flow, workDir = process.cwd() }) {
+async function run(chromium, { setup, flow, workDir = process.cwd(), manualLogin = false }) {
   if (!DEPT) { console.error('Set DEPT to the login department label, e.g. DEPT="Main Pharmacy"'); process.exit(2); }
   const script = JSON.parse(fs.readFileSync(path.join(workDir, 'script.json'), 'utf8'));
   const dur = JSON.parse(fs.readFileSync(path.join(workDir, 'audio', 'durations.json'), 'utf8'));
@@ -69,8 +75,8 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
   await ctx.addInitScript(overlay);
   const p = await ctx.newPage();
   const tVideo = Date.now();
-  await login(p);
-  await sleep(800);
+  if (manualLogin) { await p.goto(BASE, { waitUntil: 'networkidle' }); }
+  else { await login(p); await sleep(800); }
   const t0 = Date.now();
   const marks = [];
   let stepId, stepStart;
@@ -133,7 +139,10 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
     async pinGrowl() {
       const kept = await p.evaluate(() => document.getElementById('__keep')?.innerText.trim() || null);
       if (kept) return kept;
-      await p.locator('.ui-growl-item-container').first().waitFor({ timeout: 5000 }).catch(() => {});
+      // wait for the message text, not just the container: PrimeFaces adds the container first
+      // and fades the text in, so reading it too early returns ''
+      await p.locator('.ui-growl-item-container .ui-growl-message').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+      await sleep(300);
       return p.evaluate(() => {
         const g = document.querySelector('.ui-growl-item-container'); if (!g) return null;
         const b = g.getBoundingClientRect(); const c = g.cloneNode(true);
@@ -144,7 +153,7 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
         c.querySelectorAll('*').forEach(e => { e.style.color = fg; e.style.background = 'transparent'; });
         document.querySelectorAll('.ui-growl').forEach(e => e.style.visibility = 'hidden');
         document.body.appendChild(c);
-        return g.innerText.trim();
+        return (g.innerText.trim() || g.textContent.replace(/\s+/g, ' ').trim());
       });
     },
     // drop the pinned copy and dismiss the original growl (as a user closing it would) -
@@ -169,4 +178,4 @@ async function run(chromium, { setup, flow, workDir = process.cwd() }) {
   console.log(`recorded ${marks.length} steps, ${total.toFixed(1)}s, ${W}x${H}`);
 }
 
-module.exports = { run, login, topMenu, sleep };
+module.exports = { run, login, topMenu, sleep, creds };

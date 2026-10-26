@@ -16,6 +16,10 @@
                         overflow: hidden;
                         text-overflow: ellipsis;
                     }
+                    /* Rows left blank (All ...) apply to every value, so they are tinted to stand out in a long list. */
+                    .discount-wildcard-row td {
+                        background-color: #fff8e1 !important;
+                    }
                 </style>
                 <h:form>
                     <p:panel header="Inward Discount Matrix - Services and Investigations" id="reportPrint" class="row w-100">
@@ -208,12 +212,20 @@
                                 </div>
                             </f:facet>
 
+                            <p class="text-muted small mb-2">
+                                Shaded rows with "All (no category)" are scheme-wide fallbacks: they apply to every category that has no row of its own.
+                                They are not tied to Services, so the same row also appears on the Pharmacy page.
+                                To give every category the same discount, select all categories above; one row is added per category.
+                                Filtering by department, category, admission type or BHT type still lists the "All ..." rows, because they apply too.
+                            </p>
+
                             <p:dataTable
                                 id="discountTbl"
                                 value="#{inwardDiscountMatrixController.items}"
                                 filteredValue="#{inwardDiscountMatrixController.filterItems}"
                                 var="a"
                                 rowKey="#{a.id}"
+                                rowStyleClass="#{empty a.category ? 'discount-wildcard-row' : ''}"
                                 paginator="true"
                                 rows="25"
                                 rowsPerPageTemplate="25,50,100,200"

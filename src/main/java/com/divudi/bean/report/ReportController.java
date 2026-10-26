@@ -6885,6 +6885,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.department = department;
     }
 
+    public boolean hasFromDate() {
+        return fromDate != null;
+    }
+
+    public boolean hasToDate() {
+        return toDate != null;
+    }
+
     @Override
     public Date getFromDate() {
         if (fromDate == null) {
@@ -8695,6 +8703,134 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             context.responseComplete();
         } catch (Exception e) {
             Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Error exporting Petty Cash Payment Report to PDF", e);
+        }
+    }
+
+    private Map<String, Object> getFiltersForDebtorSettlementReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "N/A");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "N/A");
+        filters.put("Credit Company", institution != null ? institution.getName() : "All");
+        filters.put("Settlement Status", selectedVoucherStatusOnDebtorSettlement != null ? selectedVoucherStatusOnDebtorSettlement : "All");
+        return filters;
+    }
+
+    public void exportDebtorSettlementReportToPdf() {
+        if (billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Debtor_Settlement_Report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Debtor_Settlement_Report.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (sessionController.getInstitution() != null && sessionController.getInstitution().getName() != null) {
+                document.add(new Paragraph(sessionController.getInstitution().getName(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            }
+            document.add(new Paragraph("Debtor Settlement Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable infoTable = createInfoTable(getFiltersForDebtorSettlementReport());
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            int columnCount = 12;
+            PdfPTable table = new PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+            table.setHeaderRows(1);
+            table.setWidths(new float[]{1f, 5f, 4f, 3f, 3f, 3f, 3f, 4f, 3f, 3f, 4f, 4f});
+            String[] headers = new String[]{"S", "Credit Company", "Voucher No", "Voucher Amount", "Adjusted Amount", "Balance Amount",
+                "Payment Method", "Narration", "Voucher Status", "Settlement Status", "Created By", "Approved By"};
+
+            java.awt.Color lightGray = new java.awt.Color(192, 192, 192);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setBackgroundColor(lightGray);
+                table.addCell(cell);
+            }
+
+            int serialNo = 1;
+            for (BillItem bi : billItems) {
+                Bill b = bi.getBill();
+                if (b == null) {
+                    continue;
+                }
+                Bill cancelledBill = b.isCancelled() ? b.getCancelledBill() : null;
+
+                addPdfTextCell(table, String.valueOf(serialNo++), normalFont, null, Element.ALIGN_RIGHT);
+                addPdfTextCell(table, b.getFromInstitution() != null ? b.getFromInstitution().getName() : "", normalFont, null, Element.ALIGN_LEFT);
+
+                String voucherNo = b.getDeptId() != null ? b.getDeptId() : "";
+                if (cancelledBill != null && cancelledBill.getDeptId() != null) {
+                    voucherNo += "\n(Cancelled - " + cancelledBill.getDeptId() + ")";
+                }
+                addPdfTextCell(table, voucherNo, normalFont, null, Element.ALIGN_LEFT);
+
+                addPdfNumberCell(table, b.getTotal(), normalFont, null);
+                addPdfNumberCell(table, b.getAdjustedTotal(), normalFont, null);
+                addPdfNumberCell(table, b.getNetTotal(), normalFont, null);
+                addPdfTextCell(table, b.getPaymentMethod() != null ? b.getPaymentMethod().getLabel() : "", normalFont, null, Element.ALIGN_LEFT);
+
+                String narration = bi.getReferenceBill() != null && bi.getReferenceBill().getDeptId() != null ? bi.getReferenceBill().getDeptId() : "";
+                if (cancelledBill != null && cancelledBill.getDeptId() != null) {
+                    narration += "\nCancelled by " + cancelledBill.getDeptId();
+                }
+                addPdfTextCell(table, narration, normalFont, null, Element.ALIGN_LEFT);
+
+                addPdfTextCell(table, b.getApproveUser() != null ? "Approved" : "Not Approved", normalFont, null, Element.ALIGN_LEFT);
+                addPdfTextCell(table, classifyVoucherSettlementStatus(bi), normalFont, null, Element.ALIGN_LEFT);
+
+                String createdBy = b.getCreater() != null && b.getCreater().getName() != null ? b.getCreater().getName() : "";
+                if (cancelledBill != null && cancelledBill.getCreater() != null && cancelledBill.getCreater().getName() != null) {
+                    createdBy += "\nCancelled by " + cancelledBill.getCreater().getName();
+                }
+                addPdfTextCell(table, createdBy, normalFont, null, Element.ALIGN_LEFT);
+                addPdfTextCell(table, b.getApproveUser() != null && b.getApproveUser().getName() != null ? b.getApproveUser().getName() : "", normalFont, null, Element.ALIGN_LEFT);
+            }
+
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Net Total", headerFont));
+            totalLabel.setColspan(3);
+            totalLabel.setBackgroundColor(lightGray);
+            table.addCell(totalLabel);
+            addPdfNumberCell(table, netTotal, headerFont, lightGray);
+            PdfPCell totalFiller = new PdfPCell(new Phrase(""));
+            totalFiller.setColspan(columnCount - 4);
+            totalFiller.setBackgroundColor(lightGray);
+            table.addCell(totalFiller);
+
+            document.add(table);
+
+            String generatedBy = sessionController.getLoggedUser() != null && sessionController.getLoggedUser().getName() != null
+                    ? sessionController.getLoggedUser().getName() : "";
+            document.add(new Paragraph("Generated by " + generatedBy + " @ " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 8)));
+
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Error exporting Debtor Settlement Report to PDF", e);
         }
     }
 

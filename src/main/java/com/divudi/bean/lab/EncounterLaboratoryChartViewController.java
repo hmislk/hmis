@@ -1,6 +1,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.inward.AdmissionController;
 import com.divudi.core.data.dto.InvestigationDTO;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
@@ -69,6 +70,8 @@ public class EncounterLaboratoryChartViewController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    AdmissionController admissionController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -86,6 +89,7 @@ public class EncounterLaboratoryChartViewController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToBackInpatientDashboard() {
+        admissionController.refreshDashboardFinancials();
         return "/inward/admission_profile?faces-redirect=true";
     }
 

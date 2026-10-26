@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="itemMovementGrowl"></p:growl>
+            <p:panel>
+                <f:facet name="header">
+                    <h:outputText styleClass="fa fa-pills"></h:outputText>
+                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Pharmacy Item Summary" class="m-2"></p:outputLabel>
+
+                    <p:commandButton
+                        value="Download"
+                        ajax="false"
+                        rendered="#{inpatientPharmacyItemMovementController.patientEncounter ne null}"
+                        class="ui-button-primary m-1"
+                        icon="fa fa-download">
+                        <p:dataExporter fileName="Inpatient Pharmacy Item Summary" target="tbl" type="xlsx"></p:dataExporter>
+                    </p:commandButton>
+
+                    <p:commandButton
+                        value="Print"
+                        ajax="false"
+                        rendered="#{inpatientPharmacyItemMovementController.patientEncounter ne null}"
+                        class="ui-button-primary m-1"
+                        icon="fa fa-print">
+                        <p:printer target="printArea"></p:printer>
+                    </p:commandButton>
+
+                    <p:commandButton
+                        value="Inpatient Dashboard"
+                        rendered="#{inpatientPharmacyItemMovementController.openedFromDashboard}"
+                        action="#{admissionController.navigateToAdmissionProfilePage}"
+                        style="float: right;"
+                        ajax="false"
+                        class="ui-button-secondary m-1"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+
+                    <p:commandButton
+                        value="New Search"
+                        rendered="#{not inpatientPharmacyItemMovementController.openedFromDashboard and inpatientPharmacyItemMovementController.patientEncounter ne null}"
+                        action="#{inpatientPharmacyItemMovementController.newSearch}"
+                        style="float: right;"
+                        ajax="false"
+                        class="ui-button-warning m-1"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+                </f:facet>
+
+                <h:panelGroup rendered="#{inpatientPharmacyItemMovementController.patientEncounter eq null}">
+                    <div class="d-flex align-items-center">
+                        <h:outputLabel value="Type Patient Name or BHT : " class="me-2"/>
+                        <p:autoComplete
+                            id="acBht"
+                            forceSelection="true"
+                            value="#{inpatientPharmacyItemMovementController.patientEncounter}"
+                            completeMethod="#{admissionController.completePatient}"
+                            var="apt"
+                            itemLabel="#{apt.bhtNo}"
+                            itemValue="#{apt}"
+                            size="30"
+                            inputStyleClass="form-control"
+                            class="mx-2 w-50">
+                            <p:column headerText="BHT No" style="padding: 6px; width: 150px;">
+                                <h:outputLabel value="#{apt.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient Name" style="padding: 6px;">
+                                <h:outputLabel value="#{apt.patient.person.name}"/>
+                            </p:column>
+                            <p:column headerText="Room No" style="padding: 6px; width: 200px;">
+                                <h:outputLabel value="#{apt.currentPatientRoom.roomFacilityCharge.name}"/>
+                            </p:column>
+                        </p:autoComplete>
+                        <p:commandButton
+                            value="Process"
+                            ajax="false"
+                            icon="fa fa-cogs"
+                            class="ui-button-success"
+                            action="#{inpatientPharmacyItemMovementController.processItemMovementSummary}">
+                        </p:commandButton>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup id="printArea" layout="block" rendered="#{inpatientPharmacyItemMovementController.patientEncounter ne null}">
+                    <div class="row">
+                        <div class="col-3">
+                            <common:admission_details admission="#{inpatientPharmacyItemMovementController.patientEncounter}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                        <div class="col-9">
+                            <p:dataTable
+                                id="tbl"
+                                rowIndexVar="rowIndex"
+                                value="#{inpatientPharmacyItemMovementController.items}"
+                                var="dto"
+                                emptyMessage="No pharmacy issues for this admission">
+
+                                <f:facet name="header">
+                                    <h:outputText value="Pharmacy items of BHT #{inpatientPharmacyItemMovementController.patientEncounter.bhtNo} - #{inpatientPharmacyItemMovementController.patientEncounter.patient.person.nameWithTitle} (all batches combined; issues include bills later cancelled, shown under Cancelled)" />
+                                </f:facet>
+
+                                <p:column headerText="No" width="2em" style="padding: 2px">
+                                    <h:outputText value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column headerText="Item" width="16em" style="padding: 2px">
+                                    <h:outputText value="#{dto.itemName}" />
+                                    <f:facet name="footer">
+                                        <h:outputText value="Total" />
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Direct Issue Qty" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.directIssueQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Direct Issue Value" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.directIssueValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{inpatientPharmacyItemMovementController.directIssueValueTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Issued on Request Qty" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.requestIssueQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Issued on Request Value" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.requestIssueValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{inpatientPharmacyItemMovementController.requestIssueValueTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Returned Qty" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.returnQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Returned Value" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.returnValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{inpatientPharmacyItemMovementController.returnValueTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Cancelled Qty" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.cancelledQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Cancelled Value" style="text-align: right; padding: 2px">
+                                    <h:outputText value="#{dto.cancelledValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{inpatientPharmacyItemMovementController.cancelledValueTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Net Qty" style="text-align: right; padding: 2px; font-weight: bold">
+                                    <h:outputText value="#{dto.netQty}">
+                                        <f:convertNumber pattern="#,##0.##" />
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Net Value" style="text-align: right; padding: 2px; font-weight: bold">
+                                    <h:outputText value="#{dto.netValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{inpatientPharmacyItemMovementController.netValueTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

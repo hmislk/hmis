@@ -160,6 +160,7 @@
                                 <p:column
                                     width="4em"
                                     headerText="Ordered Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Ordered Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
@@ -169,6 +170,7 @@
                                 <p:column
                                     width="4em"
                                     headerText="Ordered Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Ordered Free Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
@@ -199,6 +201,7 @@
                                 <p:column
                                     width="6em"
                                     headerText="Received Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Received Free Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
@@ -233,6 +236,7 @@
                                 <p:column
                                     width="8em"
                                     headerText="Discount Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Discount Rate Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
@@ -268,6 +272,7 @@
                                 </p:column>
                                 <p:column
                                     headerText="Wholesale Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Wholesale Rate Column', true)}"
                                     width="8em"
                                     styleClass="text-end">
                                     <p:inputText
@@ -287,6 +292,7 @@
 
                                 <p:column
                                     headerText="Line Net Total"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Line Net Total Column', true)}"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:panelGroup id="total">
@@ -323,6 +329,7 @@
                                 </p:column>
                                 <p:column
                                     headerText="Comments"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Comments Column', true)}"
                                     width="5em"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
@@ -868,8 +875,11 @@
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup class="d-flex justify-content-center">
                             <pha:grn_with_costing
-                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One', configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true))}"
                                 bill="#{grnCostingNativeSqlController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing_new
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two', false)}"
+                                bill="#{grnCostingNativeSqlController.currentGrnBillPre}" />
                             <pha:grn_with_costing_custom_1
                                 rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
                                 bill="#{grnCostingNativeSqlController.currentGrnBillPre}"/>
@@ -944,10 +954,18 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
-                                        id="grnReceiptA4"
-                                        value="#{pharmacyConfigController.grnReceiptA4}" />
-                                    <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
-                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
+                                        id="grnReceiptA4One"
+                                        value="#{pharmacyConfigController.grnReceiptA4One}" />
+                                    <p:outputLabel for="grnReceiptA4One" value="A4 Paper Format One" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format One</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptA4Two"
+                                        value="#{pharmacyConfigController.grnReceiptA4Two}" />
+                                    <p:outputLabel for="grnReceiptA4Two" value="A4 Paper Format Two" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format Two</small>
                                 </div>
 
                                 <div class="mb-3">

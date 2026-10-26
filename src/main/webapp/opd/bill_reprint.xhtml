@@ -186,9 +186,25 @@
                                                 ajax="false">
                                                 <p:printer target="groupPrint" />
                                             </p:commandButton>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}">
+                                                <p:commandButton
+                                                    value="Print (Raw Text)"
+                                                    title="Download a .prn file for the dot-matrix print agent"
+                                                    class="ui-button-help mx-1"
+                                                    icon="fa fa-file-lines"
+                                                    ajax="false"
+                                                    action="#{opdRawTextBillController.streamBill(billSearch.bill, true)}"/>
+                                                <p:commandButton
+                                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                    title="Raw Text Print Settings"
+                                                    icon="fas fa-cog"
+                                                    class="ui-button-secondary"
+                                                    type="button"
+                                                    onclick="PF('opdRawTextSettingsDialog').show();"/>
+                                            </h:panelGroup>
 
-                                            <p:commandButton 
-                                                value="Print Refund Bill" 
+                                            <p:commandButton
+                                                value="Print Refund Bill"
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
                                                 style="float: right"
@@ -550,6 +566,7 @@
 
                     </p:panel>
                 </h:form>
+                <ui:include src="/opd/raw_text_bill_settings_dialog.xhtml"/>
             </ui:define>
 
         </ui:composition>

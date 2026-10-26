@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.RoomOccupancyReportDto;
 import com.divudi.core.entity.Department;
@@ -7,16 +8,20 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import java.util.stream.Collectors;
@@ -31,6 +36,13 @@ import com.lowagie.text.Paragraph;
 import java.awt.Color;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @Named
 @SessionScoped
@@ -38,6 +50,11 @@ public class RoomOccupancyReportController implements Serializable {
 
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private DepartmentFacade departmentFacade;
+
+    @Inject
+    private SessionController sessionController;
 
     private Date fromDate;
     private Date toDate;
@@ -215,7 +232,8 @@ public class RoomOccupancyReportController implements Serializable {
 
     private void addReportHeader(Document pdf, String title) throws DocumentException {
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, Color.DARK_GRAY);
-        Font metaFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
+        // Darker, larger meta font than before (issue: filters were present but easy to miss in the PDF)
+        Font metaFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.BLACK);
 
         Paragraph titlePara = new Paragraph(title, titleFont);
         titlePara.setAlignment(Element.ALIGN_CENTER);
@@ -226,6 +244,39 @@ public class RoomOccupancyReportController implements Serializable {
         metaPara.setAlignment(Element.ALIGN_CENTER);
         metaPara.setSpacingAfter(12f);
         pdf.add(metaPara);
+    }
+
+    /**
+     * The filter values currently applied to the report, keyed by label, in
+     * display order. Shared by the PDF header, the Excel export header and the
+     * on-screen/print "Applied Filters" line so the three stay consistent.
+     */
+    private Map<String, Object> collectActiveFilters() {
+        Map<String, Object> filters = new LinkedHashMap<>();
+        filters.put("Discharge From", fromDate != null ? HEADER_DATE_FMT.format(fromDate) : "N/A");
+        filters.put("Discharge To", toDate != null ? HEADER_DATE_FMT.format(toDate) : "N/A");
+        if (selectedPatient != null) {
+            filters.put("Patient MRN", selectedPatient.getBhtNo());
+        }
+        if (ward != null) {
+            filters.put("Ward", ward.getName());
+        }
+        if (roomFacilityCharge != null) {
+            filters.put("Bed", roomFacilityCharge.getName());
+        }
+        if (roomCategory != null) {
+            filters.put("Room Category", roomCategory.getName());
+        }
+        if (admissionType != null) {
+            filters.put("Admission Type", admissionType.getName());
+        }
+        if (institution != null) {
+            filters.put("Institution", institution.getName());
+        }
+        if (site != null) {
+            filters.put("Site", site.getName());
+        }
+        return filters;
     }
 
     private String buildFilterSummary() {
@@ -260,7 +311,141 @@ public class RoomOccupancyReportController implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Plain-text "Applied Filters" line for the on-screen/print view (Issue:
+     * downloaded PDF/Excel showed the applied filters but the printed page did
+     * not carry any indication of what was filtered).
+     */
+    public String getAppliedFiltersSummary() {
+        Map<String, Object> filters = collectActiveFilters();
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            if (!first) {
+                sb.append("   |   ");
+            }
+            sb.append(entry.getKey()).append(": ").append(entry.getValue());
+            first = false;
+        }
+        return sb.toString();
+    }
+
+    // PostProcessor for the Detail Excel export: inserts the applied filters
+    // above the exported rows (Issue: downloaded Excel had no indication of
+    // which filters produced the data).
+    public void postProcessDetailExcel(Object document) {
+        insertExcelFilterSummary(document, "Room Occupancy Report - Detail");
+    }
+
+    // PostProcessor for the Summary Excel export (same purpose as above).
+    public void postProcessSummaryExcel(Object document) {
+        String title = "Summary By Admission Type".equals(reportType)
+                ? "Room Occupancy Report - Summary By Admission Type"
+                : "Room Occupancy Report - Summary By Room Category";
+        insertExcelFilterSummary(document, title);
+    }
+
+    private void insertExcelFilterSummary(Object document, String title) {
+        if (!(document instanceof XSSFWorkbook)) {
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        Map<String, Object> filters = collectActiveFilters();
+        String institutionName = sessionController != null && sessionController.getInstitution() != null
+                ? sessionController.getInstitution().getName() : null;
+
+        int filterRows = Math.max(1, (int) Math.ceil(filters.size() / 3.0));
+        int rowsNeeded = (institutionName != null ? 1 : 0) + 1 + filterRows + 1;
+
+        int lastRowNum = sheet.getLastRowNum();
+        if (sheet.getPhysicalNumberOfRows() > 0) {
+            sheet.shiftRows(0, lastRowNum, rowsNeeded);
+        }
+
+        org.apache.poi.ss.usermodel.Font instFont = workbook.createFont();
+        instFont.setBold(true);
+        instFont.setFontHeightInPoints((short) 14);
+        CellStyle instStyle = workbook.createCellStyle();
+        instStyle.setFont(instFont);
+        instStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 12);
+        CellStyle titleStyle = workbook.createCellStyle();
+        titleStyle.setFont(titleFont);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        org.apache.poi.ss.usermodel.Font labelFont = workbook.createFont();
+        labelFont.setBold(true);
+        CellStyle labelStyle = workbook.createCellStyle();
+        labelStyle.setFont(labelFont);
+
+        int lastCol = 7;
+        int rowIndex = 0;
+
+        if (institutionName != null) {
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(institutionName);
+            instCell.setCellStyle(instStyle);
+        }
+
+        sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 0, lastCol));
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(title);
+        titleCell.setCellStyle(titleStyle);
+
+        int pairCounter = 0;
+        Row row = sheet.createRow(rowIndex++);
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            Cell labelCell = row.createCell(pairCounter * 3);
+            labelCell.setCellValue(entry.getKey() + ":");
+            labelCell.setCellStyle(labelStyle);
+
+            Cell valueCell = row.createCell(pairCounter * 3 + 1);
+            valueCell.setCellValue(String.valueOf(entry.getValue()));
+
+            pairCounter++;
+            if (pairCounter == 3) {
+                pairCounter = 0;
+                row = sheet.createRow(rowIndex++);
+            }
+        }
+    }
+
+    /**
+     * Ward autocomplete: the departments that actually have rooms/beds
+     * (RoomFacilityCharge.department), which is exactly what the Ward filter
+     * matches on. The shared Inward-type department list offered departments
+     * that no room belongs to, so choosing one returned no data.
+     */
+    public List<Department> completeWard(String qry) {
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select distinct d from RoomFacilityCharge rfc "
+                + " join rfc.department d "
+                + " where rfc.retired = false "
+                + " and d.retired = false "
+                + " and upper(d.name) like :q "
+                + " order by d.name";
+        params.put("q", "%" + (qry == null ? "" : qry.toUpperCase()) + "%");
+        return departmentFacade.findByJpql(jpql, params);
+    }
+
+    // Both discharge calendars default to the same day (start / end of today).
+    // Left null, each picker filled in the current clock time on its own, so
+    // Discharge From and Discharge To came out as different moments.
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -269,6 +454,9 @@ public class RoomOccupancyReportController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 

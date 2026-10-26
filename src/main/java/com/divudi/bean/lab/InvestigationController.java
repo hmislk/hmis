@@ -1568,6 +1568,8 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Item code is already used");
             return;
         }
+
+        itemController.warnIfItemNameDuplicated(getCurrent());
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);

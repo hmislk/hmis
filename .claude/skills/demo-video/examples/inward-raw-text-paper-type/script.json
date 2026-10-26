@@ -1,0 +1,19 @@
+[
+  {"id": "intro", "say": "This video shows the Raw Text paper type for inpatient payment and deposit receipts. Raw Text sends the receipt straight to a dot-matrix printer, without the browser's print dialog."},
+  {"id": "menu", "say": "Open the Payments menu and click Payment Management."},
+  {"id": "accordion", "say": "Expand Inward Deposit, and click Payment."},
+  {"id": "patient", "say": "Type the patient's name or BHT number, pick the admission, and click select."},
+  {"id": "pay", "say": "Choose Cash, enter the amount, and click Pay."},
+  {"id": "before", "say": "The receipt opens. Raw Text is off in this department, so the page shows the usual paper preview, and prints through the browser."},
+  {"id": "settings", "say": "To change this, click Settings, next to the title. You need the Change Receipt Printing Paper Types privilege."},
+  {"id": "tick", "say": "In the Raw Text card, tick Use Raw Text paper in this department. The setting applies only to the department you are logged in to."},
+  {"id": "layout", "say": "The same card sets the layout: top margin, line width, pre-printed stationery, and which patient details to show. Here we change the line width to 48 characters, and click Apply and Close."},
+  {"id": "after", "say": "The page now shows an approximate preview of the dot-matrix print, at the new width. The print button is now Print, Raw Text, at the far right."},
+  {"id": "print", "say": "Click Print, Raw Text. The receipt downloads as a P R N file."},
+  {"id": "download", "say": "This is the downloaded file. The print agent on the cashier's computer sends it straight to the dot-matrix printer."},
+  {"id": "setup", "say": "Each cashier computer needs a one-time setup. Open Raw text printer setup, under the preview. It lists five steps, with a button to download the print agent, and a link to the full guide."},
+  {"id": "reprintNav", "say": "Reprints work the same way. Go back to Payment Management, and under Inward Deposit, click Payment Search."},
+  {"id": "search", "say": "Enter the BHT number, click Search, and then click the bill number."},
+  {"id": "reprint", "say": "The reprint shows the original and the duplicate, side by side, with Print Original and Print Duplicate Raw Text buttons."},
+  {"id": "outro", "say": "To go back to normal paper, open Settings and untick Use Raw Text paper. Deposit receipts and deposit reprints work the same way."}
+]
