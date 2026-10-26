@@ -137,7 +137,7 @@
             <div style="width: 100%;">
 
                 <table border="0" style="text-align: center; width: 100%; border: 0px!important; padding: 1px!important;">
-                    <thead style="font-size: 13px;">
+                    <thead style="font-size: 14px;">
                         <tr>
                             <th style="text-align: left!important;min-width: 34%; font-weight: bold!important;">Item</th>
                             <!--<th style="width: 4%; text-align: right!important; font-weight: bold!important;">Code</th>-->
@@ -151,11 +151,11 @@
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Last Purchase Rate</th>
                             <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Profit %</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Net Value</th>
-                            
+
                         </tr>
                     </thead>
 
-                    <tbody style="font-size: 13px;">
+                    <tbody style="font-size: 14px;">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
                                 <td style="text-align: left;">
@@ -303,7 +303,7 @@
                     </tr>
 
                 </table>
-                
+
             </div>
 
             <div class=" w-100">
@@ -346,7 +346,7 @@
                 </h:panelGroup>
 
             </div>
-            
+
             <div style="display: flex; flex-direction: column; width: 100%; font-size: 15px; margin-top: 5px;">
                 <div style="display: flex; justify-content: space-between; width: 100%;">
                     <div>
@@ -360,7 +360,7 @@
                         </h:outputLabel>
                     </div>
                 </div>
-                
+
                 <div style="display: flex; justify-content: space-between; width: 100%;">    
                     <div>
                         <h:outputLabel value="GRN Prepared By &nbsp;&nbsp; : &nbsp;" />
@@ -386,7 +386,7 @@
                         </h:outputLabel>
                     </div>
                 </div>
-                
+
                 <div style="display: flex; justify-content: space-between; width: 100%;">
                     <div>
                         <h:outputLabel value="Printed By &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : &nbsp;" />
@@ -399,9 +399,20 @@
                         </h:outputLabel>
                     </div>
                 </div>
-                
+
+                <div class="row my-4">
+                    <div class="col-6 text-center">
+                        <h:outputLabel value="......................................................................"/><br></br>
+                        <h:outputLabel value="Prepared By. " />
+                    </div>
+                    <div class="col-6 text-center">
+                        <h:outputLabel value="......................................................................"/><br></br>
+                        <h:outputLabel value="Authorized By. " />
+                    </div>
+                </div>
+
             </div>
-            
+
         </div>
     </cc:implementation>
 </html>
