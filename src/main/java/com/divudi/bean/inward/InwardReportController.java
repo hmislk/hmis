@@ -29,6 +29,7 @@ import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
 import com.divudi.core.data.dto.SurgeryCountSurgeryWiseDTO;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.entity.clinical.ClinicalEntity;
 import static com.divudi.core.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
 import static com.divudi.core.data.inward.AdmissionStatus.ANY_STATUS;
 import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
@@ -319,6 +320,14 @@ public class InwardReportController implements Serializable {
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
     private List<AdmissionDischargeDTO> admissionDischargesList;
+    // Criteria of the last Process, so the header above the rows (screen, Excel,
+    // PDF, print) describes those rows even if the filters were edited since.
+    private List<String[]> admissionDischargeCriteriaSnapshot;
+    // Admission & Discharge report (#21582)
+    private static final String BHT_CANCEL_RETIRE_COMMENT = "BHT Cancel";
+    private static final String ADMISSION_DISCHARGE_STATUS_CANCELLED = "CANCELLED";
+    private ClinicalEntity dischargeCondition;
+    private String admissionDischargeStatus;
     private Item surgeryItem;
 
     // for specialty/doctor wise income
@@ -3347,23 +3356,32 @@ public class InwardReportController implements Serializable {
     }
 
     public void processAdmissionDischargeReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select Admission From and To dates.");
+            return;
+        }
+        admissionDischargeCriteriaSnapshot = buildAdmissionDischargeCriteria();
+
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
+        // Every relationship read in the SELECT is LEFT JOINed with an alias. A path such as
+        // fb.creater.name would be an implicit INNER JOIN and silently drop every admission
+        // that has no final bill yet (i.e. all "Admitted but not discharged" rows).
         jpql.append("SELECT new com.divudi.core.data.dto.AdmissionDischargeDTO(")
-                .append("pe.patient.phn, ")
-                .append("pe.patient.person.name, ")
-                .append("pe.patient.person.mobile, ")
+                .append("pt.phn, ")
+                .append("pp.name, ")
+                .append("pp.mobile, ")
                 .append("pe.bhtNo, ")
-                .append("pe.patient.person.address, ")
+                .append("pp.address, ")
                 .append("pe.comments, ")
-                .append("pe.admissionType.name, ")
-                .append("pe.patient.person.dob, ")
-                .append("pe.patient.person.sex, ")
-                .append("pe.department.name, ")
+                .append("admType.name, ")
+                .append("pp.dob, ")
+                .append("pp.sex, ")
+                .append("dept.name, ")
                 .append("pe.dateOfAdmission, ")
                 .append("pe.dateOfDischarge, ")
-                .append("dc.name, ")
+                .append("d.name, ")
                 .append("rfc.name, ")
                 .append("rcp.name, ")
                 .append("cc.name, ")
@@ -3374,24 +3392,44 @@ public class InwardReportController implements Serializable {
                 .append("pe.amountDueAtFinalProcessing, ")
                 .append("cd.name, ")
                 .append("pe.clinicalDischargeDateTime, ")
-                .append("fb.creater.name, ")
-                .append("fb.createdAt) ")
+                .append("fbc.name, ")
+                .append("fb.createdAt, ")
+                .append("pe.id, ")
+                .append("COALESCE(crp.name, cr.name), ")
+                .append("fb.hospitalFee, ")
+                .append("fb.professionalFee, ")
+                .append("rhi.name, ")
+                .append("rdp.name, ")
+                .append("rcat.name, ")
+                .append("pe.retired, ")
+                .append("pe.discharged, ")
+                .append("pe.paymentFinalized) ")
                 .append("FROM PatientEncounter pe ")
+                .append("LEFT JOIN pe.patient pt ")
+                .append("LEFT JOIN pt.person pp ")
+                .append("LEFT JOIN pe.admissionType admType ")
+                .append("LEFT JOIN pe.department dept ")
                 .append("LEFT JOIN pe.dischargeCondition d ")
-                .append("LEFT JOIN d.category dc ")
                 .append("LEFT JOIN pe.currentPatientRoom room ")
                 .append("LEFT JOIN room.roomFacilityCharge rfc ")
+                .append("LEFT JOIN rfc.roomCategory rcat ")
                 .append("LEFT JOIN pe.referringConsultant rc ")
                 .append("LEFT JOIN rc.person rcp ")
+                .append("LEFT JOIN pe.referringDoctor rd ")
+                .append("LEFT JOIN rd.person rdp ")
+                .append("LEFT JOIN pe.referredByInstitution rhi ")
                 .append("LEFT JOIN pe.creditCompany cc ")
+                .append("LEFT JOIN pe.creater cr ")
+                .append("LEFT JOIN cr.webUserPerson crp ")
                 .append("LEFT JOIN pe.clinicalDischargedBy cd ")
-                .append("LEFT JOIN pe.finalBill fb ");
+                .append("LEFT JOIN pe.finalBill fb ")
+                .append("LEFT JOIN fb.creater fbc ");
 
-        jpql.append("WHERE pe.retired = :ret ")
-                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
-        params.put("ret", false);
+        jpql.append("WHERE pe.dateOfAdmission BETWEEN :fd AND :td ");
         params.put("fd", fromDate);
         params.put("td", toDate);
+
+        appendAdmissionDischargeStatusFilter(jpql, params);
 
         if (dischargeFromDate != null && dischargeToDate != null) {
             jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
@@ -3399,8 +3437,7 @@ public class InwardReportController implements Serializable {
             params.put("dtd", dischargeToDate);
         }
         if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
-            jpql.append("AND pe.finalBill IS NOT NULL ")
-                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            jpql.append("AND fb.createdAt BETWEEN :iafd AND :iatd ");
             params.put("iafd", invoiceApprovedFromDate);
             params.put("iatd", invoiceApprovedToDate);
         }
@@ -3409,7 +3446,7 @@ public class InwardReportController implements Serializable {
             params.put("inst", institution);
         }
         if (site != null) {
-            jpql.append("AND pe.department.site = :site ");
+            jpql.append("AND dept.site = :site ");
             params.put("site", site);
         }
         if (department != null) {
@@ -3440,24 +3477,9 @@ public class InwardReportController implements Serializable {
             jpql.append("AND rfc.roomCategory = :rc ");
             params.put("rc", roomCategory);
         }
-        if (admissionStatus != null) {
-            switch (admissionStatus) {
-                case ADMITTED_BUT_NOT_DISCHARGED:
-                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
-                    params.put("dis", false);
-                    break;
-                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
-                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
-                    params.put("dis", true);
-                    break;
-                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
-                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
-                    params.put("dis", true);
-                    break;
-                case ANY_STATUS:
-                default:
-                    break;
-            }
+        if (dischargeCondition != null) {
+            jpql.append("AND d = :dcond ");
+            params.put("dcond", dischargeCondition);
         }
 
         jpql.append("ORDER BY pe.dateOfAdmission ");
@@ -3468,9 +3490,450 @@ public class InwardReportController implements Serializable {
                     params,
                     TemporalType.TIMESTAMP
             );
+            if (admissionDischargesList == null) {
+                admissionDischargesList = new ArrayList<>();
+            }
+            fillAdmissionDischargeAdvanceAndPlan(admissionDischargesList);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error loading admissions & discharges: " + e.getMessage());
             admissionDischargesList = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Status filter for the Admission &amp; Discharge report. Cancelled BHTs
+     * (cancelled via "Cancel Admission", which retires the encounter with
+     * retireComments = 'BHT Cancel') are included for "All" and "Cancelled".
+     * Deleted or auto-retired encounters are never included.
+     */
+    private void appendAdmissionDischargeStatusFilter(StringBuilder jpql, Map<String, Object> params) {
+        String status = admissionDischargeStatus == null ? "" : admissionDischargeStatus.trim();
+
+        if (ADMISSION_DISCHARGE_STATUS_CANCELLED.equals(status)) {
+            jpql.append("AND pe.retired = :ret AND pe.retireComments = :cancelMarker ");
+            params.put("ret", true);
+            params.put("cancelMarker", BHT_CANCEL_RETIRE_COMMENT);
+            return;
+        }
+
+        AdmissionStatus selected = null;
+        if (!status.isEmpty()) {
+            try {
+                selected = AdmissionStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                selected = null;
+            }
+        }
+
+        if (selected == null || selected == ANY_STATUS) {
+            jpql.append("AND (pe.retired = :ret OR (pe.retired = :cancelledRet AND pe.retireComments = :cancelMarker)) ");
+            params.put("ret", false);
+            params.put("cancelledRet", true);
+            params.put("cancelMarker", BHT_CANCEL_RETIRE_COMMENT);
+            return;
+        }
+
+        jpql.append("AND pe.retired = :ret ");
+        params.put("ret", false);
+        switch (selected) {
+            case ADMITTED_BUT_NOT_DISCHARGED:
+                jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                params.put("dis", false);
+                break;
+            case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                params.put("dis", true);
+                break;
+            case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                params.put("dis", true);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void fillAdmissionDischargeAdvanceAndPlan(List<AdmissionDischargeDTO> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+        List<Long> encounterIds = new ArrayList<>(rows.size());
+        for (AdmissionDischargeDTO row : rows) {
+            if (row.getEncounterId() != null) {
+                encounterIds.add(row.getEncounterId());
+            }
+        }
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> advanceByEncounterId = batchFetchPaidAmounts(encounterIds);
+        Map<Long, String> planByEncounterId = batchFetchSponsorPlans(encounterIds);
+
+        for (AdmissionDischargeDTO row : rows) {
+            Long id = row.getEncounterId();
+            if (id == null) {
+                continue;
+            }
+            row.setAdvance(advanceByEncounterId.getOrDefault(id, 0.0));
+            row.setPlan(planByEncounterId.get(id));
+        }
+    }
+
+    /**
+     * The health plan is captured as the free-text "Description" of each
+     * sponsor (EncounterCreditCompany) added at admission. An admission can
+     * have several sponsors, so the descriptions are joined.
+     */
+    private Map<Long, String> batchFetchSponsorPlans(List<Long> encounterIds) {
+        String jpql = "SELECT ecc.patientEncounter.id, ecc.descreption "
+                + "FROM EncounterCreditCompany ecc "
+                + "WHERE ecc.retired = false "
+                + "  AND ecc.patientEncounter.id IN :ids "
+                + "ORDER BY ecc.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ids", encounterIds);
+
+        List<Object[]> rows = getBillFacade().findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        Map<Long, Set<String>> plans = new HashMap<>();
+        if (rows != null) {
+            for (Object[] row : rows) {
+                if (row[0] == null || row[1] == null) {
+                    continue;
+                }
+                String plan = row[1].toString().trim();
+                if (plan.isEmpty()) {
+                    continue;
+                }
+                Long id = ((Number) row[0]).longValue();
+                plans.computeIfAbsent(id, k -> new LinkedHashSet<>()).add(plan);
+            }
+        }
+
+        Map<Long, String> result = new HashMap<>(plans.size());
+        for (Map.Entry<Long, Set<String>> e : plans.entrySet()) {
+            result.put(e.getKey(), String.join(", ", e.getValue()));
+        }
+        return result;
+    }
+
+    public String getAdmissionDischargeStatusLabel() {
+        String status = admissionDischargeStatus == null ? "" : admissionDischargeStatus.trim();
+        if (status.isEmpty()) {
+            return "All";
+        }
+        if (ADMISSION_DISCHARGE_STATUS_CANCELLED.equals(status)) {
+            return "Cancelled";
+        }
+        try {
+            return AdmissionStatus.valueOf(status).getLabel();
+        } catch (IllegalArgumentException e) {
+            return "All";
+        }
+    }
+
+    /**
+     * Label/value pairs of the search criteria, shown above the results table
+     * and in the Excel, PDF and print outputs.
+     */
+    public List<String[]> getAdmissionDischargeCriteria() {
+        return admissionDischargeCriteriaSnapshot != null
+                ? admissionDischargeCriteriaSnapshot
+                : buildAdmissionDischargeCriteria();
+    }
+
+    private List<String[]> buildAdmissionDischargeCriteria() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        List<String[]> criteria = new ArrayList<>();
+        criteria.add(new String[]{"Admission Date", formatAdmissionDischargeRange(fromDate, toDate, sdf)});
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            criteria.add(new String[]{"Discharge Date", formatAdmissionDischargeRange(dischargeFromDate, dischargeToDate, sdf)});
+        }
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            criteria.add(new String[]{"Invoice Approved Date", formatAdmissionDischargeRange(invoiceApprovedFromDate, invoiceApprovedToDate, sdf)});
+        }
+        criteria.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
+        criteria.add(new String[]{"Site", site != null ? site.getName() : "All"});
+        criteria.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        criteria.add(new String[]{"Discharge Type", dischargeCondition != null ? dischargeCondition.getName() : "All"});
+        criteria.add(new String[]{"Consultant", consultant != null && consultant.getPerson() != null
+            ? consultant.getPerson().getNameWithTitle() : "All"});
+        criteria.add(new String[]{"Sponsor", sponsor != null ? sponsor.getName() : "All"});
+        criteria.add(new String[]{"Admission Status", getAdmissionDischargeStatusLabel()});
+        criteria.add(new String[]{"Admission Category", admissionType != null ? admissionType.getName() : "All"});
+        criteria.add(new String[]{"Payment Mode", paymentMethod != null ? paymentMethod.getLabel() : "All"});
+        return criteria;
+    }
+
+    private String formatAdmissionDischargeRange(Date from, Date to, SimpleDateFormat sdf) {
+        return (from != null ? sdf.format(from) : "-") + "  to  " + (to != null ? sdf.format(to) : "-");
+    }
+
+    public List<AdmissionDischargeColumn> getAdmissionDischargePrintColumns() {
+        List<AdmissionDischargeColumn> columns = new ArrayList<>();
+        for (AdmissionDischargeColumn column : ADMISSION_DISCHARGE_COLUMNS) {
+            if (column.isPrint()) {
+                columns.add(column);
+            }
+        }
+        return columns;
+    }
+
+    public String formatAdmissionDischargeCell(AdmissionDischargeDTO row, AdmissionDischargeColumn column) {
+        if (row == null || column == null) {
+            return "";
+        }
+        Object value = column.valueOf(row);
+        if (value == null) {
+            return "";
+        }
+        switch (column.getKind()) {
+            case MONEY:
+                return String.format("%,.2f", ((Number) value).doubleValue());
+            case DECIMAL:
+                return String.format("%.2f", ((Number) value).doubleValue());
+            case DATE:
+                return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format((Date) value);
+            default:
+                return value.toString();
+        }
+    }
+
+    public String navigateToAdmissionDischargeReportPrint() {
+        if (admissionDischargesList == null) {
+            JsfUtil.addErrorMessage("Please process the report first.");
+            return null;
+        }
+        return "/reports/inpatientReports/admission_discharge_report_print?faces-redirect=true";
+    }
+
+    public void downloadAdmissionDischargeExcel() {
+        if (admissionDischargesList == null) {
+            processAdmissionDischargeReport();
+        }
+        if (admissionDischargesList == null || admissionDischargesList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        List<AdmissionDischargeColumn> columns = new ArrayList<>();
+        for (AdmissionDischargeColumn column : ADMISSION_DISCHARGE_COLUMNS) {
+            if (column.isExcel()) {
+                columns.add(column);
+            }
+        }
+        int lastColumn = columns.size(); // column 0 is S.No
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Admission Discharge");
+            SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+            SimpleDateFormat generatedFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+
+            XSSFCellStyle labelStyle = workbook.createCellStyle();
+            XSSFFont labelFont = workbook.createFont();
+            labelFont.setBold(true);
+            labelStyle.setFont(labelFont);
+
+            XSSFCellStyle headerStyle = createRoomOccupancyHeaderStyle(workbook);
+            XSSFCellStyle textStyle = createRoomOccupancyTextStyle(workbook);
+            XSSFCellStyle moneyStyle = createRoomOccupancyNumberStyle(workbook, "#,##0.00");
+            XSSFCellStyle decimalStyle = createRoomOccupancyNumberStyle(workbook, "0.00");
+            XSSFCellStyle integerStyle = createRoomOccupancyNumberStyle(workbook, "0");
+            XSSFCellStyle dateStyle = createRoomOccupancyTextStyle(workbook);
+            dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd/MM/yyyy HH:mm:ss"));
+
+            int rowIndex = 0;
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Admission Discharge Report");
+            titleCell.setCellStyle(titleStyle);
+
+            for (String[] criterion : getAdmissionDischargeCriteria()) {
+                Row infoRow = sheet.createRow(rowIndex++);
+                Cell labelCell = infoRow.createCell(0);
+                labelCell.setCellValue(criterion[0] + ":");
+                labelCell.setCellStyle(labelStyle);
+                infoRow.createCell(2).setCellValue(criterion[1]);
+            }
+            Row generatedRow = sheet.createRow(rowIndex++);
+            Cell generatedLabel = generatedRow.createCell(0);
+            generatedLabel.setCellValue("Generated:");
+            generatedLabel.setCellStyle(labelStyle);
+            generatedRow.createCell(2).setCellValue(generatedFormat.format(new Date()));
+
+            rowIndex++;
+
+            int headerRowIndex = rowIndex;
+            Row headerRow = sheet.createRow(rowIndex++);
+            Cell snHeader = headerRow.createCell(0);
+            snHeader.setCellValue("S.No");
+            snHeader.setCellStyle(headerStyle);
+            for (int i = 0; i < columns.size(); i++) {
+                Cell cell = headerRow.createCell(i + 1);
+                cell.setCellValue(columns.get(i).getHeader());
+                cell.setCellStyle(headerStyle);
+            }
+
+            int serial = 1;
+            for (AdmissionDischargeDTO dto : admissionDischargesList) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                Cell snCell = dataRow.createCell(0);
+                snCell.setCellValue(serial++);
+                snCell.setCellStyle(integerStyle);
+                for (int i = 0; i < columns.size(); i++) {
+                    AdmissionDischargeColumn column = columns.get(i);
+                    Object value = column.valueOf(dto);
+                    Cell cell = dataRow.createCell(i + 1);
+                    switch (column.getKind()) {
+                        case MONEY:
+                            cell.setCellStyle(moneyStyle);
+                            if (value != null) {
+                                cell.setCellValue(((Number) value).doubleValue());
+                            }
+                            break;
+                        case DECIMAL:
+                            cell.setCellStyle(decimalStyle);
+                            if (value != null) {
+                                cell.setCellValue(((Number) value).doubleValue());
+                            }
+                            break;
+                        case DATE:
+                            cell.setCellStyle(dateStyle);
+                            if (value != null) {
+                                cell.setCellValue((Date) value);
+                            }
+                            break;
+                        default:
+                            cell.setCellStyle(textStyle);
+                            cell.setCellValue(value != null ? value.toString() : "");
+                            break;
+                    }
+                }
+            }
+
+            sheet.createFreezePane(3, headerRowIndex + 1);
+            sheet.setAutoFilter(new CellRangeAddress(headerRowIndex, rowIndex - 1, 0, lastColumn));
+            sheet.setColumnWidth(0, 1800);
+            for (int i = 0; i < columns.size(); i++) {
+                sheet.setColumnWidth(i + 1, columns.get(i).getKind() == AdmissionDischargeColumn.Kind.DATE ? 5200 : 4600);
+            }
+
+            workbook.write(baos);
+            byte[] excelBytes = baos.toByteArray();
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseContentLength(excelBytes.length);
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"Admission_Discharge_" + fileDateFormat.format(new Date()) + ".xlsx\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(excelBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        }
+    }
+
+    public void downloadAdmissionDischargePdf() {
+        if (admissionDischargesList == null) {
+            processAdmissionDischargeReport();
+        }
+        if (admissionDischargesList == null || admissionDischargesList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        List<AdmissionDischargeColumn> columns = getAdmissionDischargePrintColumns();
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        SimpleDateFormat generatedFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            // ~45 columns: A2 landscape keeps a readable 5pt font.
+            Document document = new Document(com.lowagie.text.PageSize.A2.rotate(), 18, 18, 24, 18);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font infoLabelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font infoValueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 5.5f,
+                    com.lowagie.text.Font.NORMAL, java.awt.Color.WHITE);
+            com.lowagie.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 5.5f);
+
+            Paragraph title = new Paragraph("Admission Discharge Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(8);
+            document.add(title);
+
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(35);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1.4f, 3f});
+            infoTable.setSpacingAfter(10);
+            for (String[] criterion : getAdmissionDischargeCriteria()) {
+                addRoomOccupancyPdfInfoRow(infoTable, criterion[0] + ":", criterion[1], infoLabelFont, infoValueFont);
+            }
+            addRoomOccupancyPdfInfoRow(infoTable, "Generated:", generatedFormat.format(new Date()), infoLabelFont, infoValueFont);
+            document.add(infoTable);
+
+            float[] widths = new float[columns.size() + 1];
+            widths[0] = 0.5f;
+            for (int i = 0; i < columns.size(); i++) {
+                widths[i + 1] = columns.get(i).getPdfWidth();
+            }
+            PdfPTable table = new PdfPTable(widths.length);
+            table.setWidthPercentage(100);
+            table.setWidths(widths);
+            table.setHeaderRows(1);
+
+            java.awt.Color headerBg = new java.awt.Color(41, 128, 185);
+            java.awt.Color oddRowBg = new java.awt.Color(248, 249, 250);
+
+            addRoomOccupancyPdfHeaderCell(table, "S.No", headerFont, headerBg, 1, 1);
+            for (AdmissionDischargeColumn column : columns) {
+                addRoomOccupancyPdfHeaderCell(table, column.getHeader(), headerFont, headerBg, 1, 1);
+            }
+
+            int serial = 1;
+            for (AdmissionDischargeDTO dto : admissionDischargesList) {
+                java.awt.Color rowBg = serial % 2 == 0 ? oddRowBg : null;
+                addRoomOccupancyPdfCell(table, String.valueOf(serial), cellFont, rowBg, Element.ALIGN_RIGHT);
+                for (AdmissionDischargeColumn column : columns) {
+                    addRoomOccupancyPdfCell(table, formatAdmissionDischargeCell(dto, column), cellFont, rowBg,
+                            column.isNumeric() ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT);
+                }
+                serial++;
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"Admission_Discharge_" + fileDateFormat.format(new Date()) + ".pdf\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
         }
     }
 
@@ -6612,6 +7075,22 @@ public class InwardReportController implements Serializable {
         this.roomCategory = roomCategory;
     }
 
+    public ClinicalEntity getDischargeCondition() {
+        return dischargeCondition;
+    }
+
+    public void setDischargeCondition(ClinicalEntity dischargeCondition) {
+        this.dischargeCondition = dischargeCondition;
+    }
+
+    public String getAdmissionDischargeStatus() {
+        return admissionDischargeStatus;
+    }
+
+    public void setAdmissionDischargeStatus(String admissionDischargeStatus) {
+        this.admissionDischargeStatus = admissionDischargeStatus;
+    }
+
     public Staff getConsultant() {
         return consultant;
     }
@@ -7932,4 +8411,134 @@ public class InwardReportController implements Serializable {
         }
         table.addCell(cell);
     }
+
+    /**
+     * One column of the Admission &amp; Discharge report outputs. A single list
+     * drives Excel, PDF and the print page so they cannot drift apart.
+     */
+    public static class AdmissionDischargeColumn implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        public enum Kind {
+            TEXT, MONEY, DECIMAL, DATE
+        }
+
+        interface Getter extends java.util.function.Function<AdmissionDischargeDTO, Object>, Serializable {
+        }
+
+        private final String header;
+        private final Kind kind;
+        private final Getter getter;
+        private final boolean excel;
+        private final boolean print;
+        private final float pdfWidth;
+
+        AdmissionDischargeColumn(String header, Kind kind, Getter getter, boolean excel, boolean print, float pdfWidth) {
+            this.header = header;
+            this.kind = kind;
+            this.getter = getter;
+            this.excel = excel;
+            this.print = print;
+            this.pdfWidth = pdfWidth;
+        }
+
+        static AdmissionDischargeColumn of(String header, Kind kind, Getter getter) {
+            return new AdmissionDischargeColumn(header, kind, getter, true, true,
+                    kind == Kind.DATE ? 1.4f : 1.0f);
+        }
+
+        static AdmissionDischargeColumn wide(String header, Getter getter) {
+            return new AdmissionDischargeColumn(header, Kind.TEXT, getter, true, true, 1.6f);
+        }
+
+        static AdmissionDischargeColumn excelOnly(String header, Getter getter) {
+            return new AdmissionDischargeColumn(header, Kind.TEXT, getter, true, false, 1.0f);
+        }
+
+        static AdmissionDischargeColumn printOnly(String header, Getter getter) {
+            return new AdmissionDischargeColumn(header, Kind.TEXT, getter, false, true, 2.2f);
+        }
+
+        Object valueOf(AdmissionDischargeDTO row) {
+            return getter.apply(row);
+        }
+
+        public String getHeader() {
+            return header;
+        }
+
+        public Kind getKind() {
+            return kind;
+        }
+
+        public boolean isNumeric() {
+            return kind == Kind.MONEY || kind == Kind.DECIMAL;
+        }
+
+        public boolean isExcel() {
+            return excel;
+        }
+
+        public boolean isPrint() {
+            return print;
+        }
+
+        public float getPdfWidth() {
+            return pdfWidth;
+        }
+    }
+
+    // Same order as the on-screen table. Excel carries the parsed address parts;
+    // PDF / print use the single raw address to stay printable.
+    private static final List<AdmissionDischargeColumn> ADMISSION_DISCHARGE_COLUMNS = Collections.unmodifiableList(Arrays.asList(
+            AdmissionDischargeColumn.of("MRN", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getPhn),
+            AdmissionDischargeColumn.wide("Patient Name", AdmissionDischargeDTO::getPatientName),
+            AdmissionDischargeColumn.of("Mobile No", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getMobileNumber),
+            AdmissionDischargeColumn.of("IP No", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getBhtNo),
+            AdmissionDischargeColumn.excelOnly("House No/Post Box", AdmissionDischargeDTO::getHouseNo),
+            AdmissionDischargeColumn.excelOnly("Street / Village", AdmissionDischargeDTO::getStreetVillage),
+            AdmissionDischargeColumn.excelOnly("Locality / Post Office", AdmissionDischargeDTO::getLocality),
+            AdmissionDischargeColumn.excelOnly("District", AdmissionDischargeDTO::getDistrict),
+            AdmissionDischargeColumn.excelOnly("City", AdmissionDischargeDTO::getCity),
+            AdmissionDischargeColumn.excelOnly("State", AdmissionDischargeDTO::getState),
+            AdmissionDischargeColumn.excelOnly("Country", AdmissionDischargeDTO::getCountry),
+            AdmissionDischargeColumn.excelOnly("PIN", AdmissionDischargeDTO::getPin),
+            AdmissionDischargeColumn.printOnly("Address", AdmissionDischargeDTO::getRawAddress),
+            AdmissionDischargeColumn.wide("Admission Remarks", AdmissionDischargeDTO::getAdmissionRemarks),
+            AdmissionDischargeColumn.of("Admission Category", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getAdmissionTypeName),
+            AdmissionDischargeColumn.of("Age", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getAge),
+            AdmissionDischargeColumn.of("Gender", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getSex),
+            AdmissionDischargeColumn.of("Department", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getDepartmentName),
+            AdmissionDischargeColumn.of("Admission Date", AdmissionDischargeColumn.Kind.DATE, AdmissionDischargeDTO::getDateOfAdmission),
+            AdmissionDischargeColumn.of("Expected Date of Discharge", AdmissionDischargeColumn.Kind.DATE, AdmissionDischargeDTO::getDateOfDischarge),
+            AdmissionDischargeColumn.of("Discharge Date", AdmissionDischargeColumn.Kind.DATE, AdmissionDischargeDTO::getDateOfDischarge),
+            AdmissionDischargeColumn.of("Discharge Type", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getDischargeTypeName),
+            AdmissionDischargeColumn.of("Ward / Bed", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getWardBedName),
+            AdmissionDischargeColumn.of("Sponsor Bed Type", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getSponsorBedType),
+            AdmissionDischargeColumn.wide("Consultant", AdmissionDischargeDTO::getConsultantName),
+            AdmissionDischargeColumn.wide("Referral Hospital", AdmissionDischargeDTO::getReferralHospitalName),
+            AdmissionDischargeColumn.wide("Referral Doctor", AdmissionDischargeDTO::getReferralDoctorName),
+            AdmissionDischargeColumn.wide("Sponsor", AdmissionDischargeDTO::getSponsorName),
+            AdmissionDischargeColumn.wide("Plan", AdmissionDischargeDTO::getPlan),
+            AdmissionDischargeColumn.of("Sponsor Amount", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getTotalCompanyPaidAtFinalProcessing),
+            AdmissionDischargeColumn.of("Patient Amount", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getTotalPatientPaidAtFinalProcessing),
+            AdmissionDischargeColumn.of("Hospital Amount", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getHospitalFee),
+            AdmissionDischargeColumn.of("Professional Fees", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getProfessionalFee),
+            AdmissionDischargeColumn.of("Advance", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getAdvance),
+            AdmissionDischargeColumn.of("Discount", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getDiscount),
+            AdmissionDischargeColumn.of("Invoice Amount", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getNetTotal),
+            AdmissionDischargeColumn.of("Bill Balance", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getAmountDueAtFinalProcessing),
+            AdmissionDischargeColumn.of("Patient Balance", AdmissionDischargeColumn.Kind.MONEY, AdmissionDischargeDTO::getAmountDueAtFinalProcessing),
+            AdmissionDischargeColumn.of("Admission User", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getAdmittedByName),
+            AdmissionDischargeColumn.of("Discharge User", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getClinicalDischargedByName),
+            AdmissionDischargeColumn.wide("Admission Status", AdmissionDischargeDTO::getAdmissionStatusLabel),
+            AdmissionDischargeColumn.wide("Cancel Remarks", AdmissionDischargeDTO::getCancelRemarks),
+            AdmissionDischargeColumn.of("Length of Stay (LOS) Days", AdmissionDischargeColumn.Kind.DECIMAL, AdmissionDischargeDTO::getLosDays),
+            AdmissionDischargeColumn.of("TAT", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getTatFormatted),
+            AdmissionDischargeColumn.of("Billing TAT", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getBillingTatFormatted),
+            AdmissionDischargeColumn.of("Final Bill By", AdmissionDischargeColumn.Kind.TEXT, AdmissionDischargeDTO::getFinalBillCreatorName),
+            AdmissionDischargeColumn.of("Final Bill Date Time", AdmissionDischargeColumn.Kind.DATE, AdmissionDischargeDTO::getFinalBillCreatedAt),
+            AdmissionDischargeColumn.of("Received Date", AdmissionDischargeColumn.Kind.DATE, AdmissionDischargeDTO::getFinalBillCreatedAt)
+    ));
 }
