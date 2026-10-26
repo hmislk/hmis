@@ -39,8 +39,13 @@ script `.github/scripts/check_bean_scope.py`) fails any PR that changes the
 scope annotations of an existing Java class. New classes are not checked.
 
 The check is overridden only by the PR label **`scope-change-approved`**, which
-the lead developer adds after agreeing to the change. Do not add this label
-yourself.
+the lead developer adds after agreeing to the change. The label counts only when
+it was applied by a login listed in `.github/scope-change-approvers`; a label
+added by anyone else still fails the check. Do not add this label yourself.
+
+The guard script and the approver list are read from the base branch, so a PR
+cannot relax them for itself, and a PR that edits the guard files fails the
+check unless approved.
 
 Run it locally before pushing:
 

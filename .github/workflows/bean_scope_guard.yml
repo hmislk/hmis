@@ -4,8 +4,10 @@ name: Bean scope guard
 # Java class (e.g. @SessionScoped -> @ViewScoped). Controllers are
 # session-scoped on purpose and will be migrated together; never change a
 # bean's scope without discussing it with the lead developer first.
-# Override only with the PR label 'scope-change-approved', added by the lead
-# developer after agreeing to the change.
+# Override only with the PR label 'scope-change-approved', and only when it was
+# applied by a login listed in .github/scope-change-approvers on the base
+# branch. The guard script and approver list are read from the base branch, so
+# a PR cannot relax them for itself.
 
 on:
   pull_request:
@@ -13,6 +15,8 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 jobs:
   bean-scope:
@@ -26,7 +30,10 @@ jobs:
       - name: Check that existing beans keep their scope
         env:
           EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          ALLOW: ${{ contains(github.event.pull_request.labels.*.name, 'scope-change-approved') }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'scope-change-approved') }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # Compare against the merge commit's first parent (the current base
@@ -37,8 +44,30 @@ jobs:
             BASE_SHA="$EVENT_BASE_SHA"
           fi
           echo "Comparing against base $BASE_SHA"
+
+          # Use the base branch's copy of the guard and approver list when it
+          # has one (the PR's own copy only before the guard first lands).
+          GUARD="$RUNNER_TEMP/check_bean_scope.py"
+          APPROVERS="$RUNNER_TEMP/scope-change-approvers"
+          git show "$BASE_SHA:.github/scripts/check_bean_scope.py" > "$GUARD" 2>/dev/null \
+            || cp .github/scripts/check_bean_scope.py "$GUARD"
+          git show "$BASE_SHA:.github/scope-change-approvers" > "$APPROVERS" 2>/dev/null \
+            || cp .github/scope-change-approvers "$APPROVERS"
+
+          ALLOW=false
+          if [ "$HAS_LABEL" = "true" ]; then
+            LABELLER=$(gh api "repos/$REPO/issues/$PR_NUMBER/events" --paginate \
+              --jq '.[] | select(.event=="labeled" and .label.name=="scope-change-approved") | .actor.login' | tail -n1)
+            if grep -vE '^\s*(#|$)' "$APPROVERS" | grep -qxF "$LABELLER"; then
+              echo "Label 'scope-change-approved' applied by approver $LABELLER"
+              ALLOW=true
+            else
+              echo "::error::Label 'scope-change-approved' was applied by '$LABELLER', who is not in .github/scope-change-approvers. Only the lead developer can approve a scope change."
+            fi
+          fi
+
           if [ "$ALLOW" = "true" ]; then
-            python3 .github/scripts/check_bean_scope.py "$BASE_SHA" --allow
+            python3 "$GUARD" "$BASE_SHA" --allow
           else
-            python3 .github/scripts/check_bean_scope.py "$BASE_SHA"
+            python3 "$GUARD" "$BASE_SHA"
           fi

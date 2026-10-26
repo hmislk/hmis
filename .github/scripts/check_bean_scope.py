@@ -3,7 +3,8 @@
 Bean scope guard.
 
 Fails when a change adds, removes or replaces a scope annotation on an
-existing Java class (for example @SessionScoped -> @ViewScoped).
+existing Java class (for example @SessionScoped -> @ViewScoped, or
+javax.faces.bean.ViewScoped -> javax.faces.view.ViewScoped).
 
 Controllers are session-scoped on purpose; moving them to view or request
 scope is planned as one coordinated migration. Changing one bean on its own
@@ -11,17 +12,22 @@ breaks pages and other beans that rely on its state surviving navigation.
 Never change a bean's scope without first discussing it with the lead
 developer.
 
-New files are not checked (a new bean may choose any scope). Deleted files
-are not checked. A renamed file is compared with its old path.
+Scopes are compared per class (by class name), with each annotation resolved
+to its fully qualified type through the file's imports. New classes are not
+checked; removed classes are not checked. Moved files are matched by path
+rename or, when Git reports a heavily edited move as delete + add, by file
+name. Changes to the guard itself are also reported, so the check cannot be
+switched off silently.
 
 Usage:  check_bean_scope.py <base-ref> [--head <ref>] [--allow]
   --allow  report findings as warnings and exit 0 (PR labelled
-           'scope-change-approved' by the lead developer).
+           'scope-change-approved' by an approver listed in
+           .github/scope-change-approvers).
 """
+import os
 import re
 import subprocess
 import sys
-from collections import Counter
 
 SCOPES = (
     "SessionScoped", "ViewScoped", "RequestScoped", "ApplicationScoped",
@@ -31,9 +37,16 @@ SCOPES = (
     "SessionScope", "ViewScope", "RequestScope", "ApplicationScope",
     "NoneScoped", "CustomScoped",
 )
-ANNOTATION = re.compile(r"@(?:[\w.]+\.)?(" + "|".join(SCOPES) + r")\b")
+ANNOTATION = re.compile(r"@((?:[a-z_][\w]*\.)+)?(" + "|".join(SCOPES) + r")\b")
+CLASS_DECL = re.compile(r"\b(?:class|interface|enum|record)\s+([A-Za-z_]\w*)")
+IMPORT = re.compile(r"^\s*import\s+([\w.]+)\.(\w+)\s*;", re.M)
 COMMENTS = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)
 STRINGS = re.compile(r'"(?:\\.|[^"\\])*"')
+GUARD_FILES = (
+    ".github/scripts/check_bean_scope.py",
+    ".github/workflows/bean_scope_guard.yml",
+    ".github/scope-change-approvers",
+)
 
 
 def git(*args, ok=(0,)):
@@ -43,32 +56,60 @@ def git(*args, ok=(0,)):
     return r.stdout
 
 
-def scopes(text):
-    """Multiset of scope annotations in Java source, ignoring comments and strings."""
+def class_scopes(text):
+    """{class name: sorted fully qualified scope annotations} for Java source."""
     code = COMMENTS.sub("", STRINGS.sub('""', text))
-    return Counter(m.group(1) for m in ANNOTATION.finditer(code))
+    imports = {name: pkg + "." + name for pkg, name in IMPORT.findall(code)}
+    result = {}
+    pending = []
+    pos = 0
+    tokens = sorted(
+        [(m.start(), "a", m) for m in ANNOTATION.finditer(code)]
+        + [(m.start(), "c", m) for m in CLASS_DECL.finditer(code)],
+        key=lambda t: t[0],
+    )
+    for _start, kind, m in tokens:
+        if kind == "a":
+            qualifier, name = m.group(1), m.group(2)
+            pending.append(qualifier + name if qualifier else imports.get(name, name))
+        else:
+            result.setdefault(m.group(1), [])
+            result[m.group(1)].extend(pending)
+            pending = []
+    return {k: sorted(v) for k, v in result.items()}
 
 
 def show(ref, path):
     return git("show", f"{ref}:{path}", ok=(0, 128))
 
 
-def changed_files(base, head):
-    """(old_path, new_path) for modified and renamed .java files."""
-    out = git("diff", "--name-status", "-M", f"{base}...{head}", "--", "*.java")
-    pairs = []
+def changed(base, head):
+    """((old_path, new_path) Java pairs to compare, changed guard files)."""
+    out = git("diff", "--name-status", "-M", f"{base}...{head}")
+    pairs, deleted, added, guard = [], {}, {}, []
     for line in out.splitlines():
         parts = line.split("\t")
-        status = parts[0]
+        status, paths = parts[0], parts[1:]
+        if any(p in GUARD_FILES for p in paths):
+            guard.append(paths[-1])
+        if not paths[-1].endswith(".java") and not paths[0].endswith(".java"):
+            continue
         if status.startswith("M"):
-            pairs.append((parts[1], parts[1]))
+            pairs.append((paths[0], paths[0]))
         elif status.startswith("R"):
-            pairs.append((parts[1], parts[2]))
-    return pairs
+            pairs.append((paths[0], paths[1]))
+        elif status.startswith("D"):
+            deleted[os.path.basename(paths[0])] = paths[0]
+        elif status.startswith("A"):
+            added[os.path.basename(paths[0])] = paths[0]
+    for name, old in deleted.items():
+        if name in added:
+            pairs.append((old, added[name]))
+    return pairs, guard
 
 
-def fmt(counter):
-    return ", ".join(f"@{k}" + (f" x{v}" if v > 1 else "") for k, v in sorted(counter.items())) or "(none)"
+def fmt(scopes):
+    return ", ".join("@" + s for s in scopes) or "(none)"
 
 
 def main(argv):
@@ -83,21 +124,28 @@ def main(argv):
         return 2
     base = args[0]
 
+    pairs, guard = changed(base, head)
     findings = []
-    for old, new in changed_files(base, head):
-        before = scopes(show(base, old))
-        after = scopes(show(head, new))
-        if before != after:
-            findings.append((new, before, after))
+    for old, new in pairs:
+        before = class_scopes(show(base, old))
+        after = class_scopes(show(head, new))
+        for cls in sorted(before.keys() & after.keys()):
+            if before[cls] != after[cls]:
+                findings.append((f"{new} ({cls})", before[cls], after[cls]))
 
-    if not findings:
+    if not findings and not guard:
         print("Bean scope guard: no scope annotation changed on an existing class.")
         return 0
 
     level = "WARNING" if allow else "ERROR"
-    print(f"Bean scope guard {level}: this PR changes the scope of existing beans.\n")
-    for path, before, after in findings:
-        print(f"  {path}\n    before: {fmt(before)}\n    after:  {fmt(after)}")
+    if findings:
+        print(f"Bean scope guard {level}: this PR changes the scope of existing beans.\n")
+        for where, before, after in findings:
+            print(f"  {where}\n    before: {fmt(before)}\n    after:  {fmt(after)}")
+    if guard:
+        print(f"\nBean scope guard {level}: this PR changes the guard itself:")
+        for path in guard:
+            print(f"  {path}")
     print(
         "\nNever change a bean's scope without discussing it with the lead developer first."
         "\nControllers are session-scoped on purpose; moving them is planned as one coordinated"
