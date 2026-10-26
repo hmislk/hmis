@@ -97,7 +97,11 @@ public class SurgeryReportController implements Serializable {
     private int selectedYear;
     // Month indices (0=Jan..11=Dec) within [fromYearDate, toYearDate], so the
     // table/chart/exports only show the selected months instead of always all 12.
-    private List<Integer> otRoomMonthIndices;
+    private List<Integer> otRoomMonthIndices = new ArrayList<>();
+    // From/To of the last Process, so the period label and the exports always
+    // describe the counts on screen even if the date inputs were edited since.
+    private Date otRoomReportFromDate;
+    private Date otRoomReportToDate;
 
     public void processSurgeryStatusReport() {
         reportList = new ArrayList<>();
@@ -575,6 +579,8 @@ public class SurgeryReportController implements Serializable {
         otRoomBarChartModel = null;
         otRoomLineChartModel = null;
         otRoomMonthIndices = new ArrayList<>();
+        otRoomReportFromDate = null;
+        otRoomReportToDate = null;
 
         if (fromYearDate == null || toYearDate == null) {
             JsfUtil.addErrorMessage("Please select both From and To dates.");
@@ -601,6 +607,8 @@ public class SurgeryReportController implements Serializable {
         for (int m = from.get(Calendar.MONTH); m <= to.get(Calendar.MONTH); m++) {
             otRoomMonthIndices.add(m);
         }
+        otRoomReportFromDate = fromYearDate;
+        otRoomReportToDate = toYearDate;
 
         Map<String, Object> params = new HashMap<>();
         String jpql = buildOtRoomWiseJpql(params);
@@ -782,7 +790,9 @@ public class SurgeryReportController implements Serializable {
 
     public int getOtRoomSelectedYear() {
         Calendar cal = Calendar.getInstance();
-        if (fromYearDate != null) {
+        if (otRoomReportFromDate != null) {
+            cal.setTime(otRoomReportFromDate);
+        } else if (fromYearDate != null) {
             cal.setTime(fromYearDate);
         }
         return cal.get(Calendar.YEAR);
@@ -790,6 +800,10 @@ public class SurgeryReportController implements Serializable {
 
     public List<Integer> getOtRoomMonthIndices() {
         return otRoomMonthIndices;
+    }
+
+    public boolean isOtRoomMonthShown(int monthIndex) {
+        return otRoomMonthIndices.contains(monthIndex);
     }
 
     public String getOtRoomMonthLabel(int monthIndex) {
@@ -800,11 +814,11 @@ public class SurgeryReportController implements Serializable {
     }
 
     public String getOtRoomPeriodLabel() {
-        if (fromYearDate == null || toYearDate == null) {
+        if (otRoomReportFromDate == null || otRoomReportToDate == null) {
             return "";
         }
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        return sdf.format(fromYearDate) + " - " + sdf.format(toYearDate);
+        return sdf.format(otRoomReportFromDate) + " - " + sdf.format(otRoomReportToDate);
     }
 
     private int[] parseRgb(String csv) {
