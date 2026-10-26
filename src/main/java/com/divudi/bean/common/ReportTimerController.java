@@ -8,6 +8,8 @@ import com.divudi.service.ReportLogAsyncService;
 import javax.ejb.EJB;
 import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.Future;
@@ -22,10 +24,15 @@ public class ReportTimerController implements Serializable {
     @EJB
     private ReportLogAsyncService reportLogAsyncService;
 
+    // No transaction: entities a report only reads must not be saved. Inside one, those it
+    // touches (e.g. auto-created finance details) are saved at commit (#24735).
+    // Explicit service writes still commit in their own transaction.
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, WebUser loggedUser) {
         trackReportExecution(reportGenerationLogic, reportType, reportType.getReportName(), loggedUser);
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, String reportName, WebUser loggedUser) {
         final Date startTime = new Date();
 
