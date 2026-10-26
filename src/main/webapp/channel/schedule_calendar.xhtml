@@ -146,18 +146,16 @@
                                 <p:badge size="large" class="px-1" value="Completed" severity="success" rendered="#{commonFunctionsProxy.convertToSessionInstance(bookingControllerViewScope.sEvent.data).completed}"/>
                             </h:panelGroup>
 
-                            #{bookingControllerViewScope.selectedSessionInstance.staff}
-
-
-
-
                         </h:panelGrid>
 
-                    </h:panelGroup>
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton value="To Booking" accesskey="-" ajax="false"
+                                             class="font-bold ui-button-warning"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance eq null}"
+                                             action="#{bookingController.navigateChannelBookingViewFromChannelBookingByDate(bookingControllerViewScope.selectedSessionInstance, bookingControllerViewScope.selectedSessionInstance.staff.speciality, bookingControllerViewScope.selectedSessionInstance.staff)}"/>
+                        </div>
 
-                    <div class="d-flex justify-content-end mt-3">
-                        <p:commandButton value="To Booking" accesskey="-"  class="font-bold ui-button-warning"/>
-                    </div>
+                    </h:panelGroup>
                 </p:dialog>
 
 
