@@ -1,0 +1,44 @@
+name: Bean scope guard
+
+# Fails a PR that adds, removes or replaces a scope annotation on an existing
+# Java class (e.g. @SessionScoped -> @ViewScoped). Controllers are
+# session-scoped on purpose and will be migrated together; never change a
+# bean's scope without discussing it with the lead developer first.
+# Override only with the PR label 'scope-change-approved', added by the lead
+# developer after agreeing to the change.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  bean-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check that existing beans keep their scope
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          ALLOW: ${{ contains(github.event.pull_request.labels.*.name, 'scope-change-approved') }}
+        run: |
+          set -euo pipefail
+          # Compare against the merge commit's first parent (the current base
+          # tip), as config_semantics_guard.yml does.
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            BASE_SHA=$(git rev-parse HEAD^1)
+          else
+            BASE_SHA="$EVENT_BASE_SHA"
+          fi
+          echo "Comparing against base $BASE_SHA"
+          if [ "$ALLOW" = "true" ]; then
+            python3 .github/scripts/check_bean_scope.py "$BASE_SHA" --allow
+          else
+            python3 .github/scripts/check_bean_scope.py "$BASE_SHA"
+          fi
