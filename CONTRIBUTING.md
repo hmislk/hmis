@@ -17,6 +17,13 @@ This is a **live production system** serving 40+ healthcare institutions. All ch
 3. **Follow the safe improvement plans** in the documentation
 4. **Never modify database schema** without extensive planning
 
+### 🚨 Never Change a Bean's Scope Without the Lead Developer
+**Do not change the scope of an existing bean** (for example `@SessionScoped` → `@ViewScoped`, or any change to `@RequestScoped`, `@ApplicationScoped`, `@Stateless`, etc.) **without discussing it with the lead developer first.**
+
+Controllers are session-scoped on purpose. Other pages and beans rely on their state carrying across navigation, so changing one bean's scope breaks things on pages you did not touch. Fix the issue within the current scope; if you believe a scope change is unavoidable, raise it on the issue **before** writing code.
+
+The CI check **`bean-scope-guard`** blocks any PR that changes a bean's scope. Only the lead developer can unblock it, by adding the label `scope-change-approved`. See [Bean Scope Policy](developer_docs/jsf/bean-scope-policy.md).
+
 ## Repository Setup for Contributors
 
 ### Prerequisites
