@@ -87,12 +87,13 @@
                                         <div class="row p-2">
                                             <div class="col-12">
                                                 <p:outputLabel value="Assessment Date/Time: " />
-                                                <p:inputText
+                                                <p:calendar
                                                     value="#{inpatientClinicalDataController.current.encounterDateTime}"
                                                     disabled="#{inpatientClinicalDataController.viewOnly}"
+                                                    pattern="dd/MM/yyyy HH:mm"
+                                                    navigator="true"
                                                     style="width:180px;">
-                                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
-                                                </p:inputText>
+                                                </p:calendar>
                                             </div>
                                             <div class="col-12 mt-2">
                                                 <p:outputLabel value="Complaints &amp; History:" />
