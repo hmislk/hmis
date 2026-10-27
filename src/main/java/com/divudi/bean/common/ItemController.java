@@ -2451,6 +2451,19 @@ public class ItemController implements Serializable {
     }
 
     public List<Item> completeAmpItem(String query) {
+        return completeAmpOrAmppItem(query, Amp.class);
+    }
+
+    /**
+     * Same search as completeAmpItem, but also lists Packs (AMPPs) when the
+     * "List Packs (AMPPs) in Item Selection" option is on (e.g. Item
+     * Suppliers page).
+     */
+    public List<Item> completeAmpItemWithAmppsIfListed(String query) {
+        return completeAmpOrAmppItem(query, amppTypeForItemSelection());
+    }
+
+    private List<Item> completeAmpOrAmppItem(String query, Class<? extends Item> amppType) {
         List<Item> suggestions = new ArrayList<>();
         if (query == null || query.trim().isEmpty()) {
             return suggestions;
@@ -2459,7 +2472,7 @@ public class ItemController implements Serializable {
         String[] words = query.split("\\s+");
 
         StringBuilder jpql = new StringBuilder(
-                "SELECT c FROM Item c WHERE c.retired = false AND c.inactive = false AND type(c) = :amp AND (");
+                "SELECT c FROM Item c WHERE c.retired = false AND c.inactive = false AND (type(c) = :amp OR type(c) = :ampp) AND (");
 
         StringBuilder nameConditions = new StringBuilder();
         for (int i = 0; i < words.length; i++) {
@@ -2476,6 +2489,7 @@ public class ItemController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("amp", Amp.class);
+        params.put("ampp", amppType);
         params.put("code", query.toLowerCase().trim());
         params.put("barcode", query.trim());
 

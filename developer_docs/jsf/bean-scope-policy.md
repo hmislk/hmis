@@ -45,7 +45,10 @@ added by anyone else still fails the check. Do not add this label yourself.
 
 The guard script and the approver list are read from the base branch, so a PR
 cannot relax them for itself, and a PR that edits the guard files fails the
-check unless approved.
+check unless approved. The one exception is a PR into a branch that has no
+guard yet (e.g. a `development` → QA/staging sync bringing the guard there for
+the first time): adding the guard files is not reported. Scope changes in such
+a PR are still checked.
 
 Run it locally before pushing:
 

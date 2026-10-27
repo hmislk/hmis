@@ -218,6 +218,11 @@ public class GrnCostingNativeSqlController implements Serializable {
                 OptionScope.APPLICATION
         ));
         metadata.addConfigOption(new ConfigOptionInfo(
+                "GRN - Highlight Rows With Expiry Date and Batch No Entered",
+                "Highlights GRN item rows in green once both Date of Expiry and Batch No are entered (low-profit-margin rows keep their red warning)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Pharmacy Purchase - Quantity Must Be Integer",
                 "Validates that quantity and free quantity values are whole numbers (no decimals)",
                 OptionScope.INSTITUTION

@@ -35,6 +35,7 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardFee;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
@@ -1903,7 +1904,7 @@ public class InwardBeanController implements Serializable {
     }
 
     public boolean billTheatreTimeAsOt() {
-        return configOptionApplicationController.getBooleanValueByKey("Inward Bill - Bill Theatre Room Time Under Operation Theatre Charges", false);
+        return configOptionApplicationController.getBooleanValueByKey(com.divudi.service.inward.InwardRoomChargeCalculationService.THEATRE_TIME_AS_OT_KEY, false);
     }
 
     public boolean isTheatreTimeAsOt(PatientRoom pr) {
@@ -2303,6 +2304,31 @@ public class InwardBeanController implements Serializable {
         params.put("theatreClass", TheatreRoom.class);
         params.put("pe", admission);
         return getPatientRoomFacade().findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * Baby admissions of this mother that are still on the ward: child
+     * Admissions not yet nursing discharged. A baby's charges are billed on the
+     * mother's bill, so the mother's administrative discharge must wait for
+     * them (#24743). An OPD card converted to this BHT is also a child
+     * Admission and is left out.
+     */
+    public List<PatientEncounter> findBabyAdmissionsNotNursingDischarged(PatientEncounter mother) {
+        if (mother == null || mother.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT a FROM PatientEncounter a"
+                + " WHERE TYPE(a) = :admissionClass"
+                + " AND a.retired = false"
+                + " AND a.parentEncounter = :mother"
+                + " AND a.convertedToAnotherEncounter = false"
+                + " AND (a.nursingDischarged = false OR a.nursingDischarged IS NULL)"
+                + " ORDER BY a.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("admissionClass", Admission.class);
+        params.put("mother", mother);
+        List<PatientEncounter> babies = encounterFacade.findByJpql(jpql, params);
+        return babies != null ? babies : new ArrayList<>();
     }
 
     /**
@@ -3928,25 +3954,7 @@ public class InwardBeanController implements Serializable {
      * way they did in issue #23871 (a porter-flow return counted in the
      * total but missing from the list).
      */
-    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
-        BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
-        BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-        // Porter-based ward return flow (#21466/#21470) - see issue #22990.
-        BillTypeAtomic.RETURN_MEDICINE_INWARD,
-        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
-    );
+    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = com.divudi.core.data.inward.InwardMedicineBillTypes.ALL;
 
     /**
      * Exposes {@link #INWARD_MEDICINE_BILL_TYPES} so callers such as

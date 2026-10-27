@@ -25,6 +25,8 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [151. Dependent browser steps sent in one message race each other — send them one at a time](#151-dependent-browser-steps-sent-in-one-message-race-each-other--send-them-one-at-a-time)
 - [156. A menubar flyout left open covers buttons near the top of the page — press them with the keyboard](#156-a-menubar-flyout-left-open-covers-buttons-near-the-top-of-the-page--press-them-with-the-keyboard)
 - [162. `browser_run_code_unsafe` has no `require` — parameterise by generating the script file](#162-browser_run_code_unsafe-has-no-require--parameterise-by-generating-the-script-file)
+- [168. The admission autocomplete also matches phone numbers — pick the suggestion that shows the BHT](#168-the-admission-autocomplete-also-matches-phone-numbers--pick-the-suggestion-that-shows-the-bht)
+- [169. Report buttons have a hidden twin in the Favorites tab — click only `:visible` buttons](#169-report-buttons-have-a-hidden-twin-in-the-favorites-tab--click-only-visible-buttons)
 
 ---
 
@@ -629,3 +631,21 @@ Verified 2026-10-21 on *Inward → Inpatient Analytics → Payment Reports → C
 ## 162. `browser_run_code_unsafe` has no `require` — parameterise by generating the script file
 
 The code runs without Node's `require`/`fs` (`ReferenceError: require is not defined`), so it can't read a JSON of inputs. Keep one template with a placeholder, write a filled copy per scenario from Bash, and pass it as `filename`.
+
+## 167. `run_code` times out on a slow non-AJAX report
+
+Click Process with `click({ noWaitAfter: true })` and return. Wait outside the browser (e.g. until `jstack` no longer shows the report method), then take the screenshot.
+
+## 168. The admission autocomplete also matches phone numbers — pick the suggestion that shows the BHT
+
+Typing a raw BHT number such as `56588` into the Interim Bill (or any admission) autocomplete also matches patients whose phone number contains those digits, and that patient can be the first suggestion. Filter the suggestions by the BHT text, then click:
+
+```js
+await panel.locator('tr:not(:has(th)), li').filter({ hasText: 'BHT/' + bht }).first().click();
+```
+
+Check the patient name or BHT on the page before reading figures.
+
+## 169. Report buttons have a hidden twin in the Favorites tab — click only `:visible` buttons
+
+Pages with a ⭐ Favorites tab (e.g. *Inpatient Analytics*) render every favourited report button twice. `.first()` on a name match can pick the hidden Favorites copy and wait until the timeout without an error. Use `page.locator('button:visible').filter({ hasText: /^\s*Report Name\s*$/ })`.
