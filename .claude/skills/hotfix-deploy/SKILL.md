@@ -210,7 +210,7 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 |----------------------|--------|-------|
 | COOP — pharmacy | `coop-production` | |
 | COOP — inward | `coop-staging` | Despite the "staging" name, COOP inward users run against it day to day (production DB). |
-| Ruhunu hospital | `rh-production` | The `rh-staging` app is undeployed (not required); don't target it. |
+| Ruhunu hospital | `rh-production` | `rh-staging` is live again (since 2026-10-28) and writes to the same production DB. |
 | Southern Lanka | `southernlanka-staging` | **Live users are here.** `southernlanka-production` is live too (since 2026-10-15), on the same DB. |
 | RMH | `rmh-production` | `rmh-staging` writes to the same production DB. |
 | Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |
