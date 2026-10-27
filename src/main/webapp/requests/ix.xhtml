@@ -43,6 +43,12 @@
                                     box-sizing: border-box;
                                 }
 
+                                /* maincss.css forces overflow: scroll on html, which always shows both scroll bars */
+                                html {
+                                    overflow-x: hidden !important;
+                                    overflow-y: auto !important;
+                                }
+
                                 body {
                                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                                     background: #{configOptionApplicationController.getColorValueByKey('Laboratory Report SMS Interface - Background Color ','linear-gradient(180deg,rgba(12, 207, 38, 0.63) 0%, rgba(0, 30, 130, 1) 100%)')};
