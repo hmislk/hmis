@@ -83,12 +83,12 @@
 
                             <p:commandButton action="#{bookingControllerViewScope.markSessionInstanceAsStarted()}"
                                              value="Start Session"
-                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed}"
+                                             disabled="#{bookingControllerViewScope.selectedSessionInstance.completed or bookingControllerViewScope.selectedSessionInstance.cancelled}"
                                              rendered="#{bookingControllerViewScope.selectedSessionInstance.started ne true}"
                                              ajax="false"
                                              styleClass="ui-button-success mx-1"
                                              icon="fa fa-check"
-                                             onclick="return confirm('Are you sure you want to complete this session?');" />
+                                             onclick="return confirm('Are you sure you want to start this session?');" />
 
                             <p:commandButton action="/channel/channel_booking?faces-redirect=true"
                                              value="Back to Booking view"

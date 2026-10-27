@@ -764,6 +764,12 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("No session selected");
             return;
         }
+        // Re-read the flag: another user may have cancelled the session after this page was opened
+        SessionInstance latestSessionInstance = selectedSessionInstance.getId() == null ? null : sessionInstanceFacade.find(selectedSessionInstance.getId());
+        if (selectedSessionInstance.isCancelled() || (latestSessionInstance != null && latestSessionInstance.isCancelled())) {
+            JsfUtil.addErrorMessage("This session has been cancelled and cannot be started.");
+            return;
+        }
 
         if (!selectedSessionInstance.isArrived()) {
             markAsArrived();
