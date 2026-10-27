@@ -65,7 +65,9 @@
 
                                 <p:separator/>
 
-                                <p:dataTable value="#{pharmacyStockTakeController.snapshotBill.billItems}"
+                                <p:dataTable id="tblStockCountItems"
+                                             widgetVar="tblStockCountItems"
+                                             value="#{pharmacyStockTakeController.snapshotBill.billItems}"
                                              var="bi"
                                              rows="25"
                                              paginator="true"
@@ -118,7 +120,7 @@
 
 
                                     <p:column headerText="Quantity" sortBy="#{bi.qty}"
-                                              filterBy="#{bi.qty}" filterMatchMode="exact"
+                                              filterBy="#{bi.qty}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 80px; text-align: right;">
                                         <h:outputText value="#{bi.qty}"
                                                       style="color: #495057; font-weight: 500;">
@@ -127,7 +129,7 @@
                                     </p:column>
 
                                     <p:column headerText="Purchase Rate" sortBy="#{bi.pharmaceuticalBillItem.purchaseRate}"
-                                              filterBy="#{bi.pharmaceuticalBillItem.purchaseRate}" filterMatchMode="exact"
+                                              filterBy="#{bi.pharmaceuticalBillItem.purchaseRate}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 110px; text-align: right;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}"
                                                       style="color: #6c757d;">
@@ -136,7 +138,7 @@
                                     </p:column>
 
                                     <p:column headerText="Retail Rate" sortBy="#{bi.pharmaceuticalBillItem.retailRate}"
-                                              filterBy="#{bi.pharmaceuticalBillItem.retailRate}" filterMatchMode="exact"
+                                              filterBy="#{bi.pharmaceuticalBillItem.retailRate}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 110px; text-align: right;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}"
                                                       style="color: #6c757d;">
@@ -145,7 +147,7 @@
                                     </p:column>
 
                                     <p:column headerText="Cost Rate" sortBy="#{bi.pharmaceuticalBillItem.costRate}"
-                                              filterBy="#{bi.pharmaceuticalBillItem.costRate}" filterMatchMode="exact"
+                                              filterBy="#{bi.pharmaceuticalBillItem.costRate}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 110px; text-align: right;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.costRate}"
                                                       style="color: #6c757d;">
@@ -153,7 +155,8 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Purchase Value"
+                                    <p:column headerText="Purchase Value" sortBy="#{bi.pharmaceuticalBillItem.purchaseRate * bi.qty}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.purchaseRate * bi.qty}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 120px; text-align: right;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate * bi.qty}"
                                                       style="color: #004085;">
@@ -161,7 +164,8 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Cost Value"
+                                    <p:column headerText="Cost Value" sortBy="#{bi.pharmaceuticalBillItem.costRate * bi.qty}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.costRate * bi.qty}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 120px; text-align: right;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.costRate * bi.qty}"
                                                       style="color: #155724; font-weight: bold;">
@@ -169,7 +173,8 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Retail Value"
+                                    <p:column headerText="Retail Value" sortBy="#{bi.pharmaceuticalBillItem.retailRate * bi.qty}"
+                                              filterBy="#{bi.pharmaceuticalBillItem.retailRate * bi.qty}" filterFunction="#{commonFunctionsProxy.filterByNumberEquals}"
                                               style="width: 120px; text-align: right;">
                                         <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate * bi.qty}"
                                                       style="color: #856404;">
