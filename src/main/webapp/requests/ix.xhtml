@@ -438,9 +438,9 @@
                                         <div class="logo-icon">
                                             <img 
                                                 src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface Logo')}" 
-                                                alt="Hospital Logo" 
-                                                height="80" 
-                                                width="80"/>
+                                                alt="Hospital Logo"
+                                                height="#{configOptionApplicationController.getIntegerValueByKey('Laboratory Report SMS Interface Logo Height', 80)}"
+                                                width="#{configOptionApplicationController.getIntegerValueByKey('Laboratory Report SMS Interface Logo Width', 80)}"/>
                                         </div>
                                         <div class="logo-text">
                                             <h1>#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.institution.chequePrintingName}</h1>
