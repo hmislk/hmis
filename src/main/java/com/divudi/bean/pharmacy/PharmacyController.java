@@ -204,7 +204,7 @@ public class PharmacyController implements Serializable {
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
-    private List<BillItem> pendingGrns;
+    private List<com.divudi.core.data.dto.PendingGrnDisplayDTO> pendingGrns;
     private List<com.divudi.core.data.dto.PharmacyGrnItemDTO> grnDtos;
     private List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> grnReturnDtos;
     private List<BillItem> pos;
@@ -10233,7 +10233,7 @@ public class PharmacyController implements Serializable {
         return grns;
     }
 
-    public List<BillItem> getPendingGrns() {
+    public List<com.divudi.core.data.dto.PendingGrnDisplayDTO> getPendingGrns() {
         return pendingGrns;
     }
 
@@ -10700,14 +10700,25 @@ public class PharmacyController implements Serializable {
         // PHARMACY_GRN_PRE: Saved but not finalized
         // PHARMACY_GRN: Finalized but awaiting approval (when manage costing is true)
         // PERFORMANCE FIX: Simplified WHERE conditions and added limit
-        String jpql = "SELECT bi FROM BillItem bi "
-                + "WHERE bi.bill.retired = false "
+        // Scalar projection: the Pending GRN views must not lazy-load associations per row.
+        // Nullable associations use explicit LEFT JOINs so rows without them are not dropped.
+        String jpql = "SELECT new com.divudi.core.data.dto.PendingGrnDisplayDTO("
+                + "b.deptId, b.createdAt, COALESCE(fi.name, ''), COALESCE(d.name, ''), COALESCE(rb.deptId, ''), "
+                + "b.billTypeAtomic, it.name, pbi.qty, pbi.freeQty) "
+                + "FROM BillItem bi "
+                + "JOIN bi.bill b "
+                + "JOIN bi.item it "
+                + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
+                + "LEFT JOIN b.fromInstitution fi "
+                + "LEFT JOIN b.department d "
+                + "LEFT JOIN b.referenceBill rb "
+                + "WHERE b.retired = false "
                 + "AND bi.retired = false "
-                + "AND bi.bill.cancelled = false "
-                + "AND (bi.bill.checked IS NULL OR bi.bill.checked = false) "
+                + "AND b.cancelled = false "
+                + "AND (b.checked IS NULL OR b.checked = false) "
                 + "AND bi.item IN :relatedItems "
-                + "AND bi.bill.billTypeAtomic IN :btaList "
-                + "AND bi.bill.createdAt BETWEEN :frm AND :to ";
+                + "AND b.billTypeAtomic IN :btaList "
+                + "AND b.createdAt BETWEEN :frm AND :to ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("relatedItems", relatedItems);
@@ -10718,15 +10729,15 @@ public class PharmacyController implements Serializable {
         boolean pharmacyHistoryListOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey("Pharmacy History Lists Only Department Transactions for Purchase Orders", true);
         if (pharmacyHistoryListOnlyDepartmentTransactions) {
             params.put("department", getSessionController().getDepartment());
-            jpql += "AND bi.bill.department=:department ";
+            jpql += "AND b.department=:department ";
         }
 
-        jpql += " ORDER BY bi.bill.createdAt DESC ";
+        jpql += " ORDER BY b.createdAt DESC ";
 
         startTime = System.currentTimeMillis();
         try {
             // Add reasonable limit to prevent hanging on large datasets
-            pendingGrns = getBillItemFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 1000);
+            pendingGrns = (List<com.divudi.core.data.dto.PendingGrnDisplayDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 1000);
             long queryTime = System.currentTimeMillis() - startTime;
         } catch (Exception e) {
             long queryTime = System.currentTimeMillis() - startTime;
@@ -12412,7 +12423,7 @@ public class PharmacyController implements Serializable {
         this.grns = grns;
     }
 
-    public void setPendingGrns(List<BillItem> pendingGrns) {
+    public void setPendingGrns(List<com.divudi.core.data.dto.PendingGrnDisplayDTO> pendingGrns) {
         this.pendingGrns = pendingGrns;
     }
 
