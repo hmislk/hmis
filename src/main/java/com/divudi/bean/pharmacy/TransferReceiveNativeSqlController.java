@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.TemporalType;
@@ -76,6 +77,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private TransferReceiveItemRowDto selectedItemRow;
+    // Re-entrancy guard for settle()/settleApprove(): a double submit of the
+    // non-AJAX Receive button must not persist two receive bills (#24788)
+    private final AtomicBoolean settling = new AtomicBoolean(false);
 
     // ---- Injected ----
     @Inject
@@ -394,7 +398,23 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settle().
      */
     public void settle() {
+        if (!settling.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            doSettle();
+        } finally {
+            settling.set(false);
+        }
+    }
+
+    private void doSettle() {
         if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
+        // Already settled by an earlier request of this session (#24788)
+        if (printPreview) {
+            JsfUtil.addErrorMessage("This receive has already been saved. Please go back to the list.");
             return;
         }
         if (itemRowList == null || itemRowList.isEmpty()) {
@@ -446,7 +466,23 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settleApprove().
      */
     public void settleApprove() {
+        if (!settling.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            doSettleApprove();
+        } finally {
+            settling.set(false);
+        }
+    }
+
+    private void doSettleApprove() {
         if (!isAuthorized("APPROVE", "PharmacyReceiveApprove")) {
+            return;
+        }
+        // Already approved by an earlier request of this session (#24788)
+        if (printPreview) {
+            JsfUtil.addErrorMessage("This receive has already been approved. Please go back to the list.");
             return;
         }
         if (receivedBillId == null) {
