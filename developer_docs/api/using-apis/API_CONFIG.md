@@ -107,7 +107,8 @@ Header: Config: YOUR_CONFIG_API_KEY
 > keys use `setShortText` (below); it also retags an existing row to
 > `SHORT_TEXT`. If the branch has no `setShortText`, use
 > *Application Options → Import* with a CSV row of type `SHORT_TEXT` and
-> **Import Missing Only**.
+> **Import Missing Only** to create a new key. That mode skips existing keys,
+> so it can't change an existing `LONG_TEXT` row.
 
 ---
 
