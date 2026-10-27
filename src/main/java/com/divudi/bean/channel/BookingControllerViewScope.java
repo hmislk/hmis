@@ -4290,18 +4290,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
         }
-        if (getAssignedReleasedAppoinmentNumber() != 0L) {
-            Long num = getAssignedReleasedAppoinmentNumber();
-            boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
+        // A staff-chosen released number must still be free when the booking row is inserted,
+        // so hold the lock from the check until the bill (and its BillSession) is saved (#24785).
+        try (SessionBookingLock.Hold hold = getAssignedReleasedAppoinmentNumber() != 0L
+                ? SessionBookingLock.acquire(getSelectedSessionInstance()) : null) {
+            if (getAssignedReleasedAppoinmentNumber() != 0L) {
+                Long num = getAssignedReleasedAppoinmentNumber();
+                boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
 
-            if (!checkNumber) {
-                JsfUtil.addErrorMessage("No is already Booked by Online Booking now. Change Number ");
-                return;
+                if (!checkNumber) {
+                    JsfUtil.addErrorMessage("No is already Booked by Online Booking now. Change Number ");
+                    return;
+                }
             }
-        }
 
-        saveSelected(patient);
-        printingBill = saveBilledBill(reservedBooking);
+            saveSelected(patient);
+            printingBill = saveBilledBill(reservedBooking);
+        }
 
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
