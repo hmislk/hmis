@@ -1115,6 +1115,8 @@ public class ChannelApi {
         // Serial number allocation and the booking insert must not interleave with another
         // booking for the same session; re-check capacity under the same lock (#24785).
         try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(session)) {
+            // The booked count is a stored figure; recompute it under the lock so the check sees bookings just saved.
+            channelService.fillBillSessionsAndUpdateBookingsCountInSessionInstance(session);
             if (channelService.isFullyBookedSession(session)) {
                 JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
