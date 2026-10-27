@@ -34,7 +34,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.approved}"  >
-                        <div >
+                        <div class="sms-report-page">
 
                             <style>
                                 * {
@@ -344,12 +344,38 @@
                                         padding: 12px;
                                     }
 
+                                    /* Centre the report card on the screen */
+                                    .sms-report-page {
+                                        min-height: calc(100vh - 24px);
+                                        min-height: calc(100dvh - 24px);
+                                        display: flex;
+                                        flex-direction: column;
+                                        justify-content: center;
+                                        align-items: center;
+                                    }
+
+                                    .container {
+                                        width: 100%;
+                                        margin: 0 auto;
+                                        border-radius: 12px;
+                                    }
+
                                     .header {
                                         padding: 16px;
                                     }
 
+                                    .logo-section {
+                                        gap: 12px;
+                                    }
+
+                                    .logo-icon img {
+                                        max-width: 100%;
+                                        object-fit: contain;
+                                    }
+
                                     .logo-text h1 {
-                                        font-size: 24px;
+                                        font-size: 20px;
+                                        overflow-wrap: anywhere;
                                     }
 
                                     .welcome-section {
@@ -358,6 +384,35 @@
 
                                     .welcome-title {
                                         font-size: 18px;
+                                        line-height: 1.4;
+                                        overflow-wrap: anywhere;
+                                    }
+
+                                    .phone-info {
+                                        flex-wrap: wrap;
+                                    }
+
+                                    .phone-info span {
+                                        margin-top: 0 !important;
+                                    }
+
+                                    .card-row {
+                                        flex-wrap: wrap;
+                                        align-items: flex-start;
+                                    }
+
+                                    .card-value {
+                                        min-width: 0;
+                                        overflow-wrap: anywhere;
+                                    }
+
+                                    .mobile-cards .ui-button {
+                                        min-height: 44px;
+                                        margin-top: 8px;
+                                    }
+
+                                    .footer-content {
+                                        flex-wrap: wrap;
                                     }
 
                                     .table-section {
@@ -383,18 +438,36 @@
                                 }
 
                                 @media (max-width: 480px) {
-                                    .logo-section {
-                                        flex-direction: column;
-                                        gap: 8px;
+                                    body {
+                                        padding: 8px;
                                     }
 
-                                    .logo-icon {
-                                        margin-bottom: 8px;
+                                    .sms-report-page {
+                                        min-height: calc(100vh - 16px);
+                                        min-height: calc(100dvh - 16px);
+                                    }
+
+                                    .header,
+                                    .welcome-section,
+                                    .table-section,
+                                    .info-section {
+                                        padding: 12px;
+                                    }
+
+                                    .logo-section {
+                                        flex-direction: column;
+                                        gap: 10px;
+                                    }
+
+                                    .logo-text h1 {
+                                        font-size: 18px;
+                                    }
+
+                                    .welcome-title {
+                                        font-size: 16px;
                                     }
 
                                     .phone-info {
-                                        flex-direction: column;
-                                        align-items: flex-start;
                                         gap: 4px;
                                     }
                                 }
