@@ -911,14 +911,22 @@ public class PharmacyBean {
         return true;
     }
 
-    public boolean resetStock(PharmaceuticalBillItem ph, Stock stock, double qty, Staff staff) {
-        if (stock.getId() == null) {
+    /**
+     * Sets a staff stock's quantity and records a staff history row. The history
+     * is written for the staff member who owns the freshly reloaded row, never a
+     * possibly stale caller-held owner (#24791).
+     */
+    public boolean resetStaffStock(PharmaceuticalBillItem ph, Stock stock, double qty) {
+        if (stock == null || stock.getId() == null) {
             return false;
         }
         stock = getStockFacade().findWithoutCache(stock.getId());
+        if (stock == null || stock.getStaff() == null) {
+            return false;
+        }
         stock.setStock(qty);
         getStockFacade().editAndCommit(stock);
-        addToStockHistory(ph, stock, staff);
+        addToStockHistory(ph, stock, stock.getStaff());
         return true;
     }
 
