@@ -296,7 +296,7 @@
                                                     disabled="#{!(bs.bill.paidAmount eq 0 or (!(bs.bill.paymentMethod eq 'OnCall') or bs.bill.paidBill.paymentMethod ne 'OnCall'))}"
                                                     value="Change Patient"
                                                     ajax="false" 
-                                                    action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                    action="#{bookingControllerViewScope.navigateToChangePatient(bs)}" 
                                                     class="ui-button-secondary">
                                                 </p:commandButton>
 
@@ -383,7 +383,7 @@
                                                     disabled="#{!(bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall')}"
                                                     value="Change Patient"
                                                     ajax="false" 
-                                                    action="#{bookingControllerViewScope.navigateToManageBooking(bs)}" 
+                                                    action="#{bookingControllerViewScope.navigateToChangePatient(bs)}" 
                                                     class="ui-button-secondary">
                                                 </p:commandButton>
 

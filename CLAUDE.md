@@ -25,6 +25,7 @@
 - **🚨 Business errors thrown from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** A plain `IllegalStateException`/`IllegalArgumentException` reaches the JSF controller or REST class as `EJBException`, so its `catch` never fires and the user sees no message.
 - **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
 - **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
+- **🚨 Never change a bean's scope** (`@SessionScoped` → `@ViewScoped` etc.) without discussing it with the lead developer first. Fix the issue within the current scope. CI `bean-scope-guard` fails such PRs unless the lead developer adds the label `scope-change-approved`. See [Bean Scope Policy](developer_docs/jsf/bean-scope-policy.md).
 - **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
 - **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
 
@@ -50,6 +51,7 @@
 - **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI enforces this only for the retired `*-prod` names until #24453). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
 - **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch and update its title/body.
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
+- **🚨 Dependabot PRs: green CI isn't enough.** Before merging, confirm related artifacts stay on one version (e.g. `poi`/`poi-ooxml`) and that `pom.xml` pins (e.g. `commons-io`) don't hold back the bumped library's dependencies (`mvn dependency:tree`). CI compile catches neither.
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).
 
 ## Reference (read when relevant)

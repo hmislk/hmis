@@ -454,3 +454,7 @@ ext(){ grep -oE '^\s*[A-Z][A-Za-z0-9_]*\s*\(' | sed -E 's/[ (\t]//g' | sort -u; 
 comm -23 <(git show origin/development:$F | ext) <(ext < $F)
 ```
 To make them grantable in the UI, also wire them into `UserPrivilageController` (§135).
+
+## 162. Local test user: grant the page's privileges for the session department, and expect hidden errors
+
+A page opens only if the logged-in user holds its privilege for the department selected at login (§20, §124), so before testing a page, check the user's `Privileges` rows for that department and insert any that are missing (local DB only), then log in again (§135). Likewise set any `ConfigOption` the flow depends on (§107). Some pages have no `p:messages`/`p:growl`, so a failed action looks like a no-op; read `server.log` and the DB instead of the screen.

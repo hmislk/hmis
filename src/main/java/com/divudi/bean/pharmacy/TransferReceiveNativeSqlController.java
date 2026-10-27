@@ -18,6 +18,7 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dto.TransferReceiveItemPrintDto;
 import com.divudi.core.data.dto.TransferReceiveItemRowDto;
 import com.divudi.core.data.dto.TransferReceivePrintDto;
 import com.divudi.core.entity.Bill;
@@ -570,11 +571,42 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         printDto = transferReceiveNativeSqlService.loadPrintDtoByBillId(receivedBillId);
         if (printDto != null) {
+            // The pre-saved receive bill is a header only (see saveRequest), so the
+            // reloaded DTO has no lines. Print the lines being received instead.
+            fillPrintItemsFromRows(printDto);
             enrichPrintDto(printDto, savedBill);
         }
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Request Finalized Successfully");
+    }
+
+    private void fillPrintItemsFromRows(TransferReceivePrintDto dto) {
+        if (dto.getItems() != null && !dto.getItems().isEmpty()) {
+            return;
+        }
+        if (itemRowList == null || itemRowList.isEmpty()) {
+            return;
+        }
+        List<TransferReceiveItemRowDto> received = new ArrayList<>();
+        for (TransferReceiveItemRowDto row : itemRowList) {
+            if (row.getReceivingQty() != null && row.getReceivingQty().signum() > 0) {
+                received.add(row);
+            }
+        }
+        List<TransferReceiveItemPrintDto> items = transferReceiveNativeSqlService.buildPrintItems(received);
+        double net = 0;
+        double purchase = 0;
+        double retail = 0;
+        for (TransferReceiveItemPrintDto item : items) {
+            net += item.getNetValue();
+            purchase += item.getValueAtPurchaseRate().doubleValue();
+            retail += item.getValueAtRetailRate().doubleValue();
+        }
+        dto.setItems(items);
+        dto.setNetTotal(net);
+        dto.setTotalPurchaseValue(purchase);
+        dto.setTotalRetailSaleValue(retail);
     }
 
     // -----------------------------------------------------------------------

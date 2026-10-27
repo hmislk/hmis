@@ -18,6 +18,7 @@
 8. **🚨 NEVER MODIFY EXISTING CONSTRUCTORS**: Only add new constructors; do not change/remove existing signatures.
 9. **🚨 JPQL FIRST, NATIVE SQL LAST**: Use JPQL by default; use native SQL only with demonstrated constraints.
 10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: JPQL `COUNT(...)` should use `findLongByJpql`.
+10a. **🚨 NEVER CHANGE A BEAN'S SCOPE** (`@SessionScoped` → `@ViewScoped` etc.) without discussing it with the lead developer first. CI `bean-scope-guard` fails such PRs unless the lead developer adds the label `scope-change-approved`. See `developer_docs/jsf/bean-scope-policy.md`.
 
 ### Deployment
 11. **🚨 NEVER DEPLOY MANUALLY AS ROOT**: Never use root/sudo for Payara deployment paths; use CI/CD.

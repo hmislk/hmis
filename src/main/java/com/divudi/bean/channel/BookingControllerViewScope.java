@@ -19,6 +19,7 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ViewScopeDataTransferController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.BillClassType;
@@ -113,6 +114,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
@@ -246,6 +248,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     @Inject
     ViewScopeDataTransferController viewScopeDataTransferController;
     @Inject
+    WebUserController webUserController;
+    @Inject
     OpdBillController opdBillController;
     @Inject
     ChannelScheduleController channelScheduleController;
@@ -297,6 +301,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean printPreviewForReprintingAsDuplicate;
     private boolean printPreviewForOnlineBill;
     private boolean printPreviewC;
+    // Position of the "Change Patient" tab in manage_booking_by_date.xhtml; the tabs before it are always rendered
+    private static final int CHANGE_PATIENT_TAB_INDEX = 5;
+    private int manageBookingTabIndex;
 
     private double absentCount;
     private int serealNo;
@@ -543,9 +550,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
      */
     public void onEventSelectCal(SelectEvent<ScheduleEvent<?>> selectEvent) {
         sEvent = selectEvent.getObject();
+        if (sEvent != null && sEvent.getData() instanceof SessionInstance) {
+            selectedSessionInstance = (SessionInstance) sEvent.getData();
+        } else {
+            selectedSessionInstance = null;
+        }
     }
 
     public void onDateSelect(SelectEvent<LocalDateTime> selectEvent) {
+        sEvent = null;
+        selectedSessionInstance = null;
         event = (ChannelScheduleEvent) DefaultScheduleEvent.builder()
                 .startDate(selectEvent.getObject())
                 .endDate(selectEvent.getObject().plusHours(1))
@@ -2271,6 +2285,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             viewScopeDataTransferController.setNeedToFillFeeTotalsByBillFees(false);
         }
 
+        if (Boolean.TRUE.equals(viewScopeDataTransferController.getNeedToOpenChangePatientTab())) {
+            viewScopeDataTransferController.setNeedToOpenChangePatientTab(false);
+            if (isChangePatientTabAvailable()) {
+                manageBookingTabIndex = CHANGE_PATIENT_TAB_INDEX;
+            }
+        }
+
+    }
+
+    // Mirrors the rendered condition of the "Change Patient" tab in manage_booking_by_date.xhtml
+    private boolean isChangePatientTabAvailable() {
+        if (selectedBillSession == null || selectedBillSession.getBill() == null) {
+            return false;
+        }
+        return webUserController.hasPrivilege("ChannelBookingChange")
+                && selectedBillSession.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
@@ -2509,6 +2539,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billSessionFacade.edit(bs);
         }
 
+    }
+
+    public String navigateToChangePatient(BillSession bs) {
+        String outcome = navigateToManageBooking(bs);
+        if (outcome != null && !outcome.isEmpty()) {
+            viewScopeDataTransferController.setNeedToOpenChangePatientTab(true);
+        }
+        return outcome;
     }
 
     public String navigateToManageBooking(BillSession bs) {
@@ -4264,13 +4302,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend = Double.valueOf(strTenderedValue);
-                if (feeNetTotalForSelectedBill > tend) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                String tenderedError = ChannelTenderedAmountRules.tenderedAmountError(strTenderedValue, feeNetTotalForSelectedBill, true);
+                if (tenderedError != null) {
+                    JsfUtil.addErrorMessage(tenderedError);
                     return;
                 }
             }
@@ -7624,7 +7658,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         return selectedBillSession;
     }
 
+    private static Long idOf(BillSession billSession) {
+        return billSession == null ? null : billSession.getId();
+    }
+
     public void setSelectedBillSession(BillSession selectedBillSession) {
+        if (!Objects.equals(idOf(this.selectedBillSession), idOf(selectedBillSession))) {
+            // A tendered amount typed for another booking must not be validated against this one.
+            setStrTenderedValue(null);
+        }
         this.selectedBillSession = selectedBillSession;
         if (selectedBillSession != null) {
             Bill bill = selectedBillSession.getBill();
@@ -7978,7 +8020,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     private boolean errorCheckForSettle() {
 
         if (settlePaymentMethod == null) {
-            settlePaymentMethod = paymentMethod.Cash;
+            JsfUtil.addErrorMessage("Please select a payment method for settling.");
             return true;
         }
 
@@ -8060,24 +8102,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-            if (settlePaymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                    return;
-                }
-                Double tend;
-                try {
-                    tend = Double.parseDouble(strTenderedValue);
-                } catch (NumberFormatException e) {
-                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
-                    return;
-                }
-                if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
-                    JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
-                    return;
-                }
-            }
+        if (errorCheckForSettleTenderedAmount()) {
+            return;
         }
 
         Bill b = savePaidBill();
@@ -8149,6 +8175,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreviewForReprintingAsOriginal = false;
         creditCompany = null;
         toStaff = null;
+        setStrTenderedValue(null);
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
@@ -8163,6 +8190,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSessionFacade().create(bs);
         return bs;
 
+    }
+
+    private boolean errorCheckForSettleTenderedAmount() {
+        if (settlePaymentMethod != PaymentMethod.Cash) {
+            return false;
+        }
+        boolean tenderedRequired = configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking");
+        if (!tenderedRequired && !configOptionApplicationController.getBooleanValueByKey("Reject cash settlement of an on-call channel booking when the entered tendered amount is less than the net total", true)) {
+            return false;
+        }
+        // Compare against the amount savePaidBill() records as paid.
+        String tenderedError = ChannelTenderedAmountRules.tenderedAmountError(strTenderedValue, getBillSession().getBill().getNetTotal(), tenderedRequired);
+        if (tenderedError != null) {
+            JsfUtil.addErrorMessage(tenderedError);
+            return true;
+        }
+        return false;
     }
 
     private Bill savePaidBill() {
@@ -10047,6 +10091,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setPrintPreviewC(boolean printPreviewC) {
         this.printPreviewC = printPreviewC;
+    }
+
+    public int getManageBookingTabIndex() {
+        return manageBookingTabIndex;
+    }
+
+    public void setManageBookingTabIndex(int manageBookingTabIndex) {
+        this.manageBookingTabIndex = manageBookingTabIndex;
     }
 
     public String getEncryptedBillSessionId() {
