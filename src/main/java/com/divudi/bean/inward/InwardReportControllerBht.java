@@ -228,6 +228,8 @@ public class InwardReportControllerBht implements Serializable {
     private List<RequestIssueRow> requestIssueRows;
     private List<Bill> requestIssueSummaryBills;
 
+    private boolean showRefundCancelTests;
+
     public String navigateToInpatientPharmacyItemList() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
@@ -2222,8 +2224,13 @@ public class InwardReportControllerBht implements Serializable {
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        if (showRefundCancelTests) {
+            btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        }
+
         List<BillItem> labBillItems = new ArrayList<>();
-        labBillItems = fetchLabBillItems(patientEncounter, btas);
+        labBillItems = fetchLabBillItems(patientEncounter, btas, showRefundCancelTests);
 
         labBillItems = labBillItems.stream()
                 .filter(bi -> bi.getItem().getClass().equals(Investigation.class))
@@ -2233,7 +2240,7 @@ public class InwardReportControllerBht implements Serializable {
         labBillItemsToPatientEncounter = new ArrayList<>();
 
         for (BillItem bi : labBillItems) {
-            if (!bi.getBill().isCancelled()) {
+            if (showRefundCancelTests || !bi.getBill().isCancelled()) {
                 labBillItemsToPatientEncounter.add(bi);
                 labBillItemsToPatientEncounterNetTotal += bi.getNetValue();
             }
@@ -2243,13 +2250,19 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     public List<BillItem> fetchLabBillItems(PatientEncounter pt, List<BillTypeAtomic> billTypesAtomics) {
+        return fetchLabBillItems(pt, billTypesAtomics, false);
+    }
+
+    public List<BillItem> fetchLabBillItems(PatientEncounter pt, List<BillTypeAtomic> billTypesAtomics, boolean includeCancelledAndRefunded) {
         String jpql = "select bi "
                 + "from BillItem bi "
                 + "where bi.bill.retired = false "
-                + "and bi.bill.cancelled = false "
-                + "and bi.retired = false "
-                + "and bi.refunded = false "
-                + "and bi.bill.billTypeAtomic in :billTypesAtomics "
+                + "and bi.retired = false ";
+        if (!includeCancelledAndRefunded) {
+            jpql += "and bi.bill.cancelled = false "
+                    + "and bi.refunded = false ";
+        }
+        jpql += "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
 
         HashMap<String, Object> params = new HashMap<>();
@@ -3334,6 +3347,14 @@ public class InwardReportControllerBht implements Serializable {
             return Math.abs(bi.getPharmaceuticalBillItem().getQty());
         }
         return Math.abs(bi.getQty() == null ? 0.0 : bi.getQty());
+    }
+
+    public boolean isShowRefundCancelTests() {
+        return showRefundCancelTests;
+    }
+
+    public void setShowRefundCancelTests(boolean showRefundCancelTests) {
+        this.showRefundCancelTests = showRefundCancelTests;
     }
 
     /**
