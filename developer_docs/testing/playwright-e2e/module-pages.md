@@ -38,6 +38,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [149. Interim Bill search says "No results found" for an admission from another institution](#149-interim-bill-search-says-no-results-found-for-an-admission-from-another-institution)
 - [150. Interim Bill room charges are stale on the first open — open it twice before comparing totals](#150-interim-bill-room-charges-are-stale-on-the-first-open--open-it-twice-before-comparing-totals)
 - [153. Transfer request: issue and cancel act on the approved bill, not the PRE bill](#153-transfer-request-issue-and-cancel-act-on-the-approved-bill-not-the-pre-bill)
+- [157. Handover: the "Hand over to" autocomplete matches full names, and the accept list holds old handovers](#157-handover-the-hand-over-to-autocomplete-matches-full-names-and-the-accept-list-holds-old-handovers)
 
 ---
 
@@ -761,3 +762,10 @@ request, join PRE → `FORWARDREFERENCEBILL_ID` and check the approved bill's
 issues. Cancel Request marks whichever bill the page opened: the approved bill
 from Issue for Requests, the PRE bill from Approved Requests. Check that
 bill's `CANCELLED`.
+
+## 157. Handover: the "Hand over to" autocomplete matches full names, and the accept list holds old handovers
+
+- Typing a username also matches other staff whose full name contains it (`anjali` lists `...Dulanjali...` first). Pick the suggestion by the receiver's full name and check `bill.TOWEBUSER_ID` after the handover. A handover to the wrong user is undone with *Handover → My Handovers → Recall*.
+- On a copied production DB, *Shift Handovers to Accept* can list thousands of old pending rows. Pick the row by its date or bill number, never the first row.
+- The *Shift* section of the Financial Transaction Manager is open on load; clicking its header closes it.
+- An OPD payment sits on the batch bill, whose to-department is empty, so the cash book entry written at accept takes the receiver's logged-in department as its "to" side.

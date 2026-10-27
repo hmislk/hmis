@@ -495,7 +495,7 @@
                                                          class="ui-button-success mx-1"
                                                          ajax="false">
                                             <p:dataExporter type="xlsx"
-                                                            target="roomCharges"
+                                                            target="#{inwardBeanController.billTheatreTimeAsOt() ? 'roomCharges,theatreRoomCharges' : 'roomCharges'}"
                                                             fileName="Room_Charges" />
                                         </p:commandButton>
                                         <p:commandButton value="PDF"
@@ -503,7 +503,7 @@
                                                          class="ui-button-danger"
                                                          ajax="false">
                                             <p:dataExporter type="pdf"
-                                                            target="roomCharges"
+                                                            target="#{inwardBeanController.billTheatreTimeAsOt() ? 'roomCharges,theatreRoomCharges' : 'roomCharges'}"
                                                             fileName="Room_Charges" />
                                         </p:commandButton>
                                     </div>
@@ -514,7 +514,8 @@
                                         </div>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
-                                        <p:dataTable id="roomCharges" value="#{bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
+                                        <h:outputText value="Room Stays" styleClass="fw-bold" rendered="#{inwardBeanController.billTheatreTimeAsOt()}"/>
+                                        <p:dataTable id="roomCharges" value="#{inwardBeanController.billTheatreTimeAsOt() ? bhtSummeryController.wardPatientRooms : bhtSummeryController.patientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
                                             <p:column headerText="Room" styleClass="text-start">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
@@ -595,6 +596,90 @@
                                                 </h:outputLabel>
                                             </p:column>
                                         </p:dataTable>
+                                        <h:panelGroup rendered="#{inwardBeanController.billTheatreTimeAsOt()}">
+                                          <h:outputText value="Theatre Stays (billed under Operation Theatre Charges)" styleClass="fw-bold d-block mt-3"/>
+                                          <p:dataTable id="theatreRoomCharges" value="#{bhtSummeryController.theatrePatientRooms}" var="rm" style="min-width:10em;" styleClass="p-datatable-sm">
+                                              <p:column headerText="Room" styleClass="text-start">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                      <h:outputLabel value="#{rm.roomFacilityCharge.name}" style="display: inline;"/>
+                                                      <h:panelGroup rendered="#{rm.discharged}">
+                                                          <p:badge value="Left" severity="info"/>
+                                                      </h:panelGroup>
+                                                      <h:panelGroup rendered="#{not rm.discharged}">
+                                                          <p:badge value="Active" severity="warning"/>
+                                                      </h:panelGroup>
+                                                      <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                          <p:badge value="Guardian" severity="success"/>
+                                                      </h:panelGroup>
+                                                      <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.TheatreRoom'}">
+                                                          <p:badge value="Theatre" severity="danger"/>
+                                                      </h:panelGroup>
+                                                  </div>
+                                              </p:column>
+                                              <p:column headerText="Admission" style="min-width:10em;" styleClass="text-start">
+                                                  <h:outputText value="#{rm.admittedAt}">
+                                                      <f:convertDateTime timeZone="Asia/Colombo"
+                                                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                  </h:outputText>
+                                              </p:column>
+                                              <p:column headerText="Discharge" style="min-width:10em;" styleClass="text-start">
+                                                  <h:panelGroup rendered="#{rm.dischargedAt ne null}">
+                                                      <h:outputText value="#{rm.dischargedAt}">
+                                                          <f:convertDateTime timeZone="Asia/Colombo"
+                                                                             pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                      </h:outputText>
+                                                  </h:panelGroup>
+                                                  <h:panelGroup rendered="#{rm.dischargedAt eq null}">
+                                                      <span class="text-muted fst-italic">—</span>
+                                                  </h:panelGroup>
+                                              </p:column>
+                                              <p:column headerText="Room" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedRoomCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Maintain" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedMaintainCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="MO" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedMoCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Nursing" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedNursingCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Linen" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedLinenCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Admin" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedAdministrationCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Medical" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.calculatedMedicalCareCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Discount" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.discountRoomCharge + rm.discountMaintainCharge + rm.discountLinenCharge + rm.discountNursingCharge + rm.discountMoCharge + rm.discountAdministrationCharge + rm.discountMedicalCareCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                              <p:column headerText="Net" style="width: 5em;" styleClass="text-end">
+                                                  <h:outputLabel value="#{rm.adjustedRoomCharge + rm.adjustedMaintainCharge + rm.ajdustedLinenCharge + rm.ajdustedNursingCharge + rm.adjustedMoCharge + rm.ajdustedAdministrationCharge + rm.ajdustedMedicalCareCharge}">
+                                                      <f:convertNumber pattern="#,##0.00"/>
+                                                  </h:outputLabel>
+                                              </p:column>
+                                          </p:dataTable>
+                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </p:tab>
 
@@ -657,12 +742,6 @@
                                         </p:column>
                                         <p:column headerText="Creator" styleClass="text-start" >
                                             <h:outputLabel value="#{pt.creater.webUserPerson.name}"/>
-                                            <br/>
-                                            <h:panelGroup rendered="#{pt.retired}" >
-                                                <h:outputLabel style="color: red;" value="Deleted By " />
-                                                <h:outputLabel style="color: red;"  value="#{pt.retirer.webUserPerson.name}" >
-                                                </h:outputLabel>
-                                            </h:panelGroup>
                                         </p:column>
                                         <!--
                                             #23606 - timed services are billed one BilledBill each
@@ -709,13 +788,33 @@
                                                     disabled="#{pt.bill.checkedBy ne null}"
                                                     action="#{bhtSummeryController.updatePatientItem(pt)}" >
                                                 </p:commandButton>
+                                                <!--
+                                                    #23940 - Stop and Delete are different actions.
+                                                    Stop ends a running service: it stays on the bill,
+                                                    charged up to the Stopped Time. Delete is only for a
+                                                    service entered by mistake: it and its charge leave
+                                                    the bill. Do not label either of them "Remove".
+                                                -->
                                                 <p:commandButton
                                                     ajax="false"
-                                                    icon="fa fa-times"
+                                                    icon="fa fa-stop"
+                                                    class="ui-button-secondary"
+                                                    value="Stop"
+                                                    rendered="#{pt.toTime eq null}"
+                                                    title="Stop #{pt.item.name} now. It stays on the bill, charged up to now."
+                                                    action="#{bhtSummeryController.stopTimedService(pt)}" >
+                                                </p:commandButton>
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-trash"
                                                     class="ui-button-danger"
-                                                    value="Remove "
+                                                    value="Delete"
                                                     disabled="#{pt.bill.checkedBy ne null}"
-                                                    action="#{surgeryBillController.removeTimeService(pt)}" >
+                                                    title="Delete #{pt.item.name} entered by mistake. It and its charge leave the bill."
+                                                    action="#{bhtSummeryController.deleteTimedService(pt)}" >
+                                                    <p:confirm header="Delete Timed Service"
+                                                               message="This deletes #{pt.item.name} and its charge from the bill. To end a running service, press Stop instead."
+                                                               icon="pi pi-exclamation-triangle" />
                                                 </p:commandButton>
                                                 <!--
                                                     A service still running has no final amount to
@@ -731,7 +830,7 @@
                                                     value="Check"
                                                     rendered="#{pt.bill ne null and pt.bill.checkedBy eq null}"
                                                     disabled="#{pt.toTime eq null or not webUserController.hasPrivilege('InwardCheck')}"
-                                                    title="#{pt.toTime eq null ? 'Enter a Stopped Time and press Update before checking this service.' : 'Mark this timed service bill as checked'}"
+                                                    title="#{pt.toTime eq null ? 'Press Stop, or enter a Stopped Time and press Update, before checking this service.' : 'Mark this timed service bill as checked'}"
                                                     action="#{bhtSummeryController.markTimedServiceAsChecked(pt)}" >
                                                 </p:commandButton>
                                                 <p:commandButton
@@ -1824,6 +1923,11 @@
                             <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
                         </div>
                     </p:dialog>
+
+                    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="pi pi-check" />
+                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                    </p:confirmDialog>
 
                 </h:form>
             </ui:define>

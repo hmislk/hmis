@@ -304,15 +304,17 @@ public class Person implements Serializable, RetirableEntity  {
     }
 
     public String getNameWithTitle() {
-        String temT;
-        Title t = getTitle();
-        if (t != null) {
-            temT = t.getLabel();
+        // Title labels already end with a space ("Mr. "), so trim both parts
+        // and join with exactly one space to avoid "Mr.  Name".
+        String temT = getTitle() == null ? "" : getTitle().getLabel().trim();
+        String temN = getName() == null ? "" : getName().trim();
+        if (temT.isEmpty()) {
+            nameWithTitle = temN;
+        } else if (temN.isEmpty()) {
+            nameWithTitle = temT;
         } else {
-            temT = "";
+            nameWithTitle = temT + " " + temN;
         }
-        nameWithTitle = temT + " " + getName();
-
         return nameWithTitle;
     }
     

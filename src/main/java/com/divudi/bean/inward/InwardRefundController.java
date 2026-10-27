@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -185,6 +186,13 @@ public class InwardRefundController implements Serializable {
             return true;
         }
 
+        PatientEncounter billEncounter = getOriginalBillToRefund().getPatientEncounter();
+        if (billEncounter == null
+                || !Objects.equals(billEncounter.getId(), getCurrent().getPatientEncounter().getId())) {
+            JsfUtil.addErrorMessage("The selected bill does not belong to the selected BHT. Please clear and select the BHT and bill again.");
+            return true;
+        }
+
         if (getOriginalBillToRefund().isCancelled()) {
             JsfUtil.addErrorMessage("This bill has been cancelled and cannot be refunded.");
             return true;
@@ -257,6 +265,7 @@ public class InwardRefundController implements Serializable {
 
     private void saveBill() {
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
         getCurrent().setBillType(BillType.InwardPaymentBill);
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());

@@ -41,6 +41,7 @@ import com.divudi.core.data.dto.BeforeStockTakingDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacySaleByBillTypeDTO;
+import com.divudi.core.data.dto.StockTransferDetailRowDTO;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
@@ -297,7 +298,7 @@ public class PharmacyController implements Serializable {
     private List<PharmacySummery> departmentSummaries;
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
     private List<DepartmentCategoryWiseItems> resultsList;
-    private Map<String, List<PharmacyRow>> departmentWiseRows;
+    private Map<String, List<StockTransferDetailRowDTO>> departmentWiseRows;
     private Map<String, Double[]> departmentTotalsMap;
     private List<TransferBreakdownGroup> transferBreakdownGroups;
     private TransferBreakdownTotals transferBreakdownTotals;
@@ -3796,14 +3797,6 @@ public class PharmacyController implements Serializable {
 
             switch (reportType) {
                 case "byBill":
-                    if (item != null) {
-                        JsfUtil.addErrorMessage("You can not use List By Bill when an item is selected");
-                        return;
-                    }
-                    if (category != null) {
-                        JsfUtil.addErrorMessage("You can not use List By Bill when a category is selected");
-                        return;
-                    }
                     generateConsumptionByBillDto(disposalBillTypes);
                     break;
                 case "byBillItem":
@@ -3832,24 +3825,44 @@ public class PharmacyController implements Serializable {
 
     public void generateConsumptionByBillDto(List<BillTypeAtomic> billTypeAtomics) {
         try {
+            // With an item-level filter, each bill's values are the sum of its matching items only,
+            // so the totals reconcile with the By Bill Item report under the same filters.
+            boolean itemLevelFilter = item != null || category != null || dosageForm != null;
+            String groupedColumns = "b.id, b.deptId, b.invoiceNumber, "
+                    + "toDept.name, "
+                    + "b.cancelled, b.fullReturned, "
+                    + "cb.id, cb.deptId, "
+                    + "rb.id, rb.deptId, "
+                    + "obb.id, obb.deptId, ";
+            String trailingColumns = "b.createdAt, wu.name, b.comments, b.billTypeAtomic ";
+
             StringBuilder jpql = new StringBuilder();
-            jpql.append("SELECT b.id, b.deptId, b.invoiceNumber, ");
-            jpql.append("toDept.name, ");
-            jpql.append("b.cancelled, b.fullReturned, ");
-            jpql.append("cb.id, cb.deptId, ");
-            jpql.append("rb.id, rb.deptId, ");
-            jpql.append("obb.id, obb.deptId, ");
-            jpql.append("bfd.totalPurchaseValue, bfd.totalCostValue, bfd.totalRetailSaleValue, ");
-            jpql.append("b.createdAt, wu.name, b.comments, b.billTypeAtomic ");
-            jpql.append("FROM Bill b ");
+            jpql.append("SELECT ").append(groupedColumns);
+            if (itemLevelFilter) {
+                jpql.append("SUM(bifd.valueAtPurchaseRate), SUM(bifd.valueAtCostRate), SUM(bifd.valueAtRetailRate), ");
+            } else {
+                jpql.append("bfd.totalPurchaseValue, bfd.totalCostValue, bfd.totalRetailSaleValue, ");
+            }
+            jpql.append(trailingColumns);
+            if (itemLevelFilter) {
+                jpql.append("FROM BillItem bi ");
+                jpql.append("JOIN bi.bill b ");
+                jpql.append("LEFT JOIN bi.item i ");
+                jpql.append("LEFT JOIN bi.billItemFinanceDetails bifd ");
+            } else {
+                jpql.append("FROM Bill b ");
+                jpql.append("LEFT JOIN b.billFinanceDetails bfd ");
+            }
             jpql.append("LEFT JOIN b.toDepartment toDept ");
             jpql.append("LEFT JOIN b.cancelledBill cb ");
             jpql.append("LEFT JOIN b.refundedBill rb ");
             jpql.append("LEFT JOIN b.billedBill obb ");
-            jpql.append("LEFT JOIN b.billFinanceDetails bfd ");
             jpql.append("LEFT JOIN b.creater cr ");
             jpql.append("LEFT JOIN cr.webUserPerson wu ");
             jpql.append("WHERE (b.retired = false OR b.retired IS NULL) ");
+            if (itemLevelFilter) {
+                jpql.append("AND (bi.retired = false OR bi.retired IS NULL) ");
+            }
             jpql.append("AND b.completed = true ");
             jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
             jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -3871,8 +3884,16 @@ public class PharmacyController implements Serializable {
                 jpql.append("AND b.department = :dept ");
                 params.put("dept", dept);
             }
+            if (item != null) {
+                jpql.append("AND bi.item = :item ");
+                params.put("item", item);
+            }
+            if (category != null) {
+                jpql.append("AND i.category = :category ");
+                params.put("category", category);
+            }
             if (dosageForm != null) {
-                jpql.append("AND EXISTS (SELECT bi2 FROM BillItem bi2 WHERE bi2.bill = b AND bi2.item.dosageForm = :df) ");
+                jpql.append("AND i.dosageForm = :df ");
                 params.put("df", dosageForm);
             }
             if (toDepartment != null) {
@@ -3882,6 +3903,9 @@ public class PharmacyController implements Serializable {
             if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
                 jpql.append("AND b.departmentType IN :departmentTypes ");
                 params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            if (itemLevelFilter) {
+                jpql.append("GROUP BY ").append(groupedColumns).append(trailingColumns);
             }
             jpql.append("ORDER BY b.createdAt ASC");
 
@@ -6559,42 +6583,38 @@ public class PharmacyController implements Serializable {
                 headerRow.createCell(11).setCellValue("Issue Approved User");
             }
 
-            for (Map.Entry<String, List<PharmacyRow>> deptEntry : departmentWiseRows.entrySet()) {
+            for (Map.Entry<String, List<StockTransferDetailRowDTO>> deptEntry : departmentWiseRows.entrySet()) {
                 String departmentName = deptEntry.getKey();
-                List<PharmacyRow> billItems = deptEntry.getValue();
+                List<StockTransferDetailRowDTO> billItems = deptEntry.getValue();
 
-                for (PharmacyRow i : billItems) {
+                for (StockTransferDetailRowDTO i : billItems) {
                     Row dataRow = sheet.createRow(rowIndex++);
                     int colIndex = 0;
 
                     dataRow.createCell(colIndex++).setCellValue(departmentName);
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getDeptId() != null ? i.getBillItem().getBill().getDeptId() : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getCreatedAt()) : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getBackwardReferenceBill() != null ? i.getBillItem().getBill().getBackwardReferenceBill().getDeptId() : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getBackwardReferenceBill() != null && i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt()) : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getName() != null ? i.getBillItem().getItem().getName() : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getCode() != null ? i.getBillItem().getItem().getCode() : "-");
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getPharmaceuticalBillItem().getQty());
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getItem().getVmp() != null && i.getBillItem().getItem().getVmp().getStrengthUnit() != null ? i.getBillItem().getItem().getVmp().getStrengthUnit().getName() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillDeptId() != null ? i.getBillDeptId() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getBillCreatedAt() != null ? sdf.format(i.getBillCreatedAt()) : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getRefBillId() != null ? i.getRefBillDeptId() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getRefBillCreatedAt() != null ? sdf.format(i.getRefBillCreatedAt()) : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getItemName() != null ? i.getItemName() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getItemCode() != null ? i.getItemCode() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getQty() != null ? i.getQty() : 0.0);
+                    dataRow.createCell(colIndex++).setCellValue(i.getStrengthUnitName() != null ? i.getStrengthUnitName() : "-");
                     // Use BIFD purchase rate instead of PharmaceuticalBillItem purchase rate for consistency
-                    double purchaseRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getPurchaseRate() != null
-                            ? i.getBillItem().getBillItemFinanceDetails().getPurchaseRate().doubleValue() : 0;
-                    double purchaseValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate() != null
-                            ? i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0;
+                    double purchaseRate = i.getPurchaseRate() != null ? i.getPurchaseRate().doubleValue() : 0;
+                    double purchaseValue = i.getValueAtPurchaseRate() != null ? i.getValueAtPurchaseRate().doubleValue() : 0;
                     dataRow.createCell(colIndex++).setCellValue(purchaseRate);
                     dataRow.createCell(colIndex++).setCellValue(purchaseValue);
 
                     if (costingEnabled) {
                         // Use BIFD cost rate instead of ItemBatch cost rate for consistency
-                        double costRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getCostRate() != null
-                                ? i.getBillItem().getBillItemFinanceDetails().getCostRate().doubleValue() : 0;
-                        double costValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate() != null
-                                ? i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0;
+                        double costRate = i.getCostRate() != null ? i.getCostRate().doubleValue() : 0;
+                        double costValue = i.getValueAtCostRate() != null ? i.getValueAtCostRate().doubleValue() : 0;
                         dataRow.createCell(colIndex++).setCellValue(costRate);
                         dataRow.createCell(colIndex++).setCellValue(costValue);
                     }
 
-                    dataRow.createCell(colIndex++).setCellValue(i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-");
+                    dataRow.createCell(colIndex++).setCellValue(i.getCreaterName() != null ? i.getCreaterName() : "-");
                 }
                 Row footerRow = sheet.createRow(rowIndex++);
                 Cell totalLabelCell = footerRow.createCell(0);
@@ -6702,39 +6722,35 @@ public class PharmacyController implements Serializable {
                 addCellToPdfTable(table, header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8), BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
 
-            for (Map.Entry<String, List<PharmacyRow>> deptEntry : departmentWiseRows.entrySet()) {
+            for (Map.Entry<String, List<StockTransferDetailRowDTO>> deptEntry : departmentWiseRows.entrySet()) {
                 String departmentName = deptEntry.getKey();
-                List<PharmacyRow> billItems = deptEntry.getValue();
+                List<StockTransferDetailRowDTO> billItems = deptEntry.getValue();
 
-                for (PharmacyRow i : billItems) {
+                for (StockTransferDetailRowDTO i : billItems) {
                     addCellToPdfTable(table, departmentName, FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, i.getBillItem().getBill().getDeptId() != null ? i.getBillItem().getBill().getDeptId() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, i.getBillItem().getBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getCreatedAt()) : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, i.getBillItem().getBill().getBackwardReferenceBill() != null ? i.getBillItem().getBill().getBackwardReferenceBill().getDeptId() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, i.getBillItem().getBill().getBackwardReferenceBill() != null && i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt() != null ? sdf.format(i.getBillItem().getBill().getBackwardReferenceBill().getCreatedAt()) : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, i.getBillItem().getItem().getName() != null ? i.getBillItem().getItem().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, i.getBillItem().getItem().getCode() != null ? i.getBillItem().getItem().getCode() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
-                    addCellToPdfTable(table, String.format("%,.1f", (i.getBillItem().getPharmaceuticalBillItem() != null ? i.getBillItem().getPharmaceuticalBillItem().getQty() : 0.0)), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
-                    addCellToPdfTable(table, i.getBillItem().getItem().getVmp() != null && i.getBillItem().getItem().getVmp().getStrengthUnit() != null ? i.getBillItem().getItem().getVmp().getStrengthUnit().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getBillDeptId() != null ? i.getBillDeptId() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getBillCreatedAt() != null ? sdf.format(i.getBillCreatedAt()) : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getRefBillId() != null ? i.getRefBillDeptId() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getRefBillCreatedAt() != null ? sdf.format(i.getRefBillCreatedAt()) : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getItemName() != null ? i.getItemName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getItemCode() != null ? i.getItemCode() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, String.format("%,.1f", (i.getQty() != null ? i.getQty() : 0.0)), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
+                    addCellToPdfTable(table, i.getStrengthUnitName() != null ? i.getStrengthUnitName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
                     // Use BIFD purchase rate instead of PharmaceuticalBillItem purchase rate for consistency
-                    double purchaseRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getPurchaseRate() != null
-                            ? i.getBillItem().getBillItemFinanceDetails().getPurchaseRate().doubleValue() : 0;
-                    double purchaseValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate() != null
-                            ? i.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0;
+                    double purchaseRate = i.getPurchaseRate() != null ? i.getPurchaseRate().doubleValue() : 0;
+                    double purchaseValue = i.getValueAtPurchaseRate() != null ? i.getValueAtPurchaseRate().doubleValue() : 0;
                     addCellToPdfTable(table, String.format("%,.2f", purchaseRate), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
                     addCellToPdfTable(table, String.format("%,.2f", purchaseValue), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
 
                     if (costingEnabled) {
                         // Use BIFD cost rate instead of ItemBatch cost rate for consistency
-                        double costRate = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getCostRate() != null
-                                ? i.getBillItem().getBillItemFinanceDetails().getCostRate().doubleValue() : 0;
-                        double costValue = i.getBillItem().getBillItemFinanceDetails() != null && i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate() != null
-                                ? i.getBillItem().getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0;
+                        double costRate = i.getCostRate() != null ? i.getCostRate().doubleValue() : 0;
+                        double costValue = i.getValueAtCostRate() != null ? i.getValueAtCostRate().doubleValue() : 0;
                         addCellToPdfTable(table, String.format("%,.2f", costRate), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
                         addCellToPdfTable(table, String.format("%,.2f", costValue), FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
                     }
 
-                    addCellToPdfTable(table, i.getBillItem().getBill().getCreater() != null && i.getBillItem().getBill().getCreater().getWebUserPerson() != null ? i.getBillItem().getBill().getCreater().getWebUserPerson().getName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                    addCellToPdfTable(table, i.getCreaterName() != null ? i.getCreaterName() : "-", FontFactory.getFont(FontFactory.HELVETICA, 8));
                 }
                 PdfPCell totalLabelCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
                 totalLabelCell.setColspan(10);
@@ -6874,16 +6890,20 @@ public class PharmacyController implements Serializable {
 
     public void generateReportByDepartmentWiseBill(List<BillTypeAtomic> billTypeAtomics) {
         Map<String, Object> parameters = new HashMap<>();
+        // LEFT JOINs keep bills whose optional relations are null; a path in SELECT would inner-join and drop them
         StringBuilder sql = new StringBuilder(
-                "SELECT b.toDepartment, "
-                + "b.department, "
+                "SELECT td, "
+                + "d, "
                 + "b.deptId, "
                 + "b.createdAt, "
-                + "b.backwardReferenceBill, "
-                + "b.backwardReferenceBill.deptId, "
+                + "brb, "
+                + "brb.deptId, "
                 + "SUM(b.netTotal), "
                 + "b "
                 + "FROM Bill b "
+                + "LEFT JOIN b.toDepartment td "
+                + "LEFT JOIN b.department d "
+                + "LEFT JOIN b.backwardReferenceBill brb "
                 + "WHERE b.retired = false "
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate "
                 + "AND b.billTypeAtomic IN :billTypeAtomics "
@@ -6895,7 +6915,7 @@ public class PharmacyController implements Serializable {
 
         additionalCommonFilltersForBillEntity(sql, parameters);
 
-        sql.append(" GROUP BY b.toDepartment, b.department, b.deptId, b.createdAt, b.backwardReferenceBill, b.backwardReferenceBill.deptId, b");
+        sql.append(" GROUP BY td, d, b.deptId, b.createdAt, brb, brb.deptId, b");
         sql.append(" ORDER BY b.id");
 
         Map<Department, List<DepartmentWiseBill>> departmentWiseBillMap = new HashMap<>();
@@ -6958,7 +6978,7 @@ public class PharmacyController implements Serializable {
             }
 
             departmentWiseBillList = departmentWiseBillMap.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey(Comparator.comparing(Department::getName)))
+                    .sorted(Map.Entry.comparingByKey(Comparator.nullsLast(Comparator.comparing(Department::getName, Comparator.nullsLast(Comparator.naturalOrder())))))
                     .flatMap(entry -> entry.getValue().stream())
                     .collect(Collectors.toList());
 
@@ -7072,7 +7092,6 @@ public class PharmacyController implements Serializable {
 
                 totalPurchase += purchaseValue;
 
-                departmentWiseRows.computeIfAbsent(departmentName, k -> new ArrayList<>()).add(row);
                 double retailValue = row.getBillItem().getBillItemFinanceDetails() != null
                         && row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate() != null
                         ? row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate().doubleValue() : 0.0;
@@ -7109,10 +7128,31 @@ public class PharmacyController implements Serializable {
             Map<String, Object> parameters = new HashMap<>();
             StringBuilder sql = new StringBuilder();
 
-            sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
-                    .append("AND bi.bill.retired = false ")
-                    .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
-                    .append("AND bi.bill.billTypeAtomic IN :billTypeAtomics ");
+            // Flat projection (#24745): loading BillItem entities pulled a huge eager graph per row.
+            // Every optional relationship is an explicit LEFT JOIN so no row is dropped.
+            sql.append("SELECT new com.divudi.core.data.dto.StockTransferDetailRowDTO(")
+                    .append("b.id, b.deptId, b.createdAt, ")
+                    .append("rb.id, rb.deptId, rb.createdAt, ")
+                    .append("i.name, i.code, cat.name, df.name, su.name, ")
+                    .append("pbi.qty, ")
+                    .append("f.purchaseRate, f.valueAtPurchaseRate, f.costRate, f.valueAtCostRate, f.retailSaleRate, f.valueAtRetailRate, ")
+                    .append("wp.name, td.name) ")
+                    .append("FROM BillItem bi JOIN bi.bill b ")
+                    .append("LEFT JOIN bi.pharmaceuticalBillItem pbi ")
+                    .append("LEFT JOIN bi.billItemFinanceDetails f ")
+                    .append("LEFT JOIN bi.item i ")
+                    .append("LEFT JOIN i.category cat ")
+                    .append("LEFT JOIN i.dosageForm df ")
+                    .append("LEFT JOIN i.vmp vmp ")
+                    .append("LEFT JOIN vmp.strengthUnit su ")
+                    .append("LEFT JOIN b.backwardReferenceBill rb ")
+                    .append("LEFT JOIN b.creater cr ")
+                    .append("LEFT JOIN cr.webUserPerson wp ")
+                    .append("LEFT JOIN b.toDepartment td ")
+                    .append("WHERE bi.retired = false ")
+                    .append("AND b.retired = false ")
+                    .append("AND b.createdAt BETWEEN :fromDate AND :toDate ")
+                    .append("AND b.billTypeAtomic IN :billTypeAtomics ");
 
             parameters.put("fromDate", fromDate);
             parameters.put("toDate", toDate);
@@ -7134,50 +7174,29 @@ public class PharmacyController implements Serializable {
 
             sql.append(" ORDER BY bi.id DESC");
 
-            billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+            @SuppressWarnings("unchecked")
+            List<StockTransferDetailRowDTO> rows = (List<StockTransferDetailRowDTO>) getBillItemFacade()
+                    .findLightsByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
-            if (billItems.isEmpty()) {
-                pharmacyRows = new ArrayList<>();
+            if (rows == null || rows.isEmpty()) {
                 return;
             }
 
-            List<Item> items = billItems.stream()
-                    .map(BillItem::getItem)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .collect(Collectors.toList());
+            for (StockTransferDetailRowDTO row : rows) {
+                String departmentName = row.getToDepartmentName() != null ? row.getToDepartmentName() : "Other";
 
-            if (!items.isEmpty()) {
-                List<ItemBatch> allBatches = getItemBatchesByItems(items);
-                pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
-
-//                totalPurchase = pharmacyRows.stream()
-//                        .filter(r -> r.getQuantity() != null && r.getPurchaseValue() != null)
-//                        .mapToDouble(r -> r.getQuantity() * r.getPurchaseValue())
-//                        .sum();
-            }
-
-            for (PharmacyRow row : pharmacyRows) {
-                String departmentName = row.getBillItem().getBill().getToDepartment() != null
-                        ? row.getBillItem().getBill().getToDepartment().getName()
-                        : "Other";
-
-                double purchaseValue = row.getBillItem().getBillItemFinanceDetails() != null
-                        && row.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate() != null
-                        ? row.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate().doubleValue() : 0.0;
-                double costValue = costingEnabled && row.getBillItem().getBillItemFinanceDetails() != null
-                        && row.getBillItem().getBillItemFinanceDetails().getValueAtCostRate() != null
-                        ? row.getBillItem().getBillItemFinanceDetails().getValueAtCostRate().doubleValue() : 0.0;
+                double purchaseValue = row.getValueAtPurchaseRate() != null
+                        ? row.getValueAtPurchaseRate().doubleValue() : 0.0;
+                double costValue = costingEnabled && row.getValueAtCostRate() != null
+                        ? row.getValueAtCostRate().doubleValue() : 0.0;
+                double retailValue = row.getValueAtRetailRate() != null
+                        ? row.getValueAtRetailRate().doubleValue() : 0.0;
 
                 totalPurchase += purchaseValue;
                 totalCostValue += costValue;
-                
-                departmentWiseRows.computeIfAbsent(departmentName, k -> new ArrayList<>()).add(row);
-                double retailValue = row.getBillItem().getBillItemFinanceDetails() != null
-                        && row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate() != null
-                        ? row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate().doubleValue() : 0.0;
-                
                 totalRetailValue += retailValue;
+
+                departmentWiseRows.computeIfAbsent(departmentName, k -> new ArrayList<>()).add(row);
 
                 departmentTotalsMap.compute(departmentName, (k, v) -> {
                     if (v == null) {
@@ -7208,10 +7227,15 @@ public class PharmacyController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder();
 
-        sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
-                .append("AND bi.bill.retired = false ")
-                .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
-                .append("AND bi.bill.billTypeAtomic IN :billTypeAtomics ")
+        sql.append("SELECT fd.name, td.name, pbi.qty, f.valueAtPurchaseRate, f.valueAtCostRate, f.valueAtRetailRate ")
+                .append("FROM BillItem bi JOIN bi.bill b JOIN bi.pharmaceuticalBillItem pbi ")
+                .append("LEFT JOIN bi.billItemFinanceDetails f ")
+                .append("LEFT JOIN b.fromDepartment fd ")
+                .append("LEFT JOIN b.toDepartment td ")
+                .append("WHERE bi.retired = false ")
+                .append("AND b.retired = false ")
+                .append("AND b.createdAt BETWEEN :fromDate AND :toDate ")
+                .append("AND b.billTypeAtomic IN :billTypeAtomics ")
                 .append("AND bi.pharmaceuticalBillItem IS NOT NULL ");
 
         parameters.put("fromDate", fromDate);
@@ -7233,37 +7257,30 @@ public class PharmacyController implements Serializable {
         }
 
         try {
-            List<BillItem> items = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+            List<Object[]> rows = getBillItemFacade().findObjectArrayByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
-            if (items == null || items.isEmpty()) {
+            if (rows == null || rows.isEmpty()) {
                 return;
             }
 
             Map<String, TransferBreakdownGroup> groupAccumulator = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-            for (BillItem billItem : items) {
-                PharmaceuticalBillItem pharmaItem = billItem.getPharmaceuticalBillItem();
-                if (pharmaItem == null) {
-                    continue;
-                }
+            for (Object[] r : rows) {
+                String fromDepartmentName = (String) r[0];
+                String toDepartmentName = (String) r[1];
+                Number qtyValue = (Number) r[2];
 
-                double quantity = Math.abs(pharmaItem.getQty());
-
-                BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
-                double purchaseValue = extractPositive(financeDetails != null ? financeDetails.getValueAtPurchaseRate() : null);
-                double costValue = extractPositive(financeDetails != null ? financeDetails.getValueAtCostRate() : null);
-                double retailValue = extractPositive(financeDetails != null ? financeDetails.getValueAtRetailRate() : null);
+                double quantity = qtyValue != null ? Math.abs(qtyValue.doubleValue()) : 0.0;
+                double purchaseValue = extractPositive((BigDecimal) r[3]);
+                double costValue = extractPositive((BigDecimal) r[4]);
+                double retailValue = extractPositive((BigDecimal) r[5]);
 
                 if (quantity == 0.0 && purchaseValue == 0.0 && costValue == 0.0 && retailValue == 0.0) {
                     continue;
                 }
 
-                String primaryDepartmentName = resolveDepartmentName(
-                        primaryFromDepartment ? billItem.getBill().getFromDepartment() : billItem.getBill().getToDepartment()
-                );
-                String secondaryDepartmentName = resolveDepartmentName(
-                        primaryFromDepartment ? billItem.getBill().getToDepartment() : billItem.getBill().getFromDepartment()
-                );
+                String primaryDepartmentName = resolveDepartmentName(primaryFromDepartment ? fromDepartmentName : toDepartmentName);
+                String secondaryDepartmentName = resolveDepartmentName(primaryFromDepartment ? toDepartmentName : fromDepartmentName);
 
                 TransferBreakdownGroup group = groupAccumulator.computeIfAbsent(primaryDepartmentName, TransferBreakdownGroup::new);
                 group.addEntry(secondaryDepartmentName, quantity, purchaseValue, costValue, retailValue);
@@ -7286,6 +7303,13 @@ public class PharmacyController implements Serializable {
             return 0.0;
         }
         return Math.abs(value.doubleValue());
+    }
+
+    private String resolveDepartmentName(String departmentName) {
+        if (departmentName == null || departmentName.trim().isEmpty()) {
+            return "Unspecified Department";
+        }
+        return departmentName;
     }
 
     private String resolveDepartmentName(Department department) {
@@ -7334,14 +7358,19 @@ public class PharmacyController implements Serializable {
         StringBuilder sql = new StringBuilder();
 
         // Select all department information plus aggregate values
+        // LEFT JOINs keep bills whose department or finance details are null; a path in SELECT would inner-join and drop them
         sql.append("SELECT ")
-                .append("b.department.name, ")
-                .append("b.fromDepartment.name, ")
-                .append("b.toDepartment.name, ")
-                .append("SUM(b.billFinanceDetails.totalPurchaseValue), ")
-                .append("SUM(b.billFinanceDetails.totalCostValue), ")
-                .append("SUM(b.billFinanceDetails.totalRetailSaleValue) ")
+                .append("d.name, ")
+                .append("fd.name, ")
+                .append("td.name, ")
+                .append("SUM(bfd.totalPurchaseValue), ")
+                .append("SUM(bfd.totalCostValue), ")
+                .append("SUM(bfd.totalRetailSaleValue) ")
                 .append("FROM Bill b ")
+                .append("LEFT JOIN b.department d ")
+                .append("LEFT JOIN b.fromDepartment fd ")
+                .append("LEFT JOIN b.toDepartment td ")
+                .append("LEFT JOIN b.billFinanceDetails bfd ")
                 .append("WHERE b.retired = false ")
                 .append("AND b.billTypeAtomic IN :btAtomics ")
                 .append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
@@ -7353,8 +7382,8 @@ public class PharmacyController implements Serializable {
         additionalCommonFilltersForBillEntity(sql, parameters);
 
         // Group by all three department fields to satisfy MySQL ONLY_FULL_GROUP_BY
-        sql.append(" GROUP BY b.department.name, b.fromDepartment.name, b.toDepartment.name ");
-        sql.append(" ORDER BY SUM(b.billFinanceDetails.totalRetailSaleValue) DESC");
+        sql.append(" GROUP BY d.name, fd.name, td.name ");
+        sql.append(" ORDER BY SUM(bfd.totalRetailSaleValue) DESC");
 
         try {
             List<Object[]> results = getBillFacade().findAggregates(sql.toString(), parameters, TemporalType.TIMESTAMP);
@@ -7375,6 +7404,9 @@ public class PharmacyController implements Serializable {
                 String keyDepartment = "issue".equals(transferType) ? fromDepartment : toDepartment;
                 if (keyDepartment == null) {
                     keyDepartment = mainDepartment;
+                }
+                if (keyDepartment == null) {
+                    keyDepartment = "(No department)";
                 }
 
                 // Create or update main summary entry
@@ -13144,11 +13176,11 @@ public class PharmacyController implements Serializable {
         this.resultsList = resultsList;
     }
 
-    public Map<String, List<PharmacyRow>> getDepartmentWiseRows() {
+    public Map<String, List<StockTransferDetailRowDTO>> getDepartmentWiseRows() {
         return departmentWiseRows;
     }
 
-    public void setDepartmentWiseRows(Map<String, List<PharmacyRow>> departmentWiseRows) {
+    public void setDepartmentWiseRows(Map<String, List<StockTransferDetailRowDTO>> departmentWiseRows) {
         this.departmentWiseRows = departmentWiseRows;
     }
 

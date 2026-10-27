@@ -160,7 +160,7 @@ public class GrnController implements Serializable {
 
         closeBill.setBillClosed(true);
         billFacade.edit(closeBill);
-
+        JsfUtil.addSuccessMessage("PO closed successfully.");
     }
 
     public void openSelectedPurchaseOrder() {
@@ -189,7 +189,7 @@ public class GrnController implements Serializable {
 
         closeBill.setBillClosed(false);
         billFacade.edit(closeBill);
-
+        JsfUtil.addSuccessMessage("PO re-opened successfully.");
     }
 
     public double calDifference() {

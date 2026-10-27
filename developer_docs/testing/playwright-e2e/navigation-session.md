@@ -23,13 +23,20 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [127. A `position: fixed` bottom banner eats clicks on dialog buttons — and dialogs on some pages pin their bottom to the window bottom](#127-a-position-fixed-bottom-banner-eats-clicks-on-dialog-buttons--and-dialogs-on-some-pages-pin-their-bottom-to-the-window-bottom)
 - [136. Forcing `.click()` on a still-hidden PrimeFaces menu leaf (parent flyout never actually opened) can crash the JSF view state and log you out](#136-forcing-click-on-a-still-hidden-primefaces-menu-leaf-parent-flyout-never-actually-opened-can-crash-the-jsf-view-state-and-log-you-out)
 - [151. Dependent browser steps sent in one message race each other — send them one at a time](#151-dependent-browser-steps-sent-in-one-message-race-each-other--send-them-one-at-a-time)
+- [156. A menubar flyout left open covers buttons near the top of the page — press them with the keyboard](#156-a-menubar-flyout-left-open-covers-buttons-near-the-top-of-the-page--press-them-with-the-keyboard)
+- [162. `browser_run_code_unsafe` has no `require` — parameterise by generating the script file](#162-browser_run_code_unsafe-has-no-require--parameterise-by-generating-the-script-file)
+- [168. The admission autocomplete also matches phone numbers — pick the suggestion that shows the BHT](#168-the-admission-autocomplete-also-matches-phone-numbers--pick-the-suggestion-that-shows-the-bht)
+- [169. Report buttons have a hidden twin in the Favorites tab — click only `:visible` buttons](#169-report-buttons-have-a-hidden-twin-in-the-favorites-tab--click-only-visible-buttons)
 
 ---
 
 ## 11. Session is lost on redeploy and on stale snapshots
 
-- **A redeploy invalidates the session** (already noted in §1) — re-login and
-  re-select department before continuing.
+- **After a redeploy, re-open the app root** (already noted in §1). It may show
+  the login page or go straight to **Select Department**, so only fill
+  credentials when a visible password field exists
+  (`input[type=password]:visible`); otherwise a text locator can hit a hidden
+  dropdown filter and hang.
 - If a click navigates somewhere unexpected (e.g. `about:blank` or a
   `TypeError: Cannot read properties of undefined (reading 'url')`), the page
   state and your last `browser_snapshot` have diverged. Re-navigate to the app
@@ -606,3 +613,39 @@ Medicines from Pharmacy*) while developing #24358/#24359/#24360.
 ## 151. Dependent browser steps sent in one message race each other — send them one at a time
 
 Tool calls in one message can run concurrently: waits overlap instead of adding up, and a click can fire before the page that a previous menu click requested has loaded ("does not match any elements"). Send each step that depends on the previous page in its own message, and wait for a real condition (`browser_wait_for` text) rather than stacking timed waits.
+
+## 156. A menubar flyout left open covers buttons near the top of the page — press them with the keyboard
+
+If you clicked a top-level menubar item to reach a page, its flyout can stay open on the new page. A click on a report's **Generate Report** or **Download as Excel** button then times out with `<span class="ui-menuitem-text">…</span> from <form id="…:menuForm"> subtree intercepts pointer events`. Escape, clicking elsewhere and moving the mouse away don't reliably close it. Focus the button and press Enter instead; this submits the same button a user would:
+
+```js
+const b = page.getByRole('button', { name: /Download as Excel/ });
+await b.focus();
+await page.keyboard.press('Enter');
+```
+
+For a `p:selectOneMenu` under the flyout, set its hidden `<select id="…_input">` and dispatch `change`.
+
+Verified 2026-10-21 on *Inward → Inpatient Analytics → Payment Reports → Combined Inward Payments* (#24443).
+
+## 162. `browser_run_code_unsafe` has no `require` — parameterise by generating the script file
+
+The code runs without Node's `require`/`fs` (`ReferenceError: require is not defined`), so it can't read a JSON of inputs. Keep one template with a placeholder, write a filled copy per scenario from Bash, and pass it as `filename`.
+
+## 167. `run_code` times out on a slow non-AJAX report
+
+Click Process with `click({ noWaitAfter: true })` and return. Wait outside the browser (e.g. until `jstack` no longer shows the report method), then take the screenshot.
+
+## 168. The admission autocomplete also matches phone numbers — pick the suggestion that shows the BHT
+
+Typing a raw BHT number such as `56588` into the Interim Bill (or any admission) autocomplete also matches patients whose phone number contains those digits, and that patient can be the first suggestion. Filter the suggestions by the BHT text, then click:
+
+```js
+await panel.locator('tr:not(:has(th)), li').filter({ hasText: 'BHT/' + bht }).first().click();
+```
+
+Check the patient name or BHT on the page before reading figures.
+
+## 169. Report buttons have a hidden twin in the Favorites tab — click only `:visible` buttons
+
+Pages with a ⭐ Favorites tab (e.g. *Inpatient Analytics*) render every favourited report button twice. `.first()` on a name match can pick the hidden Favorites copy and wait until the timeout without an error. Use `page.locator('button:visible').filter({ hasText: /^\s*Report Name\s*$/ })`.
