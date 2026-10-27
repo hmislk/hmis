@@ -32,7 +32,7 @@ All production apps run on Payara 5 on five Azure VMs in the
 | COOP (pharmacy) | `coop-production` | `coop_production_ci_cd.yml` | shared3 | https://coop.carecode.org/coop | |
 | COOP (inward) | `coop-staging` | `coop_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/coop | **Live users.** Uses the production database. |
 | Ruhunu | `rh-production` | `rh_production_ci_cd.yml` | shared2 | https://rh.carecode.org/rh | |
-| Ruhunu (staging) | `rh-staging` | `rh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rh | **Live** (redeployed 2026-10-28 with `development`, then enabled in Payara). Uses the production database, shared with the `rh-production` app; see [Two live apps on one database](#two-live-apps-on-one-database). |
+| Ruhunu (staging) | `rh-staging` | `rh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rh | **Live** (redeployed 2026-10-28 through this branch's own pipeline, after `development` was merged into `rh-staging`; then enabled in Payara). Uses the production database, shared with the `rh-production` app; see [Two live apps on one database](#two-live-apps-on-one-database). |
 | RMH | `rmh-production` | `rmh_production_ci_cd.yml` | shared2 | https://rmh.carecode.org/rmh | |
 | RMH (staging) | `rmh-staging` | `rmh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rmh | Uses the production database. |
 | Southern Lanka | `southernlanka-staging` | `southernlanka_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/southernlanka | **Live.** Uses the production database, shared with the shared1 app below. |
