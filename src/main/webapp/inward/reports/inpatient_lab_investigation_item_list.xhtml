@@ -58,6 +58,19 @@
                 </f:facet>
 
                 <style>
+                    .cancelled-row,
+                    .cancelled-row > td {
+                        background-color: #f8d7da !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    .refunded-row,
+                    .refunded-row > td {
+                        background-color: #ffe5b4 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
                     @media print{
 
                         body {
@@ -280,7 +293,8 @@
                                 rowIndexVar="rowIndex" 
 
                                 value="#{inwardReportControllerBht.labBillItemsToPatientEncounter}"  
-                                var="bip">
+                                var="bip"
+                                rowStyleClass="#{bip.bill.billTypeAtomic eq 'INWARD_SERVICE_BILL_CANCELLATION' ? 'cancelled-row' : (bip.bill.billTypeAtomic eq 'INWARD_SERVICE_BILL_REFUND' ? 'refunded-row' : '')}">
 
                                 <f:facet name="header">
                                     <f:facet name="header">
