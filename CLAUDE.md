@@ -51,6 +51,7 @@
 - **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI enforces this only for the retired `*-prod` names until #24453). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
 - **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch and update its title/body.
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
+- **🚨 Dependabot PRs: green CI isn't enough.** Before merging, confirm related artifacts stay on one version (e.g. `poi`/`poi-ooxml`) and that `pom.xml` pins (e.g. `commons-io`) don't hold back the bumped library's dependencies (`mvn dependency:tree`). CI compile catches neither.
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).
 
 ## Reference (read when relevant)
