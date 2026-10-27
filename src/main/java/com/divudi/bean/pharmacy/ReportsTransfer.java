@@ -41,7 +41,6 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.BillService;
 import com.divudi.core.data.dto.PharmacyTransferIssueBillDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceiveDTO;
 import com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO;
@@ -97,8 +96,6 @@ public class ReportsTransfer implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemFacade itemFacade;
-    @EJB
-    BillService billService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -1172,86 +1169,6 @@ public class ReportsTransfer implements Serializable {
             costValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
         }
 
-    }
-
-    // TODO: Remove this method if QAs are fine with the DTO approach
-    @Deprecated
-    public void fillDepartmentBHTIssueByBill() {
-        reportTimerController.trackReportExecution(() -> {
-            FacesContext context = FacesContext.getCurrentInstance();
-            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-            String url = request.getRequestURL().toString();
-
-            String ipAddress = request.getRemoteAddr();
-
-            AuditEvent auditEvent = new AuditEvent();
-            auditEvent.setEventStatus("Started");
-            long duration;
-            Date startTime = new Date();
-            auditEvent.setEventDataTime(startTime);
-            if (sessionController != null && sessionController.getDepartment() != null) {
-                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-            }
-
-            if (sessionController != null && sessionController.getInstitution() != null) {
-                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-            }
-            if (sessionController != null && sessionController.getLoggedUser() != null) {
-                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-            }
-            auditEvent.setUrl(url);
-            auditEvent.setIpAddress(ipAddress);
-            auditEvent.setEventTrigger("fillDepartmentBHTIssueByBill()");
-            auditEventApplicationController.logAuditEvent(auditEvent);
-
-            Map m = new HashMap();
-            String sql;
-            m.put("fd", fromDate);
-            m.put("td", toDate);
-            m.put("bt", BillType.PharmacyBhtPre);
-            m.put("fdept", fromDepartment);
-            sql = "select b from Bill b "
-                    + " where b.department=:fdept "
-                    + " and b.createdAt  between :fd and :td ";
-
-            if (admissionType != null) {
-                sql += "  and b.patientEncounter.admissionType=:at ";
-                m.put("at", admissionType);
-            }
-
-            sql += " and b.billType=:bt order by b.id";
-
-            transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-            totalsValue = 0.0;
-            discountsValue = 0.0;
-            netTotalValues = 0.0;
-            marginValue = 0;
-            netTotalPurchaseValues = 0.0;
-            for (Bill b : transferBills) {
-                if (b.getBillFinanceDetails() == null
-                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null
-                        || b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() == 0) {
-                    billService.createBillFinancialDetailsForPharmacyBill(b);
-                }
-                Double pv = (b.getBillFinanceDetails() == null
-                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null)
-                        ? 0.0
-                        : b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-                netTotalPurchaseValues += pv;
-                totalsValue = totalsValue + (b.getTotal());
-                discountsValue = discountsValue + b.getDiscount();
-                marginValue += b.getMargin();
-                netTotalValues = netTotalValues + b.getNetTotal();
-            }
-
-            Date endTime = new Date();
-            duration = endTime.getTime() - startTime.getTime();
-            auditEvent.setEventDuration(duration);
-            auditEvent.setEventStatus("Completed");
-            auditEventApplicationController.logAuditEvent(auditEvent);
-        }, PharmacyReports.BHT_ISSUE_BY_BILL, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentBHTIssueByBillByDTOs() {

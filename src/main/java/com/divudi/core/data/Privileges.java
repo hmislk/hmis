@@ -117,6 +117,7 @@ public enum Privileges {
     InwardFinalBillRetire("Inward Final Bill Retire"),
     InwardFinalBillEmail("Inward Final Bill Email"),
     InwardFinalBillApprove("Inward Final Bill Approve"),
+    InwardFinalBillViewUnapproved("Inward Final Bill View / Print Unapproved"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     // Inpatient Dashboard - Reports Panel individual button privileges (issue: admission_profile.xhtml Reports panel)
@@ -165,9 +166,11 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    CoveringLetters("Covering Letters"),
     InwardSendEmail("Inward Send Email"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
+    InwardPackageChange("Inward Package Change"),
     InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
     InwardEditPaymentDetails("Inward Edit Payment Details"),
     InwardManageAllergies("Inward Manage Allergies"),
@@ -193,6 +196,7 @@ public enum Privileges {
     InpatientDashboardPanelBilling("Inpatient Dashboard - Billing Panel"),
     InpatientDashboardPanelServices("Inpatient Dashboard - Services Panel"),
     InpatientDashboardPanelRoomManagement("Inpatient Dashboard - Room Management Panel"),
+    InpatientDashboardPanelPackage("Inpatient Dashboard - Package Panel"),
     InpatientDashboardPanelOperationTheatre("Inpatient Dashboard - Operation Theatre Panel"),
     InpatientDashboardPanelClinicalData("Inpatient Dashboard - Clinical Data Panel"),
     InpatientDashboardPanelPharmaceuticals("Inpatient Dashboard - Pharmaceuticals Panel"),
@@ -231,6 +235,7 @@ public enum Privileges {
     CashierHandoverStatusReport("Cashier Handover Status Report"),
     SettleHandoverProofMissing("Settle Handover Proof Missing"),
     SettleNonCashPayments("Settle Non-Cash Payments"),
+    ApproveNonCashSettlement("Approve Non-Cash Settlement"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Lab">
@@ -668,6 +673,9 @@ public enum Privileges {
     PharmacyAdjustmentSearchAdjustmentBills("Pharmacy Adjustment Search Adjustment Bills"),
     PharmacyAdjustmentTransferAllStock("Pharmacy Adjustment Transfer All Stock"),
     PharmacyAdjustmentCreateBatch("Pharmacy Adjustment Create Batch"),
+    PharmacyStockAdjustmentApproval("Pharmacy Stock Adjustment Approval"),
+    PharmacyPriceAdjustmentApproval("Pharmacy Price Adjustment Approval"),
+    PharmacyExpiryDateAdjustmentApproval("Pharmacy Expiry Date Adjustment Approval"),
     PharmacyPhysicalCountApprove("Pharmacy Physical Count Approve"),
     PharmacyStockTakeApprove("Pharmacy Stock Take Approve"),
     ArchiveOldStockHistory("Archive Old StockHistory Records"),
@@ -796,6 +804,22 @@ public enum Privileges {
     CollectingCentreDebitNote("CC Debit Note"),
     CollectingCentreReports("CC Reports"),
     ChangeCollectingCentre("Change Collecting Centre"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Collecting Centre Self Billing">
+    CcSelfBillingMenu("CC Self Billing Menu"),
+    CcSelfBilling("CC Self - Create Bill"),
+    CcSelfSearchBills("CC Self - Search Bills"),
+    CcSelfBillReprint("CC Self - Bill Reprint"),
+    CcSelfBillCancel("CC Self - Bill Cancel"),
+    CcSelfBillRefund("CC Self - Bill Refund"),
+    CcSelfStatement("CC Self - Statement"),
+    CcSelfSampleManagement("CC Self - Sample Management"),
+    CcSelfSampleBarcodePrint("CC Self - Generate/Print Barcodes"),
+    CcSelfSampleCollect("CC Self - Collect Samples"),
+    CcSelfSampleSend("CC Self - Send Samples"),
+    CcSelfSampleReject("CC Self - Reject Samples"),
+    CcSelfSampleRegenerate("CC Self - Re-Generate Samples"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="User">
@@ -956,6 +980,7 @@ public enum Privileges {
     PharmacyAnalyticsPurcharseBillWithSupplier("Pharmacy Analytics - Purcharse Bill with Supplier"),
     PharmacyAnalyticsPharmacyGRNReport("Pharmacy Analytics - Pharmacy GRN Report"),
     PharmacyAnalyticsPharmacyGRNAndPurchaseReport("Pharmacy Analytics - Pharmacy GRN and purchase Report"),
+    PharmacyAnalyticsBillSearchByItem("Pharmacy Analytics - Pharmacy Bill Search by Item"),
     PharmacyAnalyticsGRNPurchaseItemsBySupplier("Pharmacy Analytics - GRN Purchase Items by Supplier"),
     PharmacyAnalyticsGRNSummaryBySupplier("Pharmacy Analytics - GRN Summary By Supplier"),
     PharmacyAnalyticsGRNBillItemReport("Pharmacy Analytics - GRN Bill Item Report"),
@@ -1527,6 +1552,9 @@ public enum Privileges {
             case PharmacyAdjustmentSearchAdjustmentBills:
             case PharmacyAdjustmentTransferAllStock:
             case PharmacyAdjustmentCreateBatch:
+            case PharmacyStockAdjustmentApproval:
+            case PharmacyPriceAdjustmentApproval:
+            case PharmacyExpiryDateAdjustmentApproval:
             case PharmacyPhysicalCountApprove:
             case PharmacyStockTakeApprove:
             case ArchiveOldStockHistory:
@@ -1614,6 +1642,22 @@ public enum Privileges {
             case CollectingCentreReports:
             case ChangeCollectingCentre:
                 return "Collecting Centre";
+
+            // Collecting Centre Self Billing Privileges
+            case CcSelfBillingMenu:
+            case CcSelfBilling:
+            case CcSelfSearchBills:
+            case CcSelfBillReprint:
+            case CcSelfBillCancel:
+            case CcSelfBillRefund:
+            case CcSelfStatement:
+            case CcSelfSampleManagement:
+            case CcSelfSampleBarcodePrint:
+            case CcSelfSampleCollect:
+            case CcSelfSampleSend:
+            case CcSelfSampleReject:
+            case CcSelfSampleRegenerate:
+                return "Collecting Centre Self Billing";
             
             // Approval Privileges
             case RequestManager:
@@ -1628,6 +1672,7 @@ public enum Privileges {
             case CashierHandoverStatusReport:
             case SettleHandoverProofMissing:
             case SettleNonCashPayments:
+            case ApproveNonCashSettlement:
                 return "Finance";
 
             case IssueFundTransfer:
@@ -1672,9 +1717,11 @@ public enum Privileges {
             case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case CoveringLetters:
             case InwardSendEmail:
             case InwardPackageAdministration:
             case InwardPackageAdmission:
+            case InwardPackageChange:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:
@@ -1683,6 +1730,7 @@ public enum Privileges {
             case InwardFinalBillRetire:
             case InwardFinalBillEmail:
             case InwardFinalBillApprove:
+            case InwardFinalBillViewUnapproved:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1698,6 +1746,7 @@ public enum Privileges {
             case InpatientDashboardPanelBilling:
             case InpatientDashboardPanelServices:
             case InpatientDashboardPanelRoomManagement:
+            case InpatientDashboardPanelPackage:
             case InpatientDashboardPanelOperationTheatre:
             case InpatientDashboardPanelClinicalData:
             case InpatientDashboardPanelPharmaceuticals:
@@ -1835,6 +1884,7 @@ public enum Privileges {
             case PharmacyAnalyticsPurcharseBillWithSupplier:
             case PharmacyAnalyticsPharmacyGRNReport:
             case PharmacyAnalyticsPharmacyGRNAndPurchaseReport:
+            case PharmacyAnalyticsBillSearchByItem:
             case PharmacyAnalyticsGRNPurchaseItemsBySupplier:
             case PharmacyAnalyticsGRNSummaryBySupplier:
             case PharmacyAnalyticsGRNBillItemReport:

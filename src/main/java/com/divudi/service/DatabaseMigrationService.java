@@ -25,9 +25,17 @@ import javax.ejb.TransactionAttributeType;
  * and the banner is suppressed. Otherwise, a background check (see
  * {@link DatabaseMigrationVersionCheckService}) compares the stored version
  * against the wiki's current DDL version shortly after startup and clears
- * the banner automatically if they already match. Failing that, the banner
- * remains until an admin visits mf.xhtml and marks the migration as
- * complete or not necessary.
+ * the banner only when the stored version is a real, parseable version
+ * string that is already at or after the wiki's (see
+ * {@link DatabaseMigrationVersionCheckService#isStoredVersionOlderThanWiki}
+ * — issue #23679: this used to require exact string equality, so a stored
+ * version that was already current but not byte-identical to the wiki's
+ * left the banner pending forever with no real evidence of drift). An
+ * unset/unparseable stored version — e.g. a hospital that has never had its
+ * schema checked against the wiki at all — still correctly leaves the
+ * banner up, same as a confirmed-older version, until an admin visits
+ * mf.xhtml and runs the DDL sync (or otherwise marks the migration complete
+ * or not necessary).
  *
  * The wiki DDL version check runs asynchronously (never inline in
  * {@code @PostConstruct}) to avoid blocking the deploy thread with an

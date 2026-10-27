@@ -240,6 +240,11 @@ correct, not noise. Post via:
 gh pr comment <PR> --body "..."
 ```
 
+The comment is public, like everything else in this repo. Keep hospital data
+out of it — no production record identifiers, affected-record counts, schema
+names or patient/staff names in the E2E evidence or the failure excerpts. See
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+
 If merge-gate is re-run on the same PR later (e.g. after the author
 pushed fixes), post a **new** comment rather than editing/deleting the
 previous one — the history of gate runs staying visible is the point.

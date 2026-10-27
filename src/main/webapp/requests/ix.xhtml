@@ -25,7 +25,7 @@
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" integrity="sha512-VKjwFVu/mmKGk0Z0BxgDzmn10e590qk3ou/jkmRugAkSTMSIRkd4nEnk+n7r5WBbJquusQEQjBidrBD3IQQISQ==" crossorigin="anonymous"></script>
 
                 <h:panelGroup rendered="#{patientReportController.currentPatientReport eq null}"  >
-                    <na:link_expire />
+                    <na:invalid_report_link />
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{patientReportController.currentPatientReport ne null}"  >
@@ -34,13 +34,19 @@
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.approved}"  >
-                        <div >
+                        <div class="sms-report-page">
 
                             <style>
                                 * {
                                     margin: 0;
                                     padding: 0;
                                     box-sizing: border-box;
+                                }
+
+                                /* maincss.css forces overflow: scroll on html, which always shows both scroll bars */
+                                html {
+                                    overflow-x: hidden !important;
+                                    overflow-y: auto !important;
                                 }
 
                                 body {
@@ -73,17 +79,20 @@
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
+                                    gap: 20px;
                                     margin-top: 8px;
                                     margin-bottom: 8px;
                                 }
 
                                 .logo-icon {
-                                    width: 48px;
-                                    height: 48px;
+                                    flex-shrink: 0;
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
-                                    margin-right: 12px;
+                                }
+
+                                .logo-text {
+                                    text-align: center;
                                 }
 
                                 .logo-icon::before {
@@ -95,7 +104,8 @@
                                     font-size: 24px;
                                     font-weight: bold;
                                     color: #1d4ed8;
-                                    line-height: 1;
+                                    line-height: 1.2;
+                                    margin: 0;
                                 }
 
                                 .logo-text p {
@@ -334,12 +344,46 @@
                                         padding: 12px;
                                     }
 
+                                    /* Centre the report card on the screen */
+                                    .sms-report-page {
+                                        min-height: calc(100vh - 24px);
+                                        min-height: calc(100dvh - 24px);
+                                        display: flex;
+                                        flex-direction: column;
+                                        justify-content: center;
+                                        align-items: center;
+                                    }
+
+                                    .container {
+                                        width: 100%;
+                                        margin: 0 auto;
+                                        border-radius: 12px;
+                                    }
+
                                     .header {
                                         padding: 16px;
                                     }
 
+                                    .logo-section {
+                                        gap: 12px;
+                                    }
+
+                                    /* Let the logo box shrink to the header so an oversized configured logo scales instead of clipping */
+                                    .logo-icon {
+                                        flex-shrink: 1;
+                                        min-width: 0;
+                                        max-width: 100%;
+                                    }
+
+                                    .logo-icon img {
+                                        max-width: 100%;
+                                        height: auto;
+                                        object-fit: contain;
+                                    }
+
                                     .logo-text h1 {
-                                        font-size: 24px;
+                                        font-size: 20px;
+                                        overflow-wrap: anywhere;
                                     }
 
                                     .welcome-section {
@@ -348,6 +392,35 @@
 
                                     .welcome-title {
                                         font-size: 18px;
+                                        line-height: 1.4;
+                                        overflow-wrap: anywhere;
+                                    }
+
+                                    .phone-info {
+                                        flex-wrap: wrap;
+                                    }
+
+                                    .phone-info span {
+                                        margin-top: 0 !important;
+                                    }
+
+                                    .card-row {
+                                        flex-wrap: wrap;
+                                        align-items: flex-start;
+                                    }
+
+                                    .card-value {
+                                        min-width: 0;
+                                        overflow-wrap: anywhere;
+                                    }
+
+                                    .mobile-cards .ui-button {
+                                        min-height: 44px;
+                                        margin-top: 8px;
+                                    }
+
+                                    .footer-content {
+                                        flex-wrap: wrap;
                                     }
 
                                     .table-section {
@@ -373,19 +446,36 @@
                                 }
 
                                 @media (max-width: 480px) {
-                                    .logo-section {
-                                        flex-direction: column;
-                                        gap: 8px;
+                                    body {
+                                        padding: 8px;
                                     }
 
-                                    .logo-icon {
-                                        margin-right: 0;
-                                        margin-bottom: 8px;
+                                    .sms-report-page {
+                                        min-height: calc(100vh - 16px);
+                                        min-height: calc(100dvh - 16px);
+                                    }
+
+                                    .header,
+                                    .welcome-section,
+                                    .table-section,
+                                    .info-section {
+                                        padding: 12px;
+                                    }
+
+                                    .logo-section {
+                                        flex-direction: column;
+                                        gap: 10px;
+                                    }
+
+                                    .logo-text h1 {
+                                        font-size: 18px;
+                                    }
+
+                                    .welcome-title {
+                                        font-size: 16px;
                                     }
 
                                     .phone-info {
-                                        flex-direction: column;
-                                        align-items: flex-start;
                                         gap: 4px;
                                     }
                                 }
@@ -428,13 +518,13 @@
                             <div class="container">
                                 <!-- Header -->
                                 <div class="header">
-                                    <div class="logo-section gap-4">
+                                    <div class="logo-section">
                                         <div class="logo-icon">
                                             <img 
                                                 src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface Logo')}" 
-                                                alt="Hospital Logo" 
-                                                height="80" 
-                                                width="80"/>
+                                                alt="Hospital Logo"
+                                                height="#{configOptionApplicationController.getIntegerValueByKey('Laboratory Report SMS Interface Logo Height', 80)}"
+                                                width="#{configOptionApplicationController.getIntegerValueByKey('Laboratory Report SMS Interface Logo Width', 80)}"/>
                                         </div>
                                         <div class="logo-text">
                                             <h1>#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.institution.chequePrintingName}</h1>
@@ -580,6 +670,7 @@
                                 </h:panelGroup>
                             </div>
 
+                            <h:outputScript library="js" name="lab-report-pdf.js" target="body"/>
                             <script>
                                 function downloadPdf() {
                                     console.log("Downloading PDF...");
@@ -599,7 +690,7 @@
                                     };
 
                                     html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-                                        pdf.deletePage(2); // Remove the second page if it exists
+                                        return labReportTrimPdf(pdf, element); // Remove the second page if it exists
                                     }).save().then(() => {
                                         element.classList.add('print-only');
                                     });

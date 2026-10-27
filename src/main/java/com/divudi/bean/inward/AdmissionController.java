@@ -74,6 +74,7 @@ import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.inward.Reservation;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ReservationFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -82,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +164,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientPackageApplicationBean;
     }
 
+    /** Bills the configured automatic admission charges. (Issue #23594) */
+    @Inject
+    private com.divudi.service.inward.AdmissionChargeApplicationBean admissionChargeApplicationBean;
+
     @Inject
     BhtEditController bhtEditController;
     @Inject
@@ -170,6 +176,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    AdmissionTypeController admissionTypeController;
     @Inject
     BillSearch billSearch;
     @Inject
@@ -222,6 +230,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
     private List<Admission> childAdmissions;
+    /** Id of the admission childAdmissions was loaded for. */
+    private Long childAdmissionsParentId;
     private boolean patientDetailsEditable;
     private List<ClinicalFindingValue> patientAllergies;
     private ClinicalFindingValue currentPatientAllergy;
@@ -267,6 +277,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "BHT Number can be edited at the time of admission",
                 "Allow editing of the auto-generated BHT number during admission (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Return BHT Number of a Cancelled Admission to the Sequence When It Is the Last Number Issued",
+                "When enabled, cancelling an admission whose BHT number is still the last one issued in its series moves the counter back, so the next admission reuses that number (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -374,6 +393,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Inward Patient Admit - Credit Companies Require Reference Number",
                 "Require a reference number for credit companies during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Patient NIC Required for Credit Admissions",
+                "Refuse a Credit admission when the patient's National ID Number is blank; any value, even '-', is accepted. Baby and Rapid / Temp A&E admissions are exempt. Independent of 'Patient Details Required in Patient Admission' (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -514,7 +540,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void removeCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         if (encounterCreditCompany != null) {
-            encounterCreditCompanies.remove(encounterCreditCompany);
+            Iterator<EncounterCreditCompany> it = encounterCreditCompanies.iterator();
+            while (it.hasNext()) {
+                if (it.next() == encounterCreditCompany) {
+                    it.remove();
+                    break;
+                }
+            }
             encounterCreditCompany = new EncounterCreditCompany();
         }
     }
@@ -863,6 +895,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         roomChangeController.createPatientRoom();
         roomChangeController.setInstitution(sessionController.getInstitution());
         return "/inward/inward_room_change?faces-redirect=true";
+    }
+
+    public String navigateToPackageChange() {
+        return "/inward/inward_package_change?faces-redirect=true";
     }
 
     public String navigateToAddRoom() {
@@ -1491,6 +1527,39 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * Brings the stored financial snapshot shown on the Inpatient Dashboard up to
+     * date when bills were added since it was last calculated. Call before
+     * navigating to admission_profile.
+     */
+    public void refreshDashboardFinancials() {
+        if (current == null) {
+            return;
+        }
+        PatientEncounter refreshed = bhtSummeryController.refreshProcessingSnapshotIfStale(current);
+        if (refreshed instanceof Admission) {
+            current = (Admission) refreshed;
+        }
+    }
+
+    /**
+     * Opens the Inpatient Dashboard for an encounter selected outside this bean
+     * (bed board, surgery bill). The dashboard renders {@code current}, so it is
+     * set here rather than only on BhtSummeryController.
+     */
+    public String navigateToInpatientDashboard(PatientEncounter pe) {
+        if (pe == null) {
+            pe = current;
+        }
+        if (pe instanceof Admission) {
+            current = (Admission) pe;
+            refreshDashboardFinancials();
+            pe = current;
+        }
+        bhtSummeryController.setPatientEncounter(pe);
+        return bhtSummeryController.navigateToInpatientProfile();
+    }
+
     public String navigateToAdmissionProfilePage() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -1501,6 +1570,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return "";
         }
 
+        refreshDashboardFinancials();
         patientDetailsEditable = false;
         fetchChildAdmissions();
         if (configOptionApplicationController.getBooleanValueByKey("Patient admission and room assignment are simultaneous processes.", true)) {
@@ -2215,46 +2285,51 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // by design; blank name/address are placeholder-filled and the required
         // patient-detail checks below are skipped. (Issue #21183)
         if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission", false)) {
+            // Each check below is independent of the others, so all of them are
+            // evaluated and reported together instead of stopping at the first
+            // miss — otherwise a form missing several fields takes one
+            // submit/fix round-trip per field. (Issue #24564)
+            boolean patientDetailsHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getTitle() == null) {
                     JsfUtil.addErrorMessage("Patient Title is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getSex() == null) {
                     JsfUtil.addErrorMessage("Patient Gender is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Age is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getDob() == null) {
                     JsfUtil.addErrorMessage("Patient Age is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Name is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getName() == null || getCurrent().getPatient().getPerson().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Name is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Address is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getAddress() == null || getCurrent().getPatient().getPerson().getAddress().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Address is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Area is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getArea() == null || getCurrent().getPatient().getPerson().getArea().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Area is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Mail is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getEmail() == null || getCurrent().getPatient().getPerson().getEmail().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Mail is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             // Baby admissions typically have no NIC of their own yet, so this
@@ -2262,7 +2337,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getNic() == null || getCurrent().getPatient().getPerson().getNic().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient NIC is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             // Baby admissions typically have no phone number of their own yet either
@@ -2272,8 +2347,27 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getPhone() == null || getCurrent().getPatient().getPerson().getPhone().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
+            }
+            if (patientDetailsHasError) {
+                return true;
+            }
+        }
+
+        // Credit admissions need a patient NIC on record. Deliberately kept outside
+        // the "Patient Details Required" block above, and on its own inward-only
+        // option, so enabling it neither drags in the other patient-detail checks
+        // nor affects OPD/channelling. Any non-blank value (even "-") is accepted.
+        // Baby and Rapid / Temp A&E admissions are exempt, matching the existing
+        // NIC check. (Issue #23978)
+        if (!isRapidTempAe() && !isBabyAdmission()
+                && getCurrent().getPaymentMethod() == PaymentMethod.Credit
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Patient NIC Required for Credit Admissions", false)) {
+            Person person = getCurrent().getPatient().getPerson();
+            if (person == null || person.getNic() == null || person.getNic().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("National ID Number is required for credit admissions. Enter the NIC, or '-' if not available.");
+                return true;
             }
         }
 
@@ -2285,59 +2379,65 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Mandatory Fields Enabled", false)) {
+            // Independent per-field checks — accumulate and report all of them
+            // together rather than stopping at the first. (Issue #24564)
+            boolean mandatoryFieldsHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Medical Officer Required", false)) {
                 if (getCurrent().getOpdDoctor() == null) {
                     JsfUtil.addErrorMessage("Medical Officer is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Primary Reason Required", false)) {
                 if (getCurrent().getPrimaryReason() == null) {
                     JsfUtil.addErrorMessage("Primary Reason is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Comments Required", false)) {
                 if (getCurrent().getComments() == null || getCurrent().getComments().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Comments / Reference No is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
                 if (getCurrent().getReferringDoctor() == null) {
                     JsfUtil.addErrorMessage("Doctor who referred the patient is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
                 if (getCurrent().getReferringStaff() == null) {
                     JsfUtil.addErrorMessage("Staff who referred the patient is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
                 if (getCurrent().getReferredByInstitution() == null) {
                     JsfUtil.addErrorMessage("Referral Institution is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Workplace Required", false)) {
                 if (getCurrent().getWorkplace() == null) {
                     JsfUtil.addErrorMessage("Workplace is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
                 if (getCurrent().getReferralId() == null || getCurrent().getReferralId().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referral Number is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
                 if (getCurrent().getReferringMethod() == null || getCurrent().getReferringMethod().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referred From is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
+            }
+            if (mandatoryFieldsHasError) {
+                return true;
             }
         }
 
@@ -2346,47 +2446,55 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 JsfUtil.addErrorMessage("Guardian is Required");
                 return true;
             }
+            // Each sub-field check below is independent of the others, so all of
+            // them are evaluated and reported together instead of stopping at the
+            // first miss — otherwise a form missing several guardian fields takes
+            // one submit/fix round-trip per field. (Issue #24564)
+            boolean guardianHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getTitle() == null) {
                     JsfUtil.addErrorMessage("Guardian Title is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Name is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian NIC is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Address is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
-                    return true;
+                    guardianHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
                 if (getCurrent().getGuardianRelationshipToPatient() == null) {
                     JsfUtil.addErrorMessage("Guardian Relationship is Required");
-                    return true;
+                    guardianHasError = true;
                 }
+            }
+            if (guardianHasError) {
+                return true;
             }
         }
 
@@ -2656,6 +2764,65 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         setPatient(ap.getPatient());
+        prefillAdmissionFromAppointment(ap);
+    }
+
+    /**
+     * Pre-fills the admission form from the appointment being admitted so staff
+     * do not have to re-key what the appointment already captured. (#23620)
+     *
+     * <ul>
+     *   <li>Consultant &larr; the appointment bill's referring doctor.</li>
+     *   <li>Room &larr; the reservation's room, when the reservation is a room
+     *       reservation and that room is still vacant.</li>
+     *   <li>Admission Type &larr; the single {@link AdmissionType} whose fixed
+     *       {@code roomFacilityCharge} is that room, and only when exactly one
+     *       matches - otherwise it is left for staff to choose.</li>
+     * </ul>
+     *
+     * Every field is only set when it is currently empty, so this never
+     * overrides a value staff have already entered.
+     */
+    private void prefillAdmissionFromAppointment(Bill appointmentBill) {
+        if (getCurrent() == null) {
+            return;
+        }
+        if (getCurrent().getReferringConsultant() == null && appointmentBill.getReferredBy() != null) {
+            getCurrent().setReferringConsultant(appointmentBill.getReferredBy());
+        }
+        Reservation res = getCurrentReservation();
+        // currentReservation is @SessionScoped and is NOT set by every caller of
+        // this listener (the admission form's own "Appointment" search tab calls
+        // it without a reservation). Only trust it for the room / admission-type
+        // prefill when it actually belongs to the appointment being admitted -
+        // otherwise a stale reservation from an earlier, abandoned calendar
+        // "To Admit" click would apply the wrong room. (#23620)
+        if (res == null || res.getRoom() == null
+                || res.getAppointment() == null || res.getAppointment().getBill() == null
+                || !res.getAppointment().getBill().equals(appointmentBill)) {
+            return;
+        }
+        RoomFacilityCharge reservedRoom = res.getRoom();
+        if (reservedRoom.getRoom() != null && getInwardBean().isRoomFilled(reservedRoom.getRoom())) {
+            // Reserved room has since been taken - leave selection to staff.
+            return;
+        }
+        if (getPatientRoom() != null && getPatientRoom().getRoomFacilityCharge() == null) {
+            getPatientRoom().setRoomFacilityCharge(reservedRoom);
+        }
+        if (getCurrent().getAdmissionType() == null) {
+            AdmissionType matchedType = null;
+            int matchCount = 0;
+            for (AdmissionType at : admissionTypeController.getItems()) {
+                if (reservedRoom.equals(at.getRoomFacilityCharge())) {
+                    matchedType = at;
+                    matchCount++;
+                }
+            }
+            if (matchCount == 1) {
+                getCurrent().setAdmissionType(matchedType);
+            }
+        }
     }
 
     @Inject
@@ -3063,6 +3230,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     getSessionController().getLoggedUser());
         }
 
+        // Held outside the room block so the automatic admission charges below can
+        // retire it if they fail - a room-less Rapid / Temp A&E admission simply
+        // leaves it null. (Issue #23594)
+        PatientRoom createdPatientRoom = null;
+
         // Only create a PatientRoom record when a facility charge is actually selected.
         // For Rapid / Temp A&E admissions the room validation is skipped, so
         // getRoomFacilityCharge() may be null; attempting to save it would NPE. (Issue #21183)
@@ -3073,6 +3245,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             // controls whether a nurse handover request is also created below (Issue #23145).
             currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser(), true);
             getCurrent().setRoomAdmitted(true);
+            createdPatientRoom = currentPatientRoom;
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
 
@@ -3183,6 +3356,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         saveEncounterCreditCompanies(current);
 
+        // Automatic admission charges — outside the room block on purpose, since a
+        // room-less Rapid / Temp A&E admission still has to be charged. (Issue #23594)
+        if (!applyAutomaticAdmissionCharges(createdPatientRoom)) {
+            return;
+        }
+
         if (isNewAdmission) {
             String auditTrigger = getCurrent().getParentEncounter() != null
                     ? "Baby Admission Created" : "Admission Created";
@@ -3234,9 +3413,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
+        // Held outside the room block so the automatic admission charges below can
+        // retire it if they fail. (Issue #23594)
+        PatientRoom createdPatientRoom = null;
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed() || getPatientRoom().getRoomFacilityCharge() != null) {
             PatientRoom currentPatientRoom = getInwardBean().savePatientRoom(getPatientRoom(), null, getPatientRoom().getRoomFacilityCharge(), getCurrent(), getCurrent().getDateOfAdmission(), getSessionController().getLoggedUser());
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+            createdPatientRoom = currentPatientRoom;
 
             if (currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
@@ -3264,6 +3448,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         saveEncounterCreditCompanies(current);
 
+        // Automatic admission charges — same hook as saveSelected(). (Issue #23594)
+        if (!applyAutomaticAdmissionCharges(createdPatientRoom)) {
+            return;
+        }
+
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
         getCurrentNonBht().setDateOfDischarge(new Date());
@@ -3278,6 +3467,50 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         printPreview = true;
+    }
+
+    /**
+     * Bills the configured automatic admission charges for the admission just
+     * saved (issue #23594).
+     *
+     * <p>Compensating transaction, same pattern as the inpatient package
+     * application above: this controller is a CDI bean and is not itself
+     * transactional, so the admission and the room were each already committed
+     * in earlier transactions. A failure here cannot be rolled back by the
+     * container, and would otherwise leave a half-charged admission - so retire
+     * what was created and surface a clear error instead.</p>
+     *
+     * @return {@code true} to carry on, {@code false} when the admission was
+     * rolled back and the caller must stop
+     */
+    private boolean applyAutomaticAdmissionCharges(PatientRoom createdPatientRoom) {
+        try {
+            admissionChargeApplicationBean.applyAdmissionChargesToAdmission(
+                    getCurrent(), getSessionController().getLoggedUser(), getSessionController().getDepartment());
+            return true;
+        } catch (RuntimeException ex) {
+            logger.log(Level.SEVERE, "Automatic admission charges failed for admission " + getCurrent().getBhtNo(), ex);
+            Date now = new Date();
+            String reason = "Auto-retired: automatic admission charges failed - " + ex.getMessage();
+
+            if (createdPatientRoom != null) {
+                createdPatientRoom.setRetired(true);
+                createdPatientRoom.setRetireComments(reason);
+                createdPatientRoom.setRetirer(getSessionController().getLoggedUser());
+                createdPatientRoom.setRetiredAt(now);
+                patientRoomFacade.edit(createdPatientRoom);
+            }
+
+            getCurrent().setRetired(true);
+            getCurrent().setRetireComments(reason);
+            getCurrent().setRetirer(getSessionController().getLoggedUser());
+            getCurrent().setRetiredAt(now);
+            getFacade().edit(getCurrent());
+
+            JsfUtil.addErrorMessage("Automatic admission charges could not be applied and this admission has been cancelled. Please retry. (" + ex.getMessage() + ")");
+            admittingProcessStarted = false;
+            return false;
+        }
     }
 
     public void saveEncounterCreditCompanies(PatientEncounter current) {
@@ -3922,11 +4155,23 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         HashMap<String, Object> params = new HashMap<>();
         params.put("parent", current);
         childAdmissions = getFacade().findByJpql(jpql, params);
+        childAdmissionsParentId = current.getId();
     }
 
+    /**
+     * The current admission's baby admissions. Many pages open the Inpatient
+     * Dashboard by setting {@code current} directly (e.g. the Interim Bill's
+     * Inpatient Dashboard button), so the list is reloaded whenever it was
+     * loaded for a different admission (issue #24749).
+     */
     public List<Admission> getChildAdmissions() {
-        if (childAdmissions == null) {
-            childAdmissions = new ArrayList<>();
+        Long currentId = current != null ? current.getId() : null;
+        if (childAdmissions == null || !java.util.Objects.equals(childAdmissionsParentId, currentId)) {
+            fetchChildAdmissions();
+            if (childAdmissions == null) {
+                childAdmissions = new ArrayList<>();
+            }
+            childAdmissionsParentId = currentId;
         }
         return childAdmissions;
     }

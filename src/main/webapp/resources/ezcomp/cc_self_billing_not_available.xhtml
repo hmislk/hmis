@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <div class="cc-na-wrap">
+            <div class="cc-na-blob-mid"/>
+            <div class="cc-na-card">
+                <div class="cc-na-icon-ring">
+                    <div class="cc-na-icon">
+                        <h:outputText styleClass="fas fa-triangle-exclamation"/>
+                    </div>
+                </div>
+
+                <h:outputText styleClass="cc-na-title" value="Collecting Centre Self Billing Not Available"/>
+
+                <h:outputText styleClass="cc-na-message" escape="false"
+                              rendered="#{sessionController.department != null}"
+                              value="This page is only available to users logged in to a &lt;span class=&quot;cc-na-highlight&quot;&gt;Collecting Centre&lt;/span&gt; department. Your currently selected department is not one."/>
+                <h:outputText styleClass="cc-na-message"
+                              rendered="#{sessionController.department == null}"
+                              value="This page is only available to users logged in to a Collecting Centre department. No department is currently selected for your session."/>
+
+                <div class="cc-na-context" rendered="#{sessionController.department != null}">
+                    <div class="cc-na-chip cc-na-chip-blue">
+                        <h:outputText styleClass="fas fa-city"/>
+                        <h:outputText value="#{sessionController.institution.name}" styleClass="cc-na-chip-value"/>
+                    </div>
+                    <div class="cc-na-chip cc-na-chip-green">
+                        <h:outputText styleClass="fas fa-sitemap"/>
+                        <h:outputText value="#{sessionController.department.name}" styleClass="cc-na-chip-value"/>
+                    </div>
+                    <div class="cc-na-chip cc-na-chip-orange">
+                        <h:outputText styleClass="fas fa-tag"/>
+                        <h:outputText value="#{sessionController.department.departmentType.label}" styleClass="cc-na-chip-value"/>
+                    </div>
+                </div>
+
+                <div class="cc-na-actions">
+                    <p:commandButton id="btnCcNotAvailableHome"
+                                     ajax="false"
+                                     value="To Home"
+                                     icon="pi pi-home"
+                                     styleClass="cc-na-btn-home"
+                                     action="#{navigationController.navigateToHome}"/>
+                    <p:commandButton id="btnCcNotAvailableLogout"
+                                     ajax="false"
+                                     value="Logout"
+                                     icon="pi pi-sign-out"
+                                     styleClass="cc-na-btn-logout"
+                                     action="#{sessionController.logout}"/>
+                </div>
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>

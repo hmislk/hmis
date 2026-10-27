@@ -36,6 +36,8 @@ public class ServiceResponseDTO {
     private String inwardChargeType;
     private Long categoryId;
     private String categoryName;
+    private Long financialCategoryId;
+    private String financialCategoryName;
     private Long institutionId;
     private String institutionName;
     private Long departmentId;
@@ -213,6 +215,22 @@ public class ServiceResponseDTO {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Long getFinancialCategoryId() {
+        return financialCategoryId;
+    }
+
+    public void setFinancialCategoryId(Long financialCategoryId) {
+        this.financialCategoryId = financialCategoryId;
+    }
+
+    public String getFinancialCategoryName() {
+        return financialCategoryName;
+    }
+
+    public void setFinancialCategoryName(String financialCategoryName) {
+        this.financialCategoryName = financialCategoryName;
     }
 
     public Long getInstitutionId() {

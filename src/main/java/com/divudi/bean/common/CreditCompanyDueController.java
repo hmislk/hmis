@@ -1534,6 +1534,238 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+    /**
+     * Excel export for the Inward Credit Due search
+     * ({@code credit/inward_due_search_credit_company.xhtml}). The on-screen
+     * table uses a grouped {@code p:subTable} (institution -> bills), which
+     * {@code p:dataExporter} cannot serialize - it always produces an empty
+     * workbook for that structure. Building the workbook directly with POI
+     * (same pattern as {@link #downloadExcel()} for the OPD due search)
+     * avoids that limitation.
+     */
+    public void downloadInwardCreditDueExcel() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        List<InstitutionEncounters> data = institutionEncounters == null ? Collections.emptyList() : institutionEncounters;
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Inward Credit Due");
+
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 15);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle filterStyle = workbook.createCellStyle();
+            filterStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle sectionHeaderStyle = workbook.createCellStyle();
+            sectionHeaderStyle.setFont(boldFont);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dateStyle = workbook.createCellStyle();
+            CreationHelper createHelper = workbook.getCreationHelper();
+            dateStyle.cloneStyleFrom(dataStyle);
+            dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-MM-dd"));
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            int headerCount = 8;
+            int rowIndex = 0;
+
+            SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Due Search (Credit Company) - Inward");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
+
+            Row dateRow = sheet.createRow(rowIndex++);
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue(
+                    "From : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                    + "    To : " + (getToDate() != null ? sdf.format(getToDate()) : "-")
+                    + "    Date Basis : " + ("admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date"));
+            dateCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
+
+            Row filterRow = sheet.createRow(rowIndex++);
+            Cell filterCell = filterRow.createCell(0);
+            filterCell.setCellValue(
+                    "Admission Type : " + (admissionType != null ? admissionType.getName() : "All")
+                    + "    Payment Method : " + (paymentMethod != null ? paymentMethod.getLabel() : "All")
+                    + "    Institution : " + (institution != null ? institution.getName() : "All"));
+            filterCell.setCellStyle(filterStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
+
+            rowIndex++;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            int headerIndex = 0;
+            headerIndex = createHeaderCell(headerRow, headerIndex, "BHT No", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Date Of Admission", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Date Of Discharge", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Patient Name", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Credit Company", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Bill Amount", headerStyle);
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Paid", headerStyle);
+            createHeaderCell(headerRow, headerIndex, "Outstanding", headerStyle);
+
+            for (InstitutionEncounters ins : data) {
+                if (ins == null) {
+                    continue;
+                }
+
+                Row institutionRow = sheet.createRow(rowIndex++);
+                Cell institutionCell = institutionRow.createCell(0);
+                institutionCell.setCellValue(ins.getInstitution() != null ? ins.getInstitution().getName() : "");
+                institutionCell.setCellStyle(sectionHeaderStyle);
+                sheet.addMergedRegion(new CellRangeAddress(institutionRow.getRowNum(), institutionRow.getRowNum(), 0, headerCount - 1));
+
+                for (Bill bill : ins.getBills()) {
+                    if (bill == null) {
+                        continue;
+                    }
+                    Row dataRow = sheet.createRow(rowIndex++);
+                    int dataIndex = 0;
+
+                    Cell bhtCell = dataRow.createCell(dataIndex++);
+                    bhtCell.setCellValue(bill.getPatientEncounter() != null ? bill.getPatientEncounter().getBhtNo() : "");
+                    bhtCell.setCellStyle(dataStyle);
+
+                    Cell admissionCell = dataRow.createCell(dataIndex++);
+                    Date doa = bill.getPatientEncounter() != null ? bill.getPatientEncounter().getDateOfAdmission() : null;
+                    if (doa != null) {
+                        admissionCell.setCellValue(doa);
+                        admissionCell.setCellStyle(dateStyle);
+                    } else {
+                        admissionCell.setCellValue("");
+                        admissionCell.setCellStyle(dataStyle);
+                    }
+
+                    Cell dischargeCell = dataRow.createCell(dataIndex++);
+                    Date dod = bill.getPatientEncounter() != null ? bill.getPatientEncounter().getDateOfDischarge() : null;
+                    if (dod != null) {
+                        dischargeCell.setCellValue(dod);
+                        dischargeCell.setCellStyle(dateStyle);
+                    } else {
+                        dischargeCell.setCellValue("");
+                        dischargeCell.setCellStyle(dataStyle);
+                    }
+
+                    Cell nameCell = dataRow.createCell(dataIndex++);
+                    nameCell.setCellValue(bill.getPatient() != null && bill.getPatient().getPerson() != null
+                            ? bill.getPatient().getPerson().getNameWithTitle() : "");
+                    nameCell.setCellStyle(dataStyle);
+
+                    Cell companyCell = dataRow.createCell(dataIndex++);
+                    companyCell.setCellValue(bill.getCreditCompany() != null ? bill.getCreditCompany().getName() : "");
+                    companyCell.setCellStyle(dataStyle);
+
+                    Cell amountCell = dataRow.createCell(dataIndex++);
+                    amountCell.setCellValue(bill.getNetTotal());
+                    amountCell.setCellStyle(numberStyle);
+
+                    Cell paidCell = dataRow.createCell(dataIndex++);
+                    paidCell.setCellValue(bill.getPaidAmount());
+                    paidCell.setCellStyle(numberStyle);
+
+                    Cell outstandingCell = dataRow.createCell(dataIndex);
+                    outstandingCell.setCellValue(bill.getNetTotal() - bill.getPaidAmount());
+                    outstandingCell.setCellStyle(numberStyle);
+                }
+
+                Row subTotalRow = sheet.createRow(rowIndex++);
+                Cell subTotalLabel = subTotalRow.createCell(0);
+                subTotalLabel.setCellValue("Sub Total");
+                subTotalLabel.setCellStyle(headerStyle);
+                sheet.addMergedRegion(new CellRangeAddress(subTotalRow.getRowNum(), subTotalRow.getRowNum(), 0, 4));
+
+                for (int i = 1; i <= 4; i++) {
+                    subTotalRow.createCell(i);
+                }
+
+                Cell subTotalAmount = subTotalRow.createCell(5);
+                subTotalAmount.setCellValue(ins.getTotal());
+                subTotalAmount.setCellStyle(numberStyle);
+
+                Cell subTotalPaid = subTotalRow.createCell(6);
+                subTotalPaid.setCellValue(ins.getPaidTotal());
+                subTotalPaid.setCellStyle(numberStyle);
+
+                Cell subTotalOutstanding = subTotalRow.createCell(7);
+                subTotalOutstanding.setCellValue(ins.getTotal() - ins.getPaidTotal());
+                subTotalOutstanding.setCellStyle(numberStyle);
+            }
+
+            Row grandTotalRow = sheet.createRow(rowIndex++);
+            Cell grandTotalLabel = grandTotalRow.createCell(0);
+            grandTotalLabel.setCellValue("Grand Total");
+            grandTotalLabel.setCellStyle(headerStyle);
+            sheet.addMergedRegion(new CellRangeAddress(grandTotalRow.getRowNum(), grandTotalRow.getRowNum(), 0, 4));
+
+            for (int i = 1; i <= 4; i++) {
+                grandTotalRow.createCell(i);
+            }
+
+            Cell grandTotalAmount = grandTotalRow.createCell(5);
+            grandTotalAmount.setCellValue(finalTotal);
+            grandTotalAmount.setCellStyle(numberStyle);
+
+            Cell grandTotalPaid = grandTotalRow.createCell(6);
+            grandTotalPaid.setCellValue(finalPaidTotal);
+            grandTotalPaid.setCellStyle(numberStyle);
+
+            Cell grandTotalOutstanding = grandTotalRow.createCell(7);
+            grandTotalOutstanding.setCellValue(finalTotal - finalPaidTotal);
+            grandTotalOutstanding.setCellStyle(numberStyle);
+
+            if (sessionController != null && sessionController.getLoggedUser() != null
+                    && sessionController.getLoggedUser().getWebUserPerson() != null) {
+                Row printedByRow = sheet.createRow(rowIndex++);
+                printedByRow.createCell(0).setCellValue(
+                        "Printed By : " + sessionController.getLoggedUser().getWebUserPerson().getName());
+            }
+
+            for (int i = 0; i < headerCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=Inward_Credit_Due_Report.xlsx");
+            try (OutputStream outputStream = response.getOutputStream()) {
+                workbook.write(outputStream);
+                facesContext.responseComplete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //    public void createInwardCreditDueWithAdditionalFilters() {
 //        Date startTime = new Date();
 //

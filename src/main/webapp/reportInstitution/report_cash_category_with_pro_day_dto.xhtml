@@ -46,18 +46,12 @@
                         <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
                                          action="#{bookKeepingSummery.createCashCategoryWithProDayDto}"/>
                         <p:commandButton ajax="false" value="Print"  class="ui-button-info mx-2" icon="fas fa-print" >
-                            <p:printer target="panelPrint" />
+                            <p:printer target="printArea" />
                         </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
-                            <p:dataExporter type="xlsx" target="opdCashTable,
-                                            opdCreditTable,
-                                            pharmacySalesTable,
-                                            pharmacyWholeSalesTable,
-                                            channelTable,
-                                            inwardTable"
-                                            fileName="Book_Keeping_Summery_with_pro_day_dto"
-                                            />
-                        </p:commandButton>
+                        <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel"
+                                         actionListener="#{bookKeepingSummery.downloadBookKeepingExcel}"/>
+                        <p:commandButton value="PDF" ajax="false" class="ui-button-danger mx-2" icon="fas fa-file-pdf"
+                                         actionListener="#{bookKeepingSummery.downloadBookKeepingPdf}"/>
                         <p:commandButton value="Compare with Old Version" ajax="false" class="ui-button-secondary" icon="fas fa-balance-scale"
                                          action="report_cash_category_with_pro_day"/>
                     </h:panelGrid>
@@ -265,6 +259,198 @@
                         <h:outputLabel value="Printed By: #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                     </f:facet>
                 </p:panel>
+
+                <!-- Print-only layout (hidden on screen, used by the Print button) -->
+                <div style="display: none;">
+                    <h:panelGroup id="printArea" layout="block" styleClass="bk-print">
+                        <style>
+                            @page { size: A4 portrait; margin: 12mm; }
+                            .bk-print { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 9.5pt; color: #222; }
+                            .bk-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .bk-print .bk-head { text-align: center; border-bottom: 4px solid #333; padding-bottom: 6px; margin-bottom: 10px; }
+                            .bk-print .bk-head h2 { font-size: 14pt; font-weight: bold; margin: 0; text-transform: uppercase; }
+                            .bk-print .bk-head h3 { font-size: 11pt; font-weight: bold; margin: 3px 0 0 0; }
+                            .bk-print table.bk-meta { border: none; margin-bottom: 4px; }
+                            .bk-print table.bk-meta td { background: none; padding: 2px 4px; font-size: 9pt; }
+                            .bk-print table.bk-meta .bk-meta-label { font-weight: bold; width: 25mm; white-space: nowrap; }
+                            .bk-print h4 { font-size: 10.5pt; font-weight: bold; margin: 12px 0 4px 0; page-break-after: avoid; break-after: avoid; }
+                            .bk-print table { width: 100%; border-collapse: collapse; border: 1px solid #888; }
+                            .bk-print tr { page-break-inside: avoid; break-inside: avoid; }
+                            .bk-print th, .bk-print td { padding: 4px 10px; text-align: left; }
+                            .bk-print thead th { background: #e4e4e4; border-bottom: 1px solid #888; }
+                            .bk-print table:not(.bk-meta) tbody tr:nth-child(even) td { background: #f3f3f3; }
+                            .bk-print tfoot { display: table-row-group; }
+                            .bk-print tfoot td { font-weight: bold; background: #e4e4e4; border-top: 1px solid #888; }
+                            .bk-print .num { text-align: right; white-space: nowrap; width: 32mm; }
+                            .bk-print .empty { color: #666; font-style: italic; }
+                            .bk-print .grand td { font-size: 10.5pt; }
+                        </style>
+
+                        <div class="bk-head">
+                            <h2><h:outputText value="#{bookKeepingSummery.institution.name}"/></h2>
+                            <h3>Book Keeping Summary (With Professional)</h3>
+                        </div>
+
+                        <table class="bk-meta">
+                            <tr>
+                                <td class="bk-meta-label">From</td>
+                                <td>
+                                    <h:outputText value="#{bookKeepingSummery.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="bk-meta-label">Printed By</td>
+                                <td><h:outputText value="#{sessionController.loggedUser.webUserPerson.name}"/></td>
+                            </tr>
+                            <tr>
+                                <td class="bk-meta-label">To</td>
+                                <td>
+                                    <h:outputText value="#{bookKeepingSummery.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </td>
+                                <td class="bk-meta-label">Printed At</td>
+                                <td>
+                                    <h:outputText value="#{sessionController.currentDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Category sections (total row omitted when null) -->
+                        <ui:repeat var="sec"
+                                   value="#{[
+                                   {'title': 'OPD Cash Collections (Cash, Card, Cheque, Slip)', 'rows': bookKeepingSummery.opdCashDtoList, 'total': bookKeepingSummery.opdCashDtoTotal, 'totalLabel': 'Total'},
+                                   {'title': 'OPD Credit Collections', 'rows': bookKeepingSummery.opdCreditDtoList, 'total': bookKeepingSummery.opdCreditDtoTotal, 'totalLabel': 'Total'},
+                                   {'title': 'Pharmacy Sales', 'rows': bookKeepingSummery.pharmacySalesDtoList, 'total': null, 'totalLabel': null},
+                                   {'title': 'Pharmacy Wholesale', 'rows': bookKeepingSummery.pharmacyWholeSalesDtoList, 'total': bookKeepingSummery.pharmacyDtoTotal, 'totalLabel': 'Pharmacy Total (Sales + Wholesale)'},
+                                   {'title': 'Channel Collections', 'rows': bookKeepingSummery.channelBillsDtoList, 'total': bookKeepingSummery.channelDtoTotal, 'totalLabel': 'Total'},
+                                   {'title': 'Inward Collections', 'rows': bookKeepingSummery.inwardCollectionsDtoList, 'total': bookKeepingSummery.inwardDtoTotal, 'totalLabel': 'Total'}
+                                   ]}">
+                            <h4><h:outputText value="#{sec.title}"/></h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th class="num">Bill Count</th>
+                                        <th class="num">Total Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{sec.rows}" var="dto">
+                                        <tr>
+                                            <td><h:outputText value="#{dto.categoryName}"/></td>
+                                            <td class="num"><h:outputText value="#{dto.billCount}"/></td>
+                                            <td class="num">
+                                                <h:outputText value="#{dto.totalValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                    <h:panelGroup rendered="#{empty sec.rows}">
+                                        <tr><td colspan="3" class="empty">No data available</td></tr>
+                                    </h:panelGroup>
+                                </tbody>
+                                <h:panelGroup rendered="#{sec.total ne null}">
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2"><h:outputText value="#{sec.totalLabel}"/></td>
+                                            <td class="num">
+                                                <h:outputText value="#{sec.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </h:panelGroup>
+                            </table>
+                        </ui:repeat>
+
+                        <!-- Bill-wise sections -->
+                        <ui:repeat var="sec"
+                                   value="#{[
+                                   {'title': 'Agent Collections', 'bills': bookKeepingSummery.agentCollections, 'total': bookKeepingSummery.agentPaymentTotal},
+                                   {'title': 'Collecting Centre Collections', 'bills': bookKeepingSummery.collectingCentreCollections, 'total': bookKeepingSummery.collectingCentrePaymentTotal}
+                                   ]}">
+                            <h4><h:outputText value="#{sec.title}"/></h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bill Number</th>
+                                        <th class="num">Net Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{sec.bills}" var="bill">
+                                        <tr>
+                                            <td><h:outputText value="#{bill.deptId}"/></td>
+                                            <td class="num">
+                                                <h:outputText value="#{bill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                    <h:panelGroup rendered="#{empty sec.bills}">
+                                        <tr><td colspan="2" class="empty">No data available</td></tr>
+                                    </h:panelGroup>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td>Total</td>
+                                        <td class="num">
+                                            <h:outputText value="#{sec.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </ui:repeat>
+
+                        <!-- Grand total (Agent and Collecting Centre collections are not included) -->
+                        <h4>Grand Summary</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Collection</th>
+                                    <th class="num">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat var="row"
+                                           value="#{[
+                                           {'label': 'OPD Cash Collections', 'amount': bookKeepingSummery.opdCashDtoTotal},
+                                           {'label': 'OPD Credit Collections', 'amount': bookKeepingSummery.opdCreditDtoTotal},
+                                           {'label': 'Pharmacy (Sales + Wholesale)', 'amount': bookKeepingSummery.pharmacyDtoTotal},
+                                           {'label': 'Channel Collections', 'amount': bookKeepingSummery.channelDtoTotal},
+                                           {'label': 'Inward Collections', 'amount': bookKeepingSummery.inwardDtoTotal}
+                                           ]}">
+                                    <tr>
+                                        <td><h:outputText value="#{row.label}"/></td>
+                                        <td class="num">
+                                            <h:outputText value="#{row.amount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                            <tfoot>
+                                <tr class="grand">
+                                    <td>Grand Total</td>
+                                    <td class="num">
+                                        <h:outputText value="#{bookKeepingSummery.grandDtoTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </h:panelGroup>
+                </div>
             </p:panel>
         </h:form>
     </ui:define>

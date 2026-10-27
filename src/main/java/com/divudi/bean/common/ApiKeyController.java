@@ -78,6 +78,9 @@ public class ApiKeyController implements Serializable {
         if (k == null) {
             return false;
         }
+        if (k.isRetired()) {
+            return false;
+        }
         if (k.getDateOfExpiary().before(new Date())) {
             return false;
         }

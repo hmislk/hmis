@@ -3,11 +3,18 @@ package com.divudi.service;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemCreateRequestDTO;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemDTO;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemPageDTO;
+import com.divudi.core.data.dto.admissioncharge.AdmissionChargeItemUpdateRequestDTO;
 import com.divudi.core.entity.AiMessage;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ApiKeyFacade;
 import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.service.inward.AdmissionChargeApiService;
+import com.divudi.service.inward.AdmissionChargeValidationException;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.net.URI;
@@ -51,6 +58,9 @@ public class AnthropicApiService implements Serializable {
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+
+    @EJB
+    private AdmissionChargeApiService admissionChargeApiService;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -615,8 +625,14 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Operation to perform."))
                                 .add("scope", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("enum", Json.createArrayBuilder().add("service").add("pharmacy"))
-                                        .add("description", "Required for POST. Optional filter for LIST."))
+                                        .add("enum", Json.createArrayBuilder().add("service").add("pharmacy").add("room"))
+                                        .add("description", "Required for POST. Optional filter for LIST. 'room' = room charge types (room, linen, maintenance, nursing, MO, administration, medical care) optionally per room category."))
+                                .add("inwardChargeTypes", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "scope=room only: comma-separated InwardChargeType names, e.g. RoomCharges,LinenCharges,MaintainCharges. Required for a room POST. For LIST, a single value filters by that charge type."))
+                                .add("roomCategoryIds", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "scope=room only: comma-separated room category ids (see /api/inward/room-categories). Omit for all rooms; a row for a room's own category wins over an all-rooms row. For LIST, a single id filters by that room category."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Entry id. Required for GET, PUT, DELETE."))
@@ -626,6 +642,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("categoryId", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Category id (service/investigation or pharmaceutical). Optional for POST/PUT/LIST."))
+                                .add("categoryIds", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Comma-separated category ids for a bulk POST (one row per category; existing identical rows are skipped and reported). Use instead of categoryId, e.g. to apply one discount to every pharmaceutical category."))
                                 .add("admissionTypeId", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "AdmissionType id. Optional."))
@@ -1041,6 +1060,54 @@ public class AnthropicApiService implements Serializable {
                                 .add("vatPercentage", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject manageItemMappingsTool = Json.createObjectBuilder()
+                .add("name", "manage_item_mappings")
+                .add("description",
+                        "Search, create, bulk-create, or retire ItemMapping rows — which items a "
+                        + "department, an institution, or an outside-charge site may bill. Use SEARCH to "
+                        + "list current mappings (the audit/diff primitive) filtered by at most one of "
+                        + "department_id/institution_id/outside_charge_site_id, plus optional item_id/query. "
+                        + "Use CREATE to map one item to exactly one target — idempotent: mapping an "
+                        + "already-active pair returns already_exists, and mapping a previously-retired pair "
+                        + "reactivates it instead of duplicating. Use BULK_CREATE with item_ids (comma-separated) "
+                        + "to map many items to one target at once, reporting a per-item outcome. Use RETIRE to "
+                        + "soft-retire one mapping by id (never a hard delete). An outside-charge mapping is "
+                        + "stored as an institution mapping with outsideChargeMapping=true — use "
+                        + "outside_charge_site_id (not institution_id) to create or search those. "
+                        + "Always confirm with the user before CREATE, BULK_CREATE, or RETIRE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Operation: SEARCH, CREATE, BULK_CREATE, or RETIRE. Required."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "ItemMapping ID. Required for RETIRE."))
+                                .add("item_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Item ID. Required for CREATE. Optional filter for SEARCH."))
+                                .add("item_ids", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Comma-separated Item IDs. Required for BULK_CREATE."))
+                                .add("department_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID target. Exactly one of department_id/institution_id/outside_charge_site_id is required for CREATE/BULK_CREATE; at most one for SEARCH."))
+                                .add("institution_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution ID target (plain institution mapping, not outside-charge)."))
+                                .add("outside_charge_site_id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution ID target for an outside-charge mapping (sets outsideChargeMapping=true)."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text matched against the mapped item's name (case-insensitive). Used with SEARCH."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results to return (1–200). Defaults to 30. Used with SEARCH.")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -1862,9 +1929,9 @@ public class AnthropicApiService implements Serializable {
                         + "  Clinical: {dx} {past-dx} {allergies} {routine-medicines} {rx} {drx} {ix} {procedures}\n"
                         + "  Vitals: {bp} {pr} {rr} {sat} {height} {weight} {bmi} {pfr}\n"
                         + "  Vital series: {temp-series} {bp-series} {pr-series} {rr-series} {sat-series}\n"
-                        + "  Credit company: {credit_company} {credit_company_address} {policy_no} {reference_no} {credit_limit}\n"
+                        + "  Credit company: {credit_company} {credit_company_address} {credit_company_contact} {policy_no} {reference_no} {credit_limit} {company_amount}\n"
                         + "  Institution: {institution} {department} {doctor} {letter_date}\n"
-                        + "  Billing: {final_bill} (admission net total) {patient_name} {patient_age} {patient_sex} (aliases of name/age/sex)\n"
+                        + "  Billing: {final_bill} (admission net total) {final_bill_no} (final bill number) {patient_name} {patient_age} {patient_sex} (aliases of name/age/sex)\n"
                         + "If the admission has more than one credit company, the user selects which one to use on the "
                         + "inward_letters page before generating; the credit company placeholders resolve to the selected company.\n"
                         + "InpatientDiagnosisCard uses the same placeholders (credit company fields resolve to empty if not applicable).")
@@ -2011,6 +2078,90 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageAdmissionChargesTool = Json.createObjectBuilder()
+                .add("name", "manage_admission_charges")
+                .add("description",
+                        "Manage AdmissionChargeItem rows — routine charges billed automatically on every matching "
+                        + "admission (issue #23594), additive alongside room and service charges. These are NOT "
+                        + "inpatient packages. "
+                        + "Resolution is two-step per item, applied when an admission is saved: admission type is "
+                        + "the outer filter, payment method the inner one; a null in either column means "
+                        + "\"applies to all\" for that dimension. "
+                        + "Configuration trap: because admission type is a filter, not a preference, adding one "
+                        + "admission-type-specific row for an item completely replaces the null-admissionType row "
+                        + "set for that item and that admission type — it does not fall back to it. Configuring "
+                        + "(Admission Charge, Day Case, Cash) and forgetting the Day Case Credit row leaves a "
+                        + "Credit Day Case admission with NO admission charge at all. Warn the user whenever a "
+                        + "change would leave an item's admission-type-specific rows covering only one of Cash "
+                        + "and Credit for a given admission type — check with LIST filtered by itemId. "
+                        + "paymentMethod is only ever Cash or Credit (or omitted, meaning \"both\") — an admission "
+                        + "can hold no other value; any other PaymentMethod value is rejected. "
+                        + "The item behind a row must have a department, an institution, an inwardChargeType, and "
+                        + "at least one live fee, or the charge cannot be billed — an item with no fee produces a "
+                        + "charge that cancels and refunds as zero. "
+                        + "Double-charge trap: AdmissionType.admissionFee is a separate, older mechanism already "
+                        + "added to the bill under the Admission Fee charge type, without a bill item. An "
+                        + "admission type with a non-zero admissionFee plus an AdmissionChargeItem configured "
+                        + "here charges the patient twice — warn the user before configuring a general admission "
+                        + "charge against an admission type that already has a non-zero admissionFee. "
+                        + "At most one live row may exist per (item, admissionType, paymentMethod) triple — "
+                        + "CREATE/UPDATE reject a duplicate; retire the existing row first, or update it instead. "
+                        + "action: LIST | GET | CREATE | UPDATE | RETIRE | RESTORE. "
+                        + "RETIRE only soft-retires, and RESTORE undoes it, so a mistaken retire is recoverable — "
+                        + "pass includeRetired=true to LIST or GET to see what was retired and get the id to "
+                        + "restore. "
+                        + "Always confirm with the user before CREATE, UPDATE, RETIRE, or RESTORE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("CREATE").add("UPDATE")
+                                                .add("RETIRE").add("RESTORE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionChargeItem id. Required for GET, UPDATE, RETIRE, RESTORE."))
+                                .add("itemId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Item (service) id being charged. Required for CREATE. Optional filter for LIST, and optional for UPDATE to repoint the row at a different item."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionType id this row applies to. Optional; omitted means \"any admission type\". Optional filter for LIST."))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Cash or Credit. Optional; omitted means \"both\". No other PaymentMethod value is valid here — an admission is never any other payment method."))
+                                .add("price", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Charge amount, must be >= 0. Required for CREATE."))
+                                .add("qty", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Quantity. Optional; defaults to 1.0."))
+                                .add("orderNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Display ordering. Optional; defaults to 0."))
+                                .add("clearAdmissionType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — UPDATE only. Sets admissionType back to null (\"any\"). Ignored if admissionTypeId is also given. A plain JSON body cannot tell \"field omitted\" apart from \"field set to null\", so clearing this column is explicit."))
+                                .add("clearPaymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — UPDATE only. Sets paymentMethod back to null (\"both\"). Ignored if paymentMethod is also given."))
+                                .add("includeRetired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — include retired rows in LIST/GET. Optional; defaults to false. Use it to find a row retired by mistake so it can be restored with RESTORE."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for RETIRE."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "LIST only — page size (1–100). Optional; defaults to 30."))
+                                .add("offset", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "LIST only — rows to skip, for paging through a configuration set larger than one page. The response carries a total count so you can tell whether more remain. Optional; defaults to 0.")))
+                        .add("required", Json.createArrayBuilder().add("action")))
+                .build();
+
         JsonObject lookupFinanceBillTool = Json.createObjectBuilder()
                 .add("name", "lookup_finance_bill")
                 .add("description",
@@ -2149,6 +2300,69 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageInpatientPackagesTool = Json.createObjectBuilder()
+                .add("name", "manage_inpatient_packages")
+                .add("description",
+                        "Create, list, fetch, update, or retire Inpatient Package master data — fixed-price "
+                        + "package headers (per AdmissionType + RoomCategory) with their component items "
+                        + "(services, timed items, professional-fee roles, outside charges, pharmacy items). "
+                        + "Distinct from admission charges (manage_admission_charges), which are additive "
+                        + "routine charges rather than a bundled package price. "
+                        + "POST creates a full package with its items in one call. PUT always overwrites header "
+                        + "fields — including fields you omit, which reset to their default (0 / empty) since "
+                        + "PUT has no partial-header mode, so always send the complete header; items, if "
+                        + "provided, fully replaces the component set (items with an id update that component, "
+                        + "items without an id create a new one, and any existing component missing from the "
+                        + "array is soft-retired) — omit items entirely on PUT to leave existing components "
+                        + "untouched. totalPrice and fixedRoomCharge are always server-computed from "
+                        + "chargeTypeAmounts and each item's fixedPrice and cannot be set directly. RETIRE "
+                        + "cannot be undone through this API — there is no restore endpoint. Always confirm "
+                        + "with the user before POST, PUT, or RETIRE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("RETIRE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Package id. Required for GET, PUT and RETIRE."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Package name. Required for POST and PUT."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "AdmissionType id. Required for POST and PUT; optional filter for LIST."))
+                                .add("roomCategoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "RoomCategory id. Required for POST and PUT; optional filter for LIST."))
+                                .add("includedRoomDurationHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Room duration included in the package price, in hours. Optional on POST (defaults to 0); on PUT, omitting it resets it to 0 since PUT fully overwrites the header."))
+                                .add("chargeTypeAmounts", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "POST/PUT — the charge-type price map as a JSON object string keyed by "
+                                                + "InwardChargeType name, e.g. {\"RoomCharges\":5000,\"NursingCharges\":1000}. "
+                                                + "The RoomCharges entry becomes fixedRoomCharge; all entries are summed into "
+                                                + "totalPrice along with the items' fixedPrice."))
+                                .add("items", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "POST/PUT — the complete component item list as a JSON array string, e.g. "
+                                                + "[{\"componentType\":\"SERVICE\",\"itemId\":123,\"qty\":1,\"fixedPrice\":2000},"
+                                                + "{\"id\":45,\"componentType\":\"PROFESSIONAL_FEE_ROLE\",\"roleLabel\":\"Visiting Consultant\",\"qty\":1,\"fixedPrice\":3000}]. "
+                                                + "componentType is SERVICE, TIMED_ITEM, PROFESSIONAL_FEE_ROLE, OUTSIDE_CHARGE or "
+                                                + "PHARMACY_ITEM. Every type but PROFESSIONAL_FEE_ROLE requires itemId; "
+                                                + "PROFESSIONAL_FEE_ROLE requires specialityId or roleLabel. Include an id to "
+                                                + "update an existing component, omit it to add one. On PUT, omit this whole "
+                                                + "parameter to leave existing components untouched; pass [] to retire all of them."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "RETIRE only — reason for retiring the package. Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -2166,6 +2380,7 @@ public class AnthropicApiService implements Serializable {
                 .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
                 .add(manageServicesTool)
+                .add(manageItemMappingsTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageReportFormatsTool)
                 .add(manageInvestigationComponentsTool)
@@ -2188,6 +2403,8 @@ public class AnthropicApiService implements Serializable {
                 .add(manageChannelBookingTool)
                 .add(manageInpatientTemplates)
                 .add(manageTimedItemsTool)
+                .add(manageAdmissionChargesTool)
+                .add(manageInpatientPackagesTool)
                 .add(lookupFinanceBillTool)
                 .build();
     }
@@ -2297,6 +2514,9 @@ public class AnthropicApiService implements Serializable {
                     String id                = toolInput.containsKey("id")               ? toolInput.getString("id", "")               : "";
                     String departmentId      = toolInput.containsKey("departmentId")     ? toolInput.getString("departmentId", "")     : "";
                     String categoryId        = toolInput.containsKey("categoryId")       ? toolInput.getString("categoryId", "")       : "";
+                    String categoryIds       = toolInput.containsKey("categoryIds")      ? toolInput.getString("categoryIds", "")      : "";
+                    String inwardChargeTypes = toolInput.containsKey("inwardChargeTypes") ? toolInput.getString("inwardChargeTypes", "") : "";
+                    String roomCategoryIds   = toolInput.containsKey("roomCategoryIds")  ? toolInput.getString("roomCategoryIds", "")  : "";
                     String admissionTypeId   = toolInput.containsKey("admissionTypeId")  ? toolInput.getString("admissionTypeId", "")  : "";
                     String paymentSchemeId   = toolInput.containsKey("paymentSchemeId")  ? toolInput.getString("paymentSchemeId", "")  : "";
                     String paymentMethodStr  = toolInput.containsKey("paymentMethod")    ? toolInput.getString("paymentMethod", "")    : "";
@@ -2305,8 +2525,8 @@ public class AnthropicApiService implements Serializable {
                     String query             = toolInput.containsKey("query")            ? toolInput.getString("query", "")            : "";
                     String limit             = toolInput.containsKey("limit")            ? toolInput.getString("limit", "")            : "";
                     String retireComments    = toolInput.containsKey("retireComments")   ? toolInput.getString("retireComments", "")   : "";
-                    return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId,
-                            admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
+                    return callInwardDiscountMatrixApi(method, scope, id, departmentId, categoryId, categoryIds,
+                            inwardChargeTypes, roomCategoryIds, admissionTypeId, paymentSchemeId, paymentMethodStr, discountPercent,
                             creditCompanyId, query, limit, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_inward_price_adjustment": {
@@ -2422,6 +2642,18 @@ public class AnthropicApiService implements Serializable {
                     String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
                     String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
                     return callServiceApi(method, id, query, serviceType, categoryId, inactive, limit, name, code, printName, fullName, inwardChargeType, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_item_mappings": {
+                    String method = toolInput.getString("method", "SEARCH");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String itemId = toolInput.containsKey("item_id") ? toolInput.getString("item_id", "") : "";
+                    String itemIds = toolInput.containsKey("item_ids") ? toolInput.getString("item_ids", "") : "";
+                    String departmentId = toolInput.containsKey("department_id") ? toolInput.getString("department_id", "") : "";
+                    String institutionId = toolInput.containsKey("institution_id") ? toolInput.getString("institution_id", "") : "";
+                    String outsideChargeSiteId = toolInput.containsKey("outside_charge_site_id") ? toolInput.getString("outside_charge_site_id", "") : "";
+                    String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String limit = toolInput.containsKey("limit") ? toolInput.getString("limit", "30") : "30";
+                    return callItemMappingApi(method, id, itemId, itemIds, departmentId, institutionId, outsideChargeSiteId, query, limit, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigation_format": {
                     String resourceType = toolInput.getString("resource_type", "ITEM");
@@ -2648,6 +2880,39 @@ public class AnthropicApiService implements Serializable {
                             departmentId, institutionId, categoryId, inactive,
                             fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating, durationUnit,
                             feesJson, query, size, offset, includeRetired, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_admission_charges": {
+                    String action              = toolInput.getString("action", "LIST");
+                    String id                  = toolInput.containsKey("id")                 ? toolInput.getString("id", "")                 : "";
+                    String itemId              = toolInput.containsKey("itemId")             ? toolInput.getString("itemId", "")             : "";
+                    String admissionTypeId     = toolInput.containsKey("admissionTypeId")    ? toolInput.getString("admissionTypeId", "")    : "";
+                    String paymentMethod       = toolInput.containsKey("paymentMethod")      ? toolInput.getString("paymentMethod", "")      : "";
+                    String price               = toolInput.containsKey("price")              ? toolInput.getString("price", "")              : "";
+                    String qty                 = toolInput.containsKey("qty")                ? toolInput.getString("qty", "")                : "";
+                    String orderNo             = toolInput.containsKey("orderNo")            ? toolInput.getString("orderNo", "")            : "";
+                    String clearAdmissionType  = toolInput.containsKey("clearAdmissionType") ? toolInput.getString("clearAdmissionType", "") : "";
+                    String clearPaymentMethod  = toolInput.containsKey("clearPaymentMethod") ? toolInput.getString("clearPaymentMethod", "") : "";
+                    String includeRetired      = toolInput.containsKey("includeRetired")     ? toolInput.getString("includeRetired", "")     : "";
+                    String retireComments      = toolInput.containsKey("retireComments")     ? toolInput.getString("retireComments", "")     : "";
+                    String size                = toolInput.containsKey("size")               ? toolInput.getString("size", "")               : "";
+                    String offset              = toolInput.containsKey("offset")             ? toolInput.getString("offset", "")             : "";
+                    return manageAdmissionCharges(action, id, itemId, admissionTypeId, paymentMethod, price, qty,
+                            orderNo, clearAdmissionType, clearPaymentMethod, includeRetired, retireComments,
+                            size, offset, hmisApiKey);
+                }
+                case "manage_inpatient_packages": {
+                    String method              = toolInput.getString("method", "LIST");
+                    String id                  = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String name                = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String admissionTypeId     = toolInput.containsKey("admissionTypeId") ? toolInput.getString("admissionTypeId", "") : "";
+                    String roomCategoryId      = toolInput.containsKey("roomCategoryId") ? toolInput.getString("roomCategoryId", "") : "";
+                    String includedRoomDurationHours = toolInput.containsKey("includedRoomDurationHours") ? toolInput.getString("includedRoomDurationHours", "") : "";
+                    String chargeTypeAmountsJson = toolInput.containsKey("chargeTypeAmounts") ? toolInput.getString("chargeTypeAmounts", "") : "";
+                    String itemsJson           = toolInput.containsKey("items") ? toolInput.getString("items", "") : null;
+                    String retireComments      = toolInput.containsKey("retireComments") ? toolInput.getString("retireComments", "") : "";
+                    return callInpatientPackagesApi(method, id, name, admissionTypeId, roomCategoryId,
+                            includedRoomDurationHours, chargeTypeAmountsJson, itemsJson, retireComments,
+                            hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -3533,8 +3798,8 @@ public class AnthropicApiService implements Serializable {
     }
 
     private String callInwardDiscountMatrixApi(
-            String method, String scope, String id, String departmentId, String categoryId,
-            String admissionTypeId, String paymentSchemeId, String paymentMethod,
+            String method, String scope, String id, String departmentId, String categoryId, String categoryIds,
+            String inwardChargeTypes, String roomCategoryIds, String admissionTypeId, String paymentSchemeId, String paymentMethod,
             String discountPercent, String creditCompanyId, String query, String limit,
             String retireComments, String hmisBaseUrl, String hmisApiKey) {
 
@@ -3571,6 +3836,17 @@ public class AnthropicApiService implements Serializable {
                     }
                     if (categoryId != null && !categoryId.isEmpty()) {
                         urlBuilder.append(first ? "?" : "&").append("categoryId=").append(categoryId);
+                        first = false;
+                    }
+                    // scope=room filters: GET takes one value each, so a single
+                    // charge type / room category is sent as a filter.
+                    if (inwardChargeTypes != null && !inwardChargeTypes.trim().isEmpty() && !inwardChargeTypes.contains(",")) {
+                        urlBuilder.append(first ? "?" : "&").append("inwardChargeType=")
+                                .append(URLEncoder.encode(inwardChargeTypes.trim(), StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (roomCategoryIds != null && !roomCategoryIds.trim().isEmpty() && !roomCategoryIds.contains(",")) {
+                        urlBuilder.append(first ? "?" : "&").append("roomCategoryId=").append(roomCategoryIds.trim());
                         first = false;
                     }
                     if (admissionTypeId != null && !admissionTypeId.isEmpty()) {
@@ -3611,6 +3887,27 @@ public class AnthropicApiService implements Serializable {
                     if (scope != null && !scope.isEmpty()) bodyBuilder.add("scope", scope);
                     if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
                     if (categoryId != null && !categoryId.trim().isEmpty()) bodyBuilder.add("categoryId", Long.parseLong(categoryId.trim()));
+                    if (categoryIds != null && !categoryIds.trim().isEmpty()) {
+                        javax.json.JsonArrayBuilder ids = Json.createArrayBuilder();
+                        for (String cid : categoryIds.split(",")) {
+                            if (!cid.trim().isEmpty()) ids.add(Long.parseLong(cid.trim()));
+                        }
+                        bodyBuilder.add("categoryIds", ids);
+                    }
+                    if (inwardChargeTypes != null && !inwardChargeTypes.trim().isEmpty()) {
+                        javax.json.JsonArrayBuilder t = Json.createArrayBuilder();
+                        for (String ct : inwardChargeTypes.split(",")) {
+                            if (!ct.trim().isEmpty()) t.add(ct.trim());
+                        }
+                        bodyBuilder.add("inwardChargeTypes", t);
+                    }
+                    if (roomCategoryIds != null && !roomCategoryIds.trim().isEmpty()) {
+                        javax.json.JsonArrayBuilder r = Json.createArrayBuilder();
+                        for (String rid : roomCategoryIds.split(",")) {
+                            if (!rid.trim().isEmpty()) r.add(Long.parseLong(rid.trim()));
+                        }
+                        bodyBuilder.add("roomCategoryIds", r);
+                    }
                     if (admissionTypeId != null && !admissionTypeId.trim().isEmpty()) bodyBuilder.add("admissionTypeId", Long.parseLong(admissionTypeId.trim()));
                     if (paymentSchemeId != null && !paymentSchemeId.trim().isEmpty()) bodyBuilder.add("paymentSchemeId", Long.parseLong(paymentSchemeId.trim()));
                     if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
@@ -4659,6 +4956,61 @@ public class AnthropicApiService implements Serializable {
             }
             if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
         } catch (Exception e) { return "Service API error: "+e.getMessage(); }
+    }
+
+    private String callItemMappingApi(String method, String id, String itemId, String itemIds,
+            String departmentId, String institutionId, String outsideChargeSiteId,
+            String query, String limit, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb;
+
+            if ("SEARCH".equalsIgnoreCase(method)) {
+                StringBuilder url = new StringBuilder(root + "/api/item-mappings/search?limit=" + URLEncoder.encode(limit, StandardCharsets.UTF_8));
+                if (departmentId != null && !departmentId.isEmpty()) url.append("&departmentId=").append(URLEncoder.encode(departmentId, StandardCharsets.UTF_8));
+                if (institutionId != null && !institutionId.isEmpty()) url.append("&institutionId=").append(URLEncoder.encode(institutionId, StandardCharsets.UTF_8));
+                if (outsideChargeSiteId != null && !outsideChargeSiteId.isEmpty()) url.append("&outsideChargeSiteId=").append(URLEncoder.encode(outsideChargeSiteId, StandardCharsets.UTF_8));
+                if (itemId != null && !itemId.isEmpty()) url.append("&itemId=").append(URLEncoder.encode(itemId, StandardCharsets.UTF_8));
+                if (query != null && !query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                rb = HttpRequest.newBuilder().uri(URI.create(url.toString())).GET();
+            } else if ("CREATE".equalsIgnoreCase(method)) {
+                if (itemId == null || itemId.isEmpty()) return "Error: item_id is required for CREATE.";
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("itemId", Long.parseLong(itemId));
+                if (departmentId != null && !departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                if (institutionId != null && !institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                if (outsideChargeSiteId != null && !outsideChargeSiteId.isEmpty()) b.add("outsideChargeSiteId", Long.parseLong(outsideChargeSiteId));
+                rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/item-mappings"))
+                        .method("POST", HttpRequest.BodyPublishers.ofString(b.build().toString()))
+                        .header("Content-Type", "application/json");
+            } else if ("BULK_CREATE".equalsIgnoreCase(method)) {
+                if (itemIds == null || itemIds.isEmpty()) return "Error: item_ids is required for BULK_CREATE.";
+                javax.json.JsonArrayBuilder idsArray = Json.createArrayBuilder();
+                for (String idStr : itemIds.split(",")) {
+                    String trimmed = idStr.trim();
+                    if (!trimmed.isEmpty()) idsArray.add(Long.parseLong(trimmed));
+                }
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("itemIds", idsArray);
+                if (departmentId != null && !departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                if (institutionId != null && !institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                if (outsideChargeSiteId != null && !outsideChargeSiteId.isEmpty()) b.add("outsideChargeSiteId", Long.parseLong(outsideChargeSiteId));
+                rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/item-mappings/bulk"))
+                        .method("POST", HttpRequest.BodyPublishers.ofString(b.build().toString()))
+                        .header("Content-Type", "application/json");
+            } else if ("RETIRE".equalsIgnoreCase(method)) {
+                if (id == null || id.isEmpty()) return "Error: id is required for RETIRE.";
+                rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/item-mappings/" + id)).DELETE();
+            } else {
+                return "Error: Unsupported method for manage_item_mappings: " + method
+                        + ". Allowed methods are SEARCH, CREATE, BULK_CREATE, RETIRE.";
+            }
+            rb.timeout(Duration.ofSeconds(15));
+            if (!key.isEmpty()) rb.header("Finance", key);
+            HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + resp.statusCode() + "\n" + resp.body();
+        } catch (Exception e) { return "Item Mapping API error: " + e.getMessage(); }
     }
 
     private String callInvestigationFormatApi(String resourceType, String method,
@@ -6155,6 +6507,304 @@ public class AnthropicApiService implements Serializable {
             return "Timed items API error: " + e.getMessage();
         }
     }
+
+    private String callInpatientPackagesApi(String method, String id, String name, String admissionTypeId,
+            String roomCategoryId, String includedRoomDurationHours, String chargeTypeAmountsJson,
+            String itemsJson, String retireComments, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String baseUrl = hmisBaseUrl.replaceAll("/$", "") + "/api/inpatient-packages";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+            switch (method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder url = new StringBuilder(baseUrl);
+                    List<String> qp = new ArrayList<>();
+                    if (!admissionTypeId.isEmpty()) qp.add("admissionTypeId=" + URLEncoder.encode(admissionTypeId, StandardCharsets.UTF_8));
+                    if (!roomCategoryId.isEmpty()) qp.add("roomCategoryId=" + URLEncoder.encode(roomCategoryId, StandardCharsets.UTF_8));
+                    if (!qp.isEmpty()) url.append("?").append(String.join("&", qp));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "GET": {
+                    if (id.isEmpty()) return "Error: id is required for GET.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "POST": {
+                    if (name.isEmpty()) return "Error: name is required for POST.";
+                    if (admissionTypeId.isEmpty()) return "Error: admissionTypeId is required for POST.";
+                    if (roomCategoryId.isEmpty()) return "Error: roomCategoryId is required for POST.";
+                    com.google.gson.JsonObject body = buildInpatientPackageBody(name, admissionTypeId, roomCategoryId,
+                            includedRoomDurationHours, chargeTypeAmountsJson, itemsJson);
+                    if (body == null) return "Error: chargeTypeAmounts and items, if provided, must be valid JSON.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT": {
+                    if (id.isEmpty()) return "Error: id is required for PUT.";
+                    if (name.isEmpty()) return "Error: name is required for PUT.";
+                    if (admissionTypeId.isEmpty()) return "Error: admissionTypeId is required for PUT.";
+                    if (roomCategoryId.isEmpty()) return "Error: roomCategoryId is required for PUT.";
+                    com.google.gson.JsonObject body = buildInpatientPackageBody(name, admissionTypeId, roomCategoryId,
+                            includedRoomDurationHours, chargeTypeAmountsJson, itemsJson);
+                    if (body == null) return "Error: chargeTypeAmounts and items, if provided, must be valid JSON.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "RETIRE": {
+                    if (id.isEmpty()) return "Error: id is required for RETIRE.";
+                    com.google.gson.JsonObject body = new com.google.gson.JsonObject();
+                    if (!retireComments.isEmpty()) body.addProperty("retireComments", retireComments);
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/retire"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                default:
+                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, RETIRE";
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Error: request interrupted.";
+        } catch (Exception e) {
+            return "Error calling Inpatient Packages API: " + e.getMessage();
+        }
+    }
+
+    /**
+     * @return the request body, or null if chargeTypeAmounts/items were supplied but are not
+     *         valid JSON — parsed rather than concatenated so a malformed payload is reported
+     *         here instead of reaching the API as an unparseable body.
+     */
+    private com.google.gson.JsonObject buildInpatientPackageBody(String name, String admissionTypeId,
+            String roomCategoryId, String includedRoomDurationHours, String chargeTypeAmountsJson, String itemsJson) {
+        com.google.gson.JsonObject body = new com.google.gson.JsonObject();
+        body.addProperty("name", name);
+        body.addProperty("admissionTypeId", Long.parseLong(admissionTypeId));
+        body.addProperty("roomCategoryId", Long.parseLong(roomCategoryId));
+        if (includedRoomDurationHours != null && !includedRoomDurationHours.isEmpty()) {
+            body.addProperty("includedRoomDurationHours", Double.parseDouble(includedRoomDurationHours));
+        }
+        if (chargeTypeAmountsJson != null && !chargeTypeAmountsJson.trim().isEmpty()) {
+            try {
+                body.add("chargeTypeAmounts", com.google.gson.JsonParser.parseString(chargeTypeAmountsJson.trim()).getAsJsonObject());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        if (itemsJson != null) {
+            String raw = itemsJson.trim().isEmpty() ? "[]" : itemsJson.trim();
+            try {
+                body.add("items", com.google.gson.JsonParser.parseString(raw).getAsJsonArray());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        return body;
+    }
+
+    /**
+     * Handles {@code manage_admission_charges}. Unlike the other manage_* tools, this one is
+     * an in-process call to {@link AdmissionChargeApiService} rather than an HTTP round-trip
+     * through the REST API — {@code AnthropicApiService} is itself server-side, so it can call
+     * the same validated business logic directly. {@link AdmissionChargeValidationException} is
+     * caught here and surfaced as a plain "Error: ..." string, never a stack trace.
+     */
+    private String manageAdmissionCharges(String action, String id, String itemId, String admissionTypeId,
+            String paymentMethod, String price, String qty, String orderNo,
+            String clearAdmissionType, String clearPaymentMethod,
+            String includeRetired, String retireComments, String size, String offset,
+            String hmisApiKey) {
+        String normalizedAction = action == null ? "" : action.trim().toUpperCase();
+        try {
+            switch (normalizedAction) {
+                case "LIST": {
+                    Long itemIdL = itemId.isEmpty() ? null : Long.parseLong(itemId);
+                    Long admissionTypeIdL = admissionTypeId.isEmpty() ? null : Long.parseLong(admissionTypeId);
+                    boolean includeRetiredB = Boolean.parseBoolean(includeRetired);
+                    // Clamped to the range the tool schema advertises; search() passes
+                    // limit straight to setMaxResults, so an unbounded value would page
+                    // the whole table into the model's context.
+                    int limit = size.isEmpty() ? 30 : Math.max(1, Math.min(100, Integer.parseInt(size)));
+                    int off = offset.isEmpty() ? 0 : Integer.parseInt(offset);
+                    AdmissionChargeItemPageDTO pageResult = admissionChargeApiService.search(
+                            itemIdL, admissionTypeIdL, paymentMethod.isEmpty() ? null : paymentMethod,
+                            includeRetiredB, limit, off);
+                    return formatAdmissionChargePage(pageResult);
+                }
+                case "GET": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for GET.";
+                    }
+                    boolean includeRetiredB = Boolean.parseBoolean(includeRetired);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.findById(Long.parseLong(id), includeRetiredB);
+                    return "Admission charge item:\n" + formatAdmissionChargeItem(dto);
+                }
+                case "CREATE": {
+                    if (itemId.isEmpty()) {
+                        return "Error: itemId is required for CREATE.";
+                    }
+                    if (price.isEmpty()) {
+                        return "Error: price is required for CREATE.";
+                    }
+                    AdmissionChargeItemCreateRequestDTO request = new AdmissionChargeItemCreateRequestDTO();
+                    request.setItemId(Long.parseLong(itemId));
+                    if (!admissionTypeId.isEmpty()) {
+                        request.setAdmissionTypeId(Long.parseLong(admissionTypeId));
+                    }
+                    if (!paymentMethod.isEmpty()) {
+                        request.setPaymentMethod(paymentMethod);
+                    }
+                    request.setPrice(Double.parseDouble(price));
+                    if (!qty.isEmpty()) {
+                        request.setQty(Double.parseDouble(qty));
+                    }
+                    if (!orderNo.isEmpty()) {
+                        request.setOrderNo(Integer.parseInt(orderNo));
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.create(request, user);
+                    return "Admission charge item created.\n" + formatAdmissionChargeItem(dto);
+                }
+                case "UPDATE": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for UPDATE.";
+                    }
+                    AdmissionChargeItemUpdateRequestDTO request = new AdmissionChargeItemUpdateRequestDTO();
+                    if (!itemId.isEmpty()) {
+                        request.setItemId(Long.parseLong(itemId));
+                    }
+                    if (!admissionTypeId.isEmpty()) {
+                        request.setAdmissionTypeId(Long.parseLong(admissionTypeId));
+                    } else if (!clearAdmissionType.isEmpty()) {
+                        request.setClearAdmissionType(Boolean.parseBoolean(clearAdmissionType));
+                    }
+                    if (!paymentMethod.isEmpty()) {
+                        request.setPaymentMethod(paymentMethod);
+                    } else if (!clearPaymentMethod.isEmpty()) {
+                        request.setClearPaymentMethod(Boolean.parseBoolean(clearPaymentMethod));
+                    }
+                    if (!price.isEmpty()) {
+                        request.setPrice(Double.parseDouble(price));
+                    }
+                    if (!qty.isEmpty()) {
+                        request.setQty(Double.parseDouble(qty));
+                    }
+                    if (!orderNo.isEmpty()) {
+                        request.setOrderNo(Integer.parseInt(orderNo));
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.update(Long.parseLong(id), request, user);
+                    return "Admission charge item updated.\n" + formatAdmissionChargeItem(dto);
+                }
+                case "RETIRE": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for RETIRE.";
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.retire(
+                            Long.parseLong(id), retireComments.isEmpty() ? null : retireComments, user);
+                    return "Admission charge item retired.\n" + formatAdmissionChargeItem(dto);
+                }
+                case "RESTORE": {
+                    if (id.isEmpty()) {
+                        return "Error: id is required for RESTORE.";
+                    }
+                    WebUser user = resolveCallerWebUser(hmisApiKey);
+                    AdmissionChargeItemDTO dto = admissionChargeApiService.restore(Long.parseLong(id), user);
+                    return "Admission charge item restored.\n" + formatAdmissionChargeItem(dto);
+                }
+                default:
+                    return "Error: Unknown action '" + action + "'. Supported: LIST, GET, CREATE, UPDATE, RETIRE, RESTORE.";
+            }
+        } catch (AdmissionChargeValidationException e) {
+            return "Error: " + e.getMessage();
+        } catch (NumberFormatException e) {
+            return "Error: invalid numeric value — " + e.getMessage();
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "manage_admission_charges failed for action {0}: {1}",
+                    new Object[]{action, e.getMessage()});
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String formatAdmissionChargeItem(AdmissionChargeItemDTO dto) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("id: ").append(dto.getId()).append("\n");
+        sb.append("item: ").append(dto.getItemName()).append(" (itemId=").append(dto.getItemId()).append(")\n");
+        if (dto.getItemDepartmentName() != null) {
+            sb.append("department: ").append(dto.getItemDepartmentName()).append("\n");
+        }
+        if (dto.getInwardChargeType() != null) {
+            sb.append("inwardChargeType: ").append(dto.getInwardChargeType()).append("\n");
+        }
+        sb.append("admissionType: ").append(dto.getAdmissionTypeId() != null
+                ? dto.getAdmissionTypeName() + " (id=" + dto.getAdmissionTypeId() + ")" : "any (applies to every admission type)")
+                .append("\n");
+        sb.append("paymentMethod: ").append(dto.getPaymentMethod() != null
+                ? dto.getPaymentMethod() : "both (applies to Cash and Credit)").append("\n");
+        sb.append("price: ").append(dto.getPrice()).append("\n");
+        sb.append("qty: ").append(dto.getQty()).append("\n");
+        sb.append("orderNo: ").append(dto.getOrderNo()).append("\n");
+        sb.append("retired: ").append(dto.isRetired());
+        return sb.toString();
+    }
+
+    private String formatAdmissionChargePage(AdmissionChargeItemPageDTO page) {
+        List<AdmissionChargeItemDTO> items = page.getItems();
+        if (items == null || items.isEmpty()) {
+            return "No admission charge items found (total=" + page.getTotal() + ").";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Found ").append(page.getTotal()).append(" admission charge item(s); showing ")
+                .append(items.size()).append(" starting at offset ").append(page.getOffset()).append(":\n\n");
+        for (AdmissionChargeItemDTO dto : items) {
+            sb.append(formatAdmissionChargeItem(dto)).append("\n\n");
+        }
+        long shownThrough = (long) page.getOffset() + items.size();
+        if (shownThrough < page.getTotal()) {
+            sb.append("... ").append(page.getTotal() - shownThrough)
+                    .append(" more row(s) remain. Pass offset=").append(shownThrough).append(" to see the next page.\n");
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * Resolves the WebUser behind the caller's HMIS API key, for the {@code creater}/
+     * {@code retirer} fields on records this tool writes. Mirrors {@link #resolveCallerName}'s
+     * lookup but returns the entity rather than a display string.
+     */
+    private WebUser resolveCallerWebUser(String hmisApiKey) {
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", hmisApiKey);
+            ApiKey ak = apiKeyFacade.findFirstByJpql(
+                    "SELECT a FROM ApiKey a WHERE a.keyValue = :k AND a.retired = false", p);
+            return ak != null ? ak.getWebUser() : null;
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Could not resolve caller WebUser from hmisApiKey", e);
+            return null;
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -6211,7 +6861,11 @@ public class AnthropicApiService implements Serializable {
           .append("LIST_PAYMENT_METHODS, LOOKUP_CREDIT_COMPANIES), ")
           .append("then POST to create, PUT to update, or DELETE to retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward billing discounts. ")
-          .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists.\n\n");
+          .append("POST returns 'already_exists' with the existing id when a duplicate combination already exists. ")
+          .append("To apply one discount across many categories (e.g. every pharmaceutical category for a scheme), POST once with categoryIds ")
+          .append("(comma-separated) instead of categoryId; identical existing rows are skipped and listed in the response. ")
+          .append("Room charge discounts use scope='room' with inwardChargeTypes (e.g. RoomCharges) and optional roomCategoryIds; ")
+          .append("a row for a room's own category wins over an all-rooms row.\n\n");
         sb.append("### manage_inward_price_adjustment\n");
         sb.append("Manage Inward Price Adjustment (margin) Matrix entries for services/investigations and pharmacy. ")
           .append("Each row defines a gross-value price range (fromPrice, toPrice) and a margin percentage to apply. ")
@@ -6384,13 +7038,42 @@ public class AnthropicApiService implements Serializable {
           .append("PUT_FEES replaces the entire slot list in one atomic, fully-validated call — prefer it over a run of POST_FEE calls when ")
           .append("configuring a tiered service; slots you leave out of the array are retired. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
+        sb.append("### manage_admission_charges\n");
+        sb.append("Manage AdmissionChargeItem rows — routine charges billed automatically on every matching admission, ")
+          .append("additive alongside room and service charges. These are NOT inpatient packages. ")
+          .append("Resolution is two-step per item, applied when an admission is saved: admission type is the outer filter, ")
+          .append("payment method the inner one; a null in either column means \"applies to all\" for that dimension. ")
+          .append("Configuration trap: because admission type is a filter, not a preference, adding one admission-type-specific ")
+          .append("row for an item completely replaces the null-admissionType row set for that item and that admission type — ")
+          .append("it does not fall back to it. Configuring (Admission Charge, Day Case, Cash) and forgetting the Day Case ")
+          .append("Credit row leaves a Credit Day Case admission with NO admission charge at all. Warn the user whenever a ")
+          .append("change (CREATE, UPDATE, or RETIRE) would leave an item's admission-type-specific rows covering only one of ")
+          .append("Cash and Credit for a given admission type — check with LIST filtered by itemId before and after the change. ")
+          .append("paymentMethod is only ever Cash or Credit (or omitted, meaning \"both\") — an admission can hold no other ")
+          .append("value; any other PaymentMethod value is rejected. ")
+          .append("The item behind a row must have a department, an institution, an inwardChargeType, and at least one live ")
+          .append("fee, or the charge cannot be billed — an item with no fee produces a charge that cancels and refunds as zero. ")
+          .append("Double-charge trap: AdmissionType.admissionFee is a separate, older mechanism already added to the bill ")
+          .append("under the Admission Fee charge type, without a bill item. An admission type with a non-zero admissionFee ")
+          .append("plus an AdmissionChargeItem configured here charges the patient twice — warn the user before configuring ")
+          .append("a general admission charge against an admission type that already has a non-zero admissionFee. ")
+          .append("At most one live row may exist per (item, admissionType, paymentMethod) triple — CREATE/UPDATE reject a ")
+          .append("duplicate; retire the existing row first, or update it instead. ")
+          .append("action: LIST | GET | CREATE | UPDATE | RETIRE | RESTORE. LIST is paged with size + offset and filters on ")
+          .append("itemId, admissionTypeId, paymentMethod, includeRetired. UPDATE uses clearAdmissionType / clearPaymentMethod ")
+          .append("to explicitly reset either column back to null, since a plain body cannot tell \"omitted\" apart from ")
+          .append("\"set to null\" and both are meaningful. ")
+          .append("RETIRE only soft-retires, and RESTORE undoes it, so a mistaken retire is recoverable — pass ")
+          .append("includeRetired=true to LIST or GET to see what was retired and get the id to restore. ")
+          .append("Always confirm with the user before CREATE, UPDATE, RETIRE, or RESTORE — these changes affect live inward ")
+          .append("billing on every future matching admission.\n\n");
         sb.append("### manage_inpatient_templates\n");
         sb.append("Create, read, update, and retire document templates (HTML with placeholder tokens). ")
           .append("Supported types: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter. ")
           .append("method: LIST | GET | POST | PUT | DELETE. ")
           .append("LIST: browse templates by type and name. GET /{id}: retrieve a template including its full HTML contents. ")
           .append("POST: create a new template (name, type, contents required). PUT: update name, type, contents, defaultTemplate, or autoGenerate flags. DELETE: soft-retire. ")
-          .append("InpatientLetter placeholders available in contents: {credit_company} {credit_company_address} {policy_no} {reference_no} {credit_limit} ")
+          .append("InpatientLetter placeholders available in contents: {credit_company} {credit_company_address} {credit_company_contact} {policy_no} {reference_no} {credit_limit} {company_amount} {final_bill_no} ")
           .append("{institution} {department} {doctor} {letter_date} {final_bill} {patient_name} {patient_age} {patient_sex} — plus all Inpatient Diagnosis Card placeholders ")
           .append("({name} {age} {sex} {bht} {doa} {dod} {dx} {past-dx} {allergies} {rx} {drx} {ix} {procedures} {routine-medicines} vitals). ")
           .append("If an admission has multiple credit companies, the user picks one on the inward_letters page before generating. ")
@@ -6526,6 +7209,7 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical pharmacy adjustment bills"},
                     {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"},
+                    {"POST", "/pharmacy/backfill_transfer_bifd", "Backfill missing BIFD/BFD records for historical pharmacy stock transfer issue/receive bills"},
                     {"POST", "/pharmacy/backfill_transfer_department_type", "Backfill missing departmentType on historical pharmacy transfer bills (issue/receive/cancellations/returns). Dry-run by default (apply=false); resolution: unanimous item types, then backwardReferenceBill, then billedBill"}
                 });
 
@@ -6551,7 +7235,9 @@ public class AnthropicApiService implements Serializable {
                     {"PUT",    "/departments/{id}",   "Update a department"},
                     {"DELETE", "/departments/{id}",   "Retire a department"},
                     {"GET",    "/departments/{id}/preferences", "Get department UserPreference settings (item-listing strategies)"},
-                    {"PUT",    "/departments/{id}/preferences", "Update department UserPreference settings (partial; creates if absent)"}
+                    {"PUT",    "/departments/{id}/preferences", "Update department UserPreference settings (partial; creates if absent)"},
+                    {"GET",    "/departments/{id}/config", "List department-scoped ConfigOption key/value pairs"},
+                    {"PUT",    "/departments/{id}/config", "Set a department-scoped ConfigOption. Body: {configKey, configValue, configValueType?}; creates the key if it doesn't exist yet for this department (configValueType, an OptionValueType name like BOOLEAN, is only used on create — inferred from configValue when omitted)"}
                 });
 
         appendModule(sb, "Sites", "/sites",
@@ -6960,7 +7646,7 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"GET",    "/inward-discount-matrix?scope=X",                               "List entries. Filters: scope, departmentId, categoryId, admissionTypeId, paymentSchemeId, paymentMethod, creditCompanyId, limit"},
                     {"GET",    "/inward-discount-matrix/{id}",                                   "Fetch one entry"},
-                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), discountPercent (required), paymentSchemeId, departmentId, categoryId, admissionTypeId, paymentMethod, creditCompanyId"},
+                    {"POST",   "/inward-discount-matrix",                                         "Create. Body: scope (required), discountPercent (required), paymentSchemeId, departmentId, categoryId OR categoryIds (array, bulk: one row per category, duplicates skipped), admissionTypeId, paymentMethod, creditCompanyId. scope=room: inwardChargeType(s) + optional roomCategoryId(s) instead of categories"},
                     {"PUT",    "/inward-discount-matrix/{id}",                                   "Update. Body fields all optional; send null to clear a field"},
                     {"DELETE", "/inward-discount-matrix/{id}",                                   "Soft-retire entry. Optional: retireComments"},
                     {"GET",    "/inward-discount-matrix/admission-types/search?query=",          "AdmissionType name → id lookup"},
@@ -7046,6 +7732,25 @@ public class AnthropicApiService implements Serializable {
                     {"PUT",  "/itemrequests/{id}/cancel", "Cancel a still-PENDING request. Body: {reason}"}
                 });
 
+        appendModule(sb, "Item Mappings", "/item-mappings",
+                "Which items a department, an institution, or an outside-charge site may bill (ItemMapping "
+                + "entity) — backs the ITEMS_MAPPED_TO_LOGGED_DEPARTMENT / ..._INSTITUTION item-listing "
+                + "strategies. GET /search lists current mappings for at most one target kind at a time "
+                + "(department/institution/outside-charge-site) — the audit/diff primitive. POST maps one "
+                + "item to exactly one target; idempotent — re-mapping an active pair returns already_exists, "
+                + "re-mapping a previously-retired pair reactivates it instead of duplicating. POST /bulk maps "
+                + "many itemIds to one target with a per-item outcome (created/reactivated/already_mapped/"
+                + "item_not_found). DELETE /{id} soft-retires a mapping — never a hard delete. An "
+                + "outside-charge mapping is an institution mapping with outsideChargeMapping=true; there is "
+                + "no separate site table.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_ITEM_MAPPINGS.md"),
+                new String[][]{
+                    {"GET",    "/item-mappings/search", "List mappings. Query: departmentId, institutionId, outsideChargeSiteId, itemId, query, limit"},
+                    {"POST",   "/item-mappings",        "Map one item to one target. Body: {itemId, departmentId|institutionId|outsideChargeSiteId}"},
+                    {"POST",   "/item-mappings/bulk",   "Map many items to one target. Body: {itemIds:[...], departmentId|institutionId|outsideChargeSiteId}"},
+                    {"DELETE", "/item-mappings/{id}",   "Soft-retire one mapping"}
+                });
+
         appendModule(sb, "Timed Items", "/timed-items",
                 "Manage timed item master data and their tiered fee slots for duration-based inward billing. "
                 + "Items have departmentType (Inward, Theatre) and inwardChargeType. "
@@ -7069,6 +7774,39 @@ public class AnthropicApiService implements Serializable {
                     {"PATCH",  "/timed-items/{id}/fees/{feeId}/restore", "Un-retire fee tier"}
                 });
 
+        appendModule(sb, "Admission Charges", "/admission-charges",
+                "Manage AdmissionChargeItem rows — routine charges billed automatically on every matching "
+                + "admission, additive alongside room and service charges (not inpatient packages). Each row "
+                + "resolves per (item, admissionType, paymentMethod): admissionType null means any type, "
+                + "paymentMethod null means both Cash and Credit. At most one live row per triple. Retire is "
+                + "soft and reversible via restore.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_ADMISSION_CHARGES.md"),
+                new String[][]{
+                    {"GET",    "/admission-charges/search?itemId=&admissionTypeId=&paymentMethod=&includeRetired=&limit=&offset=", "Search admission charge items. Returns {items, total, limit, offset}"},
+                    {"GET",    "/admission-charges/{id}?includeRetired=", "Fetch one admission charge item"},
+                    {"POST",   "/admission-charges",              "Create. Body: itemId, price (required); admissionTypeId, paymentMethod, qty, orderNo optional"},
+                    {"PUT",    "/admission-charges/{id}",          "Update (all fields optional). Use clearAdmissionType/clearPaymentMethod to explicitly reset either column to null"},
+                    {"DELETE", "/admission-charges/{id}",          "Soft-retire admission charge item. Optional: retireComments (query param)"},
+                    {"PATCH",  "/admission-charges/{id}/restore",  "Un-retire admission charge item"}
+                });
+
+        appendModule(sb, "Inpatient Packages", "/inpatient-packages",
+                "Manage fixed-price Inpatient Package headers (per AdmissionType + RoomCategory) and their "
+                + "component items (services, timed items, professional-fee roles, outside charges, pharmacy "
+                + "items). Distinct from Admission Charges, which are additive routine charges rather than a "
+                + "bundled package price. totalPrice and fixedRoomCharge are always server-computed from "
+                + "chargeTypeAmounts and each item's fixedPrice, and are ignored on input. PUT fully overwrites "
+                + "the header (an omitted field resets to its default, e.g. includedRoomDurationHours -> 0), "
+                + "and retire has no restore endpoint.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_INPATIENT_PACKAGES.md"),
+                new String[][]{
+                    {"GET",  "/inpatient-packages?admissionTypeId=&roomCategoryId=", "List non-retired packages with their items"},
+                    {"GET",  "/inpatient-packages/{id}",       "Fetch one package with its items"},
+                    {"POST", "/inpatient-packages",            "Create a full package. Body: name, admissionTypeId, roomCategoryId (required); includedRoomDurationHours, chargeTypeAmounts, items[] optional"},
+                    {"PUT",  "/inpatient-packages/{id}",       "Full header overwrite (omitted fields reset to default) plus optional items[] full-replace (id=update, no id=create, missing=retire); omit items entirely to leave components untouched"},
+                    {"POST", "/inpatient-packages/{id}/retire","Soft-retire the whole package (irreversible via this API). Body: {retireComments}"}
+                });
+
         // ── Login History / Config ────────────────────────────────────────────
         appendModule(sb, "Login History", "/logins",
                 "Query user login history filtered by department, user, and date range.",
@@ -7080,7 +7818,8 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "System Configuration", "/config",
                 "Search and set application configuration options at runtime. "
-                + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
+                + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'. "
+                + "Every endpoint (read and write) requires an API key of type Config; other key types get 401.",
                 githubUrl(branch, "developer_docs/api/using-apis/API_CONFIG.md"),
                 new String[][]{
                     {"GET",  "/config?scope={tag}",  "List config options whose key contains {tag} (e.g. scope=inward); omit scope for all"},

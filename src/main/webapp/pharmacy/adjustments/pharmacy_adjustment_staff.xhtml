@@ -120,7 +120,8 @@
                                     <div class="row mt-2">
                                         <div class="col-md-3"><h:outputLabel value="New Quantity" ></h:outputLabel></div>
                                         <div class="col-md-6">
-                                            <p:inputText class="w-100" autocomplete="off" value="#{pharmacyAdjustmentController.qty}" >
+                                            <p:inputText class="w-100" autocomplete="off" value="#{pharmacyAdjustmentController.qty}"
+                                                         readonly="#{pharmacyAdjustmentController.fulfillingApprovedRequest ne null}" >
                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                             </p:inputText>
                                         </div>
@@ -133,11 +134,23 @@
 
                                     <div class="w-50">
                                         <p:commandButton
+                                            id="btnAdjust"
                                             value="Make Adjustment"
                                             ajax="false"
+                                            rendered="#{!pharmacyAdjustmentController.requiresApproval or pharmacyAdjustmentController.fulfillingApprovedRequest ne null}"
                                             action="#{pharmacyAdjustmentController.adjustStaffStock()}"
                                             class="w-1000 my-2 ui-button-warning"
                                             icon="fa-solid fa-sliders">
+
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnSendForApproval"
+                                            value="Send for Approval"
+                                            ajax="false"
+                                            rendered="#{pharmacyAdjustmentController.requiresApproval and pharmacyAdjustmentController.fulfillingApprovedRequest eq null}"
+                                            action="#{pharmacyAdjustmentController.adjustStaffStock()}"
+                                            class="w-1000 my-2 ui-button-warning"
+                                            icon="fa fa-paper-plane">
 
                                         </p:commandButton>
                                     </div>

@@ -95,6 +95,13 @@ public class SurgeryReportController implements Serializable {
     private String otRoomBarChartImage;
     private String otRoomLineChartImage;
     private int selectedYear;
+    // Month indices (0=Jan..11=Dec) within [fromYearDate, toYearDate], so the
+    // table/chart/exports only show the selected months instead of always all 12.
+    private List<Integer> otRoomMonthIndices = new ArrayList<>();
+    // From/To of the last Process, so the period label and the exports always
+    // describe the counts on screen even if the date inputs were edited since.
+    private Date otRoomReportFromDate;
+    private Date otRoomReportToDate;
 
     public void processSurgeryStatusReport() {
         reportList = new ArrayList<>();
@@ -160,7 +167,7 @@ public class SurgeryReportController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select new com.divudi.core.data.dto.SurgeryReportDTO( ")
                 .append("   b.id, pat.phn, pp.name, pe.dateOfAdmission, i.name, ")
-                .append("   rfc.department.name, rfc.name, stp.name, rcp.title, rcp.name, pe.id, p.id ")
+                .append("   rfc.department.name, rfc.name, stp.name, rcp.title, rcp.name, pe.id, p.id, stp.title ")
                 .append(" ) ")
                 .append(queryBody)
                 .append(" order by i.name ");
@@ -177,6 +184,7 @@ public class SurgeryReportController implements Serializable {
 
         Set<Long> billIds = new HashSet<>();
         Set<Long> encounterIds = new HashSet<>();
+        Set<Long> procedureIds = new HashSet<>();
         for (SurgeryReportDTO r : reportList) {
             if (r.getBillId() != null) {
                 billIds.add(r.getBillId());
@@ -184,14 +192,25 @@ public class SurgeryReportController implements Serializable {
             if (r.getPatientEncounterId() != null) {
                 encounterIds.add(r.getPatientEncounterId());
             }
+            if (r.getProcedureId() != null) {
+                procedureIds.add(r.getProcedureId());
+            }
         }
 
         attachOtStatuses(reportList, billIds, encounterIds);
-        attachSurgeons(reportList, encounterIds);
+        attachSurgeons(reportList, procedureIds);
     }
 
-    private void attachSurgeons(List<SurgeryReportDTO> rows, Set<Long> encounterIds) {
-        if (rows.isEmpty() || encounterIds.isEmpty()) {
+    // Scoped by procedureId (b.procedure.id - the PatientEncounter representing
+    // this specific surgery), NOT patientEncounterId (the overall admission).
+    // An admission can have several surgeries/procedures; keying by the admission
+    // id instead of the procedure id (a prior "optimization") merged every
+    // procedure's performed/assisted doctors together and applied the combined
+    // list to every surgery under that admission - e.g. a doctor added to a
+    // Cardiac Surgery showing up under a different Shoulder Arthroscopy for the
+    // same patient (issue #22096 / #23327).
+    private void attachSurgeons(List<SurgeryReportDTO> rows, Set<Long> procedureIds) {
+        if (rows.isEmpty() || procedureIds.isEmpty()) {
             return;
         }
 
@@ -205,20 +224,20 @@ public class SurgeryReportController implements Serializable {
                 + " LEFT JOIN ec.billFee bf "
                 + " LEFT JOIN bf.staff bfst "
                 + " LEFT JOIN bfst.person bfstp "
-                + " WHERE (pe.id IN :encIds OR ce.id IN :encIds) "
+                + " WHERE (pe.id IN :procIds OR ce.id IN :procIds) "
                 + " AND ec.retired = false "
                 + " AND ec.patientEncounterComponentType IN :types "
                 + " ORDER BY ec.orderNo ";
 
         Map<String, Object> p = new HashMap<>();
-        p.put("encIds", encounterIds);
+        p.put("procIds", procedureIds);
         p.put("types", java.util.Arrays.asList(
                 com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By,
                 com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by));
 
         List<Object[]> docRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
-        Map<Long, List<String>> doctorsByEncounter = new HashMap<>();
+        Map<Long, List<String>> doctorsByProcedure = new HashMap<>();
 
         for (Object[] row : docRows) {
             Long peId = (Long) row[0];
@@ -252,15 +271,15 @@ public class SurgeryReportController implements Serializable {
             String finalName = fullName.toString().trim();
 
             if (peId != null) {
-                doctorsByEncounter.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
+                doctorsByProcedure.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
             }
             if (ceId != null && !ceId.equals(peId)) {
-                doctorsByEncounter.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
+                doctorsByProcedure.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
             }
         }
 
         for (SurgeryReportDTO r : rows) {
-            List<String> docs = doctorsByEncounter.get(r.getPatientEncounterId());
+            List<String> docs = doctorsByProcedure.get(r.getProcedureId());
             if (docs != null && !docs.isEmpty()) {
                 r.setSurgeonName(docs.stream().distinct().collect(Collectors.joining(", ")));
             }
@@ -357,6 +376,12 @@ public class SurgeryReportController implements Serializable {
             short dateFmt = workbook.getCreationHelper().createDataFormat().getFormat("dd/MM/yyyy HH:mm");
             dateStyle.setDataFormat(dateFmt);
 
+            // Bold applied filters so they can't be missed/mistaken for blank rows.
+            CellStyle filterStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font filterFont = workbook.createFont();
+            filterFont.setBold(true);
+            filterStyle.setFont(filterFont);
+
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             int rowIdx = 0;
 
@@ -367,16 +392,22 @@ public class SurgeryReportController implements Serializable {
             rowIdx++; // blank row
 
             Row dateRow = sheet.createRow(rowIdx++);
-            dateRow.createCell(0).setCellValue("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate));
+            Cell dateCell = dateRow.createCell(0);
+            dateCell.setCellValue("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate));
+            dateCell.setCellStyle(filterStyle);
 
             if (operationTheatreRoom != null) {
                 Row otRow = sheet.createRow(rowIdx++);
-                otRow.createCell(0).setCellValue("OT Room: " + operationTheatreRoom.getName());
+                Cell otCell = otRow.createCell(0);
+                otCell.setCellValue("OT Room: " + operationTheatreRoom.getName());
+                otCell.setCellStyle(filterStyle);
             }
 
             if (procedure != null) {
                 Row procRow = sheet.createRow(rowIdx++);
-                procRow.createCell(0).setCellValue("Proposed Surgery: " + procedure.getName());
+                Cell procCell = procRow.createCell(0);
+                procCell.setCellValue("Proposed Surgery: " + procedure.getName());
+                procCell.setCellStyle(filterStyle);
             }
             rowIdx++; // blank row
 
@@ -405,7 +436,7 @@ public class SurgeryReportController implements Serializable {
                 row.createCell(6).setCellValue(nullSafe(dto.getWardName()));
                 row.createCell(7).setCellValue(nullSafe(dto.getSurgeonName()));
                 row.createCell(8).setCellValue(nullSafe(dto.getOtStatus()));
-                row.createCell(9).setCellValue(nullSafe(dto.getConsultantName()));
+                row.createCell(9).setCellValue(titledName(dto.getTitle(), dto.getConsultantName()));
             }
 
             for (int c = 0; c < REPORT_HEADERS.length; c++) {
@@ -444,7 +475,7 @@ public class SurgeryReportController implements Serializable {
             title.setSpacingAfter(5);
             document.add(title);
 
-            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
             Paragraph filters = new Paragraph();
             filters.add(new Phrase("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate) + "\n", filterFont));
             if (operationTheatreRoom != null) {
@@ -479,7 +510,7 @@ public class SurgeryReportController implements Serializable {
                 addCell(table, nullSafe(dto.getWardName()), cellFont);
                 addCell(table, nullSafe(dto.getSurgeonName()), cellFont);
                 addCell(table, nullSafe(dto.getOtStatus()), cellFont);
-                addCell(table, nullSafe(dto.getConsultantName()), cellFont);
+                addCell(table, titledName(dto.getTitle(), dto.getConsultantName()), cellFont);
             }
 
             document.add(table);
@@ -500,6 +531,17 @@ public class SurgeryReportController implements Serializable {
 
     private String nullSafe(String s) {
         return s == null ? "" : s;
+    }
+
+    // The on-screen table prepends the title itself (#{c.title} #{c.consultantName}
+    // in surgery_status.xhtml); the Excel/PDF exports build their own rows from the
+    // DTO directly and were using consultantName alone, so the "Dr" title never made
+    // it into the downloaded files.
+    private String titledName(com.divudi.core.data.Title title, String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        return title != null ? title.getLabel().trim() + " " + name.trim() : name.trim();
     }
 
     private void streamToResponse(byte[] data, String fileName, String contentType) throws java.io.IOException {
@@ -536,6 +578,9 @@ public class SurgeryReportController implements Serializable {
         otRoomGrandTotal = 0;
         otRoomBarChartModel = null;
         otRoomLineChartModel = null;
+        otRoomMonthIndices = new ArrayList<>();
+        otRoomReportFromDate = null;
+        otRoomReportToDate = null;
 
         if (fromYearDate == null || toYearDate == null) {
             JsfUtil.addErrorMessage("Please select both From and To dates.");
@@ -558,6 +603,12 @@ public class SurgeryReportController implements Serializable {
                     + "multi-year range would merge counts from different years.");
             return;
         }
+
+        for (int m = from.get(Calendar.MONTH); m <= to.get(Calendar.MONTH); m++) {
+            otRoomMonthIndices.add(m);
+        }
+        otRoomReportFromDate = fromYearDate;
+        otRoomReportToDate = toYearDate;
 
         Map<String, Object> params = new HashMap<>();
         String jpql = buildOtRoomWiseJpql(params);
@@ -647,7 +698,7 @@ public class SurgeryReportController implements Serializable {
 
         BarChart barChart = new BarChart();
         BarData barData = new BarData();
-        barData.addLabels(MONTH_SHORT_LABELS);
+        barData.addLabels(getOtRoomMonthLabelsForChart());
 
         int colorIndex = 0;
         for (OtRoomWiseSurgeryCountDTO dto : otRoomWiseList) {
@@ -659,7 +710,7 @@ public class SurgeryReportController implements Serializable {
                     .setBorderColor(toRgba(rgb, 1))
                     .setBorderWidth(1);
 
-            for (int m = 0; m < 12; m++) {
+            for (int m : otRoomMonthIndices) {
                 dataset.addData(dto.getCount(m));
             }
             barData.addDataset(dataset);
@@ -684,7 +735,7 @@ public class SurgeryReportController implements Serializable {
 
         LineChart lineChart = new LineChart();
         LineData lineData = new LineData();
-        lineData.addLabels(MONTH_SHORT_LABELS);
+        lineData.addLabels(getOtRoomMonthLabelsForChart());
 
         int colorIndex = 0;
         for (OtRoomWiseSurgeryCountDTO dto : otRoomWiseList) {
@@ -696,7 +747,7 @@ public class SurgeryReportController implements Serializable {
                     .setFill(new Fill(false))
                     .setTension(0.4f);
 
-            for (int m = 0; m < 12; m++) {
+            for (int m : otRoomMonthIndices) {
                 dataset.addData(dto.getCount(m));
             }
             lineData.addDataset(dataset);
@@ -711,6 +762,14 @@ public class SurgeryReportController implements Serializable {
         lineChart.setOptions(lineOptionsObj);
 
         otRoomLineChartModel = lineChart.toJson();
+    }
+
+    private String[] getOtRoomMonthLabelsForChart() {
+        String[] labels = new String[otRoomMonthIndices.size()];
+        for (int i = 0; i < otRoomMonthIndices.size(); i++) {
+            labels[i] = MONTH_SHORT_LABELS[otRoomMonthIndices.get(i)];
+        }
+        return labels;
     }
 
     private Plugins buildOtRoomChartPlugins() {
@@ -731,10 +790,35 @@ public class SurgeryReportController implements Serializable {
 
     public int getOtRoomSelectedYear() {
         Calendar cal = Calendar.getInstance();
-        if (fromYearDate != null) {
+        if (otRoomReportFromDate != null) {
+            cal.setTime(otRoomReportFromDate);
+        } else if (fromYearDate != null) {
             cal.setTime(fromYearDate);
         }
         return cal.get(Calendar.YEAR);
+    }
+
+    public List<Integer> getOtRoomMonthIndices() {
+        return otRoomMonthIndices;
+    }
+
+    public boolean isOtRoomMonthShown(int monthIndex) {
+        return otRoomMonthIndices.contains(monthIndex);
+    }
+
+    public String getOtRoomMonthLabel(int monthIndex) {
+        if (monthIndex < 0 || monthIndex >= MONTH_SHORT_LABELS.length) {
+            return "";
+        }
+        return MONTH_SHORT_LABELS[monthIndex];
+    }
+
+    public String getOtRoomPeriodLabel() {
+        if (otRoomReportFromDate == null || otRoomReportToDate == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        return sdf.format(otRoomReportFromDate) + " - " + sdf.format(otRoomReportToDate);
     }
 
     private int[] parseRgb(String csv) {
@@ -783,6 +867,10 @@ public class SurgeryReportController implements Serializable {
             footerStyle.setFont(footerFont);
             footerStyle.setAlignment(HorizontalAlignment.RIGHT);
 
+            int monthCount = otRoomMonthIndices.size();
+            int totalCol = monthCount + 1;
+            int lastCol = totalCol;
+
             int rowIdx = 0;
 
             // Title row
@@ -790,6 +878,11 @@ public class SurgeryReportController implements Serializable {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("OT Room Wise Surgery Count - " + getOtRoomSelectedYear());
             titleCell.setCellStyle(titleStyle);
+
+            // Period row (From/To date range)
+            Row periodRow = sheet.createRow(rowIdx++);
+            Cell periodCell = periodRow.createCell(0);
+            periodCell.setCellValue("Period: " + getOtRoomPeriodLabel());
             rowIdx++; // blank row
 
             // Year header row (merged)
@@ -798,19 +891,19 @@ public class SurgeryReportController implements Serializable {
             Cell yearCell = yearRow.createCell(1);
             yearCell.setCellValue(String.valueOf(getOtRoomSelectedYear()));
             yearCell.setCellStyle(headerStyle);
-            sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 1, 13));
+            sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 1, lastCol));
 
             // Month header row
             Row monthRow = sheet.createRow(rowIdx++);
             Cell roomHeader = monthRow.createCell(0);
             roomHeader.setCellValue("OT Room");
             roomHeader.setCellStyle(headerStyle);
-            for (int m = 0; m < 12; m++) {
-                Cell cell = monthRow.createCell(m + 1);
-                cell.setCellValue(MONTH_SHORT_LABELS[m]);
+            for (int i = 0; i < monthCount; i++) {
+                Cell cell = monthRow.createCell(i + 1);
+                cell.setCellValue(MONTH_SHORT_LABELS[otRoomMonthIndices.get(i)]);
                 cell.setCellStyle(headerStyle);
             }
-            Cell totalHeader = monthRow.createCell(13);
+            Cell totalHeader = monthRow.createCell(totalCol);
             totalHeader.setCellValue("Total");
             totalHeader.setCellStyle(headerStyle);
 
@@ -818,12 +911,12 @@ public class SurgeryReportController implements Serializable {
             for (OtRoomWiseSurgeryCountDTO dto : otRoomWiseList) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(nullSafe(dto.getRoomName()));
-                for (int m = 0; m < 12; m++) {
-                    Cell cell = row.createCell(m + 1);
-                    cell.setCellValue(dto.getCount(m));
+                for (int i = 0; i < monthCount; i++) {
+                    Cell cell = row.createCell(i + 1);
+                    cell.setCellValue(dto.getCount(otRoomMonthIndices.get(i)));
                     cell.setCellStyle(numberStyle);
                 }
-                Cell totalCell = row.createCell(13);
+                Cell totalCell = row.createCell(totalCol);
                 totalCell.setCellValue(dto.getTotalCount());
                 totalCell.setCellStyle(footerStyle);
             }
@@ -833,17 +926,17 @@ public class SurgeryReportController implements Serializable {
             Cell footerLabel = footerRow.createCell(0);
             footerLabel.setCellValue("Total Count");
             footerLabel.setCellStyle(footerStyle);
-            for (int m = 0; m < 12; m++) {
-                Cell cell = footerRow.createCell(m + 1);
-                cell.setCellValue(otRoomMonthlyTotals.getOrDefault(m, 0L));
+            for (int i = 0; i < monthCount; i++) {
+                Cell cell = footerRow.createCell(i + 1);
+                cell.setCellValue(otRoomMonthlyTotals.getOrDefault(otRoomMonthIndices.get(i), 0L));
                 cell.setCellStyle(footerStyle);
             }
-            Cell grandTotalCell = footerRow.createCell(13);
+            Cell grandTotalCell = footerRow.createCell(totalCol);
             grandTotalCell.setCellValue(otRoomGrandTotal);
             grandTotalCell.setCellStyle(footerStyle);
 
             // Auto-size columns
-            for (int c = 0; c <= 13; c++) {
+            for (int c = 0; c <= lastCol; c++) {
                 sheet.autoSizeColumn(c);
             }
 
@@ -905,18 +998,26 @@ public class SurgeryReportController implements Serializable {
                     "OT Room Wise Surgery Count - " + getOtRoomSelectedYear(),
                     pdfTitleFont);
             title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(10);
+            title.setSpacingAfter(4);
             document.add(title);
 
-            // 14 columns: Room Name + Jan-Dec + Total
-            PdfPTable table = new PdfPTable(14);
+            Font pdfPeriodFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            Paragraph period = new Paragraph("Period: " + getOtRoomPeriodLabel(), pdfPeriodFont);
+            period.setAlignment(Element.ALIGN_CENTER);
+            period.setSpacingAfter(10);
+            document.add(period);
+
+            int monthCount = otRoomMonthIndices.size();
+            int colCount = monthCount + 2; // Room Name + selected months + Total
+
+            PdfPTable table = new PdfPTable(colCount);
             table.setWidthPercentage(100);
-            float[] widths = new float[14];
+            float[] widths = new float[colCount];
             widths[0] = 14; // room name
-            for (int i = 1; i <= 12; i++) {
+            for (int i = 1; i <= monthCount; i++) {
                 widths[i] = 6;
             }
-            widths[13] = 7; // total
+            widths[colCount - 1] = 7; // total
             table.setWidths(widths);
 
             // Year header row
@@ -926,7 +1027,7 @@ public class SurgeryReportController implements Serializable {
             table.addCell(emptyCell);
 
             PdfPCell yearCell = new PdfPCell(new Phrase(String.valueOf(getOtRoomSelectedYear()), pdfHeaderFont));
-            yearCell.setColspan(13);
+            yearCell.setColspan(monthCount + 1);
             yearCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             yearCell.setBackgroundColor(new java.awt.Color(220, 220, 220));
             yearCell.setPadding(4);
@@ -934,15 +1035,15 @@ public class SurgeryReportController implements Serializable {
 
             // Month header row
             addCell(table, "OT Room", pdfHeaderFont, new java.awt.Color(220, 220, 220));
-            for (String month : MONTH_SHORT_LABELS) {
-                addCell(table, month, pdfHeaderFont, new java.awt.Color(220, 220, 220));
+            for (int m : otRoomMonthIndices) {
+                addCell(table, MONTH_SHORT_LABELS[m], pdfHeaderFont, new java.awt.Color(220, 220, 220));
             }
             addCell(table, "Total", pdfHeaderFont, new java.awt.Color(220, 220, 220));
 
             // Data rows
             for (OtRoomWiseSurgeryCountDTO dto : otRoomWiseList) {
                 addCell(table, nullSafe(dto.getRoomName()), pdfCellFont);
-                for (int m = 0; m < 12; m++) {
+                for (int m : otRoomMonthIndices) {
                     addCell(table, String.valueOf(dto.getCount(m)), pdfCellFont);
                 }
                 addCell(table, String.valueOf(dto.getTotalCount()), pdfFooterFont);
@@ -950,7 +1051,7 @@ public class SurgeryReportController implements Serializable {
 
             // Footer row
             addCell(table, "Total Count", pdfFooterFont, new java.awt.Color(230, 230, 230));
-            for (int m = 0; m < 12; m++) {
+            for (int m : otRoomMonthIndices) {
                 addCell(table, String.valueOf(otRoomMonthlyTotals.getOrDefault(m, 0L)),
                         pdfFooterFont, new java.awt.Color(230, 230, 230));
             }

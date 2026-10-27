@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.core.data.inward.TimedItemDurationUnit;
 import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.service.inward.TimedItemPricingService;
 import java.util.Date;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,6 +19,7 @@ class TimedItemDurationUnitCalculationTest {
     private static final long MINUTE_MS = 60L * 1000L;
 
     private final InwardBeanController inwardBean = new InwardBeanController();
+    private final TimedItemPricingService pricing = new TimedItemPricingService();
 
     private TimedItemFee fee(double duration, double overShoot, TimedItemDurationUnit unit) {
         TimedItemFee f = new TimedItemFee();
@@ -35,7 +37,7 @@ class TimedItemDurationUnitCalculationTest {
 
     private double count(TimedItemFee f, long elapsedMinutes) {
         Date[] s = span(elapsedMinutes);
-        return inwardBean.calCount(f, s[0], s[1]);
+        return pricing.calCount(f, s[0], s[1]);
     }
 
     // ---------- unit conversion on the entity ----------
@@ -152,7 +154,7 @@ class TimedItemDurationUnitCalculationTest {
         // can hand these methods a null fee. That has to behave like an
         // unconfigured fee (count 0), not break the page rendering the bill.
         Date[] s = span(150);
-        assertEquals(0.0, inwardBean.calCount(null, s[0], s[1]), 0.0001);
+        assertEquals(0.0, pricing.calCount(null, s[0], s[1]), 0.0001);
         assertEquals(0.0, inwardBean.calCountWithoutOverShoot(null, s[0], s[1]), 0.0001);
     }
 
@@ -162,7 +164,7 @@ class TimedItemDurationUnitCalculationTest {
         // by it yields Infinity, which casts to a huge block count — the failure mode
         // to guard against here is an overcharge, not a crash.
         Date[] s = span(150);
-        assertEquals(0.0, inwardBean.calCount(fee(0, 0, TimedItemDurationUnit.HOUR), s[0], s[1]), 0.0001);
+        assertEquals(0.0, pricing.calCount(fee(0, 0, TimedItemDurationUnit.HOUR), s[0], s[1]), 0.0001);
         assertEquals(0.0, inwardBean.calCountWithoutOverShoot(fee(0, 0, TimedItemDurationUnit.HOUR), s[0], s[1]), 0.0001);
         assertEquals(0.0, inwardBean.calCountWithoutOverShoot(fee(0, 0, null), s[0], s[1]), 0.0001);
     }

@@ -399,6 +399,8 @@ Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-ent
 
 If the sum of all column widths exceeds the table container, add `scrollable="true"` to enable horizontal scroll rather than letting columns collapse to zero.
 
+**Never key a `p:column`'s `rendered` on the table's row variable** (e.g. `rendered="#{row.total > 0}"` where `row` is the `var` of the enclosing `p:dataTable`). PrimeFaces evaluates a column's `rendered` when it encodes the header and again for each body row — so when it depends on row-scoped state, it can suppress the header and omit that cell from rows where the condition is false, which can misalign the table. This is easy to miss in review because the data often looks completely right at a glance; only the header (or an occasional row) is wrong. If a column needs to be conditionally shown, key it on table-level or user-level state only (privileges, config options, aggregate totals computed in the backing bean) — never on the per-row loop variable. To hide specific *rows* instead, filter the backing list or use a `rowStyleClass` pattern, not `p:column rendered`. (Found fixing hmislk/hmis#24219 — a table had rendered with no header since it was first written, because every column's `rendered` referenced the row var.)
+
 ### Badge Usage for Status Indicators
 - **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)
 - PrimeFaces badges provide better visibility and theming support
@@ -551,9 +553,9 @@ Do NOT use `dropdown="true"` on `p:autoComplete`. It renders a dropdown toggle b
     inputStyleClass="w-100 form-control"
     value="#{myController.institution}"
     completeMethod="#{institutionController.completeCreditCompany}"
-    var="cc"
-    itemLabel="#{cc.name}"
-    itemValue="#{cc}"
+    var="crCo"
+    itemLabel="#{crCo.name}"
+    itemValue="#{crCo}"
     forceSelection="true" />
 
 <!-- WRONG — both issues shown -->
@@ -565,6 +567,8 @@ Do NOT use `dropdown="true"` on `p:autoComplete`. It renders a dropdown toggle b
 ```
 
 This applies to all entity-backed autocompletes: `Institution`, `Department`, `Item`, `Patient`, etc.
+
+**Never use `cc` as an EL `var` name** (`f:selectItems`, `p:autoComplete`, `ui:repeat`, `p:dataTable`). `cc` is the JSF composite-component implicit object, so `#{cc.name}` renders blank or as `Institution[ id=... ]`.
 
 ---
 

@@ -9,6 +9,7 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.data.dto.batch.*;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
+import com.divudi.service.WebUserService;
 import com.divudi.service.pharmacy.PharmacyBatchApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 
+import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -54,6 +56,9 @@ public class PharmacyBatchApi {
 
     @Inject
     private PharmacyBatchApiService batchService;
+
+    @EJB
+    private WebUserService webUserService;
 
     // Support multiple date formats for expiryDate and other Date fields
     private static final JsonDeserializer<Date> DATE_DESERIALIZER = (JsonElement json, Type typeOfT, com.google.gson.JsonDeserializationContext context) -> {
@@ -171,6 +176,17 @@ public class PharmacyBatchApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            // Plain creation needs no privilege (unchanged); the stock-take options are
+            // checked per department, like the matching /pharmacy_adjustments endpoints.
+            if (Boolean.TRUE.equals(request.getAllowPastExpiry())
+                    && !webUserService.hasPrivilege("PharmacyAdjustmentExpiryDate", user, request.getDepartmentId())) {
+                return errorResponse("Not authorized: allowPastExpiry needs PharmacyAdjustmentExpiryDate for this department", 403);
+            }
+            if (request.getInitialQuantity() != null
+                    && !webUserService.hasPrivilege("PharmacyAdjustmentDepartmentStockQTY", user, request.getDepartmentId())) {
+                return errorResponse("Not authorized: initialQuantity needs PharmacyAdjustmentDepartmentStockQTY for this department", 403);
+            }
+
             // Process batch creation
             BatchCreateResponseDTO response = batchService.createBatch(request, user);
             return successResponse(response, gsonWithNulls);
@@ -236,6 +252,10 @@ public class PharmacyBatchApi {
 
         ApiKey apiKey = apiKeyController.findApiKey(key);
         if (apiKey == null) {
+            return null;
+        }
+
+        if (apiKey.isRetired()) {
             return null;
         }
 

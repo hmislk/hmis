@@ -14,7 +14,8 @@ public enum LoginPage {
     OPD_TOKEN_DISPLAY("OPD Token Display"),
     PHARMACY_TOKEN_DISPLAY("Pharmacy Token Display"),
     COURIER_LANDING_PAGE("Courier Landing Page"),
-    LABORATORY_DOCTER_DASHBOARD("Laboratory Docter Dashboard");
+    LABORATORY_DOCTER_DASHBOARD("Laboratory Docter Dashboard"),
+    COLLECTING_CENTRE_SELF_BILLING_HOME("Collecting Centre Self Billing Home");
 
     private final String label;
 

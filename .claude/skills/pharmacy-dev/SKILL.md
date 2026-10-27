@@ -21,6 +21,7 @@ For detailed pharmacy development, refer to these files:
 - [Quantity Decimals](../../developer_docs/pharmacy/quantity-decimal-validation-guide.md) - Decimal validation
 - [Transfer Disbursement](../../developer_docs/billing/PHARMACY_TRANSFER_DISBURSEMENT_DOCUMENTATION.md) - Transfer workflow
 - [Purchase Order Workflow](../../developer_docs/po-workflow-documentation.md) - PO workflow
+- [Pharmacy Token Workflow](../../../developer_docs/pharmacy/pharmacy-token-workflow.md) - Token issue → Retail Sale / Sale for Cashier → pay → call → complete; which bean backs each sale page
 - [Bulk Stock Verification Adjustment](../../developer_docs/pharmacy/bulk-stock-verification-adjustment-guide.md) - Reconciling a physical stock count spreadsheet against system stock at scale via the adjustment/batch-creation APIs
 
 ## Configuration Options
@@ -47,6 +48,9 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - Use StockDTO for autocomplete performance
 - Cache autocomplete results for converter
 - Defer expensive discount calculations
+
+### Store module
+- Hospitals issue and return Store items to BHTs through the pharmacy flow and controllers (e.g. `BhtIssueReturnController`). The `bean/store/*ReturnController` pages are still reachable (Theatre / Store → BHT Issue menus) but aren't used in practice. Don't add fixes or guards there unless an issue explicitly reports that path; fix the pharmacy controller and say so in the issue.
 
 ## GRN Report Testing
 

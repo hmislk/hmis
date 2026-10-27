@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -119,7 +120,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
      * Spelling mistake. Should be balance. This field is kept for
      * backward compatibility with existing MySQL databases. Use carefully.
      * Planned for correction in a future major version.
+     *
+     * Not updatable: a whole-entity save never changes the stored balance, so
+     * a page holding an out-of-date copy cannot undo a deposit or bill. Change
+     * it only through InstitutionFacade.updateBalance (#24614).
      */
+    @Column(updatable = false)
     double ballance;
 
     private double companyBalance;

@@ -32,7 +32,7 @@
                 </div>
                 <div >
                     <h:outputLabel value="Email : &nbsp;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.department.email}"/>                                                 
+                    <h:outputLabel value="#{not empty cc.attrs.bill.referenceBill.creater.department.email ? cc.attrs.bill.referenceBill.creater.department.email : cc.attrs.bill.referenceBill.creater.institution.email}"/>
                 </div>
             </div>
 

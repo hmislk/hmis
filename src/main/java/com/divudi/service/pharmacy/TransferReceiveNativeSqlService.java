@@ -499,19 +499,8 @@ public class TransferReceiveNativeSqlService {
                     .setParameter(2, issuedBillId)
                     .executeUpdate();
 
-            // Insert into the Bill.forwardReferenceBills join table
-            try {
-                String fwdTable = resolveTable("BILL_FORWARDREFERENCEBILLS");
-                em.createNativeQuery(
-                    "INSERT IGNORE INTO " + fwdTable
-                    + " (Bill_ID, forwardReferenceBills_ID) VALUES (?,?)")
-                    .setParameter(1, issuedBillId)
-                    .setParameter(2, billId)
-                    .executeUpdate();
-            } catch (Exception ex) {
-                LOGGER.log(Level.WARNING, "[TRNativeSettle] Could not insert forwardReferenceBill link: {0}",
-                        ex.getMessage());
-            }
+            // Bill.forwardReferenceBills is mappedBy backwardReferenceBill, so the
+            // backwardReferenceBill_ID set above is the link; there is no join table (#24807).
 
             // Step 9: Update fullyIssued if all items are now received
             updateFullyIssuedIfComplete(issuedBillId,
@@ -542,6 +531,16 @@ public class TransferReceiveNativeSqlService {
         printDto.setTotalWholesaleValue(totals[4]);
         printDto.setComments(bill.getComments());
 
+        printDto.setItems(buildPrintItems(itemsToProcess));
+        return printDto;
+    }
+
+    /**
+     * Converts receive rows into print rows (receiving qty, rate and value per
+     * line). Rows with no receiving qty are printed with zero, so callers that
+     * only want received lines must filter first.
+     */
+    public List<TransferReceiveItemPrintDto> buildPrintItems(List<TransferReceiveItemRowDto> itemsToProcess) {
         List<TransferReceiveItemPrintDto> printItems = new ArrayList<>();
         for (int i = 0; i < itemsToProcess.size(); i++) {
             TransferReceiveItemRowDto src = itemsToProcess.get(i);
@@ -551,7 +550,7 @@ public class TransferReceiveNativeSqlService {
             pi.setItemCode(src.getItemCode());
             pi.setBatchNo(src.getBatchNo());
             pi.setDateOfExpire(src.getDateOfExpire());
-            double packs = src.getReceivingQty().doubleValue();
+            double packs = src.getReceivingQty() != null ? src.getReceivingQty().doubleValue() : 0;
             double units = packs * src.getUnitsPerPack();
             pi.setQty(packs);
             pi.setQtyInUnits(units);
@@ -571,8 +570,7 @@ public class TransferReceiveNativeSqlService {
             pi.setLineGrossTotal(grossRate.multiply(BigDecimal.valueOf(packs)));
             printItems.add(pi);
         }
-        printDto.setItems(printItems);
-        return printDto;
+        return printItems;
     }
 
     /**

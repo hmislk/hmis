@@ -156,28 +156,28 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-                                <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(dto.cancellation or dto.refund) ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="No" />
                                     </f:facet>
                                     <h:outputLabel value="#{rowIndex+1}" />
                                 </p:column>
 
-                                <p:column width="20em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                <p:column width="20em" style="padding: 2px" styleClass="#{(dto.cancellation or dto.refund) ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Name" />
                                     </f:facet>
                                     <h:outputLabel value="#{dto.itemName}" />
                                 </p:column>
 
-                                <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                <p:column width="10em" style="padding: 2px" styleClass="#{(dto.cancellation or dto.refund) ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Department" />
                                     </f:facet>
                                     <h:outputLabel value="#{dto.departmentName}" />
                                 </p:column>
 
-                                <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                <p:column width="10em" style="padding: 2px" styleClass="#{(dto.cancellation or dto.refund) ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Date" />
                                     </f:facet>
@@ -186,7 +186,7 @@
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{dto.cancellation ? 'ui-messages-fatal' : ''}">
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(dto.cancellation or dto.refund) ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
