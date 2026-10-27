@@ -368,8 +368,16 @@
                                         gap: 12px;
                                     }
 
+                                    /* Let the logo box shrink to the header so an oversized configured logo scales instead of clipping */
+                                    .logo-icon {
+                                        flex-shrink: 1;
+                                        min-width: 0;
+                                        max-width: 100%;
+                                    }
+
                                     .logo-icon img {
                                         max-width: 100%;
+                                        height: auto;
                                         object-fit: contain;
                                     }
 
