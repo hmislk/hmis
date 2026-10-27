@@ -91,6 +91,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -4139,11 +4140,27 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     public void onEditItem(RowEditEvent event) {
         SessionInstance tmp = (SessionInstance) event.getObject();
         SessionInstance si = sessionInstanceFacade.find(tmp.getId());
-        if (si.getMaxNo() != tmp.getMaxNo()) {
-            tmp.setEditedAt(new Date());
-            tmp.setEditer(getSessionController().getLoggedUser());
+        if (si == null) {
+            JsfUtil.addErrorMessage("This session no longer exists. Please search again.");
+            return;
         }
-        sessionInstanceFacade.edit(tmp);
+        // Copy only the fields editable on this page, so booking counts updated elsewhere are not overwritten by the row held in the session
+        boolean changed = si.getMaxNo() != tmp.getMaxNo()
+                || si.getStartingNo() != tmp.getStartingNo()
+                || !Objects.equals(si.getStartingTime(), tmp.getStartingTime())
+                || si.isRetired() != tmp.isRetired();
+        if (!changed) {
+            return;
+        }
+        si.setMaxNo(tmp.getMaxNo());
+        si.setStartingNo(tmp.getStartingNo());
+        si.setStartingTime(tmp.getStartingTime());
+        si.setRetired(tmp.isRetired());
+        si.setEditedAt(new Date());
+        si.setEditer(getSessionController().getLoggedUser());
+        sessionInstanceFacade.edit(si);
+        tmp.setEditedAt(si.getEditedAt());
+        tmp.setEditer(si.getEditer());
     }
 
     public void listnerStaffListForRowSelect() {
