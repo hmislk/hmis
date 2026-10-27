@@ -17,7 +17,10 @@ infrastructure sheet held by server management.
   the table below are **not** deployed by any branch merge.
 - Changes reach a hospital branch only through a PR from a **`*-hotfix`**
   branch (see [Hotfix branches](../git/commit-conventions.md#hotfix-branches)).
-  Note: the `-hotfix` suffix is a team rule, **not yet enforced by CI** for `*-production` / `*-staging` targets (`check-branch` still only matches the retired `*-prod` names; tracked in #24453).
+  QA-tested `home-qa*` branches are also accepted; `rh-local-staging` accepts only
+  `development`. CI `check-branch` and `single-deploy-pr` flag other heads and a
+  second open PR as warnings (not required checks). The "Deploy Branches Rules"
+  ruleset blocks deleting, force-pushing and pushing directly to these branches.
 - The old `*-prod`, `*-stg`, `*-dev`, `*-prod-migrated` and `*-stg-migrated`
   branches and their pipelines were **retired on 2026-10-11**. Each was kept as
   a git tag `archive/2026-10-11/<old-branch>` in case it is ever needed.
