@@ -100,10 +100,12 @@ POST /api/config/setLongText/AI%20Chat%20-%20Claude%20Model/claude-sonnet-4-6
 Header: Config: YOUR_CONFIG_API_KEY
 ```
 
-> **Match the type the code reads.** This stores the option as `LONG_TEXT`.
-> A key that the code reads with `getShortTextValueByKey` ignores a `LONG_TEXT`
-> row and keeps returning its own empty value. For short-text keys use
-> `setShortText` (below). If the branch has no `setShortText`, use
+> **Don't use this for short-text keys.** A new key is stored as `LONG_TEXT`.
+> `getShortTextValueByKey` still returns that row's value, but the row keeps
+> the wrong type. The value is also HTML-sanitised (`&` becomes `&amp;`), and a
+> path segment can't carry `/`, so a URL can't be set this way. For short-text
+> keys use `setShortText` (below); it also retags an existing row to
+> `SHORT_TEXT`. If the branch has no `setShortText`, use
 > *Application Options → Import* with a CSV row of type `SHORT_TEXT` and
 > **Import Missing Only**.
 
