@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            /* maincss.css forces overflow: scroll on html, which always shows both scroll bars */
+            html {
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #{configOptionApplicationController.getColorValueByKey('Laboratory Report SMS Interface - Background Color ','linear-gradient(180deg,rgba(12, 207, 38, 0.63) 0%, rgba(0, 30, 130, 1) 100%)')};
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            /* Centre the card on the screen */
+            .invalid-link-page {
+                min-height: calc(100vh - 40px);
+                min-height: calc(100dvh - 40px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .invalid-link-container {
+                width: 100%;
+                max-width: 560px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                overflow: hidden;
+                border: 1px solid #e5e7eb;
+            }
+
+            .invalid-link-header {
+                display: flex;
+                justify-content: center;
+                padding: 24px;
+                border-bottom: 1px solid #f3f4f6;
+            }
+
+            .invalid-link-header img {
+                max-width: 100%;
+                object-fit: contain;
+            }
+
+            .invalid-link-strip {
+                height: 4px;
+                background: linear-gradient(90deg, #f59e0b 0%, #dc2626 100%);
+            }
+
+            .invalid-link-body {
+                padding: 40px 28px;
+                text-align: center;
+            }
+
+            .invalid-link-icon-circle {
+                width: 96px;
+                height: 96px;
+                margin: 0 auto 24px;
+                border-radius: 50%;
+                background: #fef2f2;
+                border: 6px solid #fee2e2;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #dc2626;
+                font-size: 38px;
+            }
+
+            .invalid-link-title {
+                font-size: 24px;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 12px;
+            }
+
+            .invalid-link-subtitle {
+                font-size: 15px;
+                color: #6b7280;
+                line-height: 1.7;
+                margin-bottom: 24px;
+            }
+
+            .invalid-link-hint {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                text-align: left;
+                background: #eff6ff;
+                border: 1px solid #dbeafe;
+                border-radius: 10px;
+                padding: 14px 16px;
+                font-size: 14px;
+                color: #1e3a8a;
+                line-height: 1.6;
+            }
+
+            .invalid-link-hint i {
+                margin-top: 3px;
+                color: #2563eb;
+            }
+
+            .invalid-link-footer {
+                padding: 16px;
+                text-align: center;
+                border-top: 1px solid #f3f4f6;
+                color: #6b7280;
+                font-size: 13px;
+            }
+
+            .invalid-link-footer-brand {
+                font-weight: 600;
+                color: #374151;
+            }
+
+            /* Mobile responsive */
+            @media (max-width: 768px) {
+                body {
+                    padding: 12px;
+                }
+
+                .invalid-link-page {
+                    min-height: calc(100vh - 24px);
+                    min-height: calc(100dvh - 24px);
+                }
+
+                .invalid-link-container {
+                    border-radius: 12px;
+                }
+
+                .invalid-link-header {
+                    padding: 16px;
+                }
+
+                .invalid-link-body {
+                    padding: 28px 16px;
+                }
+
+                .invalid-link-title {
+                    font-size: 20px;
+                }
+
+                .invalid-link-subtitle {
+                    font-size: 14px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                body {
+                    padding: 8px;
+                }
+
+                .invalid-link-page {
+                    min-height: calc(100vh - 16px);
+                    min-height: calc(100dvh - 16px);
+                }
+
+                .invalid-link-icon-circle {
+                    width: 80px;
+                    height: 80px;
+                    font-size: 30px;
+                }
+
+                .invalid-link-title {
+                    font-size: 18px;
+                }
+            }
+        </style>
+
+        <div class="invalid-link-page">
+            <div class="invalid-link-container">
+
+                <!-- Header -->
+                <div class="invalid-link-header">
+                    <img
+                        src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface Logo')}"
+                        alt="Hospital Logo"
+                        height="#{configOptionApplicationController.getIntegerValueByKey('Laboratory Report SMS Interface Logo Height', 80)}"
+                        width="#{configOptionApplicationController.getIntegerValueByKey('Laboratory Report SMS Interface Logo Width', 80)}"/>
+                </div>
+                <div class="invalid-link-strip"></div>
+
+                <!-- Body -->
+                <div class="invalid-link-body">
+                    <div class="invalid-link-icon-circle">
+                        <i class="fas fa-link-slash"></i>
+                    </div>
+                    <div class="invalid-link-title">Invalid Report Link</div>
+                    <div class="invalid-link-subtitle">
+                        We could not find a report for this link.<br/>
+                        Please make sure you opened the complete link from your SMS.
+                    </div>
+                    <div class="invalid-link-hint">
+                        <i class="fas fa-circle-info"></i>
+                        <span>If the problem continues, please contact the laboratory to receive a new report link.</span>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="invalid-link-footer">
+                    <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px;">
+                        <span>Powered by</span>
+                        <span class="invalid-link-footer-brand">
+                            <a href="https://carecode.lk/" target="_blank" rel="noopener noreferrer">CareCode (Pvt) Ltd.</a>
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: center; margin-top: 8px;">
+                        <img
+                            src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface -  Company Logo','https://i.ibb.co/V0bCPdZZ/fcare.png')}"
+                            alt="CareCode Logo"
+                            height="33"/>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </cc:implementation>
+</html>
