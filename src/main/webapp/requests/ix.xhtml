@@ -79,17 +79,20 @@
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
+                                    gap: 20px;
                                     margin-top: 8px;
                                     margin-bottom: 8px;
                                 }
 
                                 .logo-icon {
-                                    width: 48px;
-                                    height: 48px;
+                                    flex-shrink: 0;
                                     display: flex;
                                     align-items: center;
                                     justify-content: center;
-                                    margin-right: 12px;
+                                }
+
+                                .logo-text {
+                                    text-align: center;
                                 }
 
                                 .logo-icon::before {
@@ -101,7 +104,8 @@
                                     font-size: 24px;
                                     font-weight: bold;
                                     color: #1d4ed8;
-                                    line-height: 1;
+                                    line-height: 1.2;
+                                    margin: 0;
                                 }
 
                                 .logo-text p {
@@ -385,7 +389,6 @@
                                     }
 
                                     .logo-icon {
-                                        margin-right: 0;
                                         margin-bottom: 8px;
                                     }
 
@@ -434,7 +437,7 @@
                             <div class="container">
                                 <!-- Header -->
                                 <div class="header">
-                                    <div class="logo-section gap-4">
+                                    <div class="logo-section">
                                         <div class="logo-icon">
                                             <img 
                                                 src="#{configOptionApplicationController.getLongTextValueByKey('Laboratory Report SMS Interface Logo')}" 
