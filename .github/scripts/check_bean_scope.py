@@ -17,7 +17,8 @@ to its fully qualified type through the file's imports. New classes are not
 checked; removed classes are not checked. Moved files are matched by path
 rename or, when Git reports a heavily edited move as delete + add, by file
 name. Changes to the guard itself are also reported, so the check cannot be
-switched off silently.
+switched off silently, except when the base branch has no guard yet (a sync
+PR bringing the guard to that branch for the first time).
 
 Usage:  check_bean_scope.py <base-ref> [--head <ref>] [--allow]
   --allow  report findings as warnings and exit 0 (PR labelled
@@ -125,6 +126,10 @@ def main(argv):
     base = args[0]
 
     pairs, guard = changed(base, head)
+    if guard and not show(base, GUARD_FILES[0]):
+        # First landing: the base has no guard to relax, so adding it is not a change.
+        print("Bean scope guard: base has no guard yet; this PR adds it.")
+        guard = []
     findings = []
     for old, new in pairs:
         before = class_scopes(show(base, old))
