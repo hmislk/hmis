@@ -56,7 +56,12 @@ git fetch origin
 gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,isCrossRepository,title
 ```
 
-- **An open PR exists:** reuse it. Check out its head branch
+- **An open PR exists:** reuse it, even when another developer opened it.
+  Another author is not a reason to open a parallel PR: add your fix to their
+  branch and tell them. Only stop and ask if the open PR is not ready to take
+  more fixes (e.g. it is mid-review or scheduled to merge at a fixed time).
+  CI enforces this: `single-deploy-pr` fails every PR except the oldest open
+  one per deploy branch. Check out its head branch
   (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
   the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
   `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
