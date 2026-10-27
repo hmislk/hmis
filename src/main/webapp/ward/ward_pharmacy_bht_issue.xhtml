@@ -82,26 +82,34 @@
                 </f:facet>
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <h:outputLabel value="Porter / Staff Carrying Medicines to Ward:" for="acPorter" />
-                        <p:autoComplete id="acPorter"
-                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                        value="#{pharmacySaleBhtController.preBill.toStaff}"
-                                        maxResults="10"
-                                        placeholder="Search staff by name">
+                    <div class="col-md-6 my-2">
+                        <div class="d-flex gap-3">
+                            <h:outputLabel value="Porter / Staff Carrying Medicines to Ward:" for="acPorter" class="mt-2"/>
+                            <p:autoComplete 
+                                id="acPorter"
+                                completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                forceSelection="true"
+                                var="w" 
+                                inputStyleClass="form-control"
+                                itemLabel="#{w.person.name}" 
+                                itemValue="#{w}"
+                                value="#{pharmacySaleBhtController.preBill.toStaff}"
+                                maxResults="10"
+                                style="width: 400px;"
+                                placeholder="Search staff by name">
 
-                            <p:column headerText="Name">
-                                <h:outputText value="#{w.person.nameWithTitle}" />
-                            </p:column>
-                            <p:column headerText="Speciality">
-                                <h:outputText value="#{w.speciality.name}" />
-                            </p:column>
-                            <p:column headerText="Staff Code">
-                                <h:outputText value="#{w.staffCode}" />
-                            </p:column>
-                        </p:autoComplete>
+                                <p:column headerText="Name" style="padding: 6px;">
+                                    <h:outputText value="#{w.person.nameWithTitle}" />
+                                </p:column>
+                                <p:column headerText="Staff Code" style="padding: 6px;">
+                                    <h:outputText value="#{w.staffCode}" />
+                                </p:column>
+                                <p:column headerText="Speciality" style="padding: 6px;">
+                                    <h:outputText value="#{w.speciality.name}" />
+                                </p:column>
+
+                            </p:autoComplete>
+                        </div>              
                     </div>
                 </div>
 
@@ -339,8 +347,12 @@
 
                 <p:panel header="Issuing Items" class="mt-2">
                     <style>
-                        .auto-substituted-row { background-color: #FFF3CD !important; }
-                        .auto-substituted-row td { background-color: #FFF3CD !important; }
+                        .auto-substituted-row {
+                            background-color: #FFF3CD !important;
+                        }
+                        .auto-substituted-row td {
+                            background-color: #FFF3CD !important;
+                        }
                     </style>
                     <!-- ANY AJAX call originating from a component inside this editable p:dataTable's
                          row scope — the table's own rowEdit/rowEditCancel behaviors, a p:ajax nested
