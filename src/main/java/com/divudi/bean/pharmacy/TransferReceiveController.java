@@ -54,6 +54,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -114,9 +117,11 @@ public class TransferReceiveController implements Serializable {
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
-    // Re-entrancy guard: blocks a second settle() (e.g. rapid double-click on the
-    // non-AJAX Receive button) from processing the same transfer twice.
-    private boolean settling;
+    // Re-entrancy guard: blocks a second settle()/settleApprove() (e.g. rapid
+    // double-click on the non-AJAX Receive button) from processing the same
+    // transfer twice. Atomic: two concurrent requests of one session must not
+    // both pass the check (#24788).
+    private final AtomicBoolean settling = new AtomicBoolean(false);
 
     public static class ConfigOptionInfo {
 
@@ -419,43 +424,63 @@ public class TransferReceiveController implements Serializable {
             return false;
         }
         
-        // Check each receiving item against its reference issued item
+        // Sum the quantity being received per referenced issue line, so several
+        // lines pointing at one issue line cannot each pass on their own (#24788)
+        Map<Long, Double> receivingQtyByIssueLine = new HashMap<>();
+        Map<Long, BillItem> issueLineById = new HashMap<>();
         for (BillItem receivingItem : receivingItems) {
-            if (receivingItem.getReferanceBillItem() == null) {
+            if (receivingItem.getReferanceBillItem() == null || receivingItem.getReferanceBillItem().getId() == null) {
                 continue; // Skip items without reference
             }
-            
+
             BillItem issuedItem = receivingItem.getReferanceBillItem();
-            
-            // Get current remaining quantity (excluding this receive bill)
-            double currentRemainingQty = calculateRemainingQtyWithFreshData(issuedItem);
-            
-            // Get the quantity being received for this specific item
+
             double quantityBeingReceived = 0.0;
             if (receivingItem.getPharmaceuticalBillItem() != null) {
                 quantityBeingReceived = Math.abs(receivingItem.getPharmaceuticalBillItem().getQty());
             }
-            
-            // Check if this receive would cause over-receiving
-            if (quantityBeingReceived > currentRemainingQty + 0.001) { // Add tolerance
+            receivingQtyByIssueLine.merge(issuedItem.getId(), quantityBeingReceived, Double::sum);
+            issueLineById.put(issuedItem.getId(), issuedItem);
+        }
+
+        for (Map.Entry<Long, Double> e : receivingQtyByIssueLine.entrySet()) {
+            // Get current remaining quantity (excluding this receive bill)
+            double currentRemainingQty = calculateRemainingQtyWithFreshData(issueLineById.get(e.getKey()));
+            if (e.getValue() > currentRemainingQty + 0.001) { // Add tolerance
                 return true; // Would cause over-receiving
             }
         }
-        
+
         return false; // All quantities are within limits
+    }
+
+    /**
+     * A receive bill holds one line per issued line. Two lines referencing the
+     * same issued line would each move the porter's stock (#24788).
+     */
+    private boolean hasDuplicateIssueLines() {
+        Set<Long> seen = new HashSet<>();
+        for (BillItem bi : getReceivedBill().getBillItems()) {
+            if (bi.getReferanceBillItem() == null || bi.getReferanceBillItem().getId() == null) {
+                continue;
+            }
+            if (!seen.add(bi.getReferanceBillItem().getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void settle() {
         // Re-entrancy guard: a second near-simultaneous submit (rapid double-click
         // on the non-AJAX Receive button) is ignored until the first completes.
-        if (settling) {
+        if (!settling.compareAndSet(false, true)) {
             return;
         }
-        settling = true;
         try {
             doSettle();
         } finally {
-            settling = false;
+            settling.set(false);
         }
     }
 
@@ -539,7 +564,19 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
         }
-        
+
+        // A receive bill that already has an id was settled by an earlier request
+        // (#24788). Settling it again would move the porter's stock a second time.
+        if (getReceivedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This receive has already been saved. Please go back to the list.");
+            return;
+        }
+
+        if (hasDuplicateIssueLines()) {
+            JsfUtil.addErrorMessage("Cannot receive - the same issued item appears more than once. Please go back to the list and open the receive again.");
+            return;
+        }
+
         // Additional validation: Check if trying to over-receive
         if (isAlreadyReceived(getIssuedBill())) {
             JsfUtil.addErrorMessage("Cannot receive - already fully received!");
@@ -945,11 +982,33 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settleApprove() {
+        if (!settling.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            doSettleApprove();
+        } finally {
+            settling.set(false);
+        }
+    }
+
+    private void doSettleApprove() {
         if (getReceivedBill().getId() == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
         }
-        
+
+        // Already approved by an earlier request (#24788)
+        if (getReceivedBill().getApproveAt() != null) {
+            JsfUtil.addErrorMessage("This receive has already been approved. Please go back to the list.");
+            return;
+        }
+
+        if (hasDuplicateIssueLines()) {
+            JsfUtil.addErrorMessage("Cannot receive - the same issued item appears more than once. Please go back to the list and open the receive again.");
+            return;
+        }
+
         // Additional validation: Check if trying to over-receive
         if (isAlreadyReceived(getIssuedBill())) {
             JsfUtil.addErrorMessage("Cannot receive - already fully received!");
@@ -1661,7 +1720,7 @@ public class TransferReceiveController implements Serializable {
     }
 
     public boolean isSettling() {
-        return settling;
+        return settling.get();
     }
 
     @Deprecated
