@@ -4137,13 +4137,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     public void onEditItem(RowEditEvent event) {
-        ServiceSession tmp = (ServiceSession) event.getObject();
-        ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
-        if (ss.getMaxNo() != tmp.getMaxNo()) {
+        SessionInstance tmp = (SessionInstance) event.getObject();
+        SessionInstance si = sessionInstanceFacade.find(tmp.getId());
+        if (si.getMaxNo() != tmp.getMaxNo()) {
             tmp.setEditedAt(new Date());
             tmp.setEditer(getSessionController().getLoggedUser());
         }
-        getServiceSessionFacade().edit(tmp);
+        sessionInstanceFacade.edit(tmp);
     }
 
     public void listnerStaffListForRowSelect() {
