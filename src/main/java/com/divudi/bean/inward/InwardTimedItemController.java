@@ -271,6 +271,11 @@ public class InwardTimedItemController implements Serializable {
         }
 
         PatientItem newPatientItem = getTimedEncounterComponent().getBillFee().getPatientItem();
+        // Without a start there is nothing to measure from, so the service would be charged 0.00.
+        if (newPatientItem.getFromTime() == null) {
+            JsfUtil.addErrorMessage("Enter the Start Time");
+            return;
+        }
         if (newPatientItem.getToTime() != null && newPatientItem.getFromTime() != null) {
             if (newPatientItem.getToTime().before(newPatientItem.getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
