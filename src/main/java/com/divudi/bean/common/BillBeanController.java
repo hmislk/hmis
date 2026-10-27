@@ -2488,6 +2488,36 @@ public class BillBeanController implements Serializable {
         return bill;
     }
 
+    /**
+     * Counts the still-running ({@code toTime IS NULL}) timed services billed
+     * on a surgery's TimedService bill.
+     * <p>
+     * Joined through {@code EncounterComponent} rather than
+     * {@code PatientItem.billItem} - the surgery Add flow
+     * ({@code InwardTimedItemController.saveTimeServiceBill()}) links a timed
+     * service's BillItem onto its {@code EncounterComponent}, never onto the
+     * {@code PatientItem} itself, so {@code PatientItem.billItem} is always
+     * null here.
+     * <p>
+     * Filters on {@code patientItem.retired} in addition to {@code ec.retired}
+     * - {@code SurgeryBillController.removeTimeService(PatientItem)} only
+     * retires the {@code PatientItem}, not its {@code EncounterComponent}, so a
+     * removed-but-never-stopped service would otherwise still count as running.
+     */
+    public long countRunningTimedServices(Bill timedServiceBill) {
+        if (timedServiceBill == null || timedServiceBill.getId() == null) {
+            return 0;
+        }
+        String jpql = "SELECT COUNT(ec) FROM EncounterComponent ec"
+                + " WHERE ec.retired = false"
+                + " AND ec.billItem.bill = :bill"
+                + " AND ec.billFee.patientItem.retired = false"
+                + " AND ec.billFee.patientItem.toTime IS NULL";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", timedServiceBill);
+        return getEncounterComponentFacade().findLongByJpql(jpql, hm);
+    }
+
     public Bill fetchBill(String billId) {
         // Assuming that the String billId needs to be converted to Long
         // This conversion may need additional validation or error handling if the String is not a valid Long
@@ -2545,6 +2575,39 @@ public class BillBeanController implements Serializable {
     public Bill fetchBillBypassingCache(Long billId) {
         Bill bill = getBillFacade().findWithoutCache(billId);
         return bill;
+    }
+
+    /**
+     * Same as {@link #fetchBillWithItemsAndFees(Long)} but bypasses the JPA L2
+     * cache for both the bill and its items. Use this to reload a bill just
+     * settled through a native-SQL settle path (e.g.
+     * InpatientDirectIssueNativeSqlService) — a cache-aware JPQL read can keep
+     * returning an already-cached Bill instance whose scalar totals and
+     * already-resolved lazy billItems collection were built before the native
+     * INSERTs/UPDATEs existed, even after the shared cache has been evicted
+     * (issue #24030).
+     */
+    public Bill fetchBillWithItemsAndFeesBypassingCache(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        Bill fb = fetchBillBypassingCache(billId);
+        if (fb == null) {
+            return null;
+        }
+        List<BillItem> billItems = fillBillItemsBypassingCache(fb);
+        if (billItems == null) {
+            return fb;
+        }
+        fb.setBillItems(billItems);
+        for (BillItem fbi : billItems) {
+            List<BillFee> fbfs = findSavedBillFeefromBillItem(fbi);
+            if (fbfs != null) {
+                fbi.setBillFees(fbfs);
+                fb.getBillFees().addAll(fbfs);
+            }
+        }
+        return fb;
     }
 
     public double getTotalByBillFee(BillItem billItem) {
@@ -3760,6 +3823,17 @@ public class BillBeanController implements Serializable {
         m.put("ret", false);
         m.put("b", b);
         return billItemFacade.findByJpql(j, m);
+    }
+
+    public List<BillItem> fillBillItemsBypassingCache(Bill b) {
+        String j = "Select bi "
+                + " from BillItem bi "
+                + " where bi.bill=:b "
+                + " and bi.retired=:ret ";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("b", b);
+        return billItemFacade.findByJpqlWithoutCache(j, m);
     }
 
     public List<BillItemDTO> fillBillItemDTOs(Long billId) {

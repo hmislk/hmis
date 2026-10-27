@@ -551,6 +551,8 @@ public class ServiceController implements Serializable {
             return;
         }
 
+        itemController.warnIfItemNameDuplicated(getCurrent());
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Update Successfully");

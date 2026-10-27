@@ -2,11 +2,13 @@
 name: hotfix-deploy
 description: >
   Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-prod, ruhunu-prod, southernlanka-prod, etc.). Covers branch creation,
+  (coop-production, rh-production, southernlanka-staging, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
-  through the normal development → QA → prod pipeline.
-disable-model-invocation: true
+  through the normal development → QA → prod pipeline. The agent may invoke
+  this on its own judgment to prepare a hotfix (branch, fix, commit, push,
+  PR) — merging the PR, which is what actually triggers CI/CD deployment,
+  remains a manual human action.
 allowed-tools: Bash, Read, Grep, Edit, Write
 argument-hint: "<prod-branch> <description>"
 ---
@@ -17,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch (e.g., `coop-prod`, `ruhunu-prod`, `southernlanka-prod`)
+- `$0` — Target production branch (e.g., `coop-production`, `rh-production`, `southernlanka-staging`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -92,6 +94,11 @@ gh pr create \
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
 
+The body is public: state the defect, the fix and the deploy note, and keep the
+affected hospital's record counts, production bill numbers, schema names and
+data-fix steps out of it. See
+[What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
+
 ## Step 8 — Restore Stashed Work
 
 ```bash
@@ -110,9 +117,13 @@ git branch -d $1-hotfix
 
 | Hospital/Environment | Branch         |
 |----------------------|----------------|
-| COOP hospitals       | `coop-prod`    |
-| Ruhunu hospital      | `ruhunu-prod`  |
-| Southern Lanka       | `southernlanka-prod` |
+| COOP pharmacy        | `coop-production` |
+| COOP inward          | `coop-staging`    |
+| Ruhunu hospital      | `rh-production`   |
+| Southern Lanka (live)| `southernlanka-staging` |
+
+Full map: `developer_docs/deployment/ci-cd-pipeline-overview.md`. CI's `-hotfix`
+head check does not yet run for these targets (#24453); follow the naming rule anyway.
 
 ## Reference
 

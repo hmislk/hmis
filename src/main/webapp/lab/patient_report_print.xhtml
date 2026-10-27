@@ -141,6 +141,7 @@
 
                                 </style>
 
+                                <h:outputScript library="js" name="lab-report-pdf.js" target="body"/>
                                 <script>
                                     function downloadPdf() {
                                         console.log("Downloading PDF...");
@@ -162,7 +163,7 @@
                                         };
 
                                         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-                                            pdf.deletePage(2); // Remove the second page if it exists
+                                            return labReportTrimPdf(pdf, element); // Remove the second page if it exists
                                         }).save().then(() => {
                                             element.classList.add('print-only');
                                         });

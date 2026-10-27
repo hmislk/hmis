@@ -160,6 +160,11 @@
                                         <h:outputText value="#{row.bill.total}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.grossTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
 
                                     <p:column
@@ -169,6 +174,11 @@
                                         <h:outputText value="#{row.bill.tax}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{searchController.bundle.tax}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
                                     </p:column>
 
                                     <p:column

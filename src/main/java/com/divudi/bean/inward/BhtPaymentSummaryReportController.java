@@ -11,10 +11,15 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.UserSettingsController;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import org.primefaces.component.export.PDFOptions;
+import org.primefaces.component.export.PDFOrientationType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -24,19 +29,19 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
 /**
- * Controller for BHT Deposit and Credit Settlement Summary Report.
- * Issue #19345
+ * Controller for BHT Deposit and Credit Settlement Summary Report. Issue #19345
  *
  * One row per PatientEncounter (BHT). Money-in is shown as three separate
- * PaymentMethod-broken-down column groups (issue #23262):
- * "Make a Deposit" (BillTypeAtomic.INWARD_DEPOSIT),
- * "Make a Payment" (BillTypeAtomic.INWARD_PAYMENT) and
- * "Post Final Payment" (BillType.PostFinalBillInwardPayment),
- * plus a Grand Total column and a combined credit-settlement column.
+ * PaymentMethod-broken-down column groups (issue #23262): "Make a Deposit"
+ * (BillTypeAtomic.INWARD_DEPOSIT), "Make a Payment"
+ * (BillTypeAtomic.INWARD_PAYMENT) and "Post Final Payment"
+ * (BillType.PostFinalBillInwardPayment), plus a Grand Total column and a
+ * combined credit-settlement column.
  */
 @Named
 @SessionScoped
@@ -51,6 +56,10 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private PaymentFacade paymentFacade;
     @EJB
     private BillFacade billFacade;
+    @Inject
+    private UserSettingsController userSettingsController;
+    @Inject
+    private SessionController sessionController;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -58,7 +67,9 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
 
-    /** "admissionDate" or "dischargeDate" */
+    /**
+     * "admissionDate" or "dischargeDate"
+     */
     private String dateBasis = "dischargeDate";
 
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
@@ -72,6 +83,17 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // Report output
     // -------------------------------------------------------------------------
     private List<BhtPaymentSummaryDTO> reportRows;
+
+    /**
+     * Snapshot of fromDate/toDate/dateBasis as of the last generateReport()
+     * call, so the PDF export subtitle (built on a later request, after the
+     * From/To/Date Basis inputs on the same form may have been edited again
+     * without re-clicking Generate) always describes reportRows and not
+     * whatever is currently sitting in the filter fields (issue #23446).
+     */
+    private Date reportFromDate;
+    private Date reportToDate;
+    private String reportDateBasis;
 
     private double grandTotalDeposits;
     private double grandTotalDepositCash;
@@ -97,8 +119,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     // Main generate method
     // -------------------------------------------------------------------------
-
     public void generateReport() {
+        reportFromDate = fromDate;
+        reportToDate = toDate;
+        reportDateBasis = dateBasis;
+
         reportRows = new ArrayList<>();
         grandTotalDeposits = 0;
         grandTotalDepositCash = 0;
@@ -156,7 +181,6 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     // Query helpers
     // -------------------------------------------------------------------------
-
     private List<PatientEncounter> fetchEncounters() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder(
@@ -300,8 +324,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch all Payment records linked to INWARD_DEPOSIT ("Make a Deposit") bills
-     * for this encounter. Deposit bills link to the encounter via
+     * Fetch all Payment records linked to INWARD_DEPOSIT ("Make a Deposit")
+     * bills for this encounter. Deposit bills link to the encounter via
      * bill.patientEncounter directly.
      *
      * Matches BOTH {@code BillTypeAtomic.INWARD_DEPOSIT} and
@@ -312,8 +336,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
      * CANCELLATION billTypeAtomic, rather than flagging the original row.
      * Filtering to a single billTypeAtomic and excluding cancelled bills would
      * make a cancelled deposit vanish from this report with no trace it ever
-     * happened. Including both rows and summing each with its natural sign
-     * (no {@code Math.abs()} in the caller) nets out correctly. This mirrors
+     * happened. Including both rows and summing each with its natural sign (no
+     * {@code Math.abs()} in the caller) nets out correctly. This mirrors
      * {@link #fetchPostFinalPayments}.
      */
     private List<Payment> fetchDepositPayments(PatientEncounter enc) {
@@ -331,10 +355,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
-     * Fetch all Payment records linked to INWARD_PAYMENT ("Make a Payment") bills
-     * for this encounter — payments toward the bill made any time during the
-     * stay, kept separate from deposits (INWARD_DEPOSIT) and from post-final-bill
-     * payments (BillType.PostFinalBillInwardPayment). Issue #23262.
+     * Fetch all Payment records linked to INWARD_PAYMENT ("Make a Payment")
+     * bills for this encounter — payments toward the bill made any time during
+     * the stay, kept separate from deposits (INWARD_DEPOSIT) and from
+     * post-final-bill payments (BillType.PostFinalBillInwardPayment). Issue
+     * #23262.
      *
      * Matches BOTH {@code BillTypeAtomic.INWARD_PAYMENT} and
      * {@code BillTypeAtomic.INWARD_PAYMENT_CANCELLATION}, and deliberately does
@@ -344,8 +369,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
      * CANCELLATION billTypeAtomic, rather than flagging the original row.
      * Filtering to a single billTypeAtomic and excluding cancelled bills would
      * make a cancelled payment vanish from this report with no trace it ever
-     * happened. Including both rows and summing each with its natural sign
-     * (no {@code Math.abs()} in the caller) nets out correctly. This mirrors
+     * happened. Including both rows and summing each with its natural sign (no
+     * {@code Math.abs()} in the caller) nets out correctly. This mirrors
      * {@link #fetchPostFinalPayments}.
      */
     private List<Payment> fetchPayments(PatientEncounter enc) {
@@ -365,11 +390,11 @@ public class BhtPaymentSummaryReportController implements Serializable {
     /**
      * Fetch post-final-bill payments for this encounter.
      *
-     * Deliberately does NOT filter on {@code bill.cancelled=false}: cancellation
-     * and refund of a post-final-bill payment are represented as a separate
-     * negative-amount row of the same bill type, rather than by flagging the
-     * original row, so summing every row's paid value with its natural sign
-     * (no {@code Math.abs()}) nets out correctly. This mirrors
+     * Deliberately does NOT filter on {@code bill.cancelled=false}:
+     * cancellation and refund of a post-final-bill payment are represented as a
+     * separate negative-amount row of the same bill type, rather than by
+     * flagging the original row, so summing every row's paid value with its
+     * natural sign (no {@code Math.abs()}) nets out correctly. This mirrors
      * {@link PostFinalBillInwardPaymentController#getPostFinalPaymentTotal},
      * which uses the same unfiltered, sign-preserving sum pattern.
      */
@@ -387,7 +412,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
 
     /**
      * Fetch credit company bills (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY)
-     * that reference this encounter directly, excluding cancelled/refunded bills.
+     * that reference this encounter directly, excluding cancelled/refunded
+     * bills.
      */
     private List<Bill> fetchCreditCompanyBills(PatientEncounter enc) {
         String jpql = "select b from Bill b"
@@ -408,7 +434,6 @@ public class BhtPaymentSummaryReportController implements Serializable {
     // -------------------------------------------------------------------------
     // UI helpers
     // -------------------------------------------------------------------------
-
     private static Date startOfCurrentMonth() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -419,9 +444,19 @@ public class BhtPaymentSummaryReportController implements Serializable {
         return cal.getTime();
     }
 
+    private static Date endOfCurrentMonth() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+
     public void makeNull() {
         fromDate = startOfCurrentMonth();
-        toDate = new Date();
+        toDate = endOfCurrentMonth();
         dateBasis = "dischargeDate";
         admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType = null;
@@ -450,78 +485,247 @@ public class BhtPaymentSummaryReportController implements Serializable {
         grandTotalFinalBills = 0;
         grandTotalBalance = 0;
         grandTotalAllMoneyIn = 0;
+
+        // Every Configure Columns checkbox must show checked whenever the
+        // user navigates in fresh, regardless of any previously saved
+        // per-user preference from an earlier visit.
+        userSettingsController.resetInwardBhtPaymentDetailColumnsVisible();
+    }
+
+    // -------------------------------------------------------------------------
+    // PDF export pre/post processing (issue #23446)
+    // -------------------------------------------------------------------------
+    /**
+     * {@code p:dataExporter} preProcessor for the "BHT Deposit and Credit
+     * Settlement Detail" pdf export - this report has up to ~27 columns.
+     * Landscape A4 alone still squeezed every column so badly that
+     * PrimeFaces' PDF table wrapped individual numbers one or two digits per
+     * line (e.g. "85,190.68" broken across three lines). Landscape A3 gives
+     * roughly double the usable width of A4, and is paired with a small,
+     * fixed cell/header font (see {@link #getPdfExportOptions()}) so values
+     * fit on one line instead of wrapping (issue #23446).
+     *
+     * Note: the PrimeFaces PDF exporter (14.x) uses the OpenPDF
+     * ({@code com.lowagie.text}) library. Fully-qualified names are used
+     * throughout in case another export method on this controller is ever
+     * added against iText5 ({@code com.itextpdf.text}), which shares class
+     * names with OpenPDF.
+     */
+    public void preProcessPdfBhtPaymentDetail(Object document) throws com.lowagie.text.DocumentException {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        pdf.setPageSize(com.lowagie.text.PageSize.A3.rotate());
+        pdf.setMargins(15f, 15f, 15f, 15f);
+        pdf.open();
+
+        com.lowagie.text.Font titleFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA_BOLD, 14);
+        com.lowagie.text.Paragraph titlePara = new com.lowagie.text.Paragraph("BHT Deposit and Credit Settlement Detail", titleFont);
+        titlePara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        titlePara.setSpacingAfter(4f);
+        pdf.add(titlePara);
+
+        com.lowagie.text.Font subFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA, 9);
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getShortDateFormat());
+        String range = "From: " + (reportFromDate != null ? sdf.format(reportFromDate) : "-")
+                + "   To: " + (reportToDate != null ? sdf.format(reportToDate) : "-")
+                + "   Date Basis: " + ("admissionDate".equals(reportDateBasis) ? "Admission Date" : "Discharge Date");
+        com.lowagie.text.Paragraph subPara = new com.lowagie.text.Paragraph(range, subFont);
+        subPara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        subPara.setSpacingAfter(10f);
+        pdf.add(subPara);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "BHT Deposit and Credit
+     * Settlement Detail" pdf export - appends a Printed By/At footer line
+     * after the table, before the document is closed (issue #23446).
+     */
+    public void postProcessPdfBhtPaymentDetail(Object document) throws com.lowagie.text.DocumentException {
+        com.lowagie.text.Document pdf = (com.lowagie.text.Document) document;
+        com.lowagie.text.Font footerFont = com.lowagie.text.FontFactory.getFont(com.lowagie.text.FontFactory.HELVETICA, 9);
+        String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+        String printedTime = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(new Date());
+        com.lowagie.text.Paragraph footerPara = new com.lowagie.text.Paragraph("Printed by: " + userName + "     Printed at: " + printedTime, footerFont);
+        footerPara.setSpacingBefore(10f);
+        pdf.add(footerPara);
+    }
+
+    /**
+     * PrimeFaces PDF table options for the "BHT Deposit and Credit Settlement
+     * Detail" export. The default cell/header font is too large for a
+     * ~27-column table even in landscape A3, forcing every value onto
+     * multiple wrapped lines; shrinking it lets each cell fit on one line
+     * (issue #23446).
+     */
+    public PDFOptions getPdfExportOptions() {
+        PDFOptions options = new PDFOptions();
+        options.setOrientation(PDFOrientationType.LANDSCAPE);
+        options.setCellFontSize("6");
+        options.setFacetFontSize("7");
+        return options;
     }
 
     // -------------------------------------------------------------------------
     // Getters / setters
     // -------------------------------------------------------------------------
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = startOfCurrentMonth();
+        }
+        return fromDate;
+    }
 
-    public Date getFromDate() { return fromDate; }
-    public void setFromDate(Date fromDate) { this.fromDate = fromDate; }
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
 
-    public Date getToDate() { return toDate; }
-    public void setToDate(Date toDate) { this.toDate = toDate; }
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = endOfCurrentMonth();
+        }
+        return toDate;
+    }
 
-    public String getDateBasis() { return dateBasis; }
-    public void setDateBasis(String dateBasis) { this.dateBasis = dateBasis; }
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
 
-    public AdmissionStatus getAdmissionStatus() { return admissionStatus; }
-    public void setAdmissionStatus(AdmissionStatus admissionStatus) { this.admissionStatus = admissionStatus; }
+    public String getDateBasis() {
+        return dateBasis;
+    }
 
-    public AdmissionType getAdmissionType() { return admissionType; }
-    public void setAdmissionType(AdmissionType admissionType) { this.admissionType = admissionType; }
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
 
-    public PaymentMethod getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+    public AdmissionStatus getAdmissionStatus() {
+        return admissionStatus;
+    }
 
-    public Institution getInstitution() { return institution; }
-    public void setInstitution(Institution institution) { this.institution = institution; }
+    public void setAdmissionStatus(AdmissionStatus admissionStatus) {
+        this.admissionStatus = admissionStatus;
+    }
 
-    public Institution getSite() { return site; }
-    public void setSite(Institution site) { this.site = site; }
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
 
-    public Department getDepartment() { return department; }
-    public void setDepartment(Department department) { this.department = department; }
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
 
-    public List<BhtPaymentSummaryDTO> getReportRows() { return reportRows; }
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
 
-    public double getGrandTotalDeposits() { return grandTotalDeposits; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 
-    public double getGrandTotalDepositCash() { return grandTotalDepositCash; }
+    public Institution getInstitution() {
+        return institution;
+    }
 
-    public double getGrandTotalDepositCard() { return grandTotalDepositCard; }
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
 
-    public double getGrandTotalDepositOther() { return grandTotalDepositOther; }
+    public Institution getSite() {
+        return site;
+    }
 
-    public double getGrandTotalPayments() { return grandTotalPayments; }
+    public void setSite(Institution site) {
+        this.site = site;
+    }
 
-    public double getGrandTotalPaymentCash() { return grandTotalPaymentCash; }
+    public Department getDepartment() {
+        return department;
+    }
 
-    public double getGrandTotalPaymentCard() { return grandTotalPaymentCard; }
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
 
-    public double getGrandTotalPaymentCredit() { return grandTotalPaymentCredit; }
+    public List<BhtPaymentSummaryDTO> getReportRows() {
+        return reportRows;
+    }
 
-    public double getGrandTotalPaymentOther() { return grandTotalPaymentOther; }
+    public double getGrandTotalDeposits() {
+        return grandTotalDeposits;
+    }
 
-    public double getGrandTotalPostFinalPayments() { return grandTotalPostFinalPayments; }
+    public double getGrandTotalDepositCash() {
+        return grandTotalDepositCash;
+    }
 
-    public double getGrandTotalPostFinalCash() { return grandTotalPostFinalCash; }
+    public double getGrandTotalDepositCard() {
+        return grandTotalDepositCard;
+    }
 
-    public double getGrandTotalPostFinalCard() { return grandTotalPostFinalCard; }
+    public double getGrandTotalDepositOther() {
+        return grandTotalDepositOther;
+    }
 
-    public double getGrandTotalPostFinalCredit() { return grandTotalPostFinalCredit; }
+    public double getGrandTotalPayments() {
+        return grandTotalPayments;
+    }
 
-    public double getGrandTotalPostFinalOther() { return grandTotalPostFinalOther; }
+    public double getGrandTotalPaymentCash() {
+        return grandTotalPaymentCash;
+    }
 
-    public double getGrandTotalCreditBilled() { return grandTotalCreditBilled; }
+    public double getGrandTotalPaymentCard() {
+        return grandTotalPaymentCard;
+    }
 
-    public double getGrandTotalCreditSettlement() { return grandTotalCreditSettlement; }
+    public double getGrandTotalPaymentCredit() {
+        return grandTotalPaymentCredit;
+    }
 
-    public double getGrandTotalCreditBalance() { return grandTotalCreditBalance; }
+    public double getGrandTotalPaymentOther() {
+        return grandTotalPaymentOther;
+    }
 
-    public double getGrandTotalFinalBills() { return grandTotalFinalBills; }
+    public double getGrandTotalPostFinalPayments() {
+        return grandTotalPostFinalPayments;
+    }
 
-    public double getGrandTotalBalance() { return grandTotalBalance; }
+    public double getGrandTotalPostFinalCash() {
+        return grandTotalPostFinalCash;
+    }
 
-    public double getGrandTotalAllMoneyIn() { return grandTotalAllMoneyIn; }
+    public double getGrandTotalPostFinalCard() {
+        return grandTotalPostFinalCard;
+    }
+
+    public double getGrandTotalPostFinalCredit() {
+        return grandTotalPostFinalCredit;
+    }
+
+    public double getGrandTotalPostFinalOther() {
+        return grandTotalPostFinalOther;
+    }
+
+    public double getGrandTotalCreditBilled() {
+        return grandTotalCreditBilled;
+    }
+
+    public double getGrandTotalCreditSettlement() {
+        return grandTotalCreditSettlement;
+    }
+
+    public double getGrandTotalCreditBalance() {
+        return grandTotalCreditBalance;
+    }
+
+    public double getGrandTotalFinalBills() {
+        return grandTotalFinalBills;
+    }
+
+    public double getGrandTotalBalance() {
+        return grandTotalBalance;
+    }
+
+    public double getGrandTotalAllMoneyIn() {
+        return grandTotalAllMoneyIn;
+    }
 }

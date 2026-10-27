@@ -71,7 +71,7 @@
 
                         <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
                             <f:facet name="header">
-                                <h:outputText value="Name"/>
+                                <h:outputText value="Department Name"/>
                             </f:facet>
                             <h:outputText value="#{item.name}"/>
                         </p:column>
@@ -88,6 +88,13 @@
                                 <h:outputText value="Institution"/>
                             </f:facet>
                             <h:outputText value="#{item.institution.name}"/>
+                        </p:column>
+
+                        <p:column sortBy="#{item.institution.institutionType}" filterBy="#{item.institution.institutionType}" filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Institution Type"/>
+                            </f:facet>
+                            <h:outputText value="#{item.institution.institutionType}"/>
                         </p:column>
 
                         <p:column sortBy="#{item.site.name}" filterBy="#{item.site.name}" filterMatchMode="contains">

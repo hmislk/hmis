@@ -25,11 +25,15 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.PharmacyTransferIssueDraftItem;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmacyTransferIssueDraftItemFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +77,24 @@ public class TransferIssueNativeSqlController implements Serializable {
     private boolean printPreview;
     private boolean draftMode;
 
+    /**
+     * Set when {@link #finalizeDraftNativeIssue()} has already shown a stock-shortage
+     * warning for the current {@link #issueItems} and stopped short of finalizing, so
+     * the user could go back and adjust quantities. A second Finalize click with this
+     * still true (i.e. nothing was edited in between — see
+     * {@link #onQuantityChangeForTransferIssue} / {@link #remove}, which clear it)
+     * is treated as "finalize anyway" and proceeds despite the shortage.
+     */
+    private boolean stockWarningAcknowledged;
+
+    /**
+     * Non-retired, unapproved PHARMACY_ISSUE_PRE drafts for the session department that are
+     * currently blocking a new Fast Issue. Populated by {@link #navigateToIssueRequestNative()}
+     * when the block fires, so pharmacy_transfer_request_list.xhtml can list them with a
+     * one-click cancel instead of leaving the user stuck (#23608).
+     */
+    private List<Bill> blockingPendingDrafts;
+
     // ---- Injected ----
     @Inject
     private SessionController sessionController;
@@ -86,14 +108,28 @@ public class TransferIssueNativeSqlController implements Serializable {
     @Inject
     private PageMetadataRegistry pageMetadataRegistry;
 
+    /**
+     * Legacy entity-based controller. Injected so a draft saved before the native-SQL
+     * workflow existed (real persisted BillItem rows) can be dispatched to its own
+     * load/cancel logic instead of being mishandled by the native path (#23608 review).
+     */
+    @Inject
+    private TransferIssueForRequestsController transferIssueForRequestsController;
+
     @EJB
     private BillFacade billFacade;
+
+    @EJB
+    private BillItemFacade billItemFacade;
 
     @EJB
     private BillNumberGenerator billNumberBean;
 
     @EJB
     private TransferIssueNativeSqlService transferIssueNativeSqlService;
+
+    @EJB
+    private PharmacyTransferIssueDraftItemFacade pharmacyTransferIssueDraftItemFacade;
 
     // -----------------------------------------------------------------------
     // Lifecycle
@@ -177,16 +213,22 @@ public class TransferIssueNativeSqlController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey(
-                "Use Save Finalize Approve Workflow for Issue for Requests", false)
-                && hasPendingNativeIssueForDepartment()) {
-            JsfUtil.addErrorMessage("There is already a pending fast issue for this department. Please finalize or cancel it first.");
-            return null;
+                "Use Save Finalize Approve Workflow for Issue for Requests", false)) {
+            blockingPendingDrafts = loadPendingNativeIssueDraftsForDepartment();
+            if (blockingPendingDrafts != null && !blockingPendingDrafts.isEmpty()) {
+                JsfUtil.addErrorMessage("There is already a pending fast issue for this department. "
+                        + "Finalize or approve it from Disbursement → Issues → Finalize/Approve Issues, "
+                        + "or cancel it in the list shown below if it was started by mistake.");
+                return null;
+            }
         }
+        blockingPendingDrafts = null;
 
         printPreview = false;
         printDto = null;
         draftMode = false;
         issuedBill = new BilledBill();
+        stockWarningAcknowledged = false;
 
         boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
                 "Pharmacy Transfer is by Purchase Rate", false);
@@ -215,18 +257,91 @@ public class TransferIssueNativeSqlController implements Serializable {
     // Save → Finalize → Approve draft workflow (native / fast issue)
     // -----------------------------------------------------------------------
 
-    private boolean hasPendingNativeIssueForDepartment() {
-        String jpql = "Select count(b) From Bill b "
-                + " where b.retired=false "
+    /**
+     * Loads the non-retired, unapproved PHARMACY_ISSUE_PRE drafts for the session department.
+     * A non-empty result blocks a new Fast Issue; the caller surfaces the list to the user so
+     * they can finalize/approve or cancel it rather than being stuck (#23608).
+     */
+    private List<Bill> loadPendingNativeIssueDraftsForDepartment() {
+        String jpql = "select b from Bill b "
+                + " where b.retired = false "
                 + " and b.billTypeAtomic = :bTp "
                 + " and b.checked = :checked "
-                + " and b.department = :dept";
+                + " and b.department = :dept "
+                + " order by b.createdAt";
         Map<String, Object> params = new HashMap<>();
         params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
         params.put("checked", false);
         params.put("dept", sessionController.getDepartment());
-        long count = billFacade.findLongByJpql(jpql, params);
-        return count > 0;
+        return billFacade.findByJpql(jpql, params);
+    }
+
+    /**
+     * True if {@code draft} already has real, non-retired {@link com.divudi.core.entity.BillItem}
+     * rows — i.e. it was saved through the legacy entity-based workflow
+     * ({@code TransferIssueForRequestsController.saveDraftIssue()}) rather than the native-SQL
+     * Save Draft step, which persists only the bill header. Callers must dispatch such drafts to
+     * the legacy controller instead of the native load/settle path, which would otherwise discard
+     * those rows and, on Approve, insert a second set into the same bill (#23608 review, Codex).
+     */
+    private boolean hasEntityBackedItems(Bill draft) {
+        String jpql = "select count(bi) from BillItem bi where bi.bill = :bill and bi.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", draft);
+        return billItemFacade.findLongByJpql(jpql, params) > 0;
+    }
+
+    /**
+     * Cancels (soft-retires) a single pending PHARMACY_ISSUE_PRE draft identified by row.
+     * Serves both the blocking-draft panel on pharmacy_transfer_request_list.xhtml and the
+     * Cancel button on the Finalize Issues recovery list. An already-approved (checked) draft
+     * cannot be cancelled here.
+     */
+    public void cancelPendingNativeIssueDraft(Bill draft) {
+        if (!isAuthorized("CANCEL_PENDING_NATIVE_ISSUE", "PharmacyTransferIssueCancel")) {
+            return;
+        }
+        if (draft == null || draft.getId() == null) {
+            JsfUtil.addErrorMessage("No pending fast issue selected to cancel.");
+            return;
+        }
+        if (hasEntityBackedItems(draft)) {
+            // Entity-backed legacy draft — its cancel also retires the persisted BillItem
+            // rows, which the native path below does not touch (#23608 review, Codex).
+            transferIssueForRequestsController.setIssuedBill(draft);
+            transferIssueForRequestsController.cancelPendingIssue();
+            blockingPendingDrafts = loadPendingNativeIssueDraftsForDepartment();
+            if (blockingPendingDrafts.isEmpty()) {
+                blockingPendingDrafts = null;
+            }
+            return;
+        }
+        Bill fresh = billFacade.find(draft.getId());
+        if (fresh == null || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("This pending fast issue was not found or is already cancelled.");
+        } else if (fresh.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_ISSUE_PRE
+                || fresh.getDepartment() == null
+                || !fresh.getDepartment().equals(sessionController.getDepartment())) {
+            // Defense-in-depth: the recovery lists this is wired to are already
+            // department/type-scoped, but never soft-retire a bill of the wrong type or
+            // department on the strength of that alone (#23608 review, CodeRabbit IDOR).
+            JsfUtil.addErrorMessage("This bill is not a pending fast issue for your department.");
+        } else if (fresh.isChecked()) {
+            JsfUtil.addErrorMessage("This fast issue is already approved and cannot be cancelled here.");
+        } else {
+            fresh.setRetired(true);
+            fresh.setRetiredAt(new Date());
+            fresh.setRetirer(sessionController.getLoggedUser());
+            fresh.setRetireComments("Pending fast issue draft cancelled to unblock the department (#23608)");
+            billFacade.edit(fresh);
+            JsfUtil.addSuccessMessage("Pending fast issue "
+                    + (fresh.getDeptId() != null ? fresh.getDeptId() : ("#" + fresh.getId()))
+                    + " cancelled. You can start a new issue now.");
+        }
+        blockingPendingDrafts = loadPendingNativeIssueDraftsForDepartment();
+        if (blockingPendingDrafts.isEmpty()) {
+            blockingPendingDrafts = null;
+        }
     }
 
     public void saveDraftNativeIssue() {
@@ -263,16 +378,131 @@ public class TransferIssueNativeSqlController implements Serializable {
         }
         issuedBill = draft;
         stampDepartmentTypeIfMissing();
-        billFacade.create(draft);
+        persistDraftWithItemSnapshot(draft, issueItems);
         draftMode = true;
         JsfUtil.addSuccessMessage("Draft fast issue saved. Please proceed to Finalize.");
     }
 
+    /**
+     * Freezes the exact rows/quantities/rates the user selected at Save time. Without this,
+     * reopening the draft later (a different session Finalizing or Approving it) would have to
+     * recompute item rows and quantities from the request's *current* remaining quantities,
+     * silently issuing something other than what was saved (#23608 review, CodeRabbit).
+     *
+     * The draft bill header and every snapshot row are persisted via a single call to
+     * {@code pharmacyTransferIssueDraftItemFacade.createDraftWithItems(...)} — one
+     * container-managed EJB transaction — rather than a separate {@code billFacade.create(draft)}
+     * plus one {@code create(...)} call per row: this controller is a plain CDI bean, not itself
+     * transactional, so N+1 separate facade calls would each commit independently, and a failure
+     * partway through could leave the draft bill committed with an incomplete item selection
+     * (#23608 review, CodeRabbit).
+     */
+    private void persistDraftWithItemSnapshot(Bill draft, List<TransferIssueItemRowDto> items) {
+        List<PharmacyTransferIssueDraftItem> snapshots = new ArrayList<>();
+        if (items != null) {
+            Date now = new Date();
+            for (TransferIssueItemRowDto dto : items) {
+                PharmacyTransferIssueDraftItem snapshot = toDraftItemEntity(dto, draft);
+                snapshot.setCreatedAt(now);
+                snapshots.add(snapshot);
+            }
+        }
+        pharmacyTransferIssueDraftItemFacade.createDraftWithItems(draft, snapshots);
+    }
+
+    private PharmacyTransferIssueDraftItem toDraftItemEntity(TransferIssueItemRowDto dto, Bill draft) {
+        PharmacyTransferIssueDraftItem e = new PharmacyTransferIssueDraftItem();
+        e.setDraftBill(draft);
+        e.setSerialNo(dto.getSerialNo());
+        e.setItemName(dto.getItemName());
+        e.setItemCode(dto.getItemCode());
+        e.setBatchNo(dto.getBatchNo());
+        e.setDateOfExpire(dto.getDateOfExpire());
+        e.setRequestedBillItemId(dto.getRequestedBillItemId());
+        e.setItemId(dto.getItemId());
+        e.setAmpItemId(dto.getAmpItemId());
+        e.setItemDtype(dto.getItemDtype());
+        e.setDepartmentType(dto.getDepartmentType());
+        e.setUnitsPerPack(dto.getUnitsPerPack());
+        e.setDeptStockId(dto.getDeptStockId());
+        e.setItemBatchId(dto.getItemBatchId());
+        e.setAvailableStock(dto.getAvailableStock());
+        e.setRequestedQty(dto.getRequestedQty());
+        e.setAlreadyIssuedQty(dto.getAlreadyIssuedQty());
+        e.setRemainingQty(dto.getRemainingQty());
+        e.setIssuingQty(dto.getIssuingQty());
+        e.setGrossRate(dto.getGrossRate());
+        // Recompute rather than trust dto.getLineTotal(): it is refreshed only by the
+        // "Issue QTY" field's keyup AJAX listener, so a qty typed and immediately followed by
+        // Save Draft (no intervening keyup) would otherwise freeze a stale total into the
+        // snapshot the Finalizer/Approver later reviews on screen.
+        e.setLineTotal(computeLineTotal(dto.getGrossRate(), dto.getIssuingQty()));
+        e.setPurchaseRate(dto.getPurchaseRate());
+        e.setRetailRate(dto.getRetailRate());
+        e.setWholesaleRate(dto.getWholesaleRate());
+        e.setCostRate(dto.getCostRate());
+        e.setBatchRetailRate(dto.getBatchRetailRate());
+        e.setBatchPurchaseRate(dto.getBatchPurchaseRate());
+        e.setBatchWholesaleRate(dto.getBatchWholesaleRate());
+        e.setBatchCostRate(dto.getBatchCostRate());
+        return e;
+    }
+
+    private TransferIssueItemRowDto toItemRowDto(PharmacyTransferIssueDraftItem e) {
+        TransferIssueItemRowDto dto = new TransferIssueItemRowDto();
+        dto.setSerialNo(e.getSerialNo());
+        dto.setItemName(e.getItemName());
+        dto.setItemCode(e.getItemCode());
+        dto.setBatchNo(e.getBatchNo());
+        dto.setDateOfExpire(e.getDateOfExpire());
+        dto.setRequestedBillItemId(e.getRequestedBillItemId());
+        dto.setItemId(e.getItemId());
+        dto.setAmpItemId(e.getAmpItemId());
+        dto.setItemDtype(e.getItemDtype());
+        dto.setDepartmentType(e.getDepartmentType());
+        dto.setUnitsPerPack(e.getUnitsPerPack());
+        dto.setDeptStockId(e.getDeptStockId());
+        dto.setItemBatchId(e.getItemBatchId());
+        dto.setAvailableStock(e.getAvailableStock());
+        dto.setRequestedQty(e.getRequestedQty());
+        dto.setAlreadyIssuedQty(e.getAlreadyIssuedQty());
+        dto.setRemainingQty(e.getRemainingQty());
+        dto.setIssuingQty(e.getIssuingQty());
+        dto.setGrossRate(e.getGrossRate());
+        dto.setLineTotal(computeLineTotal(e.getGrossRate(), e.getIssuingQty()));
+        dto.setPurchaseRate(e.getPurchaseRate());
+        dto.setRetailRate(e.getRetailRate());
+        dto.setWholesaleRate(e.getWholesaleRate());
+        dto.setCostRate(e.getCostRate());
+        dto.setBatchRetailRate(e.getBatchRetailRate());
+        dto.setBatchPurchaseRate(e.getBatchPurchaseRate());
+        dto.setBatchWholesaleRate(e.getBatchWholesaleRate());
+        dto.setBatchCostRate(e.getBatchCostRate());
+        return dto;
+    }
+
+    private static double computeLineTotal(BigDecimal grossRate, BigDecimal issuingQty) {
+        if (grossRate == null || issuingQty == null) {
+            return 0.0;
+        }
+        return grossRate.multiply(issuingQty).doubleValue();
+    }
+
+    /**
+     * Reopens a saved PHARMACY_ISSUE_PRE draft for Finalize or Approve, dispatching by how it
+     * was actually saved: an entity-backed legacy draft goes to
+     * {@code TransferIssueForRequestsController}, which knows how to load its real BillItem
+     * rows; a native-SQL draft is restored from its frozen item snapshot rather than
+     * recomputed from the request's current remaining quantities (#23608).
+     */
     public String loadDraftNativeIssueForEditing(Bill draft) {
         makeNull();
         if (draft == null || draft.getId() == null) {
             JsfUtil.addErrorMessage("Invalid draft bill.");
             return null;
+        }
+        if (hasEntityBackedItems(draft)) {
+            return transferIssueForRequestsController.loadDraftIssueForEditing(draft);
         }
         issuedBill = billFacade.find(draft.getId());
         if (issuedBill == null || issuedBill.isRetired()) {
@@ -284,22 +514,28 @@ public class TransferIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Request bill reference missing from draft.");
             return null;
         }
-        boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
-                "Pharmacy Transfer is by Purchase Rate", false);
-        boolean byCostRate = configOptionApplicationController.getBooleanValueByKey(
-                "Pharmacy Transfer is by Cost Rate", false);
-        issueItems = transferIssueNativeSqlService.loadRequestedItemsForIssue(
-                requestedBill.getId(),
-                sessionController.getDepartment().getId(),
-                byPurchaseRate,
-                byCostRate);
+        List<PharmacyTransferIssueDraftItem> snapshot = pharmacyTransferIssueDraftItemFacade.findByDraftBill(issuedBill);
+        if (snapshot == null || snapshot.isEmpty()) {
+            JsfUtil.addErrorMessage("No saved item selection found for this draft "
+                    + "(it may have been saved before item snapshots were tracked). "
+                    + "Cancel it and start a new Fast Issue.");
+            return null;
+        }
+        issueItems = new ArrayList<>();
+        for (PharmacyTransferIssueDraftItem row : snapshot) {
+            issueItems.add(toItemRowDto(row));
+        }
         draftMode = true;
         printPreview = false;
         return "/pharmacy/pharmacy_transfer_issue_native?faces-redirect=true";
     }
 
-    public void finalizeDraftNativeIssue() {
+    public synchronized void finalizeDraftNativeIssue() {
         if (!isAuthorized("FINALIZE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
+        if (issueItems == null || issueItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items to finalize. The draft has no items left — cancel it and start over.");
             return;
         }
         if (issuedBill == null || issuedBill.getId() == null) {
@@ -315,6 +551,31 @@ public class TransferIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Draft already finalized.");
             return;
         }
+        if (!validateNoOverIssue(issueItems)) {
+            return;
+        }
+        // Not a hard block — Finalize doesn't move stock, and the actual available
+        // quantity can legitimately shift before this draft reaches Approve (other
+        // drafts/issues competing for the same batch). Approve re-checks this for real
+        // (checkStockSufficiency, called with the state-mutating steps still ahead of
+        // it) right before moving stock, and that atomic check is what actually
+        // prevents stock going negative — this is purely to warn the finalizer early.
+        //
+        // First time a shortage is seen for the current issueItems: stop here without
+        // finalizing, so quantities stay editable and the user can go fix them. A
+        // second Finalize click with nothing edited since (stockWarningAcknowledged
+        // still true — see onQuantityChangeForTransferIssue/remove, which clear it on
+        // any edit) is treated as "finalize anyway" and proceeds.
+        List<String> stockWarnings = transferIssueNativeSqlService.checkStockSufficiency(issueItems);
+        if (!stockWarnings.isEmpty() && !stockWarningAcknowledged) {
+            for (String msg : stockWarnings) {
+                JsfUtil.addWarningMessage("Stock may be insufficient by approval time — " + msg);
+            }
+            JsfUtil.addWarningMessage("Adjust quantities, or click Finalize again to proceed anyway.");
+            stockWarningAcknowledged = true;
+            return;
+        }
+        stockWarningAcknowledged = false;
         fresh.setCompleted(true);
         fresh.setCompletedAt(new Date());
         fresh.setCompletedBy(sessionController.getLoggedUser());
@@ -347,6 +608,24 @@ public class TransferIssueNativeSqlController implements Serializable {
         if (fresh.isChecked()) {
             JsfUtil.addErrorMessage("This fast issue has already been approved.");
             makeNull();
+            return null;
+        }
+        if (!validateNoOverIssue(issueItems)) {
+            return null;
+        }
+        // Re-check stock right before approval starts: the draft may have sat waiting
+        // for approval for a while, during which another session could have consumed
+        // the same batch stock (e.g. via a different issue or a direct sale). The
+        // atomic deductStock() UPDATE inside the settle service already guarantees
+        // stock can never go negative, but without this upfront check that guard is
+        // only discovered after checked=true and a bill number have already been
+        // committed and then have to be rolled back — this mirrors the same
+        // checkStockSufficiency() call settle() already does before touching state.
+        List<String> stockErrors = transferIssueNativeSqlService.checkStockSufficiency(issueItems);
+        if (!stockErrors.isEmpty()) {
+            for (String msg : stockErrors) {
+                JsfUtil.addErrorMessage("Insufficient stock — " + msg);
+            }
             return null;
         }
         fresh.setChecked(true);
@@ -443,37 +722,9 @@ public class TransferIssueNativeSqlController implements Serializable {
             return;
         }
 
-        // Validate that the total issuing qty per request bill item does not exceed
-        // the remaining requested qty (requestedQty - alreadyIssuedQty).
-        // Negative quantities are explicitly excluded from the sum. If they were included,
-        // a user could enter qty=+100 on one batch row and qty=-60 on another row of the
-        // same item, keeping the sum at 40 (under the limit) while settlement still issues
-        // 100 units from the first row. Skipping negatives prevents that bypass.
-        // The service's itemsToProcess filter (issuingQty > 0) is a second safety layer.
-        Map<Long, Double> issuingByReqItem = new LinkedHashMap<>();
-        Map<Long, String> nameByReqItem    = new LinkedHashMap<>();
-        Map<Long, Double> maxByReqItem     = new LinkedHashMap<>();
-        for (TransferIssueItemRowDto item : issueItems) {
-            long reqId   = item.getRequestedBillItemId();
-            double qty   = item.getIssuingQty() != null ? item.getIssuingQty().doubleValue() : 0.0;
-            if (qty <= 0) continue; // negative/zero qty excluded — see comment above
-            double max   = item.getRequestedQty() - item.getAlreadyIssuedQty();
-            issuingByReqItem.merge(reqId, qty, Double::sum);
-            nameByReqItem.putIfAbsent(reqId, item.getItemName());
-            maxByReqItem.putIfAbsent(reqId, max);
+        if (!validateNoOverIssue(issueItems)) {
+            return;
         }
-        boolean overIssue = false;
-        for (Map.Entry<Long, Double> e : issuingByReqItem.entrySet()) {
-            double total = e.getValue();
-            double max   = maxByReqItem.getOrDefault(e.getKey(), 0.0);
-            if (total > max + 0.001) {
-                JsfUtil.addErrorMessage(nameByReqItem.get(e.getKey())
-                        + ": issue qty " + String.format("%.2f", total)
-                        + " exceeds remaining requested qty " + String.format("%.2f", max));
-                overIssue = true;
-            }
-        }
-        if (overIssue) return;
 
         List<String> stockErrors = transferIssueNativeSqlService.checkStockSufficiency(issueItems);
         if (!stockErrors.isEmpty()) {
@@ -517,6 +768,52 @@ public class TransferIssueNativeSqlController implements Serializable {
         printPreview = true;
     }
 
+    /**
+     * Validates that the total issuing qty per request bill item does not exceed
+     * the remaining requested qty (requestedQty - alreadyIssuedQty), summed across
+     * every batch-split row for that request item — a single requested item can be
+     * listed as several rows (one per batch) when availability forces a split, and
+     * each row repeats the same requestedQty, so capping a row in isolation would
+     * miss a user entering the full requested qty on two sibling batch rows.
+     * Negative quantities are explicitly excluded from the sum. If they were included,
+     * a user could enter qty=+100 on one batch row and qty=-60 on another row of the
+     * same item, keeping the sum at 40 (under the limit) while settlement still issues
+     * 100 units from the first row. Skipping negatives prevents that bypass.
+     * The service's itemsToProcess filter (issuingQty > 0) is a second safety layer.
+     * Shared by {@link #settle()} (single-step Issue), {@link #finalizeDraftNativeIssue()}
+     * and {@link #approveDraftNativeIssue()} (Save/Finalize/Approve workflow).
+     * Deliberately NOT called from {@link #saveDraftNativeIssue()} — a draft is a
+     * work-in-progress the user should be free to save with incomplete/over/under
+     * quantities and correct later; the gate belongs at Finalize (locking the draft
+     * for approval) and Approve (moving stock), not at the save step.
+     */
+    private boolean validateNoOverIssue(List<TransferIssueItemRowDto> items) {
+        Map<Long, Double> issuingByReqItem = new LinkedHashMap<>();
+        Map<Long, String> nameByReqItem    = new LinkedHashMap<>();
+        Map<Long, Double> maxByReqItem     = new LinkedHashMap<>();
+        for (TransferIssueItemRowDto item : items) {
+            long reqId   = item.getRequestedBillItemId();
+            double qty   = item.getIssuingQty() != null ? item.getIssuingQty().doubleValue() : 0.0;
+            if (qty <= 0) continue; // negative/zero qty excluded — see comment above
+            double max   = item.getRequestedQty() - item.getAlreadyIssuedQty();
+            issuingByReqItem.merge(reqId, qty, Double::sum);
+            nameByReqItem.putIfAbsent(reqId, item.getItemName());
+            maxByReqItem.putIfAbsent(reqId, max);
+        }
+        boolean overIssue = false;
+        for (Map.Entry<Long, Double> e : issuingByReqItem.entrySet()) {
+            double total = e.getValue();
+            double max   = maxByReqItem.getOrDefault(e.getKey(), 0.0);
+            if (total > max + 0.001) {
+                JsfUtil.addErrorMessage(nameByReqItem.get(e.getKey())
+                        + ": issue qty " + String.format("%.2f", total)
+                        + " exceeds remaining requested qty " + String.format("%.2f", max));
+                overIssue = true;
+            }
+        }
+        return !overIssue;
+    }
+
     // -----------------------------------------------------------------------
     // UI helpers
     // -----------------------------------------------------------------------
@@ -526,6 +823,7 @@ public class TransferIssueNativeSqlController implements Serializable {
      * Mirrors TransferIssueForRequestsController.onQuantityChangeForTransferIssue().
      */
     public void onQuantityChangeForTransferIssue(TransferIssueItemRowDto item) {
+        stockWarningAcknowledged = false;
         if (item == null || item.getIssuingQty() == null || item.getGrossRate() == null) {
             return;
         }
@@ -540,6 +838,7 @@ public class TransferIssueNativeSqlController implements Serializable {
      * Mirrors TransferIssueForRequestsController.remove().
      */
     public void remove(TransferIssueItemRowDto item) {
+        stockWarningAcknowledged = false;
         if (issueItems != null) {
             issueItems.remove(item);
         }
@@ -572,6 +871,8 @@ public class TransferIssueNativeSqlController implements Serializable {
         printDto = null;
         printPreview = false;
         draftMode = false;
+        blockingPendingDrafts = null;
+        stockWarningAcknowledged = false;
     }
 
     /**
@@ -856,6 +1157,20 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     public void setDraftMode(boolean draftMode) {
         this.draftMode = draftMode;
+    }
+
+    /**
+     * True once a draft fast issue has been finalized and is awaiting approval.
+     * At this stage approval must be a pure boolean decision (Approve / Cancel Draft) —
+     * quantities, staff and item selection are locked in the UI so the approver cannot
+     * silently change what gets issued (#23802).
+     */
+    public boolean isAwaitingApprovalReadOnly() {
+        return draftMode && getIssuedBill().isCompleted();
+    }
+
+    public List<Bill> getBlockingPendingDrafts() {
+        return blockingPendingDrafts;
     }
 
     /**

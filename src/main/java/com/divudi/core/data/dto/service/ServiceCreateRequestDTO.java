@@ -18,6 +18,7 @@ public class ServiceCreateRequestDTO {
     private String printName;
     private String fullName;
     private Long categoryId;
+    private Long financialCategoryId; // Category with categoryType FINANCIAL_CATEGORY (income account)
     private Long institutionId;
     private Long departmentId;
     private String inwardChargeType; // required when serviceType=Inward
@@ -97,6 +98,14 @@ public class ServiceCreateRequestDTO {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public Long getFinancialCategoryId() {
+        return financialCategoryId;
+    }
+
+    public void setFinancialCategoryId(Long financialCategoryId) {
+        this.financialCategoryId = financialCategoryId;
     }
 
     public Long getInstitutionId() {

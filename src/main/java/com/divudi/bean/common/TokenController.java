@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyPreSettleController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.bean.pharmacy.PharmacySaleForCashierController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.TokenType;
@@ -56,6 +57,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
+    PharmacySaleForCashierController pharmacySaleForCashierController;
+    @Inject
     PharmacyPreSettleController pharmacyPreSettleController;
     @Inject
     PatientController patientController;
@@ -95,7 +98,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
 
     public String navigateToTokenIndex() {
         resetClassVariables();
-        return "/token/index?faces-redirect?";
+        return "/token/index?faces-redirect=true";
     }
 
     public String navigateToCreateNewPharmacyToken() {
@@ -331,11 +334,29 @@ public class TokenController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Token");
             return "";
         }
+        // pharmacy_bill_retail_sale_for_cashier.xhtml is backed by PharmacySaleForCashierController.
+        // Navigate first (it resets the bill), then hand over the token and its patient.
+        String outcome = pharmacySaleForCashierController.navigateToPharmacyBillForCashier();
+        pharmacySaleForCashierController.setPatient(currentToken.getPatient());
+        pharmacySaleForCashierController.setPatientDetailsEditable(false);
+        pharmacySaleForCashierController.setToken(currentToken);
+        return outcome;
+    }
 
-        pharmacySaleController.resetAll();
+    public String navigateToNewPharmacyRetailSale() {
+        if (currentToken == null) {
+            JsfUtil.addErrorMessage("No Token");
+            return "";
+        }
+        // Navigate first (it resets the bill), then hand over the token and its patient.
+        String outcome = pharmacySaleController.navigateToPharmacyRetailSale();
+        if (outcome == null || !outcome.startsWith("/pharmacy/pharmacy_bill_retail_sale")) {
+            return outcome;
+        }
         pharmacySaleController.setPatient(currentToken.getPatient());
+        pharmacySaleController.setPatientDetailsEditable(false);
         pharmacySaleController.setToken(currentToken);
-        return pharmacySaleController.navigateToPharmacyBillForCashier();
+        return outcome;
     }
 
     public String navigateToNewPharmacyBillForCashierWholeSale() {
@@ -557,6 +578,11 @@ public class TokenController implements Serializable, ControllerWithPatient {
         currentToken.setCompletedAt(currentToken.isCompleted() ? now : null);
         currentToken.setStartedAt(currentToken.isCompleted() ? (currentToken.getStartedAt() == null ? now : currentToken.getStartedAt()) : null);
         tokenFacade.edit(currentToken);
+    }
+
+    public void toggleCompletedStatusAndRefreshPharmacyTokens() {
+        toggleCompletedStatus();
+        fillPharmacyTokens();
     }
 
     public void fetchNextToken() {

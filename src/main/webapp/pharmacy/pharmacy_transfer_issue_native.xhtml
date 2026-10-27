@@ -102,6 +102,12 @@
                         </h:panelGroup>
                     </f:facet>
 
+                    <h:panelGroup layout="block" styleClass="alert alert-info py-1 px-2 mb-2"
+                                  rendered="#{transferIssueNativeSqlController.awaitingApprovalReadOnly}">
+                        <h:outputText styleClass="fas fa-lock mx-1" />
+                        <h:outputText value="This fast issue is finalized and awaiting approval. Quantities, staff and items are read-only — Approve or Cancel Draft." />
+                    </h:panelGroup>
+
                     <div class="row">
                         <!-- Item List (col-9) -->
                         <div class="col-9">
@@ -157,7 +163,8 @@
                                             autocomplete="off"
                                             id="issuingQty"
                                             value="#{item.issuingQty}"
-                                            onfocus="this.select()">
+                                            onfocus="this.select()"
+                                            disabled="#{transferIssueNativeSqlController.awaitingApprovalReadOnly}">
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax
                                                 event="keyup"
@@ -184,7 +191,9 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Remove" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                    <p:column headerText="Remove"
+                                              rendered="#{!transferIssueNativeSqlController.awaitingApprovalReadOnly}"
+                                              style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <p:commandButton
                                             icon="fas fa-trash"
                                             class="ui-button-danger ui-button-icon-only"
@@ -218,6 +227,7 @@
                                         itemLabel="#{staff.person.name}"
                                         itemValue="#{staff}"
                                         forceSelection="true"
+                                        disabled="#{transferIssueNativeSqlController.awaitingApprovalReadOnly}"
                                         class="w-100">
                                         <p:column headerText="Name">
                                             <h:outputText value="#{staff.person.nameWithTitle}" />

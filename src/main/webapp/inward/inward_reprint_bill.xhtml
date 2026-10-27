@@ -20,7 +20,7 @@
                             <div>
                                 <p:commandButton ajax="false" value="Cancel"
                                                  action="#{inwardSearch.navigateToCancelInwardServiceBillFromReprint()}"
-                                                 disabled="#{inwardSearch.bill.cancelled}"
+                                                 disabled="#{inwardSearch.bill.cancelled or (inwardSearch.bill.patientEncounter.nursingDischarged and !webUserController.hasPrivilege('InwardProcessCancelAfterNursingDischarge'))}"
                                                  class="m-2 ui-button-danger"
                                                  icon="fa fa-ban">                           
                                 </p:commandButton>

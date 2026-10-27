@@ -87,11 +87,17 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     PatientDepositService patientDepositService;
     @EJB
     PatientFacade patientFacade;
+    @EJB
+    private com.divudi.service.BillService billService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private InwardRawTextReceiptController inwardRawTextReceiptController;
+    @Inject
+    private AdmissionController admissionController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -158,7 +164,7 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
         if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
             // Use Flash scope to preserve error message across redirect
-            JsfUtil.addErrorMessage("Start Your Shift First !");
+            JsfUtil.addStartShiftFirstMessageForRedirect();
             return "/cashier/index?faces-redirect=true";
         }
         return "/inward/inward_bill_deposit?faces-redirect=true";
@@ -205,7 +211,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     }
 
     public String navigateToInpationDashbord() {
-        return "/inward/admission_profile?faces-redirect=true";
+        return admissionController.navigateToInpatientDashboard(
+                getCurrent() == null ? null : getCurrent().getPatientEncounter());
     }
 
     public String navigateToPatientRefund() {
@@ -875,16 +882,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
 
         AdmissionType admissionTypeForBillNumber = getCurrent().getPatientEncounter() != null
                 ? getCurrent().getPatientEncounter().getAdmissionType() : null;
-        boolean uniqueSerialPerAdmissionType = admissionTypeForBillNumber != null
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Bill Number Generation Strategy - Unique Serial Per Admission Type for Inward Payments", false);
-        if (uniqueSerialPerAdmissionType) {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
-        } else {
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic()));
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorYearly(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic()));
-        }
+        getCurrent().setDeptId(getBillNumberBean().departmentInwardPaymentBillNumberGenerator(getSessionController().getDepartment(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
+        getCurrent().setInsId(getBillNumberBean().institutionInwardPaymentBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillTypeAtomic(), admissionTypeForBillNumber));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
@@ -1092,6 +1091,22 @@ public class InwardDepositController implements Serializable, ControllerWithMult
 
     public void setCurrent(BilledBill current) {
         this.current = current;
+    }
+
+    /**
+     * Streams the current deposit receipt as a raw byte file (.prn) for
+     * dot-matrix printing that bypasses the browser rasteriser. A watched-folder
+     * agent on the cashier PC raw-copies the file to the LQ-310. See
+     * tools/client-print-agent/ and the wiki page
+     * "Dot-Matrix-Printing-for-Inward-Deposit-and-Payment-Receipts".
+     */
+    public void streamCurrentDepositReceiptAsRawText() {
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("No saved deposit to print.");
+            return;
+        }
+        inwardRawTextReceiptController.streamReceipt(getCurrent(), BillTypeAtomic.INWARD_DEPOSIT,
+                false, sessionController.getDepartment(), "inward-deposit-");
     }
 
     public BillNumberGenerator getBillNumberBean() {

@@ -28,7 +28,7 @@
                                         icon="fa fa-ban"
                                         onclick="if (!confirm('Cancel this post-final payment?')) return false;"
                                         action="#{postFinalBillInwardPaymentController.cancelPostFinalPayment()}"
-                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.current.refunded}"  >
+                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.current.refunded or postFinalBillInwardPaymentController.current.checkedBy ne null}"  >
                                     </p:commandButton>
 
                                     <p:commandButton
@@ -37,7 +37,7 @@
                                         class="ui-button-warning"
                                         icon="fa fa-money-bill-transfer"
                                         action="#{postFinalBillInwardPaymentController.navigateToRefundFromPostFinalPaymentBill(postFinalBillInwardPaymentController.current)}"
-                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.current.refunded}"  >
+                                        disabled="#{postFinalBillInwardPaymentController.current.cancelled or postFinalBillInwardPaymentController.calculateFreshRemainingRefundableAmount(postFinalBillInwardPaymentController.current) le 0.01}"  >
                                     </p:commandButton>
 
                                     <p:commandButton

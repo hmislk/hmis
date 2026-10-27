@@ -3182,6 +3182,20 @@ public class UserSettingsController implements Serializable {
         saveColumnVisibility("inward_bht_payment_detail", settings);
     }
 
+    /**
+     * Explicitly marks every inward_bht_payment_detail column checkbox true.
+     * Called on navigating into the report so every "Configure Columns"
+     * checkbox is always checked on entry, regardless of what the user
+     * unchecked on a previous visit.
+     */
+    public void resetInwardBhtPaymentDetailColumnsVisible() {
+        ColumnVisibilitySettings settings = new ColumnVisibilitySettings();
+        for (String key : INWARD_BHT_PAYMENT_DETAIL_COLUMN_KEYS) {
+            settings.setColumnVisible(key, true);
+        }
+        saveColumnVisibility("inward_bht_payment_detail", settings);
+    }
+
     public boolean isInwardBhtPaymentDetailBhtNoVisible() {
         return isColumnVisible("inward_bht_payment_detail", "bhtNo");
     }
@@ -3398,6 +3412,372 @@ public class UserSettingsController implements Serializable {
         setBhtPaymentDetailColumnVisible("totalBalance", visible);
     }
 
+    // Page: inward_bht_deposit_detail (Issue #23680)
+    // Backs inward_report_bht_deposit_detail.xhtml (BhtDepositDetailReportController).
+    // Full ordered key list for this page, used only to enforce "at least one
+    // column stays visible" below.
+    private static final java.util.List<String> INWARD_BHT_DEPOSIT_DETAIL_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admissionType", "admitted", "discharged",
+            "billNo", "billType", "dateTime", "paymentMethod", "amount", "referenceNo");
+
+    /**
+     * Shared setter for every inward_bht_deposit_detail column checkbox.
+     * Refuses to hide the last remaining visible column - unchecking it would
+     * leave the report table with zero columns, breaking the screen table and
+     * its exports.
+     */
+    private void setBhtDepositDetailColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_deposit_detail");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_DEPOSIT_DETAIL_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_deposit_detail", settings);
+    }
+
+    public boolean isInwardBhtDepositDetailBhtNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "bhtNo");
+    }
+
+    public void setInwardBhtDepositDetailBhtNoVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailPatientNameVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "patientName");
+    }
+
+    public void setInwardBhtDepositDetailPatientNameVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("patientName", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailAdmissionTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "admissionType");
+    }
+
+    public void setInwardBhtDepositDetailAdmissionTypeVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailAdmittedVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "admitted");
+    }
+
+    public void setInwardBhtDepositDetailAdmittedVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailDischargedVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "discharged");
+    }
+
+    public void setInwardBhtDepositDetailDischargedVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailBillNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "billNo");
+    }
+
+    public void setInwardBhtDepositDetailBillNoVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("billNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailBillTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "billType");
+    }
+
+    public void setInwardBhtDepositDetailBillTypeVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("billType", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailDateTimeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "dateTime");
+    }
+
+    public void setInwardBhtDepositDetailDateTimeVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("dateTime", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailPaymentMethodVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "paymentMethod");
+    }
+
+    public void setInwardBhtDepositDetailPaymentMethodVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("paymentMethod", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailAmountVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "amount");
+    }
+
+    public void setInwardBhtDepositDetailAmountVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("amount", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailReferenceNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail", "referenceNo");
+    }
+
+    public void setInwardBhtDepositDetailReferenceNoVisible(boolean visible) {
+        setBhtDepositDetailColumnVisible("referenceNo", visible);
+    }
+
+    // Page: inward_bht_deposit_detail_with_credit_companies (Issue #23770)
+    // Backs inward_report_bht_deposit_detail_with_credit_companies.xhtml
+    // (BhtDepositDetailWithCreditCompaniesReportController). Independent
+    // pageId/column-visibility state from inward_bht_deposit_detail above -
+    // this is a separate sibling report, not a shared one, so the original
+    // report's stored preferences must stay untouched.
+    private static final java.util.List<String> INWARD_BHT_DEPOSIT_DETAIL_WITH_CC_COLUMN_KEYS = java.util.Arrays.asList(
+            "bhtNo", "patientName", "admissionType", "admitted", "discharged",
+            "billNo", "billType", "dateTime", "paymentMethod", "amount", "referenceNo", "creditCompanies");
+
+    /**
+     * Shared setter for every inward_bht_deposit_detail_with_credit_companies
+     * column checkbox. Refuses to hide the last remaining visible column, same
+     * rule as setBhtDepositDetailColumnVisible above.
+     */
+    private void setBhtDepositDetailWithCcColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_deposit_detail_with_credit_companies");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_DEPOSIT_DETAIL_WITH_CC_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_deposit_detail_with_credit_companies", settings);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcBhtNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "bhtNo");
+    }
+
+    public void setInwardBhtDepositDetailWithCcBhtNoVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("bhtNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcPatientNameVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "patientName");
+    }
+
+    public void setInwardBhtDepositDetailWithCcPatientNameVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("patientName", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcAdmissionTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "admissionType");
+    }
+
+    public void setInwardBhtDepositDetailWithCcAdmissionTypeVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcAdmittedVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "admitted");
+    }
+
+    public void setInwardBhtDepositDetailWithCcAdmittedVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcDischargedVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "discharged");
+    }
+
+    public void setInwardBhtDepositDetailWithCcDischargedVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcBillNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "billNo");
+    }
+
+    public void setInwardBhtDepositDetailWithCcBillNoVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("billNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcBillTypeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "billType");
+    }
+
+    public void setInwardBhtDepositDetailWithCcBillTypeVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("billType", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcDateTimeVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "dateTime");
+    }
+
+    public void setInwardBhtDepositDetailWithCcDateTimeVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("dateTime", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcPaymentMethodVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "paymentMethod");
+    }
+
+    public void setInwardBhtDepositDetailWithCcPaymentMethodVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("paymentMethod", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcAmountVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "amount");
+    }
+
+    public void setInwardBhtDepositDetailWithCcAmountVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("amount", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcReferenceNoVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "referenceNo");
+    }
+
+    public void setInwardBhtDepositDetailWithCcReferenceNoVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("referenceNo", visible);
+    }
+
+    public boolean isInwardBhtDepositDetailWithCcCreditCompaniesVisible() {
+        return isColumnVisible("inward_bht_deposit_detail_with_credit_companies", "creditCompanies");
+    }
+
+    public void setInwardBhtDepositDetailWithCcCreditCompaniesVisible(boolean visible) {
+        setBhtDepositDetailWithCcColumnVisible("creditCompanies", visible);
+    }
+
+    // Page: inward_bht_payment_summary
+    // Backs inward_report_bht_payment_summary.xhtml (bhtPaymentDetailReportController - see #23258).
+    // BHT No and Patient Name are always shown (no toggle) - only the
+    // remaining columns are user-hideable.
+
+    private static final java.util.List<String> INWARD_BHT_PAYMENT_SUMMARY_COLUMN_KEYS = java.util.Arrays.asList(
+            "admissionType", "admitted", "discharged", "type", "billNo",
+            "dateTime", "paymentMethod", "amount", "referenceNo", "creditCompany");
+
+    /**
+     * Shared setter for every inward_bht_payment_summary column checkbox.
+     * Refuses to hide the last remaining visible optional column, matching
+     * the guard used for inward_bht_payment_detail.
+     */
+    private void setBhtPaymentSummaryColumnVisible(String columnId, boolean visible) {
+        ColumnVisibilitySettings settings = getColumnVisibility("inward_bht_payment_summary");
+        if (!visible) {
+            long stillVisible = INWARD_BHT_PAYMENT_SUMMARY_COLUMN_KEYS.stream()
+                    .filter(key -> !key.equals(columnId) && settings.isColumnVisible(key))
+                    .count();
+            if (stillVisible == 0) {
+                JsfUtil.addErrorMessage("At least one column must stay visible.");
+                return;
+            }
+        }
+        settings.setColumnVisible(columnId, visible);
+        saveColumnVisibility("inward_bht_payment_summary", settings);
+    }
+
+    /**
+     * Explicitly marks every inward_bht_payment_summary column checkbox true.
+     * Called on navigating into the report so every "Configure Columns"
+     * checkbox is always checked on entry, regardless of what the user
+     * unchecked on a previous visit.
+     */
+    public void resetInwardBhtPaymentSummaryColumnsVisible() {
+        ColumnVisibilitySettings settings = new ColumnVisibilitySettings();
+        for (String key : INWARD_BHT_PAYMENT_SUMMARY_COLUMN_KEYS) {
+            settings.setColumnVisible(key, true);
+        }
+        saveColumnVisibility("inward_bht_payment_summary", settings);
+    }
+
+    public boolean isInwardBhtPaymentSummaryAdmissionTypeVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "admissionType");
+    }
+
+    public void setInwardBhtPaymentSummaryAdmissionTypeVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("admissionType", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryAdmittedVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "admitted");
+    }
+
+    public void setInwardBhtPaymentSummaryAdmittedVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("admitted", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryDischargedVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "discharged");
+    }
+
+    public void setInwardBhtPaymentSummaryDischargedVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("discharged", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryTypeVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "type");
+    }
+
+    public void setInwardBhtPaymentSummaryTypeVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("type", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryBillNoVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "billNo");
+    }
+
+    public void setInwardBhtPaymentSummaryBillNoVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("billNo", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryDateTimeVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "dateTime");
+    }
+
+    public void setInwardBhtPaymentSummaryDateTimeVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("dateTime", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryPaymentMethodVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "paymentMethod");
+    }
+
+    public void setInwardBhtPaymentSummaryPaymentMethodVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("paymentMethod", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryAmountVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "amount");
+    }
+
+    public void setInwardBhtPaymentSummaryAmountVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("amount", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryReferenceNoVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "referenceNo");
+    }
+
+    public void setInwardBhtPaymentSummaryReferenceNoVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("referenceNo", visible);
+    }
+
+    public boolean isInwardBhtPaymentSummaryCreditCompanyVisible() {
+        return isColumnVisible("inward_bht_payment_summary", "creditCompany");
+    }
+
+    public void setInwardBhtPaymentSummaryCreditCompanyVisible(boolean visible) {
+        setBhtPaymentSummaryColumnVisible("creditCompany", visible);
+    }
+
     // Page: inward_professional_payment_summary (Issue #23515)
     // Backs the Summary table on inward/reports/inward_professional_payment_report_dto.xhtml
     // (InwardReportControllerBht). Also consumed directly by
@@ -3509,6 +3889,11 @@ public class UserSettingsController implements Serializable {
 
     // Issue #23515 review (CodeRabbit) - same "at least one column stays
     // visible" guard as the Summary block above.
+    // balanceToPay is deliberately excluded - it's a summary total row, not a
+    // detail column, so it must not count toward "at least one column visible"
+    // (CodeRabbit #23611: including it let every real column be hidden while
+    // the guard still saw balanceToPay's default-true isColumnVisible() read
+    // as "something is visible", leaving an empty table).
     private static final java.util.List<String> INWARD_PROFESSIONAL_PAYMENT_DETAILED_COLUMN_KEYS = java.util.Arrays.asList(
             "bhtNo", "admitted", "discharged", "finalBillNo", "consultant",
             "speciality", "addedFeeDate", "addedFeeValue", "paidDate",
@@ -3623,6 +4008,18 @@ public class UserSettingsController implements Serializable {
 
     public void setInwardProfessionalPaymentDetailedPaidFeeValueVisible(boolean visible) {
         setProfessionalPaymentDetailedColumnVisible("paidFeeValue", visible);
+    }
+
+    // Defaults to hidden (unlike every other column above, which defaults to
+    // visible via isColumnVisible's getOrDefault(key, true)) - requested as a
+    // temporary hide of this row; users who want it back can re-check it.
+    public boolean isInwardProfessionalPaymentDetailedBalanceToPayVisible() {
+        return getColumnVisibility("inward_professional_payment_detailed")
+                .getColumnVisible().getOrDefault("balanceToPay", false);
+    }
+
+    public void setInwardProfessionalPaymentDetailedBalanceToPayVisible(boolean visible) {
+        setProfessionalPaymentDetailedColumnVisible("balanceToPay", visible);
     }
 
     /**

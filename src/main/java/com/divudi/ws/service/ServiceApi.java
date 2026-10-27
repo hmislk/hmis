@@ -71,6 +71,11 @@ public class ServiceApi {
     /**
      * Search services by name, type, category, and active status.
      * GET /api/services/search?query=ward&serviceType=Inward&limit=30
+     *
+     * Results are ordered by name then id. To list the whole master, page with
+     * {@code offset}: GET /api/services/search?limit=100&offset=200&includeTotal=true.
+     * {@code data} stays a plain array; {@code includeTotal=true} adds {@code totalCount},
+     * {@code offset} and {@code limit} beside it. Without it the response is unchanged.
      */
     @GET
     @Path("/search")
@@ -84,10 +89,13 @@ public class ServiceApi {
             }
 
             String query = uriInfo.getQueryParameters().getFirst("query");
+            String code = uriInfo.getQueryParameters().getFirst("code");
             String serviceType = uriInfo.getQueryParameters().getFirst("serviceType");
             String categoryIdStr = uriInfo.getQueryParameters().getFirst("categoryId");
             String inactiveStr = uriInfo.getQueryParameters().getFirst("inactive");
             String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+            String offsetStr = uriInfo.getQueryParameters().getFirst("offset");
+            String includeTotalStr = uriInfo.getQueryParameters().getFirst("includeTotal");
 
             Long categoryId = null;
             if (categoryIdStr != null && !categoryIdStr.trim().isEmpty()) {
@@ -113,9 +121,38 @@ public class ServiceApi {
                 }
             }
 
+            int offset = 0;
+            if (offsetStr != null && !offsetStr.trim().isEmpty()) {
+                try {
+                    offset = Math.max(Integer.parseInt(offsetStr.trim()), 0);
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid offset format", 400);
+                }
+            }
+
+            boolean includeTotal = false;
+            if (includeTotalStr != null && !includeTotalStr.trim().isEmpty()) {
+                String raw = includeTotalStr.trim().toLowerCase();
+                if (!"true".equals(raw) && !"false".equals(raw)) {
+                    return errorResponse("Invalid includeTotal value. Use true or false.", 400);
+                }
+                includeTotal = Boolean.parseBoolean(raw);
+            }
+
             List<ServiceSearchResultDTO> results = serviceApiService.searchServices(
-                    query, serviceType, categoryId, inactive, limit);
-            return successResponse(results);
+                    query, code, serviceType, categoryId, inactive, limit, offset);
+            if (!includeTotal) {
+                return successResponse(results);
+            }
+
+            // limit is echoed because it is clamped to 100: a caller that asked for more
+            // must advance by what it actually got, not by what it asked for.
+            Map<String, Object> body = successData(results);
+            body.put("totalCount", serviceApiService.countServices(
+                    query, code, serviceType, categoryId, inactive));
+            body.put("offset", offset);
+            body.put("limit", limit);
+            return Response.status(200).entity(gson.toJson(body)).build();
 
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
@@ -584,7 +621,10 @@ public class ServiceApi {
     }
 
     /**
-     * List fees with marginAllowed disabled (false or null) in a category.
+     * List fees with marginAllowed explicitly disabled (false) in a category.
+     * A null marginAllowed is treated as allowed by billing, matching
+     * InwardBeanController.setBillFeeMargin's !Boolean.FALSE.equals(...) check,
+     * so it is not included here (issue #24155).
      * GET /api/services/fees/margin-disabled?categoryId=X
      */
     @GET
@@ -630,6 +670,78 @@ public class ServiceApi {
      * Search service categories.
      * GET /api/services/categories/search?query=surgery&limit=20
      */
+    /**
+     * Recalculate an item's total and totalForForeigner from its current fees.
+     * POST /api/services/{id}/recalculate-totals
+     */
+    @POST
+    @Path("/{id}/recalculate-totals")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response recalculateTotals(@PathParam("id") Long id) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            ServiceResponseDTO response = serviceApiService.recalculateTotals(id);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("not found")) {
+                return errorResponse(msg, 404);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
+    /**
+     * Search any Category row, optionally narrowed to one CategoryType.
+     * Unlike /categories/search this is not limited to the ServiceCategory
+     * DTYPE, so it can find the categories services actually use and the
+     * FINANCIAL_CATEGORY rows used as income accounts.
+     *
+     * GET /api/services/item-categories/search?query=theatre&categoryType=FINANCIAL_CATEGORY&limit=20
+     */
+    @GET
+    @Path("/item-categories/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchAllCategories() {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            String query = uriInfo.getQueryParameters().getFirst("query");
+            String categoryType = uriInfo.getQueryParameters().getFirst("categoryType");
+            String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+
+            int limit = 30;
+            if (limitStr != null && !limitStr.trim().isEmpty()) {
+                try {
+                    int parsed = Integer.parseInt(limitStr.trim());
+                    limit = Math.min(Math.max(parsed, 1), 100);
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid limit format", 400);
+                }
+            }
+
+            List<ServiceCategoryDTO> results = serviceApiService.searchCategories(query, categoryType, limit);
+            return successResponse(results);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.startsWith("Invalid categoryType")) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
     @GET
     @Path("/categories/search")
     @Produces(MediaType.APPLICATION_JSON)
@@ -814,6 +926,10 @@ public class ServiceApi {
 
         ApiKey apiKey = apiKeyController.findApiKey(key);
         if (apiKey == null) {
+            return null;
+        }
+
+        if (apiKey.isRetired()) {
             return null;
         }
 

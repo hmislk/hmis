@@ -98,6 +98,7 @@
                                 scrollHeight="350px"
                                 id="itemList"
                                 selectionMode="multiple"
+                                rowStyleClass="#{configOptionApplicationController.getBooleanValueByKey('GRN - Highlight Rows With Expiry Date and Batch No Entered', false) and bi.pharmaceuticalBillItem.doe ne null and not empty bi.pharmaceuticalBillItem.stringValue and not (bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin) ? 'grn-row-complete' : ''}"
                                 editable="true">
                                 <p:focus id="focusPrate" for="pRate"></p:focus>
 
@@ -160,6 +161,7 @@
                                 <p:column
                                     width="4em"
                                     headerText="Ordered Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Ordered Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
@@ -169,6 +171,7 @@
                                 <p:column
                                     width="4em"
                                     headerText="Ordered Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Ordered Free Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:outputLabel
                                         class="w-100 text-end text-secondary"
@@ -199,6 +202,7 @@
                                 <p:column
                                     width="6em"
                                     headerText="Received Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Received Free Qty Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
@@ -233,6 +237,7 @@
                                 <p:column
                                     width="8em"
                                     headerText="Discount Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Discount Rate Column', true)}"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
@@ -268,6 +273,7 @@
                                 </p:column>
                                 <p:column
                                     headerText="Wholesale Rate"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Wholesale Rate Column', true)}"
                                     width="8em"
                                     styleClass="text-end">
                                     <p:inputText
@@ -287,6 +293,7 @@
 
                                 <p:column
                                     headerText="Line Net Total"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Line Net Total Column', true)}"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <h:panelGroup id="total">
@@ -323,6 +330,7 @@
                                 </p:column>
                                 <p:column
                                     headerText="Comments"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Show Comments Column', true)}"
                                     width="5em"
                                     styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
@@ -350,11 +358,12 @@
                                     styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:commandButton
                                         process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
-                                        update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
+                                        update=":#{p:resolveFirstComponentWithId('txtDuplicateComment',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
                                         icon="fas fa-plus"
                                         class="ui-button-warning mx-1"
                                         disabled="#{bi.referanceBillItem == null}"
-                                        action="#{grnCostingNativeSqlController.duplicateItem(bi)}"/>
+                                        action="#{grnCostingNativeSqlController.promptDuplicateItem(bi)}"
+                                        oncomplete="if (!args.validationFailed) PF('dlgConfirmDuplicateGrnRow').show()"/>
                                     <p:commandButton
                                         id="btnRemoveItem"
                                         ajax="false"
@@ -366,6 +375,29 @@
                                 </p:column>
 
                             </p:dataTable>
+
+                            <!-- Highlight rows whose Date of Expiry and Batch No are both
+                                 entered. rowStyleClass covers the initial render (incl.
+                                 reopening a saved GRN); the script keeps it in sync while
+                                 typing, since the batch field has no AJAX. Low-profit-margin
+                                 rows (ui-messages-fatal cells) are never highlighted, so the
+                                 red warning stays visible. -->
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Highlight Rows With Expiry Date and Batch No Entered', false)}">
+                            <style>
+                                .ui-datatable .ui-datatable-data > tr.grn-row-complete:not(.ui-state-highlight) > td {
+                                    background-color: #d1e7dd;
+                                }
+                            </style>
+                            <script>
+                                $(document).on('input change', 'tr input[id$=":batch"], tr input[id$=":doeDateOnlyShort_input"]', function () {
+                                    var row = $(this).closest('tr');
+                                    var batch = $.trim(row.find('input[id$=":batch"]').val());
+                                    var doe = $.trim(row.find('input[id$=":doeDateOnlyShort_input"]').val());
+                                    var lowMargin = row.children('td.ui-messages-fatal').length > 0;
+                                    row.toggleClass('grn-row-complete', batch !== '' &amp;&amp; doe !== '' &amp;&amp; !lowMargin);
+                                });
+                            </script>
+                            </h:panelGroup>
                         </div>
                     </div>
 
@@ -867,8 +899,11 @@
                     <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
                         <h:panelGroup class="d-flex justify-content-center">
                             <pha:grn_with_costing
-                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true)}"
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 One', configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4', true))}"
                                 bill="#{grnCostingNativeSqlController.currentGrnBillPre}"/>
+                            <pha:grn_with_costing_new
+                                rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is A4 Two', false)}"
+                                bill="#{grnCostingNativeSqlController.currentGrnBillPre}" />
                             <pha:grn_with_costing_custom_1
                                 rendered="#{configOptionController.getBooleanValueByKey('GRN Receipt Paper is Custom 1', true)}"
                                 bill="#{grnCostingNativeSqlController.currentGrnBillPre}"/>
@@ -883,8 +918,39 @@
                 </p:panel>
             </h:panelGroup>
 
-
-
+            <!-- Confirm-with-comment dialog for the row "Duplicate" (+) button.
+                 Requires a reason before a second line is added, so a stray or
+                 double click can no longer silently duplicate a GRN row. -->
+            <p:dialog id="dlgConfirmDuplicateGrnRowDialog"
+                      header="Confirm Duplicate Row"
+                      widgetVar="dlgConfirmDuplicateGrnRow"
+                      modal="true"
+                      width="450"
+                      closeOnEscape="true">
+                <h:panelGroup layout="block" class="mb-2">
+                    <h:outputText value="Splitting this item into a second batch/line. Please state why:" />
+                </h:panelGroup>
+                <p:inputTextarea
+                    id="txtDuplicateComment"
+                    value="#{grnCostingNativeSqlController.duplicateComment}"
+                    rows="3"
+                    class="w-100"
+                    placeholder="e.g. remaining quantity received in a different batch" />
+                <h:panelGroup layout="block" class="mt-3 text-end">
+                    <p:commandButton
+                        value="Cancel"
+                        class="ui-button-secondary mx-1"
+                        process="@this"
+                        action="#{grnCostingNativeSqlController.cancelDuplicatePrompt()}"
+                        oncomplete="PF('dlgConfirmDuplicateGrnRow').hide();" />
+                    <p:commandButton
+                        value="Confirm Duplicate"
+                        class="ui-button-warning mx-1"
+                        process="@this txtDuplicateComment"
+                        update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                        action="#{grnCostingNativeSqlController.confirmDuplicateItem()}" />
+                </h:panelGroup>
+            </p:dialog>
 
         </h:form>
 
@@ -912,10 +978,18 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <p:selectBooleanCheckbox
-                                        id="grnReceiptA4"
-                                        value="#{pharmacyConfigController.grnReceiptA4}" />
-                                    <p:outputLabel for="grnReceiptA4" value="A4 Paper Format" class="ms-2" />
-                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format</small>
+                                        id="grnReceiptA4One"
+                                        value="#{pharmacyConfigController.grnReceiptA4One}" />
+                                    <p:outputLabel for="grnReceiptA4One" value="A4 Paper Format One" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format One</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p:selectBooleanCheckbox
+                                        id="grnReceiptA4Two"
+                                        value="#{pharmacyConfigController.grnReceiptA4Two}" />
+                                    <p:outputLabel for="grnReceiptA4Two" value="A4 Paper Format Two" class="ms-2" />
+                                    <small class="form-text text-muted d-block">Standard A4 GRN receipt format Two</small>
                                 </div>
 
                                 <div class="mb-3">

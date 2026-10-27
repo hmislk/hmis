@@ -12,6 +12,7 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -61,6 +62,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.FeeValue;
 import com.divudi.core.entity.lab.Investigation;
@@ -139,6 +141,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
      */
     @Inject
     WebUserController webUserController;
+    @Inject
+    CollectingCentreSelfCommonController collectingCentreSelfCommonController;
     @Inject
     ItemFeeManager itemFeeManager;
     @Inject
@@ -264,6 +268,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private String externalDoctor;
 
     private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
+
+    private boolean ccSelfServiceBilling;
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
@@ -731,11 +737,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             getPatient().setCreatedAt(new Date());
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
             getPatient().getPerson().setCreatedAt(new Date());
-            try {
-                getPersonFacade().create(getPatient().getPerson());
-            } catch (Exception e) {
-                getPersonFacade().edit(getPatient().getPerson());
-            }
+            // Person is persisted by the cascade from Patient.person (cascade = ALL) in the
+            // patient create below. Persisting it separately here leaves an unreferenced
+            // duplicate PERSON row (#23887).
             try {
                 getPatientFacade().create(getPatient());
             } catch (Exception e) {
@@ -835,6 +839,9 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String settleCcBill() {
+        if (ccSelfServiceBilling && !collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfBilling)) {
+            return null;
+        }
         if (!ccBillSettlingStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Bill Settling Already Started.");
             return null;
@@ -904,8 +911,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
 
         ccBillSettlingStarted.set(false);
-        return "/collecting_centre/bill_print?faces-redirect=true";
-
+        if (ccSelfServiceBilling) {
+            return "/collecting_centre/cc_self_bill_print?faces-redirect=true";
+        }else{
+            return "/collecting_centre/bill_print?faces-redirect=true";
+        }
+        
     }
 
     public BillItem saveCcBillItem(Bill b, BillEntry e, WebUser wu) {
@@ -1057,9 +1068,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         agentHistory.setTransactionValue(transactionValue);
         agentHistory.setReferenceNumber(refNo);
         agentHistory.setHistoryType(historyType);
+        double[] balances = getInstitutionFacade().adjustBalance(collectingCentre, transactionValue);
+        if (balances != null) {
+            agentHistory.setBalanceBeforeTransaction(balances[0]);
+            agentHistory.setBalanceAfterTransaction(balances[1]);
+        }
         agentHistoryFacade.create(agentHistory);
-        collectingCentre.setBallance(collectingCentre.getBallance() + transactionValue);
-        getInstitutionFacade().edit(collectingCentre);
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1182,6 +1196,12 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
         ccBill.setCollectingCentre(collectingCentre);
 
+        if (sessionController.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+            ccBill.setCcBillingType(CollectingCentreBillingType.AGENT_BILLING);
+        } else {
+            ccBill.setCcBillingType(CollectingCentreBillingType.HOSPITAL_BILLING);
+        }
+
         ccBill.setToDepartment(bt);
         ccBill.setToInstitution(bt.getInstitution());
 
@@ -1298,6 +1318,30 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 return true;
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Referral details are required for CC billing.", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("External Doctor is required for CC billing.", false)) {
+                if(externalDoctor == null || externalDoctor.trim().equalsIgnoreCase("")){
+                    JsfUtil.addErrorMessage("External Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Doctor is required for CC billing.", false)) {
+                if(referredBy == null){
+                    JsfUtil.addErrorMessage("Referring Doctor is required for CC billing.");
+                    return true;
+                }
+            }
+            
+            if (configOptionApplicationController.getBooleanValueByKey("Referring Institution is required for CC billing.", false)) {
+                if(referredByInstitution == null){
+                    JsfUtil.addErrorMessage("Referring Institution is required for CC billing.");
+                    return true;
+                }
+            }
+            
+        }
+
         return false;
     }
 
@@ -1481,6 +1525,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setReferredBy(null);
         setReferredByInstitution(null);
         setReferralId(null);
+        setExternalDoctor(null);
         setSessionDate(null);
         setCreditCompany(null);
         setYearMonthDay(null);
@@ -1709,6 +1754,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBill();
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1717,6 +1763,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1747,7 +1794,48 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
         ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = false;
         return "/collecting_centre/bill?faces-redirect=true";
+    }
+
+    /**
+     * Entry point for a Collecting Centre self-service user creating a bill
+     * for their own institution. Unlike the staff-facing flow, the
+     * collecting centre is not picked from a list - it is always the
+     * institution the user is logged in as.
+     */
+    public String navigateToCollectingCentreSelfBilling() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBilling)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBilling);
+        }
+        prepareNewBill();
+        collectingCentre = sessionController.getInstitution();
+        loadCCFinancialData(collectingCentre);
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        if (collectingCentre.getFeeListType() != null) {
+            opdItems = itemFeeManager.fillItemLightsForCc(collectingCentre);
+        } else {
+            opdItems = fillOpdItems();
+        }
+        itemController.setCcInstitutionItems(itemController.fillItemsByInstitution(collectingCentre));
+        setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = true;
+        return "/collecting_centre/cc_self_bill?faces-redirect=true";
+    }
+
+    public String navigateToCollectingCentreSelfBillingKeepingCollectingCentre() {
+        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfBilling)) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfBilling);
+        }
+        collectingCentre = sessionController.getInstitution();
+        loadCCFinancialData(collectingCentre);
+        prepareNewBillKeepingCollectingCenter();
+        fillAvailableAgentReferanceNumbers(collectingCentre);
+        setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
+        ccSelfServiceBilling = true;
+        return "/collecting_centre/cc_self_bill?faces-redirect=true";
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {

@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true"/>
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+        <cc:attribute name="heading" type="java.lang.String" default="Deposit Receipt"/>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:outputStylesheet library="css" name="five_five_dotmatrix.css"/>
+
+        <ui:param name="preprinted"
+                  value="#{configOptionApplicationController.getBooleanValueByKey('Inward Dot Matrix Receipt Preprinted Stationery', false)}"/>
+        <ui:param name="topMarginLines"
+                  value="#{configOptionApplicationController.getIntegerValueByKey('Inward Dot Matrix Receipt Top Margin Lines', 8)}"/>
+
+        <div class="dmxbill" style="page-break-after: always;">
+
+            <!-- Leading blank lines so the body clears pre-printed letterhead -->
+            <h:panelGroup rendered="#{preprinted}">
+                <ui:repeat value="#{configOptionApplicationController.integerList(topMarginLines)}" var="i">
+                    <div class="dmx-pre"> </div>
+                </ui:repeat>
+            </h:panelGroup>
+
+            <!-- App-rendered text header, only on blank continuous paper -->
+            <h:panelGroup rendered="#{not preprinted}">
+                <div class="dmx-header">
+                    <h:outputText value="#{cc.attrs.bill.department.printingName}"/>
+                </div>
+                <div class="dmx-header">
+                    <h:outputText value="#{cc.attrs.bill.department.address}"/>
+                </div>
+                <div class="dmx-header">
+                    <h:outputText value="#{cc.attrs.bill.department.telephone1}"/>
+                    <h:outputText value=" / #{cc.attrs.bill.department.telephone2}"
+                                  rendered="#{not empty cc.attrs.bill.department.telephone2}"/>
+                </div>
+                <div class="dmx-header" rendered="#{not empty cc.attrs.bill.department.fax}">
+                    <h:outputText value="Fax: #{cc.attrs.bill.department.fax}"/>
+                </div>
+            </h:panelGroup>
+
+            <div class="dmx-heading">
+                <h:outputText value="#{cc.attrs.heading}"/>
+                <h:outputText value=" **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
+                <h:outputText value=" **Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
+            </div>
+
+            <div class="dmx-rule">----------------------------------------</div>
+
+            <div class="dmx-row"><span class="dmx-label">Admission Type :</span><span class="dmx-value">#{cc.attrs.bill.patientEncounter.admissionType.name}</span></div>
+            <div class="dmx-row"><span class="dmx-label">Name          :</span><span class="dmx-value">#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}</span></div>
+            <div class="dmx-row">
+                <span class="dmx-label">Age / Gender  :</span>
+                <span class="dmx-value">
+                    <h:outputText value="#{cc.attrs.bill.patientEncounter.patient.age} "/>
+                    <h:outputText value="#{cc.attrs.bill.patientEncounter.patient.person.sex}"/>
+                </span>
+            </div>
+            <div class="dmx-row"><span class="dmx-label">Address       :</span><span class="dmx-value">#{cc.attrs.bill.patientEncounter.patient.person.address}</span></div>
+            <div class="dmx-row"><span class="dmx-label">Phone         :</span><span class="dmx-value">#{cc.attrs.bill.patientEncounter.patient.person.phone}</span></div>
+            <div class="dmx-row"><span class="dmx-label">BHT No        :</span><span class="dmx-value">#{cc.attrs.bill.patientEncounter.bhtNo}</span></div>
+            <div class="dmx-row"><span class="dmx-label">Bill No       :</span><span class="dmx-value">#{cc.attrs.bill.deptId}</span></div>
+            <div class="dmx-row">
+                <span class="dmx-label">Bill Date     :</span>
+                <span class="dmx-value">
+                    <h:outputText value="#{cc.attrs.bill.createdAt}">
+                        <f:convertDateTime pattern="dd/MMM/yyyy" timeZone="Asia/Colombo"/>
+                    </h:outputText>
+                </span>
+            </div>
+            <div class="dmx-row">
+                <span class="dmx-label">Bill Time     :</span>
+                <span class="dmx-value">
+                    <h:outputText value="#{cc.attrs.bill.createdAt}">
+                        <f:convertDateTime pattern="hh:mm a" timeZone="Asia/Colombo"/>
+                    </h:outputText>
+                </span>
+            </div>
+            <div class="dmx-row"><span class="dmx-label">Payment       :</span><span class="dmx-value">#{cc.attrs.bill.paymentMethod}</span></div>
+
+            <!-- Multiple payment method breakdown as plain monospace rows -->
+            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'MultiplePaymentMethods'}">
+                <div class="dmx-rule">- - - - - - - - - - - - - - - - - - - - </div>
+                <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill)}" var="ps">
+                    <div class="dmx-amount-row">
+                        <span class="dmx-amount-label">#{ps.paymentMethod}<h:outputText value=" (#{ps.creditCardRefNo})" rendered="#{ps.paymentMethod eq 'Card'}"/></span>
+                        <span class="dmx-amount-value"><h:outputText value="#{ps.paidValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></span>
+                    </div>
+                </ui:repeat>
+            </h:panelGroup>
+
+            <div class="dmx-rule">========================================</div>
+            <div class="dmx-amount-row">
+                <span class="dmx-amount-label">Paying Amount</span>
+                <span class="dmx-amount-value"><h:outputText value="#{cc.attrs.bill.total}"><f:convertNumber pattern="#,##0.00"/></h:outputText></span>
+            </div>
+            <div class="dmx-rule">========================================</div>
+
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comment on Inward Deposit Bill', false) and not empty cc.attrs.bill.comments}">
+                <div class="dmx-row"><span class="dmx-label">Comment       :</span><span class="dmx-value">#{cc.attrs.bill.comments}</span></div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Print Barcode on Inward Dot Matrix Receipt', false)}">
+                <div class="dmx-header" style="font-size: 10px;">
+                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"/>
+                </div>
+            </h:panelGroup>
+
+            <div class="dmx-pre"> </div>
+            <div class="dmx-cashier">Cashier : #{cc.attrs.bill.creater.webUserPerson.name}</div>
+            <div class="dmx-pre"> </div>
+            <div class="dmx-footer"><h:outputText value="#{sessionController.userPreference.pharmacyBillFooter}"/></div>
+        </div>
+    </cc:implementation>
+</html>

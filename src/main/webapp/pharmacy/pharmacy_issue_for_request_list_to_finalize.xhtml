@@ -92,21 +92,19 @@
                                     styleClass="ui-button ui-button-stage-finalize ui-button-sm"
                                     icon="fas fa-lock"
                                     value="Finalize"
-                                    title="Open and Finalize Issue"
+                                    title="Open and Finalize Issue #{g.deptId}"
                                     ajax="false"
-                                    action="#{transferIssueForRequestsController.loadDraftIssueForEditing(g)}"
+                                    action="#{transferIssueNativeSqlController.loadDraftNativeIssueForEditing(g)}"
                                     style="font-size: 0.85em; padding: 0.375rem 0.75rem;"/>
                                 <p:commandButton
                                     id="btnCancel"
                                     styleClass="ui-button ui-button-danger ui-button-sm ms-1"
                                     icon="fas fa-times"
                                     value="Cancel"
-                                    title="Cancel this draft issue"
+                                    title="Cancel draft issue #{g.deptId}"
                                     ajax="false"
                                     onclick="if(!confirm('Cancel this draft issue? This cannot be undone.')) return false;"
-                                    action="#{transferIssueForRequestsController.cancelPendingIssue()}">
-                                    <f:setPropertyActionListener value="#{g}" target="#{transferIssueForRequestsController.issuedBill}"/>
-                                </p:commandButton>
+                                    action="#{transferIssueNativeSqlController.cancelPendingNativeIssueDraft(g)}"/>
                             </p:column>
                         </p:dataTable>
                     </div>
