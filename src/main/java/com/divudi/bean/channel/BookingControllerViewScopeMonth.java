@@ -6378,6 +6378,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return true;
         }
 
+        // Fresh DB read; runs inside settleCredit()'s per-bill lock, so a concurrent
+        // settle of the same booking has either fully saved its paid bill or not started.
+        Bill currentBookingBill = getBillFacade().findWithoutCache(getBillSession().getBill().getId());
+        if (currentBookingBill != null && (currentBookingBill.getPaidAmount() != 0 || currentBookingBill.getPaidBill() != null)) {
+            JsfUtil.addErrorMessage("Payment Already Settled.");
+            return true;
+        }
+
         if (settlePaymentMethod == paymentMethod.OnCall) {
             JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
             return true;
@@ -6401,6 +6409,21 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     public void settleCredit() {
+        if (getBillSession() == null || getBillSession().getBill() == null || getBillSession().getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No booking selected to settle.");
+            return;
+        }
+        // Hold the lock across the already-paid check AND every settlement write,
+        // otherwise two submits can both pass the check before either saves (#23776).
+        // Shares BookingControllerViewScope's locks, so a By Date and a By Month
+        // settle of the same booking also serialize.
+        Long bookingBillId = getBillSession().getBill().getId();
+        synchronized (BookingControllerViewScope.SETTLE_LOCKS[(int) Math.floorMod(bookingBillId, (long) BookingControllerViewScope.SETTLE_LOCKS.length)]) {
+            settleCreditUnderLock();
+        }
+    }
+
+    private void settleCreditUnderLock() {
         if (errorCheckForSettle()) {
             return;
         }
