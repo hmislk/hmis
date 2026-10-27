@@ -911,6 +911,17 @@ public class PharmacyBean {
         return true;
     }
 
+    public boolean resetStock(PharmaceuticalBillItem ph, Stock stock, double qty, Staff staff) {
+        if (stock.getId() == null) {
+            return false;
+        }
+        stock = getStockFacade().findWithoutCache(stock.getId());
+        stock.setStock(qty);
+        getStockFacade().editAndCommit(stock);
+        addToStockHistory(ph, stock, staff);
+        return true;
+    }
+
     public Stock addToStock(PharmaceuticalBillItem pharmaceuticalBillItem, double qty, Staff staff) {
         String sql;
         HashMap hm = new HashMap();
