@@ -114,6 +114,8 @@
                             <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
                                 <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall'}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
                                 <p:outputLabel rendered="#{bs.bill.balance eq 0.0 and bs.bill.paymentMethod ne 'OnCall' }" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.recheduledSession}" value="Rescheduled" style="margin-left: 6px; color: red;font-size: 12px;font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" style="margin-left: 6px; color: #b8860b;font-size: 12px;font-weight: bold"/>
                             </p:column>
 <!--                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
                                 <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 11px;font-weight: bold" />

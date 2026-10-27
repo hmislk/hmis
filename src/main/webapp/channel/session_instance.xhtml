@@ -537,11 +537,15 @@
                                                 <p:outputLabel value="#{bs.serialNo}" style="font-size: 12px;" />
                                             </p:column>
 
-                                            <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px" >
+                                            <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px"
+                                                      exportValue="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' ? bs.bill.referenceBill.onlineBooking.patientName : bs.bill.patient.person.nameWithTitle}#{bs.recheduledSession ? ' (Rescheduled)' : ''}#{bs.rescheduledFromBillSession ne null ? ' (Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ')' : ''}" >
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
                                                     <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
                                                     <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
+
+                                                    </p:badge>
+                                                    <p:badge rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" class="m-1" severity="info">
 
                                                     </p:badge>
                                                 </div>
@@ -664,9 +668,18 @@
                                                 <p:outputLabel value="#{bs.serialNo}" style="font-size: 12px;" />
                                             </p:column>
 
-                                            <p:column headerText="Patient Name" style="font-size: 12px; width: 30%; padding: 1px" >
-                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
-                                                <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
+                                            <p:column headerText="Patient Name" style="font-size: 12px; width: 30%; padding: 1px"
+                                                      exportValue="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' ? bs.bill.referenceBill.onlineBooking.patientName : bs.bill.patient.person.nameWithTitle}#{bs.recheduledSession ? ' (Rescheduled)' : ''}#{bs.rescheduledFromBillSession ne null ? ' (Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ')' : ''}" >
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
+                                                    <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
+                                                    <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
+
+                                                    </p:badge>
+                                                    <p:badge rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" class="m-1" severity="info">
+
+                                                    </p:badge>
+                                                </div>
                                             </p:column>
                                             <!--                            <p:column headerText="Booked At" style="font-size: 12px; width: 23%!important; padding: 1px" >
                                                                             <p:outputLabel value="#{bs.createdAt}" style="font-size: 12px;" >

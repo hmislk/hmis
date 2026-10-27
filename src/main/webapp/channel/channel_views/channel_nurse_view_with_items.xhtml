@@ -123,6 +123,11 @@
                                     <p:outputLabel value="#{bi.netValue}" style="font-size: 12px;" rendered="#{not loop.first}" /><br/>
                                 </ui:repeat>
                             </p:column>
+
+                            <p:column headerText="Remarks" style="font-size: 12px; width: 12%!important; padding: 1px">
+                                <p:outputLabel rendered="#{bs.recheduledSession}" value="Rescheduled" style="color: red;font-size: 12px;font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" style="color: #b8860b;font-size: 12px;font-weight: bold"/>
+                            </p:column>
                             
 <!--                             <p:column headerText="Status" style="font-size: 12px; width: 18%!important; padding: 1px">
                                     <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled eq true}" style="color: red; font-size: 12px;"/>
