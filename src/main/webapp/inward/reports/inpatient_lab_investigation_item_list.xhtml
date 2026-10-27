@@ -110,23 +110,34 @@
                         <p:panel>
                             <f:facet name="header">
 
-                                <p:outputLabel value="Issued Lab" style="font-weight: bold"></p:outputLabel>
+                                <div class="d-flex">
+                                    <p:outputLabel value="Issued Lab" style="font-weight: bold"></p:outputLabel>
 
-                                <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true" disabled="true">
-                                    <f:selectItem itemLabel="All Lab" ></f:selectItem>
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
-                                </p:selectOneMenu>
+                                    <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true" disabled="true">
+                                        <f:selectItem itemLabel="All Lab" ></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
 
-                                <p:commandButton 
-                                    value="Process" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
-                                    icon="fa fa-prescription-bottle-alt"
-                                    class="ui-button-success"
-                                    >
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{inwardReportControllerBht.patientEncounter}" />
-                                </p:commandButton>
+                                    <div class="d-flex gap-3 mx-4 mt-2">
+                                        <p:outputLabel value="Show Refund cancel Tests" style="font-weight: bold"></p:outputLabel>
+                                        <p:toggleSwitch 
+                                            value="#{inwardReportControllerBht.showRefundCancelTests}"
+                                            onIcon="pi pi-check" 
+                                            offIcon="pi pi-times">
+                                        </p:toggleSwitch>
+                                    </div>
+
+                                    <p:commandButton 
+                                        value="Process" 
+                                        action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
+                                        icon="fa fa-prescription-bottle-alt"
+                                        class="ui-button-success">
+                                        <f:setPropertyActionListener 
+                                            value="#{admissionController.current}" 
+                                            target="#{inwardReportControllerBht.patientEncounter}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </div>
 
                             </f:facet>
 
