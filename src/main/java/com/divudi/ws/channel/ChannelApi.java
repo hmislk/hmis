@@ -60,6 +60,7 @@ import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.SessionBookingLock;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
 import com.divudi.service.WebSocketService;
@@ -1071,7 +1072,16 @@ public class ChannelApi {
         newBooking.setEmail(email);
         newBooking.setAddress(address);
 
-        Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+        Bill bill;
+        // Serial number allocation and the booking insert must not interleave with another
+        // booking for the same session; re-check capacity under the same lock (#24785).
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(session)) {
+            if (channelService.isFullyBookedSession(session)) {
+                JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+        }
 
         try {
             WebSocketService.broadcastToSessions("Online Temporary Booking Added - " + session.getId());

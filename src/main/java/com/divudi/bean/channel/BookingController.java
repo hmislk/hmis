@@ -80,6 +80,7 @@ import com.divudi.core.entity.channel.SessionInstanceActivity;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.SessionBookingLock;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -654,33 +655,35 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
-        Integer count = null;
-        boolean reservedSession;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstanceForRechedule())) {
+            Integer count = null;
+            boolean reservedSession;
 
-        if (selectedBillSession.isReservedBooking()) {
-            if (lastSessionReservedNumbers.isEmpty()) {
-                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
-                return;
-            }
-            for (Integer rn : lastSessionReservedNumbers) {
-                if (bs.getSerialNo() == rn) {
-                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
-                    if (count == null) {
-                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
-                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+            if (selectedBillSession.isReservedBooking()) {
+                if (lastSessionReservedNumbers.isEmpty()) {
+                    JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
+                    return;
+                }
+                for (Integer rn : lastSessionReservedNumbers) {
+                    if (bs.getSerialNo() == rn) {
+                        count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
+                        if (count == null) {
+                            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+                            JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                        }
                     }
                 }
-            }
 
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+            } else {
+                count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+            }
+            if (count != null) {
+                newBillSession.setSerialNo(count);
+            } else {
+                newBillSession.setSerialNo(1);
+            }
+            getBillSessionFacade().create(newBillSession);
         }
-        if (count != null) {
-            newBillSession.setSerialNo(count);
-        } else {
-            newBillSession.setSerialNo(1);
-        }
-        getBillSessionFacade().create(newBillSession);
         bs.setRecheduledSession(true);
         bs.setReferenceBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
@@ -4048,27 +4051,29 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
         bs.setStaff(getSelectedSessionInstance().getStaff());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            Integer count;
 
-        if (forReservedNumbers) {
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, null);
-            if (count == null) {
+            if (forReservedNumbers) {
+                count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, null);
+                if (count == null) {
+                    count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+                    JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                }
+
+                bs.setReservedBooking(true);
+            } else {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
 
-            bs.setReservedBooking(true);
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-        }
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
+            getBillSessionFacade().create(bs);
         }
-
-        getBillSessionFacade().create(bs);
 
         return bs;
     }
