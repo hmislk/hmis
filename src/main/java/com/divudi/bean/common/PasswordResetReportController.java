@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.dto.UserPasswordResetDto;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.LoginsFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPasswordHistoryFacade;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -41,11 +43,15 @@ public class PasswordResetReportController implements Serializable {
     private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
     @EJB
     private LoginsFacade loginsFacade;
+    @Inject
+    private SessionController sessionController;
 
     private String nameFilter;
     private String updatedByFilter;
     private boolean includeRetired;
     private List<UserPasswordResetDto> rows;
+    private Date processedAt;
+    private String processedBy;
 
     private long selfCount;
     private long adminCount;
@@ -58,6 +64,15 @@ public class PasswordResetReportController implements Serializable {
     }
 
     public void fillReport() {
+        processedAt = new Date();
+        WebUser loggedUser = sessionController.getLoggedUser();
+        if (loggedUser == null) {
+            processedBy = null;
+        } else if (loggedUser.getWebUserPerson() != null && loggedUser.getWebUserPerson().getName() != null) {
+            processedBy = loggedUser.getWebUserPerson().getName();
+        } else {
+            processedBy = loggedUser.getName();
+        }
         Map<String, Object> params = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.dto.UserPasswordResetDto("
                 + "wu.id, wu.name, wu.code, sp.title, sp.name, wp.title, wp.name, "
@@ -202,6 +217,14 @@ public class PasswordResetReportController implements Serializable {
 
     public List<UserPasswordResetDto> getRows() {
         return rows;
+    }
+
+    public Date getProcessedAt() {
+        return processedAt;
+    }
+
+    public String getProcessedBy() {
+        return processedBy;
     }
 
     public long getSelfCount() {
