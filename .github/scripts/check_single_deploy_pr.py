@@ -93,27 +93,43 @@ def sweep(repo, dry_run):
         base = p["base"]["ref"]
         if DEPLOY_BRANCH.search(base):
             by_base.setdefault(base, []).append(p)
+    # A status belongs to a commit, not a PR, and one head commit can be open
+    # as PRs to several deploy branches. Work out one result per commit, with a
+    # duplicate on any branch winning, so the PRs do not overwrite each other.
+    # The context stays fixed so it can later be made a required check.
+    by_sha = {}
     for base, prs in sorted(by_base.items()):
         prs.sort(key=lambda p: p["number"])
         first = prs[0]
         for p in prs:
             if p is first:
-                state, desc = "success", "Only open PR to %s" % base
+                result = ("success", "Only open PR to %s" % base, first)
             else:
-                state = "failure"
-                desc = "#%d is already open on %s - add these commits to its branch" % (first["number"], base)
-            desc = desc[:140]
+                result = ("failure", "#%d is already open on %s - add these commits to its branch"
+                          % (first["number"], base), first)
             sha = p["head"]["sha"]
-            if current_state(repo, sha) == (state, desc):
-                continue
-            print("%s %s: %s" % (describe(p), state, desc))
-            if not dry_run:
-                api("POST", "/repos/%s/statuses/%s" % (repo, sha), {
-                    "state": state,
-                    "context": CONTEXT,
-                    "description": desc,
-                    "target_url": "%s/pull/%d" % ("https://github.com/" + repo, first["number"]),
-                })
+            entry = by_sha.setdefault(sha, {"prs": [], "result": result, "bases": []})
+            entry["prs"].append(p)
+            if result[0] == "success":
+                entry["bases"].append(base)
+            if entry["result"][0] == "success" and result[0] == "failure":
+                entry["result"] = result
+    for entry in by_sha.values():
+        if entry["result"][0] == "success":
+            entry["result"] = ("success", "Only open PR to %s" % ", ".join(entry["bases"]), entry["result"][2])
+    for sha, entry in by_sha.items():
+        state, desc, target = entry["result"]
+        desc = desc[:140]
+        if current_state(repo, sha) == (state, desc):
+            continue
+        print("%s %s: %s" % (", ".join(describe(p) for p in entry["prs"]), state, desc))
+        if not dry_run:
+            api("POST", "/repos/%s/statuses/%s" % (repo, sha), {
+                "state": state,
+                "context": CONTEXT,
+                "description": desc,
+                "target_url": "https://github.com/%s/pull/%d" % (repo, target["number"]),
+            })
     return 0
 
 
