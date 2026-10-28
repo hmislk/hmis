@@ -22,7 +22,9 @@
                                 <div class="row g-0" >
                                     <div class="col-lg-6" >
                                         <div class="card-body p-md-5 mx-md-4">
-                                            <div class="text-center">
+                                            <!-- Logo only on the username/password form, not on the authenticator code or locked screens -->
+                                            <h:panelGroup layout="block" class="text-center"
+                                                          rendered="#{not twoFactorAuthController.pending and not twoFactorAuthController.accountLockedNotice}">
                                                 <h:graphicImage
                                                     rendered="#{not empty sessionController.applicationPreference.logoUrl}"
                                                     value="#{sessionController.applicationPreference.logoUrl}"
@@ -37,11 +39,14 @@
                                                     alt="logo"
                                                     />
 
-                                            </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{twoFactorAuthController.accountLockedNotice and not twoFactorAuthController.pending}">
+                                                <ez:two_factor_locked/>
+                                            </h:panelGroup>
                                             <h:panelGroup rendered="#{twoFactorAuthController.pending}">
                                                 <ez:two_factor_challenge/>
                                             </h:panelGroup>
-                                            <h:form rendered="#{not twoFactorAuthController.pending}">
+                                            <h:form rendered="#{not twoFactorAuthController.pending and not twoFactorAuthController.accountLockedNotice}">
                                                 <div class="form-outline mb-4">
                                                     <label class="form-label m-1" for="txtUserName">User Name</label>
                                                     <p:inputText id="txtUserName"
