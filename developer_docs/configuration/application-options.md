@@ -12,6 +12,15 @@ Every hospital already has a stored value for each existing key (the row is crea
 
 The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
 
+## Reading and writing keys from a settings dialog
+
+`ConfigOptionController` and `ConfigOptionApplicationController` store a key differently:
+
+- `ConfigOptionApplicationController` reads and writes the plain key, for the whole application.
+- `ConfigOptionController` reads and writes `"<current department name> - <key>"` first and falls back to the plain key when no department row exists.
+
+A print or settings dialog must use the **same** controller as the page or template that reads the key. If a dialog saves through `ConfigOptionController` but the template reads through `ConfigOptionApplicationController`, the saved department-prefixed row is never read and the checkbox appears to do nothing. Check how the template reads the key before binding a dialog checkbox to it. Keys that other pages also read with a different default (for example the `Pharmacy Disbursement Reports - Display ...` keys, which transfer issue reports treat as true when unset) should be written only when the user changes them.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
