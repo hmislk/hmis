@@ -227,6 +227,11 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     public void startSelfSetup() {
+        if (isLoggedUserEnrolled()) {
+            // Linking a new phone is done by an admin reset, not by the user
+            JsfUtil.addErrorMessage("Your authenticator app is already linked. Ask an administrator to reset it.");
+            return;
+        }
         selfSetupSecret = TotpUtil.generateSecret();
         selfSetupCode = null;
     }
