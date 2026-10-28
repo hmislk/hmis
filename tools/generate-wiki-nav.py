@@ -11,12 +11,21 @@ Usage:
 Writes <out-config> as ``INHERIT: <base-config>`` plus a generated ``nav:``.
 Build the site with ``mkdocs build -f <out-config>``.
 
+Index format (Wiki-Article-Index.md):
+- the first ``#`` heading is the page title; later ``#`` headings are tabs
+  (Get Started, User Guide, Administration, ...), ``##`` modules and ``###``
+  sub-sections; links in list items are pages
+- an italic line right under a heading is its description, and an
+  ``<!-- icon: material/pill -->`` comment its icon (both invisible or
+  harmless on GitHub); they feed the landing-page cards
+- ``##`` groups before any tab heading (the old two-level format) go under
+  "User Guide"
+
 Menu layout:
-- Home
-- User Manual: overview, the article index, then every ``##`` group of the
-  article index (``###`` headings become sub-sections)
-- Videos, Knowledge Base, Developer Guide, About: fixed pages, skipped when
-  missing; the index group "Developer Documentation" goes to Developer Guide
+- Home: a generated landing page (docs/index.md) with one card per tab and
+  one per User Guide module
+- one tab per index ``#`` heading, in index order
+- Videos, About: fixed pages, unless the index already lists them
 - More Articles: every page not reached above, grouped by sub-folder or
   filename prefix, so every wiki page is reachable from the menu
 
@@ -34,27 +43,18 @@ import sys
 
 
 ARTICLE_INDEX = "Wiki-Article-Index"
-DEVELOPER_GROUP = "developer documentation"
+DEFAULT_TAB = "User Guide"
+DEFAULT_ICON = "material/book-open-variant"
 MIN_GROUP_SIZE = 5
+LANDING_TITLE = "CareCode HMIS Documentation"
+LANDING_INTRO = (
+    "CareCode HMIS is an open-source hospital management information system. "
+    "Pick where you want to start, or use the search box above to find a "
+    "page by name."
+)
 EXCLUDED_PAGES = {"index", "_footer", "_sidebar"}
 
 VIDEO_PAGES = [("Video Library", "Video-Library")]
-KNOWLEDGE_PAGES = [
-    ("Overview", "Knowledgebase"),
-    ("Functions", "Functions"),
-    ("Clinical Knowledge", "Clinical-Knowledge"),
-    ("Medicines", "Medicines"),
-    ("Pharmaceutical Fundamentals", "Pharmaceutical-Fundamentals"),
-]
-DEVELOPER_PAGES = [
-    ("Overview", "Developer-Manual"),
-    ("Tech Stack", "Tech-Stack"),
-    ("API", "API"),
-    ("Design Documentation", "Design-Documentation"),
-    ("Code Concepts", "Code-Concepts-for-Developers"),
-    ("Theories for Developers", "Theories-for-developers"),
-    ("Troubleshooting", "Troubleshooting"),
-]
 ABOUT_PAGES = [
     ("About Open HMIS", "About-Open-HMIS"),
     ("Road Map", "Road-map"),
@@ -70,8 +70,9 @@ ABOUT_PAGES = [
 def list_doc_files(docs_dir: Path) -> list:
     """Docs-relative paths of every page MkDocs will build, root files first.
 
-    MkDocs ignores a README.md that sits next to an index.md, so those are
-    left out (the converter renames Home.md to index.md at the root)."""
+    MkDocs ignores a README.md (case-sensitive) that sits next to an
+    index.md, so those are left out. The converter renames README.md files to
+    Readme.md, so this only matters for a docs folder it did not produce."""
     files = sorted(
         docs_dir.rglob("*.md"),
         key=lambda p: (len(p.relative_to(docs_dir).parts), str(p)),
@@ -81,7 +82,7 @@ def list_doc_files(docs_dir: Path) -> list:
         rel = path.relative_to(docs_dir).as_posix()
         if rel.startswith("."):
             continue
-        if path.name.lower() == "readme.md" and (path.parent / "index.md").exists():
+        if path.name == "README.md" and (path.parent / "index.md").exists():
             continue
         result.append(rel)
     return result
@@ -153,48 +154,115 @@ def find_links(line: str):
         i = end + 1
 
 
-def parse_article_index(text: str, pages: dict):
-    """Return (groups, broken).
+class Node:
+    """A tab (``#``), module (``##``) or sub-section (``###``) of the index.
 
-    groups: list of (heading, items) where items holds (label, path) pages
-    and (sub_heading, [(label, path), ...]) sub-sections.
+    items holds (label, path) pages and child Nodes, in index order."""
+
+    def __init__(self, title: str):
+        self.title = title
+        self.description = ""
+        self.icon = ""
+        self.items = []
+
+    def first_page(self):
+        for item in self.items:
+            if isinstance(item, Node):
+                page = item.first_page()
+                if page:
+                    return page
+            else:
+                return item[1]
+        return None
+
+    def to_nav(self):
+        out = []
+        for item in self.items:
+            if isinstance(item, Node):
+                children = item.to_nav()
+                if children:
+                    out.append((item.title, children))
+            else:
+                out.append(item)
+        return out
+
+
+HEADING = re.compile(r"^(#{1,3})\s+(.+?)\s*#*\s*$")
+ICON = re.compile(r"^<!--\s*icon:\s*(\S+)\s*-->$")
+DESCRIPTION = re.compile(r"^(?:\*([^*].*?)\*|_([^_].*?)_)$")
+
+
+def parse_article_index(text: str, pages: dict):
+    """Return (tabs, broken).
+
+    The first ``#`` heading is the page title. Later ``#`` headings are tabs,
+    ``##`` modules, ``###`` sub-sections; list-item links are pages. An italic
+    line right under a heading is its description and an
+    ``<!-- icon: material/name -->`` comment its icon. ``##`` groups before
+    any tab heading (the old two-level format) go under "User Guide".
+
     broken: list of (heading, label, target) for links to missing pages."""
-    groups = []
+    tabs = []
     broken = []
-    group = None
-    section = None
+    seen_title = False
+    tab = module = section = None
+    current = None  # the heading that may still take a description or icon
 
     for line in text.splitlines():
-        h2 = re.match(r"^##\s+(.+?)\s*$", line)
-        h3 = re.match(r"^###\s+(.+?)\s*$", line)
-        if h2:
-            group = (h2.group(1), [])
-            groups.append(group)
-            section = None
+        stripped = line.strip()
+        h = HEADING.match(line)
+        if h:
+            level, title = len(h.group(1)), h.group(2)
+            if level == 1:
+                if not seen_title:
+                    seen_title = True
+                    current = None
+                    continue
+                tab = Node(title)
+                tabs.append(tab)
+                module = section = None
+                current = tab
+            elif level == 2:
+                if tab is None:
+                    tab = Node(DEFAULT_TAB)
+                    tabs.append(tab)
+                module = Node(title)
+                tab.items.append(module)
+                section = None
+                current = module
+            else:
+                if module is None:
+                    continue
+                section = Node(title)
+                module.items.append(section)
+                current = section
             continue
-        if h3 and group is not None:
-            section = (h3.group(1), [])
-            group[1].append(section)
+
+        if not stripped:
             continue
-        if group is None or not re.match(r"^\s*[-*+]\s", line):
+        icon = ICON.match(stripped)
+        if icon and current is not None:
+            current.icon = icon.group(1)
+            continue
+        desc = DESCRIPTION.match(stripped)
+        if desc and current is not None and not current.description \
+                and not current.items:
+            current.description = desc.group(1) or desc.group(2)
+            continue
+        current = None
+
+        target_node = section or module or tab
+        if target_node is None or not re.match(r"^\s*[-*+]\s", line):
             continue
         for label, target in find_links(line):
             path = resolve(target, pages)
             if path is None:
                 if not re.match(r"^[a-z]+:", target.strip("<> "), re.I):
-                    broken.append((group[0], label, target))
+                    broken.append((target_node.title, label, target))
                 continue
-            (section or group)[1].append((label, path))
+            target_node.items.append((label, path))
 
-    # Drop empty sub-sections and groups
-    cleaned = []
-    for heading, items in groups:
-        items = [
-            it for it in items if not isinstance(it[1], list) or it[1]
-        ]
-        if items:
-            cleaned.append((heading, items))
-    return cleaned, broken
+    return [tb for tb in tabs if tb.first_page()], broken
 
 
 # ---------------------------------------------------------------------------
@@ -280,38 +348,25 @@ def build_nav(docs_dir: Path):
         raise SystemExit(f"{ARTICLE_INDEX}.md not found in {docs_dir}")
 
     text = (docs_dir / index_path).read_text(encoding="utf-8", errors="ignore")
-    groups, broken = parse_article_index(text, pages)
-
-    user_manual = fixed_section(
-        [("Overview", "User-Manual"), ("All Articles (Index)", ARTICLE_INDEX)],
-        pages,
-    )
-    developer = fixed_section(DEVELOPER_PAGES, pages)
-    for heading, items in groups:
-        if heading.lower() == DEVELOPER_GROUP:
-            developer.extend(items)
-        else:
-            user_manual.append((heading, items))
+    tabs, broken = parse_article_index(text, pages)
 
     nav = [("Home", "index.md")]
-    nav.append(("User Manual", user_manual))
-    for label, entries in (
-        ("Videos", VIDEO_PAGES),
-        ("Knowledge Base", KNOWLEDGE_PAGES),
-    ):
-        section = fixed_section(entries, pages)
-        if section:
-            nav.append((label, section))
-    if developer:
-        nav.append(("Developer Guide", developer))
+    for tab in tabs:
+        nav.append((tab.title, tab.to_nav()))
+    if nav[1:]:
+        nav[1][1].append(("All Articles (Index)", index_path))
+
+    indexed = set()
+    collect_paths(nav[1:], indexed)
+
+    videos = [e for e in fixed_section(VIDEO_PAGES, pages) if e[1] not in indexed]
+    if videos:
+        nav.append(("Videos", videos))
 
     reached = set()
     collect_paths(nav, reached)
-    about = fixed_section(ABOUT_PAGES, pages)
+    about = [e for e in fixed_section(ABOUT_PAGES, pages) if e[1] not in reached]
     collect_paths(about, reached)
-
-    indexed = set()
-    collect_paths([g for g in groups], indexed)
 
     remaining = sorted(
         path for path in files
@@ -330,7 +385,65 @@ def build_nav(docs_dir: Path):
         and Path(path).stem.lower() not in EXCLUDED_PAGES
         and not is_redirect_stub(docs_dir / path)
     )
-    return nav, broken, not_indexed, len(files)
+    return nav, tabs, broken, not_indexed, len(files)
+
+
+# ---------------------------------------------------------------------------
+# Landing page
+# ---------------------------------------------------------------------------
+
+def shortcode(icon: str) -> str:
+    """``material/pill`` -> ``:material-pill:`` (pymdownx.emoji)."""
+    return ":" + (icon or DEFAULT_ICON).replace("/", "-") + ":"
+
+
+def md_link(path: str) -> str:
+    target = path.replace(" ", "%20")
+    return f"<{target}>" if "(" in target or ")" in target else target
+
+
+def cards(nodes) -> list:
+    lines = ['<div class="grid cards" markdown>', ""]
+    for node in nodes:
+        page = node.first_page()
+        lines.append(f"-   {shortcode(node.icon)}{{ .lg .middle }} "
+                     f"**[{node.title}]({md_link(page)})**")
+        lines.append("")
+        lines.append("    ---")
+        lines.append("")
+        if node.description:
+            lines.append(f"    {node.description}")
+            lines.append("")
+    lines += ["</div>", ""]
+    return lines
+
+
+def write_landing_page(docs_dir: Path, tabs) -> None:
+    """Replace docs/index.md (the converted wiki Home.md) with a landing page:
+    one card per tab, then one card per module of the User Guide tab."""
+    lines = [
+        "---",
+        "hide:",
+        "  - navigation",
+        "  - toc",
+        "---",
+        "",
+        f"# {LANDING_TITLE}",
+        "",
+        LANDING_INTRO,
+        "",
+        "## Start here",
+        "",
+    ]
+    lines += cards(tabs)
+    for tab in tabs:
+        modules = [m for m in tab.items if isinstance(m, Node) and m.first_page()]
+        if tab.title.lower() == DEFAULT_TAB.lower() and modules:
+            lines += [f"## {tab.title}", ""]
+            if tab.description:
+                lines += [tab.description, ""]
+            lines += cards(modules)
+    (docs_dir / "index.md").write_text("\n".join(lines), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -393,7 +506,8 @@ def main() -> int:
     base_config = Path(sys.argv[2]).resolve()
     out_config = Path(sys.argv[3]).resolve()
 
-    nav, broken, not_indexed, total = build_nav(docs_dir)
+    nav, tabs, broken, not_indexed, total = build_nav(docs_dir)
+    write_landing_page(docs_dir, tabs)
 
     inherit = os.path.relpath(base_config, out_config.parent)
     lines = [

@@ -92,6 +92,10 @@ markdown_extensions:
       alternate_style: true
   - footnotes
   - def_list
+  # Icons in the generated landing-page cards (:material-pill: etc.)
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 # ---------------------------------------------------------------------------
 # Extra
