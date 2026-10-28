@@ -769,3 +769,7 @@ bill's `CANCELLED`.
 - On a copied production DB, *Shift Handovers to Accept* can list thousands of old pending rows. Pick the row by its date or bill number, never the first row.
 - The *Shift* section of the Financial Transaction Manager is open on load; clicking its header closes it.
 - An OPD payment sits on the batch bill, whose to-department is empty, so the cash book entry written at accept takes the receiver's logged-in department as its "to" side.
+
+## 171. Cost of Goods Sold: run the landing page for one day, then set the real range on the drill-down
+
+The landing *Process* aggregates about 20 bill types plus opening and closing stock, and can take tens of minutes on a full local copy even for one day. The Sale, BHT and other drill-downs open only from its result rows, and each has its own fast *Process*. Run the landing page for a single day, open the drill-down, then set the date range you need there.
