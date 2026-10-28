@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- Authenticator app code screen shown after the password is accepted (see TwoFactorAuthController) -->
+    <cc:interface>
+    </cc:interface>
+
+    <cc:implementation>
+        <h:form id="frmTwoFactor">
+
+            <h:panelGroup rendered="#{twoFactorAuthController.enrollmentNeeded}" layout="block" class="mb-3">
+                <h5 class="mb-2">Set up your authenticator app</h5>
+                <ol class="small ps-3 mb-2">
+                    <li>Install Google Authenticator, Microsoft Authenticator or a similar app on your phone.</li>
+                    <li>In the app, add an account and scan this QR code.</li>
+                    <li>Enter the 6-digit code shown in the app.</li>
+                </ol>
+                <div class="text-center my-2">
+                    <h:outputText value="#{twoFactorAuthController.setupQrSvg}" escape="false" />
+                </div>
+                <div class="small text-center">
+                    <h:outputText value="Can't scan? Enter this key manually:" />
+                    <br/>
+                    <code><h:outputText value="#{twoFactorAuthController.setupSecretForDisplay}" /></code>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{not twoFactorAuthController.enrollmentNeeded}" layout="block" class="mb-3">
+                <h5 class="mb-2">Two-step verification</h5>
+                <p class="small mb-0">
+                    <h:outputText value="Enter the 6-digit code from the authenticator app linked to " />
+                    <strong><h:outputText value="#{twoFactorAuthController.pendingUserName}" /></strong>
+                    <h:outputText value="." />
+                </p>
+            </h:panelGroup>
+
+            <div class="form-outline mb-3">
+                <label class="form-label m-1" for="txtTwoFactorCode">Authenticator Code</label>
+                <p:inputText id="txtTwoFactorCode"
+                             value="#{twoFactorAuthController.code}"
+                             required="true"
+                             requiredMessage="Enter the 6-digit code"
+                             maxlength="7"
+                             autocomplete="one-time-code"
+                             class="form-control w-100 text-center"
+                             style="letter-spacing: 0.3em; font-size: 1.3em;">
+                    <f:passThroughAttribute name="inputmode" value="numeric" />
+                    <f:passThroughAttribute name="autofocus" value="autofocus" />
+                </p:inputText>
+            </div>
+
+            <div class="text-center pt-1 mb-3">
+                <p:commandButton
+                    class="btn m-1 w-75 shadow-sm"
+                    value="Verify"
+                    icon="pi pi-check"
+                    ajax="false"
+                    action="#{twoFactorAuthController.verifyLoginCode()}" />
+                <p:commandButton
+                    class="ui-button-secondary m-1 w-75"
+                    value="Back to Login"
+                    icon="pi pi-arrow-left"
+                    ajax="false"
+                    immediate="true"
+                    action="#{twoFactorAuthController.cancelLogin()}" />
+            </div>
+        </h:form>
+    </cc:implementation>
+</html>
