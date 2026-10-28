@@ -179,6 +179,149 @@
                 justify-content: center;
                 width: 100%;
             }
+            /* Forced setup banner */
+            .auth-forced {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 1.1rem 1rem 1.35rem;
+                margin-bottom: 1.25rem;
+                border-radius: 14px;
+                overflow: hidden;
+                color: #7c2d12;
+                background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+                border: 1px solid #fed7aa;
+                box-shadow: 0 6px 18px rgba(234, 88, 12, 0.10);
+            }
+            .auth-forced::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 5px;
+                background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+            }
+            .auth-forced-icon {
+                flex: 0 0 2.9rem;
+                height: 2.9rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                color: #fff;
+                background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+                box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.15);
+            }
+            .auth-forced-text {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .auth-forced-title {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.2rem;
+            }
+            .auth-forced-tag {
+                padding: 0.1rem 0.55rem;
+                border-radius: 999px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #fff;
+                background: #ea580c;
+            }
+            .auth-forced-sub {
+                display: block;
+                font-size: 0.875rem;
+                line-height: 1.45;
+                color: #9a3412;
+            }
+            .auth-forced-logout.ui-button {
+                flex: 0 0 auto;
+                border-radius: 10px;
+                background: #fff;
+            }
+            @media (max-width: 576px) {
+                .auth-forced {
+                    flex-wrap: wrap;
+                }
+                .auth-forced-logout.ui-button {
+                    width: 100%;
+                }
+            }
+            /* Status panel: everything centred, accent colour by state */
+            .auth-status {
+                --auth-accent: #d97706;
+                --auth-soft: #fffbeb;
+                --auth-line: #fde68a;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.6rem;
+                padding: 1.75rem 1.25rem 1.5rem 1.25rem;
+                margin-bottom: 1.25rem;
+                border-radius: 16px;
+                border: 1px solid var(--surface-border, #e5e7eb);
+                background: var(--surface-card, #fff);
+            }
+            .auth-status.linked {
+                --auth-accent: #16a34a;
+                --auth-soft: #f0fdf4;
+                --auth-line: #bbf7d0;
+            }
+            .auth-status-icon {
+                width: 4.2rem;
+                height: 4.2rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.8rem;
+                color: #fff;
+                background: var(--auth-accent);
+                box-shadow: 0 0 0 8px var(--auth-soft), 0 10px 22px rgba(0, 0, 0, 0.12);
+                margin-bottom: 0.4rem;
+            }
+            .auth-status-title {
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+            .auth-status-date {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary, #6c757d);
+            }
+            .auth-status-chip {
+                display: inline-block;
+                max-width: 30rem;
+                padding: 0.45rem 0.9rem;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                color: var(--text-color-secondary, #475569);
+                background: var(--surface-ground, #f5f7fb);
+            }
+            .auth-status-chip.required {
+                font-weight: 600;
+                color: var(--auth-accent);
+                background: var(--auth-soft);
+                border: 1px solid var(--auth-line);
+            }
+            .auth-status-action {
+                margin: 0.6rem 0 0.2rem 0;
+            }
+            .auth-status-action .ui-button {
+                padding: 0.35rem 1.4rem;
+                border-radius: 12px;
+                font-weight: 600;
+            }
         </style>
 
         <h:form id="frmMyAuthenticator">
@@ -207,6 +350,26 @@
                         <!-- Messages live inside the form so ajax updates of @form show them -->
                         <ez:modern_messages id="msgAuthenticator" />
 
+                        <!-- Forced setup: the templates show only this screen until an app is linked -->
+                        <h:panelGroup rendered="#{twoFactorAuthController.setupRequiredNow}" layout="block" class="auth-forced">
+                            <div class="auth-forced-icon"><i class="fa fa-user-shield"></i></div>
+                            <div class="auth-forced-text">
+                                <div class="auth-forced-title">
+                                    <h:outputText value="Two-step verification setup required" />
+                                    <span class="auth-forced-tag">Required</span>
+                                </div>
+                                <h:outputText value="Your administrator requires an authenticator app for your account. Set it up below to continue using the system."
+                                              class="auth-forced-sub" />
+                            </div>
+                            <p:commandButton value="Log Out"
+                                             icon="pi pi-sign-out"
+                                             class="auth-forced-logout ui-button-secondary ui-button-outlined"
+                                             ajax="false"
+                                             immediate="true"
+                                             title="Log out without setting up"
+                                             action="#{sessionController.logout}" />
+                        </h:panelGroup>
+
                         <!-- Feature switched off -->
                         <h:panelGroup rendered="#{not twoFactorAuthController.twoFactorEnabled}" layout="block" class="auth-info mb-0">
                             <i class="fa fa-info-circle"></i>
@@ -214,36 +377,33 @@
                         </h:panelGroup>
 
                         <!-- Current status -->
-                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress}" layout="block">
-                            <div class="auth-info">
-                                <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}">
-                                    <i class="fa fa-check-circle" style="color: #22c55e;"></i>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}">
-                                    <i class="fa fa-mobile-alt"></i>
-                                </h:panelGroup>
-                                <div>
-                                    <div class="fw-semibold">
-                                        <h:outputText rendered="#{twoFactorAuthController.loggedUserEnrolled}" value="Your authenticator app is linked" />
-                                        <h:outputText rendered="#{not twoFactorAuthController.loggedUserEnrolled}" value="No authenticator app linked yet" />
-                                    </div>
-                                    <div class="auth-meta">
-                                        <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled and sessionController.loggedUser.twoFactorEnrolledAt ne null}">
-                                            <h:outputText value="Linked on " />
-                                            <h:outputText value="#{sessionController.loggedUser.twoFactorEnrolledAt}">
-                                                <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
-                                            </h:outputText>
-                                            <h:outputText value=" · " />
-                                        </h:panelGroup>
-                                        <h:outputText rendered="#{twoFactorAuthController.loggedUserRequired}"
-                                                      value="Your account requires a code from an authenticator app at every login." />
-                                        <h:outputText rendered="#{not twoFactorAuthController.loggedUserRequired}"
-                                                      value="Your account does not currently require an authenticator code. You can still link an app now so it is ready if your administrator enables it." />
-                                    </div>
-                                </div>
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress}" layout="block"
+                                      class="auth-status #{twoFactorAuthController.loggedUserEnrolled ? 'linked' : 'unlinked'}">
+                            <div class="auth-status-icon">
+                                <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}"><i class="fa fa-check"></i></h:panelGroup>
+                                <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}"><i class="fa fa-mobile-alt"></i></h:panelGroup>
                             </div>
+                            <h:outputText rendered="#{twoFactorAuthController.loggedUserEnrolled}" value="Your authenticator app is linked" class="auth-status-title" />
+                            <h:outputText rendered="#{not twoFactorAuthController.loggedUserEnrolled}" value="No authenticator app linked yet" class="auth-status-title" />
 
-                            <div class="auth-actions d-flex flex-wrap align-items-center gap-3">
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled and sessionController.loggedUser.twoFactorEnrolledAt ne null}" class="auth-status-date">
+                                <i class="fa fa-calendar-check"></i>
+                                <h:outputText value=" Linked on " />
+                                <h:outputText value="#{sessionController.loggedUser.twoFactorEnrolledAt}">
+                                    <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                </h:outputText>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserRequired}" class="auth-status-chip required">
+                                <i class="fa fa-lock"></i>
+                                <h:outputText value=" Your account requires a code from an authenticator app at every login." />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserRequired}" class="auth-status-chip">
+                                <i class="fa fa-info-circle"></i>
+                                <h:outputText value=" Not required for your account yet. Linking an app now keeps you ready if your administrator enables it." />
+                            </h:panelGroup>
+
+                            <div class="auth-status-action">
                                 <p:commandButton value="#{twoFactorAuthController.loggedUserEnrolled ? 'Link a New Phone' : 'Set Up Authenticator App'}"
                                                  icon="fa fa-qrcode"
                                                  class="#{twoFactorAuthController.loggedUserEnrolled ? 'ui-button-warning' : 'ui-button-success'}"
@@ -251,11 +411,14 @@
                                                  process="@this"
                                                  update="@form"
                                                  action="#{twoFactorAuthController.startSelfSetup()}" />
-                                <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
-                                    <i class="fa fa-info-circle me-1"></i>
-                                    <h:outputText value="The current phone keeps working until you confirm a code from the new one." />
-                                </h:panelGroup>
                             </div>
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
+                                <i class="fa fa-info-circle me-1"></i>
+                                <h:outputText value="The current phone keeps working until you confirm a code from the new one." />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
+                                <h:outputText value="Takes about a minute: install Google or Microsoft Authenticator, scan the QR code, enter the code." />
+                            </h:panelGroup>
                         </h:panelGroup>
 
                         <!-- Setup -->
