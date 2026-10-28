@@ -388,7 +388,7 @@ public class TwoFactorAuthController implements Serializable {
         String jpql = "select a from AuditEvent a"
                 + " where a.entityType=:et"
                 + " and a.objectId=:uid"
-                + " order by a.eventDataTime desc";
+                + " order by a.eventDataTime desc, a.id desc";
         Map<String, Object> m = new HashMap<>();
         m.put("et", AUDIT_ENTITY_TYPE);
         m.put("uid", user.getId());
