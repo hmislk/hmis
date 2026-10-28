@@ -16,10 +16,10 @@
                 <h:form id="frm">
                     <p:panel header="Zero Stock Item Report" >
 
-                        <common:institution_site_department_filter controller="#{reportsStock}"/>
+                        <common:institution_site_department_filter controller="#{reportsStock}" departmentRequired="true"/>
                         <p:fieldset styleClass="my-2" legend="About this report">
                             <p>
-                                This report lists all pharmacy items that currently have zero stock. Items appear here only if they previously had stock within the selected institution, site, or department.
+                                This report lists the pharmacy items that currently have zero stock in the selected department. Items appear here only if they previously had stock in that department. Select a department; Institution and Site only narrow the department list.
                             </p>
                         </p:fieldset>
                         <h:panelGrid columns="6" styleClass="my-2">

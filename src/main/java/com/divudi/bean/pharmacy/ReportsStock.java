@@ -1577,8 +1577,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void fillDepartmentZeroItemStocks() {
         reportTimerController.trackReportExecution(() -> {
-            if (department == null && site == null && institution == null) {
-                JsfUtil.addErrorMessage("Please select a department, site, or institution");
+            // Department is required (#20010): an institution- or site-wide run listed only items
+            // whose total stock was zero, so one department could show more items than "All".
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                pharmacyStockRows = new ArrayList<>();
                 return;
             }
             Map m = new HashMap();
