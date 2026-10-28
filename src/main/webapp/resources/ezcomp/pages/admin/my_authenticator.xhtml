@@ -322,6 +322,39 @@
                 border-radius: 12px;
                 font-weight: 600;
             }
+            .auth-reset-help {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+                max-width: 30rem;
+                margin-top: 0.6rem;
+                padding: 0.9rem 1rem;
+                text-align: center;
+                border-radius: 12px;
+                background: #eff6ff;
+                border: 1px solid #bfdbfe;
+            }
+            .auth-reset-help-icon {
+                flex: 0 0 2.2rem;
+                width: 2.2rem;
+                height: 2.2rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                background: #2563eb;
+            }
+            .auth-reset-help-title {
+                font-weight: 600;
+                color: #1e3a8a;
+            }
+            .auth-reset-help-text {
+                font-size: 0.85rem;
+                color: #1e40af;
+            }
         </style>
 
         <h:form id="frmMyAuthenticator">
@@ -403,18 +436,23 @@
                                 <h:outputText value=" Not required for your account yet. Linking an app now keeps you ready if your administrator enables it." />
                             </h:panelGroup>
 
-                            <div class="auth-status-action">
-                                <p:commandButton value="#{twoFactorAuthController.loggedUserEnrolled ? 'Link a New Phone' : 'Set Up Authenticator App'}"
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-status-action">
+                                <p:commandButton value="Set Up Authenticator App"
                                                  icon="fa fa-qrcode"
-                                                 class="#{twoFactorAuthController.loggedUserEnrolled ? 'ui-button-warning' : 'ui-button-success'}"
+                                                 class="ui-button-success"
                                                  title="Show a QR code to link your authenticator app"
                                                  process="@this"
                                                  update="@form"
                                                  action="#{twoFactorAuthController.startSelfSetup()}" />
-                            </div>
-                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
-                                <i class="fa fa-info-circle me-1"></i>
-                                <h:outputText value="The current phone keeps working until you confirm a code from the new one." />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-reset-help">
+                                <div class="auth-reset-help-icon"><i class="fa fa-user-shield"></i></div>
+                                <div class="auth-reset-help-body">
+                                    <div class="auth-reset-help-title">Changed or lost your phone?</div>
+                                    <div class="auth-reset-help-text">
+                                        Contact your system administrator to reset your authenticator.
+                                    </div>
+                                </div>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
                                 <h:outputText value="Takes about a minute: install Google or Microsoft Authenticator, scan the QR code, enter the code." />
